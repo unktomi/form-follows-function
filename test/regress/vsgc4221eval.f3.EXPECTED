@@ -1,0 +1,23 @@
+factor: NaN
+f(NaN, NaN)
+dummy: NaN
+Invalidate X count: 1
+Invalidate Y count: 1
+-- a --
+factor: 1.0
+f(1.0, 1.0)
+dummy: 2.0
+Invalidate X count: 2
+Invalidate Y count: 2
+-- set a.x --
+factor: 2.0
+f(2.0, 2.0)
+dummy: 4.0
+Invalidate X count: 3
+Invalidate Y count: 3
+-- set a.y --
+factor: 1.0
+f(1.0, 1.0)
+dummy: 2.0
+Invalidate X count: 4
+Invalidate Y count: 4

@@ -1,0 +1,7 @@
+test/should-fail/vsgc4135.f3:8: warning: [warnonuse] Package java.util has been used.
+import java.util.*;
+            ^
+test/should-fail/vsgc4135.f3:12: warning: [warnonuse] Package java.awt has been used.
+var f = new java.awt.Frame("");
+                ^
+2 warnings

@@ -1,0 +1,7 @@
+test/should-fail/vsgc3422.f3:11: Note: Need explicit type for m because of cycle in definition.
+      A{ function m() {}}
+         ^
+test/should-fail/vsgc3422.f3:11: This is the cyclic reference to m that prevents type inference.
+      A{ function m() {}}
+         ^
+1 error

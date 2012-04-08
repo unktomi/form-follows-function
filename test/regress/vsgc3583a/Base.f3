@@ -1,0 +1,8 @@
+/**
+ * @subtest
+ */
+package vsgc3583a;
+
+public def PAK = ["a", "b", "c"];
+
+public class Base {}

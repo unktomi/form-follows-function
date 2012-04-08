@@ -1,0 +1,7 @@
+org.f3.jdi.connect.F3LaunchingConnector
+org.f3.jdi.connect.F3ProcessAttachingConnector
+org.f3.jdi.connect.F3RawLaunchingConnector
+# org.f3.jdi.connect.F3SharedMemoryAttachingConnector
+# org.f3.jdi.connect.F3SharedMemoryListeningConnector
+org.f3.jdi.connect.F3SocketAttachingConnector
+org.f3.jdi.connect.F3SocketListeningConnector

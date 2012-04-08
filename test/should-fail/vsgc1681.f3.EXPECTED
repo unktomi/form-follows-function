@@ -1,0 +1,7 @@
+test/should-fail/vsgc1681.f3:7: missing return value
+        else { return ; }
+               ^
+test/should-fail/vsgc1681.f3:14: cannot return a value from method whose result type is void
+        else { return 100; }
+               ^
+2 errors

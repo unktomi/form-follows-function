@@ -1,0 +1,14 @@
+/*
+ * VSGC-230:Type of block expression doesn't consider return
+ *
+ * @test
+ * @run
+ */
+import java.lang.System;
+class Alpha { 
+  var beep : Boolean; 
+  function myop(x : String) : String { var q : String; if (not beep) {return q = if (beep) "yo" else "po"} else "lo" } 
+} 
+
+var alpha : Alpha = new Alpha;
+System.out.println(alpha.myop("bar"));

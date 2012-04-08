@@ -1,0 +1,31 @@
+/*
+ * @subtest
+ */
+mixin public class TestBase {
+ var failures = 0;
+ var passcount = 0;
+ public function check(i1:Integer, i2:Integer):Boolean { i1 == i2 }
+ public function check(n1:Number, n2:Number):Boolean   { n1 == n2 }
+ public function check(b1:Boolean, b2:Boolean):Boolean { b1 == b2 }
+ public function check(s1:String, s2:String):Boolean   { s1.compareTo(s2)==0 }
+
+ // vsgc2134 - cannot overload based on sequence parms
+ public function checkis(is1:Integer[], is2:Integer[]):Boolean { is1 == is2 }
+ public function checkns(ns1:Number[], ns2:Number[]):Boolean { ns1 == ns2 }
+ public function checkbs(bs1:Boolean[], bs2:Boolean[]):Boolean { bs1 == bs2 }
+ public function checkss(ss1:String[], ss2:String[]):Boolean { ss1 == ss2 }
+ public function getFailures():Integer { return failures; }
+ public function getPasses():Integer { return passcount; }
+ public function TestAssert(t:Boolean,msg:String):String {
+    var failMessage ="PASS {msg}";
+    if(t){ passcount++;
+    } else {
+       failures++;
+       failMessage ="FAILED: {msg}";
+       println(failMessage);
+     }
+     return failMessage;
+ }
+
+}
+

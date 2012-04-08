@@ -1,0 +1,9 @@
+/**
+ * VSGC-3952 : Samples: Mosaic fails with an NPE in initVars$
+ *
+ * @subtest
+ */
+
+public mixin class vsgc3952mix {
+  public var furb = "furb"
+}

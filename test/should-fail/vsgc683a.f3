@@ -1,0 +1,39 @@
+/*
+ * Regression test: VSGC-683: Use F3 type name rather than Java type names in error messages
+ *
+ * @test/compile-error
+ *
+ * This should produce:
+ *
+ *     vsgc683a.f3:38: incompatible types
+ *     found   : vsgc683a.Node[]
+ *     required: vsgc683a.Node
+ *         content: [Node {}]
+ *                  ^
+ *     1 error
+ * 
+ * instead of
+ * 
+ *     vsgc683a.f3:38: incompatible types
+ *     found   : org.f3.runtime.sequence.Sequence<? extends vsgc683a.Node>
+ *     required: vsgc683a.Node
+ *         content: [Node {}]
+ *                  ^
+ *     1 error
+ * 
+ * There doesn't seem to be a way to provide .EXPECTED files 
+ * for tests that are expected to fail compilation.
+ *
+ */
+
+class Node {
+}
+
+class Group extends Node {
+    var content: Node;
+}
+
+
+Group {
+    content: [Node {}]
+} 

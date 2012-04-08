@@ -1,0 +1,14 @@
+/*
+ * VSGC-3095 : An override variable can not be given a type
+ *
+ *
+ * @test
+ */
+
+mixin class Mixin {
+    public var bar : String;
+}
+
+class Mixee extends Mixin {
+    override public var bar : String;
+}

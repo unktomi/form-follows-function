@@ -1,0 +1,12 @@
+/*
+ * @test
+ * @run
+ *
+ * mixin A should be initialized just once
+ */
+mixin class A           {init{f3.lang.F3.println("init A");}}
+mixin class E extends A {init{f3.lang.F3.println("init E");}}
+class B extends A       {init{f3.lang.F3.println("init B");}}
+class C extends A, B, E {init{f3.lang.F3.println("init C");}}
+
+C{};

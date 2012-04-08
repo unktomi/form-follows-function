@@ -1,0 +1,17 @@
+/**
+ * Regression test VSGC-2200 : varargs constructor args not handled -- Compiler crash java.lang.ProcessBuilder constructor
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.ProcessBuilder;
+
+var pb:ProcessBuilder = new ProcessBuilder("f3", "print");
+var cmd = pb.command();
+println(cmd.get(0));
+println(cmd.get(1));
+
+pb = new ProcessBuilder("f3");
+cmd = pb.command();
+println(cmd.get(0));

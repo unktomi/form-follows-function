@@ -1,0 +1,13 @@
+test/should-fail/vsgc3226.f3:8: warning: bind does not detect changes in nativearray value
+var chars:nativearray of Character = bind text.toCharArray() on replace {
+^
+test/should-fail/vsgc3226.f3:8: warning: trigger does not detect changes in nativearray value
+var chars:nativearray of Character = bind text.toCharArray() on replace {
+                                                             ^
+test/should-fail/vsgc3226.f3:11: warning: bind does not detect changes in nativearray value
+var chars_2:nativearray of Character = bind chars;
+^
+test/should-fail/vsgc3226.f3:12: warning: bind does not detect changes in nativearray value
+var chars_3:Character[] = bind chars;
+^
+4 warnings

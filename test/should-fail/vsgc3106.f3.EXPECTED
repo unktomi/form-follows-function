@@ -1,0 +1,4 @@
+test/should-fail/vsgc3106.f3:17: seq has script only (default) write access in vsgc3106Test
+obj.seq[0..1] = ["b", "c"]; 
+   ^
+1 error

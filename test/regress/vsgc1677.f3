@@ -1,0 +1,19 @@
+/**
+ * regression test: VSGC-1677 : Compiler throws ClassCastException for "return" within variable declaration
+ *
+ * @test
+ */
+
+function fn1( ) : String {
+ 
+ var num : Integer =
+ {
+  try {
+  return 'Return within a var initialization' ;
+  } catch ( var1 : java.lang.Exception ) {
+  } ;
+ 
+  1
+ } ;
+  'Output' } 
+ 

@@ -1,0 +1,94 @@
+/*
+ * vsgc2088.f3
+ *
+ * Created on Aug 26, 2008, 10:28:47 AM
+ */
+
+
+import f3.lang.F3;
+
+/**
+ * Example F3 showing the usage of F3.addShutdownAction() with an
+ * explicit F3.exit() call.
+ * The exit occurs when the script when F3.exit is called.
+ *
+ * Output from this script will be as follows:
+ * vsgc2088 Script
+ * Correctly Failed to Add Exit3
+ * Exiting Script
+ * Running Exit Action6
+ * Running Exit Action5
+ * Running Exit Action3
+ * Running Exit Action4
+ *
+ * @test
+ * @run
+ *
+ * @author sgw
+ */
+
+// Show that we are starting the Script
+println("vsgc2088 Script");
+
+/*
+ * A void Function that takes no arguments will be placed on the
+ * exit action stack by the addShutdownAction to be executed at the
+ * time the script exits either implicitly or explicitly.
+ */
+var runAtExit1 = function() : Void {
+    println("Running Exit Action1");
+}
+var runAtExit2 = function() : Void {
+    F3.exit();
+    println("Running Exit Action2");
+}
+var runAtExit3 = function() : Void {
+    println("Running Exit Action3");
+}
+var runAtExit4 = function() : Void {
+    println("Running Exit Action4");
+}
+var runAtExit5 = function() : Void {
+    println("Running Exit Action5");
+}
+
+var runTest = function() : Void {
+    println("Running Exit Action6");
+}
+
+/*
+ * Add the runAtExit function to the stack for the Shutdown Actions
+ * this stack will be executed when the F3 exits.
+ */
+var ra1 = F3.addShutdownAction(runAtExit1);
+F3.removeShutdownAction(ra1);
+
+var ra2 = F3.addShutdownAction(runAtExit2);
+var ra3 = F3.addShutdownAction(runAtExit3);
+var ra4 = F3.addShutdownAction(runAtExit4);
+var ra5 = F3.addShutdownAction(runAtExit5);
+
+F3.removeShutdownAction(ra3);
+ra3 = F3.addShutdownAction(runAtExit3);
+
+F3.removeShutdownAction(ra5);
+ra5 = F3.addShutdownAction(runAtExit5);
+
+var rt = F3.addShutdownAction(runTest);
+F3.removeShutdownAction(rt);
+rt = F3.addShutdownAction(runTest);
+ra3 = F3.addShutdownAction(runAtExit3);
+if(F3.addShutdownAction(runAtExit3) == ra3) {
+    println("Correctly Failed to Add Exit3");
+}
+
+
+println("Exiting Script");
+/*
+ * Script will now call F3.exit();
+ */
+F3.exit();
+/*
+ * F3.exit() should not return here
+ */
+println("Should not reach here");

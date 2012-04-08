@@ -1,0 +1,4 @@
+test/should-fail/vsgc1488.f3:15: Invalid assignment
+    run: function(){
+    ^
+1 error

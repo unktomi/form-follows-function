@@ -1,0 +1,19 @@
+test/should-fail/vsgc1086.f3:21: warning: In bind with inverse of shapes[ index].name, shapes[ index] is not a constant, but will be treated as such. You may want to rewrite as:
+  def temp = shapes[ index];
+  var x = bind temp.name with inverse;
+
+var name = bind shapes[index].name with inverse;
+                ^
+test/should-fail/vsgc1086.f3:29: warning: In bind with inverse of x.name, x is not a constant, but will be treated as such. You may want to rewrite as:
+  def temp = x;
+  var x = bind temp.name with inverse;
+
+var y = bind x.name with inverse;
+             ^
+test/should-fail/vsgc1086.f3:37: warning: In bind with inverse of a1.name, a1 is not a constant, but will be treated as such. You may want to rewrite as:
+  def temp = a1;
+  var x = bind temp.name with inverse;
+
+var b1 = bind a1.name with inverse;
+              ^
+3 warnings

@@ -1,0 +1,4 @@
+size old/new/slice = 0/3/3 from 0 to -1 - slice = Rectangle[1]Rectangle[2]Rectangle[3]
+initialized - now update val
+size old/new/slice = 3/3/3 from 0 to 2 - slice = Rectangle[4]Rectangle[5]Rectangle[6]
+after update:Rectangle[4]Rectangle[5]Rectangle[6]

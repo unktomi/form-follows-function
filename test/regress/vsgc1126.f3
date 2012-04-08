@@ -1,0 +1,14 @@
+/*
+ * Regression test VSGC-1126 : __DIR__ used as Java method parameter
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.NullPointerException;
+import java.net.URL;
+
+var readurl = new URL(new URL(__DIR__), "../components/images/foo.png");
+if (readurl == null) {
+    throw new NullPointerException("URL not created");
+}

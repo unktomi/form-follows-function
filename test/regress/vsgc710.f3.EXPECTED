@@ -1,0 +1,242 @@
+------- WayOut{}
+trig: wayOut1 WayOuti
+WayOuti
+WayOutfi
+------- WayOut{wayOuti: 'litWayOuti'}
+trig: wayOut1 litWayOuti
+litWayOuti
+WayOutfi
+------- Out{}
+trig: wayOut1 ovOut-WayOuti
+trig: override Out wayOuti ovOut-WayOuti
+trig: outi Outi
+ovOut-WayOuti
+WayOutfi
+Outi
+Outfi
+------- Out{wayOuti: 'litOutWayOuti'}
+trig: wayOut1 litOutWayOuti
+trig: override Out wayOuti litOutWayOuti
+trig: outi Outi
+litOutWayOuti
+WayOutfi
+Outi
+Outfi
+------- Out{outi: 'litOuti'}
+trig: wayOut1 ovOut-WayOuti
+trig: override Out wayOuti ovOut-WayOuti
+trig: outi litOuti
+ovOut-WayOuti
+WayOutfi
+litOuti
+Outfi
+------- A{}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ai
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+ai
+afi
+------- A{wayOuti: 'litAWayOuti'}
+trig: wayOut1 litAWayOuti
+trig: override Out wayOuti litAWayOuti
+trig: override A wayOuti litAWayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ai
+litAWayOuti
+WayOutfi
+ovA-outi
+Outfi
+ai
+afi
+------- A{outi: 'litAOuti'}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi litAOuti
+trig: override A out1 litAOuti
+trig: a1 ai
+ovA-wayOuti
+WayOutfi
+litAOuti
+Outfi
+ai
+afi
+------- A{ai: 'litAi'}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 litAi
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+litAi
+afi
+------- B{}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ovB-ai
+trig: override B a1 ovB-ai
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+ovB-ai
+afi
+bi
+bfi
+------- B{wayOuti: 'litBWayOuti'}
+trig: wayOut1 litBWayOuti
+trig: override Out wayOuti litBWayOuti
+trig: override A wayOuti litBWayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ovB-ai
+trig: override B a1 ovB-ai
+litBWayOuti
+WayOutfi
+ovA-outi
+Outfi
+ovB-ai
+afi
+bi
+bfi
+------- B{outi: 'litBOuti'}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi litBOuti
+trig: override A out1 litBOuti
+trig: a1 ovB-ai
+trig: override B a1 ovB-ai
+ovA-wayOuti
+WayOutfi
+litBOuti
+Outfi
+ovB-ai
+afi
+bi
+bfi
+------- B{ai: 'litBAi'}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 litBAi
+trig: override B a1 litBAi
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+litBAi
+afi
+bi
+bfi
+------- B{bi: 'litBi'}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ovB-ai
+trig: override B a1 ovB-ai
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+ovB-ai
+afi
+litBi
+bfi
+------- B-Anon{}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 B-AnonOvAi
+trig: override B a1 B-AnonOvAi
+trig: override B-Anon ai B-AnonOvAi
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+B-AnonOvAi
+afi
+bi
+bfi
+------- C-Anon{}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ovB-ai
+trig: override B a1 ovB-ai
+trig: override CAnon ci ovCAnon-ci
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+ovB-ai
+afi
+bi
+bfi
+ovCAnon-ci
+cfi
+Anoni
+Anonfi
+------- E-C{}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ovB-ai
+trig: override B a1 ovB-ai
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+ovB-ai
+afi
+bi
+bfi
+ci
+cfi
+ei
+efi
+------- E{bi: 'litEBi'}
+trig: wayOut1 ovA-wayOuti
+trig: override Out wayOuti ovA-wayOuti
+trig: override A wayOuti ovA-wayOuti
+trig: outi ovA-outi
+trig: override A out1 ovA-outi
+trig: a1 ovB-ai
+trig: override B a1 ovB-ai
+ovA-wayOuti
+WayOutfi
+ovA-outi
+Outfi
+ovB-ai
+afi
+litEBi
+bfi
+ci
+cfi
+ei
+efi

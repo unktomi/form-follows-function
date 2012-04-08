@@ -1,0 +1,20 @@
+/**
+ * Regress test for VSGC-4250: Regression: compiler error when binding to an array of strings
+ *
+ * @test
+ * @run
+ */
+
+var text = "A,B";
+
+class ListView {
+  var items:Object[];
+};
+
+var lv = ListView {
+items: bind text.split(",");
+}
+
+var x = bind lv.items on replace { println("replace! {x}");} // this doesn't get updated
+
+text = "C,B";

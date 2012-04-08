@@ -1,0 +1,11 @@
+test\should-fail\vsgc2591.f3:14: unexpected type
+required: variable
+found   : value
+      28 => 100.0 tween Interpolator.EASEBOTH
+      ^
+test\should-fail\vsgc2591.f3:17: unexpected type
+required: variable
+found   : value
+      val+val => 100.0 tween Interpolator.EASEBOTH
+      ^
+2 errors

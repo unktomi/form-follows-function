@@ -1,0 +1,44 @@
+Comparator chosen=> EmployeeExperienceComparator
+Employee details as of now::
+	 Name ==> Silly,Experience==>5 yrs ,salary ==>50000
+	 Name ==> Billy,Experience==>20 yrs ,salary ==>25000
+	 Name ==> Hilly,Experience==>9 yrs ,salary ==>45000
+	 Name ==> Willy,Experience==>1 yrs ,salary ==>95000
+Select Employee for Layoff from db (Least experienced must leave)  :: 	 Name ==> Willy,Experience==>1 yrs ,salary ==>95000
+Layoff the employee ::	 Name ==> Willy,Experience==>1 yrs ,salary ==>95000
+Insert a new Employee into DB::	 Name ==> XHill,Experience==>49 yrs ,salary ==>335000
+Employee details as of now::
+	 Name ==> Silly,Experience==>5 yrs ,salary ==>50000
+	 Name ==> Billy,Experience==>20 yrs ,salary ==>25000
+	 Name ==> Hilly,Experience==>9 yrs ,salary ==>45000
+	 Name ==> XHill,Experience==>49 yrs ,salary ==>335000
+Select Employee for Layoff from db (Least experienced must leave)  :: 	 Name ==> Silly,Experience==>5 yrs ,salary ==>50000
+Layoff the employee ::	 Name ==> Silly,Experience==>5 yrs ,salary ==>50000
+Employee details as of now::
+	 Name ==> Billy,Experience==>20 yrs ,salary ==>25000
+	 Name ==> Hilly,Experience==>9 yrs ,salary ==>45000
+	 Name ==> XHill,Experience==>49 yrs ,salary ==>335000
+Done,Clear the DataBase
+**************************************
+Comparator chosen=> EmployeeNameComparator
+Employee details as of now::
+	 Name ==> Silly,Experience==>5 yrs ,salary ==>50000
+	 Name ==> Billy,Experience==>20 yrs ,salary ==>25000
+	 Name ==> Hilly,Experience==>9 yrs ,salary ==>45000
+	 Name ==> Willy,Experience==>1 yrs ,salary ==>95000
+Select Employee for Layoff from db (by just selecting the first alphabetical-ordered name)  :: 	 Name ==> Billy,Experience==>20 yrs ,salary ==>25000
+Layoff the employee ::	 Name ==> Billy,Experience==>20 yrs ,salary ==>25000
+Insert a new Employee into DB::	 Name ==> XHill,Experience==>49 yrs ,salary ==>335000
+Employee details as of now::
+	 Name ==> Silly,Experience==>5 yrs ,salary ==>50000
+	 Name ==> Hilly,Experience==>9 yrs ,salary ==>45000
+	 Name ==> Willy,Experience==>1 yrs ,salary ==>95000
+	 Name ==> XHill,Experience==>49 yrs ,salary ==>335000
+Select Employee for Layoff from db (by just selecting the first alphabetical-ordered name)  :: 	 Name ==> Hilly,Experience==>9 yrs ,salary ==>45000
+Layoff the employee ::	 Name ==> Hilly,Experience==>9 yrs ,salary ==>45000
+Employee details as of now::
+	 Name ==> Silly,Experience==>5 yrs ,salary ==>50000
+	 Name ==> Willy,Experience==>1 yrs ,salary ==>95000
+	 Name ==> XHill,Experience==>49 yrs ,salary ==>335000
+Done,Clear the DataBase
+**************************************

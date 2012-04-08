@@ -1,0 +1,7 @@
+test/should-fail/vsgc2665.f3:10: y is already defined in this object literal
+   y: 2
+   ^
+test/should-fail/vsgc2665.f3:11: y is already defined in this object literal
+   y: 3
+   ^
+2 errors

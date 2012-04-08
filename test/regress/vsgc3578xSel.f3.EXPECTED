@@ -1,0 +1,7 @@
+after x
+y: removed [ ] and added [ hi, low ]
+after bz
+bz.y: [ hi, low ]
+y: removed [ hi, low ] and added [ sa ]
+after z.x
+bz.y: [ sa ]

@@ -1,0 +1,15 @@
+/**
+ * Regress test for VSGC-3091 - MediaBox: Compilation error with Marina #99
+ *
+ * @test/compile-error
+ */
+
+class A {
+var x = 12;
+}
+
+class B extends A {
+function f() {
+override var x = 12;
+}
+}

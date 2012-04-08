@@ -1,0 +1,28 @@
+/**
+ * Regress test for VSGC-3065 - Complex bind causes null as value for some parts of bind chain.
+ *
+ * Test initialization order
+ *
+ * @test
+ * @run
+ */
+
+function v(x : String) : String { println(x); x }
+
+class A {
+  var a = v("a");
+  public var b = v("b");
+  var c = v("cBad");
+  public var d = v("dBad");
+  var e = v("e");
+  public var f = v("f");
+}
+
+class B extends A {
+  var g = v("g");
+  public var h = v("h");
+  override var c = v("c");
+  override var d = v("d");
+}
+
+B{}

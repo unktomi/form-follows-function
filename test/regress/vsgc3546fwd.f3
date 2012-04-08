@@ -1,0 +1,19 @@
+/**
+ * VSGC-3546 : Internal bug in compiler: nativearray in bound-for -- cannot find symbol symbol : variable startPos$ 
+ *
+ * Forward reference and null array
+ *
+ * @test
+ * @run
+ */
+
+var str = "gee hello there";
+def ba = bind arr as String[] on replace [a..b]=newVal { println("[{a}..{b}] = {newVal.toString()}") };
+var arr = str.split(" ");
+println(ba);
+str = "wow man";
+arr = str.split(" ");
+arr = null;
+arr = str.split("w");
+println("---");
+println(ba);

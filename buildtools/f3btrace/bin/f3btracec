@@ -1,0 +1,14 @@
+#! /bin/sh
+
+if [ -z "$F3_HOME" ] ; then
+  PRG="$0"
+  progname=`basename "$0"`
+  F3_HOME=`dirname "$PRG"`/../../../dist/
+fi
+
+if [ -f "${BTRACE_HOME}/build/btrace-client.jar" ] ; then
+    javac -cp ${BTRACE_HOME}/build/btrace-client.jar:${F3_HOME}/lib/shared/f3rt.jar $*
+else
+    echo "Please set BTRACE_HOME before running this script"
+fi
+

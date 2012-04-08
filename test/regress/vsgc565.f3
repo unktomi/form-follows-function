@@ -1,0 +1,16 @@
+/*
+ * VSGC-565: Test of bind that needs Integer->Double conversion.
+ *
+ * @test
+ * @run
+ */
+import java.lang.System;
+var i:Integer = 3;
+var x:Number = bind add(i, 10);
+
+function add(a:Number, b:Number):Number {
+   return a + b;
+}
+System.out.println("x: {x}");
+i = 5;
+System.out.println("x: {x}");

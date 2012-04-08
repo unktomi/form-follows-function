@@ -1,0 +1,11 @@
+x: =>3=3
+y: 4
+z: Ralph
+x: =>4=4
+y: 11
+x: 0 => 3
+y: 0 => 4
+z:  => Bert=Bert
+x: 3 => 4
+y: 4 => 11
+z: Bert => Zoey=Zoey

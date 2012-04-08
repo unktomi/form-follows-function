@@ -1,0 +1,26 @@
+/* VSGC-197:  Make sure onChanges list of F3Var is visited in base F3TreeScanner visitor.
+ * @test
+ */
+public class ConfirmDialog {
+    public var visible: Boolean = false on replace {
+        if (visible) {
+            //TODO DO LATER - this is a work around until a more permanent solution is provided
+            javax.swing.SwingUtilities.invokeLater(java.lang.Runnable {
+                         public function run():Void {
+                            var result = true;
+                            if (result) { if(onYes != null) onYes(); } 
+                            else if (result) { if(onNo != null) onNo(); }
+                            else if (result) { if(onCancel != null) onCancel(); }
+                            else if (result) { if(onYes != null) onYes(); }
+                            else if (result) { if(onCancel != null) onCancel(); }
+                            visible = false;
+                        }
+                }
+             );
+        } 
+    }
+    public var onYes: function():Void;
+    public var onNo: function():Void;
+    public var onCancel: function():Void;
+}
+

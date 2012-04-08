@@ -1,0 +1,86 @@
+/*
+ * Regression test 
+ * VSGC-3794 : Compiled Bind Optimization: for bound obj lit initializers which can't be reincarnated
+ *   and don't clash in name, push them into subclass rather than factoring to obj lit level
+ *
+ * @test
+ * @run
+ */
+
+var cnt = 0;
+
+class A {
+  var w;
+  var x;
+  init {
+    ++cnt;
+  }
+}
+
+function test1() {
+  var y = 2;
+  var aa = A{ x: bind y+4 }
+  if (aa.x != 6) println("ERROR: {aa.x}");
+}
+
+function test2() {
+  var y = 2;
+  var aa = A{ x: bind y+4 }
+  y = 16;
+  if (aa.x != 20) println("ERROR: {aa.x}");
+}
+
+function test3() {
+  var y = 2;
+  var z = 'z';
+  var aa = bind A{ w: z x: bind y+4 }
+  if (aa.x != 6) println("ERROR: {aa.x}");
+  z = 'ZZZ';
+  if (aa.x != 6) println("ERROR: {aa.x}");
+}
+
+class B {
+  var y = 8;
+
+  function do() {
+    var a = A{ x: bind y+4 }
+    return a
+  }
+}
+
+function test4() {
+  var e = B{};
+  var aa = e.do();
+  e.y = 16;
+  if (aa.x != 20) println("ERROR: {aa.x}");
+}
+
+function test5() {
+  cnt = 0;
+  var y = 2;
+  var z = 'z';
+  var aa = bind A{ 
+    w: z 
+    x: bind A{
+      x: y+4
+    } 
+  }
+  if ((aa.x as A).x != 6) println("ERROR: {aa.x}");
+  if (cnt != 2) println("ERROR: cnt 2 -- {cnt}");
+  z = 'ZZZ';
+  if ((aa.x as A).x != 6) println("ERROR: {aa.x}");
+  if (aa.w != z) println("ERROR: w wrong -- {aa.w}");
+  if (cnt != 3) println("ERROR: cnt 3 -- {cnt}");
+  y = 16;
+  if ((aa.x as A).x != 20) println("ERROR: {aa.x}");
+  if (aa.w != z) println("ERROR: w wrong -- {aa.w}");
+  if (cnt != 4) println("ERROR: cnt 4 -- {cnt}");
+}
+
+function run() {
+  test1();
+  test2();
+  test3();
+  test4();
+  test5();
+}

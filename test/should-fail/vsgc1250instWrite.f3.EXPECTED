@@ -1,0 +1,70 @@
+test\should-fail\vsgc1250instWrite.f3:48: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250instWrite.Inh
+	memScr = 99;   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250instWrite.f3:52: memIScr has script only (default) write access in vsgc1250subFail
+	memIScr = 99;   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250instWrite.f3:56: memRScr has script only (default) write access in vsgc1250subFail
+	memRScr = 99;   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250instWrite.f3:64: cannot find symbol
+symbol  : variable memPkg
+location: class vsgc1250instWrite.InhA
+	memPkg = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250instWrite.f3:65: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250instWrite.InhA
+	memScr = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250instWrite.f3:68: memIPkg has package write access in vsgc1250.a.vsgc1250subFailA
+	memIPkg = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250instWrite.f3:69: memIScr has script only (default) write access in vsgc1250.a.vsgc1250subFailA
+	memIScr = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250instWrite.f3:72: memRPkg has package write access in vsgc1250.a.vsgc1250subFailA
+	memRPkg = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250instWrite.f3:73: memRScr has script only (default) write access in vsgc1250.a.vsgc1250subFailA
+	memRScr = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250instWrite.f3:124: memScr has script only (default) access in vsgc1250subFail
+	vf.memScr = 99;   // ERROR: same package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:128: memIScr has script only (default) write access in vsgc1250subFail
+	vf.memIScr = 99;   // ERROR: same package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:132: memRScr has script only (default) write access in vsgc1250subFail
+	vf.memRScr = 99;   // ERROR: same package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:138: memPro has protected access in vsgc1250.a.vsgc1250subFailA
+	vf.memPro = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:139: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	vf.memPkg = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:140: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	vf.memScr = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:142: memIPro has protected write access in vsgc1250.a.vsgc1250subFailA
+	vf.memIPro = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:143: memIPkg has package write access in vsgc1250.a.vsgc1250subFailA
+	vf.memIPkg = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:144: memIScr has script only (default) write access in vsgc1250.a.vsgc1250subFailA
+	vf.memIScr = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:146: memRPro has protected write access in vsgc1250.a.vsgc1250subFailA
+	vf.memRPro = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:147: memRPkg has package write access in vsgc1250.a.vsgc1250subFailA
+	vf.memRPkg = 99;   // ERROR: different package
+	  ^
+test\should-fail\vsgc1250instWrite.f3:148: memRScr has script only (default) write access in vsgc1250.a.vsgc1250subFailA
+	vf.memRScr = 99;   // ERROR: different package
+	  ^
+21 errors

@@ -1,0 +1,21 @@
+/**
+ * regression test: VSGC-3569 : Compiled bind: sequence actions (non-bound)
+ *
+ * @test
+ * @run
+ */
+
+class vsgc3569instance {
+  var seq : String[]
+}
+
+function run() {
+  def z = vsgc3569instance{}
+  z.seq =  ["row", "row", "mow"];
+  println(z.seq[1..2] = "boat");
+  println(z.seq);
+  println(z.seq[0..0] = ["little", "tiny"]);
+  println(z.seq);
+  println(z.seq = ["no"]);
+  println(z.seq);
+}

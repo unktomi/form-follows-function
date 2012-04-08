@@ -1,0 +1,15 @@
+Zero = 0rad
+50deg = 50deg
+5turn = 5turn
+.5rad = 0.5rad or 28.64789deg or 0.079577turn
+5deg + .1rad = 0.187266rad
+1deg + 1rad = 1.017453rad
+1deg - 1rad = -0.982547rad
+1deg * 2 = 2deg
+1deg / 2 = 0.5deg
+1deg < 1rad = true
+1deg <= 1rad = true
+1deg > 1rad = false
+1deg >= 1rad = false
+1deg == 1rad = false
+1deg != 1rad = true

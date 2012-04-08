@@ -1,0 +1,648 @@
+by = 1
+by = 1
+by < by = false
+by = 1
+by = 1
+by <= by = true
+by = 1
+by = 1
+by > by = false
+by = 1
+by = 1
+by >= by = true
+by = 1
+by = 1
+by == by = true
+by = 1
+by = 1
+by != by = false
+by = 1
+sh = 10
+by < sh = true
+by = 1
+sh = 10
+by <= sh = true
+by = 1
+sh = 10
+by > sh = false
+by = 1
+sh = 10
+by >= sh = false
+by = 1
+sh = 10
+by == sh = false
+by = 1
+sh = 10
+by != sh = true
+by = 1
+ii = 100
+by < ii = true
+by = 1
+ii = 100
+by <= ii = true
+by = 1
+ii = 100
+by > ii = false
+by = 1
+ii = 100
+by >= ii = false
+by = 1
+ii = 100
+by == ii = false
+by = 1
+ii = 100
+by != ii = true
+by = 1
+lo = 2147383648
+by < lo = true
+by = 1
+lo = 2147383648
+by <= lo = true
+by = 1
+lo = 2147383648
+by > lo = false
+by = 1
+lo = 2147383648
+by >= lo = false
+by = 1
+lo = 2147383648
+by == lo = false
+by = 1
+lo = 2147383648
+by != lo = true
+by = 1
+fl = 1234.5
+by < fl = true
+by = 1
+fl = 1234.5
+by <= fl = true
+by = 1
+fl = 1234.5
+by > fl = false
+by = 1
+fl = 1234.5
+by >= fl = false
+by = 1
+fl = 1234.5
+by == fl = false
+by = 1
+fl = 1234.5
+by != fl = true
+by = 1
+db = 6.12E40
+by < db = true
+by = 1
+db = 6.12E40
+by <= db = true
+by = 1
+db = 6.12E40
+by > db = false
+by = 1
+db = 6.12E40
+by >= db = false
+by = 1
+db = 6.12E40
+by == db = false
+by = 1
+db = 6.12E40
+by != db = true
+sh = 10
+by = 1
+sh < by = false
+sh = 10
+by = 1
+sh <= by = false
+sh = 10
+by = 1
+sh > by = true
+sh = 10
+by = 1
+sh >= by = true
+sh = 10
+by = 1
+sh == by = false
+sh = 10
+by = 1
+sh != by = true
+sh = 10
+sh = 10
+sh < sh = false
+sh = 10
+sh = 10
+sh <= sh = true
+sh = 10
+sh = 10
+sh > sh = false
+sh = 10
+sh = 10
+sh >= sh = true
+sh = 10
+sh = 10
+sh == sh = true
+sh = 10
+sh = 10
+sh != sh = false
+sh = 10
+ii = 100
+sh < ii = true
+sh = 10
+ii = 100
+sh <= ii = true
+sh = 10
+ii = 100
+sh > ii = false
+sh = 10
+ii = 100
+sh >= ii = false
+sh = 10
+ii = 100
+sh == ii = false
+sh = 10
+ii = 100
+sh != ii = true
+sh = 10
+lo = 2147383648
+sh < lo = true
+sh = 10
+lo = 2147383648
+sh <= lo = true
+sh = 10
+lo = 2147383648
+sh > lo = false
+sh = 10
+lo = 2147383648
+sh >= lo = false
+sh = 10
+lo = 2147383648
+sh == lo = false
+sh = 10
+lo = 2147383648
+sh != lo = true
+sh = 10
+fl = 1234.5
+sh < fl = true
+sh = 10
+fl = 1234.5
+sh <= fl = true
+sh = 10
+fl = 1234.5
+sh > fl = false
+sh = 10
+fl = 1234.5
+sh >= fl = false
+sh = 10
+fl = 1234.5
+sh == fl = false
+sh = 10
+fl = 1234.5
+sh != fl = true
+sh = 10
+db = 6.12E40
+sh < db = true
+sh = 10
+db = 6.12E40
+sh <= db = true
+sh = 10
+db = 6.12E40
+sh > db = false
+sh = 10
+db = 6.12E40
+sh >= db = false
+sh = 10
+db = 6.12E40
+sh == db = false
+sh = 10
+db = 6.12E40
+sh != db = true
+ii = 100
+by = 1
+ii < by = false
+ii = 100
+by = 1
+ii <= by = false
+ii = 100
+by = 1
+ii > by = true
+ii = 100
+by = 1
+ii >= by = true
+ii = 100
+by = 1
+ii == by = false
+ii = 100
+by = 1
+ii != by = true
+ii = 100
+sh = 10
+ii < sh = false
+ii = 100
+sh = 10
+ii <= sh = false
+ii = 100
+sh = 10
+ii > sh = true
+ii = 100
+sh = 10
+ii >= sh = true
+ii = 100
+sh = 10
+ii == sh = false
+ii = 100
+sh = 10
+ii != sh = true
+ii = 100
+ii = 100
+ii < ii = false
+ii = 100
+ii = 100
+ii <= ii = true
+ii = 100
+ii = 100
+ii > ii = false
+ii = 100
+ii = 100
+ii >= ii = true
+ii = 100
+ii = 100
+ii == ii = true
+ii = 100
+ii = 100
+ii != ii = false
+ii = 100
+lo = 2147383648
+ii < lo = true
+ii = 100
+lo = 2147383648
+ii <= lo = true
+ii = 100
+lo = 2147383648
+ii > lo = false
+ii = 100
+lo = 2147383648
+ii >= lo = false
+ii = 100
+lo = 2147383648
+ii == lo = false
+ii = 100
+lo = 2147383648
+ii != lo = true
+ii = 100
+fl = 1234.5
+ii < fl = true
+ii = 100
+fl = 1234.5
+ii <= fl = true
+ii = 100
+fl = 1234.5
+ii > fl = false
+ii = 100
+fl = 1234.5
+ii >= fl = false
+ii = 100
+fl = 1234.5
+ii == fl = false
+ii = 100
+fl = 1234.5
+ii != fl = true
+ii = 100
+db = 6.12E40
+ii < db = true
+ii = 100
+db = 6.12E40
+ii <= db = true
+ii = 100
+db = 6.12E40
+ii > db = false
+ii = 100
+db = 6.12E40
+ii >= db = false
+ii = 100
+db = 6.12E40
+ii == db = false
+ii = 100
+db = 6.12E40
+ii != db = true
+lo = 2147383648
+by = 1
+lo < by = false
+lo = 2147383648
+by = 1
+lo <= by = false
+lo = 2147383648
+by = 1
+lo > by = true
+lo = 2147383648
+by = 1
+lo >= by = true
+lo = 2147383648
+by = 1
+lo == by = false
+lo = 2147383648
+by = 1
+lo != by = true
+lo = 2147383648
+sh = 10
+lo < sh = false
+lo = 2147383648
+sh = 10
+lo <= sh = false
+lo = 2147383648
+sh = 10
+lo > sh = true
+lo = 2147383648
+sh = 10
+lo >= sh = true
+lo = 2147383648
+sh = 10
+lo == sh = false
+lo = 2147383648
+sh = 10
+lo != sh = true
+lo = 2147383648
+ii = 100
+lo < ii = false
+lo = 2147383648
+ii = 100
+lo <= ii = false
+lo = 2147383648
+ii = 100
+lo > ii = true
+lo = 2147383648
+ii = 100
+lo >= ii = true
+lo = 2147383648
+ii = 100
+lo == ii = false
+lo = 2147383648
+ii = 100
+lo != ii = true
+lo = 2147383648
+lo = 2147383648
+lo < lo = false
+lo = 2147383648
+lo = 2147383648
+lo <= lo = true
+lo = 2147383648
+lo = 2147383648
+lo > lo = false
+lo = 2147383648
+lo = 2147383648
+lo >= lo = true
+lo = 2147383648
+lo = 2147383648
+lo == lo = true
+lo = 2147383648
+lo = 2147383648
+lo != lo = false
+lo = 2147383648
+fl = 1234.5
+lo < fl = false
+lo = 2147383648
+fl = 1234.5
+lo <= fl = false
+lo = 2147383648
+fl = 1234.5
+lo > fl = true
+lo = 2147383648
+fl = 1234.5
+lo >= fl = true
+lo = 2147383648
+fl = 1234.5
+lo == fl = false
+lo = 2147383648
+fl = 1234.5
+lo != fl = true
+lo = 2147383648
+db = 6.12E40
+lo < db = true
+lo = 2147383648
+db = 6.12E40
+lo <= db = true
+lo = 2147383648
+db = 6.12E40
+lo > db = false
+lo = 2147383648
+db = 6.12E40
+lo >= db = false
+lo = 2147383648
+db = 6.12E40
+lo == db = false
+lo = 2147383648
+db = 6.12E40
+lo != db = true
+fl = 1234.5
+by = 1
+fl < by = false
+fl = 1234.5
+by = 1
+fl <= by = false
+fl = 1234.5
+by = 1
+fl > by = true
+fl = 1234.5
+by = 1
+fl >= by = true
+fl = 1234.5
+by = 1
+fl == by = false
+fl = 1234.5
+by = 1
+fl != by = true
+fl = 1234.5
+sh = 10
+fl < sh = false
+fl = 1234.5
+sh = 10
+fl <= sh = false
+fl = 1234.5
+sh = 10
+fl > sh = true
+fl = 1234.5
+sh = 10
+fl >= sh = true
+fl = 1234.5
+sh = 10
+fl == sh = false
+fl = 1234.5
+sh = 10
+fl != sh = true
+fl = 1234.5
+ii = 100
+fl < ii = false
+fl = 1234.5
+ii = 100
+fl <= ii = false
+fl = 1234.5
+ii = 100
+fl > ii = true
+fl = 1234.5
+ii = 100
+fl >= ii = true
+fl = 1234.5
+ii = 100
+fl == ii = false
+fl = 1234.5
+ii = 100
+fl != ii = true
+fl = 1234.5
+lo = 2147383648
+fl < lo = true
+fl = 1234.5
+lo = 2147383648
+fl <= lo = true
+fl = 1234.5
+lo = 2147383648
+fl > lo = false
+fl = 1234.5
+lo = 2147383648
+fl >= lo = false
+fl = 1234.5
+lo = 2147383648
+fl == lo = false
+fl = 1234.5
+lo = 2147383648
+fl != lo = true
+fl = 1234.5
+fl = 1234.5
+fl < fl = false
+fl = 1234.5
+fl = 1234.5
+fl <= fl = true
+fl = 1234.5
+fl = 1234.5
+fl > fl = false
+fl = 1234.5
+fl = 1234.5
+fl >= fl = true
+fl = 1234.5
+fl = 1234.5
+fl == fl = true
+fl = 1234.5
+fl = 1234.5
+fl != fl = false
+fl = 1234.5
+db = 6.12E40
+fl < db = true
+fl = 1234.5
+db = 6.12E40
+fl <= db = true
+fl = 1234.5
+db = 6.12E40
+fl > db = false
+fl = 1234.5
+db = 6.12E40
+fl >= db = false
+fl = 1234.5
+db = 6.12E40
+fl == db = false
+fl = 1234.5
+db = 6.12E40
+fl != db = true
+db = 6.12E40
+by = 1
+db < by = false
+db = 6.12E40
+by = 1
+db <= by = false
+db = 6.12E40
+by = 1
+db > by = true
+db = 6.12E40
+by = 1
+db >= by = true
+db = 6.12E40
+by = 1
+db == by = false
+db = 6.12E40
+by = 1
+db != by = true
+db = 6.12E40
+sh = 10
+db < sh = false
+db = 6.12E40
+sh = 10
+db <= sh = false
+db = 6.12E40
+sh = 10
+db > sh = true
+db = 6.12E40
+sh = 10
+db >= sh = true
+db = 6.12E40
+sh = 10
+db == sh = false
+db = 6.12E40
+sh = 10
+db != sh = true
+db = 6.12E40
+ii = 100
+db < ii = false
+db = 6.12E40
+ii = 100
+db <= ii = false
+db = 6.12E40
+ii = 100
+db > ii = true
+db = 6.12E40
+ii = 100
+db >= ii = true
+db = 6.12E40
+ii = 100
+db == ii = false
+db = 6.12E40
+ii = 100
+db != ii = true
+db = 6.12E40
+lo = 2147383648
+db < lo = false
+db = 6.12E40
+lo = 2147383648
+db <= lo = false
+db = 6.12E40
+lo = 2147383648
+db > lo = true
+db = 6.12E40
+lo = 2147383648
+db >= lo = true
+db = 6.12E40
+lo = 2147383648
+db == lo = false
+db = 6.12E40
+lo = 2147383648
+db != lo = true
+db = 6.12E40
+fl = 1234.5
+db < fl = false
+db = 6.12E40
+fl = 1234.5
+db <= fl = false
+db = 6.12E40
+fl = 1234.5
+db > fl = true
+db = 6.12E40
+fl = 1234.5
+db >= fl = true
+db = 6.12E40
+fl = 1234.5
+db == fl = false
+db = 6.12E40
+fl = 1234.5
+db != fl = true
+db = 6.12E40
+db = 6.12E40
+db < db = false
+db = 6.12E40
+db = 6.12E40
+db <= db = true
+db = 6.12E40
+db = 6.12E40
+db > db = false
+db = 6.12E40
+db = 6.12E40
+db >= db = true
+db = 6.12E40
+db = 6.12E40
+db == db = true
+db = 6.12E40
+db = 6.12E40
+db != db = false

@@ -1,0 +1,48 @@
+/*
+ * VSGC-4221 : Diamond shaped dependencies cause invalidations to be lost
+ *
+ * Simple case
+ *
+ * @test
+ * @run
+ */
+
+class A {
+   var x:Number;
+   var y:Number;
+}
+
+var invXcnt = 0;
+var invYcnt = 0;
+
+var factor: Number = bind a.x/a.y on replace { println("factor: {factor}") };
+var X = bind 100*factor on invalidate { ++invXcnt };
+var Y = bind 100*factor on invalidate { ++invYcnt };
+var dummy:A = bind A{x:X, y:Y} on replace {println("dummy.x = {dummy.x}, dummy.y = {dummy.y}");}
+
+println("Invalidate X count: {invXcnt}");
+println("Invalidate Y count: {invYcnt}");
+
+println("-- a --");
+var a:A = A {
+    x:100;
+    y:100;
+}
+
+println("Invalidate X count: {invXcnt}");
+println("Invalidate Y count: {invYcnt}");
+
+println("-- set a.x --");
+a.x = 200;
+
+println("Invalidate X count: {invXcnt}");
+println("Invalidate Y count: {invYcnt}");
+
+println("-- set a.y --");
+a.y = 200;
+
+println("Invalidate X count: {invXcnt}");
+println("Invalidate Y count: {invYcnt}");
+
+println("X: {X}");
+println("Y: {Y}");

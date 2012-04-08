@@ -1,0 +1,18 @@
+/*
+ * @test/f3unit
+ * @run
+ */
+
+class Foo { var red : Integer; }
+
+function foo(r:Integer): Foo { 
+    Foo { red: r } 
+} 
+
+class vsgc551 extends f3.f3unit.F3TestCase {
+    function test() {
+        var gray1:Foo = bind foo(1); 
+        assertEquals(1, gray1.red);
+    }
+}
+

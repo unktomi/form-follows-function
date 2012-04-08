@@ -1,0 +1,13 @@
+test/should-fail/deprecate.f3:6: The 'attribute' keyword is no longer supported.  Please use 'def' or 'var' to declare class variables.
+attribute fred :Integer;
+^
+test/should-fail/deprecate.f3:7: The 'private' keyword is no longer supported.  The default access is script-private, so you can simply remove 'private'.
+private var jim;
+^
+test/should-fail/deprecate.f3:8: The 'private' keyword is no longer supported.  The default access is script-private, so you can simply remove 'private'.
+private attribute john : Integer = 99
+^
+test/should-fail/deprecate.f3:8: The 'attribute' keyword is no longer supported.  Please use 'def' or 'var' to declare class variables.
+private attribute john : Integer = 99
+        ^
+4 errors

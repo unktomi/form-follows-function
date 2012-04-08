@@ -1,0 +1,10 @@
+/*
+ * @test/compile-error
+ * Note the "package vsgc1476A does not exist" error in vsgc1476B.f3.EXPECTED
+ * is bogus (or at least unexplained), which is why this is classified as
+ * "currently-failing".
+ */
+Nonexistent {};
+vsgc1476A.Another{}.f(3);
+
+

@@ -1,0 +1,104 @@
+/**
+ * Some tests so improve compatibilty coverage apart from junit tests
+ *  Need runtime args for getArguments() and getArgument()
+ *
+ * @test
+ * @run/param arg1 arg2 arg3
+ */
+import f3.lang.F3;
+
+public class VISAGE_LANG_TEST {
+
+	/**public static org.f3.runtime.sequence.Sequence getArguments();  
+	* As documented:
+	*   For F3 applications that are started on the command
+	*   line,running application. Returns null if there were no incoming
+	*   arguments or if this application was not invoked from the
+	*   command line.
+	*
+	* Does not seem f3unit test can take arguments, so this is plain f3 style test
+	*/
+	function check(i1:Integer, i2:Integer,msg:String) {	if(i1 !=i2) 		println("FAILED {msg}: {i1} != {i2}");}
+	function check(s1:String[], s2:String[],msg:String) {	if(s1 !=s2) 	println("FAILED {msg}: {s1} != {s2}");}
+	function check(s1:String, s2:String,msg:String) {	if(s1 !=s2) 		println("FAILED {msg}: {s1} != {s2}");}
+	function check(b1:Boolean, b2:Boolean,msg:String) { if(b1 != b2)  println("FAILED {msg}: {b1} != {b2}"); }
+
+  var expectedArgs = ["arg1","arg2","arg3"];
+	  
+  public function GetArgumentsTest()
+	{
+	  var args = F3.getArguments();
+      check(expectedArgs,args,"args[]");
+	}
+
+	/** public static java.lang.Object getArgument(java.lang.String);  */
+	public function GetArgumentTest()  {
+		/** Gets arguments by number string. This may be subject to change. */
+		var arg; var idx = 0;
+		for( a in ["0","1","2"])  {   	
+    		arg = F3.getArgument(a);
+    	   check(arg.toString(),expectedArgs[idx++],"one arg check");
+		}
+	}
+
+	public function GetArgumentNegTest()  {
+		var caughtNPE = false;
+		var nullarg;
+
+		/** get non-existant argument */
+		try	{
+			nullarg = F3.getArgument("asdfasdf");
+		}	catch (npe:java.lang.NullPointerException)	{
+			caughtNPE=true;
+		}
+		check(false, caughtNPE,"NPE");
+		if(nullarg != null) println("FAILED getARgument(non existing)");
+
+		/** get past end of argument list */
+		try	{
+			nullarg = F3.getArgument("3");
+		}	catch (npe:java.lang.NullPointerException)	{
+			caughtNPE=true;
+		}
+		check(false, caughtNPE,"arg3 of 2");
+		if(nullarg != null) println("FAILED getARgument(3)");
+
+
+		/** get before left end of argument list */
+		try	{
+			nullarg = F3.getArgument("-1");
+		}	catch (npe:java.lang.NullPointerException)	{
+			caughtNPE=true;
+		}
+		check(false, caughtNPE,"arg-1 of 2");
+		if(nullarg != null) println("FAILED getARgument(-1)");
+	}
+
+}
+
+public class TestF3args {
+
+   function testGetArguments() {
+      var jlt = VISAGE_LANG_TEST {}
+	 jlt.GetArgumentsTest();
+
+   }
+
+   function testGetArgument() {   
+      var jlt = VISAGE_LANG_TEST {}
+      jlt.GetArgumentTest();
+   }
+   function testGetArgumentNeg() {   
+      var jlt = VISAGE_LANG_TEST {}
+      jlt.GetArgumentNegTest();
+   }
+
+}
+
+function run(args:String[]) {
+	var tf3 = TestF3args{}
+	tf3.testGetArguments();
+	tf3.testGetArgument();
+    tf3.testGetArgumentNeg() 
+}
+

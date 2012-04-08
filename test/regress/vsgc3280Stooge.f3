@@ -1,0 +1,10 @@
+/**
+ * VSGC-3280 : override var x on replace... fails in a Stage initializer
+ *
+ * @subtest
+ */
+
+public class vsgc3280Stooge {
+  public var x : Number on replace { println("vsgc3280Stooge.x") }
+  def bx = bind x;
+}

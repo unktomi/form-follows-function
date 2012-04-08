@@ -1,0 +1,61 @@
+Test i1: default init...
+1. Replace Boolean old = false; new = true
+2. Replace Integer old = 0; new = 10
+3. Replace Number old = 0.0; new = 20.0
+4. Replace String old = ; new = Hello, World!
+5. Replace test_object old = ; new = declared default test_object
+6. Replace Boolean[] old = ; new = falsefalsefalse
+7. Replace Integer [] old = ; new = 12345
+8. Replace Number[] old = ; new = 20.030.040.0
+9. Replace String[] old = ; new = Hello, World!
+10. Replace test_object[] old = 
+      ...with new =  test_object1 test_object2 test_object3
+
+Test i2: non-defaults init...
+1. Replace Boolean old = false; new = true
+2. Replace Integer old = 0; new = 5
+3. Replace Number old = 0.0; new = 3.14
+4. Replace String old = ; new = Hello, Dollie!
+5. Replace test_object old = ; new =  non-default test_object
+6. Replace Boolean[] old = ; new = truetruetrue
+7. Replace Integer [] old = ; new = 678910
+8. Replace Number[] old = ; new = 100.0200.0300.0
+9. Replace String[] old = ; new = Mary had a little lamb.
+10. Replace test_object[] old = 
+      ...with new =  Peter Michael Jan
+i2 After Create
+1. i2.foo = true
+2. i2.ifoo = 5
+3. i2.dfoo = 3.14
+4. i2.sfoo = Hello, Dollie!
+5. i2.tobject =  non-default test_object
+6. i2.seqbfoo = truetruetrue
+7. i2.seqifoo = 678910
+8. i2.seqnfoo = 100.0200.0300.0
+9. i2.seqsfoo = Mary had a little lamb.
+10. i2.seqTOfoo =  Peter Michael Jan
+
+Test i3: non-defaults init, mixed order...
+1. Replace Boolean old = false; new = true
+2. Replace Integer old = 0; new = 5
+3. Replace Number old = 0.0; new = 3.14
+4. Replace String old = ; new = Hello, Dollie!
+5. Replace test_object old = ; new =  non-default test_object
+6. Replace Boolean[] old = ; new = truetruetrue
+7. Replace Integer [] old = ; new = 678910
+8. Replace Number[] old = ; new = 100.0200.0300.0
+9. Replace String[] old = ; new = Mary had a little lamb.
+10. Replace test_object[] old = 
+      ...with new =  Peter Michael Jan
+
+i3 After Create
+1. i3.foo =  true
+2. i3.ifoo = 5
+3. i3.dfoo = 3.14
+4. i3.sfoo = Hello, Dollie!
+5. i3.tobject =  non-default test_object
+6. i3.seqbfoo = truetruetrue
+7. i3.seqifoo = 678910
+8. i3.seqnfoo = 100.0200.0300.0
+9. i3.seqsfoo = Mary had a little lamb.
+10. i3.seqTOfoo =  Peter Michael Jan

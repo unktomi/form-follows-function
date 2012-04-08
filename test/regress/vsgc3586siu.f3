@@ -1,0 +1,25 @@
+/**
+ * Regression test VSGC-3586 : Compiled bind: bound sequence: for-expression
+ *
+ * Object induction var. Primitive element value. Update.
+ *
+ * @test
+ * @run
+ */
+
+var seq = ["frog", "it", "vapor"];
+def bf = bind for (x in seq) { x.length() };
+insert "larkmont" into seq; // before first access
+println(bf);
+insert "zardoz" into seq;
+println(bf);
+insert "fram" before seq[2];
+println(bf);
+seq[4] = "everything";
+println(bf);
+delete seq[4];
+println(bf);
+delete seq[0];
+println(bf);
+delete seq;
+println(bf);

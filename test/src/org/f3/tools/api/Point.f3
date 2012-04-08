@@ -1,0 +1,16 @@
+/*
+ * Point.f3
+ */
+
+package org.f3.tools.api;
+
+/**
+ * Simple class declarations for VSGC739Test.
+ */
+
+public class Point {
+    var x;
+    var y;
+}
+
+public class Point2 extends Point {}

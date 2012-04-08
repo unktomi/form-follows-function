@@ -1,0 +1,9 @@
+/**
+ * Regression test VSGC-1433 : Cannot compile class when attribute has the same name as the class itself
+ *
+ * @test
+ */
+
+public class foo {
+    public var foo : String;
+}

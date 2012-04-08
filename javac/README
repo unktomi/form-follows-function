@@ -1,0 +1,48 @@
+The javac Wrapper Project
+
+The OpenJDK project at https://jdk-jrl-sources.dev.java.net/ has a source 
+base which consists of several separately-buildable projects; "langtools" 
+is the project where the javac source base and build reside.  This project 
+wraps the "langtools" to integrate the javac build into the F3
+compiler project's build. 
+
+NOTE: once the javac.jar is built the ant scripts will rename the package
+names from com.sun.tools.javac to com.sun.tools.mjavac this is done by the
+renamer, please follow the instruction in the renamer directory.
+
+Initializing This Project
+
+This project requires the full "langtools" source, tag jdk7-b23, to be in 
+langtools/.  There are two ways to set this up:
+
+1.  Use Subversion (preferred):
+
+svn checkout https://jdk-jrl-sources.dev.java.net/svn/jdk-jrl-sources/jdk7/tags/jdk7-b23/langtools --username 
+
+2.  If you already have a local copy of the OpenJDK source base, link or
+copy it to langtools/ from this directory:
+
+Unix/Linux/Mac OS X/Cygwin:  ln -s OPENJDK_ROOT/langtools
+
+Windows: In the Explorer, copy the "langtools" directory from OpenJDK
+         directory and paste it this directory.
+
+
+Apply F3 javac Patches
+
+From the command-line (patch must be available):
+
+        $ cd langtools/src/share/classes
+        $ patch -p0 < ../../../../javac-for-f3.patch
+
+                                -- OR --
+
+In NetBeans, open the F3 Compiler project, change to the Files panel, 
+and select F3 Compiler->javac/langtools/src/share/classes.  Right-click 
+on that directory, run Tools->Apply Diff Patch.
+
+
+Building the "langtools" workspace.
+
+The "langtools" workspace can be built using build.xml with NetBeans, 
+the command line with Ant, or with any IDE that support Ant-based projects.  

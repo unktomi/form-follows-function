@@ -1,0 +1,4 @@
+test/should-fail/vsgc1188.f3:5: Sequence of Void not allowed.
+function fn():Void[]{
+              ^
+1 error

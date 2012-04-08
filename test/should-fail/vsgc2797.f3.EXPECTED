@@ -1,0 +1,6 @@
+test\should-fail\vsgc2797.f3:9: inconvertible types
+found   : String
+required: java.lang.Integer
+println(str1 instanceof java.lang.Integer);
+        ^
+1 error

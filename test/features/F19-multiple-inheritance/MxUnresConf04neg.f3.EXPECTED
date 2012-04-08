@@ -1,0 +1,9 @@
+test/features/F19-multiple-inheritance/MxUnresConf04neg.f3:13: foo() in MxUnresConf04neg.Mixee cannot override foo() in MxUnresConf04neg.Mixin; attempting to use incompatible return type
+found   : String
+required: void
+    override public function foo() : String { "x" }
+    ^
+test/features/F19-multiple-inheritance/MxUnresConf04neg.f3:12: MxUnresConf04neg.Mixee is not abstract and does not override abstract method foo() in MxUnresConf04neg.Mixin
+public class Mixee extends Mixin {
+^
+2 errors

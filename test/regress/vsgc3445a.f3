@@ -1,0 +1,29 @@
+/*
+ * Regress test for VSGC-3445: add translation support for on invalidate triggers
+ *
+ * @test
+ * @run
+ */
+ 
+var x = 1;
+var y = bind lazy x on invalidate { println("Inside on-invalidate..."); }
+println("forcing validation of y");
+y; //force validation of y's contents
+println("explicitly invalidating y");
+invalidate y; //this one calls the trigger
+println("explicitly invalidating y");
+invalidate y; //no trigger called - y is already invalid
+println("explicitly invalidating y");
+invalidate y; //no trigger called - y is already invalid
+println("forcing validation of y");
+y; //force validation of y's contents
+println("explicitly invalidating y");
+invalidate y; //this one calls the trigger
+println("explicitly invalidating y");
+invalidate y; //no trigger called - y is already invalid
+println("forcing validation of y");
+y; //force validation of y's contents
+println("implicitly invalidating y");
+x=2; //this one calls the trigger
+println("implicitly invalidating y");
+x=3; //no trigger called - y is already invalid

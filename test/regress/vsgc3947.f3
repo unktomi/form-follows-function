@@ -1,0 +1,10 @@
+/**
+ * regression test: VSGC-3947 : k instanceof org.f3.runtime.sequence.Sequence returns true even when it is not
+ *
+ * @test
+ * @run
+ */
+
+def k:Object = "Some String";
+def isSeq = (k instanceof org.f3.runtime.sequence.Sequence);
+println(isSeq);

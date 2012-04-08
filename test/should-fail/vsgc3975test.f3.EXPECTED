@@ -1,0 +1,4 @@
+test/should-fail/vsgc3975test.f3:15: parent has protected access in vsgc3975.vsgc3975b
+        (this as vsgc3975b).parent = null; // error - parent is protected in vsgc3975b
+                           ^
+1 error

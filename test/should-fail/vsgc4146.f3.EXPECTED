@@ -1,0 +1,7 @@
+test/should-fail/vsgc4146.f3:16: warning: Suspicious forward reference: variable b might not have been initialized.
+override var a = 3 on replace { b };
+                                ^
+test/should-fail/vsgc4146.f3:19: warning: Suspicious forward reference: variable y might not have been initialized.
+var x on replace { y };
+                   ^
+2 warnings

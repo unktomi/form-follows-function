@@ -1,0 +1,12 @@
+CHECK[method has no output]: method with no parms, no return
+CHECK[method has no output]: method takes Integer, no return
+CHECK[method has no output]: method takes String, no return
+CHECK[method has no output]: method takes String-var.toString()-no return
+
+a simple Stack application
+========= results ================
+Tests:      22
+Passed:     22
+Failed:     0
+GoldenFile: 0 output comparisons
+==================================

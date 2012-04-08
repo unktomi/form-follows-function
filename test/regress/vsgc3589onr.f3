@@ -1,0 +1,26 @@
+/**
+ * Regression test: VSGC-3589 : Compiled bind: bound sequence element
+ *
+ * Simple identifier references
+ *
+ * @test
+ * @run
+ */
+
+var seq = ["ox", "mule", "bull"];
+var k = 0;
+def bsi = bind seq[k] on replace { println("onr") }
+println("delta");
+k = 1;
+println("delta");
+delete seq[0];
+println("delta");
+seq = ["ram", "deer"];
+println("delta");
+k = 9;
+println("delta");
+k = 0;
+println("delta");
+seq = null;
+println("delta");
+insert "done" into seq;

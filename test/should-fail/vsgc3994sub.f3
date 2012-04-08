@@ -1,0 +1,7 @@
+/**
+ * @subtest vsgc3994.f3
+ */
+
+public class vsgc3994sub {
+   public var x;
+}

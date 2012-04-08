@@ -1,0 +1,52 @@
+group Xxx;
+
+PRIM_MAP ::= [
+    "Int":"int",
+    "Double":"double",
+    "Float":"float",
+    "Short":"short",
+    "Char":"char",
+    "Long":"long",
+    "Boolean":"boolean",
+    "Byte":"byte"
+]
+BOXED_MAP ::= [
+    "Int":"Integer",
+    "Double":"Double",
+    "Float":"Float",
+    "Short":"Short",
+    "Char":"Character",
+    "Long":"Long",
+    "Boolean":"Boolean",
+    "Byte":"Byte"
+]
+DEFAULT_MAP ::= [
+    "Int":"0",
+    "Double":"0.0",
+    "Float":"0.0f",
+    "Short":"0",
+    "Char":"0",
+    "Long":"0L",
+    "Boolean":"false",
+    "Byte":"0"
+]
+TYPEINFO_MAP ::= [
+    "Int":"TypeInfo.Integer",
+    "Double":"TypeInfo.Double",
+    "Float":"TypeInfo.Float",
+    "Short":"TypeInfo.Short",
+    "Char":"TypeInfo.Character",
+    "Long":"TypeInfo.Long",
+    "Boolean":"TypeInfo.Boolean",
+    "Byte":"TypeInfo.Byte"
+]
+
+T ::= [
+    "prim":"<PRIM_MAP.(PREFIX)>",
+    "boxed":"<BOXED_MAP.(PREFIX)>",
+    "ArraySequence":"<PREFIX>ArraySequence",
+    "TypeInfo":"<TYPEINFO_MAP.(PREFIX)>"
+]
+V ::= [
+    "default":"<DEFAULT_MAP.(PREFIX)>"
+]

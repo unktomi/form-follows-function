@@ -1,0 +1,13 @@
+/**
+ * VSGC-2462 : Lazy binding: Syntax
+ *
+ * @test
+ * @run
+ */
+
+function f(x : Integer) { 2 * x }
+function run() {
+  var x = 3;
+  def y = bind lazy f(x);
+  println( y );
+}

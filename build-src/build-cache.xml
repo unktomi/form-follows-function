@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-cache" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Defines targets to create cached areas for sdk, deployed, and xmldocs.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build.xml file only.
+
+    </description>
+
+    <!-- Populate both caches -->
+    <target name="update-cache"
+            depends="-check-hudson,
+                     update-cached-sdk,
+                     update-cached-deployed,
+                     update-cached-xmldocs">
+    </target>
+
+    <!-- Populate the caches/sdk directory. -->
+    <target name="update-cached-sdk"
+            depends="clean-cached-sdk"
+            if="hudson.f3.host.available">
+        <do-get-previous-bundle name="sdk"
+            url="${hudson.f3.sdk.url}" dir="${f3.cached.sdk.dir}"/>
+    </target>
+    
+    <!-- Populate the caches/deployed directory. -->
+    <target name="update-cached-deployed"
+            depends="clean-cached-deployed"
+            if="hudson.f3.host.available">
+        <do-get-previous-bundle name="deployed"
+            url="${hudson.f3.deployed.url}" dir="${f3.cached.deployed.dir}"/>
+    </target>
+
+   <!-- Populate the caches/xmldocs directory. -->
+    <target name="update-cached-xmldocs"
+            depends="clean-cached-xmldocs"
+            if="hudson.f3.host.available">
+        <do-get-previous-bundle name="xmldocs"
+            url="${hudson.f3.xmldocs.url}" dir="${f3.cached.xmldocs.dir}"/>
+    </target>
+
+    <!-- Clean out any caches/sdk files. -->
+    <target name="clean-cached-sdk">
+        <delete dir="${f3.cached.sdk.dir}"/>
+    </target>
+
+    <!-- Clean out any caches/deployed files. -->
+    <target name="clean-cached-deployed">
+        <delete dir="${f3.cached.deployed.dir}"/>
+    </target>
+
+    <!-- Clean out any caches/xmldocs files. -->
+    <target name="clean-cached-xmldocs">
+        <delete dir="${f3.cached.xmldocs.dir}"/>
+    </target>
+
+    <!-- Set cached.sdk.needed if we need caches/sdk. -->
+    <condition property="cached.sdk.needed">
+        <and>
+            <not>
+                <isset property="f3.full.forest"/>
+            </not>
+            <not>
+                <available file="${f3.cached.sdk.dir}/${f3.sdk.location.of.jmc.jar}" type="file"/>
+            </not>
+        </and>
+    </condition>
+
+    <!-- Set cached.deployed.needed if we need caches/deployed. -->
+    <condition property="cached.deployed.needed">
+        <and>
+            <not>
+                <isset property="f3.full.forest"/>
+            </not>
+            <not>
+                <available file="${f3.cached.deployed.dir}/${f3.deployed.location.of.jmc.jar}" type="file"/>
+            </not>
+        </and>
+    </condition>
+
+    <!-- Set cached.xmldocs.needed if we need caches/xmldocs. -->
+    <condition property="cached.xmldocs.needed">
+        <and>
+            <not>
+                <isset property="f3.full.forest"/>
+            </not>
+            <not>
+                <available file="${f3.cached.xmldocs.dir}" type="dir"/>
+            </not>
+        </and>
+    </condition>
+
+    <!-- See if hudson available. -->
+    <target name="-check-hudson">
+        <condition property="hudson.f3.host.available">
+            <and>
+                <not>
+                    <isset property="f3.open.only"/>
+                </not>
+                <isreachable host="${hudson.f3.host}" timeout="10"/>
+            </and>
+        </condition>
+    </target>
+
+    <!-- Populate both caches if needed -->
+    <target name="update-cache-if-needed"
+            depends="update-cached-sdk-if-needed,
+                     update-cached-deployed-if-needed,
+                     update-cached-xmldocs-if-needed">
+    </target>
+
+    <!-- Update caches/sdk if needed (partial build and not existing). -->
+    <target name="update-cached-sdk-if-needed"
+            depends="-check-hudson"
+            if="cached.sdk.needed">
+        <antcall target="update-cached-sdk"/>
+    </target>
+
+    <!-- Update caches/deployed if needed (partial build and not existing). -->
+    <target name="update-cached-deployed-if-needed"
+            depends="-check-hudson"
+            if="cached.deployed.needed">
+        <antcall target="update-cached-deployed"/>
+    </target>
+
+     <!-- Update caches/xmldocs if needed (partial build and not existing). -->
+    <target name="update-cached-xmldocs-if-needed"
+            depends="-check-hudson"
+            if="cached.xmldocs.needed">
+        <antcall target="update-cached-xmldocs"/>
+    </target>
+
+</project>

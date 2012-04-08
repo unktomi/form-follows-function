@@ -1,0 +1,13 @@
+/**
+ * VSGC-2613 : protected access not properly analyzed in the face of multiple inheritance
+ *
+ * @compilefirst sub2602/vsgc2602base.f3
+ * @test
+ */
+
+import sub2602.vsgc2602base;
+
+class vsgc2613 extends java.util.ArrayList, vsgc2602base {
+  function foo() { minimumWidth = 1; }
+}
+

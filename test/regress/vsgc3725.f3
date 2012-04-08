@@ -1,0 +1,31 @@
+/**
+ * VSGC-3725 : Compiled bind: accessor function not used to access a local var from a generated class.
+ *
+ * Test derived from the test in JIRA. Make sure that the test compiles ok.
+ *
+ * @test
+ */
+
+public bound function objFunc(p1: Classx): Integer {
+    var ii = 0; ii
+};
+
+package function jj() {
+    var p1: Classx[];
+    for (ii in p1) {
+         objFunc(ii);
+         p1 = null;
+    }
+}
+
+package function jj_with_bind() {
+    var p1: Classx[];
+    for (ii in p1) {
+         var z = bind objFunc(ii);
+         p1 = null;
+    }
+}
+
+public class Classx {
+}
+

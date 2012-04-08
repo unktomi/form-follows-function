@@ -1,0 +1,5 @@
+test\features\F27-default-properties\Neg-DuplicateDefault.f3:9: Variables def1 and def2 both have the default modifier.
+Only one class variable can be declared as the default.
+    public default var def2:String[];
+    ^
+1 error

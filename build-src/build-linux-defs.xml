@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-linux-defs" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Defines common properties and macrodefs that are specific to the
+        system being used and the various system installed tools on the
+        systems. Such as Visual Studio, GNU make, Mac XCode, C/C++ compilers,
+        etc.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build-defs.xml file.
+
+    </description>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <condition property="f3.build.needs.gcc.compiler">
+        <or>
+            <available file="${f3.root.dir}/media" type="dir"/>
+            <available file="${f3.root.dir}/runtime" type="dir"/>
+        </or>
+    </condition>
+
+    <condition property="f3.build.needs.make.utility">
+        <or>
+            <available file="${f3.root.dir}/media" type="dir"/>
+            <available file="${f3.root.dir}/runtime" type="dir"/>
+        </or>
+    </condition>
+
+    <property name="gcc.utility" value="gcc"/>
+    <property name="make.utility" value="make"/>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    <!-- Macrodefs for system specific tools to be shared by everyone. -->
+
+    <macrodef name="do-gcc">
+        <!-- Does a GNU gcc compilation -->
+        <attribute name="dir"/>
+        <attribute name="options" default=""/>
+        <sequential>
+            <echo message="STARTING: DO-GCC dir @{dir}"/>
+            <echo message="cd @{dir} ; ${gcc.utility} @{options}"/>
+            <exec dir="@{dir}"
+                  executable="${gcc.utility}"
+                  failonerror="true">
+                <arg line="@{options}"/>
+            </exec>
+            <echo message="FINISHED: DO-GCC dir @{dir}"/>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-make">
+        <!-- Does a Makefile build -->
+        <attribute name="dir"/>
+        <attribute name="target"/>
+        <attribute name="options" default=""/>
+        <sequential>
+            <echo message="STARTING: DO-MAKE dir @{dir}"/>
+            <echo message="cd @{dir} ; ${make.utility} @{target}"/>
+            <exec dir="@{dir}"
+                  executable="${make.utility}"
+                  failonerror="true">
+                <env key="JAVA_HOME"     value="${platform.home}"/>
+                <env key="JDK_HOME"      value="${platform.home}"/>
+                <arg line="@{options}"/>
+                <arg value="@{target}"/>
+            </exec>
+            <echo message="FINISHED: DO-MAKE dir @{dir}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <target name="needs-gcc"
+            if="f3.build.needs.gcc.compiler"
+            unless="f3.skip.platform.checks">
+        <do-gcc dir="." options="--version"/>
+    </target>
+
+    <target name="needs-make"
+            if="f3.build.needs.make.utility"
+            unless="f3.skip.platform.checks">
+        <do-make dir="." target="-version"/>
+    </target>
+
+    <target name="-init-platform-defs"
+            depends="needs-make,
+                     needs-gcc">
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+</project>

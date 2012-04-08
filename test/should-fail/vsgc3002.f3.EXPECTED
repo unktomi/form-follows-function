@@ -1,0 +1,4 @@
+test\should-fail\vsgc3002.f3:9: on replace triggers are not allowed inside bind
+   var y = bind (i mod 2 == 0) on replace {
+                               ^
+1 error

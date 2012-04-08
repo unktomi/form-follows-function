@@ -1,0 +1,121 @@
+test/should-fail/vsgc2387a.f3:18: inconvertible types
+found   : String
+required: vsgc2387a.A
+(x as A);
+ ^
+test/should-fail/vsgc2387a.f3:19: inconvertible types
+found   : vsgc2387a.A
+required: String
+(a as java.lang.String);
+ ^
+test/should-fail/vsgc2387a.f3:21: inconvertible types
+found   : String[]
+required: vsgc2387a.A
+([x] as A);
+ ^
+test/should-fail/vsgc2387a.f3:22: inconvertible types
+found   : vsgc2387a.A
+required: String[]
+(a as java.lang.String[]);
+ ^
+test/should-fail/vsgc2387a.f3:24: inconvertible types
+found   : String
+required: vsgc2387a.A[]
+(x as A[]);
+ ^
+test/should-fail/vsgc2387a.f3:25: inconvertible types
+found   : vsgc2387a.A[]
+required: String
+([a] as java.lang.String);
+ ^
+test/should-fail/vsgc2387a.f3:27: inconvertible types
+found   : vsgc2387a.A[]
+required: String[]
+([a] as java.lang.String[]);
+ ^
+test/should-fail/vsgc2387a.f3:28: inconvertible types
+found   : String[]
+required: vsgc2387a.A[]
+([x] as A[]);
+ ^
+test/should-fail/vsgc2387a.f3:32: inconvertible types
+found   : java.util.ArrayList
+required: java.util.HashSet
+(y as HashSet);
+ ^
+test/should-fail/vsgc2387a.f3:33: inconvertible types
+found   : java.util.ArrayList
+required: java.util.HashSet[]
+(y as HashSet[]);
+ ^
+test/should-fail/vsgc2387a.f3:34: inconvertible types
+found   : java.util.ArrayList[]
+required: java.util.HashSet
+([y] as HashSet);
+ ^
+test/should-fail/vsgc2387a.f3:35: inconvertible types
+found   : java.util.ArrayList[]
+required: java.util.HashSet[]
+([y] as HashSet[]);
+ ^
+test/should-fail/vsgc2387a.f3:39: inconvertible types
+found   : Integer
+required: Boolean
+(1 as Boolean);
+ ^
+test/should-fail/vsgc2387a.f3:40: inconvertible types
+found   : Integer[]
+required: Boolean
+([1] as Boolean);
+ ^
+test/should-fail/vsgc2387a.f3:41: inconvertible types
+found   : Integer
+required: Boolean[]
+(1 as Boolean[]);
+ ^
+test/should-fail/vsgc2387a.f3:42: inconvertible types
+found   : Integer[]
+required: Boolean[]
+([1] as Boolean[]);
+ ^
+test/should-fail/vsgc2387a.f3:45: inconvertible types
+found   : java.util.ArrayList[]
+required: java.util.ArrayList
+([y] as ArrayList);
+ ^
+test/should-fail/vsgc2387a.f3:46: inconvertible types
+found   : java.util.ArrayList[]
+required: java.util.List
+([y] as List);
+ ^
+test/should-fail/vsgc2387a.f3:47: inconvertible types
+found   : vsgc2387a.A[]
+required: vsgc2387a.B
+([a] as B);
+ ^
+test/should-fail/vsgc2387a.f3:48: inconvertible types
+found   : vsgc2387a.B[]
+required: vsgc2387a.A
+([b] as A);
+ ^
+test/should-fail/vsgc2387a.f3:49: inconvertible types
+found   : java.util.ArrayList[]
+required: java.util.Collection
+([y] as Collection);
+ ^
+test/should-fail/vsgc2387a.f3:50: inconvertible types
+found   : []
+required: vsgc2387a.A
+([] as A);
+ ^
+test/should-fail/vsgc2387a.f3:51: inconvertible types
+found   : Integer[]
+required: Number
+([1] as Number);
+ ^
+test/should-fail/vsgc2387a.f3:52: inconvertible types
+found   : Number[]
+required: Integer
+([1.0] as Integer);
+ ^
+24 errors

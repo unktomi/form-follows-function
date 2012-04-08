@@ -1,0 +1,21 @@
+/**
+ * VSGC-624 : Compiler can't find public method from its anonymous inner class.
+ *
+ * @test
+ */
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+public class vsgc624 extends java.lang.Object {
+    var tickListener : ActionListener = ActionListener {
+        public override function actionPerformed(evt:ActionEvent): Void {
+            // this call used to result in compiler error
+            update();
+        }
+    }    
+    
+    public function update(): Void {
+    }
+}
+

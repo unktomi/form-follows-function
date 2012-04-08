@@ -1,0 +1,18 @@
+/**
+ * VSGC-3010 : Regression: else of if is evaluated even if the if expression is true
+ *
+ * Underlying cause: lazy element access
+ *
+ * @test
+ * @run
+ */
+
+function f() { println("EVAL"); 3 }
+var q = [0..6];
+def x = bind lazy q[f()];
+delete q[0];
+q[3] = 747;
+println("---");
+println(x);
+
+

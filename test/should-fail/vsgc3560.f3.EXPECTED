@@ -1,0 +1,7 @@
+test/should-fail/vsgc3560.f3:20: non-static variable material cannot be referenced from a static context
+var material = bind Cup.material;
+                       ^
+test/should-fail/vsgc3560.f3:21: non-static variable purpose cannot be referenced from a static context
+var purpose = bind Cup.purpose;
+                      ^
+2 errors

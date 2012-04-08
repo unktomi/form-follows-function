@@ -1,0 +1,19 @@
+/**
+ * Regression test VSGC-1943 : Overriding variable declaration in subclass fails
+ *
+ * @test
+ * @run
+ */
+
+public class Base {
+    public var content:String[];
+}
+
+public class Sub extends Base {
+    public override var content = ["Hi", "Richard"];
+}
+
+function run() {
+    println(Sub{}.content[0]);
+}
+

@@ -1,0 +1,11 @@
+test/should-fail/vsgc1248.f3:5: unreachable statement
+for(i in [1..100],j in {continue;[2..100];}){
+                                 ^
+test/should-fail/vsgc1248.f3:5: 'void' type not allowed here
+for(i in [1..100],j in {continue;[2..100];}){
+                  ^
+test/should-fail/vsgc1248.f3:5: warning: iterating over a non-sequence
+for(i in [1..100],j in {continue;[2..100];}){
+                       ^
+2 errors
+1 warning

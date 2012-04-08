@@ -1,0 +1,16 @@
+Visage compiler feature test #1 -- simple string manipulation and println
+
+Demonstrated:
+ - module-level variables with explicit Integer and String type declaration
+ - explicit initializer for variables
+ - reassignment to variables
+ - calling System.out.println()
+ - calculating simple arithmetic expressions
+ - interpolating arithmetic expressions into string literals
+
+Restrictions:
+ - No type inference assumed.  All variables are given an explicit type.
+ - Only types used are Integer and String
+ - Module-level code is moved into an instance run() method, which should be static.
+ - Instance run() method needlessly instantiates another instance.
+

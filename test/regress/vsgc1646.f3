@@ -1,0 +1,23 @@
+/**
+ * Regression test VSGC-1646 : variable visibility issue
+ *
+ * @test
+ */
+
+var aset: Integer[] on replace oldSlice[a..b] = newSlice {
+    java.lang.System.out.println("aset: removed {oldSlice[a..b].toString()} and added {newSlice.toString()}");
+};
+
+class GoofyButton {
+    var action : function()
+}
+
+class GoofyFrame {
+    var content : GoofyButton
+}
+
+GoofyFrame {
+    content: GoofyButton {
+                     action: function() {insert 9 into aset;}
+                    }
+}

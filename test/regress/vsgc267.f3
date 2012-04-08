@@ -1,0 +1,11 @@
+/* VSGC-267:  Wrong variable type generated for old value variable in replace trigger
+ *
+ * @test
+ * @run
+ */
+class Foo { 
+} 
+
+class Bar { 
+    var foo: Foo on replace old {} 
+}  

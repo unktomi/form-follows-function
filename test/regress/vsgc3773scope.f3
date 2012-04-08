@@ -1,0 +1,21 @@
+/**
+ * Regression test VSGC-3773 : Compiled bind: scoping of bound object literal initializers
+ *
+ * With the previouls model --
+ * (2) references to instances variables are being resolved in the inner (wrong) scope, 
+ * rather than the scope in which they are defined.
+ *
+ * @test
+ * @run
+ */
+
+class A {
+ var width;
+}
+
+class B extends A {
+  var y = A { width: bind width}
+}
+
+println(B{}.y.width);
+println(B{width: 19}.y.width);

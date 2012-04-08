@@ -1,0 +1,3 @@
+fn1: function vsgc3381.MyClass.callMe(Integer,java.lang.String[]):Void
+fn2: function vsgc3381.MyClass.callMe(Integer,java.lang.String[]):Void
+function invoked 12 2

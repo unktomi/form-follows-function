@@ -1,0 +1,11 @@
+/**
+ * Regression test VSGC-3733 :  Compiled bind: sample won't compile: f3.scene.control.Labeled.Labeled$Script is not public
+ *
+ * @compilefirst vsgc3733/B.f3
+ *
+ * @test
+ */
+
+import vsgc3733.B;
+
+class A extends B {}

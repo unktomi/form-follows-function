@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="Intro" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Introduction</title>
+
+  <para>This chapter discusses the what and why of F3, and provides
+  some simple examples to give you an overview of the language.</para>
+
+  <sect1>
+    <title>Why F3?</title>
+
+    <para>There are thousands of programming languages, so why use F3?
+    Two good reasons are: ubiquitous delivery, and rapid development
+    of graphical applications. F3 is built on the Java platform, which is
+    available on everything from cell phones to supercomputers. F3
+    is designed so that the developer can express their desired results
+    succinctly and simply. Where most programming languages require the
+    developer to describe what they want <emphasis>imperatively</emphasis>
+    (tell me <emphasis>how</emphasis> to achieve the effect you want), F3
+    allows you to instead express many things
+    <emphasis>declaratively</emphasis> (tell me <emphasis>what</emphasis> you
+    want, and I'll figure out how to make it happen). Declarative programming
+    is particularly powerful in expressing the interactive relationships
+    between graphical components, greatly simplifing the code and the
+    development process.</para>
+  </sect1>
+
+  <sect1>
+    <title>What is F3?</title>
+
+    <para>F3 is a compilable scripting language which allows you to
+    quickly and easily write interactive graphical applications (also known as
+    Rich Internet Appllications, or RIAs). F3 gets its heritage
+    from both scripting languages, which offer fast and easy development with
+    less of the armor provided by conventional languages, and object-oriented
+    languages like Java, which offer the ability to build robust reusable
+    components. It is aimed at moderately sized interactive graphical
+    applications, rather than programming in the large. It does, however, have
+    one feature that is more common in "bigger" languages: static
+    (compile-time) typing. That is, before your program even runs, it is
+    checked for incompatible relationships between data, helping you to find
+    errors earlier.</para>
+  </sect1>
+
+  <sect1>
+    <title>A Taste of F3</title>
+
+    <para>The best way to get the flavor of F3 is to see some
+    examples! Don't worry if some of these don't make sense, the rest of this
+    Reference will provide the details.</para>
+
+    <para>F3 programs are written as one or more
+    <emphasis>scripts</emphasis>. A script consists of expressions and
+    declarations, typically in a file. The following is an expression and thus
+    a valid script:</para>
+
+    <programlisting>4</programlisting>
+
+    <para>While this is a valid script, it doesn't <emphasis>do</emphasis>
+    anything (other than evaluate the number 4). To make the result appear on
+    the console, we could print the result of the expression using the
+    built-in function 'println':</para>
+
+    <programlisting>println(4)</programlisting>
+
+    <para>Which makes it irresistible to show the obligatory Hello World
+    script:</para>
+
+    <programlisting>println("Hello, World")</programlisting>
+
+    <para>This script will, of course, print:</para>
+
+    <screen>Hello, World</screen>
+
+    <para>While it was certainly easy to write Hello World in F3,
+    this isn't really in the spirit of the language, since it isn't graphical.
+    There is a separate tutorial on using the graphics capabilities of the
+    F3 platform; see 
+    <ulink url="http://java.sun.com/f3/1/tutorials/ui/">Building GUI Applications With F3</ulink>
+    for that.</para>
+
+    <para>You can, of course, have more complex expressions:</para>
+
+    <programlisting>println("Circumference is { 2*3.1415*7 } ")</programlisting>
+
+    <para>This script will print:</para>
+
+    <screen>Circumference is 43.981</screen>
+
+    <para>Note the expression enclosed in braces. What is being printed is a
+    <emphasis>string expression</emphasis>. A string representation of the
+    expression in braces is evaluated at runtime. The value of the string
+    expression is the whole string with that string representation replacing
+    the expression in braces. That is <command>{ 2*3.1415*7 }</command> is
+    replaced in the string by <computeroutput>43.981</computeroutput> which is
+    the runtime value of { 2*3.1415*7 }.</para>
+
+    <para>Better programming style would encourage us to use named variables
+    instead of "magic numbers" in our calculation, which is easy to do:</para>
+
+    <programlisting>def PI = 3.14159265; 
+var r = 7; 
+println("Circumference is { 2 * PI * r } ")</programlisting>
+
+    <para>Here <command>PI</command> is defined to always be 3.14159265, while
+    the variable <command>r</command> starts out as 7, but can be
+    changed.</para>
+
+    <para>To improve our little script even more, we could also define a
+    function to compute the circumference:</para>
+
+    <programlisting>def PI = 3.14159265; 
+var r = 7; 
+function circumference(radius) { 2 * PI * radius }
+println("Circumference is { circumference(r) } ")</programlisting>
+
+    <para>The function <command>circumference</command> takes a Number
+    <command>radius</command> as input, and returns the value of the
+    expression <command>2 * PI * radius</command>.</para>
+
+    <para>Note that F3 uses <emphasis>type inference</emphasis> to
+    figure out the type of variables and function. Type inference means that
+    the compiler figures out the types of variables and functions from
+    context, rather than requiring us to name them explicitly. We are always
+    free to name types explicitly if so desired. With explicit type
+    declarations, this program would be written:</para>
+
+    <programlisting>def PI : Number = 3.14159265;  
+var r : Number = 7; 
+function circumference(radius : Number) : Number {
+   2 * PI * radius 
+} 
+println("Circumference is { circumference(r) }")</programlisting>
+
+    <para>Like many other languages, including Java, C++, and Ruby, F3
+    allows you to use classes to represent a real or abstract entity.
+    In this case, a point:</para>
+
+    <programlisting>class Point { 
+   var x : Integer; 
+   var y : Integer; 
+   function show() {
+      println("Point {x}, {y}")
+   } 
+} </programlisting>
+
+    <para>This class defines an abstract data type for a two-dimensional
+    point, with instance variables to hold its x and y coordinates. It also
+    defines a function to display the state of the Point on the
+    console.</para>
+
+    <para>We create an instance of a Point using an <emphasis>object
+    literal</emphasis>, which lets us assign initial values to its instance
+    variables like this:</para>
+
+    <programlisting>var myPoint = Point { 
+   x: 12
+   y: 9
+}</programlisting>
+
+    <para>This will create a Point whose <command>x</command> and
+    <command>y</command> values are 12 and 9, respectively.</para>
+
+    <para>Finally we can ask the point to print itself by calling its
+    <command>show()</command> function (defined, above, in the Point
+    class).</para>
+
+    <programlisting>myPoint.show()</programlisting>
+
+    <para>This will print:</para>
+
+    <screen>Point 12, 9</screen>
+
+    <para>For an example-based introduction to F3, see the tutorial
+    <ulink url="http://java.sun.com/f3/1/tutorials/core/">Learning the F3 Programming Language</ulink>
+ F3
+    Tutorial.</para>
+  </sect1>
+</chapter>

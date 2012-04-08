@@ -1,0 +1,10 @@
+test/should-fail/garbled.f3:11: There is a garbled class member definition starting here, I have tried to ignore it. Class members can be 'var', 'def', 'function', 'init' or 'postinit' only.
+    va
+    ^
+test/should-fail/garbled.f3:18: There is a garbled expression starting here, I have tried to ignore it.
+    *9;
+    ^
+test/should-fail/garbled.f3:19: There is a garbled expression starting here, I have tried to ignore it.
+    *9;
+    ^
+3 errors

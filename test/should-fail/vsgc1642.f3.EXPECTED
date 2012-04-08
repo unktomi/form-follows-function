@@ -1,0 +1,4 @@
+test/should-fail/vsgc1642.f3:6: sorry, not implemented: functions with more than 8 parameters
+    var a = f;
+            ^
+1 error

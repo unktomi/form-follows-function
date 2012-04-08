@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="F3Doc" default="default" basedir=".">
+    <description>Builds, tests, and runs the project F3Doc.</description>
+    <import file="nbproject/build-impl.xml"/>
+
+    <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile" if="have.sources">
+        <javac compiler="modern" fork="true"
+               srcdir="${src.dir}" destdir="${build.classes.dir}"
+               debug="${javac.debug}" deprecation="${javac.deprecation}"
+               source="${javac.source}" target="${javac.target}" includeantruntime="false">
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+            <compilerarg value="-J-Xbootclasspath/p:${file.reference.javac.jar}${path.separator}${file.reference.javadoc.jar}"/>
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
+	<filter token="f3version" value="${f3.version}"/>
+        <!-- do macro replacement but avoid binary image files -->
+        <copy todir="${build.classes.dir}" filtering="true">
+            <fileset dir="${src.dir}" excludes="**/*.png,**/*.gif,${build.classes.excludes},${excludes}" includes="${includes}"/>
+        </copy>
+        <!-- copy the .png, .gif image files without macro replacement -->
+        <copy todir="${build.classes.dir}" filtering="false">
+            <fileset dir="${src.dir}" excludes="${build.classes.excludes},${excludes}" includes="**/*.png,**/*.gif"/>
+        </copy>
+    </target>
+    
+    <target name="jar" description="Build JAR." depends="init,compile,-pre-pre-jar">
+        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+        <pathconvert property="run.classpath.without.build.classes.dir">
+            <path path="${run.classpath}"/>
+            <map from="${build.classes.dir.resolved}" to=""/>
+        </pathconvert>
+        <pathconvert pathsep=" " property="jar.classpath">
+            <path path="${run.classpath.without.build.classes.dir}"/>
+            <chainedmapper>
+                <flattenmapper/>
+            </chainedmapper>
+        </pathconvert>
+        <jar compress="${jar.compress}" destfile="${dist.jar}" manifest="${manifest.file}">
+            <fileset dir="${build.classes.dir}"/>
+            <zipfileset src="${file.reference.javadoc.jar}"/>
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Class-Path" value="${jar.classpath}"/>
+            </manifest>
+        </jar>
+    </target>
+
+
+    <!-- don't generate any javadoc, since there is no public API -->
+    <target name="javadoc"/>
+
+    <target depends="init" name="-do-clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.jar}"/>
+        <delete dir="${build.test.dir}"/>
+    </target>
+
+</project>

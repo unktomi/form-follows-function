@@ -1,0 +1,17 @@
+/**
+ * VSGC-2628 : Assigning an object to a sequence fails inside a bind
+ *
+ * @test
+ */
+
+class jj2 {
+}
+
+class jjgroup {
+   var transforms: jj2[];
+}
+
+
+var node = bind jjgroup {
+            transforms: jj2{};
+           }

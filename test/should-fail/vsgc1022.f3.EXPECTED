@@ -1,0 +1,7 @@
+test/should-fail/vsgc1022.f3:15: Note: Need explicit type for x because of cycle in initialization.
+  var x = bind
+  ^
+test/should-fail/vsgc1022.f3:17: This is the cyclic reference to x that prevents type inference.
+      else box.holders[index-1].x + 1.0
+                               ^
+1 error

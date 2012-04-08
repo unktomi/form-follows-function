@@ -1,0 +1,12 @@
+/* 
+ * Regression test: VSGC-1122: Compiler error encountered when using java.text.NumberFormat.parse()
+ *
+ * @test/compile-error
+ */
+
+import java.lang.System;
+import java.text.NumberFormat;
+
+var fmt = NumberFormat.getInstance();
+
+var x:Number = fmt.parse("5.234");

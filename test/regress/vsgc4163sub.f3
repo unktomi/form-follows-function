@@ -1,0 +1,27 @@
+/*
+ * Regression: VSGC-4163 - Mixin class static function values are not compiling. Blocking build.
+ *
+ * @compilefirst vsgc4163super.f3
+ * @test
+ * @run
+ *
+ */
+
+public var sg1 = function():String { "vsgc4163 sg1" };
+
+public class vsgc4163sub extends vsgc4163super {
+    public var cg1 = function():String { "vsgc4163 cg1" };
+}
+
+function run() {
+    var x = vsgc4163sub{};
+    
+    println("{x.sf1()}");
+    println("{x.sf2()}");
+    println("{x.sf3()}");
+    println("{x.sf4()}");
+    println("{x.cf1()}");
+    println("{x.cf2()}");
+    println("{x.sg1()}");
+    println("{x.cg1()}");
+}

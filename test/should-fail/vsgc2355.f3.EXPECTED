@@ -1,0 +1,4 @@
+test/should-fail/vsgc2355.f3:4: non-static function getRGBComponents(float[]) cannot be referenced from a static context
+java.awt.Color.getRGBComponents(null);
+              ^
+1 error

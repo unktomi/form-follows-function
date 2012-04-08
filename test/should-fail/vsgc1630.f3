@@ -1,0 +1,10 @@
+/**
+ * Should-fail test VSGC-1630 : Enforce access controls on override var
+ *
+ * @compilefirst vsgc1630sub.f3
+ * @test/compile-error
+ */
+
+class vsgc1630 extends vsgc1630sub {
+  override var x = 88;
+}

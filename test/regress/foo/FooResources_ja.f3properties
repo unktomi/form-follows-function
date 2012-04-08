@@ -1,0 +1,4 @@
+@charset "windows-1252";
+
+"source original string" = "translated string in foo/FooResources_ja.f3properties"
+"source original string in test 2" = "translated string 2 in foo/FooResources_ja.f3properties"

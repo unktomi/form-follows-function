@@ -1,0 +1,7 @@
+test/should-fail/vsgc4189.f3:11: warning: Suspicious self reference: variable x might not have been initialized.
+   var x:Object = Object{ function f2() { x; y; } };
+                                          ^
+test/should-fail/vsgc4189.f3:11: warning: Suspicious forward reference: variable y might not have been initialized.
+   var x:Object = Object{ function f2() { x; y; } };
+                                             ^
+2 warnings

@@ -1,0 +1,62 @@
+This directory contains support for using BTrace with F3 applications.
+To use BTrace, you need to use JDK 6. BTrace does *not* work with JDK 5.
+
+Steps to use:
+
+1) hg clone https://kenai.com/hg/btrace~hg 
+
+2) define environmental var BTRACE_HOME to directory where btrace repo 
+was cloned.
+
+3) build btrace tool using the following commands: 
+
+    cd $BTRACE_HOME/make
+    ant
+
+4) compile all F3 BTrace scripts using ant makefile in this dir using
+
+  ant  -Dbtrace.home=$BTRACE_HOME
+
+The above compiles all btrace scripts under btrace_scripts to the destination 
+directory ../../build/buildtools/f3btrace/
+
+Or you can use "./bin/f3btracec" to compile a specific BTrace script file like:
+
+    ./bin/f3btracec btrace_scripts/InvalidationTracer.java
+
+5) ./bin/f3btrace <compiled-btrace-script.class> <your-f3-main-class> <args>
+
+For example,
+
+ ./bin/f3btrace ../../build/buildtools/f3btrace/InvalidationTracer.class F3Main
+
+This produces the trace output file as
+
+ ../../build/buildtools/f3btrace/InvalidationTracer.class.btrace
+
+The .btrace file is produced whereever the .class of the BTrace script is 
+located. 
+
+BTrace scripts available:
+
+* InvalidationTracer.java
+
+prints message on every invalidate$foo entry/return.
+
+* GetterSetterTracer.java
+
+prints message on every get$foo/set$foo/be$foo entry/return.
+
+* OnReplaceTracer.java
+
+prints message on every on-replace block entry/return.
+
+* VarTracer.java
+
+prints message on every invalidate/get/set/be/on-replace! (heavy
+- expect lots of noice!!)
+
+* InstVarCount.java
+
+Prints F3 instance variable count (F3Base.count$()) for each F3 class.
+

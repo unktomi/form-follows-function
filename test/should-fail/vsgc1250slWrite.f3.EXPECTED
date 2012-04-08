@@ -1,0 +1,43 @@
+test\should-fail\vsgc1250slWrite.f3:25: cannot find symbol
+symbol  : variable slScr
+location: class vsgc1250slWrite.Inh
+	slScr = 99;   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250slWrite.f3:28: slRScr has script only (default) write access in vsgc1250subFail
+	slRScr = 99;   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250slWrite.f3:45: cannot find symbol
+symbol  : variable slPkg
+location: class vsgc1250slWrite.InhA
+	slPkg = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250slWrite.f3:46: cannot find symbol
+symbol  : variable slScr
+location: class vsgc1250slWrite.InhA
+	slScr = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250slWrite.f3:48: slRPkg has package write access in vsgc1250.a.vsgc1250subFailA
+	slRPkg = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250slWrite.f3:49: slRScr has script only (default) write access in vsgc1250.a.vsgc1250subFailA
+	slRScr = 99;   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250slWrite.f3:85: slScr has script only (default) access in vsgc1250subFail
+	vsgc1250subFail.slScr = 99;   // ERROR: same package
+	               ^
+test\should-fail\vsgc1250slWrite.f3:88: slRScr has script only (default) write access in vsgc1250subFail
+	vsgc1250subFail.slRScr = 99;   // ERROR: same package
+	               ^
+test\should-fail\vsgc1250slWrite.f3:93: slPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	vsgc1250subFailA.slPkg = 99;   // ERROR: different package
+	                ^
+test\should-fail\vsgc1250slWrite.f3:94: slScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	vsgc1250subFailA.slScr = 99;   // ERROR: different package
+	                ^
+test\should-fail\vsgc1250slWrite.f3:96: slRPkg has package write access in vsgc1250.a.vsgc1250subFailA
+	vsgc1250subFailA.slRPkg = 99;   // ERROR: different package
+	                ^
+test\should-fail\vsgc1250slWrite.f3:97: slRScr has script only (default) write access in vsgc1250.a.vsgc1250subFailA
+	vsgc1250subFailA.slRScr = 99;   // ERROR: different package
+	                ^
+12 errors

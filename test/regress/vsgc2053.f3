@@ -1,0 +1,26 @@
+/**
+ * VSGC-2053 : binds involving longs, resulting in compile errors.
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.Math;
+
+   public var ymin:Number = 0;
+   public var ymax:Number = 10;
+   public var ysteps:Integer = 5;
+
+function run() {
+   var jump = bind Math.round((ymax-ymin)/ysteps);
+
+   println(jump);
+   ymin = -10;
+   println(jump);
+
+   var a : Long = 0x03300FF00FF;
+   var b : Long = 0x10011001100;
+   def plus : Long = bind a + b;
+   println("{%x plus}");
+}
+    

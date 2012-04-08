@@ -1,0 +1,20 @@
+/*
+ * Regression: VSGC-4232 - bind does not work properly when sizeof operator is used.
+ *
+ * @test
+ * @run
+ */
+
+class A { var x : String[] = ["A", "B", "C"] }
+var a = A {};
+var x = ["A", "B", "C"];
+var y = bind sizeof a.x;
+var z = bind sizeof x;
+
+println("{y}");
+insert "D" into a.x;
+println("{y}");
+
+println("{z}");
+insert "D" into x;
+println("{z}");

@@ -1,0 +1,32 @@
+/*
+ * Sub test for exhaustive test
+ * VSGC-3927 : SWAT failure : JawbreakerGame compiler crash -- F3ClassSymbol cannot be cast to F3VarSymbol
+ *
+ * @subtest
+ */
+
+public class C {
+  public var x = "za"
+}
+
+public var i = 3;
+public def id = 4;
+public var ib = bind i;
+public def idb = bind i;
+public var ibi = bind i with inverse;
+
+public var o : Object = 3;
+public def od : Object = 4;
+public var ob = bind o;
+public def odb = bind o;
+public var obi = bind o with inverse;
+
+public var s = [3];
+public def sd = [4];
+public var sb = bind s;
+public def sdb = bind s;
+public var sbi = bind s with inverse;
+
+public var b = true;
+public def c = C{};
+public var cb = bind C{};

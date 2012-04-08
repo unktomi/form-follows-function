@@ -1,0 +1,32 @@
+/**
+ * VSGC-3585 : Compiled bind: bound sequence: slice
+ *
+ * On-replace -- changes to upper
+ *
+ * @test
+ * @run
+ */
+
+class vsgc3585upper {
+  var seq = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+  var a = 2;
+  var b = 5;
+  def bsi = bind seq[a..b] on replace [st..en] = newV { println("[{st}..{en}] = {sizeof newV}") };
+
+  function doit() {
+    println("=== 4");
+    b = 4; 
+    println("=== 1");
+    b = 1;
+    println("=== 0");
+    b = 0;
+    println("=== -4");
+    b = -4;
+    println("=== 3");
+    b = 3;
+    println("=== 30");
+    b = 30;
+  }
+}
+
+vsgc3585upper{}.doit()

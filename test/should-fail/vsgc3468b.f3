@@ -1,0 +1,7 @@
+/**
+ * Regression test VSGC-3468 : Compiler can not resolve symbols from f3.lang.Builtins when using -sourcepath option
+ * @compile vsgc3468b/pak1/A.f3
+ * @compilearg -sourcepath
+ * @compilearg test/should-fail
+ * @test/compile-error
+ */

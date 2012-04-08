@@ -1,0 +1,13 @@
+import f3.lang.F3;
+/*
+ * F3.addShutdownMessage - I suppose we should be able to return a java.lang.Void.
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.*;
+
+function myshutdown() { var v:java.lang.Void; return v; }
+
+F3.addShutdownAction( myshutdown )

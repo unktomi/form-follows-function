@@ -1,0 +1,10 @@
+/**
+ * Should-fail test VSGC-2139 : Outdated error message refers to 'main' function instead of 'run' function - confusing
+ *
+ * @test/compile-error
+ */
+
+public var x = "expose me";
+
+println("I'm bad");
+

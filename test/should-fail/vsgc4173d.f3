@@ -1,0 +1,9 @@
+/**
+ * Regress test for VSGC-4173.
+ *
+ *  Improved support for forward references
+ *
+ * @compilearg -XDfwdRefOpt=interpolate
+ * @compile vsgc4173sub.f3
+ * @test/warning
+ */

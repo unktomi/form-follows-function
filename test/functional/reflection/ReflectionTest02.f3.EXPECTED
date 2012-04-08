@@ -1,0 +1,194 @@
+About class ReflectionTest02
+class ReflectionTest02
+  Super classes of ReflectionTest02:
+    class ReflectionTest02
+    class java.lang.Object
+    class org.f3.runtime.F3Base
+  Mixin class: false
+  F3 Type: true
+  class java.lang.Object is assignable from class ReflectionTest02
+  class ReflectionTest02 is not assignable from class java.lang.Object
+  class org.f3.runtime.F3Base is assignable from class ReflectionTest02
+  class ReflectionTest02 is not assignable from class org.f3.runtime.F3Base
+MEMBERS of class ReflectionTest02
+   _clzStrings  isStatic=true; Declaring class: ReflectionTest02 
+   _context  isStatic=true; Declaring class: ReflectionTest02 
+   _func0  isStatic=true; Declaring class: ReflectionTest02 
+   _func1  isStatic=true; Declaring class: ReflectionTest02 
+   _func2  isStatic=true; Declaring class: ReflectionTest02 
+   _func3  isStatic=true; Declaring class: ReflectionTest02 
+   _func4  isStatic=true; Declaring class: ReflectionTest02 
+   _func5  isStatic=true; Declaring class: ReflectionTest02 
+   _func6  isStatic=true; Declaring class: ReflectionTest02 
+   _func7  isStatic=true; Declaring class: ReflectionTest02 
+   _func8  isStatic=true; Declaring class: ReflectionTest02 
+   _func9  isStatic=true; Declaring class: ReflectionTest02 
+   clone  isStatic=false; Declaring class: java.lang.Object 
+   equals  isStatic=false; Declaring class: java.lang.Object 
+   finalize  isStatic=false; Declaring class: java.lang.Object 
+   getClass  isStatic=false; Declaring class: java.lang.Object 
+   hashCode  isStatic=false; Declaring class: java.lang.Object 
+   inspectClass  isStatic=true; Declaring class: ReflectionTest02 
+   inspectMember  isStatic=true; Declaring class: ReflectionTest02 
+   notify  isStatic=false; Declaring class: java.lang.Object 
+   notifyAll  isStatic=false; Declaring class: java.lang.Object 
+   registerNatives  isStatic=true; Declaring class: java.lang.Object 
+   toString  isStatic=false; Declaring class: java.lang.Object 
+   wait  isStatic=false; Declaring class: java.lang.Object 
+   wait  isStatic=false; Declaring class: java.lang.Object 
+   wait  isStatic=false; Declaring class: java.lang.Object 
+VARIABLES of class ReflectionTest02
+  _clzStrings type:null  static=true; Decl.class: ReflectionTest02 
+  _context type:f3.reflect.F3Local.Context  static=true; Decl.class: ReflectionTest02 
+FUNCTIONS of class ReflectionTest02
+  Void _func0() min_args=0; var_args: false
+  class java.lang.String _func1() min_args=1; var_args: false
+  class java.lang.String _func2() min_args=1; var_args: false
+  Integer[] _func3() min_args=1; var_args: false
+  Integer[] _func4() min_args=2; var_args: false
+  Integer[] _func5() min_args=2; var_args: false
+  function(java.lang.Integer):java.lang.Integer _func6() min_args=0; var_args: false
+  class f3.lang.Duration _func7() min_args=1; var_args: false
+  Boolean _func8() min_args=2; var_args: false
+  Float _func9() min_args=1; var_args: false
+  class java.lang.Object clone() min_args=0; var_args: false
+  Boolean equals() min_args=1; var_args: false
+  Void finalize() min_args=0; var_args: false
+  class java.lang.Class getClass() min_args=0; var_args: false
+  Integer hashCode() min_args=0; var_args: false
+  Void inspectClass() min_args=3; var_args: false
+  Void inspectMember() min_args=1; var_args: false
+  Void notify() min_args=0; var_args: false
+  Void notifyAll() min_args=0; var_args: false
+  Void registerNatives() min_args=0; var_args: false
+  class java.lang.String toString() min_args=0; var_args: false
+  Void wait() min_args=0; var_args: false
+  Void wait() min_args=1; var_args: false
+  Void wait() min_args=2; var_args: false
+___________________________________________________________
+About class ReflectionTest02.TestClass
+class ReflectionTest02.TestClass
+  Super classes of ReflectionTest02.TestClass:
+    class ReflectionTest02.BaseTestClass
+    class ReflectionTest02.TestClass
+    class java.lang.Object
+    class org.f3.runtime.F3Base
+  Mixin class: false
+  F3 Type: true
+  class ReflectionTest02.BaseTestClass is assignable from class ReflectionTest02.TestClass
+  class ReflectionTest02.TestClass is not assignable from class ReflectionTest02.BaseTestClass
+  class java.lang.Object is assignable from class ReflectionTest02.TestClass
+  class ReflectionTest02.TestClass is not assignable from class java.lang.Object
+  class org.f3.runtime.F3Base is assignable from class ReflectionTest02.TestClass
+  class ReflectionTest02.TestClass is not assignable from class org.f3.runtime.F3Base
+MEMBERS of class ReflectionTest02.TestClass
+   clone  isStatic=false; Declaring class: java.lang.Object 
+   equals  isStatic=false; Declaring class: java.lang.Object 
+   fbFnAttr1  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFnAttr2  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFnAttr3  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFnAttr4  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc0  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc1  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc2  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc3  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc4  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc5  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc6  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc7  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc8  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   fbFunc9  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   finalize  isStatic=false; Declaring class: java.lang.Object 
+   funAttr2  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   func0$bFunc$int  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   getClass  isStatic=false; Declaring class: java.lang.Object 
+   hashCode  isStatic=false; Declaring class: java.lang.Object 
+   notify  isStatic=false; Declaring class: java.lang.Object 
+   notifyAll  isStatic=false; Declaring class: java.lang.Object 
+   registerNatives  isStatic=true; Declaring class: java.lang.Object 
+   toString  isStatic=false; Declaring class: java.lang.Object 
+   vattr1  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vb  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vB_attr1  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   vB_b  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   vB_i  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   vB_is  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   vB_n  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   vB_name  isStatic=false; Declaring class: ReflectionTest02.BaseTestClass 
+   vbooleanAttr1  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vi  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vintAttr1  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vintAttr2  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vintAttr3  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vintSeq1  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vis  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vn  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vname  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vnumberAttr1  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vnumberAttr2  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vobjAttr1  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vobjAttr2  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vseq3  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vseq4  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vstringAttr3  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vstringrAttr1  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   vstringrAttr2  isStatic=false; Declaring class: ReflectionTest02.TestClass 
+   wait  isStatic=false; Declaring class: java.lang.Object 
+   wait  isStatic=false; Declaring class: java.lang.Object 
+   wait  isStatic=false; Declaring class: java.lang.Object 
+VARIABLES of class ReflectionTest02.TestClass
+  fbFnAttr1 type:null  static=false; Decl.class: ReflectionTest02.BaseTestClass 
+  fbFnAttr2 type:null  static=false; Decl.class: ReflectionTest02.BaseTestClass 
+  fbFnAttr3 type:null  static=false; Decl.class: ReflectionTest02.BaseTestClass 
+  fbFnAttr4 type:null  static=false; Decl.class: ReflectionTest02.BaseTestClass 
+  funAttr2 type:null  static=false; Decl.class: ReflectionTest02.BaseTestClass 
+  vattr1 type:java.lang.Object  static=false; Decl.class: ReflectionTest02.TestClass   value=[null], itemcount=0
+  vb type:Boolean  static=false; Decl.class: ReflectionTest02.TestClass   value=[true], itemcount=1
+  vB_attr1 type:java.lang.Object  static=false; Decl.class: ReflectionTest02.BaseTestClass   value=[null], itemcount=0
+  vB_b type:Boolean  static=false; Decl.class: ReflectionTest02.BaseTestClass   value=[true], itemcount=1
+  vB_i type:Integer  static=false; Decl.class: ReflectionTest02.BaseTestClass   value=[1], itemcount=1
+  vB_is type:null  static=false; Decl.class: ReflectionTest02.BaseTestClass 
+  vB_n type:Float  static=false; Decl.class: ReflectionTest02.BaseTestClass   value=[1.23], itemcount=1
+  vB_name type:java.lang.String  static=false; Decl.class: ReflectionTest02.BaseTestClass   value=[TestClass], itemcount=1
+  vbooleanAttr1 type:java.lang.Object  static=false; Decl.class: ReflectionTest02.TestClass   value=[null], itemcount=0
+  vi type:Integer  static=false; Decl.class: ReflectionTest02.TestClass   value=[1], itemcount=1
+  vintAttr1 type:Integer  static=false; Decl.class: ReflectionTest02.TestClass   value=[3], itemcount=1
+  vintAttr2 type:Integer  static=false; Decl.class: ReflectionTest02.TestClass   value=[5], itemcount=1
+  vintAttr3 type:Integer  static=false; Decl.class: ReflectionTest02.TestClass   value=[92], itemcount=1
+  vintSeq1 type:null  static=false; Decl.class: ReflectionTest02.TestClass 
+  vis type:null  static=false; Decl.class: ReflectionTest02.TestClass 
+  vn type:Float  static=false; Decl.class: ReflectionTest02.TestClass   value=[1.23], itemcount=1
+  vname type:java.lang.String  static=false; Decl.class: ReflectionTest02.TestClass   value=[TestClass], itemcount=1
+  vnumberAttr1 type:Double  static=false; Decl.class: ReflectionTest02.TestClass   value=[0.0], itemcount=1
+  vnumberAttr2 type:Double  static=false; Decl.class: ReflectionTest02.TestClass   value=[1.0], itemcount=1
+  vobjAttr1 type:java.lang.Object  static=false; Decl.class: ReflectionTest02.TestClass   value=[null], itemcount=0
+  vobjAttr2 type:java.lang.Object  static=false; Decl.class: ReflectionTest02.TestClass   value=[1], itemcount=1
+  vseq3 type:null  static=false; Decl.class: ReflectionTest02.TestClass 
+  vseq4 type:null  static=false; Decl.class: ReflectionTest02.TestClass 
+  vstringAttr3 type:java.lang.String  static=false; Decl.class: ReflectionTest02.TestClass   value=[], itemcount=1
+  vstringrAttr1 type:java.lang.String  static=false; Decl.class: ReflectionTest02.TestClass   value=[dummy1], itemcount=1
+  vstringrAttr2 type:java.lang.String  static=false; Decl.class: ReflectionTest02.TestClass   value=[dummy2], itemcount=1
+FUNCTIONS of class ReflectionTest02.TestClass
+  class java.lang.Object clone() min_args=0; var_args: false
+  Boolean equals() min_args=1; var_args: false
+  Void fbFunc0() min_args=0; var_args: false
+  class java.lang.String fbFunc1() min_args=1; var_args: false
+  class java.lang.String fbFunc2() min_args=1; var_args: false
+  Integer[] fbFunc3() min_args=1; var_args: false
+  Integer[] fbFunc4() min_args=2; var_args: false
+  Integer[] fbFunc5() min_args=2; var_args: false
+  function(java.lang.Integer):java.lang.Integer fbFunc6() min_args=0; var_args: false
+  class f3.lang.Duration fbFunc7() min_args=1; var_args: false
+  Boolean fbFunc8() min_args=2; var_args: false
+  Float fbFunc9() min_args=1; var_args: false
+  Void finalize() min_args=0; var_args: false
+  class org.f3.runtime.Pointer func0$bFunc$int() min_args=2; var_args: false
+  class java.lang.Class getClass() min_args=0; var_args: false
+  Integer hashCode() min_args=0; var_args: false
+  Void notify() min_args=0; var_args: false
+  Void notifyAll() min_args=0; var_args: false
+  Void registerNatives() min_args=0; var_args: false
+  class java.lang.String toString() min_args=0; var_args: false
+  Void wait() min_args=0; var_args: false
+  Void wait() min_args=1; var_args: false
+  Void wait() min_args=2; var_args: false

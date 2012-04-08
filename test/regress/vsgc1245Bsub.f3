@@ -1,0 +1,5 @@
+/**
+ * @subtest vsgc1245B
+ */
+
+function scriptLevel() : Integer { 99 }

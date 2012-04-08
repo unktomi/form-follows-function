@@ -1,0 +1,26 @@
+/**
+ * Regression test: VSGC-3578 : Compiled bind: translation of non-transformative bound sequences: identifier, member select, if, ...
+ *
+ * Bound sequence of identifier
+ *
+ * @test
+ * @run
+ */
+
+class vsgc3578cident {
+  var q : Object[];
+  def bq = bind q;
+  
+  function doit() {
+    println(bq);
+    q = ["zip", "zop"];
+    println(bq);
+    q = [10 .. 100 step 10];
+    println(bq);
+    q = ["whoop"];
+    println(bq);
+  }
+}
+
+vsgc3578cident{}.doit()
+

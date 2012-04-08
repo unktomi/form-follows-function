@@ -1,0 +1,15 @@
+/**
+ * Regression test for VSGC-1817 : non-writable doesn't allow init
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class Test {
+    public-init var foo: Integer;
+}
+
+var x = Test{foo: 3};
+System.out.println(x.foo);

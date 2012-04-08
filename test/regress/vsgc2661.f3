@@ -1,0 +1,23 @@
+/*
+ * Regression test: VSGC-2661 - Handling of MixinClassName.foo() method calls (as per 4.4.4)
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.*;
+
+mixin static class A {
+   function foo() { "string" }
+}
+
+class B extends A {
+}
+
+class C extends B {
+  function moo() { B.foo(); }
+}
+
+var c = new C;
+
+System.out.println({c.foo()});

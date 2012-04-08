@@ -1,0 +1,14 @@
+/* For VSGC-344 - Cannot cannot find symbol "javax" within on replace block
+ * Regression test: assign op, e.g., +=
+ *
+ * @test
+ */
+
+public class vsgc344 { 
+    var jdesk: javax.swing.JDesktopPane; 
+    public var foo :String on replace { 
+	var bar : java.lang.Object[] = [new vsgc344];
+        var frames = jdesk.getAllFrames(); 
+        var f = frames[0];
+    } 
+} 

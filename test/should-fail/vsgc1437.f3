@@ -1,0 +1,12 @@
+/**
+ * Regression test for VSGC-1437 : + operator should not allow String concatenation
+ *
+ * @test/compile-error
+ */
+
+var a = "hi";
+var x = 55;
+var z = a + x;
+var y = "yo" + a;
+var q = "tada" + a + true + "--" + x;
+

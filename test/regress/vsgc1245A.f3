@@ -1,0 +1,14 @@
+/**
+ * Regression test for VSGC-1245 : Override keyword for functions
+ *
+ * @compilefirst vsgc1245Asub.f3
+ * @compilefirst vsgc1245Asub2.f3
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+def x = vsgc1245Asub2{}
+System.out.println(x.foo());
+

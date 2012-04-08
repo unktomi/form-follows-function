@@ -1,0 +1,12 @@
+/*
+ * Regression test VSGC-3704 : Compiled bind: Mixin statics missing accessors.
+ *
+ * @compile vsgc3704m.f3
+ * @test
+ */
+
+public def fred :String[] = [vsgc3704m.jj]; 
+
+public class vsgc3704 { 
+
+} 

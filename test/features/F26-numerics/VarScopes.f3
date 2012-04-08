@@ -1,0 +1,175 @@
+/*
+ * Test single assignments for variables {Character,Byte,Long,Short,Float,
+ * Double and corresponding sequences} declared at different levels
+ * (script, instance and local).
+ *
+ * @test/f3unit
+ * @run
+ */
+
+import f3.f3unit.F3TestCase;
+
+    /* The below lines cause a compiler error:
+     * [java] test\features\F26-numerics\variables\VarTestScopes.f3:20: incompatible types
+     * [java] found   : String
+     * [java] required: char
+     * [java]     def c1 : Character = 'X';
+     * [java]                          ^
+     * (moving to curently-failing/vsgc2437.f3)
+     */
+// var c1 : Character = 'X';
+// var c1 : Character = '\u0F0F';
+
+var c1 : Character = 10000;
+var b1 : Byte = 10;
+var l1 : Long = 2000000000;
+var s1 : Short = 30000;
+var f1 : Float = 3.1415926535;
+var d1 : Double = 2.71828183;
+
+/* Compilation failure; see VSGC-2583 */
+//var cSeq1 : Character[] = [ 10000..10003 ];
+var cSeq1 : Character[] = [ 10000, 10001, 10002, 10003 ];
+var bSeq1 : Byte[] = [ 10..13 ];
+var lSeq1 : Long[] = [ 2000000000..2000000003 ];
+var sSeq1 : Short[] = [ 30000..30003 ];
+var fSeq1 : Float[] = [ 4.111..7.111 ];
+// NOTE: Currently, this creates a Float range sequence (because we
+// don't have double range sequences), which then is converted to Double[].
+var dSeq1 : Double[] = [ 5555.125..5558.125 ];
+
+public class VarScopes extends F3TestCase {
+    def c2 : Character = 10000;
+    def b2 : Byte = 10;
+    def l2 : Long = 2000000000;
+    def s2 : Short = 30000;
+    def f2 : Float = 3.1415926535;
+    def d2 : Double = 2.71828183;
+    def cSeq2 : Character[] = [ 10000, 10001, 10002, 10003 ];
+    def bSeq2 : Byte[] = [ 10, 11, 12, 13 ];
+    def lSeq2 : Long[] = [ 2000000000, 2000000001, 2000000002, 2000000003 ];
+    def sSeq2 : Short[] = [ 30000, 30001, 30002, 30003 ];
+    def fSeq2 : Float[] = [ 4.111, 5.111, 6.111, 7.111 ];
+    def dSeq2 : Double[] = [ 5555.125, 5556.125, 5557.125, 5558.125 ];
+
+    function testCharacterVariables() {
+        var c3 : Character = 10000;
+        assertEquals(10000 as Character, c3);
+        assertEquals(10000 as Character, c2);
+        assertEquals(10000 as Character, c1);
+    }
+
+    function testByteVariables() {
+        var b3 : Byte = 10;
+        assertEquals(10 as Byte, b3);
+        assertEquals(10 as Byte, b2);
+        assertEquals(10 as Byte, b1);
+    }
+
+    function testLongVariables() {
+        var l3 : Long = 2000000000;
+        assertEquals(2000000000 as Long, l3);
+        assertEquals(2000000000 as Long, l2);
+        assertEquals(2000000000 as Long, l1);
+    }
+
+    function testShortVariables() {
+        var s3 : Short = 30000;
+        assertEquals(30000 as Short, s3);
+        assertEquals(30000 as Short, s2);
+        assertEquals(30000 as Short, s1);
+    }
+
+    function testFloatVariables() {
+        var f3 : Float = 3.1415926535;
+        assertEquals(3.1415926535 as Float, f3, 0);
+        assertEquals(3.1415926535 as Float, f2, 0);
+        assertEquals(3.1415926535 as Float, f1, 0);
+    }
+
+    function testDoubleVariables() {
+        var d3 : Double = 2.71828183;
+        var temp : Double;
+        assertEquals(temp = 2.71828183, d3, 0);
+        assertEquals(temp = 2.71828183, d2, 0);
+        assertEquals(temp = 2.71828183, d1, 0);
+    }
+
+    function testCharacterSequence() {
+        def cSeq3 : Character[] = [ 10000, 10001, 10002, 10003 ];
+        /* Does not work: "expected:<[ 10000, 10001, 10002, 10003 ]>
+         * but was:<[ ?, ?, ?, ? ]>" */
+//         assertEquals([10000, 10001, 10002, 10003], cSeq3);
+
+        /* Does not work: "reference to assertEquals is ambiguous, both
+         * method assertEquals(java.lang.Object,java.lang.Object) in
+         * junit.framework.Assert and method assertEquals(char,char) in
+         * junit.framework.Assert match" 
+         * See VSGC-2572 */
+//        assertEquals(10000 as Character, cSeq3[0] as Character);
+
+        assertEquals(cSeq1, cSeq2);
+        assertEquals(cSeq2, cSeq3);
+        assertEquals(cSeq1, cSeq3);
+    }
+
+    function testByteSequence() {
+        def bSeq3 : Byte[] = [ 10..<14 step 1 ];
+        /* Does not work: "expected:<[ 10, 11, 12, 13 ]>
+         * but was:<[ 10, 11, 12, 13 ]>" */
+//        assertEquals([ 10, 11, 12, 13 ], bSeq3);
+        assertEquals([ 10 as Byte, 11, 12, 13 ], bSeq3);
+        assertEquals([ 10 as Byte, 11, 12, 13 ], bSeq2);
+        assertEquals([ 10 as Byte, 11, 12, 13 ], bSeq1);
+    }
+
+    function testLongSequence() {
+        def lSeq3 : Long[] = [ 2000000000..<2000000004 step 1 ];
+        assertEquals([ 2000000000 as Long, 2000000001,
+                               2000000002, 2000000003], lSeq3);
+        assertEquals([ 2000000000 as Long, 2000000001,
+                               2000000002, 2000000003], lSeq2);
+        assertEquals([ 2000000000 as Long, 2000000001,
+                               2000000002, 2000000003], lSeq1);
+    }
+
+    function testShortSequence() {
+        def sSeq3 : Short[] = [ 30000..<30004 step 1 ];
+        /* Does not work: "expected:<[ 30000, 30001, 30002, 30003 ]>
+         * but was:<[ 30000, 30001, 30002, 30003 ]>" */
+//        assertEquals([30000, 30001, 30002, 30003], sSeq3);
+        assertEquals([30000 as Short, 30001, 30002, 30003], sSeq3);
+        assertEquals([30000 as Short, 30001, 30002, 30003], sSeq2);
+        assertEquals([30000 as Short, 30001, 30002, 30003], sSeq1);
+    }
+
+    function testFloatSequence() {
+        def fSeq3 : Float[] = [ 4.111..<7.555 step 1 ];
+        assertEquals([4.111, 5.111, 6.111, 7.111], fSeq3);
+        assertEquals([4.111, 5.111, 6.111, 7.111], fSeq2);
+        assertEquals([4.111, 5.111, 6.111, 7.111], fSeq1);
+    }
+
+    function testDoubleSequence() {
+        // NOTE: Currently, this creates a Float range sequence
+	// (because we don't have double range sequences),
+	// which then is converted to Double[].
+        def dSeq3 : Double[] = [ 5555.25..<5559.0 step 1 ];
+        /* Does not work: "expected:<[ 5555.11, 5556.11, 5557.11, 5558.11 ]>
+         * but was:<[ 5555.10986328125, 5556.10986328125,
+         *            5557.10986328125, 5558.10986328125 ]>"
+         * See VSGC-2586 */
+//        assertEquals([5555.11, 5556.11, 5557.11, 5558.11], dSeq3);
+        assertEquals([5555.25 as Double, 5556.25, 5557.25, 5558.25], dSeq3);
+
+        /* Does not work: "expected:<[ 5555.10986328125, 5556.10986328125,
+         *                             5557.10986328125, 5558.10986328125 ]>
+         * but was:<[ 5555.11, 5556.11, 5557.11, 5558.11 ]>" */
+       assertEquals([5555.125 as Double, 5556.125, 5557.125, 5558.125], dSeq2);
+
+        /* Does not work: "expected:<[ 5555.11, 5556.11, 5557.11, 5558.11 ]>
+         * but was:<[ 5555.11, 5556.11, 5557.11, 5558.11 ]>" */
+//        assertEquals([5555.11, 5556.11, 5557.11, 5558.11], dSeq2);
+        assertEquals([5555.125 as Double, 5556.125, 5557.125, 5558.125], dSeq1);
+    }
+}

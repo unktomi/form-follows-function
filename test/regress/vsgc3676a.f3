@@ -1,0 +1,13 @@
+/**
+ * Regression test VSGC-3676 : Compiled bind: applyDefaults and VarInit
+ *
+ * @compilearg -XDfwdRefError=false
+ * @test
+ * @run
+ */
+
+function run() {
+  var x = y + 1000;
+  var y = 7;
+  println(x);
+}

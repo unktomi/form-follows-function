@@ -1,0 +1,16 @@
+x: removed [ ] and added [ 1, 2, 3 ]
+y: removed [ ] and added [ 4, 5, 6 ]
+z: removed [ ] and added [ 1, 2, 3 ]
+z: removed [ ] and added [ 4 ]
+x: removed [ ] and added [ 4 ]
+y: removed [ ] and added [ 7 ]
+b => false
+z: removed [ 1, 2, 3, 4 ] and added [ 4, 5, 6, 7 ]
+inserting 5 into x
+x: removed [ ] and added [ 5 ]
+inserting 8 into y
+z: removed [ ] and added [ 8 ]
+y: removed [ ] and added [ 8 ]
+b => true
+z: removed [ 4, 5, 6, 7, 8 ] and added [ 1, 2, 3, 4, 5 ]
+Done

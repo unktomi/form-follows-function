@@ -1,0 +1,6 @@
+/*
+ * @subtest
+ */
+public mixin class vsgc3243A { 
+    public var a: Object; 
+} 

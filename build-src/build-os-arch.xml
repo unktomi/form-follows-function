@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-os-arch" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Defines common OS and Architecture properties for the system being
+        used to do the builds.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build-defs.xml file.
+
+    </description>
+
+    <!--
+    properties:
+      isWindows, isLinux, isSolaris, isMacOSX
+      os_name: "windows", "linux", "solaris", "macos", "macosx"
+      arch: "sparc", "i586", "amd64", "sparcv9", etc.
+      platform (like windows-i586)
+    -->
+    
+    <!-- Basic OS conditions -->
+    <condition property="isWindows">
+        <os family="windows"/>
+    </condition>
+    <condition property="isLinux">
+        <os name="linux"/>
+    </condition>
+    <condition property="isSolaris">
+        <os name="SunOS"/>
+    </condition>
+    <condition property="isMacOSX">
+        <and>
+            <os family="mac"/>
+            <os family="unix"/>
+        </and>
+    </condition>
+    <condition property="isUnix">
+        <os family="unix"/>
+    </condition>
+   
+    <!-- Define os_name -->
+    <condition property="os_name" value="windows">
+        <os family="windows"/>
+    </condition>
+    <condition property="os_name" value="solaris">
+        <os name="SunOS"/>
+    </condition>
+    <condition property="os_name" value="linux">
+        <os name="linux"/>
+    </condition>
+    <condition property="os_name" value="macosx">
+        <and>
+            <os family="mac"/>
+            <os family="unix"/>
+        </and>
+    </condition>
+    <condition property="os_name" value="macos">
+        <and>
+            <os family="mac"/>
+            <not>
+                <os family="unix"/>
+            </not>
+        </and>
+    </condition>
+    
+    <!-- Define arch --> 
+    <condition property="arch" value="i586">
+        <or>
+            <os arch="x86"/>
+            <os arch="i586"/>
+            <os arch="i386"/>
+        </or>
+    </condition>
+    <condition property="arch" value="sparc">
+        <os arch="sparc"/>
+    </condition>
+    <condition property="arch" value="universal">
+        <isset property="isMacOSX"/>
+    </condition>
+    <condition property="arch" value="amd64">
+        <!-- TODO: detect X64 (64bit) capability on Solaris? -->
+        <or>
+            <os arch="amd64"/>
+            <os arch="x86_64"/>
+            <os arch="x64"/>
+            <os arch="em64t"/>
+            <os arch="8664"/>
+        </or>
+    </condition>
+    <condition property="arch" value="sparcv9">
+        <!-- TODO: detect sparcv9 (64bit) capability on Solaris? -->
+        <os arch="sparcv9"/>
+    </condition>
+    
+    <!-- Define platform -->
+    <condition property="platform" value="${os_name}-${arch}" else="${os_name}-universal">
+        <or>
+            <os family="windows"/>
+            <os name="linux"/>
+            <os name="SunOS"/>
+        </or>
+    </condition>
+
+    <!-- Define default platform home locations -->
+
+    <property name="tmp.jdk.home" location="${java.home}/.."/>
+    <condition property="jdk.home" value="${tmp.jdk.home}">
+        <not>
+            <isset property="isMacOSX"/>
+        </not>
+    </condition>
+
+    <property name="tmp.macosx.jdk.home" location="${java.home}"/>
+    <condition property="jdk.home" value="${tmp.macosx.jdk.home}">
+        <isset property="isMacOSX"/>
+    </condition>
+    
+    <property name="platform.home" value="${jdk.home}"/>
+    <property name="platform6u10.home" value="${jdk.home}"/>
+
+    <target name="-init-platform">
+        <fail unless="os_name">
+	    Could not detect platform family.
+        </fail>
+        <fail unless="arch">
+            Detecting ${os_name}: could not detect architecture."
+        </fail>
+        <fail unless="platform">
+            Detecting ${os_name}-${arch}: could not determine platform name."
+        </fail>
+    </target>
+    
+</project>

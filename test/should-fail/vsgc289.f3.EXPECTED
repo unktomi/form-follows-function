@@ -1,0 +1,6 @@
+test/should-fail/vsgc289.f3:11: incompatible types
+found   : function(:Integer,:Integer):String
+required: function(:Integer,:Integer):Integer
+ab = function (a:Integer, b:Integer) : String { "" };
+     ^
+1 error

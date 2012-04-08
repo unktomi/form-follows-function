@@ -1,0 +1,4 @@
+test/should-fail/vsgc995.f3:10: cyclic inheritance involving vsgc995.Foo
+class Foo extends Bar,One {
+^
+1 error

@@ -1,0 +1,17 @@
+/*
+ * Regression test for VSGC-3678 : Compiled-bind: isInitialized fails with mixins.
+ *
+ * @compile vsgc3678M.f3
+ * @test
+ * @run
+ */
+
+class C extends vsgc3678M {} 
+function f(c:C) { isInitialized(c.x); } 
+
+var y;
+var c = new C();
+
+println(f(c));
+println(isInitialized(y));
+

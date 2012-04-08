@@ -1,0 +1,4 @@
+test/should-fail/vsgc4128.f3:15: Illegal forward reference: variable z is not initialized.
+override var x on replace { var y = z; var z = 1; }
+                                    ^
+1 error

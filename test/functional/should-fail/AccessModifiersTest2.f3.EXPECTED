@@ -1,0 +1,23 @@
+test\functional\should-fail\AccessModifiersTest2.f3:12: illegal combination of modifiers: package and protected
+   package protected var months=["Jan","Feb","Mar",
+   ^
+test\functional\should-fail\AccessModifiersTest2.f3:17: illegal combination of modifiers: public and package
+   package public var a:Integer=13;
+   ^
+test\functional\should-fail\AccessModifiersTest2.f3:18: warning: The access modifier public-init includes the access of public-read.
+   public-init public-read var b:Integer=15;
+   ^
+test\functional\should-fail\AccessModifiersTest2.f3:19: illegal combination of modifiers: public and package
+   package public var s:String="Howdy folks";
+   ^
+test\functional\should-fail\AccessModifiersTest2.f3:20: warning: The access modifier public-init includes the access of public-read.
+   public-read public-init var greet:String="Good Morning friends";
+   ^
+test\functional\should-fail\AccessModifiersTest2.f3:23: modifier public-init not allowed on a def
+   public-init def max=100;
+   ^
+test\functional\should-fail\AccessModifiersTest2.f3:24: warning: The access modifier public includes the access of public-read.
+   public public-read def min=10;
+   ^
+4 errors
+3 warnings

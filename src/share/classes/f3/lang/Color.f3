@@ -1,0 +1,730 @@
+/*
+ * Copyright (c) 2010-2011, F3 Project
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name F3 nor the names of its contributors may be used
+ *    to endorse or promote products derived from this software without
+ *    specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+package f3.lang;
+
+import java.lang.Comparable;
+import java.lang.Math;
+import java.lang.StringBuilder;
+import java.lang.ThreadLocal;
+import java.text.DecimalFormat;
+import java.util.Formattable;
+import java.util.FormattableFlags;
+import java.util.Formatter;
+import f3.animation.Interpolatable;
+import f3.util.Bits;
+
+// script-level "static" functions below
+
+/**
+ * Factory method that returns a Color instance for a specified
+ * hex integer with an optional alpha.
+ *
+ * @param hex a hex integer in rrggbb or aarrggbb format
+ * @param hasAlpha true if the hex integer contains an alpha value
+ * @return a Color instance for the specified hex integer
+ * @profile common
+ */
+public function valueOf(hex:Integer, hasAlpha:Boolean):Color {
+    def r = Bits.bitAnd(Bits.shiftRight(hex, 16), 0xFF);
+    def g = Bits.bitAnd(Bits.shiftRight(hex, 8), 0xFF);
+    def b = Bits.bitAnd(hex, 0xFF);
+    def a = if (hasAlpha) Bits.bitAnd(Bits.shiftRight(hex, 24), 0xFF) else 0xFF;
+    rgb(r, g, b, a / 255.0);
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * red, green, and blue values in the sRGB color space.
+ *
+ * @param red red component color with a value between 0 and 1 inclusive
+ * @param green green component color with a value between 0 and 1 inclusive
+ * @param blue blue component color with a value between 0 and 1 inclusive
+ * @return a Color instance for the specified rgb values
+ * @profile common
+ */
+public function color(red:Float, green:Float, blue:Float):Color {
+    color(red, green, blue, 1);
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * red, green, and blue values in the sRGB color space with the specified
+ * opacity.
+ *
+ * @param red red component color with a value between 0 and 1 inclusive
+ * @param green green component color with a value between 0 and 1 inclusive
+ * @param blue blue component color with a value between 0 and 1 inclusive
+ * @param opacity opacity magnitude with a value between 0 and 1 inclusive
+ * @return a Color instance for the specified rgb and opacity values
+ * @profile common
+ */
+public function color(red:Float, green:Float, blue:Float, opacity:Float):Color {
+    Color {
+        red: red
+        green: green
+        blue: blue
+        opacity: opacity
+    }
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * hue, saturation, and brightness values using the HSV color model.
+ *
+ * @param hue hue angle of the component with a value between 0deg and 360deg inclusive
+ * @param saturation saturation magnitude with a value between 0 and 1 inclusive
+ * @param brightness brightness (a.k.a. value) with a value between 0 and 1 inclusive
+ * @return a Color instance for the specified hsb values
+ * @profile common
+ */
+public function hsb(hue:Angle, saturation:Float, brightness:Float):Color {
+    hsb(hue, saturation, brightness, 1);
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * hue, saturation, and brightness values using the HSV color model with the
+ * given opacity.
+ *
+ * @param hue hue angle of the component with a value between 0deg and 360deg inclusive
+ * @param saturation saturation magnitude with a value between 0 and 1 inclusive
+ * @param brightness brightness (a.k.a. value) with a value between 0 and 1 inclusive
+ * @param opacity opacity magnitude with a value between 0 and 1 inclusive
+ * @return a Color instance for the specified hsb and opacity values
+ * @profile common
+ */
+public function hsb(hue:Angle, saturation:Float, brightness:Float, opacity:Number):Color {
+    def rgb = hsvToRgb(hue.toDegrees(), saturation, brightness);
+    Color {
+        red: rgb[0]
+        green: rgb[1]
+        blue: rgb[2]
+        opacity: opacity
+    }
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * hue, saturation, and brightness values using the HSL color model.
+ *
+ * @param hue hue angle of the component with a value between 0deg and 360deg inclusive
+ * @param saturation saturation magnitude with a value between 0 and 1 inclusive
+ * @param lightness lightness with a value between 0 and 1 inclusive
+ * @return a Color instance for the specified hsv values
+ * @profile common
+ */
+public function hsl(hue:Angle, saturation:Float, lightness:Float):Color {
+    hsl(hue, saturation, lightness, 1);
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * hue, saturation, and brightness values using the HSL color model with the
+ * given opacity.
+ *
+ * @param hue hue angle of the component with a value between 0deg and 360deg inclusive
+ * @param saturation saturation magnitude with a value between 0 and 1 inclusive
+ * @param lightness lightness with a value between 0 and 1 inclusive
+ * @param opacity opacity magnitude with a value between 0 and 1 inclusive
+ * @return a Color instance for the specified hsl and opacity values
+ * @profile common
+ */
+public function hsl(hue:Angle, saturation:Float, lightness:Float, opacity:Number):Color {
+    def rgb = hslToRgb(hue.toTurns(), saturation, lightness);
+    Color {
+        red: rgb[0]
+        green: rgb[1]
+        blue: rgb[2]
+        opacity: opacity
+    }
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * red, green, and blue values in the sRGB color space.
+ *
+ * @param red red component color with a value between 0 and 255 inclusive
+ * @param green green component color with a value between 0 and 255 inclusive
+ * @param blue blue component color with a value between 0 and 255 inclusive
+ * @return a Color instance for the specified rgb values
+ * @profile common
+ */
+public function rgb(red:Integer, green:Integer, blue:Integer):Color {
+    rgb(red, green, blue, 1);
+}
+
+/**
+ * Factory method that returns a Color instance for the specified
+ * red, green, and blue values in the sRGB color space with the specified
+ * opacity.
+ *
+ * @param red red component color with a value between 0 and 255 inclusive
+ * @param green green component color with a value between 0 and 255 inclusive
+ * @param blue blue component color with a value between 0 and 255 inclusive
+ * @param opacity opacity magnitude with a value between 0 and 1 inclusive
+ * @return a Color instance for the specified rgb and opacity values
+ * @profile common
+ */
+public function rgb(red:Integer, green:Integer, blue:Integer, opacity:Float):Color {
+    Color {
+        red: red / 255.0;
+        green: green / 255.0;
+        blue: blue / 255.0;
+        opacity: opacity;
+    }
+}
+
+function hsvToRgb(h:Float, s:Float, v:Float):Float[] {
+    def i = (h / 60) mod 6;
+    def f = (h / 60) - i;
+    def p = v * (1 - s);
+    def q = v * (1 - s * f);
+    def t = v * (1 - s * (1 - f));
+
+    return if (i == 0) [v, t, p]
+    else if (i == 1) [q, v, p]
+    else if (i == 2) [p, v, t]
+    else if (i == 3) [p, q, v]
+    else if (i == 4) [t, p, v]
+    else [v, p, q]
+}
+
+function hslToRgb(h:Float, s:Float, l:Float):Float[] {
+    def m2 = if (l <= 0.5) l * (s + 1) else l + s - l * s;
+    def m1 = l * 2 - m2;
+    def r = hueToRgb(m1, m2, h + 1.0/3);
+    def g = hueToRgb(m1, m2, h);
+    def b = hueToRgb(m1, m2, h - 1.0/3);
+    [r, g, b]
+}
+
+function hueToRgb(m1:Float, m2:Float, h:Float):Float {
+    def h1 = if (h < 0) h + 1 else if (h > 1) h - 1 else h;
+    return if (h1 * 6 < 1) m1 + (m2 - m1) * h1 * 6
+    else if (h1 * 2 < 1) m2
+    else if (h1 * 3 < 2) m1 + (m2 - m1) * (2.0/3 - h1) * 6
+    else m1;
+}
+
+// script-level color variables:
+public def ALICEBLUE = #F0F8FF;
+public def ANTIQUEWHITE = #FAEBD7;
+public def AQUA = #00FFFF;
+public def AQUAMARINE = #7FFFD4;
+public def AZURE = #F0FFFF;
+public def BEIGE = #F5F5DC;
+public def BISQUE = #FFE4C4;
+public def BLACK = #000000;
+public def BLANCHEDALMOND = #FFEBCD;
+public def BLUE = #0000FF;
+public def BLUEVIOLET = #8A2BE2;
+public def BROWN = #A52A2A;
+public def BURLYWOOD = #DEB887;
+public def CADETBLUE = #5F9EA0;
+public def CHARTREUSE = #7FFF00;
+public def CHOCOLATE = #D2691E;
+public def CORAL = #FF7F50;
+public def CORNFLOWERBLUE = #6495ED;
+public def CORNSILK = #FFF8DC;
+public def CRIMSON = #DC143C;
+public def CYAN = #00FFFF;
+public def DARKBLUE = #00008B;
+public def DARKCYAN = #008B8B;
+public def DARKGOLDENROD = #B8860B;
+public def DARKGRAY = #A9A9A9;
+public def DARKGREEN = #006400;
+public def DARKGREY = #A9A9A9;
+public def DARKKHAKI = #BDB76B;
+public def DARKMAGENTA = #8B008B;
+public def DARKOLIVEGREEN = #556B2F;
+public def DARKORANGE = #FF8C00;
+public def DARKORCHID = #9932CC;
+public def DARKRED = #8B0000;
+public def DARKSALMON = #E9967A;
+public def DARKSEAGREEN = #8FBC8F;
+public def DARKSLATEBLUE = #483D8B;
+public def DARKSLATEGRAY = #2F4F4F;
+public def DARKSLATEGREY = #2F4F4F;
+public def DARKTURQUOISE = #00CED1;
+public def DARKVIOLET = #9400D3;
+public def DEEPPINK = #FF1493;
+public def DEEPSKYBLUE = #00BFFF;
+public def DIMGRAY = #696969;
+public def DIMGREY = #696969;
+public def DODGERBLUE = #1E90FF;
+public def FIREBRICK = #B22222;
+public def FLORALWHITE = #FFFAF0;
+public def FORESTGREEN = #228B22;
+public def FUCHSIA = #FF00FF;
+public def GAINSBORO = #DCDCDC;
+public def GHOSTWHITE = #F8F8FF;
+public def GOLD = #FFD700;
+public def GOLDENROD = #DAA520;
+public def GRAY = #808080;
+public def GREEN = #008000;
+public def GREENYELLOW = #ADFF2F;
+public def GREY = #808080;
+public def HONEYDEW = #F0FFF0;
+public def HOTPINK = #FF69B4;
+public def INDIANRED = #CD5C5C;
+public def INDIGO = #4B0082;
+public def IVORY = #FFFFF0;
+public def KHAKI = #F0E68C;
+public def LAVENDER = #E6E6FA;
+public def LAVENDERBLUSH = #FFF0F5;
+public def LAWNGREEN = #7CFC00;
+public def LEMONCHIFFON = #FFFACD;
+public def LIGHTBLUE = #ADD8E6;
+public def LIGHTCORAL = #F08080;
+public def LIGHTCYAN = #E0FFFF;
+public def LIGHTGOLDENRODYELLOW = #FAFAD2;
+public def LIGHTGRAY = #D3D3D3;
+public def LIGHTGREEN = #90EE90;
+public def LIGHTGREY = #D3D3D3;
+public def LIGHTPINK = #FFB6C1;
+public def LIGHTSALMON = #FFA07A;
+public def LIGHTSEAGREEN = #20B2AA;
+public def LIGHTSKYBLUE = #87CEFA;
+public def LIGHTSLATEGRAY = #778899;
+public def LIGHTSLATEGREY = #778899;
+public def LIGHTSTEELBLUE = #B0C4DE;
+public def LIGHTYELLOW = #FFFFE0;
+public def LIME = #00FF00;
+public def LIMEGREEN = #32CD32;
+public def LINEN = #FAF0E6;
+public def MAGENTA = #FF00FF;
+public def MAROON = #800000;
+public def MEDIUMAQUAMARINE = #66CDAA;
+public def MEDIUMBLUE = #0000CD;
+public def MEDIUMORCHID = #BA55D3;
+public def MEDIUMPURPLE = #9370DB;
+public def MEDIUMSEAGREEN = #3CB371;
+public def MEDIUMSLATEBLUE = #7B68EE;
+public def MEDIUMSPRINGGREEN = #00FA9A;
+public def MEDIUMTURQUOISE = #48D1CC;
+public def MEDIUMVIOLETRED = #C71585;
+public def MIDNIGHTBLUE = #191970;
+public def MINTCREAM = #F5FFFA;
+public def MISTYROSE = #FFE4E1;
+public def MOCCASIN = #FFE4B5;
+public def NAVAJOWHITE = #FFDEAD;
+public def NAVY = #000080;
+public def OLDLACE = #FDF5E6;
+public def OLIVE = #808000;
+public def OLIVEDRAB = #6B8E23;
+public def ORANGE = #FFA500;
+public def ORANGERED = #FF4500;
+public def ORCHID = #DA70D6;
+public def PALEGOLDENROD = #EEE8AA;
+public def PALEGREEN = #98FB98;
+public def PALETURQUOISE = #AFEEEE;
+public def PALEVIOLETRED = #DB7093;
+public def PAPAYAWHIP = #FFEFD5;
+public def PEACHPUFF = #FFDAB9;
+public def PERU = #CD853F;
+public def PINK = #FFC0CB;
+public def PLUM = #DDA0DD;
+public def POWDERBLUE = #B0E0E6;
+public def PURPLE = #800080;
+public def RED = #FF0000;
+public def ROSYBROWN = #BC8F8F;
+public def ROYALBLUE = #4169E1;
+public def SADDLEBROWN = #8B4513;
+public def SALMON = #FA8072;
+public def SANDYBROWN = #F4A460;
+public def SEAGREEN = #2E8B57;
+public def SEASHELL = #FFF5EE;
+public def SIENNA = #A0522D;
+public def SILVER = #C0C0C0;
+public def SKYBLUE = #87CEEB;
+public def SLATEBLUE = #6A5ACD;
+public def SLATEGRAY = #708090;
+public def SLATEGREY = #708090;
+public def SNOW = #FFFAFA;
+public def SPRINGGREEN = #00FF7F;
+public def STEELBLUE = #4682B4;
+public def TAN = #D2B48C;
+public def TEAL = #008080;
+public def THISTLE = #D8BFD8;
+public def TOMATO = #FF6347;
+public def TURQUOISE = #40E0D0;
+public def VIOLET = #EE82EE;
+public def WHEAT = #F5DEB3;
+public def WHITE = #FFFFFF;
+public def WHITESMOKE = #F5F5F5;
+public def YELLOW = #FFFF00;
+public def YELLOWGREEN = #9ACD32;
+public def TRANSPARENT = #000000|00;
+
+public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(BLACK);
+
+// internal static variables
+
+def DF = ThreadLocal {
+    override function initialValue():Object {
+        return new DecimalFormat("#");
+    }
+}
+
+/**
+ * A class that defines a color value.  Color instances can be specified
+ * using color literals in standard web hex format.  They can also be created
+ * using the static functions on this class, or via the object literal syntax.
+ * Here are examples of each:
+ * <code><pre>    Color a = #F3DC2F;
+    Color a = #F3DC2F|33;  // with alpha
+    Color a = Color.color(.3, .4, .2)
+    Color a = Color.hsl(90deg, .3, .7)</pre></code>
+ * Color instances are immutable, and are therefore replaced rather than modified.
+ *
+ * @profile common
+ */
+public class Color extends Comparable, Formattable, Interpolatable {
+
+    public-init var red:Float;
+    public-init var green:Float;
+    public-init var blue:Float;
+    public-init var opacity:Float = 1.0;
+
+    /**
+     * Returns a color that has the red, green, blue, and opacity channels
+     * clipped to be in range from 0..1 inclusive.  This may clip colors that
+     * are on the extremes of the given color space, especially for the scRGB
+     * color space.
+     */
+    public function clip():Color {
+        if (red >= 0 and red <= 1 and blue >= 0 and blue <= 1 and
+            green >= 0 and green <= 1 and opacity >= 0 and opacity <= 1) return this;
+        Color {
+            red: Math.min(1, Math.max(0, red))
+            green: Math.min(1, Math.max(0, green))
+            blue: Math.min(1, Math.max(0, blue))
+            opacity: Math.min(1, Math.max(0, opacity))
+        }
+    }
+
+    /**
+     * Add this instance and another Color instance to return a new Color instance.
+     * <p>
+     * Addition is done by summing the red, green, blue, and opacity channels.
+     * The resulting Color may exceed the color space's possible display gamut.
+     * <p>
+     * This function does not change the value of the called Color instance.
+     *
+     * @profile common
+     */
+    public function add(other:Color):Color {
+        Color {
+            red: red + other.red
+            green: green + other.green
+            blue: blue + other.blue
+            opacity: opacity + other.opacity
+        }
+    }
+
+    /**
+     * Subtract this instance and another Color instance to return a new Color instance.
+     * <p>
+     * Subtraction is done by subtracting the red, green, blue, and opacity channels.
+     * The resulting Color may fall below the color space's possible display gamut.
+     * <p>
+     * This function does not change the value of the called Color instance.
+     *
+     * @profile common
+     */
+    public function sub(other:Color):Color {
+        Color {
+            red: red - other.red
+            green: green - other.green
+            blue: blue - other.blue
+            opacity: opacity - other.opacity
+        }
+    }
+
+    public function premul(n:Number):Color {
+        return mul(n);
+    }
+
+    /**
+     * Multiply this instance with a number to return a new Color instance.
+     * <p>
+     * Multiplication is done by multiplying the red, green, blue, and opacity channels
+     * by the given constant.
+     * The resulting Color may exceed the color space's possible display gamut.
+     * <p>
+     * This function does not change the value of the called Color instance.
+     *
+     * @profile common
+     */ 
+
+    public function mul(n:Number):Color {
+        Color {
+            red: red * n
+            green: green * n
+            blue: blue * n
+            opacity: opacity * n
+        }
+    }
+
+
+    /**
+     * Divide this instance by a number to return a new Color instance.
+     * <p>
+     * Division is done by dividing the red, green, blue, and opacity channels
+     * by the given constant.
+     * The resulting Color may fall below the color space's possible display gamut.
+     * <p>
+     * This function does not change the value of the called Color instance.
+     *
+     * @profile common
+     */     
+    public function div(n:Number):Color {
+        if (n == 0) {
+            throw new java.lang.ArithmeticException("/ by zero");
+        }
+        Color {
+            red: red / n
+            green: green / n
+            blue: blue / n
+            opacity: opacity / n
+        }
+    }
+
+    /**
+     * Divide this instance by another Color to return the ratio based on the
+     * relative lightness of the colors (using the HSL color model).
+     * This function does not change the value of the called Color instance.
+     *
+     * @profile common
+     */     
+    public function div(other:Color):Double {
+        def otherMag = (other.red + other.green + other.blue) * other.opacity;
+        if (otherMag == 0) {
+            throw new java.lang.ArithmeticException("/ by zero");
+        }
+        // todo - do something to return a ratio
+        return (red + blue + green) * opacity / otherMag;
+    }
+
+    /** 
+     * Return a new Color instance which is the inverse color.
+     * This function does not change the value of the called Color instance.
+     *
+     * @profile common
+     */
+    public function negate():Color {
+        Color {
+            red: 1-red
+            green: 1-green
+            blue: 1-blue
+            opacity: opacity
+        }
+    }
+
+    /**
+     * Prints out a string representation of the color in the following format:
+     * <p>
+     * color(red%, green%, blue%, opacity%)
+     * <p>
+     * Opacity will be excluded if it is equal to 100%.  For more formatting
+     * options use the custom string formatter.
+     *
+     * @profile common
+     */        
+    override function toString():String {
+        def r = red * 100;
+        def g = green * 100;
+        def b = blue * 100;
+        def o = opacity * 100;
+        return "color({%.0f r}%, {%.0f g}%, {%.0f b}%{if (o != 100) ", {%.0f o}%" else ""})";
+    }
+
+    function toHex(hex:Integer, digits:Integer, upper:Boolean) {
+        var hexStr = Integer.toHexString(hex);
+        if (upper) {
+            hexStr = hexStr.toUpperCase();
+        }
+        while (hexStr.length() < digits) {
+            hexStr = "0{hexStr}";
+        }
+        hexStr;
+    }
+
+    /**
+     * Formatting function that allows colors to be properly formatted by
+     * printf, String.format, or the F3 format primitive.
+     * <p>
+     * Width sets the minimum width of this field, following the justification
+     * rules set in flags.
+     * <p>
+     * Precision can be used to specify exactly how many digits should appear
+     * to the right of the decimal, including zero padding.
+     * <p>
+     * The alternate form will use web hexadecimal convention.
+     * <p>
+     * Finally, the uppercase flag is also supported for the normal and
+     * alternate forms.
+     */
+    override function formatTo(formatter:Formatter, flags:Integer, width:Integer, precision:Integer):Void {
+        def alternate = Bits.bitAnd(flags, FormattableFlags.ALTERNATE) != 0;
+        def uppercase = Bits.bitAnd(flags, FormattableFlags.UPPERCASE) != 0;
+        def leftJustify = Bits.bitAnd(flags, FormattableFlags.LEFT_JUSTIFY) != 0;
+        def sb = StringBuilder {};
+        if (alternate) {
+            sb.append("#");
+            sb.append(toHex(Math.round(red * 255), 2, uppercase));
+            sb.append(toHex(Math.round(green * 255), 2, uppercase));
+            sb.append(toHex(Math.round(blue * 255), 2, uppercase));
+            if (opacity != 1) {
+                sb.append("|");
+                sb.append(toHex(Math.round(opacity * 255), 2, uppercase));
+            }
+        } else {
+            def r = red * 100;
+            def g = green * 100;
+            def b = blue * 100;
+            def o = opacity * 100;
+            def df = DF.get() as DecimalFormat;
+            df.setMinimumFractionDigits(precision);
+            sb.append(if (uppercase) "COLOR(" else "color(");
+            sb.append(df.format(r));
+            sb.append("%, ");
+            sb.append(df.format(g));
+            sb.append("%, ");
+            sb.append(df.format(b));
+            sb.append("%");
+            if (o != 100) {
+                sb.append(", ");
+                sb.append(df.format(o));
+                sb.append("%");
+            }
+            sb.append(")");
+        }
+        def len = sb.length();
+        if (len < width) {
+            if (leftJustify) {
+                for (i in [1..width-len]) sb.append(' ');
+            } else {
+                for (i in [1..width-len]) sb.<<insert>>(0, ' ');
+            }
+        }
+        formatter.out().append(sb);
+    }
+
+    /**
+     * Returns true if the specified color is less than (<) this instance.
+     *
+     * @profile common
+     */
+    public function lt(other:Color):Boolean {
+        return compareTo(other) < 0;
+    }
+
+    /** 
+     * Returns true if the specified color is less than or equal to (<=) this instance.
+     *
+     * @profile common
+     */
+    public function le(other:Color):Boolean {
+        return compareTo(other) <= 0;
+    }
+
+    /** 
+     * Returns true if the specified color is greater than (>) this instance.
+     *
+     * @profile common
+     */
+    public function gt(other:Color):Boolean {
+        return compareTo(other) > 0;
+    }
+
+    /**
+     * Returns true if the specified color is greater than or equal to (>=) this instance.
+     *
+     * @profile common
+     */
+    public function ge(other:Color):Boolean {
+        return compareTo(other) >= 0;
+    }
+
+    override function compareTo(obj:Object):Integer {
+        def c = obj as Color;
+        def mag = (red = green + blue) * opacity;
+        def cMag = (c.red + c.green + c.blue) * c.opacity;
+        if (mag == cMag) {
+            return 0;
+        }
+        def cmp = mag - cMag;
+        return if (cmp < 0)
+             -1
+        else if(cmp > 0)
+             1
+        else
+             0
+    }
+
+    /**
+     * The function calcuates an interpolated color value along the {@code t} between
+     * {@code 0.0} and {@code 1.0}. When {@code t} = 1.0, {@code endVal} is returned.
+     *
+     * @param endValue  target value
+     * @param t fraction between {@code 0.0} and {@code 1.0}
+     * @return interpolated value
+     *
+     * @profile common
+     */
+    override function ofTheWay(endVal:Object, t:Number):Object {
+        if (t == 0) return this;
+        if (t == 1) return endVal;
+        def c = endVal as Color;
+        Color {
+            red: red * (1 - t) + c.red * t
+            green: green * (1 - t) + c.green * t
+            blue: blue * (1 - t) + c.blue * t
+            opacity: opacity * (1 - t) + c.opacity * t
+        }
+    }
+
+    override function equals(obj:Object):Boolean {
+        if (obj instanceof Color) {
+            def c = obj as Color;
+            if (isSameObject(c, this)) {
+                return true;
+            }
+            return red == c.red and blue == c.blue and green == c.green and opacity == c.opacity;
+        }
+        return false;
+    }
+
+    override function hashCode():Integer {
+        var value = red as Integer;
+        value = Bits.bitXor(value, green as Integer);
+        value = Bits.bitXor(value, blue as Integer);
+        return Bits.bitXor(value, opacity as Integer);
+    }
+}

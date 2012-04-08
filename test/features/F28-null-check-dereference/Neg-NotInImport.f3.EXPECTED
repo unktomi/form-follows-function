@@ -1,0 +1,4 @@
+test\features\F28-null-check-dereference\Neg-NotInImport.f3:6: You have forgotten the ';', which is needed to separate one expression from the next.
+import java!.lang!.System;
+           ^
+1 error

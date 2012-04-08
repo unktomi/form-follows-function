@@ -1,0 +1,22 @@
+/**
+ * Regression test VSGC-2141 : OR opertor behaves differently in bind and non-binding contexts.
+ *
+ * @test
+ * @run
+ */
+
+class A {
+   public var value = "something";
+}
+class B extends A {
+}
+
+var a = new B;
+
+function foo(){
+ println("inside foo()");
+ return false;
+}
+
+var t1 = bind (a instanceof B or foo());
+println(t1);

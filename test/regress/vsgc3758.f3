@@ -1,0 +1,10 @@
+/**
+ * Regression test VSGC-3758 : Compiled bind: Warning: Stage accessor already set: f3.stage.Stage$Stage$Script$1F3RobotHelper$ObjLit$1@b8f8eb
+ *
+ * @compile vsgc3758Sub.f3
+ * @test
+ * @run
+ */
+
+vsgc3758Sub { 
+}

@@ -1,0 +1,8 @@
+/*
+ * Sub test for original
+ * VSGC-3927 : SWAT failure : JawbreakerGame compiler crash -- F3ClassSymbol cannot be cast to F3VarSymbol
+ *
+ * @subtest
+ */
+
+public def timeLimit = [35ms, 65ms];

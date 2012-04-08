@@ -1,0 +1,59 @@
+/**
+ * regression test: VSGC-1157 : Can't compare sequence to null in bound function; cannot find method eq_so(....
+ * Part II: inverse cases
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class Less {}
+
+bound function doItl1(): Boolean {
+    var obj : Less = Less{};
+    var seq : Integer[] = [1, 2, 3];
+
+    not ([] == seq) and
+    not (seq == null) and 
+    not (null == seq) and 
+    not (seq == []) and
+    not ([] == seq) and
+    not ([] == obj) and
+    not (obj == null) and 
+    not (null == obj) and 
+    not (obj == []) and
+    not ([] == obj)
+}
+
+bound function doItnn(): Boolean {
+    var obj : Less = null;
+    var seq : Integer[] = null;
+    
+    not (seq != null) and 
+    not (null != seq) and 
+    not (seq != []) and
+    not (obj != null) and 
+    not (null != obj)
+}
+
+bound function doItls(): Boolean {
+    var obj : Less = Less{};
+    var seq : Less[] = [obj];
+
+    not (seq != obj) and 
+    not (obj != seq) and 
+    not (seq == null) and 
+    not (null == seq) and 
+    not (seq == []) and
+    not ([] == seq) and
+    not ([] == obj) and
+    not (obj == null) and 
+    not (null == obj) and 
+    not (obj == []) and
+    not ([] == obj)
+}
+
+    System.out.println(doItl1());
+    System.out.println(doItnn());
+    System.out.println(doItls());

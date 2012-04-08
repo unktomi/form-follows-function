@@ -1,0 +1,103 @@
+/*
+ * Assigning compatible values to a variable of the type Float.
+ * The code is expected to compile and run successfully. Warnings
+ * are not checked.
+ *
+ * @test/f3unit
+ * @run
+ */
+
+
+import f3.f3unit.F3TestCase;
+
+/* --------------------------------------------------------------
+ *            This block could live in a common f3 file
+ *            if (at)compilefirst worked with (at)test/f3unit
+ * -------------------------------------------------------------- */
+public def bb : Byte = 127;
+public def cc : Character = 65535;
+public def ii : Integer = 2147483647;
+public def ll : Long = 9223372036854775807;
+public def ss : Short = 32767;
+public def ff : Float = 3.4028234663852886E38;
+public def dd : Double = 1.7976931348623157E308;
+public def nn : Number = 3.1415926535;
+public def dduu : Duration = 600s;
+public def bboo : Boolean = true;
+public def sstt : String = "Hello, F3!";
+public def nul = null;
+public def iSeq : Integer[] = [ 1, 2, 3 ];
+public def fSeq : Float[] = [ 1.11, 2.22, 3.33 ];
+/* ------------------------------------------------------------ */
+
+var f : Float;
+
+public class ToFloat extends F3TestCase {
+
+    function testToFloat() {
+        f = bb;
+        assertEquals127();
+        f = 127 as Byte;
+        assertEquals127();
+
+        f = cc;
+        assertEquals(65535.0 as Float, f, 0);
+        f = 127 as Character;
+        assertEquals127();
+
+        f = ii;
+        assertEquals(2147483647.0 as Float, f, 0);
+        f = 127 as Integer;
+        assertEquals127();
+
+        f = ll;
+        assertEquals(9223372036854775807.0 as Float, f, 0);
+        f = 127 as Long;
+        assertEquals127();
+
+        f = ss;
+        assertEquals(32767.0 as Float, f, 0);
+        f = 127 as Short;
+        assertEquals127();
+
+        f = ff;
+        assertEquals(3.4028234663852886E38, f, 0);
+        f = 3.4028234663852886E38 as Float;
+        assertEquals(3.4028234663852886E38, f, 0);
+        f = 3.4028234663852886E38;
+        assertEquals(3.4028234663852886E38, f, 0);
+
+        f = dd;
+        f = 3.4028234663852886E38 as Double;
+        assertEquals(3.4028234663852886E38, f, 0);
+
+        f = nn;
+        assertEquals(3.1415926535 as Float, f, 0);
+        f = 127.0 as Number;
+        assertEquals127();
+
+        /* Each of the following lines produces a compile-time error
+        f = dduu;
+        f = bboo;
+        f = sstt;
+        f = nul;
+        f = iSeq;
+        f = fSeq;
+        */
+
+        f = java.lang.Float.NaN;
+        assertTrue(java.lang.Float.isNaN(f));
+
+        var seq1 = [ 125..200 ];
+        f = seq1[2];
+        assertEquals127();
+
+        var seq2 = [ 121.11, 1750.35, 127.0, 1434.9 ];
+        f = seq2[2];
+        assertEquals127();
+    }
+
+    function assertEquals127() {
+        assertEquals(127.0 as Float, f, 0);
+    }
+}

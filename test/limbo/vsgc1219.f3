@@ -1,0 +1,9 @@
+/*
+ * Regression: VSGC-1219 - Issue when French quotes used with class names.
+ *
+ * @test/fail
+ *
+ */
+
+class <<class/**/>>{}
+var obj :<<class/**/>> =<<class/**/>>{};

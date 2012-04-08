@@ -1,0 +1,4 @@
+test/should-fail/vsgc1019.f3:6: cyclic inheritance involving vsgc1019.One
+class One extends Foo, Bar {
+^
+1 error

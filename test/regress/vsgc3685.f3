@@ -1,0 +1,11 @@
+/**
+ * VSGC-3685 : Compiled bind: non-static var cannot be refd from a static context.
+ *
+ * @test
+ */
+
+def CURSOR_NONE = bind lazy { 
+    var toolkit = java.awt.Toolkit.getDefaultToolkit(); 
+    var d = toolkit.getBestCursorSize(1, 1); 
+    d.width; 
+} 

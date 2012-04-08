@@ -1,0 +1,242 @@
+/**
+ *  vsgc-3619: Compiled bind: dependent state/mode -- non-bound initalizers of bound object literal
+ *
+ *  Assure that new objects are created when a non bound initializer changes, and that
+ *  the initted ivar contains the updated value.
+ *
+ * @test
+ * @run
+ */
+class Foo {
+    var xx: Integer;
+    var seqx: Integer[];
+    var strx: String;
+    var foox: Foo;
+}
+
+function bar(p1: Integer) : Integer {
+   return p1;
+}
+
+var aa: Integer = 1;
+var bb: Integer = 2;
+var hash: Integer;
+var test: String;
+
+// The following tests should all cause a new Foo instance to be created when
+// aa changes.
+
+
+/***********************************************************
+   in soma, = is not allowed because it has a side effect
+aa = 1;
+bb = 2;
+def vv0a = bind Foo{xx:                   aa=bb};
+hash = java.lang.System.identityHashCode(vv0a);
+aa = 10;
+if (hash != java.lang.System.identityHashCode(vv0a)) {
+    println("failed: aa=bb");
+}
+
+
+aa = 1;
+def vv0b = bind Foo{xx:                   bb=aa};
+hash = java.lang.System.identityHashCode(vv0b);
+aa = 10;
+if (hash == java.lang.System.identityHashCode(vv0b)) {
+    println("failed: aa=bb");
+}
+
+*********************************************************/
+
+
+print("vv1: aa + bb");
+aa = 1;
+bb = 1;
+def vv1 = bind Foo{xx:                   aa+bb};
+hash = java.lang.System.identityHashCode(vv1);
+aa = 10;
+if (hash == java.lang.System.identityHashCode(vv1)) {
+    print(": ******* failed");
+}
+if (vv1.xx != aa+bb) {
+    print(": ******* failed: xx = {vv1.xx}");
+}
+println("");
+
+
+print("vv2: bar(aa)");
+aa = 1;
+def vv2 = bind Foo{xx:                    bar(aa)};
+hash = java.lang.System.identityHashCode(vv2);
+aa = 10;
+if (hash == java.lang.System.identityHashCode(vv2)) {
+    print(": ******* failed");
+}
+if (vv2.xx != bar(aa)) {
+    print(": ******* failed xx = {vv2.xx}");
+}
+println("");
+
+
+print("vv6: if (aa == 1) 1 else 2");
+aa = 1;
+def vv6 = bind Foo{xx:               if (aa == 1) 1 else 2}
+hash = java.lang.System.identityHashCode(vv6);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv6)) {
+    print(": ******* failed");
+}
+if (vv6.xx != (if (aa == 1) 1 else 2)) {
+    print(": ******* failed: xx = {vv6.xx}");
+}
+println("");
+
+
+print("vv7: if (1 == 1) aa else 10");
+aa = 1;
+def vv7 = bind Foo{xx:               if (1 == 1) aa else 10};
+hash = java.lang.System.identityHashCode(vv7);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv7)) {
+    print(": ********* failed");
+}
+if (vv7.xx != (if (1 == 1) aa else 10)) {
+    print(": ********* failed xx = {vv7.xx}");
+}
+println("");
+
+
+print("vv8: [aa..2]");
+aa = 1;
+def vv8 = bind Foo{seqx:               [aa..2]};
+hash = java.lang.System.identityHashCode(vv8);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv8)) {
+    print(": ******* failed");
+}
+if (vv8.seqx != [aa..2]) {
+    print(": ******* failed seqx = {vv8.seqx}");
+}
+println("");
+
+
+print("vv9: [0..2 step aa]");
+aa = 1;
+def vv9 = bind Foo{seqx:               [0..2 step aa]};
+hash = java.lang.System.identityHashCode(vv9);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv9)) {
+    print(": ******* failed");
+}
+if (vv9.seqx != [0..2 step aa]) {
+    print(": ******* failed seqx = {test}");
+}
+println("");
+
+
+print("vv10: \{aa\}");
+aa = 1;
+def vv10 = bind Foo{strx:               "{aa}"};
+hash = java.lang.System.identityHashCode(vv10);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv10)) {
+    print(": ******* failed");
+}
+if (vv10.strx != "{aa}") {
+    print(": ******* failed strx = {vv10.strx}");
+}
+println("");
+
+
+print("vv11: \"abc\{%d aa\}\"");
+aa = 1;
+def vv11 = bind Foo{strx:               "abc{%d aa}"};
+hash = java.lang.System.identityHashCode(vv11);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv11)) {
+    print(": ******* failed");
+}
+if (vv11.strx != "abc{%d aa}") {
+    print(": ******* failed: strx = {vv11.strx}");
+}
+println("");
+
+
+print("vv12: Foo\{xx: aa\}");
+aa = 1;
+def vv12 = bind Foo{foox:               Foo{xx: aa}};
+hash = java.lang.System.identityHashCode(vv12);
+var hash1 = java.lang.System.identityHashCode(vv12.foox);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv12)) {
+    print(": ******* failed");
+}
+if (hash1 == java.lang.System.identityHashCode(vv12.foox)) {
+    print(": ******* failed: foox didn't change");
+}
+println("");
+
+
+print("vv13: \{aa\}");
+aa = 1;
+def vv13 = bind Foo{xx:               {aa}};
+hash = java.lang.System.identityHashCode(vv13);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv13)) {
+    print(": ******* failed");
+}
+if (vv13.xx != {aa} ) {
+    print(": ******* failed xx = {vv13.xx}");
+}
+println("");
+
+
+print("vv14: seqy");
+var seqy = [0..10];
+def vv14 = bind Foo{seqx:                 seqy};
+hash = java.lang.System.identityHashCode(vv14);
+seqy = [30..40];
+if (hash == java.lang.System.identityHashCode(vv14)) {
+    print(": ******* failed");
+}
+if (vv14.seqx != seqy) {
+    print(": ******* failed seqx = {vv14.seqx}");
+}
+println("");
+
+
+print("vv16: seq[aa]");
+aa = 1;
+def vv16 = bind Foo{xx:                 seqy[aa]};
+hash = java.lang.System.identityHashCode(vv16);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv16)) {
+    print(": ******* failed");
+}
+if (vv16.xx != seqy[aa] ) {
+    print(": ******* failed xx = {vv16.xx}");
+}
+println("");
+
+
+print("vv17: new java.lang.Integer(aa)");
+aa = 1;
+def vv17 = bind Foo{xx:                 new java.lang.Integer(aa)};
+hash = java.lang.System.identityHashCode(vv17);
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv17)) {
+    print(": ******* failed");
+}
+if (vv17.xx != new java.lang.Integer(aa)) {
+    print(": ******* failed xx = {vv17.xx}");
+}
+println("");
+
+//  Not allowed in bind context keyframe literal
+//def vv18 = bind Foo{keyvalx:          at(1s){aa=>2}};
+
+//  Not allowed in bind context 1
+//def vv18 = bind Foo{xx:               {1; aa}};
+
+println("All Done");

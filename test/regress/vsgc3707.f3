@@ -1,0 +1,21 @@
+/**
+ * VSGC-3707 : Complied bind: call to a function var fails.
+ *
+ * @test
+ * @run
+ */
+
+var getRow:function():Integer;
+getRow = function() { 10 };
+
+println(getRow() < 33.3);
+
+// just try one object returning function as well
+class Person {
+    var name: String;
+}
+
+var getPerson:function():Person =
+   function() { Person { name: "Mr. Xyz" } };
+
+println(getPerson().name);

@@ -1,0 +1,15 @@
+x is a.
+twice(a) called.
+y is aa.
+x is b.
+twice(b) called.
+y is bb.
+twice(bb) called.
+x is b.
+y is bb.
+z is bbbb.
+twice(c) called.
+twice(cc) called.
+x is c.
+y is cc.
+z is cccc.

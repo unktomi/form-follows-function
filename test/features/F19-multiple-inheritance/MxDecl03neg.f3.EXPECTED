@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxDecl03neg.f3:15: MxDecl03neg.Mixee is not abstract and does not override abstract method foo(java.lang.String) in MxDecl03neg.AbstractMixin
+class Mixee extends AbstractMixin {
+^
+1 error

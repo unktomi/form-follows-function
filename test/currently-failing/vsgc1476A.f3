@@ -1,0 +1,7 @@
+/*
+ * @subtest vsgc1476B.f3
+ */
+
+public class Another {
+    public function f (d : Number) : Number { d }
+}

@@ -1,0 +1,7 @@
+test\should-fail\vsgc1629naughty.f3:8: twub has script only (default) initialization access in vsgc1629One
+var uno = vsgc1629One { twub: 222 };  // should fail
+                        ^
+test\should-fail\vsgc1629naughty.f3:9: twub has script only (default) write access in vsgc1629One
+uno.twub = 666; // should fail
+   ^
+2 errors

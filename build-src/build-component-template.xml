@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-@COMPONENT@" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+   
+        Defines targets for @COMPONENT@.
+
+        *** WARNING: THIS IS A GENERATED FILE. DO NOT EDIT ***
+
+    </description>
+    
+    <!-- @COMPONENT@ -->
+    <target name="@COMPONENT@-clone"
+            unless="f3.@COMPONENT@.repo.exists">
+        <do-clone component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-tip"
+            unless="f3.repository.tip.@COMPONENT@"
+            if="f3.@COMPONENT@.repo.exists">
+        <do-tip component="@COMPONENT@" property="f3.repository.tip.@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-clean" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-clean" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-clean-sdk" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-clean-sdk" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-clean-deploy" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-clean-deploy" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-sdk" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-sdk" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-test" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-test" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-deploy" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-deploy" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-sdk-docs" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-sdk-docs" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-samples" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-samples" component="@COMPONENT@"/>
+    </target>
+    <target name="@COMPONENT@-f3-full-test" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-full-test" component="@COMPONENT@"/>
+    </target>
+
+    <!-- Special targets unique to a single component, not all
+         components have to implement this target. -->
+    <target name="@COMPONENT@-f3-sign-jars" if="f3.@COMPONENT@.exists">
+        <do-component target="f3-sign-jars" component="@COMPONENT@"/>
+    </target>
+
+</project>

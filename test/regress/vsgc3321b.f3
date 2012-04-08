@@ -1,0 +1,36 @@
+/**
+ * regression test: VSGC-3645 : Compiler abort on a 'break' in an if -then-else
+ *
+ * @test
+ * @run
+ */
+
+var s;
+
+try {
+s = if (true) 1 else throw new java.lang.Exception();
+
+println(s);
+}
+catch(x) {println("Exception thrown");}
+
+try {
+s = if (false) 1 else throw new java.lang.Exception();
+
+println(s);
+}
+catch(x) {println("Exception thrown");}
+
+try {
+s = if (true) throw new java.lang.Exception() else 1;
+
+println(s);
+}
+catch(x) {println("Exception thrown");}
+
+try {
+s = if (false) throw new java.lang.Exception() else 1;
+
+println(s);
+}
+catch(x) {println("Exception thrown");}

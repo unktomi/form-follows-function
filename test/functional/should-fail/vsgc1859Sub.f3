@@ -1,0 +1,18 @@
+/*
+ * vsgc-1859 : public-read variable can be written from outside the script using bind with inverse
+ *   
+ * @compilefirst ./vsgc1859.f3 
+ * @test/compile-error
+ *  
+ */
+
+import java.lang.System;
+
+class vsgc1859Sub extends vsgc1859
+{
+    var x:String;
+ }
+ def f1=new vsgc1859Sub;
+ var f2=vsgc1859Sub{ x:bind f1.s with inverse; };  
+ f2.x="update  script only bind access variable";
+ System.out.println(f1.s);

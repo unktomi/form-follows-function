@@ -1,0 +1,18 @@
+/*
+ * Regression: VSGC-3524 - Compiler internal error on binding function of the instance.
+ *
+ * @test
+ * @run
+ *
+ */
+
+
+class Foo {
+   var x:String;
+   function poo():Void { println(x); }
+}
+var foo = Foo{x:"OK"};
+var func = foo.poo;
+func();
+var bindFunc = bind foo.poo;
+bindFunc();

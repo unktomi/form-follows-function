@@ -1,0 +1,4 @@
+test/should-fail/vsgc1240.f3:6: warning: iterating over a non-sequence
+for (x in y) { } 
+          ^
+1 warning

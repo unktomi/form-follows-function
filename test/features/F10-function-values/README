@@ -1,0 +1,7 @@
+Visage compiler feature test #10 -- function values
+
+Status:
+- does not currently compile
+- in addition to actual support for closure create,
+  we have an issue of combining function/variable namespaces,
+  and handing function types.

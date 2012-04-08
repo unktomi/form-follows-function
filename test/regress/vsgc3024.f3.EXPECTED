@@ -1,0 +1,8 @@
+scene on replace called for Group g
+scene on replace called for Group g0
+scene on replace called for Group g0
+scene on replace called for Group g
+set node.scene: node = n, scene = vsgc3024$Scene
+set node.scene: node = g, scene = vsgc3024$Scene
+Passed: g.scene = vsgc3024$Scene
+Passed: n.scene = vsgc3024$Scene

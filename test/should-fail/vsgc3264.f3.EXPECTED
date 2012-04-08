@@ -1,0 +1,6 @@
+test/should-fail/vsgc3264.f3:13: unexpected type
+required: variable
+found   : value
+            time: 2s values: val1[0] => 300 tween Interpolator.LINEAR
+                             ^
+1 error

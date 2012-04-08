@@ -1,0 +1,77 @@
+/*
+ * Regression test 
+ * VSGC-3788 : compiled-bind: recursive onReplace call on bound sequence
+ *
+ * Min case.
+ *
+ * @test
+ * @run
+ */
+
+var seen = [false, false, false];
+
+class Fred {
+   var id: Integer;
+   var width: Number;
+   var height: Number;
+   init {
+     if (seen[id]) {
+        println("ERROR: duplicate creation -- Fred {id}: {width} x {height}");
+     }
+     seen[id] = true;
+     if (width != pieRadiusX or height != pieRadiusX) {
+        println("ERROR: bad values -- Fred {id}: {width} x {height} -- expected {pieRadiusX} x {pieRadiusX}");
+     }
+   }
+}
+
+class Path {
+   var elements :Fred[];
+}
+
+var pieRadiusX: Number = 3;
+var pieRadiusY = bind pieRadiusX * 1.0;
+
+class PP {
+    var xx = bind pieRadiusX;
+    var yy = bind pieRadiusY;
+    var side: Path = Path {
+        elements: bind [
+			Fred{ id: 0 width: xx height: yy},
+			Fred{ id: 1 width: xx height: yy},
+			Fred{ id: 2 width: xx height: yy}
+		]
+    }
+}
+
+var mypp = PP{ };
+
+function checkSeen() {
+     if (seen != [true, true, true]) {
+        print("ERROR: missing updates -- ");
+        println(seen);
+     }
+     seen = [false, false, false];
+}
+
+var dummy : Integer;
+dummy = sizeof mypp.side.elements;
+checkSeen();
+
+pieRadiusX = 500; 
+dummy = sizeof mypp.side.elements;
+checkSeen();
+
+pieRadiusX = 8888;
+dummy = sizeof mypp.side.elements;
+checkSeen();
+
+pieRadiusX = 1000; 
+dummy = sizeof mypp.side.elements;
+checkSeen();
+
+for (i in [0..2]) {
+  if (mypp.side.elements[i].height != pieRadiusX) {
+    println("ERROR: bad height {mypp.side.elements[0].height}");
+  }
+}

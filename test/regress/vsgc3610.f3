@@ -1,0 +1,13 @@
+/**
+ * Regression test: VSGC-3610 : Compiled-bind: bug in handling embedded bound sequences
+ *
+ * @test
+ * @run
+ */
+
+class A {
+   var seq: Integer[];
+}
+
+var a = bind A { seq: [1]; }
+println(a.seq[0]);

@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxDecl02neg.f3:11: Only one non-mixin based class allowed.
+public class PseudoMixee extends Super, PseudoMixin  {}
+                                        ^
+1 error

@@ -1,0 +1,22 @@
+test/should-fail/vsgc2384.f3:25: The type-qualifier Object cannot be used in this context; the qualifier must denote a direct superclass of vsgc2384.M.
+        Object.toString(); //invalid
+              ^
+test/should-fail/vsgc2384.f3:38: The type-qualifier Object cannot be used in this context; the qualifier must denote a direct superclass of vsgc2384.B.
+        Object.toString(); //invalid
+              ^
+test/should-fail/vsgc2384.f3:56: The type-qualifier Object cannot be used in this context; the qualifier must denote a direct superclass of vsgc2384.C.
+        Object.toString(); //invalid
+              ^
+test/should-fail/vsgc2384.f3:57: The type-qualifier vsgc2384.A cannot be used in this context; the qualifier must denote a direct superclass of vsgc2384.C.
+        A.toString(); //invalid
+         ^
+test/should-fail/vsgc2384.f3:59: The type-qualifier vsgc2384.M cannot be used in this context; the qualifier must denote a direct superclass of vsgc2384.C.
+        M.toString(); //invalid
+         ^
+test/should-fail/vsgc2384.f3:64: The type-qualifier vsgc2384.A cannot be used in this context; the qualifier must denote a direct superclass of vsgc2384.C.
+        A.a; //invalid
+         ^
+test/should-fail/vsgc2384.f3:66: The type-qualifier vsgc2384.M cannot be used in this context; the qualifier must denote a direct superclass of vsgc2384.C.
+        M.m; //invalid
+         ^
+7 errors

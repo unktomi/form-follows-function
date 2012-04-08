@@ -1,0 +1,28 @@
+/**
+ * VSGC-3437 :  F3Local assumes a Sequence of a Boolean var.
+ *
+ * @test
+ * @run
+ */
+
+import f3.reflect.*;
+
+public class vsgc3437 {
+    protected var context = F3Local.getContext();
+    protected var objVal:F3ObjectValue = context.mirrorOf(this);
+    protected var clsType:F3ClassType = objVal.getClassType();
+
+    public var status:Boolean = true on replace {
+        println("Value");
+    }
+
+    function getVariables() {
+        clsType.getVariables(true);
+    }
+}
+
+public function run() {
+    var obj = vsgc3437 {};
+    // Used to get StringIndexOutOfBoundsException inside getVariables.
+    println(obj.getVariables());
+}

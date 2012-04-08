@@ -1,0 +1,24 @@
+/* Regression test for VSGC-1085 : object literal with extension referencing enclosing class
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class Foo {
+  var y : Integer
+}
+
+class Bar {
+  var rat = 8;
+  function yum() : Foo {
+    Foo {
+     override var y = rat;
+    }
+  }
+}
+
+var nb = Bar {}
+System.out.println(nb.yum().y);
+

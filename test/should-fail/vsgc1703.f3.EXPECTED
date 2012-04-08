@@ -1,0 +1,25 @@
+test/should-fail/vsgc1703.f3:8: illegal combination of modifiers: public and protected
+	public protected var x = 0;
+	^
+test/should-fail/vsgc1703.f3:9: illegal combination of modifiers: public and package
+	public package var y = 0;
+	^
+test/should-fail/vsgc1703.f3:10: illegal combination of modifiers: package and protected
+	package protected var z = 0;
+	^
+test/should-fail/vsgc1703.f3:11: illegal combination of modifiers: public and protected
+	public protected package var zzz = 0;
+	^
+test/should-fail/vsgc1703.f3:13: illegal combination of modifiers: public and protected
+	public protected function f1() {}
+	^
+test/should-fail/vsgc1703.f3:14: illegal combination of modifiers: public and package
+	public package function f2() {}
+	^
+test/should-fail/vsgc1703.f3:15: illegal combination of modifiers: package and protected
+	package protected function f3() {}
+	^
+test/should-fail/vsgc1703.f3:16: illegal combination of modifiers: public and protected
+	public protected package function f4() {}
+	^
+8 errors

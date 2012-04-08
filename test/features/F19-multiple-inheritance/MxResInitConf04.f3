@@ -1,0 +1,24 @@
+/*
+ * Test for the initializer conflicts resolution.
+ *
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+mixin class Mixin1 { public var bar : String }
+mixin class Mixin2 { public var bar : String = "M2" }
+class Mixee extends Mixin1, Mixin2 { override public var bar : String = "" }
+
+public class MxResInitConf04 extends F3TestCase {
+    /*
+     * All parents and a Mixee declare the variable bar,
+     * with a def.val. in Mixin2 and no default value in
+     * Mixin1 and Mixee.
+     */
+    function testConflictResolution() {
+        var m = Mixee {};
+        /* Uncomment when VSGC-3072 is fixed */
+//        assertEquals("", m.bar);
+    }
+}

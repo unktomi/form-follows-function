@@ -1,0 +1,21 @@
+/**
+ * VSGC-3181 : Cannot find constructor error compiling MediaPlayer.f3
+ *
+ * @test
+ * @run
+ */
+
+class vsgc3181 {
+  var pop = "pop";
+  var boom = Nested{};
+}
+
+class Nested {
+  function blip() {
+    pop
+  }
+}
+
+def it = vsgc3181{}
+println(it.boom.blip());
+

@@ -1,0 +1,4 @@
+test/should-fail/vsgc-2058.f3:7: missing method body, or declare abstract
+function f(a :Number, )
+^
+1 error

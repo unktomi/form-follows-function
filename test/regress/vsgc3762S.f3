@@ -1,0 +1,9 @@
+/**
+ * Regression test VSGC-3762 : Compiled bind:runtime IllegalArgumentException: no such variable: 0 on Button{}
+ *
+ * @subtest
+ */
+
+public def CSS: String[] = ["hi", vsgc3762M.CSS]; 
+public class vsgc3762S extends vsgc3762M { 
+}

@@ -1,0 +1,9 @@
+/*
+ * Regression test: VSGC-2225 - Compiler reports Cyclic Inheritence error when there is no Cyclic Inheritence
+ *
+ * @test/compile-error
+ */
+
+class A {}
+class vsgc2225 extends A {}
+

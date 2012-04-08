@@ -1,0 +1,7 @@
+test/should-fail/vsgc1242.f3:9: sorry, not implemented: functions with more than 8 parameters
+var ftype:function(:Integer,:Integer,:Integer,:Integer,:Integer,:Integer,:Integer,:Integer,:Integer):Integer = lotsOfArgs; 
+          ^
+test/should-fail/vsgc1242.f3:9: sorry, not implemented: functions with more than 8 parameters
+var ftype:function(:Integer,:Integer,:Integer,:Integer,:Integer,:Integer,:Integer,:Integer,:Integer):Integer = lotsOfArgs; 
+                                                                                                               ^
+2 errors

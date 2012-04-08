@@ -1,0 +1,4 @@
+test/should-fail/vsgc1177.f3:5: cyclic inheritance involving vsgc1177
+class vsgc1177 extends vsgc1177.A{}
+^
+1 error

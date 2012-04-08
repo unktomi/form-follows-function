@@ -1,0 +1,26 @@
+/*
+ * Test escape sequences in format specifiers in string literals.
+ * See also vsgc438a.f3.
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.*;
+import java.util.*;
+
+// To avoid any surprise caused by different locales,
+// set the default Locale to Locale.US.
+var locale = Locale.getDefault();
+try {
+    var d = (new GregorianCalendar(2008, Calendar.MAY, 4)).getTime();
+    Locale.setDefault(Locale.US);
+    System.out.println("{%tB\u0020%<tY d}");
+    System.out.println("{%tB\040%<tY d}");
+    System.out.println("{%tB\t%<tY d}");
+    System.out.println("{%tB\'%<tY d}");
+    System.out.println("{%tB\"%<tY d}");
+} finally {
+    // Restore the default locale
+    Locale.setDefault(locale);
+}

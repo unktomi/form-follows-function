@@ -1,0 +1,136 @@
+/**
+ * VSGC-4106 : Strict declaration order initialization: bound sequences
+ *
+ * Mixins / bound sequences / on-replace
+ *
+ * NOTE: some on-replace are delayed, and the EXPECTED file is thus not quite correct, see VSGC-4118
+ *
+ * @test
+ * @run
+ */
+
+mixin class M {
+  var bxbx = bind [99, 88];
+  var bxux = bind [99, 88];
+  var bxnx = bind [1, 2];
+  var bxbo = bind [99, 88];
+  var bxuo = bind [99, 88];
+  var bxno = bind [1, 2];
+
+  var uxbx = [99, 88];
+  var uxux = [99, 88];
+  var uxnx = [1, 2];
+  var uxbo = [99, 88];
+  var uxuo = [99, 88];
+  var uxno = [1, 2];
+
+  var nxbx : Integer[];
+  var nxux : Integer[];
+  var nxnx : Integer[];
+  var nxbo : Integer[];
+  var nxuo : Integer[];
+  var nxno : Integer[];
+
+  var bobx = bind [99, 88] on replace { println("onr bobx: {bobx.toString()}") }
+  var boux = bind [99, 88] on replace { println("onr boux: {boux.toString()}") }
+  var bonx = bind [1, 2] on replace { println("onr bonx: {bonx.toString()}") }
+  var bobo = bind [99, 88] on replace { println("onr bobo: {bobo.toString()}") }
+  var bouo = bind [99, 88] on replace { println("onr bouo: {bouo.toString()}") }
+  var bono = bind [1, 2] on replace { println("onr bono: {bono.toString()}") }
+
+  var uobx = [99, 88] on replace { println("onr uobx: {uobx.toString()}") }
+  var uoux = [99, 88] on replace { println("onr uoux: {uoux.toString()}") }
+  var uonx = [1, 2] on replace { println("onr uonx: {uonx.toString()}") }
+  var uobo = [99, 88] on replace { println("onr uobo: {uobo.toString()}") }
+  var uouo = [99, 88] on replace { println("onr uouo: {uouo.toString()}") }
+  var uono = [1, 2] on replace { println("onr uono: {uono.toString()}") }
+
+  var nobx : Integer[] on replace { println("onr nobx: {nobx.toString()}") }
+  var noux : Integer[] on replace { println("onr noux: {noux.toString()}") }
+  var nonx : Integer[] on replace { println("onr nonx: {nonx.toString()}") }
+  var nobo : Integer[] on replace { println("onr nobo: {nobo.toString()}") }
+  var nouo : Integer[] on replace { println("onr nouo: {nouo.toString()}") }
+  var nono : Integer[] on replace { println("onr nono: {nono.toString()}") }
+}
+
+class A extends M {
+  override var bxbx = bind [11, 22];
+  override var bxux = [11, 22];
+  override var bxbo = bind [11, 22] on replace { println("onr bxbo: {bxbo.toString()}") }
+  override var bxuo = [11, 22] on replace { println("onr bxuo: {bxuo.toString()}") }
+  override var bxno on replace { println("onr bxno: {bxno.toString()}") }
+
+  override var uxbx = bind [11, 22];
+  override var uxux = [11, 22];
+  override var uxbo = bind [11, 22] on replace { println("onr uxbo: {uxbo.toString()}") }
+  override var uxuo = [11, 22] on replace { println("onr uxuo: {uxuo.toString()}") }
+  override var uxno on replace { println("onr uxno: {uxno.toString()}") }
+
+  override var nxbx = bind [11, 22];
+  override var nxux = [11, 22];
+  override var nxbo = bind [11, 22] on replace { println("onr nxbo: {nxbo.toString()}") }
+  override var nxuo = [11, 22] on replace { println("onr nxuo: {nxuo.toString()}") }
+  override var nxno on replace { println("onr nxno: {nxno.toString()}") }
+
+  override var bobx = bind [11, 22];
+  override var boux = [11, 22];
+  override var bobo = bind [11, 22] on replace { println("onr bobo: {bobo.toString()}") }
+  override var bouo = [11, 22] on replace { println("onr bouo: {bouo.toString()}") }
+  override var bono on replace { println("onr bono: {bono.toString()}") }
+
+  override var uobx = bind [11, 22];
+  override var uoux = [11, 22];
+  override var uobo = bind [11, 22] on replace { println("onr uobo: {uobo.toString()}") }
+  override var uouo = [11, 22] on replace { println("onr uouo: {uouo.toString()}") }
+  override var uono on replace { println("onr uono: {uono.toString()}") }
+
+  override var nobx = bind [11, 22];
+  override var noux = [11, 22];
+  override var nobo = bind [11, 22] on replace { println("onr nobo: {nobo.toString()}") }
+  override var nouo = [11, 22] on replace { println("onr nouo: {nouo.toString()}") }
+  override var nono on replace { println("onr nono: {nono.toString()}") }
+}
+
+ var a = A {};
+
+ println("bxbx: {a.bxbx.toString()}");
+ println("bxux: {a.bxux.toString()}");
+ println("bxnx: {a.bxnx.toString()}");
+ println("bxbo: {a.bxbo.toString()}");
+ println("bxuo: {a.bxuo.toString()}");
+ println("bxno: {a.bxno.toString()}");
+
+ println("uxbx: {a.uxbx.toString()}");
+ println("uxux: {a.uxux.toString()}");
+ println("uxnx: {a.uxnx.toString()}");
+ println("uxbo: {a.uxbo.toString()}");
+ println("uxuo: {a.uxuo.toString()}");
+ println("uxno: {a.uxno.toString()}");
+
+ println("nxbx: {a.nxbx.toString()}");
+ println("nxux: {a.nxux.toString()}");
+ println("nxnx: {a.nxnx.toString()}");
+ println("nxbo: {a.nxbo.toString()}");
+ println("nxuo: {a.nxuo.toString()}");
+ println("nxno: {a.nxno.toString()}");
+
+ println("bobx: {a.bobx.toString()}");
+ println("boux: {a.boux.toString()}");
+ println("bonx: {a.bonx.toString()}");
+ println("bobo: {a.bobo.toString()}");
+ println("bouo: {a.bouo.toString()}");
+ println("bono: {a.bono.toString()}");
+
+ println("uobx: {a.uobx.toString()}");
+ println("uoux: {a.uoux.toString()}");
+ println("uonx: {a.uonx.toString()}");
+ println("uobo: {a.uobo.toString()}");
+ println("uouo: {a.uouo.toString()}");
+ println("uono: {a.uono.toString()}");
+
+ println("nobx: {a.nobx.toString()}");
+ println("noux: {a.noux.toString()}");
+ println("nonx: {a.nonx.toString()}");
+ println("nobo: {a.nobo.toString()}");
+ println("nouo: {a.nouo.toString()}");
+ println("nono: {a.nono.toString()}");

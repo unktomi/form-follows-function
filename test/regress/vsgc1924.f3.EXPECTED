@@ -1,0 +1,25 @@
+1234: 1234 true: true pi: 3.1415925 Foo: Foo null: null
+1234: 
+1234
+true: 
+true
+pi: 
+3.1415925
+Foo: 
+Foo
+null: 
+null
+[ 1, 2, 3 ]
+[ ]
+[ ]
+[ 1 ]
+[ 2.5 ]
+[ true ]
+[ One ]
+[ Foo ]
+[ 1, 2, 3 ]
+[ 2.5, 5.2 ]
+[ true, false ]
+[ One, Two ]
+[ Foo, Foo ]
+[ 1, 4.5, true, Here, Foo ]

@@ -1,0 +1,19 @@
+/*
+ * Test for unresolvable conflicts.
+ * Mixin1 and Mixin2 declare an override-incompatible function.
+ *
+ * NOTE: please change the test tag to (at)test/compile-error and
+ *       check the expected output when VSGC-3128 is fixed.
+ *
+ * @test/fail
+ */
+
+public mixin class Mixin1 {
+    public function foo(arg : String) : Void {}
+}
+
+public mixin class Mixin2 {
+    public function foo(arg : String) : Number { 0.0 }
+}
+
+class Mixee extends Mixin1, Mixin2 {}

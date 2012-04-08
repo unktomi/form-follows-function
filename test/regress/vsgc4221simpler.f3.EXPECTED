@@ -1,0 +1,12 @@
+invalidating photoWidth
+invalidating photoHeight
+dump [angle=0.0, width = NaN, height = NaN]
+invalidating photoWidth
+dump [angle=0.0, width = 50.0, height = 50.0]
+invalidating photoHeight
+invalidating photoWidth
+dump [angle=0.0, width = 120.00001, height = 120.00001]
+invalidating photoHeight
+invalidating photoWidth
+dump [angle=0.0, width = 33.333336, height = 33.333336]
+invalidating photoHeight

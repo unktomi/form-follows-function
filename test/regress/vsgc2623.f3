@@ -1,0 +1,11 @@
+/*
+ * Regression test for VSGC-2623 : Recent trunk changes (after 4861 I think) failure on: var types:Class[] = { Class.forName("java.awt.Image") };
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.Class;
+class Foo {}
+var x = Foo{};
+var types:Class[] = { x.getClass() };

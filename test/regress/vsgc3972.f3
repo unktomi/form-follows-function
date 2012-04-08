@@ -1,0 +1,17 @@
+/*
+ * Regression: VSGC-3972 - The compiler crashes when compiling a bind involving an instance literal with class-initialized attribute.
+ *
+ * @test
+ *
+ */
+
+
+package bindbug; 
+
+class Other {} 
+
+class Bug { 
+    public-init var type; 
+} 
+
+var x = bind Bug { type: Other.class } 

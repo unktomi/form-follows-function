@@ -1,0 +1,15 @@
+/**
+ * Regress test for VSGC-3071: mixins: found FloatVariable required IntVariable
+ *
+ * @test/compile-error
+ */
+
+public class A {
+    public var a:Integer;
+}
+
+mixin class B {
+    public var a:Number;
+}
+
+class C extends A, B{}

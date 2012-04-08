@@ -1,0 +1,4 @@
+test/should-fail/vsgc2900.f3:15: Within a bind, for-loops must not iterate over an Iterable.  Use sequences.
+def content = bind for( tweet in tweets ) {
+                                 ^
+1 error

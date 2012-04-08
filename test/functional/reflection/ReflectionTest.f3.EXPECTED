@@ -1,0 +1,54 @@
+Reflecting class ReflectionTest.TypeInference3
+Inherited SuperClasses of TypeInference3 =>
+  class ReflectionTest.TypeInference
+  class ReflectionTest.TypeInference2
+  class ReflectionTest.TypeInference3
+  class java.lang.Object
+  class org.f3.runtime.F3Base
+ Type of anotherAttr is inferred as class java.lang.String
+ Type of attr1 is inferred as class java.lang.Object
+ Type of booleanAttr1 is inferred as Boolean
+ Type of fnAttr1 is inferred as function(java.lang.Integer,java.lang.Integer):java.lang.Integer
+ Type of fnAttr2 is inferred as function(Float,java.lang.String):Void
+ Type of fnAttr3 is inferred as function(Float,java.lang.String):Integer
+ Type of fnAttr4 is inferred as function():function():Void
+ Type of funAttr2 is inferred as function():function():Void
+ Type of intAttr1 is inferred as Integer
+ Type of intAttr2 is inferred as Integer
+ Type of intAttr3 is inferred as Integer
+ Type of intSeq1 is inferred as Integer[]
+ Type of myAttr is inferred as class java.lang.String
+ Type of newAttr is inferred as Integer[]
+ Type of numberAttr1 is inferred as Double
+ Type of numberAttr2 is inferred as Double
+ Type of objAttr1 is inferred as class java.lang.Object
+ Type of objAttr2 is inferred as class java.lang.Object
+ Type of seq2 is inferred as ReflectionTest.TypeInference[]
+ Type of seq3 is inferred as java.lang.String[]
+ Type of seq4 is inferred as Float[]
+ Type of stringAttr3 is inferred as class java.lang.String
+ Type of stringrAttr1 is inferred as class java.lang.String
+ Type of stringrAttr2 is inferred as class java.lang.String
+ Type of type1Attr1 is inferred as class ReflectionTest.TypeInference
+ Return Type of method clone inferred as class java.lang.Object
+ Return Type of method equals inferred as Boolean
+ Return Type of method finalize inferred as Void
+ Return Type of method func0$bFunc$int inferred as class org.f3.runtime.Pointer
+ Return Type of method func1 inferred as class java.lang.String
+ Return Type of method func2 inferred as class java.lang.String
+ Return Type of method func3 inferred as Integer[]
+ Return Type of method func4 inferred as class ReflectionTest.TypeInference
+ Return Type of method func5 inferred as Integer[]
+ Return Type of method func6 inferred as function(java.lang.Integer):java.lang.Integer
+ Return Type of method func7 inferred as class f3.lang.Duration
+ Return Type of method func8 inferred as class java.lang.String
+ Return Type of method func8 inferred as class java.lang.String
+ Return Type of method getClass inferred as class java.lang.Class
+ Return Type of method hashCode inferred as Integer
+ Return Type of method notify inferred as Void
+ Return Type of method notifyAll inferred as Void
+ Return Type of method registerNatives inferred as Void
+ Return Type of method toString inferred as class java.lang.String
+ Return Type of method wait inferred as Void
+ Return Type of method wait inferred as Void
+ Return Type of method wait inferred as Void

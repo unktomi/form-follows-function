@@ -1,0 +1,23 @@
+/*
+ * Regression test: vsgc159
+ *
+ * @test
+ */
+
+public class Foo { 
+    protected var keyMap:java.util.Map = new java.util.HashMap(); 
+
+    public function getKeyStroke(id:Number): Bar { 
+        return keyMap.get(id) as Bar; 
+    } 
+    public function putKeyStroke(id:Number, key:Bar) { 
+        keyMap.put(id, key); 
+    } 
+} 
+
+public class Bar { 
+    public var foo:Foo; 
+    public var foobar:Number on replace { 
+        foo.putKeyStroke(foobar, this); 
+   } 
+} 

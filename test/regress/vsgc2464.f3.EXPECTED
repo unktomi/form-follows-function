@@ -1,0 +1,6 @@
+Foo id=Eager, x=11
+Foo id=Eager, x=4
+Foo id=Eager, x=99
+Foo id=Eager, x=205
+Foo id=Lazy, x=205
+Lazy

@@ -1,0 +1,27 @@
+/**
+ * Regression test VSGC-640 : There's something about 'com'
+ *
+ * check that accesses to Java static and instance fields isn't messed up by the fix
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+import java.util.Vector;
+import java.io.*;
+
+var byt = new java.lang.Byte(1);
+System.out.println(byt.SIZE);
+
+class MyVector extends Vector {
+   function doit() {
+       System.out.println(elementCount);
+   }
+}
+
+var mv = MyVector {};
+mv.doit();
+
+var st = new StreamTokenizer( new InputStreamReader( System.<<in>> ) );
+System.out.println(st.nval);

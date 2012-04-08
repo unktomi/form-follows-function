@@ -1,0 +1,39 @@
+-test1-
+[ 0, 5, 10, 3, 20, 25, 30, 35, 40, 45, 50 ]
+PASS : check insertion into seq1
+-test2-
+PASS : check size of seq2
+[ 0, 1, 2, 3, 4 ]
+[ 1, 2, 4, 8, 16 ]
+trying to trigger replace trigger
+[ 1, 2, 4, 8, 16, 32, 64, 128, 256 ]
+-test3-replacement is larger than the sequence
+CHECK: contents of seq3: 2627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100
+-test4-empty-
+CHECK: contents of seq4 with 99 inserted: 101100999899
+-test5-
+[ 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110 ]
+[ REPLACEMENTS:, , seq_2: replace 01234 at 0
+, seq_2p: replaced [ ][0..-1] by [ ]
+, insert 1011009998 or  into 1011009998, , 05101520253035404550, seq_2p: replaced [ ][0..-1] by [ 1 ]
+, seq_2p: replaced [ 1 ][1..0] by [ 2 ]
+, seq_2p: replaced [ 1, 2 ][2..1] by [ 4 ]
+, seq_2p: replaced [ 1, 2, 4 ][3..2] by [ 8 ]
+, seq_2p: replaced [ 1, 2, 4, 8 ][4..3] by [ 16 ]
+, seq_2: replace 7 at 5
+, seq_2: replace 10 at 6
+, seq_2: replace 8 at 7
+, seq_2: replace 567 at 5
+, seq_2p: replaced [ 1, 2, 4, 8, 16 ][5..4] by [ 32 ]
+, seq_2p: replaced [ 1, 2, 4, 8, 16, 32 ][6..5] by [ 64 ]
+, seq_2p: replaced [ 1, 2, 4, 8, 16, 32, 64 ][7..6] by [ 128 ]
+, seq_2p: replaced [ 1, 2, 4, 8, 16, 32, 64, 128 ][8..7] by [ 256 ]
+, replacement(20) is larger than existing(10)
+, replacement(75) is larger than existing(20)
+, insert 99 or 1011009998 into 101100999899, 100101102103104105106107108109110, 10010110288104105106107108109110, 1001011028810410510610710810911077, 1001011028810410510610710811077, 1001011028810410510710811077, 1001011028810510710877 ]
+========= results ================
+Tests:      46
+Passed:     15
+Failed:     0
+GoldenFile: 31 output comparisons
+==================================

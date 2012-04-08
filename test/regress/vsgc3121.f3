@@ -1,0 +1,15 @@
+/**
+ * Regression test for VSGC-3121 : public bound function of a mixin is not visible.
+ *
+ * @compilefirst vsgc3121Mixin.f3
+ * @test
+ */
+
+public class vsgc3121 {
+
+    public function simple() {
+        var c:vsgc3121Mixin = vsgc3121Mixin.get();
+        c.worksOk();
+        c.failsToCompile();
+    }
+}

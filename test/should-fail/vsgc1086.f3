@@ -1,0 +1,53 @@
+/**
+ * Regress test for VSGC-1086.
+ *   Failed to provide a warning when the usage of bind with 
+ *    inverse cannot satisfy the bidirectional binding.
+ *
+ * @test/warning
+ */
+
+class Shape {
+    var name: String;
+}
+
+var shapes = [Shape {
+    name: "Rectangle"
+}, Shape {
+    name: "Circle"
+}];
+
+var index = 0;
+// Warning expected for the following line.
+var name = bind shapes[index].name with inverse;
+
+def s = shapes[index];
+// No warning expected for the following line.
+var selectedName = bind s.name with inverse;
+
+var x = Shape { name: "Circle" };
+// Warning expected for the following line.
+var y = bind x.name with inverse;
+
+def a = Shape { name: "Circle" };
+// No warning expected for the following line.
+var b = bind a.name with inverse;
+
+def a1 = bind Shape { name: "Circle" };
+// Warning expected for the following line.
+var b1 = bind a1.name with inverse;
+
+// No warning expected for the following line.
+def c = bind vsgc1086.index with inverse;
+
+class Person {
+    var name: String;
+    // no warning expected for this line
+    var alias = bind this.name with inverse;
+}
+
+class Employee extends Person {
+    // no warning expected for this line
+    var myName = bind Person.name with inverse;
+}
+
+b1;

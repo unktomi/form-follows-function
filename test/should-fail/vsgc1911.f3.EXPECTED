@@ -1,0 +1,28 @@
+test\should-fail\vsgc1911.f3:8: modifiers (in this case public) not allowed on a local var
+  public var x = 0;
+  ^
+test\should-fail\vsgc1911.f3:9: modifiers (in this case package) not allowed on a local var
+  package var y = 0;
+  ^
+test\should-fail\vsgc1911.f3:10: modifiers (in this case protected) not allowed on a local var
+  protected var z = 0;
+  ^
+test\should-fail\vsgc1911.f3:11: modifiers (in this case public-init) not allowed on a local var
+  public-init var a = 0;
+  ^
+test\should-fail\vsgc1911.f3:12: modifiers (in this case public-read) not allowed on a local var
+  public-read var b = 0;
+  ^
+test\should-fail\vsgc1911.f3:16: modifiers (in this case public) not allowed on a local def
+  public def x = 0;
+  ^
+test\should-fail\vsgc1911.f3:17: modifiers (in this case package) not allowed on a local def
+  package def y = 0;
+  ^
+test\should-fail\vsgc1911.f3:18: modifiers (in this case protected) not allowed on a local def
+  protected def z = 0;
+  ^
+test\should-fail\vsgc1911.f3:19: modifiers (in this case public-read) not allowed on a local def
+  public-read def b = 0;
+  ^
+9 errors

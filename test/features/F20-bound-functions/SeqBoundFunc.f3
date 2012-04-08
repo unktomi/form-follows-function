@@ -1,0 +1,19 @@
+/* Feature test #20 -- bound function
+ *
+ * Simple sequence argument handling in bound functions.
+ * @test
+ * @run
+ */
+
+
+bound function identity(s: String[]) { s }
+
+var seq = ["Java", "F3", "JavaScript"];
+
+var bs = bind identity(seq);
+
+println(bs);
+
+seq = [ "Solaris", "SPARC" ];
+
+println(bs);

@@ -1,0 +1,7 @@
+/**
+ * @subtest
+ */
+
+package class vsgc1630sub {
+  var x = 2;
+}

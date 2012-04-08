@@ -1,0 +1,8 @@
+/**
+ * Regression test VSGC-2180 : Auto-import of classes in f3.lang not working
+ *
+ * @test
+ * @run
+ */
+
+F3.exit(); 

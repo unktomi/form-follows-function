@@ -1,0 +1,14 @@
+/**
+ * Regression test VSGC-3643 : compiled-bind : compiler crash when processing FontConverter.f3 -- lower: sequences/if/throw
+ *
+ * @test
+ */
+
+function convertFromString(property: String) {
+    if (property == "font") {
+        ["hi"]
+    } else {
+        throw new java.lang.UnsupportedOperationException("");
+    }
+    println("----")
+}

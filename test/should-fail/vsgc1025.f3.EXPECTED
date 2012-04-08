@@ -1,0 +1,7 @@
+test/should-fail/vsgc1025.f3:6: f() in vsgc1025 cannot be applied to (Integer)
+f(4);
+^
+test/should-fail/vsgc1025.f3:9: m(i:Integer) in vsgc1025 cannot be applied to (Boolean)
+m(true);
+^
+2 errors

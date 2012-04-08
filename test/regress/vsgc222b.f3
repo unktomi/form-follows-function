@@ -1,0 +1,12 @@
+/*
+ * Regression test: VSGC-222: Invoke superclass methods with super.foo()
+ *
+ * @test
+ */
+import javax.swing.JButton; 
+
+public class But extends JButton { 
+    public function getText(): String { 
+        JButton.getText(); 
+    } 
+}

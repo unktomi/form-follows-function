@@ -1,0 +1,7 @@
+deferAction Script
+Starting Script
+java.lang.NullPointerException: Action function can not be null
+Running Deferred Action
+Running Deferred Action2
+Running Deferred Action with Nesting
+Running Nested Deferred Action

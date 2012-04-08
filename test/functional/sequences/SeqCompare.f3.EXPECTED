@@ -1,0 +1,18 @@
+PASS by1 Check Byte sequence -1..1
+PASS by1 Check Byte sequence -128..128
+PASS i0 Check equal sequences of 0..1
+PASS i0 Check equal sequences of -1..0
+PASS i1 Check equal sequences of 0..1001
+PASS i1 Check equal sequences of -1001..1001
+PASS i2 As originally reported in vsgc2717
+PASS i2 Check equal sequences of 0..128
+PASS i2 Check equal sequences of -129..0
+PASS b1 Check boolean sequence true,false
+PASS n1 Check Num sequence 0.0, 128.0 step 1.0
+PASS 5 to 100k by 5s
+PASS 10 to a million by 100s
+========= results ===============
+Tests:      14
+Passed:     14
+Failed:     0
+=================================

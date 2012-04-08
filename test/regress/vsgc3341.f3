@@ -1,0 +1,30 @@
+/**
+ * VSGC-3341 : Play button doesn't change to Stop in PathAnimation 
+ *
+ * @test
+ * @run
+ */
+
+class Scenario {
+    var vb1: Boolean;
+}
+
+class Anim {
+    var animated : Boolean;
+}
+
+package class CarScenario extends Scenario {
+     var anim = Anim{animated: false};
+
+     override var vb1 = bind {anim.animated and true};
+     // - works ok if a var in this class is used instead of anim.animated, eg: override var vb2 = bind (aaa and true);
+     // - works in a var that doesn't override, eg: var vx1 = bind (anim.animated and true);
+}
+
+function run() {
+    var jj = CarScenario { };
+    jj.anim.animated = true;
+    if (not jj.vb1) {
+        println("--Fails: jj.vb1 is false");
+    }
+}

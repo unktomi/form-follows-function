@@ -1,0 +1,38 @@
+/**
+ * Should-fail test for VSGC-2507 - NullPointerException in 
+ * syntactic analysis when using "at (Duration.valueOf(someNumber))".
+ *
+ * Compile should fail but we should get proper error messages rather
+ * than NPE.
+ *
+ * @test/compile-error
+ */
+
+package f3application;
+
+import f3.animation.Timeline;
+import f3.animation.KeyFrame;
+import f3.animation.Interpolator;
+
+var variable = 1;
+var timeToFly = 3.0;
+var firstTimeline = Timeline {
+    repeatCount: Timeline.INDEFINITE
+    keyFrames: [
+        KeyFrame {
+            time: Duration.valueOf(timeToFly);
+            canSkip: true
+            values: [
+                variable => 10 tween Interpolator.LINEAR
+            ]
+        }
+    ]
+}
+var secondTimeline = Timeline {
+    repeatCount: Timeline.INDEFINITE
+    keyFrames: [
+        at (Duration.valueOf(timeToFly)) {
+            variable => 10 tween Interpolator.LINEAR
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="F3 Compiler Tools Definitions" basedir=".">
+
+    <property name="base.dir" value="${basedir}"/>
+
+    <path id="ant.class.path">
+        <fileset dir="${import.ant.lib}" includes="**/ant.jar" />
+    </path>
+
+    <path id="asm.class.path">
+        <fileset dir="${import.asm.lib}" includes="**/asm-3.1.jar" />
+        <fileset dir="${import.asm.lib}" includes="**/asm-analysis-3.1.jar" />
+        <fileset dir="${import.asm.lib}" includes="**/asm-tree-3.1.jar" />
+        <fileset dir="${import.asm.lib}" includes="**/asm-util-3.1.jar" />
+    </path>
+
+    <path id="junit.class.path">
+        <fileset file="${import.junit.jar}"/>
+    </path>
+
+    <path id="findbugs.class.path">
+        <fileset dir="${import.findbugs.home}" includes="**/*.jar" />
+    </path>
+
+    <path id="saxon.class.path">
+        <fileset dir="${import.saxon.dir}" includes="**/*.jar" />
+    </path>
+
+    <path id="xincluder.class.path">
+        <fileset dir="${import.xincluder.dir}" includes="**/*.jar" />
+    </path>
+
+    <path id="antlr.class.path">
+        <fileset dir="${import.antlr.lib}" includes="**/*.jar" />
+    </path>
+
+    <path id="antlr-runtime.class.path">
+        <file file="${import.antlr-runtime.jar}" />
+    </path>
+
+    <path id="antlrworks.class.path">
+        <fileset dir="${import.antlrworks.dir}" includes="**/*.jar" />
+    </path>
+
+    <path id="cobertura.class.path">
+        <fileset dir="${import.cobertura.dir}" includes="**/*.jar" />
+    </path>
+
+    <path id="resolver.class.path">
+        <fileset dir="${import.resolver.dir}" includes="**/*.jar" />
+    </path>
+</project>

@@ -1,0 +1,10 @@
+test/should-fail/vsgc2416bad.f3:15: modifier mixin not allowed on a script level var
+mixin var x = 9;
+^
+test/should-fail/vsgc2416bad.f3:16: modifier mixin not allowed on a script level function
+mixin function foo() { "lop" }
+^
+test/should-fail/vsgc2416bad.f3:13: vsgc2416bad.Sized is a mixin; cannot be instantiated.
+var szd = Sized{}
+          ^
+3 errors

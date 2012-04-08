@@ -1,0 +1,9 @@
+/*
+ * @subtest vsgc3200
+ */
+
+public class vsgc3200A {
+    public var a = 10;
+    public var b = 20;
+}
+

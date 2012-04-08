@@ -1,0 +1,7 @@
+test/should-fail/vsgc4038test.f3:10: Note: Need explicit type for func because of cycle in definition.
+public function func() {
+^
+test/should-fail/vsgc4038sub.f3:6: This is the cyclic reference to func that prevents type inference.
+public var f=function(){vsgc4038test{}.func()}
+                                      ^
+1 error

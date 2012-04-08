@@ -1,0 +1,51 @@
+/* Rgression test VSGC-1924 : println
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+   override function toString() { "Foo" }
+}
+var af = Foo {};
+
+print("1234: ");
+print(1234);
+print(" true: ");
+print(true);
+print(" pi: ");
+print(3.1415926);
+print(" Foo: ");
+print(af);
+print(" null: ");
+println(null);
+
+println("1234: ");
+println(1234);
+println("true: ");
+println(true);
+println("pi: ");
+println(3.1415926);
+println("Foo: ");
+println(af);
+println("null: ");
+println(null);
+
+print([1, 2, 3]);
+println("");
+
+println([]);
+println([1][1..]);
+println([1]);
+println([2.5]);
+println([true]);
+println(["One"]);
+println([af]);
+
+println([1, 2, 3]);
+println([2.5, 5.2]);
+println([true, false]);
+println(["One", "Two"]);
+println([af, af]);
+
+println([1, 4.5, true, "Here" ,af]);

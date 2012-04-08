@@ -1,0 +1,10 @@
+/**
+ * Regression test VSGC-3762 : Compiled bind: runtime IllegalArgumentException: no such variable: 0 on Button{}
+ *
+ * @compilefirst vsgc3762M.f3
+ * @compilefirst vsgc3762S.f3
+ * @test
+ * @run
+ */
+
+var xx = vsgc3762S{}; 

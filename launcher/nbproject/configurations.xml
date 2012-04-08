@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="79">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>src/configuration.h</itemPath>
+      <itemPath>src/util.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>src/configuration.cpp</itemPath>
+      <itemPath>src/util.cpp</itemPath>
+      <itemPath>src/f3.cpp</itemPath>
+      <itemPath>src/f3c.cpp</itemPath>
+      <itemPath>src/f3doc.cpp</itemPath>
+      <itemPath>src/f3w.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="f3_debug" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <ccTool>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mno-cygwin</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGE</Elem>
+            <Elem>DEBUG</Elem>
+          </preprocessorList>
+          <warningLevel>2</warningLevel>
+        </ccTool>
+        <linkerTool>
+          <output>dist/Debug/f3</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="f3c_debug" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <ccTool>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mno-cygwin</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGEC</Elem>
+            <Elem>DEBUG</Elem>
+          </preprocessorList>
+          <warningLevel>2</warningLevel>
+        </ccTool>
+        <linkerTool>
+          <output>dist/Debug/f3c</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="f3_release" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mno-cygwin -s</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGE</Elem>
+          </preprocessorList>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <output>dist/Release/f3</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="f3c_release" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mno-cygwin -s</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGEC</Elem>
+          </preprocessorList>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <output>dist/Release/f3c</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="f3doc_debug" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <ccTool>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mno-cygwin</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGEDOC</Elem>
+            <Elem>DEBUG</Elem>
+          </preprocessorList>
+          <warningLevel>2</warningLevel>
+        </ccTool>
+        <linkerTool>
+          <output>dist/Debug/f3doc</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="f3doc_release" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mno-cygwin -s</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGEDOC</Elem>
+          </preprocessorList>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <output>dist/Release/f3doc</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="f3w_release" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mwindows -mno-cygwin -s</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGEW</Elem>
+          </preprocessorList>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <linkerTool>
+          <output>dist/Release/f3w</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="f3w_debug" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_4.x|Cygwin_4.x</compilerSet>
+      </toolsSet>
+      <compileType>
+        <ccTool>
+          <commandlineTool>g++-3</commandlineTool>
+          <commandLine>-mno-cygwin</commandLine>
+          <preprocessorList>
+            <Elem>PROJECT_VISAGEW</Elem>
+            <Elem>DEBUG</Elem>
+          </preprocessorList>
+          <warningLevel>2</warningLevel>
+        </ccTool>
+        <linkerTool>
+          <output>dist/Debug/f3w</output>
+        </linkerTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>

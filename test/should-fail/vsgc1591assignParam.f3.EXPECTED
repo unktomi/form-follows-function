@@ -1,0 +1,7 @@
+test/should-fail/vsgc1591assignParam.f3:8: You cannot change the value(s) of 'x' because it is a parameter.
+   x = 6;
+   ^
+test/should-fail/vsgc1591assignParam.f3:9: You cannot change the value(s) of 'x' because it is a parameter.
+   ++x
+     ^
+2 errors

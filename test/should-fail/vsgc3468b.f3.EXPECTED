@@ -1,0 +1,4 @@
+test/should-fail/vsgc3468b/pak1/A.f3:8: cyclic inheritance involving vsgc3468b.pak1.A
+public class A extends B.B2 {}
+^
+1 error

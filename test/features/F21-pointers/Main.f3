@@ -1,0 +1,108 @@
+/* Feature test #21 -- pointers
+ *
+ * @test
+ * @run
+ */
+
+import org.f3.runtime.Pointer;
+import java.lang.System;
+
+var v = 1;
+var w = 2;
+var s = [ 1, 2, 3 ];
+var b : Boolean = true;
+var n : Number = 1.0;
+
+var bvp = bind Pointer.make(v);
+var vp = bvp.unwrap();
+
+var bwp = bind Pointer.make(w);
+var wp = bwp.unwrap();
+var bwp1 = bind Pointer.make(w);
+var wp1 = bwp1.unwrap();
+
+var bsp = bind Pointer.make(s);
+var sp = bsp.unwrap();
+
+var bnp = bind Pointer.make(n);
+var np = bnp.unwrap();
+
+var bbp = bind Pointer.make(b);
+var bp = bbp.unwrap();
+
+// True
+System.out.println(Pointer.equals(vp, vp));
+System.out.println(Pointer.equals(wp, wp));
+System.out.println(Pointer.equals(sp, sp));
+
+// False
+System.out.println(Pointer.equals(vp, wp));
+
+// True
+System.out.println(Pointer.equals(wp, wp1));
+
+vp.set(3);
+System.out.println(vp.get()); // 3
+
+sp.set([1, 2, 3, 4]);
+System.out.println(s); // [1, 2, 3, 4]
+
+class Foo {
+  var x = 2;
+}
+
+var f1 = Foo { x: 3 };
+var f2 = Foo { x: 4 };
+var f3 = f1;
+
+var bxp1 = bind Pointer.make(f1.x);
+var xp1 = bxp1.unwrap();
+var bxp2 = bind Pointer.make(f2.x);
+var xp2 = bxp2.unwrap();
+var bxp3 = bind Pointer.make(f3.x);
+var xp3 = bxp3.unwrap();
+
+System.out.println(Pointer.equals(xp1, xp2));  // false
+System.out.println(Pointer.equals(xp1, xp3));  // true
+System.out.println(xp3.get());                 // 3
+xp1.set(2);
+System.out.println(xp3.get());                 // 2
+
+class Person {
+  var name : String;
+}
+
+var person = Person { name : "Gandhi" };
+var ptr = bind Pointer.make(person.name);
+println(ptr.get());
+person.name = "Mahatma Gandhi";
+println(ptr.get());
+
+person = Person { name: "Buddha" };
+println(ptr.get());
+
+// Test bound pointers
+
+var name : String = "random name";
+
+// Make a bound pointer. This is equivalent to 
+//    var name = bind person.name;
+var bptr = Pointer.make(name).bind(ptr);
+println(name); // should print "Buddha"
+
+person.name = "Gautama";
+// should print "Gautama"
+println(name);
+
+// unbind 'name' from 'person.name'
+bptr.unbind(); 
+
+person.name = "Asoka";
+// should still print "Guatama" as the pointer is unbound!
+println(name);
+
+// re-bind 'name' with 'person.name'
+bptr = Pointer.make(name).bind(ptr);
+
+// should print "Asoka"
+println(name);

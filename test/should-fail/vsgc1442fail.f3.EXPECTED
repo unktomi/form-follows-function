@@ -1,0 +1,4 @@
+test\should-fail\vsgc1442fail.f3:9: read has script only (default) write access in vsgc1442sub
+vsgc1442sub.read = 8;
+           ^
+1 error

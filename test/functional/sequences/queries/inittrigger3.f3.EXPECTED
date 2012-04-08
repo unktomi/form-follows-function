@@ -1,0 +1,34 @@
+-----trigger firing at creation------
+bnull new value: false
+snull old:  new:
+inull old:0  newvalue:0==inull:0
+b new: false
+s old:  new:Hello
+i old:0  newvalue:5==i:5
+seqb old:  new:falsefalsefalse
+seqs old:  indexes:0..-1  new elements:Maryhadlittlelamb  new sequence:Maryhadlittlelamb
+seqi
+[ 100, 101, 102, 103, 106, 108, 110 ]
+----------values by init ---------
+bnull:false
+snull:
+inull:0
+b:false
+s:Hello
+i:5
+seqb:[ false, false, false ]
+seqs:[ Mary, had, little, lamb ]
+seqi:[ 100, 101, 102, 103, 106, 108, 110 ]
+-----trigger firing at test()------
+b new: true
+set_b(): bnull:false
+bnull new value: true
+set_b(): bnull:true
+s old:Hello  new:Hello, World!
+i old:5  newvalue:500==i:500
+seqi
+[ 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110 ]
+seqb old:falsefalsefalse  new:truefalsefalse
+seqs old:Maryhadlittlelamb  indexes:1..2  new elements: had a wee little   new sequence:Mary had a wee little lamb
+seqs old:Mary had a wee little lamb  indexes:6..5  new elements:.  new sequence:Mary had a wee little lamb.
+seqs old:Mary had a wee little lamb.  indexes:3..3  new elements:  new sequence:Mary had a little lamb.

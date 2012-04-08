@@ -1,0 +1,5 @@
+test\should-fail\vsgc2139.f3:9: Loose expressions are not permitted in scripts with exported ('public', etc) members.
+Any expressions to be run on script invocation should be moved into run().
+println("I'm bad");
+^
+1 error

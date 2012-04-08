@@ -1,0 +1,14 @@
+/**
+ * Regression test VSGC-4235 : ClassCastException: com.sun.tools.mjavac.code.Symbol$MethodSymbol cannot be cast to org.f3.tools.code.F3VarSymbol
+ *
+ *  @test/compile-error
+ */
+
+class A {
+   var f: function():Object[];
+}
+
+class B extends A {
+   override var f = function() {[]};
+   function f(x:Object[]) {[]}
+}

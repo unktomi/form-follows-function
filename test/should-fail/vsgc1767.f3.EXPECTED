@@ -1,0 +1,11 @@
+test/should-fail/vsgc1767.f3:4: inconvertible types
+found   : <nulltype>
+required: Number
+var a: Number = null as Number;
+                ^
+test/should-fail/vsgc1767.f3:5: inconvertible types
+found   : <nulltype>
+required: Number
+var b = null as Number;
+        ^
+2 errors

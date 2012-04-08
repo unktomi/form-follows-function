@@ -1,0 +1,22 @@
+/**
+ * regression test for VSGC-2056 : Calling a variable of function type throws NPE if it is null
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+  function ratCount() : Number { 14.2 }
+}
+
+var fu : Foo = null;
+println(fu.ratCount());
+
+function phoo() : Foo { null }
+println(phoo().ratCount());
+
+var mf : function() : Integer = null;
+println(mf());
+
+var mmf : function() : function() : Integer = null;
+println(mmf()());

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-invoice" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+   
+        Creates an invoice.properties file to record the sdk contents and
+        version information about this particular build of the SDK.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build.xml file only.
+
+    </description>
+
+    <!-- Defines properties for invoice work. -->
+    <macrodef name="do-invoice-header">
+        <attribute name="file"/>
+        <attribute name="description"/>
+        <sequential>
+            <propertyfile file="@{file}" comment=" Invoice for @{description} ">
+                <entry  key="f3.product.name" value="${f3.product.name}"/>
+                <entry  key="f3.build.date" type="date" value="now"/>
+                <entry  key="f3.release.milestone" value="${f3.release.milestone}"/>
+                <entry  key="f3.release.name" value="${f3.release.name}"/>
+                <entry  key="f3.release.milestone" value="${f3.release.milestone}"/>
+                <entry  key="f3.release.version" value="${f3.release.version}"/>
+                <entry  key="f3.build.number" value="${f3.build.number}"/>
+                <entry  key="f3.build.id" value="${f3.build.id}"/>
+                <entry  key="f3.job.name" value="${f3.job.name}"/>
+                <entry  key="f3.release.build.user" value="${user.name}"/>
+            </propertyfile>
+        </sequential>
+    </macrodef>
+
+    <target name="-init-sdk-invoice">
+        <delete file="${f3.sdk.invoice}"/>
+    </target>
+
+    <target name="-init-deployed-invoice">
+        <delete file="${f3.deployed.invoice}"/>
+    </target>
+
+    <target name="-init-rtdeployed-invoice">
+        <delete file="${f3.rtdeployed.invoice}"/>
+    </target>
+
+    <target name="add-sdk-invoice" depends="-init-sdk-invoice, tip-all-components">
+        <delete file="${f3.sdk.invoice}.header"/>
+        <do-invoice-header
+            file="${f3.sdk.invoice}.header"
+            description="${f3.sdk.invoice.description}"/>
+        <concat destfile="${f3.sdk.invoice}">
+            <fileset file="${f3.sdk.invoice}.header"/>
+            <fileset file="${f3.repository.data}"/>
+            <fileset file="${f3.sdk.inventory.data}"/>
+        </concat>
+        <delete file="${f3.sdk.invoice}.header"/>
+    </target>
+
+    <target name="add-deployed-invoice" depends="-init-deployed-invoice, tip-all-components">
+        <delete file="${f3.deployed.invoice}.header"/>
+        <do-invoice-header
+            file="${f3.deployed.invoice}.header"
+            description="${f3.deployed.invoice.description}"/>
+        <concat destfile="${f3.deployed.invoice}">
+            <fileset file="${f3.deployed.invoice}.header"/>
+            <fileset file="${f3.repository.data}"/>
+            <fileset file="${f3.deployed.inventory.data}"/>
+        </concat>
+        <delete file="${f3.deployed.invoice}.header"/>
+    </target>
+
+    <target name="add-rtdeployed-invoice" depends="-init-rtdeployed-invoice, tip-all-components">
+        <delete file="${f3.rtdeployed.invoice}.header"/>
+        <do-invoice-header
+            file="${f3.rtdeployed.invoice}.header"
+            description="${f3.rtdeployed.invoice.description}"/>
+        <concat destfile="${f3.rtdeployed.invoice}">
+            <fileset file="${f3.rtdeployed.invoice}.header"/>
+            <fileset file="${f3.repository.data}"/>
+            <fileset file="${f3.rtdeployed.inventory.data}"/>
+        </concat>
+        <delete file="${f3.rtdeployed.invoice}.header"/>
+    </target>
+
+    <target name="invoices" depends="add-sdk-invoice, add-deployed-invoice, add-rtdeployed-invoice"/>
+
+</project>

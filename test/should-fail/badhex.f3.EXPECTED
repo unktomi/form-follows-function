@@ -1,0 +1,10 @@
+test/should-fail/badhex.f3:5: Hexadecimal numbers must have at least one hex character following the 0x. Is this a typo?
+var v = 0x;
+         ^
+test/should-fail/badhex.f3:6: Hexadecimal literals can only contain characters 0 to 9 and a to f or A to F. Is this a typo?
+v = 0xGGG;
+    ^
+test/should-fail/badhex.f3:7: Hexadecimal numbers cannot form floating point literals. Is this a typo?
+v = 0x9.AB;
+       ^
+3 errors

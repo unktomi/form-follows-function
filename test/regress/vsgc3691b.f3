@@ -1,0 +1,41 @@
+/**
+ * Regression test for VSGC-3691 : Compiled bind: indexof in nested for gets an NPE
+ *
+ * @test
+ * @run
+ */
+
+var outer = [0..3];
+var inner = [10..13];
+
+var x1 = for (xx in outer) {
+   if (xx == 2) break;
+   for (yy in inner) {
+        if (yy == 12) break else yy;
+   }
+}
+println(x1);
+
+var x2 = for (xx in outer) {
+   if (xx == 2) break;
+   for (yy in inner) {
+        if (yy == 12) continue else yy;
+   }
+}
+println(x2);
+
+var x3 = for (xx in outer) {
+   if (xx == 2) continue;
+   for (yy in inner) {
+        if (yy == 12) break else yy;
+   }
+}
+println(x3);
+
+var x4 = for (xx in outer) {
+   if (xx == 2) continue;
+   for (yy in inner) {
+        if (yy == 12) continue else yy;
+   }
+}
+println(x4);

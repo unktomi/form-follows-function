@@ -1,0 +1,37 @@
+/**
+ * VSGC-3315 : Optimize away bound select processing when selector is immutable
+ *
+ * Set a high max for memory use of a linked list with bound select covered by VSGC-3315.
+ * Fail if it goes over.
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.management.*;
+
+def MAX_MEM = 3000000;  // On Vista 64 - July 3, 2009 : 1790584
+
+class Links {
+  var next : Links;
+  var ool : Boolean;
+  public def bb = bind next.ool;
+}
+
+function showMemory() : Void {
+  java.lang.System.gc();
+  def used = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+  if (used > MAX_MEM) {
+    println("A lot of memory used: {used}");
+  }
+}
+
+var top : Links = null;
+for (m in [1..10]) {
+  for (n in [1..1000]) {
+    top = Links {next: top}
+    0;
+  }
+
+  showMemory();
+}

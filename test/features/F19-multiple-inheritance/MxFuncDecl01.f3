@@ -1,0 +1,58 @@
+/*
+ * Tests for function declarations
+ *
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+mixin class Mixin1 {
+    function foo() : Integer { 11 }
+}
+
+class Mixee1 extends Mixin1 {
+    override function foo() : Integer { 12 }
+}
+
+class Mixee2 extends Mixin1 {
+    function boo() : Integer { foo() }
+}
+
+mixin class Mixin2 {
+    function foo(arg : String) : Integer { 21 }
+}
+
+class Mixee3 extends Mixin2 {
+    function foo(arg : Integer) : Integer { 22 }
+}
+
+public class MxFuncDecl01 extends F3TestCase {
+    /*
+     * foo() has body in both mixin and mixee. 
+     * Check that the correct one is executed.
+     */
+    function testFunctionDeclaration1() {
+        var m = Mixee1 {};
+        assertEquals(12, m.foo());
+    }
+    /*
+     * foo() is non-abstract in mixin. 
+     * Invoke foo() from mixee.
+     */
+    function testFunctionDeclaration2() {
+        var m = Mixee2 {};
+        assertEquals(11, m.boo());
+    }
+    /*
+     * foo(String) is non-abstract in mixin. 
+     * foo(Integer) is non-abstract in mixee. 
+     * Check that invocation of foo is resolved correctly.
+     */
+    function testFunctionDeclaration3() {
+        var m = Mixee3 {};
+        var i : Integer;
+        var s : String;
+        assertEquals(21, m.foo(s));
+        assertEquals(22, m.foo(i));
+    }
+}

@@ -1,0 +1,25 @@
+test\should-fail\vsgc1250slCall.f3:23: cannot find symbol
+symbol  : function slFScr()
+location: class vsgc1250slCall.Inh
+	slFScr();   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250slCall.f3:37: cannot find symbol
+symbol  : function slFPkg()
+location: class vsgc1250slCall.InhA
+	slFPkg();   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250slCall.f3:38: cannot find symbol
+symbol  : function slFScr()
+location: class vsgc1250slCall.InhA
+	slFScr();   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250slCall.f3:68: slFScr() has script only (default) access in vsgc1250subFail
+	System.out.println( vsgc1250subFail.slFScr() );   // ERROR: same package
+	                                   ^
+test\should-fail\vsgc1250slCall.f3:73: slFPkg() is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	System.out.println( vsgc1250subFailA.slFPkg() );   // ERROR: different package
+	                                    ^
+test\should-fail\vsgc1250slCall.f3:74: slFScr() has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	System.out.println( vsgc1250subFailA.slFScr() );   // ERROR: different package
+	                                    ^
+6 errors

@@ -1,0 +1,10 @@
+test/should-fail/vsgc942.f3:7: warning: explicit use of threads is not supported
+var th : Thread = new Thread();
+                  ^
+test/should-fail/vsgc942.f3:8: warning: explicit use of threads is not supported
+th.start();
+^
+test/should-fail/vsgc942.f3:9: warning: explicit use of threads is not supported
+th = Thread{};
+     ^
+3 warnings

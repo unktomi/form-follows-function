@@ -1,0 +1,72 @@
+/*
+ * @test
+ * @run
+ */
+
+import f3.reflect.F3Local;
+import f3.reflect.F3VarMember;
+import f3.reflect.F3Value;
+import f3.reflect.F3SequenceType;
+
+def cntxt = F3Local.getContext();
+var counter : Integer = 0;
+
+
+public abstract class Node {
+  def id = ++counter;
+  public-read package var parent:Parent = null;
+
+  override function toString():String {
+     "{getClass().getName()}#{id}"
+  }
+};
+
+public abstract class Parent extends Node {
+        protected var children:Node[] on replace oldNodes[a..b] = newNodes  {
+            for (i in [a..b]) {
+                var old = oldNodes[i];
+                if (old.parent == this) {
+                    old.parent = null;
+                }
+            }
+            for (node in newNodes) {
+                node.parent = this;
+            }
+        }
+};
+
+public class Group extends Parent {
+   public var content:Node[];
+   override var children = bind content with inverse;
+};
+
+public class A2 extends Group {
+   var parentChange = bind parent on replace {
+       println("parent value changed {parent}");
+   }
+}
+
+public function run() {
+    def group = Group{};
+    def a1 = A2{};
+
+    insert a1 into group.content;  // This triggers the on replace code in class A2
+
+    def f3ClsType = cntxt.findClass(Group.class.getName());
+    var obj = f3ClsType.allocate();
+    def v = f3ClsType.getVariable("content");
+    obj.initVar(v, buildSequence(v,a1));  // It should do the same.
+    obj.initialize();
+
+    def a3 = (obj as F3Local.Value).asObject();
+
+    println("a1.parent is {a1.parent}");
+}
+
+function buildSequence(v:F3VarMember, o:Object):F3Value {
+   def elementType = (v.getType() as F3SequenceType).getComponentType();
+   def builder = cntxt.makeSequenceBuilder(elementType);
+   println( "insert sequence .. {o} ");
+   builder.append(cntxt.mirrorOf(o));
+   return builder.getSequence();
+}

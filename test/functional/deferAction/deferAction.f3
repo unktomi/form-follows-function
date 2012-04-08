@@ -1,0 +1,61 @@
+/*
+ * deferAction.f3
+ *
+ * Created on Wed Oct  1 15:39:44 PDT 2008
+ *
+ * @test
+ * @run
+ */
+
+
+import f3.lang.F3;
+import java.lang.Exception;
+
+/**
+ * Example F3 showing the usage of F3.deferAction()
+ *
+ * Output from this script will be as follows:
+ * {@code Starting Script}
+ * {@code Running Deferred Action}
+ * {@code Running Deferred Action2}
+ * @author sgw
+ */
+
+// Show that we are starting the Script
+java.lang.System.out.println("deferAction Script");
+java.lang.System.out.println("Starting Script");
+
+/*
+ * Should throw an NPE here
+ */
+try {
+    F3.deferAction(null);
+} catch (e: Exception) {
+    java.lang.System.out.println("{e}");
+}
+
+/**
+ * A void Function that takes no arguments will be run by the
+ * F3 Runtime at a later time determined by the
+ * implementation
+ */
+F3.deferAction(function() : Void {
+    java.lang.System.out.println("Running Deferred Action");
+});
+
+function action2(): Void {
+    java.lang.System.out.println("Running Deferred Action2");
+}
+
+F3.deferAction(action2);
+
+/*
+ * Nested DeferActions
+ */
+F3.deferAction(function() : Void {
+    java.lang.System.out.println("Running Deferred Action with Nesting");
+    F3.deferAction(function() : Void {
+        java.lang.System.out.println("Running Nested Deferred Action");
+    });
+});
+

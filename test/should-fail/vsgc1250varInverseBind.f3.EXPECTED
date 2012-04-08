@@ -1,0 +1,70 @@
+test\should-fail\vsgc1250varInverseBind.f3:48: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250varInverseBind.Inh
+	{ var x = bind memScr with inverse };   // ERROR: inherited, same package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:52: memIScr has script only (default) bind access in vsgc1250subFail
+	{ var x = bind memIScr with inverse };   // ERROR: inherited, same package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:56: memRScr has script only (default) bind access in vsgc1250subFail
+	{ var x = bind memRScr with inverse };   // ERROR: inherited, same package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:64: cannot find symbol
+symbol  : variable memPkg
+location: class vsgc1250varInverseBind.InhA
+	{ var x = bind memPkg with inverse };   // ERROR: inherited, different package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:65: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250varInverseBind.InhA
+	{ var x = bind memScr with inverse };   // ERROR: inherited, different package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:68: memIPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind memIPkg with inverse };   // ERROR: inherited, different package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:69: memIScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind memIScr with inverse };   // ERROR: inherited, different package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:72: memRPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind memRPkg with inverse };   // ERROR: inherited, different package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:73: memRScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind memRScr with inverse };   // ERROR: inherited, different package
+	               ^
+test\should-fail\vsgc1250varInverseBind.f3:124: memScr has script only (default) access in vsgc1250subFail
+	{ var x = bind vf.memScr with inverse };   // ERROR: same package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:128: memIScr has script only (default) bind access in vsgc1250subFail
+	{ var x = bind vf.memIScr with inverse };   // ERROR: same package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:132: memRScr has script only (default) bind access in vsgc1250subFail
+	{ var x = bind vf.memRScr with inverse };   // ERROR: same package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:138: memPro has protected access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memPro with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:139: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	{ var x = bind vf.memPkg with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:140: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memScr with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:142: memIPro has protected bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memIPro with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:143: memIPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memIPkg with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:144: memIScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memIScr with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:146: memRPro has protected bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memRPro with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:147: memRPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memRPkg with inverse };   // ERROR: different package
+	                 ^
+test\should-fail\vsgc1250varInverseBind.f3:148: memRScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	{ var x = bind vf.memRScr with inverse };   // ERROR: different package
+	                 ^
+21 errors

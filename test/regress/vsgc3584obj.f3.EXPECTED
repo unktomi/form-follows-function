@@ -1,0 +1,10 @@
+replace 0 .. -1 -- 3
+[ hello, stay, bye ]
+replace 1 .. 1 -- 1
+[ hello, linger, bye ]
+replace 0 .. 0 -- 0
+[ linger, bye ]
+replace 0 .. 0 -- 0
+[ bye ]
+replace 0 .. -1 -- 1
+[ happy, bye ]

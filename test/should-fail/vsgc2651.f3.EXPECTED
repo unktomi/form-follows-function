@@ -1,0 +1,88 @@
+test/should-fail/vsgc2651.f3:16: incomparable types: vsgc2651.A and String
+(a == (x as java.lang.String));
+ ^
+test/should-fail/vsgc2651.f3:17: incomparable types: String and vsgc2651.A
+((x as java.lang.String) == a);
+ ^
+test/should-fail/vsgc2651.f3:19: incomparable types: vsgc2651.A[] and String
+([a] == (x as java.lang.String));
+ ^
+test/should-fail/vsgc2651.f3:20: incomparable types: String and vsgc2651.A[]
+((x as java.lang.String) == [a]);
+ ^
+test/should-fail/vsgc2651.f3:22: incomparable types: vsgc2651.A and String[]
+(a == [(x as java.lang.String)]);
+ ^
+test/should-fail/vsgc2651.f3:23: incomparable types: String[] and vsgc2651.A
+([(x as java.lang.String)] == a);
+ ^
+test/should-fail/vsgc2651.f3:25: incomparable types: vsgc2651.A[] and String[]
+([a] == [(x as java.lang.String)]);
+ ^
+test/should-fail/vsgc2651.f3:26: incomparable types: String[] and vsgc2651.A[]
+([(x as java.lang.String)] == [a]);
+ ^
+test/should-fail/vsgc2651.f3:28: incomparable types: java.util.ArrayList and java.util.HashSet
+((x as ArrayList) == (x as HashSet));
+ ^
+test/should-fail/vsgc2651.f3:29: incomparable types: java.util.ArrayList and java.util.HashSet[]
+((x as ArrayList) == [(x as HashSet)]);
+ ^
+test/should-fail/vsgc2651.f3:30: incomparable types: java.util.ArrayList[] and java.util.HashSet
+([(x as ArrayList)] == (x as HashSet));
+ ^
+test/should-fail/vsgc2651.f3:31: incomparable types: java.util.ArrayList[] and java.util.HashSet[]
+([(x as ArrayList)] == [(x as HashSet)]);
+ ^
+test/should-fail/vsgc2651.f3:33: incomparable types: vsgc2651.A and java.util.ArrayList
+(a == (x as ArrayList));
+ ^
+test/should-fail/vsgc2651.f3:34: incomparable types: vsgc2651.A[] and java.util.ArrayList
+([a] == (x as ArrayList));
+ ^
+test/should-fail/vsgc2651.f3:35: incomparable types: vsgc2651.A and java.util.ArrayList[]
+(a == [(x as ArrayList)]);
+ ^
+test/should-fail/vsgc2651.f3:36: incomparable types: vsgc2651.A[] and java.util.ArrayList[]
+([a] == [(x as ArrayList)]);
+ ^
+test/should-fail/vsgc2651.f3:38: incomparable types: java.util.ArrayList and vsgc2651.A
+((x as ArrayList) == a);
+ ^
+test/should-fail/vsgc2651.f3:39: incomparable types: java.util.ArrayList[] and vsgc2651.A
+([(x as ArrayList)] == a);
+ ^
+test/should-fail/vsgc2651.f3:40: incomparable types: java.util.ArrayList and vsgc2651.A[]
+((x as ArrayList) == [a]);
+ ^
+test/should-fail/vsgc2651.f3:41: incomparable types: java.util.ArrayList[] and vsgc2651.A[]
+([(x as ArrayList)] == [a]);
+ ^
+test/should-fail/vsgc2651.f3:45: incomparable types: Integer and Boolean
+System.out.println(1 == false);
+                   ^
+test/should-fail/vsgc2651.f3:47: incomparable types: Integer[] and Boolean
+System.out.println([1] == false);
+                   ^
+test/should-fail/vsgc2651.f3:48: incomparable types: Boolean and Integer[]
+System.out.println(false == [1]);
+                   ^
+test/should-fail/vsgc2651.f3:50: incomparable types: Boolean[] and Integer
+System.out.println([false] == 1);
+                   ^
+test/should-fail/vsgc2651.f3:51: incomparable types: Integer and Boolean[]
+System.out.println(1 == [false]);
+                   ^
+test/should-fail/vsgc2651.f3:53: incomparable types: Boolean[] and Integer[]
+System.out.println([false] == [1]);
+                   ^
+test/should-fail/vsgc2651.f3:54: incomparable types: Integer[] and Boolean[]
+System.out.println([1] == [false]);
+                   ^
+test/should-fail/vsgc2651.f3:56: incomparable types: Integer and <nulltype>
+System.out.println(1 == null);
+                   ^
+test/should-fail/vsgc2651.f3:57: incomparable types: <nulltype> and Integer
+System.out.println(null == 1);
+                   ^
+29 errors

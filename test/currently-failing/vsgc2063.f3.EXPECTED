@@ -1,0 +1,21 @@
+replaced old:  with new: 34 low idx:0 ; hi idx: -1
+replaced old: 34 with new:  low idx:0 ; hi idx: -1
+replaced old: 34 with new: 5 low idx:0 ; hi idx: -1
+replaced old: 534 with new: 5 low idx:0 ; hi idx: 0
+replaced old: 534 with new: 6 low idx:1 ; hi idx: 1
+replaced old: 564 with new: 6 low idx:1 ; hi idx: 1
+replaced old: 564 with new: 7 low idx:2 ; hi idx: 2
+replaced old: 567 with new: 7 low idx:2 ; hi idx: 2
+replaced sequence 34 - ov =  - nv 34 low idx =0 - hi idx -1
+3
+4
+replaced sequence 34 - ov = 34 - nv  low idx =0 - hi idx -1
+replaced sequence 534 - ov = 34 - nv 5 low idx =0 - hi idx -1
+replaced sequence 534 - ov = 534 - nv 5 low idx =0 - hi idx 0
+replaced sequence 564 - ov = 534 - nv 6 low idx =1 - hi idx 1
+replaced sequence 564 - ov = 564 - nv 6 low idx =1 - hi idx 1
+replaced sequence 567 - ov = 564 - nv 7 low idx =2 - hi idx 2
+replaced sequence 567 - ov = 567 - nv 7 low idx =2 - hi idx 2
+5
+6
+7

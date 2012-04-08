@@ -1,0 +1,7 @@
+sum int-seq->int-arr: 3
+sum int-seq->long-arr: 3
+sum int-seq->float-arr: 3.0
+sum int-seq->double-arr: 3.0
+sum long-seq->long-arr: 6
+sum long-seq->float-arr: 6.0
+sum long-seq->double-arr: 6.0

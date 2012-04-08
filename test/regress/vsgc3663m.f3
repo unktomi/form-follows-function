@@ -1,0 +1,24 @@
+/**
+ * Regression test VSGC-3663 : Compiled bind: sequence argument to bound invocation of non-bound function
+ *
+ * Mixed sequence / non-sequence arguments
+ *
+ * @test
+ * @run
+ */
+
+function len(z : String[], d : Integer) : Integer { d + sizeof z }
+var seq = ["ha", "fa"];
+var x = 0;
+def bs = bind len(seq, x);
+println(bs);
+insert "ba" into seq;
+println(bs);
+delete seq;
+println(bs);
+insert ["na", "xa"] into seq;
+println(bs);
+delete "xa" from seq;
+println(bs);
+x = 1000;
+println(bs);

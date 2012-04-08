@@ -1,0 +1,19 @@
+/*
+ * Regression test: for VSGC-3827: compiled-bind: f3 controls don't respond to mouse
+ *
+ * @test
+ * @run
+ */
+
+class A {
+   var x:Object[] = "old!";
+   var y = bind x on replace { println("y is {y}"); }
+}
+
+class B extends A {
+   var k = bind x;
+}
+
+var a:A = B{};
+println("start");
+a.x = "new!";

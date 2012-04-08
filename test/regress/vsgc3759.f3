@@ -1,0 +1,15 @@
+/**
+ * VSGC-3759 : Compiled bind: Cannot find symbol: method size$seq(), seq is a Sequence defined at the top level in a separate file - the qualifier is missing
+ *
+ * @compilefirst vsgc3759sub.f3
+ * @test
+ */
+
+class seq {
+    var field1: Integer;
+}
+function run() {
+    seq {
+       field1: bind vsgc3759sub.seq[1];
+    }
+}

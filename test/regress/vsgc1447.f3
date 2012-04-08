@@ -1,0 +1,13 @@
+/**
+ * regression test: VSGC-1447 : Asserion Error with Predicates
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+var nums = [1,2,3,4];
+var numsGreaterThanTwo = nums[n|n > 2];
+
+System.out.println(numsGreaterThanTwo);

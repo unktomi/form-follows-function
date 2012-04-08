@@ -1,0 +1,12 @@
+/*
+ * Internal error in F3 compiler caused by already defined variable in Sequence.
+ *
+ * @test/compile-error
+ */
+
+function run(args : String[]) {
+   var weekDays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+   for(day in weekDays[day | day == "Mo"]) {
+      println(day);
+   }
+}

@@ -1,0 +1,7 @@
+test/regress/vsgc2830.f3:10: 'var' conflicts with java member x in java.awt.Component.
+  var x on replace { 
+  ^
+test/regress/vsgc2830.f3:9: 'var' conflicts with java member x in java.awt.Component.
+public class Applet extends JApplet, StageDelegate, ComponentListener { 
+                                     ^
+2 errors

@@ -1,0 +1,10 @@
+Visage compiler feature test #20
+
+Demonstrated:
+ - bound functions
+ - updates on parameter or lexical context updates
+
+Restrictions:
+ - bound updates to functions called from bound functions not tested
+
+

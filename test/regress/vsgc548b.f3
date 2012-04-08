@@ -1,0 +1,13 @@
+/*
+ * @subtest vsgc548a
+ */
+
+public class vsgc548b { 
+    init { 
+        java.lang.System.out.println("init called on One"); 
+    } 
+    postinit { 
+        java.lang.System.out.println("postinit called on One"); 
+    } 
+} 
+

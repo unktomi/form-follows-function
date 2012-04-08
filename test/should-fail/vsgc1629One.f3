@@ -1,0 +1,13 @@
+/**
+ * @subtest
+ */
+
+package class vsgc1629One {
+
+  public-read var twub = 333;
+
+  function make() : vsgc1629One {
+     twub = 444; // OK
+     vsgc1629One {twub: 111} // OK
+  }
+}

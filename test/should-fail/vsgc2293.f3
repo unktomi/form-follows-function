@@ -1,0 +1,18 @@
+/**
+ * Should-fail test for VSGC-2293 :  Umbrella: variable override restrictions
+ * So, it includes tests for both:
+ *   VSGC-1952 : public-read allows subclass to override var
+ *   VSGC-2137 : def allows subclass to override var
+ *
+ * @compilefirst vsgc2293base.f3
+ * @test/compile-error
+ */
+
+class vsgc2293 extends vsgc2293base {
+     override var zero  = 10;
+     override var one   = 10;
+     override var two   = 10;
+     override var three = 10;
+     override def three = 10;
+     override var four  = 10;
+}

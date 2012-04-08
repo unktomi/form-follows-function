@@ -1,0 +1,13 @@
+/**
+ * Regression test VSGC-2146 : Regression: Type conversion problem on assignment to select by non-simple expression -- found in Assortis ElectroSimulator
+ *
+ * @test
+ * @run
+ */
+
+class Pin {
+    var level: Number;
+}
+var pin2: Pin = Pin{};
+pin2.level = -3;
+println(pin2.level);

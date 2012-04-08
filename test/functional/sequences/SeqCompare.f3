@@ -1,0 +1,191 @@
+/**
+ * VSGC-2717: Integer sequence elements failed to compare when accessed by index
+ * @test
+ * @run
+ */
+
+public class SeqCompare  {
+  var pass = 0;
+  var fail = 0;
+  public var GFT = 0; //Golden_File_Tests; do not show up as pass or fail check
+  var bDEBUG = false;
+  var failures:String[];
+  function debugout(msg: String) { if(bDEBUG) println( "{msg}" ); }
+
+  /**
+   * Functions to compare sequences by indexing through them
+   */
+ public function checkBys(i1s:Byte[], i2s:Byte[], msg:String):Boolean {
+    if ( sizeof(i1s) != sizeof(i2s) ) {
+      fail++;print("FAIL {msg} : sizeof  {i1s.getClass().getName()} != sizeof {i2s}");
+    }
+    for ( i in [ 0..(sizeof i1s) ] )
+    {
+      if(i1s[i]==i2s[i]) {}
+      if(i1s[i]!=i2s[i]) {
+        fail++;
+        println("FAIL {msg}:  i1s[{i}] != i2s[{i}]; {i1s[i]} != {i2s[i]}");
+        return false;
+      }
+    }
+    println("PASS {msg}");
+    pass++;
+    return true;
+  }
+
+  public function checkIs(i1s:Integer[], i2s:Integer[], msg:String):Boolean {
+    if ( sizeof(i1s) != sizeof(i2s) ) {
+      fail++;print("FAIL {msg} : sizeof  {i1s.getClass().getName()} != sizeof {i2s}");
+    }
+    for ( i in [ 0..(sizeof i1s) ] )
+    {
+      if(i1s[i]==i2s[i]) {}
+      if(i1s[i]!=i2s[i]) {
+        fail++;
+        println("FAIL {msg}:  i1s[{i}] != i2s[{i}]; {i1s[i]} != {i2s[i]}");
+        return false;
+      }
+    }
+    println("PASS {msg}");
+    pass++;
+    return true;
+  }
+
+  public function checkBs(b1s:Boolean[], b2s:Boolean[], msg:String) {
+    if ( sizeof(b1s) != sizeof(b2s) ) {
+      fail++;print("FAIL {msg}: sizeof  {b1s.getClass().getName()} != sizeof {b2s}");
+    }
+    for ( i in [ 0..(sizeof b1s) ] )
+    {
+      if(b1s[i]==b2s[i]) {}
+      if(b1s[i]!=b2s[i]) { fail++;
+      println("FAIL {msg}: b1s[{i}] != b2s[{i}]; {b1s[i]} != {b2s[i]}");
+      return false; }
+    }
+    println("PASS {msg}");
+    pass++;
+    return true;
+  }
+
+  public function checkNs(n1s:Number[], n2s:Number[], msg:String) {
+    if ( sizeof(n1s) != sizeof(n2s) ) {
+      fail++;print("FAIL {msg}: sizeof  {n1s.getClass().getName()} != sizeof {n2s}");
+    }
+    for ( i in [ 0..(sizeof n1s) ] )
+    {
+      if(n1s[i]==n2s[i]) {}
+      if(n1s[i]!=n2s[i]) { fail++;
+      println("FAIL {msg}: n1s[{i}] != n2s[{i}]; {n1s[i]} != {n2s[i]}");
+      return false; }
+    }
+    println("PASS {msg}");
+    pass++;
+    return true;
+  }
+
+
+/**
+ * tests
+ */
+ function byTest1(id:String) {
+	 var byteSeq1:Byte[] = [-1..1];
+	 var byteSeq2:Byte[] = [-1..1];
+	 checkBys(byteSeq1,byteSeq2,"{id} Check Byte sequence -1..1");
+	 var byteSeq3:Byte[] = [-128..128];
+	 var byteSeq4:Byte[] = [-128..128];
+	 checkBys(byteSeq3,byteSeq4,"{id} Check Byte sequence -128..128");
+
+ }
+
+  function itest0(id:String) {
+    var intSequence1:Integer[] = [ 0..1];
+    var intSequence2:Integer[] = [ 0..1];
+    var intSequence3:Integer[] = [ -1..0 ];
+    var intSequence4:Integer[] = [ -1..0 ];
+    checkIs(intSequence1, intSequence2, "{id} Check equal sequences of 0..1");
+    checkIs(intSequence3, intSequence4, "{id} Check equal sequences of -1..0");
+   }
+
+  function itest1(id:String) {
+    var intSequence1:Integer[] = [ 0..10010];
+    var intSequence2:Integer[] = [ 0..10010];
+    var intSequence3:Integer[] = [ -10010 .. 10010 ];
+    var intSequence4:Integer[] = [ -10010 .. 10010 ];
+    checkIs(intSequence1, intSequence2, "{id} Check equal sequences of 0..1001");
+    checkIs(intSequence3, intSequence4, "{id} Check equal sequences of -1001..1001");
+   }
+
+   function itest2(id:String) {
+        var s1 : Integer[] = [10000, 10000, 10000];
+        var s2 : Integer[] = [10000, 10000, 10000];
+        var passed = true;
+        for (i in [0..2])
+            if (s1[i] != s2[i]){
+                println("FAIL {id}: s1[{i}] != s2[{i}] : {s1[i]} != {s2[i]}");
+                passed = false;
+            }
+        if(passed == false) fail++
+        else pass++;
+
+        // Test as reported
+        var s3 : Integer[] = [0,0,0];
+        var s4 : Integer[] = [0,0,0];
+        var passed2 = true;
+        for (i in [0..2])
+            if (s3[i] != s4[i]) {
+                passed2=false;
+                println("FAIL {id}: s3[{i}] != s4[{i}] : {s3[i]} != {s4[i]}");
+             }
+        if(passed2 == false) fail++
+        else pass++;
+        if(passed and passed2) println("PASS {id} As originally reported in vsgc2717");
+   }
+
+  function itest3(id:String) {
+    var intSequence1:Integer[] = [ 0..128];
+    var intSequence2:Integer[] = [ 0..128];
+    var intSequence3:Integer[] = [ -129..0 ];
+    var intSequence4:Integer[] = [ -129..0 ];
+    checkIs(intSequence1, intSequence2, "{id} Check equal sequences of 0..128");
+    checkIs(intSequence3, intSequence4, "{id} Check equal sequences of -129..0");
+   }
+
+  function btest1(id:String) {
+   var boolSequence1:Boolean[] = [true, false];
+   var boolSequence2:Boolean[] = [true, false];
+   checkBs(boolSequence1,boolSequence2, "{id} Check boolean sequence true,false");
+   }
+
+  function ntest1(id:String) {
+   var NumSequence1:Number[] = [0.0..128.0 step 1.0];
+   var NumSequence2:Number[] = [0.0..128.0 step 1.0];
+   checkNs(NumSequence1,NumSequence2, "{id} Check Num sequence 0.0, 128.0 step 1.0");
+   }
+   function testMisc(id:String) {
+	   checkIs( [5..100000 step 5], [5..100000 step 5],"5 to 100k by 5s");
+	   checkNs( [10.0 .. 1000000.0 step 100.0], [10.0 .. 1000000.0 step 100.0], "10 to a million by 100s");
+   }
+
+
+
+   public function report() {
+	println("========= results ===============");
+	println("Tests:      {pass+fail+GFT}");
+	println("Passed:     {pass}");
+	println("Failed:     {fail}");
+	println("=================================");
+    }
+}
+
+public function run() {
+ var sc : SeqCompare = new SeqCompare();
+sc.byTest1("by1");
+ sc.itest0("i0");
+ sc.itest1("i1");
+ sc.itest2("i2");
+ sc.itest3("i2");
+ sc.btest1("b1");
+ sc.ntest1("n1");
+ sc.testMisc("misc literal sequences");
+ sc.report();
+}

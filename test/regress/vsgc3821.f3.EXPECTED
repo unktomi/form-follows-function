@@ -1,0 +1,11 @@
+jjx: Parent-1, set children
+jjx: Parent-0, exit
+jjx: Parent-1, set children
+jjx: Parent-0, exit
+jjx: Root: set-children
+jjx: Parent-1, set children
+jjx: Parent-2, set children
+jjx: Parent-1, exit
+jjx: Root: set-children
+jjx: Parent-0, exit
+jjx: Root: set-children

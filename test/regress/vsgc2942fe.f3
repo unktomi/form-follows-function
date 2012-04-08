@@ -1,0 +1,125 @@
+/**
+ * Regression test VSGC-2942 : Lazy binding: range -- throws divide by zero exception in trigger
+ *
+ * Eager Number ranges
+ *
+ * @test
+ * @run
+ */
+
+import java.io.*;
+
+def CALC = " >> ";
+
+def swr1 = new StringWriter();
+def pwr1 = new PrintWriter( swr1 );
+def swr2 = new StringWriter();
+def pwr2 = new PrintWriter( swr2 );
+def swr3 = new StringWriter();
+def pwr3 = new PrintWriter( swr3 );
+def swr4 = new StringWriter();
+def pwr4 = new PrintWriter( swr4 );
+def sws1 = new StringWriter();
+def pws1 = new PrintWriter( sws1 );
+def sws2 = new StringWriter();
+def pws2 = new PrintWriter( sws2 );
+def sws3 = new StringWriter();
+def pws3 = new PrintWriter( sws3 );
+def sws4 = new StringWriter();
+def pws4 = new PrintWriter( sws4 );
+
+function m(pw : PrintWriter, x : Number[]) : Number[]  { pw.print(CALC); pw.print(x); x }
+function n(pw : PrintWriter, x : Number) : Number  { pw.print(CALC); pw.print(x); x }
+
+function check(log : String, upd : Number[], seeResult : Boolean, seq : Number[]) : Void {
+  def swr = new StringWriter();
+  def pwr = new PrintWriter( swr );
+  pwr.print(seq);
+  def res = swr.toString();
+  var uc = "";
+  for (u in upd) {
+    uc = "{uc}{CALC}{u}";
+  }
+  if (seeResult) {
+    uc = "{uc}{CALC}{res}";
+  }
+  if (log != uc) {
+    println("ERROR");
+    println("Expected: {uc}");
+    println("Got: {log}");
+  }
+  println(seq);
+}
+
+function checkEmpty(sw : StringWriter) : Void {
+  def log = extract(sw);
+  if (log != "") {
+    println("Unexpected update: {log}");
+  }
+}
+
+function extract(sw : StringWriter) : String {
+  def log = sw.toString();
+  sw.getBuffer().setLength(0);
+  log
+}
+
+function checkR(upd : Number[], chng : Boolean) : Void {
+  def l1 = extract(swr1);
+  def l2 = extract(swr2);
+  def l3 = extract(swr3);
+  def l4 = extract(swr4);
+  check(l1, upd, chng,  r1);
+  check(l2, upd, false, r2);
+  check(l3, [],  chng,  r3);
+  check(l4, [],  false, r4);
+  checkEmpty(swr1);
+  checkEmpty(swr2);
+  checkEmpty(swr3);
+  checkEmpty(swr4);
+}
+
+function checkS(upd : Number[]) : Void {
+  def l1 = extract(sws1);
+  def l2 = extract(sws2);
+  def l3 = extract(sws3);
+  def l4 = extract(sws4);
+  check(l1, upd, true,  s1);
+  check(l2, upd, false, s2);
+  check(l3, [],  true,  s3);
+  check(l4, [],  false, s4);
+  checkEmpty(sws1);
+  checkEmpty(sws2);
+  checkEmpty(sws3);
+  checkEmpty(sws4);
+}
+
+var a = 9.0;
+var b = 10;
+var c = 0.5;
+def r1 = bind m(pwr1, [n(pwr1, a) .. n(pwr1, b)]) on replace{};
+def r2 = bind [n(pwr2, a) .. n(pwr2, b)] on replace{};
+def r3 = bind m(pwr3, [a .. b]) on replace{};
+def r4 = bind [a .. b];
+def s1 = bind m(pws1, [n(pws1, a) .. n(pws1, b) step n(pws1, c)]) on replace{};
+def s2 = bind [n(pws2, a) .. n(pws2, b) step n(pws2, c)] on replace{};
+def s3 = bind m(pws3, [a .. b step c]) on replace{};
+def s4 = bind [a .. b step c];
+
+checkR([a, b], true);
+checkS([a, b, c]);
+
+b = 11;
+
+checkR([b], true);
+checkS([b]);
+
+a = 9.75;
+
+checkR([a], true);
+checkS([a]);
+
+c = 0.25;
+
+checkR([], false);
+checkS([c]);

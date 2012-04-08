@@ -1,0 +1,12 @@
+/**
+ * Regression test VSGC-3236 : Slacker Binding: script-private non-overridden/object-literal-inited
+ *
+ * @compilearg -XDoptstats="i"
+ * @test/warning
+ */
+
+
+public class vsgc3236 {
+  var a = 3; // bound to
+  def b = bind a;
+}

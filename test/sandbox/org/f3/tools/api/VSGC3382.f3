@@ -1,0 +1,5 @@
+package org.f3.tools.api;
+
+public function test(param:String) {
+    println(param);
+}

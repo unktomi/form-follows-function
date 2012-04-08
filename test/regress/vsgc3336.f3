@@ -1,0 +1,11 @@
+/**
+ * VSGC-3336 :  NPE BoundCompositeSequence.computeValue() -- bound if for.
+ *
+ * @test
+ * @run
+ */
+
+// the following used to crash with NPE at runtime.
+var t = bind [ if (false) for (i in [0..100]) new Object else null ]; 
+
+println(sizeof t);

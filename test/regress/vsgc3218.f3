@@ -1,0 +1,19 @@
+/**
+ * VSGC-3218 : Compiler throws internal error when compiling the UI control code
+ *
+ * @compilefirst vsgc3218A.f3
+ * @test
+ * @run
+ */
+
+import vsgc3218A.*;
+
+class vsgc3218 {
+
+init {
+     a = "Good";
+    }
+}
+
+def b = vsgc3218{}
+println(a);

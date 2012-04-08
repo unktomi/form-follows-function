@@ -1,0 +1,5 @@
+/*
+ * @subtest vsgc2093 
+ */
+mixin public class vsgc2093Foo {
+}

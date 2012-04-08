@@ -1,0 +1,10 @@
+/**
+ * VSGC-3317 : Optimize bound F3 var select with mutable selectors
+ *
+ * @subtest vsgc3317Init.f3
+ */
+
+public class vsgc3317InitSubB extends vsgc3317InitSubA {
+  var zzz = "yo";
+  public var x = 1.2;
+}

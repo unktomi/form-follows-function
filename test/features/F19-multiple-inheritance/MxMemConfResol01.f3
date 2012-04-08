@@ -1,0 +1,51 @@
+/*
+ * Test for precedence and member conflict resolution.
+ *
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+mixin class Mixin1 {
+    public-init var bar : Integer = 140420091;
+    public function foo() : String { "Mixin1" }
+}
+
+mixin class Mixin2 {
+    package var bar : Integer = 140420092;
+    public function foo() : String { "Mixin2" }
+}
+
+class Super {
+    public-read var bar : Integer = 14042009;
+    function foo() : String { "Super" }
+}
+
+/* Uncomment this when VSGC-3072 is fixed */
+// class Mixee1 extends Mixin1, Mixin2 {}
+class Mixee1 extends Mixin1 {}
+
+/* Uncomment this when VSGC-3072 is fixed */
+// class Mixee2 extends Super, Mixin1, Mixin2 {}
+class Mixee2 extends Super {}
+
+public class MxMemConfResol01 extends F3TestCase {
+
+    /*
+     * Both parent mixins contain function foo() and a variable bar.
+     */
+    function testMixin1Mixin2() {
+        var m : Mixee1 = new Mixee1();
+        assertEquals(140420091, m.bar);
+        assertEquals("Mixin1", m.foo());
+    }
+    /*
+     * Both parent mixins and a superclass contain
+     * function foo() and a variable bar.
+     */
+    function testSuperMixin1Mixin2() {
+        def m = Mixee2 {}
+        assertEquals(14042009, m.bar);
+        assertEquals("Super", m.foo());
+    }
+}

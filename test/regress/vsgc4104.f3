@@ -1,0 +1,21 @@
+/**
+ * VSGC-4104 :  Can 'super' be referenced from a function value?
+ *
+ * @test
+ * @run
+ */
+
+class A {
+    var x;
+}
+
+class B extends A {
+    var f = function() { super.x; }
+    var ok = super.x;
+}
+
+var b = B { 
+    x: 42  // The answer to Everything!
+};
+println(b.f());
+println(b.ok);

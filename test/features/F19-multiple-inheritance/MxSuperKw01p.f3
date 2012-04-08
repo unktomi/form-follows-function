@@ -1,0 +1,7 @@
+/*
+ * @subtest MxSuperKw01c.f3
+ */
+
+public mixin class MxSuperKw01p {
+    public function foo() : String { "MxSuperKw01p.foo" }
+}

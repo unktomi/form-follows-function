@@ -1,0 +1,3 @@
+test/should-fail/vsgc379step.f3:4: range step must be Integer or Number.
+var nonNumericStep = [17..42 step "n"];
+                                  ^

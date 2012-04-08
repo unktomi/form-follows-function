@@ -1,0 +1,33 @@
+/**
+ * VSGC-4092 : sequence bound-if with logical-and condition gives stale explicit sequence element
+ *
+ * Elements evaluated minimal number of times -- mixed elements -- trigger access
+ *
+ * @test
+ * @run
+ */
+
+class A {
+  var v : Integer;
+  override function equals(o : Object) : Boolean { (o as A).v == v }
+  override function hashCode() : Integer { v }
+  override function toString() : String { "A:{v}" }
+  init {
+    println("new {this}")
+  }
+}
+
+class vsgc4092obj {
+  var x = 4 on replace { for (ai in seq) if (ai.v != x) println("MISMATCH: seq: {seq}") }
+  var sub = bind [A {v: x}];
+  var seq = bind [A{v:x}, sub, A{v:x}];
+  var aft = bind x on replace { for (ai in seq) if (ai.v != x) println("MISMATCH: seq: {seq}") }
+}
+var aa = vsgc4092obj{};
+println(aa.seq);
+aa.x = 13;
+aa.x = 29;
+println(aa.seq);
+println(aa.seq);
+println(aa.seq);
+println(aa.seq);

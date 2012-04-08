@@ -1,0 +1,4 @@
+test/should-fail/vsgc2061.f3:9: i is already defined in vsgc2061
+   var i:Integer=1;
+   ^
+1 error

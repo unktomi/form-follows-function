@@ -1,0 +1,25 @@
+test\should-fail\vsgc1250slRead.f3:25: cannot find symbol
+symbol  : variable slScr
+location: class vsgc1250slRead.Inh
+	System.out.println( slScr );   // ERROR: inherited, same package
+	                    ^
+test\should-fail\vsgc1250slRead.f3:44: cannot find symbol
+symbol  : variable slPkg
+location: class vsgc1250slRead.InhA
+	System.out.println( slPkg );   // ERROR: inherited, different package
+	                    ^
+test\should-fail\vsgc1250slRead.f3:45: cannot find symbol
+symbol  : variable slScr
+location: class vsgc1250slRead.InhA
+	System.out.println( slScr );   // ERROR: inherited, different package
+	                    ^
+test\should-fail\vsgc1250slRead.f3:84: slScr has script only (default) access in vsgc1250subFail
+	System.out.println( vsgc1250subFail.slScr );   // ERROR: same package
+	                                   ^
+test\should-fail\vsgc1250slRead.f3:92: slPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	System.out.println( vsgc1250subFailA.slPkg );   // ERROR: different package
+	                                    ^
+test\should-fail\vsgc1250slRead.f3:93: slScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	System.out.println( vsgc1250subFailA.slScr );   // ERROR: different package
+	                                    ^
+6 errors

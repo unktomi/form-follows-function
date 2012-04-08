@@ -1,0 +1,6 @@
+/*
+ * @test
+ * @compile vsgc165a.f3
+ */
+ 
+package var BAR : vsgc165a = new vsgc165a;

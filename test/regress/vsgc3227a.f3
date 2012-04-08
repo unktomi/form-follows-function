@@ -1,0 +1,13 @@
+/**
+ * VSGC-3227 : Compiler should always enforce sequence flattening
+ *
+ * @test
+ * @run
+ */
+
+function foo(x:Object) {
+   var seq:Object[] = x;
+   println(seq);
+}
+
+foo([1,2,3]);

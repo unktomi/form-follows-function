@@ -1,0 +1,4 @@
+test/should-fail/vsgc3091.f3:13: Cannot override variable x defined in vsgc3091.A within a function definition.
+override var x = 12;
+^
+1 error

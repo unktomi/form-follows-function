@@ -1,0 +1,36 @@
+/**
+ * VSGC-4106 : Strict declaration order initialization: bound sequences
+ *
+ * Emulation of original presentation
+ *
+ * @compilefirst XNode.f3
+ * @compilefirst XParent.f3
+ * @compilefirst XRectangle.f3
+ * @compilefirst XGroup.f3
+ * @test
+ * @run
+ */
+
+public class vsgc4106orig extends XNode {
+    var z = 0.0;
+    var parts : XNode[];
+
+    function create() : XNode {
+        
+        return XGroup {
+            hook: { 
+                for (zi in [0.25 .. 2.0 step 0.25]) z = zi; 
+                insert XRectangle{x:99} into parts; 
+                888 
+            },
+            content: bind [
+                XRectangle {x: z},
+                parts
+            ]
+        }
+    }
+}
+
+function run() {
+    vsgc4106orig{}.create();
+}

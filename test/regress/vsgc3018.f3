@@ -1,0 +1,30 @@
+/**
+ * Regress test for VSGC-3018 - Binding chain isn't updated when initialized.
+ *
+ * This test should really generate an illegal forward reference error -- see JIRA.
+ * Left here to track changes in behavior.
+ *
+ * @test
+ * @run
+ */
+
+var a = 1234; 
+
+class SuperB { 
+    var c:C; 
+} 
+
+class B extends SuperB { 
+    var b = 0; 
+    override var c = C { b: this } 
+} 
+
+class C { 
+    var b:B; 
+    var c = bind b.b; 
+} 
+
+var b = B { 
+    b: bind a 
+}; 
+println(b.c.c);

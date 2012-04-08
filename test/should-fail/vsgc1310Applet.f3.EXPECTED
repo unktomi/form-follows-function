@@ -1,0 +1,6 @@
+test/should-fail/vsgc1310Application.f3:6: cannot find symbol
+symbol  : class Component
+location: class vsgc1310Application
+    public var content: Component;
+                        ^
+1 error

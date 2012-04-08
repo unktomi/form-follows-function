@@ -1,0 +1,71 @@
+/**
+ * Regression test: VSGC-2563 : Change millis in Duration.java from double to long
+ *
+ * @test
+ * @run
+ */
+
+// There are plenty of tests that test Durations.  This test will test the new INDEFINITE Duration, and
+// the new long instead of double holder for millis.
+
+var indef = Duration.INDEFINITE;
+var indef1 = Duration.INDEFINITE;
+var t0 = 0ms;
+var t3 = 100ms;
+var indefString = "INDEFINITE";
+
+
+println("indef.toString(): {indef.toString()}");
+println("- INDEFINITE:               {(- indef) == indef}");
+
+println("INDEFINITE == INDEFINITE:   {indef == indef1}");
+println("INDEFINITE != INDEFINITE:   {indef != indef1}");
+println("INDEFINITE <  INDEFINITE:   {indef <  indef1}");
+println("INDEFINITE <= INDEFINITE:   {indef <= indef1}");
+println("INDEFINITE >  INDEFINITE:   {indef >  indef1}");
+println("INDEFINITE >= INDEFINITE:   {indef >= indef1}");
+
+println("INDEFINITE == time 0:   {indef == t0}");
+println("INDEFINITE != time 0:   {indef != t0}");
+println("INDEFINITE <  time 0:   {indef <  t0}");
+println("INDEFINITE <= time 0:   {indef <= t0}");
+println("INDEFINITE >  time 0:   {indef >  t0}");
+println("INDEFINITE >= time 0:   {indef >= t0}");
+
+println("INDEFINITE.toMillis:  {indef.toMillis()}");
+println("INDEFINITE.toSeconds: {indef.toSeconds()}");
+println("INDEFINITE.toMinutes: {indef.toMinutes()}");
+println("INDEFINITE.toHours:   {indef.toHours()}");
+
+println("INDEFINITE + INDEFINITE: {indef + indef == indef}");
+println("INDEFINITE - INDEFINITE: {indef - indef == indef}");
+println("INDEFINITE * 99.7:       {indef * 99.7 == indef}");
+println("INDEFINITE / 99.7:       {indef / 99.7 == indef}");
+println("INDEFINITE / INDEFINITE: {indef / indef}");
+println("t3         / INDEFINITE: {t3 / indef}");
+println("INDEFINITE / t3:         {indef / t3}");
+
+
+// this fits in a double with no loss of precision
+var longVal = 1234567890123456;
+var longDur = Duration.valueOf(longVal as Double);
+println("longVal and Duration of that = {longVal}, {longDur}");
+// See bug ???? println("same value but as literal ms: {1234567890123456ms}");
+
+// this fits in a double with no loss of precision
+var doubleVal:Double = 1234567890123.4;
+var doubleDur = Duration.valueOf(doubleVal);
+println("doubleVal and Duration of that = {doubleVal}, {doubleDur}");
+// see bug ???? println("same value but as literal ms: {1234567890123.4ms}");
+
+// verify that we don't cast a double to float.  Well, we don't but the compiler gens this
+// as a Float constant instead of a Double.  Robert says that is correct behavior.
+//println("****Duration.valueOf(1234567890123.4) = {Duration.valueOf(1234567890123.4)}");
+//println("****Duration.valueOf(1234567890123.4) = {Duration.valueOf(1234567890123.4 as Double)}");
+
+// This won't fit in a double without loss of precision.
+var long18: Long = 123456789012345678;
+println("18 digit long val and Duration of that = {long18}, {Duration.valueOf(long18 as Double)}");
+// see bug ???? println("same value but as literal ms {123456789012345678ms}");
+
+println("test completed");

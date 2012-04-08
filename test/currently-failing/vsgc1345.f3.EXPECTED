@@ -1,0 +1,4 @@
+test/currently-failing/vsgc1345.f3:43: Sorry, currently not implemented: try-catch-block within expression.
+    try{
+    ^
+1 error

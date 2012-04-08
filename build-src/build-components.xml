@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-components" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+   
+        Defines component (sub repository) properties and macrodefs
+        for building the components and controlling which components get built.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build.xml file only.
+
+        The contract between the top repository and sub repositories:
+
+           f3-init         - Initialize anything for a build
+           f3-clean        - Clean yourself
+           f3-sdk          - Build and add your files to ${f3.sdk.dir}
+           f3-sdk-clean    - Delete the files you added to ${f3.sdk.dir}
+           f3-deploy       - Build and add your files to ${f3.deployed.dir}
+           f3-deploy-clean - Delete the files you added to ${f3.deployed.dir}
+           f3-test         - Run your smoke tests on ${f3.sdk.dir}
+           f3-sdk-docs     - Generate and deliver sdk docs
+    
+         Refer to the comments in this file with the pattern
+             "NOTE: (newcomponent)"
+         for what changes are needed to add a new component.
+
+    </description>
+
+    <!-- Run an ant target for a component. -->
+    <macrodef name="do-component">
+        <attribute name="component"/>
+        <attribute name="target"/>
+        <sequential>
+            <tstamp>
+                <format property="f3.@{component}.@{target}.start.clock"
+                        pattern="HH:mm:ss"/>
+            </tstamp>
+            <tstamp>
+                <format property="f3.@{component}.@{target}.start.time"
+                        pattern="MM/dd/yyyy HH:mm:ss"/>
+            </tstamp>
+            <echo level="info"
+                  message="################################################"/>
+            <echo level="info"
+                  message="# cd @{component} ; ant @{target} -> Start  Time: ${f3.@{component}.@{target}.start.time}"/>
+            <!-- RUN separate ant file -->
+            <ant antfile="${basedir}/@{component}/build.xml"
+                 target="@{target}" inheritAll="false"/>
+            <tstamp>
+                <format property="f3.@{component}.@{target}.finish.time"
+                        pattern="MM/dd/yyyy HH:mm:ss"/>
+            </tstamp>
+            <tstamp>
+                <format property="f3.@{component}.@{target}.finish.clock"
+                        pattern="HH:mm:ss"/>
+            </tstamp>
+            <echo level="info"
+                  message="# cd @{component} ; ant @{target} -> Finish Time: ${f3.@{component}.@{target}.finish.time}"/>
+            <echo level="info"
+                  message="# Timing: ${f3.@{component}.@{target}.start.clock} -> ${f3.@{component}.@{target}.finish.clock} (@{component} @{target})"/>
+            <echo level="info"
+                  message="################################################"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Clone a component repository. -->
+    <macrodef name="do-clone">
+        <attribute name="component"/>
+        <sequential>
+            <echo message="hg clone --pull ${hg.paths.default}/@{component} ./@{component}"/>
+            <exec executable="hg">
+                <arg value="clone"/>
+                <arg value="--pull"/>
+                <arg value="${hg.paths.default}/@{component}"/>
+                <arg value="./@{component}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+     <!-- Find tip for a component repository. -->
+    <macrodef name="do-tip">
+        <attribute name="component"/>
+        <attribute name="property"/>
+        <sequential>
+            <exec executable="hg" outputproperty="@{property}" failifexecutionfails="false">
+                <arg value="tip"/>
+                <arg value="--repository"/>
+                <arg value="@{component}"/>
+                <arg value="--template"/>
+                <arg value="{node|short}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <!-- Sets up properties for a component, a component xml file to
+         define the targets, AND imports that component xml file. -->
+    <macrodef name="do-setup-and-import-component">
+        <attribute name="component"/>
+        <sequential>
+            <condition property="f3.@{component}.repo.exists">
+                <available file="${f3.root.dir}/@{component}/.hg" type="dir"/>
+            </condition>
+            <condition property="f3.@{component}.exists">
+                <available file="${f3.root.dir}/@{component}/build.xml" type="file"/>
+            </condition>
+            <mkdir dir="${f3.build.dir}/xml_generated"/>
+            <copy file="${f3.root.build.src.dir}/build-component-template.xml"
+                  tofile="${f3.build.dir}/xml_generated/build-@{component}.xml"/>
+            <replace file="${f3.build.dir}/xml_generated/build-@{component}.xml"
+                     token="@COMPONENT@" value="@{component}"/>
+            <import file="${f3.build.dir}/xml_generated/build-@{component}.xml"/>
+        </sequential>
+    </macrodef>
+
+    <!-- See what components we have and if it is a complete forest -->
+    <condition property="f3.root.repo.exists">
+        <available file="${f3.root.dir}/.hg" type="dir"/>
+    </condition>
+    
+    <!-- This defines all targets and properties for a component -->
+    <!--   NOTE: (newcomponent) Add line here for a new component. -->
+    <!--         Please keep in alphabetical order. -->
+    <do-setup-and-import-component component="apps"/>
+    <do-setup-and-import-component component="deploy"/>
+    <do-setup-and-import-component component="docs"/>
+    <do-setup-and-import-component component="f3dloader"/>
+    <do-setup-and-import-component component="jogl"/>
+    <do-setup-and-import-component component="media"/>
+    <do-setup-and-import-component component="mobile"/>
+    <do-setup-and-import-component component="f3-compiler"/>
+    <do-setup-and-import-component component="runtime"/>
+    <do-setup-and-import-component component="samples"/>
+    <do-setup-and-import-component component="tests"/>
+    <do-setup-and-import-component component="tools"/>
+    <do-setup-and-import-component component="tv"/>
+    <do-setup-and-import-component component="webservices"/>
+
+    <!-- Special case of mobile emulator repository, which does not follow
+         the normal repository conventions, but should exist for this
+         f3 forest to be considered a full source forest.  -->
+    <condition property="f3.mobile.emulator.exists">
+        <available file="${f3.mobile.emulator.dir}/.hg" type="dir"/>
+    </condition>
+
+    <!-- Only windows needs the mobile emulator sources. -->
+    <condition property="f3.mobile.emulator.exists.or.is.not.needed">
+        <or>
+            <isset property="f3.mobile.emulator.exists"/>
+            <not>
+                <or>
+                    <isset property="isWindows"/>
+                    <isset property="isMacOSX"/>
+                </or>
+            </not>
+        </or>
+    </condition>
+    
+    <!-- Do we have a full forest (determines if cached files used) -->
+    <!--   NOTE: (newcomponent) Add line here for a new component. -->
+    <!--         Please keep in alphabetical order. -->
+    <condition property="f3.full.forest">
+        <and>
+            <isset property="f3.apps.exists"/>
+            <isset property="f3.deploy.exists"/>
+            <isset property="f3.docs.exists"/>
+            <isset property="f3.f3dloader.exists"/>
+            <isset property="f3.jogl.exists"/>
+            <isset property="f3.media.exists"/>
+            <isset property="f3.mobile.exists"/>
+            <isset property="f3.mobile.emulator.exists.or.is.not.needed"/>
+            <isset property="f3.f3-compiler.exists"/>
+            <isset property="f3.runtime.exists"/>
+            <isset property="f3.samples.exists"/>
+            <isset property="f3.tests.exists"/>
+            <isset property="f3.tools.exists"/>
+            <isset property="f3.tv.exists"/>
+            <isset property="f3.webservices.exists"/>
+        </and>
+    </condition>
+
+    <!-- Run an ant target for all components. -->
+    <macrodef name="do-all-components">
+        <attribute name="target"/>
+        <sequential>
+            <!-- NOTE: (newcomponent) Add line here for a new component. -->
+            <!--       This list is NOT in alphabetical order. -->
+            <!-- WARNING: Order of building is important here, be careful. -->
+            <antcall target="tools-@{target}"/>
+            <antcall target="jogl-@{target}"/>
+            <antcall target="f3-compiler-@{target}"/>
+            <antcall target="media-@{target}"/>
+            <antcall target="runtime-@{target}"/>
+            <antcall target="f3dloader-@{target}"/>
+            <antcall target="mobile-@{target}"/>
+            <antcall target="tv-@{target}"/>
+            <antcall target="webservices-@{target}"/>
+            <antcall target="deploy-@{target}"/>
+            <antcall target="docs-@{target}"/>
+            <antcall target="apps-@{target}"/>
+            <antcall target="samples-@{target}"/>
+            <antcall target="tests-@{target}"/>
+            <echo level="info"
+                  message="Target @{target} completed for all components."/>
+        </sequential>
+    </macrodef>
+
+    <!-- Forest clone. Clone any missing component repositories. -->
+    <!--   NOTE: (newcomponent) Add line here for a new component. -->
+    <!--         Please keep in alphabetical order. -->
+    <target name="clone-all-components"
+            depends="-hg-paths-default,
+                     apps-clone,
+                     deploy-clone,
+                     docs-clone,
+                     f3dloader-clone,
+                     jogl-clone,
+                     media-clone,
+                     mobile-clone,
+                     f3-compiler-clone,
+                     runtime-clone,
+                     samples-clone,
+                     tests-clone,
+                     tools-clone,
+                     tv-clone,
+                     webservices-clone">
+    </target>
+
+    <!-- Get tips of all component repositories. -->
+    <!--   NOTE: (newcomponent) Add line here for a new component. -->
+    <!--         Please keep in alphabetical order. -->
+    <target name="tip-all-components"
+            depends="root-tip,
+                     apps-tip,
+                     deploy-tip,
+                     docs-tip,
+                     f3dloader-tip,
+                     jogl-tip,
+                     media-tip,
+                     mobile-tip,
+                     f3-compiler-tip,
+                     runtime-tip,
+                     samples-tip,
+                     tests-tip,
+                     tools-tip,
+                     tv-tip,
+                     webservices-tip">
+        <echoproperties destfile="${f3.repository.data}">
+            <propertyset>
+                <propertyref prefix="f3.repository.tip."/>
+            </propertyset>
+        </echoproperties>
+    </target>
+
+    <!-- Define the hg.paths.default property, or path to parent. -->
+    <target name="-hg-paths-default">
+        <exec executable="hg" failonerror="true">
+            <arg value="paths"/>
+            <arg value="default"/>
+            <redirector outputproperty="hg.paths.default">
+                <outputfilterchain>
+                    <tokenfilter>
+                        <stringtokenizer/>
+                        <replaceregex pattern="(.+)/.*$" replace="\1"/>
+                    </tokenfilter>
+                </outputfilterchain>
+            </redirector>
+        </exec>
+    </target>
+
+    <!-- Targets for root. -->
+    <target name="root-tip"
+            unless="f3.repository.tip.root" 
+            if="f3.root.repo.exists">
+        <do-tip component="." property="f3.repository.tip.root"/>
+    </target>
+
+    <!-- Targets to do the contract targets on all sub repositories or components. -->
+    <target name="do-all-clean">
+        <do-all-components target="f3-clean"/>
+    </target>
+    <target name="do-all-clean-sdk">
+        <do-all-components target="f3-clean-sdk"/>
+    </target>
+    <target name="do-all-clean-deploy">
+        <do-all-components target="f3-clean-deploy"/>
+    </target>
+    <target name="do-all-sdk">
+        <do-all-components target="f3-sdk"/>
+    </target>
+    <target name="do-all-test">
+        <do-all-components target="f3-test"/>
+    </target>
+    <target name="do-all-deploy">
+        <do-all-components target="f3-deploy"/>
+    </target>
+    <target name="do-all-sdk-docs">
+        <do-all-components target="f3-sdk-docs"/>
+    </target>
+    <target name="do-all-samples">
+        <do-all-components target="f3-samples"/>
+    </target>
+    <target name="do-all-full-test">
+        <do-all-components target="f3-full-test"/>
+    </target>
+
+</project>

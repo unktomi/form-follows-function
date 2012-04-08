@@ -1,0 +1,13 @@
+/**
+ * regression test: could not call varargs Class.getConstructor.
+ * @test
+ * @run
+ */
+import java.lang.Class;
+import java.lang.System;
+var point2DClass : Class = Class.forName("java.awt.geom.Point2D");
+var floatArrayClass : Class = Class.forName("[F");
+var colorArrayClass : Class = Class.forName("[Ljava.awt.Color;");
+var lgpClass : Class = Class.forName("vsgc680sub");
+var ctor = lgpClass.getConstructor(point2DClass, point2DClass, floatArrayClass, colorArrayClass);
+System.out.println("ctor: {ctor}");

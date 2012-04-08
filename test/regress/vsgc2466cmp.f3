@@ -1,0 +1,552 @@
+/**
+ * Regression test VSGC-2466 : Lazy Binding: Operators -- runtime
+ *
+ * @test
+ * @run
+ */
+
+var by : Byte = 1;
+var sh : Short = 10;
+var ii : Integer = 100;
+var lo : Long = 2147383648;
+var fl : Float = 1234.5;
+var db : Double = 6.12E40;
+function tby(x : Byte) : Byte { println("by = {x}"); x };
+function tsh(x : Short) : Short { println("sh = {x}"); x };
+function tii(x : Integer) : Integer { println("ii = {x}"); x };
+function tlo(x : Long) : Long { println("lo = {x}"); x };
+function tfl(x : Float) : Float { println("fl = {x}"); x };
+function tdb(x : Double) : Double { println("db = {x}"); x };
+def by_by_lt = bind lazy tby(by) < tby(by);
+def by_by_le = bind lazy tby(by) <= tby(by);
+def by_by_gt = bind lazy tby(by) > tby(by);
+def by_by_ge = bind lazy tby(by) >= tby(by);
+def by_by_eq = bind lazy tby(by) == tby(by);
+def by_by_ne = bind lazy tby(by) != tby(by);
+def by_sh_lt = bind lazy tby(by) < tsh(sh);
+def by_sh_le = bind lazy tby(by) <= tsh(sh);
+def by_sh_gt = bind lazy tby(by) > tsh(sh);
+def by_sh_ge = bind lazy tby(by) >= tsh(sh);
+def by_sh_eq = bind lazy tby(by) == tsh(sh);
+def by_sh_ne = bind lazy tby(by) != tsh(sh);
+def by_ii_lt = bind lazy tby(by) < tii(ii);
+def by_ii_le = bind lazy tby(by) <= tii(ii);
+def by_ii_gt = bind lazy tby(by) > tii(ii);
+def by_ii_ge = bind lazy tby(by) >= tii(ii);
+def by_ii_eq = bind lazy tby(by) == tii(ii);
+def by_ii_ne = bind lazy tby(by) != tii(ii);
+def by_lo_lt = bind lazy tby(by) < tlo(lo);
+def by_lo_le = bind lazy tby(by) <= tlo(lo);
+def by_lo_gt = bind lazy tby(by) > tlo(lo);
+def by_lo_ge = bind lazy tby(by) >= tlo(lo);
+def by_lo_eq = bind lazy tby(by) == tlo(lo);
+def by_lo_ne = bind lazy tby(by) != tlo(lo);
+def by_fl_lt = bind lazy tby(by) < tfl(fl);
+def by_fl_le = bind lazy tby(by) <= tfl(fl);
+def by_fl_gt = bind lazy tby(by) > tfl(fl);
+def by_fl_ge = bind lazy tby(by) >= tfl(fl);
+def by_fl_eq = bind lazy tby(by) == tfl(fl);
+def by_fl_ne = bind lazy tby(by) != tfl(fl);
+def by_db_lt = bind lazy tby(by) < tdb(db);
+def by_db_le = bind lazy tby(by) <= tdb(db);
+def by_db_gt = bind lazy tby(by) > tdb(db);
+def by_db_ge = bind lazy tby(by) >= tdb(db);
+def by_db_eq = bind lazy tby(by) == tdb(db);
+def by_db_ne = bind lazy tby(by) != tdb(db);
+def sh_by_lt = bind lazy tsh(sh) < tby(by);
+def sh_by_le = bind lazy tsh(sh) <= tby(by);
+def sh_by_gt = bind lazy tsh(sh) > tby(by);
+def sh_by_ge = bind lazy tsh(sh) >= tby(by);
+def sh_by_eq = bind lazy tsh(sh) == tby(by);
+def sh_by_ne = bind lazy tsh(sh) != tby(by);
+def sh_sh_lt = bind lazy tsh(sh) < tsh(sh);
+def sh_sh_le = bind lazy tsh(sh) <= tsh(sh);
+def sh_sh_gt = bind lazy tsh(sh) > tsh(sh);
+def sh_sh_ge = bind lazy tsh(sh) >= tsh(sh);
+def sh_sh_eq = bind lazy tsh(sh) == tsh(sh);
+def sh_sh_ne = bind lazy tsh(sh) != tsh(sh);
+def sh_ii_lt = bind lazy tsh(sh) < tii(ii);
+def sh_ii_le = bind lazy tsh(sh) <= tii(ii);
+def sh_ii_gt = bind lazy tsh(sh) > tii(ii);
+def sh_ii_ge = bind lazy tsh(sh) >= tii(ii);
+def sh_ii_eq = bind lazy tsh(sh) == tii(ii);
+def sh_ii_ne = bind lazy tsh(sh) != tii(ii);
+def sh_lo_lt = bind lazy tsh(sh) < tlo(lo);
+def sh_lo_le = bind lazy tsh(sh) <= tlo(lo);
+def sh_lo_gt = bind lazy tsh(sh) > tlo(lo);
+def sh_lo_ge = bind lazy tsh(sh) >= tlo(lo);
+def sh_lo_eq = bind lazy tsh(sh) == tlo(lo);
+def sh_lo_ne = bind lazy tsh(sh) != tlo(lo);
+def sh_fl_lt = bind lazy tsh(sh) < tfl(fl);
+def sh_fl_le = bind lazy tsh(sh) <= tfl(fl);
+def sh_fl_gt = bind lazy tsh(sh) > tfl(fl);
+def sh_fl_ge = bind lazy tsh(sh) >= tfl(fl);
+def sh_fl_eq = bind lazy tsh(sh) == tfl(fl);
+def sh_fl_ne = bind lazy tsh(sh) != tfl(fl);
+def sh_db_lt = bind lazy tsh(sh) < tdb(db);
+def sh_db_le = bind lazy tsh(sh) <= tdb(db);
+def sh_db_gt = bind lazy tsh(sh) > tdb(db);
+def sh_db_ge = bind lazy tsh(sh) >= tdb(db);
+def sh_db_eq = bind lazy tsh(sh) == tdb(db);
+def sh_db_ne = bind lazy tsh(sh) != tdb(db);
+def ii_by_lt = bind lazy tii(ii) < tby(by);
+def ii_by_le = bind lazy tii(ii) <= tby(by);
+def ii_by_gt = bind lazy tii(ii) > tby(by);
+def ii_by_ge = bind lazy tii(ii) >= tby(by);
+def ii_by_eq = bind lazy tii(ii) == tby(by);
+def ii_by_ne = bind lazy tii(ii) != tby(by);
+def ii_sh_lt = bind lazy tii(ii) < tsh(sh);
+def ii_sh_le = bind lazy tii(ii) <= tsh(sh);
+def ii_sh_gt = bind lazy tii(ii) > tsh(sh);
+def ii_sh_ge = bind lazy tii(ii) >= tsh(sh);
+def ii_sh_eq = bind lazy tii(ii) == tsh(sh);
+def ii_sh_ne = bind lazy tii(ii) != tsh(sh);
+def ii_ii_lt = bind lazy tii(ii) < tii(ii);
+def ii_ii_le = bind lazy tii(ii) <= tii(ii);
+def ii_ii_gt = bind lazy tii(ii) > tii(ii);
+def ii_ii_ge = bind lazy tii(ii) >= tii(ii);
+def ii_ii_eq = bind lazy tii(ii) == tii(ii);
+def ii_ii_ne = bind lazy tii(ii) != tii(ii);
+def ii_lo_lt = bind lazy tii(ii) < tlo(lo);
+def ii_lo_le = bind lazy tii(ii) <= tlo(lo);
+def ii_lo_gt = bind lazy tii(ii) > tlo(lo);
+def ii_lo_ge = bind lazy tii(ii) >= tlo(lo);
+def ii_lo_eq = bind lazy tii(ii) == tlo(lo);
+def ii_lo_ne = bind lazy tii(ii) != tlo(lo);
+def ii_fl_lt = bind lazy tii(ii) < tfl(fl);
+def ii_fl_le = bind lazy tii(ii) <= tfl(fl);
+def ii_fl_gt = bind lazy tii(ii) > tfl(fl);
+def ii_fl_ge = bind lazy tii(ii) >= tfl(fl);
+def ii_fl_eq = bind lazy tii(ii) == tfl(fl);
+def ii_fl_ne = bind lazy tii(ii) != tfl(fl);
+def ii_db_lt = bind lazy tii(ii) < tdb(db);
+def ii_db_le = bind lazy tii(ii) <= tdb(db);
+def ii_db_gt = bind lazy tii(ii) > tdb(db);
+def ii_db_ge = bind lazy tii(ii) >= tdb(db);
+def ii_db_eq = bind lazy tii(ii) == tdb(db);
+def ii_db_ne = bind lazy tii(ii) != tdb(db);
+def lo_by_lt = bind lazy tlo(lo) < tby(by);
+def lo_by_le = bind lazy tlo(lo) <= tby(by);
+def lo_by_gt = bind lazy tlo(lo) > tby(by);
+def lo_by_ge = bind lazy tlo(lo) >= tby(by);
+def lo_by_eq = bind lazy tlo(lo) == tby(by);
+def lo_by_ne = bind lazy tlo(lo) != tby(by);
+def lo_sh_lt = bind lazy tlo(lo) < tsh(sh);
+def lo_sh_le = bind lazy tlo(lo) <= tsh(sh);
+def lo_sh_gt = bind lazy tlo(lo) > tsh(sh);
+def lo_sh_ge = bind lazy tlo(lo) >= tsh(sh);
+def lo_sh_eq = bind lazy tlo(lo) == tsh(sh);
+def lo_sh_ne = bind lazy tlo(lo) != tsh(sh);
+def lo_ii_lt = bind lazy tlo(lo) < tii(ii);
+def lo_ii_le = bind lazy tlo(lo) <= tii(ii);
+def lo_ii_gt = bind lazy tlo(lo) > tii(ii);
+def lo_ii_ge = bind lazy tlo(lo) >= tii(ii);
+def lo_ii_eq = bind lazy tlo(lo) == tii(ii);
+def lo_ii_ne = bind lazy tlo(lo) != tii(ii);
+def lo_lo_lt = bind lazy tlo(lo) < tlo(lo);
+def lo_lo_le = bind lazy tlo(lo) <= tlo(lo);
+def lo_lo_gt = bind lazy tlo(lo) > tlo(lo);
+def lo_lo_ge = bind lazy tlo(lo) >= tlo(lo);
+def lo_lo_eq = bind lazy tlo(lo) == tlo(lo);
+def lo_lo_ne = bind lazy tlo(lo) != tlo(lo);
+def lo_fl_lt = bind lazy tlo(lo) < tfl(fl);
+def lo_fl_le = bind lazy tlo(lo) <= tfl(fl);
+def lo_fl_gt = bind lazy tlo(lo) > tfl(fl);
+def lo_fl_ge = bind lazy tlo(lo) >= tfl(fl);
+def lo_fl_eq = bind lazy tlo(lo) == tfl(fl);
+def lo_fl_ne = bind lazy tlo(lo) != tfl(fl);
+def lo_db_lt = bind lazy tlo(lo) < tdb(db);
+def lo_db_le = bind lazy tlo(lo) <= tdb(db);
+def lo_db_gt = bind lazy tlo(lo) > tdb(db);
+def lo_db_ge = bind lazy tlo(lo) >= tdb(db);
+def lo_db_eq = bind lazy tlo(lo) == tdb(db);
+def lo_db_ne = bind lazy tlo(lo) != tdb(db);
+def fl_by_lt = bind lazy tfl(fl) < tby(by);
+def fl_by_le = bind lazy tfl(fl) <= tby(by);
+def fl_by_gt = bind lazy tfl(fl) > tby(by);
+def fl_by_ge = bind lazy tfl(fl) >= tby(by);
+def fl_by_eq = bind lazy tfl(fl) == tby(by);
+def fl_by_ne = bind lazy tfl(fl) != tby(by);
+def fl_sh_lt = bind lazy tfl(fl) < tsh(sh);
+def fl_sh_le = bind lazy tfl(fl) <= tsh(sh);
+def fl_sh_gt = bind lazy tfl(fl) > tsh(sh);
+def fl_sh_ge = bind lazy tfl(fl) >= tsh(sh);
+def fl_sh_eq = bind lazy tfl(fl) == tsh(sh);
+def fl_sh_ne = bind lazy tfl(fl) != tsh(sh);
+def fl_ii_lt = bind lazy tfl(fl) < tii(ii);
+def fl_ii_le = bind lazy tfl(fl) <= tii(ii);
+def fl_ii_gt = bind lazy tfl(fl) > tii(ii);
+def fl_ii_ge = bind lazy tfl(fl) >= tii(ii);
+def fl_ii_eq = bind lazy tfl(fl) == tii(ii);
+def fl_ii_ne = bind lazy tfl(fl) != tii(ii);
+def fl_lo_lt = bind lazy tfl(fl) < tlo(lo);
+def fl_lo_le = bind lazy tfl(fl) <= tlo(lo);
+def fl_lo_gt = bind lazy tfl(fl) > tlo(lo);
+def fl_lo_ge = bind lazy tfl(fl) >= tlo(lo);
+def fl_lo_eq = bind lazy tfl(fl) == tlo(lo);
+def fl_lo_ne = bind lazy tfl(fl) != tlo(lo);
+def fl_fl_lt = bind lazy tfl(fl) < tfl(fl);
+def fl_fl_le = bind lazy tfl(fl) <= tfl(fl);
+def fl_fl_gt = bind lazy tfl(fl) > tfl(fl);
+def fl_fl_ge = bind lazy tfl(fl) >= tfl(fl);
+def fl_fl_eq = bind lazy tfl(fl) == tfl(fl);
+def fl_fl_ne = bind lazy tfl(fl) != tfl(fl);
+def fl_db_lt = bind lazy tfl(fl) < tdb(db);
+def fl_db_le = bind lazy tfl(fl) <= tdb(db);
+def fl_db_gt = bind lazy tfl(fl) > tdb(db);
+def fl_db_ge = bind lazy tfl(fl) >= tdb(db);
+def fl_db_eq = bind lazy tfl(fl) == tdb(db);
+def fl_db_ne = bind lazy tfl(fl) != tdb(db);
+def db_by_lt = bind lazy tdb(db) < tby(by);
+def db_by_le = bind lazy tdb(db) <= tby(by);
+def db_by_gt = bind lazy tdb(db) > tby(by);
+def db_by_ge = bind lazy tdb(db) >= tby(by);
+def db_by_eq = bind lazy tdb(db) == tby(by);
+def db_by_ne = bind lazy tdb(db) != tby(by);
+def db_sh_lt = bind lazy tdb(db) < tsh(sh);
+def db_sh_le = bind lazy tdb(db) <= tsh(sh);
+def db_sh_gt = bind lazy tdb(db) > tsh(sh);
+def db_sh_ge = bind lazy tdb(db) >= tsh(sh);
+def db_sh_eq = bind lazy tdb(db) == tsh(sh);
+def db_sh_ne = bind lazy tdb(db) != tsh(sh);
+def db_ii_lt = bind lazy tdb(db) < tii(ii);
+def db_ii_le = bind lazy tdb(db) <= tii(ii);
+def db_ii_gt = bind lazy tdb(db) > tii(ii);
+def db_ii_ge = bind lazy tdb(db) >= tii(ii);
+def db_ii_eq = bind lazy tdb(db) == tii(ii);
+def db_ii_ne = bind lazy tdb(db) != tii(ii);
+def db_lo_lt = bind lazy tdb(db) < tlo(lo);
+def db_lo_le = bind lazy tdb(db) <= tlo(lo);
+def db_lo_gt = bind lazy tdb(db) > tlo(lo);
+def db_lo_ge = bind lazy tdb(db) >= tlo(lo);
+def db_lo_eq = bind lazy tdb(db) == tlo(lo);
+def db_lo_ne = bind lazy tdb(db) != tlo(lo);
+def db_fl_lt = bind lazy tdb(db) < tfl(fl);
+def db_fl_le = bind lazy tdb(db) <= tfl(fl);
+def db_fl_gt = bind lazy tdb(db) > tfl(fl);
+def db_fl_ge = bind lazy tdb(db) >= tfl(fl);
+def db_fl_eq = bind lazy tdb(db) == tfl(fl);
+def db_fl_ne = bind lazy tdb(db) != tfl(fl);
+def db_db_lt = bind lazy tdb(db) < tdb(db);
+def db_db_le = bind lazy tdb(db) <= tdb(db);
+def db_db_gt = bind lazy tdb(db) > tdb(db);
+def db_db_ge = bind lazy tdb(db) >= tdb(db);
+def db_db_eq = bind lazy tdb(db) == tdb(db);
+def db_db_ne = bind lazy tdb(db) != tdb(db);
+by = 4;
+sh = 4;
+ii = 4;
+lo = 4;
+fl = 4;
+db = 4;
+by = 72;
+sh = 72;
+ii = 72;
+lo = 72;
+fl = 72;
+db = 72;
+by = 1;
+sh = 10;
+ii = 100;
+lo = 2147383648;
+fl = 1234.5;
+db = 6.12E40;
+println( "by < by = {by_by_lt}" );
+println( "by <= by = {by_by_le}" );
+println( "by > by = {by_by_gt}" );
+println( "by >= by = {by_by_ge}" );
+println( "by == by = {by_by_eq}" );
+println( "by != by = {by_by_ne}" );
+println( "by < sh = {by_sh_lt}" );
+println( "by <= sh = {by_sh_le}" );
+println( "by > sh = {by_sh_gt}" );
+println( "by >= sh = {by_sh_ge}" );
+println( "by == sh = {by_sh_eq}" );
+println( "by != sh = {by_sh_ne}" );
+println( "by < ii = {by_ii_lt}" );
+println( "by <= ii = {by_ii_le}" );
+println( "by > ii = {by_ii_gt}" );
+println( "by >= ii = {by_ii_ge}" );
+println( "by == ii = {by_ii_eq}" );
+println( "by != ii = {by_ii_ne}" );
+println( "by < lo = {by_lo_lt}" );
+println( "by <= lo = {by_lo_le}" );
+println( "by > lo = {by_lo_gt}" );
+println( "by >= lo = {by_lo_ge}" );
+println( "by == lo = {by_lo_eq}" );
+println( "by != lo = {by_lo_ne}" );
+println( "by < fl = {by_fl_lt}" );
+println( "by <= fl = {by_fl_le}" );
+println( "by > fl = {by_fl_gt}" );
+println( "by >= fl = {by_fl_ge}" );
+println( "by == fl = {by_fl_eq}" );
+println( "by != fl = {by_fl_ne}" );
+println( "by < db = {by_db_lt}" );
+println( "by <= db = {by_db_le}" );
+println( "by > db = {by_db_gt}" );
+println( "by >= db = {by_db_ge}" );
+println( "by == db = {by_db_eq}" );
+println( "by != db = {by_db_ne}" );
+println( "sh < by = {sh_by_lt}" );
+println( "sh <= by = {sh_by_le}" );
+println( "sh > by = {sh_by_gt}" );
+println( "sh >= by = {sh_by_ge}" );
+println( "sh == by = {sh_by_eq}" );
+println( "sh != by = {sh_by_ne}" );
+println( "sh < sh = {sh_sh_lt}" );
+println( "sh <= sh = {sh_sh_le}" );
+println( "sh > sh = {sh_sh_gt}" );
+println( "sh >= sh = {sh_sh_ge}" );
+println( "sh == sh = {sh_sh_eq}" );
+println( "sh != sh = {sh_sh_ne}" );
+println( "sh < ii = {sh_ii_lt}" );
+println( "sh <= ii = {sh_ii_le}" );
+println( "sh > ii = {sh_ii_gt}" );
+println( "sh >= ii = {sh_ii_ge}" );
+println( "sh == ii = {sh_ii_eq}" );
+println( "sh != ii = {sh_ii_ne}" );
+println( "sh < lo = {sh_lo_lt}" );
+println( "sh <= lo = {sh_lo_le}" );
+println( "sh > lo = {sh_lo_gt}" );
+println( "sh >= lo = {sh_lo_ge}" );
+println( "sh == lo = {sh_lo_eq}" );
+println( "sh != lo = {sh_lo_ne}" );
+println( "sh < fl = {sh_fl_lt}" );
+println( "sh <= fl = {sh_fl_le}" );
+println( "sh > fl = {sh_fl_gt}" );
+println( "sh >= fl = {sh_fl_ge}" );
+println( "sh == fl = {sh_fl_eq}" );
+println( "sh != fl = {sh_fl_ne}" );
+println( "sh < db = {sh_db_lt}" );
+println( "sh <= db = {sh_db_le}" );
+println( "sh > db = {sh_db_gt}" );
+println( "sh >= db = {sh_db_ge}" );
+println( "sh == db = {sh_db_eq}" );
+println( "sh != db = {sh_db_ne}" );
+println( "ii < by = {ii_by_lt}" );
+println( "ii <= by = {ii_by_le}" );
+println( "ii > by = {ii_by_gt}" );
+println( "ii >= by = {ii_by_ge}" );
+println( "ii == by = {ii_by_eq}" );
+println( "ii != by = {ii_by_ne}" );
+println( "ii < sh = {ii_sh_lt}" );
+println( "ii <= sh = {ii_sh_le}" );
+println( "ii > sh = {ii_sh_gt}" );
+println( "ii >= sh = {ii_sh_ge}" );
+println( "ii == sh = {ii_sh_eq}" );
+println( "ii != sh = {ii_sh_ne}" );
+println( "ii < ii = {ii_ii_lt}" );
+println( "ii <= ii = {ii_ii_le}" );
+println( "ii > ii = {ii_ii_gt}" );
+println( "ii >= ii = {ii_ii_ge}" );
+println( "ii == ii = {ii_ii_eq}" );
+println( "ii != ii = {ii_ii_ne}" );
+println( "ii < lo = {ii_lo_lt}" );
+println( "ii <= lo = {ii_lo_le}" );
+println( "ii > lo = {ii_lo_gt}" );
+println( "ii >= lo = {ii_lo_ge}" );
+println( "ii == lo = {ii_lo_eq}" );
+println( "ii != lo = {ii_lo_ne}" );
+println( "ii < fl = {ii_fl_lt}" );
+println( "ii <= fl = {ii_fl_le}" );
+println( "ii > fl = {ii_fl_gt}" );
+println( "ii >= fl = {ii_fl_ge}" );
+println( "ii == fl = {ii_fl_eq}" );
+println( "ii != fl = {ii_fl_ne}" );
+println( "ii < db = {ii_db_lt}" );
+println( "ii <= db = {ii_db_le}" );
+println( "ii > db = {ii_db_gt}" );
+println( "ii >= db = {ii_db_ge}" );
+println( "ii == db = {ii_db_eq}" );
+println( "ii != db = {ii_db_ne}" );
+println( "lo < by = {lo_by_lt}" );
+println( "lo <= by = {lo_by_le}" );
+println( "lo > by = {lo_by_gt}" );
+println( "lo >= by = {lo_by_ge}" );
+println( "lo == by = {lo_by_eq}" );
+println( "lo != by = {lo_by_ne}" );
+println( "lo < sh = {lo_sh_lt}" );
+println( "lo <= sh = {lo_sh_le}" );
+println( "lo > sh = {lo_sh_gt}" );
+println( "lo >= sh = {lo_sh_ge}" );
+println( "lo == sh = {lo_sh_eq}" );
+println( "lo != sh = {lo_sh_ne}" );
+println( "lo < ii = {lo_ii_lt}" );
+println( "lo <= ii = {lo_ii_le}" );
+println( "lo > ii = {lo_ii_gt}" );
+println( "lo >= ii = {lo_ii_ge}" );
+println( "lo == ii = {lo_ii_eq}" );
+println( "lo != ii = {lo_ii_ne}" );
+println( "lo < lo = {lo_lo_lt}" );
+println( "lo <= lo = {lo_lo_le}" );
+println( "lo > lo = {lo_lo_gt}" );
+println( "lo >= lo = {lo_lo_ge}" );
+println( "lo == lo = {lo_lo_eq}" );
+println( "lo != lo = {lo_lo_ne}" );
+println( "lo < fl = {lo_fl_lt}" );
+println( "lo <= fl = {lo_fl_le}" );
+println( "lo > fl = {lo_fl_gt}" );
+println( "lo >= fl = {lo_fl_ge}" );
+println( "lo == fl = {lo_fl_eq}" );
+println( "lo != fl = {lo_fl_ne}" );
+println( "lo < db = {lo_db_lt}" );
+println( "lo <= db = {lo_db_le}" );
+println( "lo > db = {lo_db_gt}" );
+println( "lo >= db = {lo_db_ge}" );
+println( "lo == db = {lo_db_eq}" );
+println( "lo != db = {lo_db_ne}" );
+println( "fl < by = {fl_by_lt}" );
+println( "fl <= by = {fl_by_le}" );
+println( "fl > by = {fl_by_gt}" );
+println( "fl >= by = {fl_by_ge}" );
+println( "fl == by = {fl_by_eq}" );
+println( "fl != by = {fl_by_ne}" );
+println( "fl < sh = {fl_sh_lt}" );
+println( "fl <= sh = {fl_sh_le}" );
+println( "fl > sh = {fl_sh_gt}" );
+println( "fl >= sh = {fl_sh_ge}" );
+println( "fl == sh = {fl_sh_eq}" );
+println( "fl != sh = {fl_sh_ne}" );
+println( "fl < ii = {fl_ii_lt}" );
+println( "fl <= ii = {fl_ii_le}" );
+println( "fl > ii = {fl_ii_gt}" );
+println( "fl >= ii = {fl_ii_ge}" );
+println( "fl == ii = {fl_ii_eq}" );
+println( "fl != ii = {fl_ii_ne}" );
+println( "fl < lo = {fl_lo_lt}" );
+println( "fl <= lo = {fl_lo_le}" );
+println( "fl > lo = {fl_lo_gt}" );
+println( "fl >= lo = {fl_lo_ge}" );
+println( "fl == lo = {fl_lo_eq}" );
+println( "fl != lo = {fl_lo_ne}" );
+println( "fl < fl = {fl_fl_lt}" );
+println( "fl <= fl = {fl_fl_le}" );
+println( "fl > fl = {fl_fl_gt}" );
+println( "fl >= fl = {fl_fl_ge}" );
+println( "fl == fl = {fl_fl_eq}" );
+println( "fl != fl = {fl_fl_ne}" );
+println( "fl < db = {fl_db_lt}" );
+println( "fl <= db = {fl_db_le}" );
+println( "fl > db = {fl_db_gt}" );
+println( "fl >= db = {fl_db_ge}" );
+println( "fl == db = {fl_db_eq}" );
+println( "fl != db = {fl_db_ne}" );
+println( "db < by = {db_by_lt}" );
+println( "db <= by = {db_by_le}" );
+println( "db > by = {db_by_gt}" );
+println( "db >= by = {db_by_ge}" );
+println( "db == by = {db_by_eq}" );
+println( "db != by = {db_by_ne}" );
+println( "db < sh = {db_sh_lt}" );
+println( "db <= sh = {db_sh_le}" );
+println( "db > sh = {db_sh_gt}" );
+println( "db >= sh = {db_sh_ge}" );
+println( "db == sh = {db_sh_eq}" );
+println( "db != sh = {db_sh_ne}" );
+println( "db < ii = {db_ii_lt}" );
+println( "db <= ii = {db_ii_le}" );
+println( "db > ii = {db_ii_gt}" );
+println( "db >= ii = {db_ii_ge}" );
+println( "db == ii = {db_ii_eq}" );
+println( "db != ii = {db_ii_ne}" );
+println( "db < lo = {db_lo_lt}" );
+println( "db <= lo = {db_lo_le}" );
+println( "db > lo = {db_lo_gt}" );
+println( "db >= lo = {db_lo_ge}" );
+println( "db == lo = {db_lo_eq}" );
+println( "db != lo = {db_lo_ne}" );
+println( "db < fl = {db_fl_lt}" );
+println( "db <= fl = {db_fl_le}" );
+println( "db > fl = {db_fl_gt}" );
+println( "db >= fl = {db_fl_ge}" );
+println( "db == fl = {db_fl_eq}" );
+println( "db != fl = {db_fl_ne}" );
+println( "db < db = {db_db_lt}" );
+println( "db <= db = {db_db_le}" );
+println( "db > db = {db_db_gt}" );
+println( "db >= db = {db_db_ge}" );
+println( "db == db = {db_db_eq}" );
+println( "db != db = {db_db_ne}" );
+
+/** gen above and expected 
+
+var by : Byte = 1;
+var sh : Short = 10;
+var ii : Integer = 100;
+var lo : Long = 2147383648;
+var fl : Float = 1234.5;
+var db : Double = 6.12e40;
+
+class P {
+  var n: String;
+  var r: Object;
+  var v: Double;
+  var t: String;
+  var isReal = false;
+}
+
+def vs = [
+	P {n: 'by' r: by v: by t: 'Byte'},
+	P {n: 'sh' r: sh v: sh t: 'Short'},
+	P {n: 'ii' r: ii v: ii t: 'Integer'},
+	P {n: 'lo' r: lo v: lo t: 'Long'},
+	P {n: 'fl' r: fl v: fl t: 'Float'   isReal: true},
+	P {n: 'db' r: db v: db t: 'Double'  isReal: true}
+];
+
+class O {
+  var n: String;
+  var m: String;
+  var f: function(:Double,:Double):Boolean;
+}
+
+def os = [
+	O {n: '<'  m: 'lt'  f: function(x,y) {x<y}    }
+	O {n: '<=' m: 'le'  f: function(x,y) {x<=y}    }
+	O {n: '>'  m: 'gt'  f: function(x,y) {x>y}    }
+	O {n: '>=' m: 'ge'  f: function(x,y) {x>=y}    }
+	O {n: '==' m: 'eq'  f: function(x,y) {x == y}}
+	O {n: '!=' m: 'ne'  f: function(x,y) {x != y}}
+];
+
+for (v1 in vs) {
+  println('var {v1.n} : {v1.t} = {v1.r};');
+}
+
+for (v1 in vs) {
+  println('function t{v1.n}(x : {v1.t}) : {v1.t} \{ println("{v1.n} = \{x\}"); x \};');
+}
+
+for (v1 in vs, v2 in vs, o in os) {
+  println('def {v1.n}_{v2.n}_{o.m} = bind lazy t{v1.n}({v1.n}) {o.n} t{v2.n}({v2.n});');
+}
+
+for (v1 in vs) {
+  println('{v1.n} = 4;');
+}
+
+for (v1 in vs) {
+  println('{v1.n} = 72;');
+}
+
+for (v1 in vs) {
+  println('{v1.n} = {v1.r};');
+}
+
+for (v1 in vs, v2 in vs, o in os) {
+  println('println( "{v1.n} {o.n} {v2.n} = \{{v1.n}_{v2.n}_{o.m}\}" );');
+}
+
+println('---------------------------------------');
+
+function display(o : O, v1 : P, v2 : P) : String {
+  return '{o.f(v1.v, v2.v)}'
+}
+
+for (v1 in vs, v2 in vs, o in os) {
+  println('{v1.n} = {v1.r}');
+  println('{v2.n} = {v2.r}');
+  println('{v1.n} {o.n} {v2.n} = {display(o, v1, v2)}');
+}
+
+**/

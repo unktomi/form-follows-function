@@ -1,0 +1,27 @@
+/*
+ * Regress test for VSGC-3476: add support for invalidate triggers and invalidate statements for non-bound vars
+ *
+ * @test
+ * @run
+ */
+ 
+var y = 1 on invalidate { println("Inside on-invalidate..."); }
+
+println("explicitly invalidating y");
+invalidate y; //this one calls the trigger
+println("explicitly invalidating y");
+invalidate y; //no trigger called - y is already invalid
+println("explicitly invalidating y");
+invalidate y; //no trigger called - y is already invalid
+println("forcing validation of y");
+y; //force validation of y's contents
+println("explicitly invalidating y");
+invalidate y; //this one calls the trigger
+println("explicitly invalidating y");
+invalidate y; //no trigger called - y is already invalid
+println("forcing validation of y");
+y; //force validation of y's contents
+println("implicitly invalidating y");
+y=2; //this one calls the trigger
+println("implicitly invalidating y");
+y=3; //no trigger called - y is already invalid

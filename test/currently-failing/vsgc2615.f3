@@ -1,0 +1,18 @@
+/*
+ * Compiler rejects all other numeric type values passed as Character parameter.
+ *
+ * After fixing please uncomment and update corresponding testcases in
+ *     test/features/F26-numerics/NumFuncTest.f3
+ *
+ * @test/fail
+ */
+
+function foo(x: Character): String {"{x}"}
+foo(1 as Byte);
+foo(1 as Short);
+foo(1 as Integer);
+foo(1 as Long);
+foo(1 as Float);
+foo(1 as Character);
+foo(1 as Double);
+foo(1 as Number); 

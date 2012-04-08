@@ -1,0 +1,18 @@
+/*
+ * Regression test for VSGC-757 : NPE on non-constant override var default
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class A extends java.util.BitSet {
+  var a : Integer
+    on replace { System.out.println("trigger"); }
+}
+
+class Test extends A {
+}
+
+Test { }

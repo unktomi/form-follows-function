@@ -1,0 +1,10 @@
+/**
+ * VSGC-2602 : Overriding a protected var in a different package fails
+ *
+ * @subtest
+ */
+
+package sub2602;
+public mixin class vsgc2602base {
+  public-read protected var minimumWidth:Number = 0; 
+}

@@ -1,0 +1,24 @@
+/*
+ * Regression - VSGC-4375 - Compilation fails when using java classes with generics.
+ *
+ * @subtest
+ *
+ */
+
+import java.lang.UnsupportedOperationException;
+
+package class vsgc4375DataContainer {
+    public-init var data:String;
+    public function perform (proc:vsgc4375Processor):Void {
+        println(proc.process(vsgc4375F3Getter{container:this}));
+    }
+    public function getData():Object {
+        data
+    }
+}
+class vsgc4375F3Getter extends vsgc4375Getter {
+    var container:vsgc4375DataContainer;
+    override public function get () : Object {
+        container.getData();
+    }
+}

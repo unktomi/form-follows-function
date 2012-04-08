@@ -1,0 +1,19 @@
+/**
+ * Should-fail test for VSGC-2900 : Compiler crash: bound for-loop over an Iterable (e.g., java.util.List)
+ *
+ * @test/compile-error
+ */
+
+import java.util.List;
+import java.util.ArrayList;
+
+var tweets : List = new ArrayList;
+
+class TextLine  {
+}
+
+def content = bind for( tweet in tweets ) {
+                        TextLine {
+                        }
+              };
+

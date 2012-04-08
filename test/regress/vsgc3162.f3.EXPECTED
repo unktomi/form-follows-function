@@ -1,0 +1,29 @@
+indef.toString(): INDEFINITE
+- INDEFINITE:               true
+INDEFINITE == INDEFINITE:   true
+INDEFINITE != INDEFINITE:   false
+INDEFINITE <  INDEFINITE:   false
+INDEFINITE <= INDEFINITE:   true
+INDEFINITE >  INDEFINITE:   false
+INDEFINITE >= INDEFINITE:   true
+INDEFINITE == time 0:   false
+INDEFINITE != time 0:   true
+INDEFINITE <  time 0:   false
+INDEFINITE <= time 0:   false
+INDEFINITE >  time 0:   true
+INDEFINITE >= time 0:   true
+INDEFINITE.toMillis:  Infinity
+INDEFINITE.toSeconds: Infinity
+INDEFINITE.toMinutes: Infinity
+INDEFINITE.toHours:   Infinity
+INDEFINITE + INDEFINITE: true
+INDEFINITE - INDEFINITE: true
+INDEFINITE * 99.7:       true
+INDEFINITE / 99.7:       true
+INDEFINITE / INDEFINITE: NaN
+t3         / INDEFINITE: 0.0
+INDEFINITE / t3:         Infinity
+longVal and Duration of that = 1234567890123456, 1234567890123456ms
+doubleVal and Duration of that = 1.2345678901234E12, 1234567890123ms
+18 digit long val and Duration of that = 123456789012345678, 123456789012345680ms
+test completed

@@ -1,0 +1,9 @@
+test/currently-failing/vsgc1476B.f3:7: cannot find symbol
+symbol  : class Nonexistent
+location: class vsgc1476B
+Nonexistent {};
+^
+test/currently-failing/vsgc1476B.f3:8: package vsgc1476A does not exist
+vsgc1476A.Another{}.f(3);
+         ^
+2 errors

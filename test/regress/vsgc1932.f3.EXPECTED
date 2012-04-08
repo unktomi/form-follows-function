@@ -1,0 +1,4 @@
+string1 old='', new=''
+duration1 old=0ms, new=0ms
+string2 old='', new='Yo'
+duration2 old=0ms, new=12ms

@@ -1,0 +1,16 @@
+/**
+ * VSGC-3942 : missing updates on bind to external script-level var
+ *
+ * Static reference via instance
+ *
+ * @compilefirst vsgc3942viaInstSub.f3
+ * @test
+ * @run
+ */
+
+var refv = vsgc3942viaInstSub{}.ref;
+def bt = bind refv.target;
+println(bt);
+refv.target = "set";
+println(bt);
+

@@ -1,0 +1,9 @@
+test/should-fail/vsgc1901.f3:4: cannot find symbol
+symbol  : class KeyFramexx
+location: package f3.animation
+import f3.animation.KeyFramexx;
+                        ^
+test/should-fail/vsgc1901.f3:5: package f3.xxanimation does not exist
+import f3.xxanimation.KeyFrame;
+                          ^
+2 errors

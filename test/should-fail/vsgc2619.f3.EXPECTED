@@ -1,0 +1,4 @@
+test/should-fail/vsgc2619.f3:11: x is already defined in f()
+            var x : Integer;
+            ^
+1 error

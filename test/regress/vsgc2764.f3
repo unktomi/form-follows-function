@@ -1,0 +1,17 @@
+/*
+ * Regression test for VSGC-2764 : local var access in trigger -- crash: local variable x is accessed from within inner class
+ *
+ * @test
+ */
+
+public class Test {
+
+    function f() {
+        var x: Boolean = false;
+        var y: Boolean = false on replace {
+            if (y) {
+                x = false;
+            }
+        };
+    }
+}

@@ -1,0 +1,13 @@
+test/functional/should-fail/immutablefunctionparms.f3:9: You cannot change the value(s) of 'ps1' because it is a parameter.
+ps1 = [101,102,103];
+^
+test/functional/should-fail/immutablefunctionparms.f3:10: You cannot change the value(s) of 'ps2' because it is a parameter.
+ps2 = ["Cannot","assign", "to", "ps2"];
+^
+test/functional/should-fail/immutablefunctionparms.f3:12: You cannot change the value(s) of 'p1' because it is a parameter.
+p1 = 5;
+^
+test/functional/should-fail/immutablefunctionparms.f3:13: You cannot change the value(s) of 'p2' because it is a parameter.
+p2 = "Oops";
+^
+4 errors

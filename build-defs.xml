@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-defs" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Defines common properties and macros for F3 project.
+
+        Sub-repositories should import this file into their build.xml file.
+
+        This file will import all other necessary top repository build-*.xml files.
+    
+    </description>
+   
+    <!-- This file determines root of the source tree for project -->
+    
+    <dirname property="f3.root.dir" file="${ant.file.build-defs}"/>
+    <property name="f3.root.build.src.dir" location="${f3.root.dir}/build-src"/>
+
+    <!-- Include any hg properties in case this is a source bundle build. -->
+
+    <property file="${f3.root.dir}/hg.properties"/>
+
+    <!-- Get platform, or, and arch properties and targets -->
+    
+    <import file="${f3.root.build.src.dir}/build-os-arch.xml"/>
+
+    <!-- Default property values for build defs -->
+    
+    <property file="${f3.root.dir}/build.properties"/>
+
+    <!-- Local overrides for build defs -->
+    
+    <property file="${f3.root.dir}/build.local.properties"/>
+
+    <!-- Get properties defined from the environment -->
+
+    <import file="${f3.root.build.src.dir}/build-environment.xml"/>
+
+    <!-- Get importer properties and targets -->
+
+    <import file="${f3.root.build.src.dir}/build-importer.xml"/>
+
+    <!-- Get jars -->
+
+    <import file="${f3.root.build.src.dir}/build-jar-importer.xml"/>
+  
+    <!-- Get platform properties and targets -->
+    
+    <import file="${f3.root.build.src.dir}/build-${os_name}-defs.xml"/>
+
+    <!-- Macrodefs for generic things to be shared by everyone -->
+    
+    <!-- JAVAC -->
+    <macrodef name="do-javac">
+        <attribute name="srcdir"/>
+        <attribute name="destdir" default="${build.classes.dir}"/>
+        <attribute name="classpath" default="${javac.src.classpath}"/>
+        <attribute name="includes" default=""/>
+        <attribute name="excludes" default=""/>
+        <sequential>
+            <mkdir dir="@{destdir}"/>
+            <echo level="debug">DO_JAVAC</echo>
+            <echo level="debug">  srcdir="@{srcdir}"</echo>
+            <echo level="debug">  destdir="@{destdir}"</echo>
+            <echo level="debug">  debug="${javac.debug}"</echo>
+            <echo level="debug">  deprecation="${javac.deprecation}"</echo>
+            <echo level="debug">  source="${javac.source}"</echo>
+            <echo level="debug">  target="${javac.target}"</echo>
+            <echo level="debug">  includes="@{includes}"</echo>
+            <echo level="debug">  excludes="@{excludes}"</echo>
+            <echo level="debug">  classpath="@{classpath}"</echo>
+            <javac srcdir="@{srcdir}" destdir="@{destdir}"
+                   debug="${javac.debug}" deprecation="${javac.deprecation}"
+                   source="${javac.source}" target="${javac.target}"
+                   includeantruntime="false" includes="@{includes}"
+                   excludes="@{excludes}">
+                <classpath>
+                    <path path="@{classpath}"/>
+                </classpath>
+                <compilerarg line="${javac.compilerargs}"/>
+            </javac>
+        </sequential>
+    </macrodef>
+    
+    <!-- JAVA -->
+    <presetdef name="do-java.preset">
+        <java fork="true" dir="${run.dir}">
+            <jvmarg value="-showversion"/>
+            <jvmarg line="${run.jvmargs}"/>
+            <classpath>
+                <path path="${run.classpath}"/>
+            </classpath>
+        </java>
+    </presetdef>
+    
+    <macrodef name="do-java">
+        <attribute name="classname" default="${run.main.class}"/>
+        <sequential>
+            <echo>jvmarg line="${run.jvmargs}"</echo>
+            <echo level="debug">DO_JAVA</echo>
+            <echo level="debug">  classname="@{classname}"</echo>
+            <do-java.preset classname="@{classname}"/>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="do-java-debug">
+        <attribute name="classname" default="${run.main.class}"/>
+        <sequential>
+            <echo>jvmarg line="${run.jvmargs}"</echo>
+            <echo level="debug">DO_JAVA-DEBUG</echo>
+            <echo level="debug">  classname="@{classname}"</echo>
+            <nbjpdastart addressproperty="jpda.address" name="JMC" transport="dt_socket">
+                <classpath path="${run.classpath}"/>
+            </nbjpdastart>
+            <do-java.preset classname="@{classname}">
+                <jvmarg value="-Xdebug"/>
+                <jvmarg value="-Xnoagent"/>
+                <jvmarg value="-Djava.compiler=none"/>
+                <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            </do-java.preset>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="do-java-test">
+        <attribute name="classname"/>
+        <sequential>
+            <echo level="debug">DO_JAVA_TEST</echo>
+            <echo level="debug">  classname="@{classname}"</echo>
+            <do-java.preset classname="@{classname}" classpath="${test.run.classpath}" dir="${test.run.dir}"/>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="print-property">
+        <attribute name="property"/>
+        <sequential>
+            <condition property="@{property}.value"
+                       value="${@{property}}" else="">
+                <isset property="@{property}"/>
+            </condition>
+            <echo>@{property} = ${@{property}.value}</echo>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-file-check">
+        <attribute name="file"/>
+        <sequential>
+            <fail message="ERROR: File check failed, missing: @{file}">
+                <condition>
+                    <not>
+                        <available file="@{file}"/>
+                    </not>
+                </condition>
+            </fail>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-class-check">
+        <attribute name="classname"/>
+        <attribute name="classpath"/>
+        <sequential>
+            <fail message="ERROR: Class check failed, missing: @{classname} in @{classpath}">
+                <condition>
+                    <not>
+                        <available classname="@{classname}" classpath="@{classpath}"/>
+                    </not>
+                </condition>
+            </fail>
+        </sequential>
+    </macrodef>
+
+    <!-- Untar macrodef (for tar.gz files) -->
+
+    <macrodef name="do-untar-bundle">
+        <attribute name="tar"/>
+        <attribute name="dir"/>
+        <attribute name="includes" default="**"/>
+        <sequential>
+            <delete dir="@{dir}.untar"/>
+            <mkdir dir="@{dir}.untar"/>
+            <untar src="@{tar}"
+                   dest="@{dir}.untar"
+                   compression="gzip">
+                <patternset includes="@{includes}"/>
+            </untar>
+            <mkdir dir="@{dir}"/>
+            <delete dir="@{dir}"/>
+            <move file="@{dir}.untar" tofile="@{dir}" verbose="true"/>
+            <delete dir="@{dir}.untar"/>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-untar-bzip2-bundle">
+        <attribute name="tar"/>
+        <attribute name="dir"/>
+        <attribute name="includes" default="**"/>
+        <sequential>
+            <delete dir="@{dir}.untar"/>
+            <mkdir dir="@{dir}.untar"/>
+            <untar src="@{tar}"
+                   dest="@{dir}.untar"
+                   compression="bzip2">
+                <patternset includes="@{includes}"/>
+            </untar>
+            <mkdir dir="@{dir}"/>
+            <delete dir="@{dir}"/>
+            <move file="@{dir}.untar" tofile="@{dir}" verbose="true"/>
+            <delete dir="@{dir}.untar"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Unzip macrodef -->
+    
+    <macrodef name="do-unzip-bundle">
+        <attribute name="zip"/>
+        <attribute name="dir"/>
+        <attribute name="includes" default="**"/>
+        <sequential>
+            <delete dir="@{dir}.unzip"/>
+            <mkdir dir="@{dir}.unzip"/>
+            <unzip src="@{zip}" dest="@{dir}.unzip">
+                <patternset includes="@{includes}"/>
+            </unzip>
+            <mkdir dir="@{dir}"/>
+            <delete dir="@{dir}"/>
+            <move file="@{dir}.unzip" tofile="@{dir}" verbose="true"/>
+            <delete dir="@{dir}.unzip"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Get a zip from a url and unzip it. -->
+
+    <macrodef name="do-get-previous-bundle">
+        <attribute name="name"/>
+        <attribute name="url"/>
+        <attribute name="dir"/>
+        <sequential>
+            <delete file="previous_@{name}.zip"/>
+            <get src="@{url}" dest="previous_@{name}.zip"/>
+            <do-unzip-bundle zip="previous_@{name}.zip" dir="@{dir}"/>
+            <delete file="previous_@{name}.zip"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Target to be used by including file. -->
+
+    <target name="-init-defs"
+            depends="-init-platform">
+        <echo>Property=Value</echo>
+        <echo>--------------</echo>
+        <property name="isAny" value="true"/>
+        <print-property property="f3.root.dir"      />
+        <print-property property="f3.sdk.dir"       />
+        <print-property property="f3.deployed.dir"  />
+        <print-property property="platform.home"     />
+        <print-property property="platform6u10.home" />
+        <print-property property="dxsdk.path"        />
+        <print-property property="wmsdk.path"        />
+    </target>
+
+</project>
+

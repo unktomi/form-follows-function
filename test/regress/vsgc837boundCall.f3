@@ -1,0 +1,55 @@
+/**
+ * Regression test VSGC-837 : method call within bind
+ *
+ * @test
+ * @run
+ */
+import java.lang.System; 
+import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.Map;
+
+var enableBindingOverhaul;
+
+// test fixed call, no arguments
+var x = bind 1234 .toString();
+System.out.println(x);
+
+// test call with arguments
+var rex = 'a*b';
+var str = 'aaaab';
+var match = bind Pattern.matches(rex, str);
+System.out.println("{rex} : {str} -- {if (match) 'MATCH' else 'no'}");
+str = 'aacb';
+System.out.println("{rex} : {str} -- {if (match) 'MATCH' else 'no'}");
+rex = 'a*cb*';
+System.out.println("{rex} : {str} -- {if (match) 'MATCH' else 'no'}");
+str = 'cbbbb';
+System.out.println("{rex} : {str} -- {if (match) 'MATCH' else 'no'}");
+str = 'zzz';
+System.out.println("{rex} : {str} -- {if (match) 'MATCH' else 'no'}");
+rex = 'z*';
+System.out.println("{rex} : {str} -- {if (match) 'MATCH' else 'no'}");
+
+// test dynamic call with default on null
+var map : Map;
+var lightMap = new HashMap;
+lightMap.put("brick", "red");
+lightMap.put("grass", "green");
+var darkMap = new HashMap;
+darkMap.put("brick", "rust");
+darkMap.put("grass", "brown");
+var what = "brick";
+var mapping = bind map.get(what);
+System.out.println("none {what} -- {mapping}");
+map = lightMap;
+System.out.println("light {what} -- {mapping}");
+what = "grass";
+System.out.println("light {what} -- {mapping}");
+map = darkMap;
+System.out.println("dark {what} -- {mapping}");
+what = "brick";
+System.out.println("dark {what} -- {mapping}");
+map = null;
+System.out.println("none {what} -- {mapping}");
+

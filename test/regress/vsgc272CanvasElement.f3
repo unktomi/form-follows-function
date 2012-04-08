@@ -1,0 +1,7 @@
+/*
+ * @subtest vsgc272
+ */
+ 
+public mixin class vsgc272CanvasElement {
+	public var parentCanvasElement: vsgc272CanvasElement;
+}

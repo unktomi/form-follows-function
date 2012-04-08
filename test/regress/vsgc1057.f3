@@ -1,0 +1,15 @@
+/**
+ * Regression test VSGC-1057 : variable type inferenced to '? extends ...' type
+ *
+ * @test
+ * @run
+ */
+import java.lang.System;
+class Foo {
+  var title = 'If Only To Have A Name';
+  var count = 120;
+}
+var ooh = Foo {};
+var classFoo = ooh.getClass();
+var jooh = classFoo.newInstance(); 
+System.out.println("jooh.title->{jooh.title}");

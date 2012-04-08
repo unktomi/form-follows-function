@@ -1,0 +1,17 @@
+/**
+ * Regression test for VSGC-741 : proper init order for attributes from a compiled class
+ *
+ * @test
+ * @compilefirst vsgc741Base.f3
+ * @run
+ */
+
+import java.lang.System;
+
+vsgc741Base { }
+vsgc741Base { frame: "hi" }
+vsgc741Base { title: "label" }
+vsgc741Base { frame: "last" title: "final" }
+vsgc741Base { function foo() {}
+              title: "anon";         
+            }

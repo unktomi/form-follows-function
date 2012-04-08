@@ -1,0 +1,6 @@
+test/should-fail/vsgc683c.f3:32: incompatible types
+found   : Integer
+required: vsgc683c.Node
+var n:Node = 1;
+             ^
+1 error

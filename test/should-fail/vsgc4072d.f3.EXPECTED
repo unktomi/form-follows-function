@@ -1,0 +1,19 @@
+test/should-fail/vsgc4072d.f3:17: warning: Illegal forward reference: variable a2 is not initialized.
+  override var a1 = a2; //forward ref
+                    ^
+test/should-fail/vsgc4072d.f3:18: warning: Illegal forward reference: variable b1 is not initialized.
+  override var a2 = b1; //forward ref
+                    ^
+test/should-fail/vsgc4072d.f3:23: warning: Illegal forward reference: variable a2 is not initialized.
+  override var a1 = a2; //forward ref
+                    ^
+test/should-fail/vsgc4072d.f3:24: warning: Illegal forward reference: variable b1 is not initialized.
+  override var a2 = b1; //forward ref
+                    ^
+test/should-fail/vsgc4072d.f3:25: warning: Illegal forward reference: variable c1 is not initialized.
+  override var a3 = c1; //forward ref
+                    ^
+test/should-fail/vsgc4072d.f3:26: warning: Illegal forward reference: variable c1 is not initialized.
+  override var b1 = c1; //forward ref
+                    ^
+6 warnings

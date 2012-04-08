@@ -1,0 +1,3 @@
+Base.foo=1, old=0
+Base.init
+Base.foo=2, old=1

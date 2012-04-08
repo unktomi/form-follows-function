@@ -1,0 +1,7 @@
+test/should-fail/vsgc1825.f3:12: You cannot change the value(s) of 'ps1' because it is a parameter.
+ps1[0] = 99;
+^
+test/should-fail/vsgc1825.f3:13: You cannot change the value(s) of 'ps2' because it is a parameter.
+ps2[0] = "oops!";
+^
+2 errors

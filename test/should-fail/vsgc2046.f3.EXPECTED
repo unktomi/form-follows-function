@@ -1,0 +1,4 @@
+test/should-fail/vsgc2046.f3:7: cannot return a value from method whose result type is void
+var s:function():Void = function():Void { return 2; };
+                                          ^
+1 error

@@ -1,0 +1,7 @@
+/**
+ * VSGC-3971 : Compiler crashes when compiling f3 source with bi-directional binds on sliders, checkboxes
+ *
+ * @subtest
+ */
+
+public var a = 20;

@@ -1,0 +1,10 @@
+/**
+ * @subtest
+ */
+
+public def RED = vsgc2110Color.color(0, 0, 0, 0);
+public function color(r:Number, g:Number, b:Number, a:Number):vsgc2110Color {
+   vsgc2110Color {};
+}
+
+public class vsgc2110Color {}

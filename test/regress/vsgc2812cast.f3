@@ -1,0 +1,17 @@
+/**
+ * Regression test VSGC-2812 : lazy bind of member select not lazy
+ *
+ * @test
+ * @run
+ */
+
+class A {
+   public var value = "something";
+}
+class B extends A {
+}
+
+var a = new A;
+var b = bind lazy (a as B).value;
+a = new B;
+println(b);

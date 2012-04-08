@@ -1,0 +1,168 @@
+/**
+ * Regression test VSGC-1250 : visibility modifiers
+ *
+ *     instance variable bind
+ *
+ * @compilefirst vsgc1250/a/vsgc1250subFailA.f3
+ * @compilefirst vsgc1250subFail.f3
+ * @test/compile-error
+ */
+import java.lang.System;
+import vsgc1250.a.vsgc1250subFailA;
+
+var toThis = 0;
+
+public class vsgc1250bind {
+	public var memHerePub = 0;
+	protected var memHerePro = 0;
+	package var memHerePkg = 0;
+	var memHereScr = 0;
+
+	public-init protected var memHereIPro = 0;
+	public-init package var memHereIPkg = 0;
+	public-init var memHereIScr = 0;
+
+	public-read protected var memHereRPro = 0;
+	public-read package var memHereRPkg = 0;
+	public-read var memHereRScr = 0;
+}
+
+class Foo {
+	public var fooPub = 0;
+	protected var fooPro = 0;
+	package var fooPkg = 0;
+	var fooScr = 0;
+
+	public-init protected var fooIPro = 0;
+	public-init package var fooIPkg = 0;
+	public-init var fooIScr = 0;
+
+	public-read protected var fooRPro = 0;
+	public-read package var fooRPkg = 0;
+	public-read var fooRScr = 0;
+}
+
+class Inh extends vsgc1250subFail {
+    function memInit() {
+	Inh {
+	    memPub: bind toThis,   // inherited, same package
+	    memPkg: bind toThis,   // inherited, same package
+	    memPro: bind toThis,   // inherited, same package
+	    memScr: bind toThis,   // ERROR: inherited, same package
+
+	    memIPkg: bind toThis,   // inherited, same package
+	    memIPro: bind toThis,   // inherited, same package
+	    memIScr: bind toThis,   // ERROR:  inherited, same package
+
+	    memRPro: bind toThis,   // inherited, same package
+	    memRPkg: bind toThis,   // inherited, same package
+	    memRScr: bind toThis,   // ERROR: inherited, same package
+	}
+    }
+}
+
+class InhA extends vsgc1250subFailA {
+    function memInit() {
+	InhA {
+	    memPub: bind toThis,   // inherited, different package
+	    memPro: bind toThis,   // inherited, different package
+	    memPkg: bind toThis,   // ERROR: inherited, different package
+	    memScr: bind toThis,   // ERROR: inherited, different package
+
+	    memIPro: bind toThis,   // inherited, different package
+	    memIPkg: bind toThis,   // ERROR:  inherited, different package
+	    memIScr: bind toThis,   // ERROR:  inherited, different package
+
+	    memRPro: bind toThis,   // inherited, different package
+	    memRPkg: bind toThis,   // ERROR: inherited, different package
+	    memRScr: bind toThis,   // ERROR: inherited, different package
+	}
+    }
+}
+
+function memInhInit() {
+	var vf = Inh {};
+	vf.memInit();
+}
+
+function memInhAInit() {
+	var vf = InhA {};
+	vf.memInit();
+}
+
+function memHereInit() {
+	vsgc1250bind {
+	    memHerePub: bind toThis,   // script class, select access
+	    memHerePro: bind toThis,   // script class, select access
+	    memHerePkg: bind toThis,   // script class, select access
+	    memHereScr: bind toThis,   // script class, select access
+
+	    memHereIPro: bind toThis,   // script class, select access
+	    memHereIPkg: bind toThis,   // script class, select access
+	    memHereIScr: bind toThis,   // script class, select access
+
+	    memHereRPro: bind toThis,   // script class, select access
+	    memHereRPkg: bind toThis,   // script class, select access
+	    memHereRScr: bind toThis,   // script class, select access
+	}
+}
+
+function memFooInit() {
+	Foo {
+	    fooPub: bind toThis,   // nested class
+	    fooPro: bind toThis,   // nested class
+	    fooPkg: bind toThis,   // nested class
+	    fooScr: bind toThis,   // nested class
+
+	    fooIPro: bind toThis,   // nested class
+	    fooIPkg: bind toThis,   // nested class
+	    fooIScr: bind toThis,   // nested class
+
+	    fooRPro: bind toThis,   // nested class
+	    fooRPkg: bind toThis,   // nested class
+	    fooRScr: bind toThis,   // nested class
+	}
+}
+
+function memSubInit() {
+	vsgc1250subFail {
+	    memPub: bind toThis,   // same package
+	    memPro: bind toThis,   // same package
+	    memPkg: bind toThis,   // same package
+	    memScr: bind toThis,   // ERROR: same package
+
+	    memIPro: bind toThis,   // same package
+	    memIPkg: bind toThis,   // same package
+	    memIScr: bind toThis,   // ERROR:  same package
+
+	    memRPro: bind toThis,   // same package
+	    memRPkg: bind toThis,   // same package
+	    memRScr: bind toThis,   // ERROR: same package
+	}
+}
+
+function memSubAInit() {
+	vsgc1250subFailA {
+	    memPub: bind toThis,   // different package
+	    memPro: bind toThis,   // ERROR: different package
+	    memPkg: bind toThis,   // ERROR: different package
+	    memScr: bind toThis,   // ERROR: different package
+
+	    memIPro: bind toThis,   // ERROR:  different package
+	    memIPkg: bind toThis,   // ERROR:  different package
+	    memIScr: bind toThis,   // ERROR:  different package
+
+	    memRPro: bind toThis,   // ERROR: different package
+	    memRPkg: bind toThis,   // ERROR: different package
+	    memRScr: bind toThis,   // ERROR: different package
+	}
+}
+
+function run() {
+	memInhInit();
+	memInhAInit();
+	memHereInit();
+	memFooInit();
+	memSubInit();
+	memSubAInit();
+}

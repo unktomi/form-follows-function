@@ -1,0 +1,15 @@
+/**
+ * VSGC-2097 :  Binding to forward reference throws StackOverflow exception.
+ *
+ * @test
+ * @run
+ */
+
+var s : Integer = 1;
+var j:Integer = bind m;
+var m:Integer = bind s + 2 * j;
+
+s = 2; // #Line5
+for (i in [1..10]) {
+   println("m value {m}");
+} 

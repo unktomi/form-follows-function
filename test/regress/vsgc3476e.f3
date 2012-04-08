@@ -1,0 +1,22 @@
+/*
+ * Regress test for VSGC-3476: add support for invalidate triggers and invalidate statements for non-bound vars
+ *
+ * @test
+ * @run
+ */
+
+class Main {
+  function f() {};
+}
+
+Main{
+override function f():Void {
+   var local = 1 on invalidate {println("Inside on-invalidate trigger...");}
+   println("explicitly invalidating local var");
+   invalidate local;
+   println("forcing validation of local var");
+   local;
+   println("implicitly invalidating local var");
+   local = 2;
+}
+}.f();

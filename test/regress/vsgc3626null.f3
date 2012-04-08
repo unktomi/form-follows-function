@@ -1,0 +1,21 @@
+/**
+ * Regression test: VSGC-3626 : Compiled bind: bound sequence: type-cast
+ *
+ * Bound sequence type cast over nullable
+ *
+ * @test
+ * @run
+ */
+
+var thing : Object;
+def cn : Object[] = bind thing on replace [start..end] = newValue { println("{start}..{end} = {sizeof newValue}") }
+thing = 44;
+thing = null;
+thing = "hi";
+
+var thang : Object;
+def can = bind thang as Object[] on replace [start..end] = newValue { println("{start}..{end} = {sizeof newValue}") }
+thang = 44;
+thang = null;
+thang = "hi";
+

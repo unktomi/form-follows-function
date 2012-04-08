@@ -1,0 +1,20 @@
+/*
+ * 
+ * Sub test case intended to be used with vsgc1905Sub
+ * @subtest
+ *
+ *
+ */
+
+package pack1;
+
+public class vsgc1905Sup{
+
+protected function fn01(fparg:function(:Integer,:Number):java.lang.Double):java.lang.Double{
+	return 30.0;
+}
+
+protected function fn02(a1:Number,a2:Integer):Number{
+	return 25.60;
+}
+}

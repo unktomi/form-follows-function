@@ -1,0 +1,46 @@
+/**
+ * Regression test VSGC-1250 : visibility modifiers
+ *
+ * New instance component
+ *
+ * @compilefirst vsgc1250/a/vsgc1250subFailA.f3
+ * @compilefirst vsgc1250subFail.f3
+ * @test/compile-error
+ */
+import java.lang.System;
+import vsgc1250.a.vsgc1250subFailA;
+
+public class cPub {}
+package class cPkg {}
+class cScr {}
+
+function cNew() {
+	var x1 = cPub {};
+	var x2 = cPkg {};
+	var x3 = cScr {};
+}
+
+function cVisNew() {
+	var x1 = vsgc1250newInstance.cPub {};
+	var x2 = vsgc1250newInstance.cPkg {};
+	var x3 = vsgc1250newInstance.cScr {};
+}
+
+function cSubNew() {
+	var x1 = vsgc1250subFail.cPub {};
+	var x2 = vsgc1250subFail.cPkg {};
+	var x3 = vsgc1250subFail.cScr {};
+}
+
+function cSubANew() {
+	var x1 = vsgc1250subFailA.cPub {};
+	var x2 = vsgc1250subFailA.cPkg {};
+	var x3 = vsgc1250subFailA.cScr {};
+}
+
+function run( ) {
+	cNew();
+	cVisNew();
+	cSubNew();
+	cSubANew();
+}

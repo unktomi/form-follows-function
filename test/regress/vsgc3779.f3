@@ -1,0 +1,31 @@
+/**
+ * VSGC-3779 : Compiled bind: infinite recursion in initialization caused by self-reference in VarInit
+ *
+ * @test
+ * @run
+ */
+
+def GOODNESS = 55.55;
+
+class BIL {
+    public var width : Number;
+}
+
+class MyText {
+    var transX : Number;
+    public-read var bil = BIL { width: GOODNESS };
+}
+
+function run() {
+    var nt : MyText = 
+        {   var tmp = bind nt.bil.width;
+            MyText {
+                transX: bind tmp
+            }
+        };
+    if (nt.transX != GOODNESS) {
+       println("Bad result: {nt.transX}");
+    } else {
+       println("Good result: {nt.transX}");
+    }
+}

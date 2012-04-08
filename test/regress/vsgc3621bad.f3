@@ -1,0 +1,25 @@
+/**
+ * VSGC-3621 : A var isn't set to a new value if oldValue.equals(newValue)
+ *
+ * @test
+ * @run
+ */
+
+class Class1 {
+    public var callback : function()
+} 
+
+function test() : Void {
+    var mc = new vsgc3621sub(17);
+    def inst = Class1 {
+            callback: function() {
+                println("before: {mc}");
+                mc = new vsgc3621sub(17);
+                println("after: {mc}");
+            }
+    }
+
+    inst.callback()
+} 
+
+test();

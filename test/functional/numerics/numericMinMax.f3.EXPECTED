@@ -1,0 +1,8 @@
+MaxByte:  127
+MinByte:  -128
+MaxShort:  32767
+MinShort:  -32768
+MaxInteger:  2147483647
+MinInteger:  -2147483648
+MaxLong:  9223372036854775807
+MinLong:  -9223372036854775808

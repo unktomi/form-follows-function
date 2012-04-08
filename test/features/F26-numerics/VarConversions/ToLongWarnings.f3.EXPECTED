@@ -1,0 +1,16 @@
+test/features/F26-numerics/VarConversions/ToLongWarnings.f3:11: warning: possible loss of precision
+found   : Number
+required: Long
+l = Values.ff;
+          ^
+test/features/F26-numerics/VarConversions/ToLongWarnings.f3:12: warning: possible loss of precision
+found   : Double
+required: Long
+l = Values.dd;
+          ^
+test/features/F26-numerics/VarConversions/ToLongWarnings.f3:13: warning: possible loss of precision
+found   : Number
+required: Long
+l = Values.nn;
+          ^
+3 warnings

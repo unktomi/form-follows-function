@@ -1,0 +1,6 @@
+test/should-fail/vsgc2244.f3:4: incompatible types
+found   : Integer
+required: function():void
+var f:function () = [2];
+                     ^
+1 error

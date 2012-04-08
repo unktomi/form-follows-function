@@ -1,0 +1,92 @@
+/**
+ * VSGC-2486 : Conversion of bound numerics
+ *
+ * @test
+ * @run
+ */
+
+var aByte : Byte = 1;
+var aShort : Short = 2;
+var anInteger : Integer = 3;
+var aLong : Long = 4;
+var aFloat : Float = 5;
+var aDouble : Double = 6;
+
+def aByteByte : Byte = bind aByte;
+def aShortByte : Byte = bind aShort;
+def anIntegerByte : Byte = bind anInteger;
+def aLongByte : Byte = bind aLong;
+def aFloatByte : Byte = bind aFloat;
+def aDoubleByte : Byte = bind aDouble;
+println( aByteByte );
+println( aShortByte );
+println( anIntegerByte );
+println( aLongByte );
+println( aFloatByte );
+println( aDoubleByte );
+
+def aByteShort : Short = bind aByte;
+def aShortShort : Short = bind aShort;
+def anIntegerShort : Short = bind anInteger;
+def aLongShort : Short = bind aLong;
+def aFloatShort : Short = bind aFloat;
+def aDoubleShort : Short = bind aDouble;
+println( aByteShort );
+println( aShortShort );
+println( anIntegerShort );
+println( aLongShort );
+println( aFloatShort );
+println( aDoubleShort );
+
+def aByteInt : Integer = bind aByte;
+def aShortInt : Integer = bind aShort;
+def anIntegerInt : Integer = bind anInteger;
+def aLongInt : Integer = bind aLong;
+def aFloatInt : Integer = bind aFloat;
+def aDoubleInt : Integer = bind aDouble;
+println( aByteInt );
+println( aShortInt );
+println( anIntegerInt );
+println( aLongInt );
+println( aFloatInt );
+println( aDoubleInt );
+
+def aByteLong : Long = bind aByte;
+def aShortLong : Long = bind aShort;
+def anIntegerLong : Long = bind anInteger;
+def aLongLong : Long = bind aLong;
+def aFloatLong : Long = bind aFloat;
+def aDoubleLong : Long = bind aDouble;
+println( aByteLong );
+println( aShortLong );
+println( anIntegerLong );
+println( aLongLong );
+println( aFloatLong );
+println( aDoubleLong );
+
+def aByteFloat : Float = bind aByte;
+def aShortFloat : Float = bind aShort;
+def anIntegerFloat : Float = bind anInteger;
+def aLongFloat : Float = bind aLong;
+def aFloatFloat : Float = bind aFloat;
+def aDoubleFloat : Float = bind aDouble;
+println( aByteFloat );
+println( aShortFloat );
+println( anIntegerFloat );
+println( aLongFloat );
+println( aFloatFloat );
+println( aDoubleFloat );
+
+def aByteDouble : Double = bind aByte;
+def aShortDouble : Double = bind aShort;
+def anIntegerDouble : Double = bind anInteger;
+def aLongDouble : Double = bind aLong;
+def aFloatDouble : Double = bind aFloat;
+def aDoubleDouble : Double = bind aDouble;
+println( aByteDouble );
+println( aShortDouble );
+println( anIntegerDouble );
+println( aLongDouble );
+println( aFloatDouble );
+println( aDoubleDouble );
+

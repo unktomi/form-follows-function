@@ -1,0 +1,22 @@
+/**
+ * VSGC-3841 : compiled-bind: on invalidate trigger fired twice from subclass
+ *
+ * @test
+ * @run
+ */
+
+class A {
+  var x on invalidate { println("inv A.x"); }
+}
+
+class B extends A {
+  var y = bind x;
+}
+
+
+var k = 1;
+var b = B {x: bind k};
+b.x;
+println("start");
+k = 2; //fires twice
+println(b.x);

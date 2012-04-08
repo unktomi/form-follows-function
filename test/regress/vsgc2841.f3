@@ -1,0 +1,17 @@
+/**
+ * regression test: VSGC-2841 : Mixins: Cannot find firePropertyChange method in SwingComboBox.f3
+ *
+ * @test
+ *
+ */
+import javax.swing.JComboBox; 
+import javax.swing.ComboBoxModel; 
+
+public class comboImpl extends JComboBox { 
+
+    public override function setModel(aModel: ComboBoxModel): Void { 
+        var oldModel = dataModel; 
+             
+        firePropertyChange("model", oldModel, dataModel); 
+    } 
+} 

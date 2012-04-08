@@ -1,0 +1,21 @@
+/*
+ * VSGC-1905 : Compiler rejects a legal override of a inherited function
+ * @compilefirst ../pack1/vsgc1905Sup.f3
+ * @test
+ */
+
+package pack2;
+import pack1.vsgc1905Sup;
+
+
+class vsgc1905Sub extends vsgc1905Sup{
+
+override protected function fn01(fparg:function(:Integer,:Number):java.lang.Double):java.lang.Double{
+return 30.0;
+}
+
+override protected function fn02(a1:Number,a2:Integer):Number{
+return 25.60;
+}
+
+} 

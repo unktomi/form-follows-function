@@ -1,0 +1,47 @@
+/*
+ * implicitExit.f3
+ *
+ * Created on Aug 26, 2008, 10:28:47 AM
+ * @test
+ * @run
+ */
+
+
+import f3.lang.F3;
+
+/**
+ * Example F3 showing the usage of F3.addShutdownAction() with an implicit exit.
+ * The exit occurs when the script (which does not contain any event loop) runs off the
+ * end of the script.
+ *
+ * Output from this script will be as follows:
+ * {@code Starting Script}
+ * {@code Exiting Script}
+ * {@code Running Exit Action}
+ * @author sgw
+ */
+
+// Show that we are starting the Script
+java.lang.System.out.println("implicitExit Script");
+java.lang.System.out.println("Starting Script");
+
+/*
+ * A void Function that takes no arguments will be placed on the
+ * exit stack list by the addShutdownAction to be executed at the
+ * time the script exits either implicitly or explicitly.
+ */
+var runAtExit = function(): Void {
+    java.lang.System.out.println("Running Exit Action");
+}
+
+/*
+ * Add the runAtExit function to the stack for the Shutdown Action
+ * this action stack will be executed when the F3 exits.
+ */
+F3.addShutdownAction(runAtExit);
+
+
+java.lang.System.out.println("Exiting Script");
+/*
+ * Script will now have F3.exit() called implicitly
+ */

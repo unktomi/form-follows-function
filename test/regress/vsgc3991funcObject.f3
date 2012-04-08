@@ -1,0 +1,60 @@
+/*
+ * Regression test 
+ * VSGC-3991 : coalesce bound-for element invalidations into bulk trigger phase update
+ *              to prevent on-replace in inconsistent state
+ *
+ * Conditional for-loop body, Object
+ *
+ * @test
+ * @run
+ */
+
+class Thing {
+  var id : String;
+  override function toString() { "({id})" }
+}
+
+function val(i : Integer, aMax : Integer, aTarm : Thing, aFarm : Thing) : Thing {
+   if (i > aMax) aTarm else aFarm
+}
+
+function check(what : String) {
+  if (mirror != content) {
+    println("ERROR {what}: mirror does not match");
+    println(mirror);
+    println(content);
+  }
+  var exp = for (i in [0..3]) val(i, max, tArm, fArm);
+  if (content != exp) {
+    println("ERROR {what}: content does not match");
+    println(content);
+    println(exp);
+  }
+}
+
+var mirror : Thing[] = [];
+var max = 2;
+var tArm = Thing {id: "T"};
+var fArm = Thing {id: "F"};
+var content = bind for (i in [0..3]) val(i, max, tArm, fArm)
+      on replace [a..b] = newV {
+          mirror[a..b] = newV;
+          for(z in content) z; 
+      }; 
+check("init");
+max = 2;
+check("same");
+max = -1;
+check("max = -1");
+max = 50;
+check("max = 50");
+
+def chg = Thing {id: "X"};
+fArm = chg;
+check("fArm = chg");
+fArm = chg;
+check("repeat");
+
+max = 1;
+tArm = Thing {id: "*"};
+check("*");

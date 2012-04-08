@@ -1,0 +1,22 @@
+/**
+ * Regress test for VSGC-4250: Regression: compiler error when binding to an array of strings
+ *
+ * @test
+ * @run
+ */
+
+class ListView {
+var items:nativearray of String;
+}
+
+var text = "A,B".split(",");
+
+var lv = ListView {
+   items: bind text with inverse
+}
+
+println(lv.items[0]);
+
+text = ["C","D"] as nativearray of String;
+
+println(lv.items[0]);

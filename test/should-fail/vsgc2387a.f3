@@ -1,0 +1,52 @@
+/*
+ * Regression test for VSGC-2387 : reference to + is ambiguous, both method +(double,double) in and method +(int,int) in match
+ *
+ * @test/compile-error
+ */
+
+import java.util.*;
+import java.lang.System;
+
+//references
+
+class A {}
+class B {}
+var a:A = null;
+var b:B = null;
+var x:java.lang.String = null;
+
+(x as A);
+(a as java.lang.String);
+
+([x] as A);
+(a as java.lang.String[]);
+
+(x as A[]);
+([a] as java.lang.String);
+
+([a] as java.lang.String[]);
+([x] as A[]);
+
+var y:ArrayList = null;
+
+(y as HashSet);
+(y as HashSet[]);
+([y] as HashSet);
+([y] as HashSet[]);
+
+//primitives
+
+(1 as Boolean);
+([1] as Boolean);
+(1 as Boolean[]);
+([1] as Boolean[]);
+
+//sequence to non-sequence
+([y] as ArrayList);
+([y] as List);
+([a] as B);
+([b] as A);
+([y] as Collection);
+([] as A);
+([1] as Number);
+([1.0] as Integer);

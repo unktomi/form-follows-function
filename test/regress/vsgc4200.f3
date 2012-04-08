@@ -1,0 +1,95 @@
+/**
+ * VSGC-4200 : Old style invoke() of Function obejcts does not work anymore..
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.reflect.*;
+import org.f3.functions.*;
+
+public class t {
+}
+
+public var func0 = function() {
+    println("func");
+}
+
+public var func1 = function(msg: String) {
+    println("func {msg}");
+}
+
+public var func2 = function(msg1: String, msg2: String) {
+    println("func {msg1}, {msg2}");
+}
+
+public var func3 = function(msg1: String, msg2: String, msg3: String) {
+    println("func {msg1}, {msg2}, {msg3}");
+}
+
+public var func4 = function(msg1: String, msg2: String, 
+    msg3: String, msg4: String) {
+    println("func {msg1}, {msg2}, {msg3}, {msg4}");
+}
+
+public var func5 = function(msg1: String, msg2: String, 
+    msg3: String, msg4: String, msg5 : String) {
+    println("func {msg1}, {msg2}, {msg3}, {msg4}, {msg5}");
+}
+
+public var func6 = function(msg1: String, msg2: String, 
+    msg3: String, msg4: String, msg5 : String, msg6 : String) {
+    println("func {msg1}, {msg2}, {msg3}, {msg4}, {msg5}, {msg6}");
+}
+
+public var func7 = function(msg1: String, msg2: String, 
+    msg3: String, msg4: String, msg5 : String, msg6 : String, msg7: String) {
+    println("func {msg1}, {msg2}, {msg3}, {msg4}, {msg5}, {msg6}, {msg7}");
+}
+
+public var func8 = function(msg1: String, msg2: String, 
+    msg3: String, msg4: String, msg5 : String, 
+    msg6 : String, msg7 : String, msg8 : String) {
+    println("func {msg1}, {msg2}, {msg3}, {msg4}, {msg5}, {msg6}, {msg7}, {msg8} ");
+}
+
+function run() {
+   var clazz = java.lang.Class.forName("vsgc4200");
+   var f = clazz.getMethod("get$func0").invoke(null);
+   (f as Function0).invoke();
+
+   f = clazz.getMethod("get$func1").invoke(null);
+   (f as Function1).invoke("1");
+
+   f = clazz.getMethod("get$func2").invoke(null);
+   (f as Function2).invoke("1", "2");
+
+   f = clazz.getMethod("get$func3").invoke(null);
+   (f as Function3).invoke("1", "2", "3");
+
+   f = clazz.getMethod("get$func4").invoke(null);
+   (f as Function4).invoke("1", "2", "3", "4");
+
+   f = clazz.getMethod("get$func5").invoke(null);
+   (f as Function5).invoke("1", "2", "3", "4", "5");
+
+   f = clazz.getMethod("get$func6").invoke(null);
+   (f as Function6).invoke("1", "2", "3", "4", "5", "6");
+
+   f = clazz.getMethod("get$func7").invoke(null);
+   (f as Function7).invoke("1", "2", "3", "4", "5", "6", "7");
+
+   f = clazz.getMethod("get$func8").invoke(null);
+   (f as Function8).invoke("1", "2", "3", "4", "5", "6", "7", "8");
+
+   // invoke normally - so that Function0-8.invoke$(..) is used
+   func0();
+   func1("1");
+   func2("1", "2");
+   func3("1", "2", "3");
+   func4("1", "2", "3", "4");
+   func5("1", "2", "3", "4", "5");
+   func6("1", "2", "3", "4", "5", "6");
+   func7("1", "2", "3", "4", "5", "6", "7");
+   func8("1", "2", "3", "4", "5", "6", "7", "8");
+}

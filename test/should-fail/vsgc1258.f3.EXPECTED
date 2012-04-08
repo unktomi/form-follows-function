@@ -1,0 +1,4 @@
+test/should-fail/vsgc1258.f3:18: Cannot override 'myvar' -- overridden variable must be from a supertype.
+    override var myvar on replace {
+                 ^
+1 error

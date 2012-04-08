@@ -1,0 +1,37 @@
+/**
+ * vsgc-2529: Error msgs should not be generated for import java.lang.Double, etc
+ * @test
+ * @run
+ */
+import java.lang.Boolean;
+import java.lang.Byte;
+import java.lang.String;
+import java.lang.Short;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Float;
+import java.lang.Double;
+import java.lang.Number;
+import java.lang.Void;
+
+
+var bb:     Boolean = true;
+var by:     Byte = 89;
+var short:  Short = 89;
+var int:    Integer = 89;
+var long:   Long = 89;
+var float:  Float = 89.6;
+var double: Double = 89.7;
+var number: Number = 22.5;
+var string: String = "Hi there sailor";
+
+println("bb     = {bb}");
+println("by     = {by}");
+println("short  = {short}");
+println("int    = {int}");
+println("long   = {long}");
+println("float  = {float}");
+println("double = {double}");
+println("number = {number}");
+println("string = {string}");
+

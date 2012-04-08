@@ -1,0 +1,8 @@
+/**
+ * VSGC-3317 : Optimize bound F3 var select with mutable selectors
+ *
+ * @subtest vsgc3317MixImpl.f3
+ */
+
+public class vsgc3317Impl extends vsgc3317Mix {
+}

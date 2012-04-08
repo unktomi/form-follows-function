@@ -1,0 +1,6 @@
+/*
+ * @subtest vsgc272
+ */
+
+public abstract class vsgc272Node extends vsgc272CanvasElement {
+}

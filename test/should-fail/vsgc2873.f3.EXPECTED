@@ -1,0 +1,7 @@
+test/should-fail/vsgc2873.f3:24: warning: Illegal self reference: variable f2 is not initialized.
+    anotherVar1: f2.aVar //warning here
+                 ^
+test/should-fail/vsgc2873.f3:25: warning: Illegal self reference: variable f2 is not initialized.
+    anotherVar2: f2.aFunc(aNumber) //warning here
+                 ^
+2 warnings

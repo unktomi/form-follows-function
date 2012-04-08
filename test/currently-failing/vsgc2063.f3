@@ -1,0 +1,66 @@
+/*
+ * vsgc-2063 - Behaviour of invoking a trigger attached to a sequence needs to be clarified.
+ * @test
+ *
+ * test/run with .expected file; when fixed, the output can be determined.
+ */
+
+
+var seq:Integer[] = [1,2,3,4];
+var seq1:Integer[] = bind seq[ x | x > 2 ]
+  on replace oldValue[lo .. hi]=newVals {
+    println("replaced old: {oldValue} with new: {newVals} low idx:{lo} ; hi idx: {hi}")
+  }
+seq = [2,5,6,7];
+
+
+/* bug attachement as originally reported */
+var seqA:Integer[] = [1,2,3,4];
+var seqA1:Integer[] = bind f()()(seqA)[ x | x > 2 ]
+on replace oldValue[lo .. hi]=newVals
+{
+println("replaced sequence {seqA1} - ov = {oldValue} - nv {newVals} low idx ={lo} - hi idx {hi}")
+}
+
+for (i in seqA1) {
+println(i);
+}
+
+seqA = [2,5,6,7];
+
+for (i in seqA1) {
+  println(i);
+}
+
+function f():function():function(:Integer[]):Integer[]{
+    function():function(:Integer[]):Integer[] {
+        function(seqA:Integer[]):Integer[] {
+            seqA;
+        }
+    }
+}
+/*
+Current output, which seems to be incorrect:
+
+replaced old:  with new: 34 low idx:0 ; hi idx: -1
+replaced old: 34 with new:  low idx:0 ; hi idx: -1
+replaced old: 34 with new: 5 low idx:0 ; hi idx: -1
+replaced old: 534 with new: 5 low idx:0 ; hi idx: 0
+replaced old: 534 with new: 6 low idx:1 ; hi idx: 1
+replaced old: 564 with new: 6 low idx:1 ; hi idx: 1
+replaced old: 564 with new: 7 low idx:2 ; hi idx: 2
+replaced old: 567 with new: 7 low idx:2 ; hi idx: 2
+replaced sequence 34 - ov =  - nv 34 low idx =0 - hi idx -1
+3
+4
+replaced sequence 34 - ov = 34 - nv  low idx =0 - hi idx -1
+replaced sequence 534 - ov = 34 - nv 5 low idx =0 - hi idx -1
+replaced sequence 534 - ov = 534 - nv 5 low idx =0 - hi idx 0
+replaced sequence 564 - ov = 534 - nv 6 low idx =1 - hi idx 1
+replaced sequence 564 - ov = 564 - nv 6 low idx =1 - hi idx 1
+replaced sequence 567 - ov = 564 - nv 7 low idx =2 - hi idx 2
+replaced sequence 567 - ov = 567 - nv 7 low idx =2 - hi idx 2
+5
+6
+7
+*/

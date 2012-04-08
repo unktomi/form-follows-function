@@ -1,0 +1,12 @@
+/**
+ * VSGC-2620 : Translation: Cannot find Sequence.bindFromLiteral
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+  var content:Object[]
+}
+var skin:Object;
+var x = Foo { content: bind skin }

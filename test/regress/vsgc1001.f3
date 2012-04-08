@@ -1,0 +1,7 @@
+/**
+ * regression test:  Not able to extend generified java class in f3.
+ * @test
+ */
+
+import java.util.HashMap;
+class Foo extends HashMap {}

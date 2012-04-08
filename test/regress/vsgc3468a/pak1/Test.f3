@@ -1,0 +1,14 @@
+/**
+ * @subtest
+ */
+package vsgc3468a.pak1;
+
+import vsgc3468a.pak2.Dep;
+
+public class Test {
+  var a : Dep;
+
+  public function testit() {
+    a.perform();
+  }
+}

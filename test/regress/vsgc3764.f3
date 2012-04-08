@@ -1,0 +1,10 @@
+/**
+ * VSGC-3764 : Compiled bind: Incompat types error on null in a bound obj. lit.
+ *
+ * @test
+ */
+
+class Rectanglex {
+    var fill: String;
+}
+var jj = bind Rectanglex{ fill: null};

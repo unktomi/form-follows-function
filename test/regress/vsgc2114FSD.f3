@@ -1,0 +1,22 @@
+/**
+ * Regression test VSGC-2114 : NPE when running RT_423Test -- should be caught
+ *
+ * @compilefirst vsgc2114WSD.f3
+ * @test
+ * @run
+ */
+
+public class vsgc2114FSD extends vsgc2114WSD {
+  
+    package override function setResizable(resizable: Boolean): Void {
+        println("FrameStageDelegate.setResizable: {resizable}");
+        (window as javax.swing.JFrame).setResizable(resizable);
+        println("FrameStageDelegate.setResizable: DONE");
+    }
+
+}
+
+function run() {
+    var fsd = vsgc2114FSD{};
+    fsd.setVisibility(true);
+}

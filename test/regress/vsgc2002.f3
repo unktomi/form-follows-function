@@ -1,0 +1,13 @@
+/**
+ * Test for VSGC-2002: Test failed in OSX10.4 Intel32 with JDK5
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.*;
+
+System.err.println("2008-09-15 15:13:59.128 java[773] CFLog (0): CFMessagePort: bootstrap_register(): failed 1103 (0x44f), port = 0x11f03, name = 'java.ServiceProvider'");
+System.err.println("See /usr/include/servers/bootstrap_defs.h for the error codes.");
+System.err.println("2008-09-15 15:13:59.128 java[773] CFLog (99): CFMessagePortCreateLocal(): failed to name Mach port (java.ServiceProvider)");
+

@@ -1,0 +1,13 @@
+/**
+ * VSGC-4135 : Add a compiler option to force warning on usage of specified packages.
+ * 
+ * @compilearg -XDwarnOnUse=java.util,java.awt
+ * @test/warning
+ */
+
+import java.util.*;
+
+var h = new Hashtable();
+
+var f = new java.awt.Frame("");
+

@@ -1,0 +1,23 @@
+/*
+ * @test/f3unit
+ * @run
+ */
+
+import f3.f3unit.*;
+
+public class BoundSelectTest extends F3TestCase {
+    function testBoundSelect() {
+        var f1 = Foo { i: 3 }
+        var f2 = Foo { i: 5 }
+        var bfi = bind f1.i;
+        assertEquals(3, bfi);
+        f1.i = 9;
+        assertEquals(9, bfi);
+        f1 = f2;
+        assertEquals(5, bfi);
+    }
+}
+
+class Foo {
+    var i : Integer;
+}

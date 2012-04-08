@@ -1,0 +1,8 @@
+/**
+ * Regress test for VSGC-3395: An internal error has occurred in the F3 compiler
+ *
+ * @test/compile-error
+ */
+
+var s:String;
+vsgc3395{s:""};

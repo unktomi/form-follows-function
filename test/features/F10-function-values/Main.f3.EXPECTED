@@ -1,0 +1,16 @@
+button pressed
+action1 called
+button pressed
+cl.fvar called
+reset cl.xvar-Cl1.concat called
+fv2(12) = 112
+void fv3(13.5)
+call named plus10: 1->11 2->12 3->13
+call anonymous x+5: 1->6 2->7 3->8
+call plus10 assigned to ff: 1->11 2->12 3->13
+call anonymous x+2 assigned to ff: 1->3 2->4 3->5
+x:test-f4
+f5(1)(5)=19
+funs[0]->x:foo0
+funs[1]->y:foo1
+funs[2]->x:foo2

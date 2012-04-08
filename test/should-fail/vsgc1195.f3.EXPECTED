@@ -1,0 +1,4 @@
+test/should-fail/vsgc1195.f3:17: doIt in vsgc1195.A cannot be applied to (String[])
+obj.doIt(["F3","Rocks"]);
+   ^
+1 error

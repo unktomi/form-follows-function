@@ -1,0 +1,16 @@
+test\should-fail\vsgc2542.f3:7: Number out of range: 4.3E80.
+def a : Float = 4.3e80;
+                ^
+test\should-fail\vsgc2542.f3:8: Number out of range: 2.1E-80.
+def b : Float = 2.1e-80;
+                ^
+test\should-fail\vsgc2542.f3:10: Byte out of range: 489.
+def k : Byte = 489;
+               ^
+test\should-fail\vsgc2542.f3:11: Short out of range: 123000.
+def l : Short = 123000;
+                ^
+test\should-fail\vsgc2542.f3:12: Integer out of range: 8589934592.
+def m : Integer = 0x200000000;
+                  ^
+5 errors

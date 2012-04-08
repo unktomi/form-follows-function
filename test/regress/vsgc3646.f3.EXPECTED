@@ -1,0 +1,5 @@
+changing obj.t1 to 42
+onChange: obj.t1 changed
+removed a change listener
+changing obj.t1 to 23
+removed fake change listener

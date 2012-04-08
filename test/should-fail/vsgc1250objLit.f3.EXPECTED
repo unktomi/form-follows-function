@@ -1,0 +1,43 @@
+test\should-fail\vsgc1250objLit.f3:49: memScr has script only (default) access in vsgc1250subFail
+	    memScr: 123,   // ERROR: inherited, same package
+	    ^
+test\should-fail\vsgc1250objLit.f3:57: memRScr has script only (default) initialization access in vsgc1250subFail
+	    memRScr: 123,   // ERROR: inherited, same package
+	    ^
+test\should-fail\vsgc1250objLit.f3:66: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	    memPkg: 123,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:68: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	    memScr: 123,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:75: memRPkg has package initialization access in vsgc1250.a.vsgc1250subFailA
+	    memRPkg: 123,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:76: memRScr has script only (default) initialization access in vsgc1250.a.vsgc1250subFailA
+	    memRScr: 123,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:130: memScr has script only (default) access in vsgc1250subFail
+	    memScr: 123,   // ERROR: same package
+	    ^
+test\should-fail\vsgc1250objLit.f3:138: memRScr has script only (default) initialization access in vsgc1250subFail
+	    memRScr: 123,   // ERROR: same package
+	    ^
+test\should-fail\vsgc1250objLit.f3:145: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	    memPkg: 123,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:146: memPro has protected access in vsgc1250.a.vsgc1250subFailA
+	    memPro: 123,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:147: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	    memScr: 123,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:153: memRPro has protected initialization access in vsgc1250.a.vsgc1250subFailA
+	    memRPro: 123,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:154: memRPkg has package initialization access in vsgc1250.a.vsgc1250subFailA
+	    memRPkg: 123,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250objLit.f3:155: memRScr has script only (default) initialization access in vsgc1250.a.vsgc1250subFailA
+	    memRScr: 123,   // ERROR: different package
+	    ^
+14 errors

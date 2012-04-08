@@ -1,0 +1,1153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-importer" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Populate the import directory or make sure that imported components
+        are available. The import area or directory (import.dir) should be
+        populated once and then re-used over multiple builds.
+        Typically, the 'ant clean' target will not remove the import area, it
+        must be manually removed (ant tasks cannot remove it due to cpptasks).
+
+        All the imported files are freely and easily downloaded, however these
+        individual downloads have proven to be unreliable in total because
+        of all the websites that are expected to be up and running well.
+        Getting an initial fully populated import area by doing multiple
+        downloads may take multiple trys.
+
+        If a ../import.zip is available, that will be used to prime the import
+        area.
+
+        If the previous hudson build is available, the import.zip from that
+        build will be used to populate the entire import area.
+
+        If the property import.dir is explicitly set, then that import area
+        will be used but will be considered read-only.
+
+        In all cases, the validity of the import components will be checked.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build-defs.xml file.
+
+    </description>
+
+    <property name="import.platform" value="${platform}"/>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    <!-- Populates the import.dir area with freely available files. -->
+
+    <!-- A global import.zip made available to populate the import area. -->
+    <property name="global.import.zip" location="${f3.root.dir}/../import.zip"/>
+
+    <!-- The location of the import area in the current build area. -->
+    <property name="local.import.dir" location="${f3.root.dir}/import"/>
+
+    <!-- A report file or log of the items inside the import area. -->
+    <property name="import.report" value="${local.import.dir}/Report.txt"/>
+    
+    <!-- If import.dir is set at this point, treat it as read-only. -->
+    <condition property="import.read-only">
+        <isset property="import.dir"/>
+    </condition>
+
+    <import file="${f3.root.build.src.dir}/build-os-arch.xml"/>
+
+    <!-- Set import.dir to local area if it is not set. -->
+    <condition property="import.dir" value="${local.import.dir}">
+        <and>
+            <not>
+                <isset property="import.dir"/>
+            </not>
+        </and>
+    </condition>
+    
+    <!-- When can we use the global import.zip to populate import.dir. -->
+    <condition property="use.global.zip">
+        <and>
+            <not>
+                <isset property="import.read-only"/>
+            </not>
+            <available file="${global.import.zip}" type="file"/>
+        </and>
+    </condition>
+
+    <!-- When import.dir is completely empty, needs to be fully populated. -->
+    <condition property="local.import.dir.empty">
+        <and>
+            <not>
+                <isset property="import.read-only"/>
+            </not>
+            <not>
+                <available file="${local.import.dir}" type="dir"/>
+            </not>
+        </and>
+    </condition>
+    <condition property="use.allof.global.zip">
+        <and>
+            <isset property="local.import.dir.empty"/>
+            <isset property="use.global.zip"/>
+        </and>
+    </condition>
+
+    <!-- When should we use http downloads. -->
+    <condition property="use.http.get">
+        <and>
+            <not>
+                <isset property="import.read-only"/>
+            </not>
+            <not>
+                <isset property="use.global.zip"/>
+            </not>
+        </and>
+    </condition>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    <!-- Macrodefs -->
+
+    <!-- Print out a property value -->
+    <macrodef name="print-prop">
+        <attribute name="name"/>
+        <sequential>
+            <condition property="@{name}.value" value="${@{name}}" else="">
+                <isset property="@{name}"/>
+            </condition>
+            <echo level="info"
+		  message="    @{name}: ${@{name}.value}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Set some basic properties for this import item -->
+    <macrodef name="import-set-properties">
+        <attribute name="description"/>
+        <attribute name="item"/>
+        <attribute name="version"/>
+        <attribute name="url"/>
+        <attribute name="basename"/>
+        <attribute name="platform"/>
+        <attribute name="includes"/>
+        <sequential>
+            <property name="import.@{item}.description"
+	              value="@{description}"/>
+            <property name="import.@{item}.version"
+	              value="@{version}"/>
+            <property name="import.@{item}.url"
+	              value="@{url}"/>
+            <property name="import.@{item}.basename"
+	              value="@{basename}"/>
+            <property name="import.@{item}.platform"
+	              value="@{platform}"/>
+            <property name="import.@{item}.includes"
+	              value="@{includes}"/>
+            <property name="import.@{item}.dir"
+                      location="${import.dir}/@{item}-@{version}/@{platform}"/>
+            <property name="import.@{item}.local.dir"
+                      location="${local.import.dir}/@{item}-@{version}/@{platform}"/>
+            <property name="import.@{item}.touchfile"
+                      location="${import.@{item}.local.dir}-installed"/>
+            <condition property="import.@{item}.installed">
+                <and>
+                    <available file="${import.@{item}.touchfile}" type="file"/>
+                    <available file="${import.@{item}.local.dir}" type="dir"/>
+                </and>
+            </condition>
+            <condition property="import.@{item}.use.http.get">
+                <and>
+                    <not>
+                        <isset property="import.read-only"/>
+                    </not>
+                    <not>
+                        <isset property="import.@{item}.installed"/>
+                    </not>
+                </and>
+            </condition>
+        </sequential>
+    </macrodef>
+
+    <!-- This file must exist after the import -->
+    <macrodef name="import-file-must-exist">
+        <attribute name="item"/>
+        <attribute name="property"/>
+        <sequential>
+            <do-file-check file="${@{property}}"/>
+            <echo level="info"
+		  message="File exists: ${@{property}}"/>
+        </sequential>
+    </macrodef>
+    
+    <!-- This class must exist in this classpath -->
+    <macrodef name="import-classname-must-exist">
+        <attribute name="item"/>
+        <attribute name="classname"/>
+        <attribute name="classpath"/>
+        <sequential>
+            <do-class-check classname="@{classname}" classpath="@{classpath}"/>
+            <echo level="info"
+		  message="Classname exists: @{classname}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Perform the download and add to the download report -->
+    <macrodef name="import-get">
+        <attribute name="item"/>
+        <attribute name="suffix"/>
+        <sequential>
+            <fail if="import.downloads.disabled"
+		  message="Downloads have been disabled"/>
+            <property name="import.@{item}.downloaded.file"
+                      location="${import.@{item}.local.dir}/${import.@{item}.basename}@{suffix}"/>
+            <delete dir="${import.@{item}.local.dir}" quiet="true"/>
+            <mkdir dir="${import.@{item}.local.dir}"/>
+            <echo level="info"
+		  message="DOWNLOAD WARNING: Getting @{item} from ${import.@{item}.url} (version ${import.@{item}.version})"/>
+            <delete file="${import.@{item}.downloaded.file}"      quiet="true"/>
+            <delete file="${import.@{item}.downloaded.file}.temp" quiet="true"/>
+            <get src="${import.@{item}.url}/${import.@{item}.basename}@{suffix}"
+                 dest="${import.@{item}.downloaded.file}.temp"/>
+            <move file="${import.@{item}.downloaded.file}.temp"
+                  tofile="${import.@{item}.downloaded.file}" verbose="true"/>
+            <import-file-must-exist item="@{item}"
+			                        property="import.@{item}.downloaded.file"/>
+            <echo message="${import.@{item}.version}"
+                  file="${import.@{item}.touchfile}"/>
+            <echo level="info"
+		  file="${import.report}" append="true">
+Import Item: @{item}
+Description: ${import.@{item}.description}
+    Version: ${import.@{item}.version} ${import.@{item}.platform}
+        Url: ${import.@{item}.url}
+            </echo>
+        </sequential>
+    </macrodef>
+    
+    <macrodef name="import-make-read-only">
+        <attribute name="dir"/>
+        <sequential>
+            <!-- Temporaily, leave as is
+	    <chmod dir="@{dir}"
+		   perm="a-w" type="both" includes="**/**"/>
+            <chmod dir="@{dir}" perm="a-w" type="dir"/>
+	    -->
+        </sequential>
+    </macrodef>
+    
+    <!-- Download a local copy of this item from the url (tar.bz2 bundle) -->
+    <macrodef name="download-url-bzip2">
+        <attribute name="item"/>
+        <sequential>
+            <import-get item="@{item}" suffix=".tar.bz2"/>
+            <exec dir="${import.@{item}.local.dir}" executable="tar" failonerror="true">
+                <arg value="-xjpf"/>
+                <arg value="${import.@{item}.downloaded.file}"/>
+            </exec>
+            <delete file="${import.@{item}.downloaded.file}"/>
+            <import-make-read-only dir="${import.@{item}.local.dir}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Download a local copy of this item from the url (tar.gz bundle) -->
+    <macrodef name="download-url-tgz">
+        <attribute name="item"/>
+        <sequential>
+            <import-get item="@{item}" suffix=".tar.gz"/>
+            <do-untar-bundle tar="${import.@{item}.downloaded.file}"
+                             dir="${import.@{item}.local.dir}"
+                             includes="${import.@{item}.includes}"/>
+            <delete file="${import.@{item}.downloaded.file}"/>
+            <import-make-read-only dir="${import.@{item}.local.dir}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Download a local copy of this item from the url (zip bundle) -->
+    <macrodef name="download-url-zip">
+        <attribute name="item"/>
+        <sequential>
+            <import-get item="@{item}" suffix=".zip"/>
+            <do-unzip-bundle zip="${import.@{item}.downloaded.file}"
+                             dir="${import.@{item}.local.dir}"
+                             includes="${import.@{item}.includes}"/>
+            <delete file="${import.@{item}.downloaded.file}"/>
+            <import-make-read-only dir="${import.@{item}.local.dir}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Download a local copy of this item from the url (jar file) -->
+    <macrodef name="download-url-jar">
+        <attribute name="item"/>
+        <sequential>
+            <import-get item="@{item}" suffix=".jar"/>
+            <import-make-read-only dir="${import.@{item}.local.dir}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Check the local copy or download -->
+    <macrodef name="import-check">
+        <attribute name="item"/>
+        <sequential>
+            <echo level="info"
+		  message="Checked imported @{item} version ${import.@{item}.version}"/>
+        </sequential>
+    </macrodef>
+
+    <!--- Import all the items for a specific platform -->
+    <macrodef name="import-platform">
+        <attribute name="platform"/>
+        <sequential>
+            <echo level="info" message="Importing for platform @{platform}"/>
+            <ant target="all-imports-platform-specific" inheritAll="false">
+                <property name="import.platform" value="@{platform}"/>
+            </ant>
+            <property name="import.platform.@{platform}.checked" value="true"/>
+        </sequential>
+    </macrodef>
+
+    <!-- Delete item -->
+    <macrodef name="import-delete">
+        <attribute name="item"/>
+        <attribute name="version"/>
+        <sequential>
+            <delete dir="${local.import.dir}/@{item}-@{version}"/>
+            <delete file="${local.import.dir}/@{item}-@{version}-installed"/>
+        </sequential>
+    </macrodef>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <!-- Import everything for all platforms -->
+    <!-- TODO: do we still need ppc binaries for JOGL? They aren't available for JOGL2 -->
+    <target name="all-imports"
+            depends="
+	        check-settings,
+                check-for-empty-import,
+		all-imports-generic,
+		all-imports-solaris-i586,
+		all-imports-solaris-amd64,
+		all-imports-linux-i586,
+		all-imports-linux-amd64,
+		all-imports-windows-i586,
+		all-imports-windows-amd64,
+		all-imports-macosx-universal,
+		all-imports-cleanup
+            ">
+        <echo level="info"
+	      message="Imported all files to ${local.import.dir} for all platforms"/>
+    </target>
+
+    <target name="all-imports-cleanup">
+	<import-delete 
+	    item="ant"              version="1.7.0"/>
+	<import-delete 
+	    item="antlr"            version="3.1.2"/>
+	<import-delete 
+	    item="antlr301"         version="3.0.1"/>
+	<import-delete 
+	    item="gluegen"          version="1.0b06"/>
+	<import-delete 
+	    item="gluegen-natives"  version="1.0b06"/>
+	<import-delete 
+	    item="javacc"           version="4.1"/>
+	<import-delete 
+	    item="jogl"             version="1.1.1"/>
+	<import-delete 
+	    item="jogl-natives"     version="1.1.1"/>
+	<import-delete 
+	    item="jogl2"            version="2.0-pre-20090622"/>
+	<import-delete 
+	    item="jogl2"            version="2.0-pre-20090804"/>
+	<import-delete 
+	    item="jogl2"            version="2.0-pre-20090821"/>
+	<import-delete 
+	    item="retroweaver"      version="2.0.3"/>
+	<import-delete 
+	    item="svnstat"          version="1.0"/>
+	<import-delete 
+	    item="cpptasks"         version="1.0b5"/>
+	<import-delete 
+	    item="swing-layout"     version="1.0.3"/>
+	<import-delete 
+	    item="wysiwygdocbook"   version="1.02"/>
+    </target>
+    
+    <target name="all-imports-this-platform"
+            depends="all-imports-platform-specific">
+    </target>
+    <target name="all-imports-solaris-sparc"
+            unless="import.platform.solaris-sparc.checked">
+        <import-platform platform="solaris-sparc"/>
+    </target>
+    <target name="all-imports-solaris-sparcv9"
+            unless="import.platform.solaris-sparcv9.checked">
+        <import-platform platform="solaris-sparcv9"/>
+    </target>
+    <target name="all-imports-solaris-i586"
+            unless="import.platform.solaris-i586.checked">
+        <import-platform platform="solaris-i586"/>
+    </target>
+    <target name="all-imports-solaris-amd64"
+            unless="import.platform.solaris-amd64.checked">
+        <import-platform platform="solaris-amd64"/>
+    </target>
+    <target name="all-imports-linux-i586"
+            unless="import.platform.linux-i586.checked">
+        <import-platform platform="linux-i586"/>
+    </target>
+    <target name="all-imports-linux-amd64"
+            unless="import.platform.linux-amd64.checked">
+        <import-platform platform="linux-amd64"/>
+    </target>
+    <target name="all-imports-windows-i586"
+            unless="import.platform.windows-i586.checked">
+        <import-platform platform="windows-i586"/>
+    </target>
+    <target name="all-imports-windows-amd64"
+            unless="import.platform.windows-amd64.checked">
+        <import-platform platform="windows-amd64"/>
+    </target>
+    <target name="all-imports-macosx-universal"
+            unless="import.platform.macosx-universal.checked">
+        <import-platform platform="macosx-universal"/>
+    </target>
+    <target name="all-imports-macosx-ppc"
+            unless="import.platform.macosx-ppc.checked">
+        <import-platform platform="macosx-ppc"/>
+    </target>
+   
+    <target name="check-settings">
+        <echo level="info"
+	      message=""/>
+        <echo level="info"
+	      message="Property Settings:"/>
+        <echo level="info"
+	      message="------------------"/>
+        <print-prop name="platform.home"/>
+        <print-prop name="platform6u10.home"/>
+        <print-prop name="import.dir"/>
+        <print-prop name="export.dir"/>
+        <print-prop name="os_name"/>
+        <print-prop name="arch"/>
+        <print-prop name="os.name"/>
+        <print-prop name="os.version"/>
+        <print-prop name="os.arch"/>
+        <print-prop name="user.name"/>
+        <print-prop name="user.dir"/>
+        <print-prop name="user.home"/>
+        <print-prop name="java.home"/>
+        <print-prop name="java.version"/>
+        <print-prop name="java.vendor"/>
+        <print-prop name="java.vm.version"/>
+        <print-prop name="ant.home"/>
+        <print-prop name="ant.version"/>
+        <echo level="info"
+	      message=""/>
+        <fail unless="platform.home"
+	       message="You have to setup platform.home property to JDK 5+ for proper building. Example: ant -Dplatform.home=/usr/lib/java/jdk1.6.0_10"/>
+        <fail message="You need JDK 1.5 or higher to build F3 Player.">
+            <condition>
+                <not>
+                    <available classname="java.lang.Appendable"/>
+                </not>
+            </condition>
+        </fail>
+    </target>
+
+    <!-- Full global copy from directory or zip file. -->
+    <target name="check-for-empty-import"
+            depends="use-global-zip-import-if-available,
+                     use-hudson-zip-import-if-needed"/>
+    <target name="use-global-zip-import-if-available"
+            if="use.allof.global.zip">
+        <do-unzip-bundle zip="${global.import.zip}" dir="${local.import.dir}"/>
+    </target>
+    <target name="use-hudson-zip-import-if-needed"
+            if="local.import.dir.empty"
+            unless="use.allof.global.zip">
+        <condition property="use.hudson.zip">
+            <and>
+                <not>
+                    <isset property="f3.open.only"/>
+                </not>
+                <isset property="local.import.dir.empty"/>
+                <isreachable host="${hudson.f3.host}" timeout="10"/>
+            </and>
+        </condition>
+        <antcall target="use-hudson-zip-import"/>
+    </target>
+    <target name="use-hudson-zip-import" if="use.hudson.zip">
+        <do-get-previous-bundle name="import"
+            url="${hudson.f3.import.url}" dir="${local.import.dir}"/>
+    </target>
+
+    <!-- Import everything that is generic. (same for all platforms) -->
+    <target name="all-imports-generic">
+        <!-- <parallel threadCount='2'> -->
+        <antcall target="import-ant"/>
+        <antcall target="import-ant-contrib"/>
+        <antcall target="import-antlr"/>
+        <antcall target="import-antlrworks"/>
+        <antcall target="import-antpack200"/>
+        <antcall target="import-asm"/>
+        <antcall target="import-bitstream"/>
+        <antcall target="import-cobertura"/>
+        <antcall target="import-crossroots"/>
+        <antcall target="import-crosstools"/>
+        <antcall target="import-docbook"/>
+        <antcall target="import-docbook-xml"/>
+        <antcall target="import-findbugs"/>
+        <antcall target="import-gluegen-src"/>
+        <antcall target="import-javacc"/>
+        <antcall target="import-junit"/>
+        <antcall target="import-junit-dep"/>
+        <antcall target="import-markymarker"/>
+        <antcall target="import-resolver"/>
+        <antcall target="import-saxon"/>
+        <antcall target="import-xincluder"/>
+        <!-- </parallel> -->
+        <echo level="info"
+	      message="Imported all files to ${local.import.dir}"/>
+    </target>
+    
+    <!-- Import everything for a single platform (import.platform) -->
+    <target name="all-imports-platform-specific">
+        <echo level="info"
+	      message="Imported all files to ${local.import.dir}"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Junit-dep: Test Framework (Minus hamcrest-core-1.1+)"
+	item="junit-dep"
+	version="4.4"
+	url="http://downloads.sourceforge.net/junit"
+	basename="junit-dep-4.4"
+	platform=""
+	includes="**"/>
+    <target name="import-get-junit-dep"
+            if="import.junit-dep.use.http.get"
+	        unless="import.junit-dep.installed">
+        <download-url-jar item="junit-dep"/>
+    </target>
+    <property name="import.junit-dep.jar"
+	      location="${import.junit-dep.dir}/${import.junit-dep.basename}.jar"/>
+    <target name="import-junit-dep"
+            depends="import-get-junit-dep">
+        <import-file-must-exist item="junit-dep"
+		                        property="import.junit-dep.jar"/>
+        <import-check item="junit-dep"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    
+    <import-set-properties
+	description="Junit: Test Framework"
+	item="junit"
+	version="4.4"
+	url="http://downloads.sourceforge.net/junit"
+	basename="junit-4.4"
+	platform=""
+	includes="**"/>
+    <target name="import-get-junit"
+            if="import.junit.use.http.get"
+	        unless="import.junit.installed">
+        <download-url-jar item="junit"/>
+    </target>
+    <property name="import.junit.jar"
+	      location="${import.junit.dir}/${import.junit.basename}.jar"/>
+    <target name="import-junit"
+            depends="import-get-junit">
+        <import-file-must-exist item="junit"
+		                        property="import.junit.jar"/>
+        <import-check item="junit"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Antlr: Parser Generator"
+	item="antlr"
+	version="3.1.3"
+	url="http://www.antlr.org/download"
+	basename="antlr-3.1.3"
+	platform=""
+	includes="antlr-3.1.3/lib/*.jar"/>
+    <target name="import-get-antlr"
+            if="import.antlr.use.http.get"
+	        unless="import.antlr.installed">
+        <download-url-tgz item="antlr"/>
+    </target>
+    <property name="import.antlr.lib"
+	      location="${import.antlr.dir}/antlr-${import.antlr.version}/lib"/>
+    <property name="import.antlr.jar"
+	      location="${import.antlr.lib}/antlr-${import.antlr.version}.jar"/>
+    <property name="import.antlr277.jar"
+	      location="${import.antlr.lib}/antlr-2.7.7.jar"/>
+    <property name="import.antlr-runtime.jar"
+	      location="${import.antlr.lib}/antlr-runtime-${import.antlr.version}.jar"/>
+    <property name="import.antlr.stringtemplate.jar"
+	      location="${import.antlr.lib}/stringtemplate-3.2.jar"/>
+    <property name="import.antlr.classpath"
+	      value="${import.antlr.jar}:${import.antlr-runtime.jar}:${import.antlr.stringtemplate.jar}"/>
+    <target name="import-antlr"
+            depends="import-get-antlr">
+        <import-file-must-exist item="antlr"
+		    property="import.antlr.jar"/>
+        <import-file-must-exist item="antlr"
+		    property="import.antlr277.jar"/>
+        <import-file-must-exist item="antlr"
+		    property="import.antlr-runtime.jar"/>
+        <import-file-must-exist item="antlr"
+		    property="import.antlr.stringtemplate.jar"/>
+        <import-classname-must-exist item="antlr"
+		    classname="org.antlr.Tool"
+		    classpath="${import.antlr.jar}"/>
+        <import-check item="antlr"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Ant: Building Tool"
+	item="ant"
+	version="1.7.1"
+	url="http://archive.apache.org/dist/ant/binaries"
+	basename="apache-ant-1.7.1-bin"
+	platform=""
+	includes="apache-ant-1.7.1/lib/*.jar"/>
+    <target name="import-get-ant"
+            if="import.ant.use.http.get"
+	        unless="import.ant.installed">
+        <download-url-tgz item="ant"/>
+    </target>
+    <property name="import.ant.home"
+	      location="${import.ant.dir}/apache-ant-${import.ant.version}"/>
+    <property name="import.ant.lib"
+	      location="${import.ant.home}/lib"/>
+    <property name="import.ant.jar"
+	      location="${import.ant.lib}/ant.jar"/>
+    <property name="import.ant-junit.jar"
+	      location="${import.ant.lib}/ant-junit.jar"/>
+    <target name="import-ant"
+            depends="import-get-ant">
+        <import-file-must-exist item="ant"
+		    property="import.ant.jar"/>
+        <import-file-must-exist item="ant"
+		    property="import.ant-junit.jar"/>
+        <import-check item="ant"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Ant-contrib: Ant Building Help (ant-contrib)"
+	item="ant-contrib"
+	version="1.0b3"
+	url="http://downloads.sourceforge.net/ant-contrib"
+	basename="ant-contrib-1.0b3-bin"
+	platform=""
+	includes="**"/>
+    <target name="import-get-ant-contrib"
+            if="import.ant-contrib.use.http.get"
+	        unless="import.ant-contrib.installed">
+        <download-url-tgz item="ant-contrib"/>
+    </target>
+    <property name="import.ant-contrib.home"
+	      location="${import.ant-contrib.dir}/ant-contrib"/>
+    <property name="import.ant-contrib.jar"
+	      location="${import.ant-contrib.home}/ant-contrib-${import.ant-contrib.version}.jar"/>
+    <target name="import-ant-contrib"
+            depends="import-get-ant-contrib">
+        <import-file-must-exist item="ant-contrib"
+		    property="import.ant-contrib.jar"/>
+        <import-check item="ant-contrib"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="antpack200: Ant task for running pack200"
+	item="antpack200"
+	version="1.0beta"
+	url="https://deployment.dev.java.net/files/documents/3921/27491"
+	basename="deployment-ant-pack200-1.0beta"
+	platform=""
+	includes="**"/>
+    <target name="import-get-antpack200"
+            if="import.antpack200.use.http.get"
+	        unless="import.antpack200.installed">
+        <download-url-zip item="antpack200"/>
+    </target>
+    <property name="import.antpack200.jar"
+	      location="${import.antpack200.dir}/deployment-ant-pack200-1.0beta.jar"/>
+    <target name="import-antpack200"
+            depends="import-get-antpack200">
+        <import-file-must-exist item="antpack200"
+		    property="import.antpack200.jar"/>
+        <import-check item="antpack200"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties description="Crossroots"
+	                       item="crossroots.lge-broadcom-mips-libs"
+	                       url="http://f3.sfbay.sun.com/tv/toolroots"
+	                       basename="lge-broadcom-mips-libs"
+                           platform="" version="1.0" includes=""/>
+
+    <import-set-properties description="Crossroots"
+	                       item="crossroots.intel-ce3100-x86-libs"
+	                       url="http://f3.sfbay.sun.com/tv/toolroots"
+	                       basename="intel-ce3100-x86-libs-13.5"
+                           platform="" version="13.5" includes=""/>
+
+    <target name="import-get-crossroots-lge-broadcom-mips-libs"
+            if="import.crossroots.lge-broadcom-mips-libs.use.http.get"
+	        unless="import.crossroots.lge-broadcom-mips-libs.installed">
+        <download-url-bzip2 item="crossroots.lge-broadcom-mips-libs"/>
+    </target>
+
+    <target name="import-get-crossroots-intel-ce3100-x86-libs"
+            if="import.crossroots.intel-ce3100-x86-libs.use.http.get"
+	        unless="import.crossroots.intel-ce3100-x86-libs.installed">
+        <download-url-bzip2 item="crossroots.intel-ce3100-x86-libs"/>
+    </target>
+
+    <target name="import-crossroots" if="isLinux">
+        <antcall target="import-get-crossroots-lge-broadcom-mips-libs"/>
+        <antcall target="import-get-crossroots-intel-ce3100-x86-libs"/>
+    </target>
+     
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties description="Crosstools"
+                           item="crosstools.lge-broadcom-mips-uclibc"
+                           url="http://f3.sfbay.sun.com/tv/toolchains"
+                           basename="lge-broadcom-mips-uclibc"
+                           platform="" version="1.0" includes=""/>
+
+    <import-set-properties description="Crosstools"
+                           item="crosstools.intel-ce3100-x86-glibc"
+                           url="http://f3.sfbay.sun.com/tv/toolchains"
+                           basename="intel-ce3100-x86-glibc-13.5"
+                           platform="" version="13.5" includes=""/>
+
+    <target name="import-get-crosstools-lge-broadcom-mips-uclibc"
+            if="import.crosstools.lge-broadcom-mips-uclibc.use.http.get"
+	        unless="import.crosstools.lge-broadcom-mips-uclibc.installed">
+        <download-url-bzip2 item="crosstools.lge-broadcom-mips-uclibc"/>
+    </target>
+
+    <target name="import-get-crosstools-intel-ce3100-x86-glibc"
+            if="import.crosstools.intel-ce3100-x86-glibc.use.http.get"
+	        unless="import.crosstools.intel-ce3100-x86-glibc.installed">
+        <download-url-bzip2 item="crosstools.intel-ce3100-x86-glibc"/>
+    </target>
+
+    <property name="import.crosstools.lge-broadcom-mips-uclibc.bin"
+	          location="${import.crosstools.lge-broadcom-mips-uclibc.dir}/toolchains/crosstools_hf-linux-2.6.18.0_gcc-4.2-10ts_uclibc-nptl-0.9.29-20070423_20080721/bin/"/>
+
+    <property name="import.crosstools.intel-ce3100-x86-glibc.bin"
+	          location="${import.crosstools.intel-ce3100-x86-glibc.dir}/i686-linux-elf/bin/"/>
+
+    <property name="import.crosstools.intel-ce3100-x86-glibc.include"
+	          location="${import.crosstools.intel-ce3100-x86-glibc.dir}/i686-linux-elf/usr/include/"/>
+
+    <target name="import-crosstools" if="isLinux">
+        <antcall target="import-get-crosstools-lge-broadcom-mips-uclibc"/>
+        <antcall target="import-get-crosstools-intel-ce3100-x86-glibc"/>
+
+        <!-- tar preserver behavior varies on different Linux systems -->
+        <chmod dir="${import.crosstools.lge-broadcom-mips-uclibc.bin}/.."
+               includes="**" perm="ugo+x" maxparallel="100" />
+        <chmod dir="${import.crosstools.intel-ce3100-x86-glibc.bin}/.."
+               includes="**" perm="ugo+x" maxparallel="100" />
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Docbook: ???"
+	item="docbook"
+	version="1.73.1"
+	url="http://downloads.sourceforge.net/docbook"
+	basename="docbook-xsl-1.73.1"
+	platform=""
+	includes="**"/>
+    <target name="import-get-docbook"
+            if="import.docbook.use.http.get"
+	        unless="import.docbook.installed">
+        <download-url-tgz item="docbook"/>
+    </target>
+    <property name="import.docbook.lib"
+	      location="${import.docbook.dir}/docbook-xsl-${import.docbook.version}/lib"/>
+    <property name="import.docbook.xsl"
+	      location="${import.docbook.lib}/lib.xsl"/>
+    <target name="import-docbook"
+            depends="import-get-docbook">
+        <import-file-must-exist item="docbook"
+		    property="import.docbook.xsl"/>
+        <import-check item="docbook"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Findbugs: Finds Java Bugs"
+	item="findbugs"
+	version="1.3.3"
+	url="http://prdownloads.sourceforge.net/findbugs"
+	basename="findbugs-1.3.3"
+	platform=""
+	includes="**"/>
+    <target name="import-get-findbugs"
+            if="import.findbugs.use.http.get"
+	        unless="import.findbugs.installed">
+        <download-url-tgz item="findbugs"/>
+    </target>
+    <property name="import.findbugs.home"
+	      location="${import.findbugs.dir}/findbugs-${import.findbugs.version}"/>
+    <property name="import.findbugs.lib"
+	      location="${import.findbugs.home}/lib"/>
+    <property name="import.findbugs.jar"
+	      location="${import.findbugs.lib}/findbugs.jar"/>
+    <target name="import-findbugs"
+            depends="import-get-findbugs">
+        <import-file-must-exist item="findbugs"
+		    property="import.findbugs.jar"/>
+        <import-classname-must-exist item="findbugs"
+		    classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
+		    classpath="${import.findbugs.jar}"/>
+        <import-check item="findbugs"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    
+    <import-set-properties
+	description="Docbook-xml: ???"
+	item="docbook-xml"
+	version="4.5"
+	url="http://www.docbook.org/xml/4.5"
+	basename="docbook-xml-4.5"
+	platform=""
+	includes="**"/>
+    <target name="import-get-docbook-xml"
+            if="import.docbook-xml.use.http.get"
+	        unless="import.docbook-xml.installed">
+        <download-url-zip item="docbook-xml"/>
+    </target>
+    <property name="import.docbook-xml.xml"
+	      location="${import.docbook-xml.dir}/catalog.xml"/>
+    <target name="import-docbook-xml"
+            depends="import-get-docbook-xml">
+        <import-file-must-exist item="docbook-xml"
+		    property="import.docbook-xml.xml"/>
+        <import-check item="docbook-xml"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Saxon: ???"
+	item="saxon"
+	version="6.5.5"
+	url="http://downloads.sourceforge.net/saxon"
+	basename="saxon6-5-5"
+	platform=""
+	includes="**.jar"/>
+    <target name="import-get-saxon"
+            if="import.saxon.use.http.get"
+	        unless="import.saxon.installed">
+        <download-url-zip item="saxon"/>
+    </target>
+    <property name="import.saxon.jar"
+	      location="${import.saxon.dir}/saxon.jar"/>
+    <target name="import-saxon"
+            depends="import-get-saxon">
+        <import-file-must-exist item="saxon"
+		    property="import.saxon.jar"/>
+        <import-check item="saxon"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Xincluder: ???"
+	item="xincluder"
+	version="1.0d11"
+	url="http://www.ibiblio.org/pub/languages/java/javafaq"
+	basename="xincluder-1.0d11"
+	platform=""
+	includes="**"/>
+    <target name="import-get-xincluder"
+            if="import.xincluder.use.http.get"
+	        unless="import.xincluder.installed">
+        <download-url-tgz item="xincluder"/>
+    </target>
+    <property name="import.xincluder.jar"
+	      location="${import.xincluder.dir}/xincluder/xincluder.jar"/>
+    <target name="import-xincluder"
+            depends="import-get-xincluder">
+        <import-file-must-exist item="xincluder"
+		    property="import.xincluder.jar"/>
+        <import-check item="xincluder"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Antlrworks: IDE for Antlr?"
+	item="antlrworks"
+	version="1.3.1"
+	url="http://antlr.org/download"
+	basename="antlrworks-1.3.1"
+	platform=""
+	includes="**"/>
+    <target name="import-get-antlrworks"
+            if="import.antlrworks.use.http.get"
+	        unless="import.antlrworks.installed">
+        <download-url-jar item="antlrworks"/>
+    </target>
+    <property name="import.antlrworks.jar"
+	      location="${import.antlrworks.dir}/${import.antlrworks.basename}.jar"/>
+    <target name="import-antlrworks"
+            depends="import-get-antlrworks">
+        <import-file-must-exist item="antlrworks"
+		    property="import.antlrworks.jar"/>
+        <import-classname-must-exist item="antlrworks"
+		    classname="org.antlr.works.Console"
+		    classpath="${import.antlrworks.jar}"/>
+        <import-check item="antlrworks"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Asm: Java bytecode manipulation and analysis framework (BSD)"
+	item="asm"
+	version="3.1"
+	url="http://download.forge.objectweb.org/asm"
+	basename="asm-3.1-bin"
+	platform=""
+	includes="**"/>
+    <target name="import-get-asm"
+            if="import.asm.use.http.get"
+	        unless="import.asm.installed">
+        <download-url-zip item="asm"/>
+    </target>
+    <property name="import.asm.home"
+	      location="${import.asm.dir}/asm-${import.asm.version}"/>
+    <property name="import.asm.lib"
+	      location="${import.asm.home}/lib"/>
+    <property name="import.asm.jar"
+	      location="${import.asm.lib}/asm-${import.asm.version}.jar"/>
+    <property name="import.asm-all.jarname"
+	      value="asm-all-${import.asm.version}.jar"/>
+    <property name="import.asm-all.jar"
+	      location="${import.asm.lib}/all/${import.asm-all.jarname}"/>
+    <target name="import-asm"
+            depends="import-get-asm">
+        <import-file-must-exist item="asm"
+		    property="import.asm.jar"/>
+        <import-file-must-exist item="asm"
+		    property="import.asm-all.jar"/>
+        <import-check item="asm"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Cobertura: Code Test Coverage Analysis"
+	item="cobertura"
+	version="1.9.3"
+	url="http://downloads.sourceforge.net/cobertura"
+	basename="cobertura-1.9.3-bin"
+	platform=""
+	includes="**"/>
+    <target name="import-get-cobertura"
+            if="import.cobertura.use.http.get"
+	        unless="import.cobertura.installed">
+        <download-url-zip item="cobertura"/>
+    </target>
+    <property name="import.cobertura.home"
+	      location="${import.cobertura.dir}/cobertura-${import.cobertura.version}"/>
+    <property name="import.cobertura.jar"
+	      location="${import.cobertura.home}/cobertura.jar"/>
+    <property name="import.cobertura.asm.jar"
+	      location="${import.cobertura.home}/lib/asm-3.0.jar"/>
+    <property name="import.cobertura.asm-tree.jar"
+	      location="${import.cobertura.home}/lib/asm-tree-3.0.jar"/>
+    <property name="import.cobertura.jakarta-oro.jar"
+	      location="${import.cobertura.home}/lib/jakarta-oro-2.0.8.jar"/>
+    <property name="import.cobertura.log4j.jar"
+	      location="${import.cobertura.home}/lib/log4j-1.2.9.jar"/>
+    <target name="import-cobertura"
+            depends="import-get-cobertura">
+        <import-file-must-exist item="cobertura"
+		    property="import.cobertura.jar"/>
+        <import-file-must-exist item="cobertura"
+		    property="import.cobertura.asm.jar"/>
+        <import-file-must-exist item="cobertura"
+		    property="import.cobertura.asm-tree.jar"/>
+        <import-file-must-exist item="cobertura"
+		    property="import.cobertura.jakarta-oro.jar"/>
+        <import-file-must-exist item="cobertura"
+		    property="import.cobertura.log4j.jar"/>
+        <import-check item="cobertura"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Resolver: ???"
+	item="resolver"
+	version="1.2"
+	url="http://www.apache.org/dist/xml/commons"
+	basename="xml-commons-resolver-1.2"
+	platform=""
+	includes="**"/>
+    <target name="import-get-resolver"
+            if="import.resolver.use.http.get"
+	        unless="import.resolver.installed">
+        <download-url-zip item="resolver"/>
+    </target>
+    <property name="import.resolver.jar"
+	      location="${import.resolver.dir}/xml-commons-resolver-${import.resolver.version}/resolver.jar"/>
+    <target name="import-resolver"
+            depends="import-get-resolver">
+        <import-file-must-exist item="resolver"
+		    property="import.resolver.jar"/>
+        <import-check item="resolver"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Javacc: Javacc"
+	item="javacc"
+	version="4.2"
+        url="https://javacc.dev.java.net/files/documents/17/117793"
+	basename="javacc-4.2"
+	platform=""
+	includes="**"/>
+    <target name="import-get-javacc"
+            if="import.javacc.use.http.get"
+	        unless="import.javacc.installed">
+        <download-url-tgz item="javacc"/>
+    </target>
+    <property name="import.javacc.jar"
+	      location="${import.javacc.dir}/javacc-${import.javacc.version}/bin/lib/javacc.jar"/>
+    <target name="import-javacc"
+            depends="import-get-javacc">
+        <import-file-must-exist item="javacc"
+		    property="import.javacc.jar"/>
+        <import-check item="javacc"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+    description="Gluegen-src: Gluegen Source"
+    item="gluegen-src"
+    version="2.0-20091209"
+    url="http://download.java.net/media/f3/gluegen/bundles"
+    basename="gluegen-src-${import.gluegen-src.version}"
+    platform=""
+    includes="**"/>
+    <target name="import-get-gluegen-src"
+            if="import.gluegen-src.use.http.get"
+            unless="import.gluegen-src.installed">
+        <download-url-zip item="gluegen-src"/>
+    </target>
+    <property name="import.gluegen-src.top.dir"
+            location="${import.gluegen-src.dir}/gluegen"/>
+    <property name="import.gluegen-src.build.xml"
+            location="${import.gluegen-src.top.dir}/make/build.xml"/>
+    <target name="import-gluegen-src"
+            depends="import-get-gluegen-src">
+        <import-file-must-exist item="gluegen-src"
+                  property="import.gluegen-src.build.xml"/>
+        <import-check item="gluegen-src"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <import-set-properties
+	description="Bitstream: ???"
+	item="bitstream"
+	version="1.10"
+	url="http://ftp.gnome.org/pub/GNOME/sources/ttf-bitstream-vera/1.10"
+	basename="ttf-bitstream-vera-1.10"
+	platform=""
+	includes="**"/>
+    <target name="import-get-bitstream"
+            if="import.bitstream.use.http.get"
+	        unless="import.bitstream.installed">
+        <download-url-zip item="bitstream"/>
+    </target>
+    <property name="import.bitstream.lib"
+	      location="${import.bitstream.dir}/ttf-bitstream-vera-${import.bitstream.version}"/>
+    <property name="import.bitstream.ttf"
+	      location="${import.bitstream.lib}/VeraMono.ttf"/>
+    <property name="import.bitstream.bold.ttf"
+	      location="${import.bitstream.lib}/VeraMoBd.ttf"/>
+    <target name="import-bitstream"
+            depends="import-get-bitstream">
+        <import-file-must-exist item="bitstream"
+		    property="import.bitstream.ttf"/>
+        <import-file-must-exist item="bitstream"
+		    property="import.bitstream.bold.ttf"/>
+        <import-check item="bitstream"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    
+    <import-set-properties
+	description="Markymarker: ???"
+	item="markymarker"
+	version="noversion"
+	url="http://www.1001freefonts.com/winfonts"
+	basename="markymarker"
+	platform=""
+	includes="**"/>
+    <target name="import-get-markymarker"
+            if="import.markymarker.use.http.get"
+	        unless="import.markymarker.installed">
+        <download-url-zip item="markymarker"/>
+    </target>
+    <property name="import.markymarker.ttf"
+	      location="${import.markymarker.dir}/MarkyM.ttf"/>
+    <target name="import-markymarker"
+            depends="import-get-markymarker">
+        <import-file-must-exist item="markymarker"
+		    property="import.markymarker.ttf"/>
+        <import-check item="markymarker"/>
+    </target>
+    
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    
+</project>
+

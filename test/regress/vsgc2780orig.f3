@@ -1,0 +1,14 @@
+/**
+ * VSGC-2780 : Can't compile when "bind rect.boundsInLocal.minX" in a function
+ *
+ * approx original test case
+ *
+ * @compilefirst vsgc2780Rect.f3
+ * @test
+ */
+
+public function test(rect : vsgc2780Rect) : vsgc2780Rect {
+    vsgc2780Rect {
+	x:  bind rect.boundsInLocal.minX;
+    }
+}

@@ -1,0 +1,7 @@
+test\should-fail\vsgc2278script.f3:13: 'var' overrides member 'x' in 'vsgc2278script.A'; use 'override'.
+  var x;
+  ^
+test\should-fail\vsgc2278script.f3:14: 'def' overrides member 'y()' in 'vsgc2278script.A'.
+  def y = 6;
+  ^
+2 errors

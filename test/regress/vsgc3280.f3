@@ -1,0 +1,13 @@
+/**
+ * VSGC-3280 : override var x on replace... fails in a Stage initializer
+ *
+ * @compilefirst vsgc3280Stooge.f3
+ * @test
+ * @run
+ */
+
+function run() {
+  def sto = vsgc3280Stooge {
+    override var x on replace { println("override {x}") }
+  }
+}

@@ -1,0 +1,94 @@
+/*
+ * @test
+ * @compilefirst ./TestBase.f3
+ * @compilefirst ./Base1.f3
+ * @compilefirst ./Base2.f3
+ * @compilefirst ./Base1b.f3
+ * @run
+ *
+ * Inheritance Structure for this test
+ *
+ *     bc1 TestBase
+ *       \   /
+ *        bc2     bc1b
+ *          \      /
+ *         TestClass
+ */
+import Base2.*;
+import Base1b.*;
+
+public class TestClass extends bc2, bc1b {
+  var tc_ival  : Integer = 10;
+  var tc_nval  : Number  = 10.0;
+  var tc_name : String  = "a baseclass";
+  var tc_isPublic : Boolean = true;
+  var tc_iseq : Integer[] = [1,2,3];
+  var tc_nseq : Number[] = [0.1, 2.3, 4.5];
+  var tc_sseq : String[] = [ "public", "class" ];
+  var tc_bseq : Boolean[] = [ true,false,true ];
+  function tc_m1():Integer {100}
+  function tc_m2( s1:String, s2:String ):String[] { var seq = [ s1,s2]; return seq; }
+  var tc_fpm1 = tc_m1;
+  var tc_fpm2 = tc_m2;
+
+  public function tcTest() {
+   TestAssert( check(bc1_ival,tc_ival),"" );
+   TestAssert( check(bc1_nval,tc_nval),""  );
+   TestAssert( check(bc1_name,tc_name),""  );
+   TestAssert( check(bc1_isPublic,tc_isPublic),""  );
+   TestAssert( checkis(bc1_iseq,tc_iseq),""  );
+   TestAssert( checkns(bc1_nseq,tc_nseq),""  );
+   TestAssert( checkss(bc1_sseq,tc_sseq),""  );
+   TestAssert( checkbs(bc1_bseq,tc_bseq),""  );
+   TestAssert( check( bc1_m1() , tc_m1()),""  );
+   TestAssert( checkss( bc1_m2("Hello","World"), tc_m2("Hello","World")),"" );
+   TestAssert( check( bc1_fpm1() , tc_fpm1() ),""  );
+   TestAssert( checkss(bc1_fpm2("Hello","World"),tc_fpm2("Hello","World")),"Test inherited function pointers returning String[]" );
+  }
+
+  public function tcTest2() {
+   TestAssert( check(bc2_ival,tc_ival),"" );
+   TestAssert( check(bc2_nval,tc_nval),""  );
+   TestAssert( check(bc2_name,tc_name),""  );
+   TestAssert( check(bc2_isPublic,tc_isPublic),""  );
+   TestAssert( checkis(bc2_iseq,tc_iseq),""  );
+   TestAssert( checkns(bc2_nseq,tc_nseq),""  );
+   TestAssert( checkss(bc2_sseq,tc_sseq),""  );
+   TestAssert( checkbs(bc2_bseq,tc_bseq),""  );
+   TestAssert( check( bc2_m1() , tc_m1()),""  );
+   TestAssert( checkss( bc2_m2("Hello","World"), tc_m2("Hello","World")),"" );
+   TestAssert( check( bc2_fpm1() , tc_fpm1() ),""  );
+   TestAssert( checkss(bc2_fpm2("Hello","World"),tc_fpm2("Hello","World")),"Test inherited function pointers returning String[]" );
+  }
+
+  public function tcTest3() {
+   TestAssert( check(bc1_ival,bc1b_ival),"Test bc1_ival==bc1b_ival" );
+   TestAssert( check(bc1_nval,bc1b_nval),"Test bc1_nal==bc1b_nal"  );
+   TestAssert( check(bc1_name,bc1b_name),"Test bc1_name==bc1b_name"  );
+   TestAssert( check(bc1_isPublic,bc1b_isPublic),"Test bc1_isPublic==bc1b_isPublic"  );
+   TestAssert( checkis(bc1_iseq,bc1b_iseq),"Test bc1_iseq==bc1b_iseq"  );
+   TestAssert( checkns(bc1_nseq,bc1b_nseq),"Test bc1_nseq==bc1b_nseq"  );
+   TestAssert( checkss(bc1_sseq,bc1b_sseq),"Test {bc1_sseq}=={bc1b_sseq}"  );
+   TestAssert( checkbs(bc1_bseq,bc1b_bseq),"Test bc1_bseq==bc1b_bseq"  );
+   TestAssert( check( bc1_m1() , bc1b_m1()),"Test bc1_m1==bc1b_ml"  );
+   TestAssert( checkss( bc1_m2("Hello","World"), bc1b_m2("Hello","World")),"" );
+   TestAssert( check( bc1_fpm1() , bc1b_fpm1() ),""  );
+   TestAssert( checkss(bc1_fpm2("Hello","World"),bc1b_fpm2("Hello","World")),"Test inherited function pointers returning String[]" );
+  }
+
+  public function test() {
+    bc2Test();
+    tcTest();
+    tcTest2();
+    tcTest3();
+    }
+}
+
+function run() {
+ var tc = new TestClass();
+ tc.test();
+
+ println("PASSED: {tc.getPasses()}");
+ println("FAILED: {tc.getFailures()}");
+}
+

@@ -1,0 +1,9 @@
+/**
+ * @subtest
+ */
+
+public class vsgc1812One extends vsgc1812Base {
+    override function doIt():Void {
+        vsgc1812Two{}.doIt();
+    }
+}

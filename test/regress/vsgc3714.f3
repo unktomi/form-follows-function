@@ -1,0 +1,16 @@
+/**
+ * VSGC-3714 :  Crash on object literal in a function variable initializer.
+ *
+ * @test
+ */
+class Label {
+  var textFill: Integer;
+}
+
+var selected: Boolean;
+
+var onUpdatexx = function() {
+   var label = Label{
+           textFill: bind if (selected) then 1 else 2;
+        }
+  } 

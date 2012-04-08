@@ -1,0 +1,13 @@
+/**
+ * Regression test for VSGC-1442 : Allow access modifiers on script-level variables
+ *
+ * @test/compile-error
+ * @compilefirst vsgc1442sub.f3
+ */
+
+vsgc1442sub.pub = 8;
+vsgc1442sub.read = 8;
+var z = vsgc1442sub.read;
+//var x = vsgc1442sub.myvar;
+//vsgc1442sub.myvar = 8;
+

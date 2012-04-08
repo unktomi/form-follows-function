@@ -1,0 +1,10 @@
+/**
+ * VSGC-2616 : Incorrect error message: 'var' overrides member main(java.lang.String[])
+ *
+ * @test
+ * @run
+ */
+
+vsgc2616j.main(['Yo']);
+println(vsgc2616j.zabba);
+

@@ -1,0 +1,26 @@
+/**
+ * VSGC-3665: Compiled-bind: lower bug when the last actual arg of vararg method call is a sequence/array
+ *
+ * @test
+ * @run
+ */
+
+import f3.reflect.*;
+
+class Test {
+    public var i : Integer[];
+};
+
+var ctx = F3Context.getInstance();
+var cls = ctx.findClass("vsgc3665.Test");
+var obj = cls.allocate();
+var values: F3Value[];
+insert ctx.mirrorOf(2) into values;
+insert ctx.mirrorOf(3) into values;
+
+var seq = ctx.makeSequence(ctx.getIntegerType(), values);
+println(seq.getItemCount());
+
+var valuesArr = values as nativearray of F3Value;
+seq = ctx.makeSequence(ctx.getIntegerType(), valuesArr);
+println(seq.getItemCount());

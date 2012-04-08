@@ -1,0 +1,13 @@
+/*
+ * VSGC-3224:  StringIndexOutOfBoundsException thrown with LiveConnect using b08 respin2.
+ * @test
+ */
+import f3.reflect.*; 
+
+var bad1 = true;
+var bad2 = false;
+var bad3 : Boolean = bind bad1;
+
+var context = F3Local.getContext(); 
+var clazz = context.findClass("vsgc3224"); 
+var variables_all = clazz.getVariables(true);

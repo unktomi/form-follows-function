@@ -1,0 +1,13 @@
+/*
+ * Regression: VSGC-4126B - Compiled bind optimization: construct a single invoke$ method per class to handle function values.
+ *
+ * @test
+ * @run
+ *
+ */
+
+var a = function(x:Integer) {
+    if (x == 0) return;
+}
+
+a(10);

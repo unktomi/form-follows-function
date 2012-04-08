@@ -1,0 +1,16 @@
+/* regression test for VSGC-1179
+ *
+ * @test
+ * @run
+ */
+
+import java.util.Locale;
+import f3.util.StringLocalizer;
+
+var locale = Locale.getDefault();
+try {
+    Locale.setDefault(Locale.US);
+    var a = StringLocalizer { key: "NOTFOUND" };
+} finally {
+    Locale.setDefault(locale);
+}

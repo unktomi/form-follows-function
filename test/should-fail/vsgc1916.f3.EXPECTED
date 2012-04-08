@@ -1,0 +1,14 @@
+test/should-fail/vsgc1916.f3:11: warning: The access modifier public-init includes the access of public-read.
+  public-init public-read var b:Integer=10;
+  ^
+test/should-fail/vsgc1916.f3:12: warning: The access modifier public-init includes the access of public-read.
+  public-init public-read protected var bs:Integer=10;
+  ^
+test/should-fail/vsgc1916.f3:13: warning: The access modifier public-init includes the access of public-read.
+  public-init public-read package var bp:Integer=10;
+  ^
+test/should-fail/vsgc1916.f3:14: illegal combination of modifiers: public and package
+  public-init public-read public package var bp:Integer=10;
+  ^
+1 error
+3 warnings

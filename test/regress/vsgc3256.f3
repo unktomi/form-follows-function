@@ -1,0 +1,11 @@
+/*
+ * Regression: VSGC-3256 - Compiler crash: bound sequence to primitive array conversion.
+ *
+ * @compilefirst vsgc3256PA.java
+ * @test
+ * @run
+ *
+ */
+
+var integers:Integer[] = [0, 1, 2];
+var z = bind vsgc3256PA.intArray(integers);

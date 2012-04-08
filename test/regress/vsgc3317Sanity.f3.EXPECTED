@@ -1,0 +1,10 @@
+x = 7
+bvsx = 7
+bvsxc = 7.0
+bvsxs = [ 7 ]
+bvsxm = 14
+x = 999
+bvsx = 999
+bvsxc = 999.0
+bvsxs = [ 999 ]
+bvsxm = 1998

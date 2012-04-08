@@ -1,0 +1,11 @@
+/**
+ * VSGC-4098 : Internal Compiler error , non-static method invalidate$$x$ol$1$$(int) cannot be referenced from a static context
+ *
+ * @subtest
+ */
+
+public class Main { 
+    public var width:Integer;
+} 
+public var stage = Main { 
+} 

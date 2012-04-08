@@ -1,0 +1,12 @@
+/*
+ * @test/compile-error
+ * @compile vsgc1310Application.f3
+ */
+
+public class vsgc1310Applet {
+    var app:vsgc1310Application;
+
+    function do() {
+        app.content;
+    }
+}

@@ -1,0 +1,17 @@
+import f3.lang.F3;
+/*
+ * F3.addShutdownMessage cannot be null
+ *
+ * @test
+ * @run
+ */
+
+var exceptionmessage:String = "java.lang.NullPointerException: Action function can not be null";
+
+try {
+    F3.addShutdownAction( null )
+    } catch ( npe:java.lang.NullPointerException ) {
+      if(exceptionmessage.compareTo( npe.toString() ) != 0 )
+             println(npe.toString());
+    }
+

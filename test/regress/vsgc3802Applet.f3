@@ -1,0 +1,20 @@
+/**
+ * VSGC-3802 : Samples won't run from browser 
+ *
+ * @compilefirst vsgc3802AppletBase.java
+ * @test
+ * @run
+ */
+
+package def STAGE_CLASS_PARAM = "MainF3Class";
+
+public class vsgc3802Applet extends vsgc3802AppletBase {
+    init {
+        println("created Applet");
+    }
+}
+
+function run() {
+    vsgc3802Applet {};
+    println(STAGE_CLASS_PARAM);
+}

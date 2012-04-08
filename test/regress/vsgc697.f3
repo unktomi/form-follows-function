@@ -1,0 +1,45 @@
+/* test for the StringLocalizer.associate() function
+ *
+ * @test
+ * @compile foo/bar/F3PropTest.f3
+ * @run
+ */
+
+import java.lang.System;
+import java.util.*;
+
+import f3.util.StringLocalizer;
+import foo.bar.F3PropTest;
+
+// save the default locale for testing
+var curLoc = Locale.getDefault();
+
+try {
+    // set the default locale to Japan
+    Locale.setDefault(Locale.JAPAN);
+
+    var aTest = F3PropTest{};
+
+    // This should print the originals
+    aTest.print();
+
+    // This should print the translated strings in 
+    // foo/bar/F3PropTestResources_ja.f3properties
+    StringLocalizer.associate("foo.bar.F3PropTestResources", "foo.bar", "F3PropTest.f3");
+    StringLocalizer.associate("foo.FooResources", "foo.bar");
+    aTest.print();
+
+    // This should print the translated strings in 
+    // foo/FooResources_ja.f3properties
+    StringLocalizer.dissociate("foo.bar", "F3PropTest.f3");
+    aTest.print();
+
+    // This should print the originals
+    StringLocalizer.associate("foo.bar.F3PropTestResources", "foo.bar", "F3PropTest.f3");
+    StringLocalizer.dissociate("foo.bar");
+    aTest.print();
+
+} finally {
+    // restore the default locale
+    Locale.setDefault(curLoc);
+}

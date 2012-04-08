@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book version="5.0" xmlns="http://docbook.org/ns/docbook"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:svg="http://www.w3.org/2000/svg"
+      xmlns:m="http://www.w3.org/1998/Math/MathML"
+      xmlns:html="http://www.w3.org/1999/xhtml"
+      xmlns:db="http://docbook.org/ns/docbook">
+  <info>
+    <title>F3 Language Reference</title>
+
+    <author>
+      <personname><firstname>Robert</firstname><surname>Field</surname></personname>
+
+      <affiliation>
+        <orgname>Sun Microsystems</orgname>
+      </affiliation>
+    </author>
+
+    <pubdate></pubdate>
+  </info>
+
+<xi:include href="Intro.xml"  parse="xml"/> 
+
+<xi:include href="Types.xml"  parse="xml"/> 
+
+<xi:include href="Variables.xml"  parse="xml"/> 
+
+<xi:include href="Functions.xml"  parse="xml"/> 
+
+<xi:include href="Classes.xml"  parse="xml"/> 
+
+<xi:include href="Expressions.xml"  parse="xml"/> 
+
+<xi:include href="Binding.xml"  parse="xml"/> 
+
+<xi:include href="Modifiers.xml"  parse="xml"/> 
+
+<xi:include href="ErrorHandling.xml"  parse="xml"/> 
+
+<xi:include href="Animation.xml"  parse="xml"/> 
+
+<xi:include href="ReservedWords.xml"  parse="xml"/> 
+
+
+</book>
+
+

@@ -1,0 +1,303 @@
+--- Creating Q ---
+    Update name: Donna
+  Creating Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+  Update owner = Owner name: Donna
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pQ = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing QdaName ---
+    Update name: Barb
+  Creating Owner name: Barb
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pQ = Purse Owner name: Barb Money dollars: 562.82 Combs count: 1
+--- Changing QdaCash ---
+    Update dollars: 14.27
+  Creating Money dollars: 14.27
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 1
+Creating Purse
+Update pQ = Purse Owner name: Barb Money dollars: 14.27 Combs count: 1
+--- Changing QdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 3
+Creating Purse
+Update pQ = Purse Owner name: Barb Money dollars: 14.27 Combs count: 3
+--- Creating R ---
+    Update name: Donna
+  Creating Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+  Update owner = Owner name: Donna
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pR = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing RdaName ---
+    Update name: Barb
+--- Changing RdaCash ---
+    Update dollars: 14.27
+  Creating Money dollars: 14.27
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 1
+Creating Purse
+Update pR = Purse Owner name: Barb Money dollars: 14.27 Combs count: 1
+--- Changing RdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 3
+Creating Purse
+Update pR = Purse Owner name: Barb Money dollars: 14.27 Combs count: 3
+--- Creating S ---
+    Update name: Donna
+  Creating Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+  Update owner = Owner name: Donna
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pS = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing SdaName ---
+    Update name: Barb
+  Creating Owner name: Barb
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pS = Purse Owner name: Barb Money dollars: 562.82 Combs count: 1
+--- Changing SdaCash ---
+    Update dollars: 14.27
+--- Changing SdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 3
+Creating Purse
+Update pS = Purse Owner name: Barb Money dollars: 14.27 Combs count: 3
+--- Creating T ---
+    Update name: Donna
+  Creating Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+  Update owner = Owner name: Donna
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pT = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing TdaName ---
+    Update name: Barb
+  Creating Owner name: Barb
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pT = Purse Owner name: Barb Money dollars: 562.82 Combs count: 1
+--- Changing TdaCash ---
+    Update dollars: 14.27
+  Creating Money dollars: 14.27
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 1
+Creating Purse
+Update pT = Purse Owner name: Barb Money dollars: 14.27 Combs count: 1
+--- Changing TdaCount ---
+    Update count: 3
+--- Creating U ---
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+    Update name: Donna
+  Creating Owner name: Donna
+  Update owner = Owner name: Donna
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pU = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing UdaName ---
+    Update name: Barb
+  Creating Owner name: Barb
+  Update owner = Owner name: Barb
+--- Changing UdaCash ---
+    Update dollars: 14.27
+  Creating Money dollars: 14.27
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 1
+Creating Purse
+Update pU = Purse Owner name: Barb Money dollars: 14.27 Combs count: 1
+--- Changing UdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 3
+Creating Purse
+Update pU = Purse Owner name: Barb Money dollars: 14.27 Combs count: 3
+--- Creating V ---
+    Update name: Donna
+  Creating Owner name: Donna
+    Update count: 1
+  Creating Combs count: 1
+  Update owner = Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pV = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing VdaName ---
+    Update name: Barb
+  Creating Owner name: Barb
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pV = Purse Owner name: Barb Money dollars: 562.82 Combs count: 1
+--- Changing VdaCash ---
+    Update dollars: 14.27
+  Creating Money dollars: 14.27
+  Update money = Money dollars: 14.27
+  Update money = Money dollars: 14.27
+--- Changing VdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 3
+Creating Purse
+Update pV = Purse Owner name: Barb Money dollars: 14.27 Combs count: 3
+--- Creating W ---
+    Update name: Donna
+  Creating Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+  Update owner = Owner name: Donna
+  Update money = Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+  Update combs = Combs count: 1
+Creating Purse
+Update pW = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing WdaName ---
+    Update name: Barb
+  Creating Owner name: Barb
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pW = Purse Owner name: Barb Money dollars: 562.82 Combs count: 1
+--- Changing WdaCash ---
+    Update dollars: 14.27
+  Creating Money dollars: 14.27
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 1
+Creating Purse
+Update pW = Purse Owner name: Barb Money dollars: 14.27 Combs count: 1
+--- Changing WdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update combs = Combs count: 3
+  Update combs = Combs count: 3
+  Update combs = Combs count: 3
+--- Creating X ---
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+    Update name: Donna
+  Creating Owner name: Donna
+  Update owner = Owner name: Donna
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pX = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing XdaName ---
+    Update name: Barb
+--- Changing XdaCash ---
+    Update dollars: 14.27
+  Creating Money dollars: 14.27
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 1
+Creating Purse
+Update pX = Purse Owner name: Barb Money dollars: 14.27 Combs count: 1
+--- Changing XdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 3
+Creating Purse
+Update pX = Purse Owner name: Barb Money dollars: 14.27 Combs count: 3
+--- Creating Y ---
+    Update name: Donna
+  Creating Owner name: Donna
+    Update count: 1
+  Creating Combs count: 1
+  Update owner = Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pY = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing YdaName ---
+    Update name: Barb
+  Creating Owner name: Barb
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 562.82
+  Update combs = Combs count: 1
+Creating Purse
+Update pY = Purse Owner name: Barb Money dollars: 562.82 Combs count: 1
+--- Changing YdaCash ---
+    Update dollars: 14.27
+--- Changing YdaCount ---
+    Update count: 3
+  Creating Combs count: 3
+  Update owner = Owner name: Barb
+  Update money = Money dollars: 14.27
+  Update combs = Combs count: 3
+Creating Purse
+Update pY = Purse Owner name: Barb Money dollars: 14.27 Combs count: 3
+--- Creating Z ---
+    Update name: Donna
+  Creating Owner name: Donna
+  Update owner = Owner name: Donna
+    Update dollars: 562.82
+  Creating Money dollars: 562.82
+  Update money = Money dollars: 562.82
+    Update count: 1
+  Creating Combs count: 1
+  Update combs = Combs count: 1
+Creating Purse
+Update pZ = Purse Owner name: Donna Money dollars: 562.82 Combs count: 1
+--- Changing ZdaName ---
+    Update name: Barb
+--- Changing ZdaCash ---
+    Update dollars: 14.27
+--- Changing ZdaCount ---
+    Update count: 3

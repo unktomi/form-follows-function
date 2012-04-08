@@ -1,0 +1,7 @@
+test/should-fail/vsgc3345.f3:7: warning: In animation target aa.abc, aa is not a constant, but will be treated as such. You may want to rewrite as:
+  def temp = aa
+  temp.abc => x
+
+public var kv = at (3s) { aa.abc => 14 } ;
+                          ^
+1 warning

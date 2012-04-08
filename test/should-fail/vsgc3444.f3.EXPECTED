@@ -1,0 +1,6 @@
+test/should-fail/vsgc3444.f3:7: unexpected type
+required: variable
+found   : value
+invalidate 1; //invalidate argument must be a var
+           ^
+1 error

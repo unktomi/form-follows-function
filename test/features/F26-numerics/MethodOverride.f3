@@ -1,0 +1,192 @@
+/*
+ * Method overloading and numerics
+ *
+ * @test/f3unit
+ * @run
+ */
+import f3.f3unit.*;
+
+/**
+ * These constants will be used to match between types
+ */
+def isInt : Integer = 1;
+def isLong : Integer = 2;
+def isByte : Integer = 3;
+def isShort : Integer = 4;
+def isChar : Integer = 5;
+def isFloat : Integer = 6;
+def isDouble : Integer = 7;
+def isByteLong : Integer = 8;
+def isLongByte : Integer = 9;
+
+var returnType : Integer = 0;
+
+/**
+ * Parameters values
+ */
+var i : Integer = 30000;
+var l : Long = 2200000000;
+var b : Byte = 10;
+var s : Short = 30000;
+var c : Character = 10;
+var f : Float = 3.1415926535;
+var d : Double = 2.71828183;
+var n : Number = 2.2;
+//var dur : Duration = 22ms;
+
+/**
+ * Instance functions overloading
+ */
+class TesterInstance {
+    /**
+     * Instance functions with return value Integer.
+     * They return the argument type as an Integer value
+     */
+    function testOverloadInstanceRetInt(x : Integer) : Integer { return isInt;}
+    function testOverloadInstanceRetInt(x : Long) : Integer { return isLong;}
+    function testOverloadInstanceRetInt(x : Byte) : Integer { return isByte;}
+    function testOverloadInstanceRetInt(x : Short) : Integer { return isShort;}
+    function testOverloadInstanceRetInt(x : Character) : Integer { return isChar;}
+    function testOverloadInstanceRetInt(x : Float) : Integer { return isFloat;}
+    function testOverloadInstanceRetInt(x : Double) : Integer { return isDouble;}
+    function testOverloadInstanceRetInt(x : Byte, y : Long) : Integer { return isByteLong;}
+    function testOverloadInstanceRetInt(x : Long, y : Byte) : Integer { return isLongByte;}
+    
+    /**
+     * Instance functions with no return value.
+     */
+    function testOverloadInstanceRetVoid(x : Integer) { returnType = isInt;}
+    function testOverloadInstanceRetVoid(x : Long) { returnType = isLong;}
+    function testOverloadInstanceRetVoid(x : Byte) { returnType = isByte;}
+    function testOverloadInstanceRetVoid(x : Short) { returnType = isShort;}
+    function testOverloadInstanceRetVoid(x : Character) { returnType = isChar;}
+    function testOverloadInstanceRetVoid(x : Float) { returnType = isFloat;}
+    function testOverloadInstanceRetVoid(x : Double) { returnType = isDouble;}
+    function testOverloadInstanceRetVoid(x : Byte, y : Long) { returnType = isByteLong;}
+    function testOverloadInstanceRetVoid(x : Long, y : Byte) { returnType = isLongByte;}
+}
+
+/**
+ * Testing overridden functions
+ */
+class TesterOverride extends TesterInstance {
+    def isIntNew : Integer = 100;
+    def isLongNew : Integer = 200;
+    def isByteNew : Integer = 300;
+    def isShortNew : Integer = 400;
+    def isCharNew : Integer = 500;
+    def isFloatNew : Integer = 600;
+    def isDoubleNew : Integer = 700;
+    def isByteLongNew : Integer = 800;
+    def isLongByteNew : Integer = 900;
+
+
+    /**
+     * Instance functions with return value Integer.
+     * They return the argument type as an Integer value
+     */
+    override function testOverloadInstanceRetInt(x : Integer) : Integer { return isIntNew;}
+    override function testOverloadInstanceRetInt(x : Long) : Integer { return isLongNew;}
+    override function testOverloadInstanceRetInt(x : Byte) : Integer { return isByteNew;}
+    override function testOverloadInstanceRetInt(x : Short) : Integer { return isShortNew;}
+    override function testOverloadInstanceRetInt(x : Character) : Integer { return isCharNew;}
+    override function testOverloadInstanceRetInt(x : Float) : Integer { return isFloatNew;}
+    override function testOverloadInstanceRetInt(x : Double) : Integer { return isDoubleNew;}
+    override function testOverloadInstanceRetInt(x : Byte, y : Long) : Integer { return isByteLongNew;}
+    override function testOverloadInstanceRetInt(x : Long, y : Byte) : Integer { return isLongByteNew;}
+    
+    /**
+     * Instance functions with no return value.
+     */
+    override function testOverloadInstanceRetVoid(x : Integer) { returnType = isIntNew;}
+    override function testOverloadInstanceRetVoid(x : Long) { returnType = isLongNew;}
+    override function testOverloadInstanceRetVoid(x : Byte) { returnType = isByteNew;}
+    override function testOverloadInstanceRetVoid(x : Short) { returnType = isShortNew;}
+    override function testOverloadInstanceRetVoid(x : Character) { returnType = isCharNew;}
+    override function testOverloadInstanceRetVoid(x : Float) { returnType = isFloatNew;}
+    override function testOverloadInstanceRetVoid(x : Double) { returnType = isDoubleNew;}
+    override function testOverloadInstanceRetVoid(x : Byte, y : Long) { returnType = isByteLongNew;}
+    override function testOverloadInstanceRetVoid(x : Long, y : Byte) { returnType = isLongByteNew;}
+
+    function testOverrideRetInt() {
+        assertEquals(testOverloadInstanceRetInt(i), isIntNew);
+        assertEquals(testOverloadInstanceRetInt(l), isLongNew);
+        assertEquals(testOverloadInstanceRetInt(b), isByteNew);
+        assertEquals(testOverloadInstanceRetInt(s), isShortNew);
+        assertEquals(testOverloadInstanceRetInt(c), isCharNew);
+        assertEquals(testOverloadInstanceRetInt(f), isFloatNew);
+        assertEquals(testOverloadInstanceRetInt(d), isDoubleNew);
+        assertEquals(testOverloadInstanceRetInt(n), isFloatNew);
+        //assertEquals(testOverloadInstanceRetInt(dur), isFloatNew);
+        assertEquals(testOverloadInstanceRetInt(b, l), isByteLongNew);
+        assertEquals(testOverloadInstanceRetInt(l, b), isLongByteNew);
+
+        assertEquals(testOverloadInstanceRetInt(10 as Integer), isIntNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Long), isLongNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Byte), isByteNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Short), isShortNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Character), isCharNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Float), isFloatNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Double), isDoubleNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Byte, 10 as Long), isByteLongNew);
+        assertEquals(testOverloadInstanceRetInt(10 as Long, 10 as Byte), isLongByteNew);
+
+        assertEquals(testOverloadInstanceRetInt(10), isIntNew);
+        assertEquals(testOverloadInstanceRetInt(3.1415926535), isFloatNew);
+        
+        assertEquals(testOverloadInstanceRetInt(2200000000 as Long), isLongNew);
+        assertEquals(testOverloadInstanceRetInt(2200000000), isLongNew);
+    }
+
+    function testOverrideRetVoid() {
+        testOverloadInstanceRetVoid(i);
+        assertEquals(returnType, isIntNew);
+
+        testOverloadInstanceRetVoid(b);
+        assertEquals(returnType, isByteNew);
+
+        testOverloadInstanceRetVoid(s);
+        assertEquals(returnType, isShortNew);
+
+        testOverloadInstanceRetVoid(c);
+        assertEquals(returnType, isCharNew);
+
+        testOverloadInstanceRetVoid(f);
+        assertEquals(returnType, isFloatNew);
+
+        testOverloadInstanceRetVoid(d);
+        assertEquals(returnType, isDoubleNew);
+
+        testOverloadInstanceRetVoid(n);
+        assertEquals(returnType, isFloatNew);
+
+        //testOverloadInstanceRetVoid(dur);
+        //assertEquals(returnType, isFloatNew);
+
+        testOverloadInstanceRetVoid(b, l);
+        assertEquals(returnType, isByteLongNew);
+
+        testOverloadInstanceRetVoid(l, b);
+        assertEquals(returnType, isLongByteNew);
+
+        testOverloadInstanceRetVoid(10);
+        assertEquals(returnType, isIntNew);
+
+        testOverloadInstanceRetVoid(3.1415926535);
+        assertEquals(returnType, isFloatNew);
+
+        /**** Comppile-time error: Integer out of range, issue vsgc2571 ****/
+        // testOverloadInstanceRetVoid(2200000000);
+        // assertEquals(returnType, isLongNew);
+    }
+}
+
+public class MethodOverride extends F3TestCase {
+    function testMethodOverride() {
+        var tester = TesterOverride{};
+        tester.testOverrideRetInt();
+        tester.testOverrideRetVoid();
+    }
+}
+
+

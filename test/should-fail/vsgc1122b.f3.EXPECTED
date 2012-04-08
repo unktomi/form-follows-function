@@ -1,0 +1,6 @@
+test/should-fail/vsgc1122b.f3:12: incompatible types
+found   : java.lang.Number
+required: Number
+var x:Number = fmt.parse("5.234");
+               ^
+1 error

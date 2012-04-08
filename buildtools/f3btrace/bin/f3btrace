@@ -1,0 +1,14 @@
+#! /bin/sh
+
+if [ -z "$F3_HOME" ] ; then
+  PRG="$0"
+  progname=`basename "$0"`
+  F3_HOME=`dirname "$PRG"`/../../../dist/
+fi
+
+if [ -f "${BTRACE_HOME}/build/btrace-agent.jar" ] ; then
+    ${F3_HOME}/bin/f3 -javaagent:${BTRACE_HOME}/build/btrace-agent.jar=dumpClasses=false,debug=false,unsafe=true,probeDescPath=.,noServer=true,script=$1 $2 $3 $4 $5 $6 $7 $8 $9
+else
+    echo "Please set BTRACE_HOME before running this script"
+fi
+

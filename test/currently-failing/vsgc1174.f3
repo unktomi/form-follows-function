@@ -1,0 +1,13 @@
+/**
+ * Regress test for VSGC-1174 - Bi-directional bind with inverse and functions compiles fine but throws runtime exception
+ * was: test/compile-error
+ *
+ * @test
+ */
+
+var a = 5;
+var b = 10;
+var c = bind (a + b);
+var d = bind c with inverse;
+println("a={a} b={b} c={c} d={d}");
+a = 10;

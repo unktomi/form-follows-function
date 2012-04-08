@@ -1,0 +1,6 @@
+  Replace [0..-1] = 6
+  Replace [6..5] = 1
+  Replace [3..3] = 0
+  Replace [0..5] = 1
+  Replace [0..0] = 10
+  Replace [10..9] = 1

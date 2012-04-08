@@ -1,0 +1,34 @@
+/**
+ * regression test:  VSGC-2662 - Handling of init blocks in mixin classes.
+ * @test
+ * @run
+ */
+
+mixin class A {
+    var x;
+    
+    init {
+      x = 123;
+    }
+    
+    postinit {
+      x += 321;
+    }
+}
+
+
+class B extends A {
+    var y;
+    
+    init {
+      y = 456;
+    }
+    
+    postinit {
+      y += 654;
+    }
+}
+
+var b = new B();
+
+println("{b.x} {b.y}");

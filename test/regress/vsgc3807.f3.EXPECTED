@@ -1,0 +1,6 @@
+--invalid
+ref binder
+set bindee
+--invalid
+ref binder
+end

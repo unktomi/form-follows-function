@@ -1,0 +1,9 @@
+init: str2 should be empty: //
+init: str4 should be empty: //
+init: str5 should be empty: //
+init: dur1 should be empty: /0ms/
+init: dur2 should be empty: /0ms/
+object literal: strField should be empty: //
+object literal: strField should be empty: //
+assing: local1 should be empty: //
+assign: local1 should be empty: //

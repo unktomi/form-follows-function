@@ -1,0 +1,78 @@
+<FindBugsFilter>
+    <Match>
+        <Package name="org.f3.tools.antlr"/>
+    </Match>
+    <Match>    
+        <!-- runtime.awt is a copy of the 1.6 AWT classes we use, but don't modify -->
+        <Package name="org.f3.runtime.awt"/>
+    </Match>
+    <Match>
+    		<!-- Offending methods are inherited from javac -->
+        <Class name="org.f3.tools.tree.F3TreeMaker" />
+        <Bug  pattern="NM_METHOD_NAMING_CONVENTION" />
+    </Match>
+    <Match>
+    		<!-- Offending classes are generated -->
+        <Package name="org.f3.tools.resources"/>
+        <Bug pattern="NM_CLASS_NAMING_CONVENTION"/>
+    </Match>
+    <Match>
+    		<!-- On purpose, sets global state -->
+        <Class name="~com\.sun\.tools\.f3\.main\.RecognizedOptions\$[0-9]+"/>
+        <Method name="process"/>
+        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
+    </Match>
+    <Match>
+    		<!-- Reference points to (immutable) sequence -->
+        <Class name="org.f3.runtime.sequence.CartesianProduct"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <!-- Exclude Duration.f3 -->
+        <Class name="f3.lang.Duration"/>
+    </Match>
+    <Match>
+        <!-- Exclude package f3.animation -->
+        <Package name="f3.animation"/>
+    </Match>
+    <Match>
+        <!-- Exclude package org.f3.runtime.util.backport -->
+        <Package name="org.f3.runtime.util.backport"/>
+    </Match>
+    <Match>
+        <!-- Switch-fallthrough on purpose -->
+        <Class name="org.f3.runtime.util.F3PropertyResourceBundle"/>
+        <Method name="initialize"/>
+        <Bug pattern="SF_SWITCH_FALLTHROUGH"/>
+    </Match>
+    <Match>
+	    <!-- valid test for whether assertions are enabled -->
+	    <Class name="org.f3.tools.comp.F3Attr"/>
+        <Method name="attribClassBody"/>
+        <Local name="assertsEnabled"/>
+        <Bug pattern="DLS_DEAD_LOCAL_STORE"/>
+    </Match>
+    <Match>
+        <!-- Error in findbugs, confuses two scan-methods in superclass -->
+        <Class name="org.f3.tools.comp.F3Enter"/>
+        <Method name="scan"/>
+        <Bug pattern="NM_WRONG_PACKAGE_INTENTIONAL"/>
+    </Match>
+    <Match>
+        <Class name="org.f3.tools.ant.F3AntTask$F3CompilerAdapter"/>
+        <Method name="execute"/>
+        <Bug pattern="DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED"/>
+    </Match>
+    
+    <!-- Temporarily disabled because work in progress -->
+    <Match>
+        <!-- Exclude package f3.reflect -->
+        <Package name="f3.reflect"/>
+    </Match>
+    <Match>
+        <!-- Field isSimple is not implemented yet -->
+        <Class name="~com\.sun\.tools\.f3\.comp\.F3ToBound\$[0-9]+"/>
+        <Field name="isSimple"/>
+        <Bug pattern="SS_SHOULD_BE_STATIC"/>
+    </Match>
+</FindBugsFilter>

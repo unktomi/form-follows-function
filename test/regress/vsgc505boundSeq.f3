@@ -1,0 +1,60 @@
+/*
+ * Regression test: bound sequence, esp. ranges and slices
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class vsgc505boundSeq {
+  var a = 3;
+  var b = 8;
+  var s = 2;
+  var qi = bind [a..b step s];
+  var qe = bind [a..<b step s];
+
+  var x = 0;
+  var y = 2;
+  var qisi = bind qi[x..y];
+  var qise = bind qi[x..<y];
+  var qisio = bind qi[x..];
+  var qiseo = bind qi[x..<];
+
+  function check(t : Integer[], expect : Integer[]) : String {
+    if (t == expect)
+      "pass"
+    else
+      "FAIL - expected: {expect} got: {t}"
+  }
+
+  function show() : Void {
+    System.out.println("[{a}..{b} step {s}] == {qi}  {check(qi, [a..b step s])}");
+    System.out.println("    [{x}..{y}] == {qisi}  {check(qisi, qi[x..y])}");
+    System.out.println("    [{x}..<{y}] == {qise}  {check(qise, qi[x..<y])}");
+    System.out.println("    [{x}..] == {qisio}  {check(qisio, qi[x..])}");
+    System.out.println("    [{x}..<] == {qiseo}  {check(qiseo, qi[x..<])}");
+    System.out.println("[{a}..<{b} step {s}] == {qe}  {check(qe, [a..<b step s])}");
+  }
+
+  function test() : Void {
+    a = 5;
+    show();
+    a = 3;
+    show();
+    b = 9;
+    show();
+    s = 3;
+    show();
+    x = 1;
+    show();
+    y = 1;
+    show();
+    y = 99;
+    show();
+  }
+}
+
+vsgc505boundSeq{}.test()
+
+

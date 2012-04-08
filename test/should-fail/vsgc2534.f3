@@ -1,0 +1,14 @@
+/*
+ * Regression test: VSGC-2534: Type incorrectly represented in error messages.
+ *
+ * @test/compile-error
+ */
+
+var byte : Byte = null;
+var short : Short = null;
+var int : Integer = null;
+var long : Long = null;
+var float : Number = null;
+var double : Double = null;
+var boolean : Boolean = null;
+var char : Character = null;

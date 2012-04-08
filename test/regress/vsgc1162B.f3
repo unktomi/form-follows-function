@@ -1,0 +1,6 @@
+/*
+ * @subtest vsgc1162C
+ */
+public abstract class vsgc1162B {
+    public var a1:vsgc1162A.A1;
+}

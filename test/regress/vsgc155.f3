@@ -1,0 +1,47 @@
+/*
+ * Regression test for bug VSGC-155
+ * @test
+ * @run
+ */
+import java.awt.*; 
+import java.lang.System; 
+
+public mixin class Node { 
+    public var opacity: Number = 1; 
+} 
+
+public mixin class AbstractVisualNode extends Node { 
+    public var fill: Paint = null; 
+    public var stroke: Paint = null; 
+} 
+
+public mixin class VisualNode extends Node { 
+} 
+
+//TODO: extends order should be VisualNode first (VSGC-675)
+public class Shape extends AbstractVisualNode, VisualNode  { 
+} 
+
+public class Rect extends Shape { 
+    public var x: Number; 
+    public var y: Number; 
+    public var width: Number; 
+    public var height: Number; 
+} 
+
+public class Text extends Shape { 
+    //var fill:Paint = Color.black; 
+    init { fill = java.awt.Color.black }
+} 
+
+public class MyRect extends Rect { 
+    //var fill:Paint = new Color(0, 0, 255); 
+    init { fill = new java.awt.Color(0, 0, 255) }
+} 
+
+function run() {
+    var rect = MyRect { }
+    var t = Text { }
+}
+
+

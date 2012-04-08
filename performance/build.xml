@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="performance" default="run" basedir=".">
+    <property name="f3dir" location="${basedir}/.."/>
+    <property name="builddir" location="${basedir}/../build/performance"/>
+    <property name="f3.home" location="${basedir}/../dist"/>
+    <property name="srcdir"   location="${basedir}/src"/>
+    <property name="bm.srcdir" location="${basedir}/benchmarks"/>
+    <property name="bm.builddir" location="${builddir}/benchmarks"/>
+    <property name="bm.outdir" location="${builddir}/output"/>
+    <property name="ant.jar" location="${f3dir}/import/ant-1.7.1/apache-ant-1.7.1/lib/ant.jar"/>
+    <property name="f3c.jar" location="${f3.home}/lib/shared/f3c.jar"/>
+    <property name="javac.source" value="1.5"/>
+    <property name="javac.target" value="1.5"/>
+    <property name="debug" value="false"/>
+    <property name="default.heap" value="-Xmx512m"/>
+    <condition property="suffix.exe" value=".exe">
+        <os family="windows"/>
+    </condition>
+    
+    <condition property="suffix.exe" value="">
+        <os family="unix"/>
+    </condition>
+
+    <path id="jfree.classpath">
+        <pathelement location="${jfree.libpath}/jfreechart-1.0.13.jar"/>
+        <pathelement location="${jfree.libpath}/jcommon-1.0.16.jar"/>
+    </path>
+
+    <target name="clean">
+        <delete dir="${builddir}"/>
+    </target>
+  
+    <target name="init" depends="clean">
+        <tstamp/>
+        <echo message="###################################"/>
+        <echo message="java.home    : ${java.home}"/>
+         <exec executable="${java.home}/bin/java${suffix.exe}">
+            <arg line="-version"/>
+        </exec>
+        <echo message="f3.home  : ${f3.home}"/>
+        <exec executable="${f3.home}/bin/f3${suffix.exe}">
+            <arg line="-version"/>
+        </exec>
+        <echo message="f3c.jar  : ${f3c.jar}"/>
+        <echo message="jfree.libpath: ${jfree.libpath}"/>
+        <echo message="csv.data.dir : ${csv.data.dir}"/>
+        <echo message="###################################"/>
+        <mkdir dir="${builddir}"/>
+        <mkdir dir="${bm.builddir}"/>
+        <mkdir dir="${bm.outdir}"/>
+        <taskdef name="f3c"
+            classname="org.f3.tools.ant.F3AntTask">
+            <classpath>
+                <pathelement location="${ant.jar}"/>
+                <pathelement location="${f3c.jar}"/>
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="compile" depends="compile-benchmarks, compile-framework"/>
+
+    <target name="compile-framework" depends="init">
+        <javac srcdir="${srcdir}"
+               destdir="${builddir}"
+               excludes="**/Reporter.java"
+               debug="true">
+        </javac>
+    </target>
+    
+    <target name="compile-benchmarks" depends="init">
+        <f3c destdir="${bm.builddir}"
+                 includes="**/*.f3" source="${javac.source}" sourcepath=""
+                 srcdir="${bm.srcdir}" target="${javac.target}"
+                 compilerclasspath="${f3c.jar}"
+                 failonerror="true">
+        </f3c>
+    </target>
+
+    <macrodef name="run-benchmark">
+        <attribute name="benchmark"     default="NOT_SET"/>
+        <attribute name="heapsize"      default="${default.heap}"/>
+        <attribute name="gcneeded"      default=""/>
+        <attribute name="loopcount"     default="0"/>
+        <attribute name="debug"         default="true"/>
+        <sequential>
+            <echo message="Runnning : @{benchmark}"/>
+            <java classname="org.f3.tools.framework.Runner" fork="true"
+              classpath="${builddir}" failonerror="true" dir="${builddir}" >
+                <sysproperty key="app.name"         value="@{benchmark}"/>
+                <sysproperty key="app.classpath"    value="${bm.builddir}"/>
+                <sysproperty key="app.workdir"      value="${bm.outdir}"/>
+                <sysproperty key="f3.home"      value="${f3.home}"/>
+                <sysproperty key="base.dir"         value="${basedir}"/>
+                <sysproperty key="debug"            value="${debug}"/>
+                <sysproperty key="Runner.vmoptions" value="@{heapsize}"/>
+                <sysproperty key="Runner.gcneeded"  value="@{gcneeded}"/>
+                <sysproperty key="Runner.loopcount" value="@{loopcount}"/>
+            </java>
+        </sequential>
+    </macrodef>
+
+    <condition property="reporter.ok">
+        <and>
+            <isset property="csv.data.dir"/>
+            <isset property="jfree.libpath"/>
+        </and>
+    </condition>
+
+    <target name="reporter" depends="compile" if="reporter.ok">
+         <javac srcdir="${srcdir}"
+               destdir="${builddir}"
+               classpathref="jfree.classpath"
+               debug="true">
+        </javac>
+        <copy todir="${bm.outdir}">
+            <fileset dir="${csv.data.dir}">
+                <include name="*.csv"/>
+            </fileset>
+        </copy>
+        <java fork="true" classpath="${builddir}" failonerror="true"
+            dir="${bm.outdir}" classname="org.f3.tools.framework.Reporter"
+            classpathref="jfree.classpath">
+        </java>
+    </target>
+    
+    <target name="run-benchmarks" depends="compile">
+        <run-benchmark benchmark="mathcalc"/>
+        <run-benchmark benchmark="mathcalcb"/>
+        <run-benchmark benchmark="bsort"/>
+        <run-benchmark benchmark="linkedListLocalMax"/>
+        <run-benchmark benchmark="linkedListMax"/>
+        <run-benchmark benchmark="linkedListBound"/>
+        <run-benchmark benchmark="linkedListOnReplace"/>
+        <run-benchmark benchmark="bindloop"/>
+        <run-benchmark benchmark="bindloop_noaccess"/>
+        <run-benchmark benchmark="mathcalcb_noseq"/>
+        <run-benchmark benchmark="bind_member_select01"/>
+        <run-benchmark benchmark="bindif"/>
+        <run-benchmark benchmark="bindforlocal"/>
+        <run-benchmark benchmark="bindforglobal"/>
+        <run-benchmark benchmark="boundblocks"/>
+        <run-benchmark benchmark="boundObjectInstantiation"/>
+        <run-benchmark benchmark="boundMethodLocal"/>
+        <run-benchmark benchmark="boundMethodGlobal"/>
+        <run-benchmark benchmark="unary_ops"/>
+        <run-benchmark benchmark="unary_ops_local"/>
+        <run-benchmark benchmark="binary_ops"/>
+        <run-benchmark benchmark="binary_ops_local"/>
+        <run-benchmark benchmark="logical_ops"/>
+        <run-benchmark benchmark="logical_ops_local"/>
+        <run-benchmark benchmark="bindBlockExprGlobal"/>
+        <run-benchmark benchmark="bindBlockExprLocal"/>
+        <run-benchmark benchmark="boundSequenceRangeSum"/>
+        <run-benchmark benchmark="boundSequenceRangeSum_nobind"/>
+        <run-benchmark benchmark="boundTypeCast"/>
+        <run-benchmark benchmark="boundTypeCast_a"/>
+        <run-benchmark benchmark="bindif_seq"/>
+        <run-benchmark benchmark="bindslice"/>
+        <run-benchmark benchmark="bindslice_lt"/>
+        <run-benchmark benchmark="bindslice_ltEVE"/>
+        <run-benchmark benchmark="bindslice_noEVE"/>
+        <run-benchmark benchmark="qsort" gcneeded="true" loopcount="128000"/>
+        <!-- ignored tests
+        <run-benchmark benchmark="boundSequenceRange"/>
+        <run-benchmark benchmark="visibleNode"/> // VSGC-3693
+        -->
+    </target>
+    
+    <target name="krun-benchmarks" depends="compile">
+        <run-benchmark benchmark="qsort" gcneeded="true" loopcount="128000"/>
+    </target>
+
+    <target name="run" depends="run-benchmarks, reporter"/>
+    <target name="krun" depends="krun-benchmarks, reporter"/>
+
+    <!-- used for test one off tests -->
+    <target name="ktest" depends="compile">
+        <run-benchmark benchmark="${test.one}"/>
+    </target>
+</project>

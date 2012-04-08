@@ -1,0 +1,28 @@
+/**
+ * Regression test VSGC-4043 : Bad invalidations when bound-for induction sequence and body update at same time
+ *
+ * Case: nullable, add
+ *
+ * @test
+ * @run
+ */
+
+    class A {
+      var s : String;
+      override function toString() { "A:{s}" }
+    }
+  
+    var items : A[] = [A{s:"Monday"}, A{s:"Tuesday"}, A{s:"Wednesday"}];
+    var xx = bind 
+            for(i in [0..<sizeof items]) {
+                items[i]
+            }
+       on replace [a..b] = newVal{
+          println("[{a}..{b}] = {sizeof newVal} -- xx = {sizeof(xx)}");
+        };
+    
+
+    function run() {
+      insert A{s:"Thursday"} into items;
+      insert A{s:"Friday"} into items;
+   }

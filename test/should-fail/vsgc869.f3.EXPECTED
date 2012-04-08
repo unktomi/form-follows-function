@@ -1,0 +1,6 @@
+test\should-fail\vsgc869.f3:20: cannot find symbol
+symbol  : variable ex
+location: class vsgc869
+System.out.println("I'm here {ex} ");
+                              ^
+1 error

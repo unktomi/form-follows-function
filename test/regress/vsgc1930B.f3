@@ -1,0 +1,11 @@
+/*
+ * Regression: VSGC-1930 - second-level inheritance of java interfaces and override.
+ *
+ * @compilefirst vsgc1930T.java
+ * @test/fail
+ *
+ */
+
+class DoableB extends vsgc1930T {
+    override function getId(): Integer { return 1 }
+}

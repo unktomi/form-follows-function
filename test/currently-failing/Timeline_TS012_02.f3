@@ -1,0 +1,73 @@
+/*
+ * Timeline_TS012_02.f3
+ * @test
+ * @run/fail
+ */
+
+/**
+ * @author Baechul Kim
+ */
+
+import f3.animation.*;
+import f3.lang.Duration;
+import java.lang.System;
+import java.lang.Thread;
+import java.lang.AssertionError;
+import java.lang.Throwable;
+import javax.swing.Timer;
+import java.awt.event.*;
+
+function runLater(ms: Number, f: function(): Void): Void {
+    var timer = new Timer(ms, ActionListener {
+        public override function actionPerformed(e: ActionEvent) {
+            F3.deferAction(f);
+        }
+    });
+    timer.setRepeats(false);
+    timer.start();
+}
+
+var count: Integer = 0;
+
+var keepAlive: Timeline = Timeline {
+    repeatCount: Timeline.INDEFINITE
+    keyFrames: [
+        KeyFrame {
+            time: 100ms
+        }
+    ]
+};
+
+var t: Timeline = Timeline {
+    repeatCount: 106
+    keyFrames: [
+        KeyFrame {
+            time: 100ms
+                action: function() {
+                    count++;
+            }
+        }
+    ]
+};
+
+keepAlive.play();
+t.play();
+
+runLater(100, modifyRepeatCount);
+runLater(2000, check);
+
+function modifyRepeatCount() {
+    t.repeatCount = 5;
+    return;
+}
+
+function check() {
+    try {
+        if(count != 5) {
+            println("count = {count}");
+            throw new AssertionError("test failed");
+        }
+    } finally {
+        keepAlive.stop();
+    }
+}

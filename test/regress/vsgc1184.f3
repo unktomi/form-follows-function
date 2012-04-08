@@ -1,0 +1,13 @@
+/*
+ * Regression: VSGC-1184 - Compiler throws internal error while trying to access vararg method of superclass.
+ *
+ * @compilefirst vsgc1184J.java
+ * @test
+ * @run
+ *
+ */
+
+class Test extends vsgc1184J {
+}
+var t = Test{};
+t.method();

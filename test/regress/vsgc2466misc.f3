@@ -1,0 +1,66 @@
+/**
+ * Regression test VSGC-2466 : Lazy Binding: Operators -- runtime
+ *
+ * @test
+ * @run
+ */
+
+var sh : Short = 10;
+var lo : Long = 2147383648;
+var bo : Boolean = true;
+def ob1 : Object = new java.util.ArrayList();
+def ob2 : Object = new java.util.Random();
+var ob : Object = ob2;
+var sq = [ 1234, 5 ];
+def sq2 = [ 1234 ];
+def n = 1234;
+
+function fsh(x : Short) : Short { println("sh = {x}"); x };
+function flo(x : Long) : Long { println("lo = {x}"); x };
+function fob(x : Object) : Object { println("ob = {x}"); x };
+function fbo(x : Boolean) : Boolean { println("bo = {x}"); x };
+function fsq(x : Integer[]) : Integer[] { println("sq = {x}"); x };
+
+def bo_bo_eq = bind lazy fbo(bo) == false;
+def ob_ob_eq = bind lazy fob(ob) == ob2;
+
+def bo_bo_ne = bind lazy fbo(bo) != false;
+def ob_ob_ne = bind lazy fob(ob) != ob2;
+
+def bo_ob_eq = bind lazy fbo(bo) == fob(ob);
+def sh_ob_eq = bind lazy fsh(sh) == fob(ob);
+def lo_ob_eq = bind lazy flo(lo) == fob(ob);
+
+def bo_ob_ne = bind lazy fbo(bo) != fob(ob);
+def sh_ob_ne = bind lazy fsh(sh) != fob(ob);
+def lo_ob_ne = bind lazy flo(lo) != fob(ob);
+
+def sq_sq_eq = bind lazy fsq(sq) != sq2;
+
+sh = 5;
+lo = 9999;
+bo = false;
+ob = null;
+sq = [8, 7, 7];
+
+sh = 111;
+lo = 8;
+bo = true;
+ob = ob1;
+sq = sq2;
+
+println( bo_bo_eq );
+println( ob_ob_eq );
+
+println( bo_bo_ne );
+println( ob_ob_ne );
+
+println( bo_ob_eq );
+println( sh_ob_eq );
+println( lo_ob_eq );
+
+println( bo_ob_ne );
+println( sh_ob_ne );
+println( lo_ob_ne );
+
+println( sq_sq_eq );

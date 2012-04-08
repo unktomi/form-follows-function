@@ -1,0 +1,8 @@
+/**
+ * Should-fail test VSGC-1866 : Compiler crash: atempting to pass constructor argument to F3 class in 'new'
+ *
+ * @test/compile-error
+ */
+
+class Sample {}
+new Sample(1);

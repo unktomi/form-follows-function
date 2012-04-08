@@ -1,0 +1,6 @@
+test/should-fail/vsgc2079.f3:5: incompatible types
+found   : String
+required: Boolean[]
+var f:Boolean[] = ["ra"];
+                   ^
+1 error

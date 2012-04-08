@@ -1,0 +1,41 @@
+test/should-fail/vsgc2534.f3:7: incompatible types
+found   : <nulltype>
+required: Byte
+var byte : Byte = null;
+                  ^
+test/should-fail/vsgc2534.f3:8: incompatible types
+found   : <nulltype>
+required: Short
+var short : Short = null;
+                    ^
+test/should-fail/vsgc2534.f3:9: incompatible types
+found   : <nulltype>
+required: Integer
+var int : Integer = null;
+                    ^
+test/should-fail/vsgc2534.f3:10: incompatible types
+found   : <nulltype>
+required: Long
+var long : Long = null;
+                  ^
+test/should-fail/vsgc2534.f3:11: incompatible types
+found   : <nulltype>
+required: Number
+var float : Number = null;
+                     ^
+test/should-fail/vsgc2534.f3:12: incompatible types
+found   : <nulltype>
+required: Double
+var double : Double = null;
+                      ^
+test/should-fail/vsgc2534.f3:13: incompatible types
+found   : <nulltype>
+required: Boolean
+var boolean : Boolean = null;
+                        ^
+test/should-fail/vsgc2534.f3:14: incompatible types
+found   : <nulltype>
+required: Character
+var char : Character = null;
+                       ^
+8 errors

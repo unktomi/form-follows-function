@@ -1,0 +1,7 @@
+test/should-fail/vsgc34_paramTypes.f3:12: Java style generics are not currently supported in F3, so you cannot use them here.
+var keyMap : java.util.Map<java.lang.Integer, java.lang.String> = new  java.util.HashMap<java.lang.Integer, java.lang.String>;
+                          ^
+test/should-fail/vsgc34_paramTypes.f3:12: Java style generics are not currently supported in F3, so you cannot use them here.
+var keyMap : java.util.Map<java.lang.Integer, java.lang.String> = new  java.util.HashMap<java.lang.Integer, java.lang.String>;
+                                                                                        ^
+2 errors

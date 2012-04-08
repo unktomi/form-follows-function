@@ -1,0 +1,11 @@
+test/regress/vsgc2914.f3:8: warning: possible loss of precision
+found   : Number[]
+required: Integer[]
+var b2: Integer[] = b1;
+                    ^
+test/regress/vsgc2914.f3:11: warning: possible loss of precision
+found   : Number[]
+required: Integer[]
+  return b1;
+         ^
+2 warnings

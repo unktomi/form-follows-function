@@ -1,0 +1,16 @@
+/**
+ * VSGC-3732 : Compiled bind: sample won't compile: cannot find symbol method access$scriptLevel$Main$().
+ *
+ * @test
+ * @compilefirst vsgc3732Main.f3
+ * @run
+ */
+
+def parserEventCallback = function() { 
+    vsgc3732Main.restaurants; 
+    vsgc3732Main.restaurants = null; 
+    println(vsgc3732Main.restaurants);
+} 
+
+parserEventCallback();
+

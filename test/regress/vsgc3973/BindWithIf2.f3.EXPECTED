@@ -1,0 +1,8 @@
+val=0
+memberVar was , is now ObjLiteral
+memberVar was ObjLiteral, is now val1
+val=1
+memberVar was val1, is now val2
+val=2
+memberVar was val2, is now ObjLiteral
+val=3

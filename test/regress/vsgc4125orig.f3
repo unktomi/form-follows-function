@@ -1,0 +1,41 @@
+/**
+ * VSGC-4125 : override var bound to a forward-referenced bound var (x) does not update flags or value on initialization of x
+ *
+ * "Original" non-GUI test
+ *
+ * @test
+ * @run
+ */
+
+class jjBoundingBox {
+   var width:Number;
+   var height:Number;
+
+}
+
+class jjParent {
+   var layoutBounds: jjBoundingBox;
+}
+
+mixin class jjResizable {
+    var width: Number;
+    var height:  Number;
+}
+
+class jjContainer extends jjParent, jjResizable {
+    override var layoutBounds = bind
+            jjBoundingBox {
+               width: this.width
+               height: this.height
+            }
+}
+
+
+function run() {
+   var xx = 300.0;
+   def square = jjContainer {
+       width: bind xx;
+       height: bind xx;
+   }
+   println("jj: square.layoutBounds.width = {square.layoutBounds.width}");
+}

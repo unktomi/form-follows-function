@@ -1,0 +1,5 @@
+true (boxed) instanceof Boolean => true
+false (unboxed) instanceof Boolean => true
+true (bind boxed) instanceof Boolean => true
+12 (boxed) instanceof Integer => true
+1 (unboxed) instanceof Integer => true

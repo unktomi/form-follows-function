@@ -1,0 +1,27 @@
+Foo w/o bound init
+false
+false
+Foo w/ bound init
+false
+true
+Foo w/ bidi bound init
+false
+false
+ExtFoo1 w/o bound init
+true
+false
+ExtFoo1 w/ bound init
+true
+true
+ExtFoo1 w/ bidi bound init
+true
+false
+ExtFoo2 w/o bound init
+false
+false
+ExtFoo2 w/ bound init
+false
+true
+ExtFoo2 w/ bidi bound init
+false
+false

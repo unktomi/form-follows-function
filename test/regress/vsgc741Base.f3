@@ -1,0 +1,12 @@
+/*
+ * @subtest vsgc741
+ */
+
+import java.lang.System;
+
+package class vsgc741Base {
+  package var frame = "default";
+  package var title: String on replace {
+        System.out.println("Frame: {frame}, Title: {title}");
+  }
+}

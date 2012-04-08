@@ -1,0 +1,12 @@
+/*
+ * VSGC-3117: Unable to use 'this' in mixin method body
+ *
+ * @test
+ */
+
+mixin class Mx {
+    function foo() {}
+    function bar() {
+        this.foo()
+    }
+}

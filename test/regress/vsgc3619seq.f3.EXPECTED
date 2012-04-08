@@ -1,0 +1,5 @@
+vv1: [aa..2]
+vv2: [0..2 step aa]
+vv3: seqy
+vv4: seq[aa]
+All Done

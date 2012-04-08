@@ -1,0 +1,13 @@
+/**
+ * Regress test for VSGC-3094: Internal error for a mixee not overriding an abstract method
+ *
+ * @test/compile-error
+ */
+
+mixin class AbstractMixin {
+    abstract function foo(s : String) : Integer;
+}
+
+class Mixee extends AbstractMixin {
+    function foo(s : Integer) : Integer { 7 }
+}

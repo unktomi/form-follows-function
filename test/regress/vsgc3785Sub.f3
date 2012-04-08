@@ -1,0 +1,12 @@
+/**
+ * Regression test VSGC-3785 : compiled-bind: 5 errors when compiling liveconnect
+ *
+ * @subtest
+ */
+
+class K { var k:Number }
+
+public class MapNode {
+   var myOpacity = 100;
+   var n = K { k : bind myOpacity }
+}

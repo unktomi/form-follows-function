@@ -1,0 +1,4 @@
+test\should-fail\vsgc2887.f3:11: KeyFrame literals must only contain KeyValue expressions within the braces, for example: SomeVariable => SomeValue
+        at (0s) { println("hi") }
+                  ^
+1 error

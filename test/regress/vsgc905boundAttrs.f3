@@ -1,0 +1,49 @@
+/**
+ * Regression test VSGC-905 : Binding Overhaul: bound attributes
+ *
+ * @test
+ * @run
+ */
+import java.lang.System; 
+
+var enableBindingOverhaul;
+
+class Foo {
+    var k = 5;
+    var z = 3.1415926535;
+    var s = 'blah';
+    var b = false;
+    var q = [5..10];
+    var bs = bind "k={k} z={%6.3f z} z^2={%e z*z} s={s} {if(b) 'clowns' else '{s}{%6d k}'}";
+    var bk = bind k;
+    var bz = bind z;
+    var bb = bind b;
+    var bq = bind q;
+
+    function go() {
+	System.out.println(bk);
+	System.out.println(bs);
+	k =2;
+	System.out.println(bk);
+	System.out.println(bs);
+	System.out.println(bz);
+	z = 1.1;
+	System.out.println(bz);
+	System.out.println(bs);
+	s = 'fog';
+	System.out.println(bs);
+	System.out.println(bb);
+	b = true;
+	System.out.println(bb);
+	System.out.println(bs);
+	System.out.println(bq);
+        insert 100 into q;
+	System.out.println(bq);
+    }
+}
+
+var oo = new Foo;
+oo.go()
+
+
+

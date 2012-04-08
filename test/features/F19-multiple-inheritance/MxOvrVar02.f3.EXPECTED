@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxOvrVar02.f3:17: 'var' overrides member 'v' in 'MxOvrVar02.A'; use 'override'.
+   var v = 55;
+   ^
+1 error

@@ -1,0 +1,11 @@
+/**
+ * @subtest
+ */
+
+public class vsgc2851a { 
+    var thisFails = "String"; 
+
+   public function getit() : String { 
+        return thisFails; 
+   } 
+} 

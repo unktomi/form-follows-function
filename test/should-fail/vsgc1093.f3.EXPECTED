@@ -1,0 +1,4 @@
+test/should-fail/vsgc1093.f3:7: Expression not supported for bind with inverse.
+var x = bind y[idx] with inverse;
+             ^
+1 error

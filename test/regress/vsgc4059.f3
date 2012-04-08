@@ -1,0 +1,22 @@
+/*
+ * Regression test
+ * VSGC-4059 : F3ScriptCompiler.compile returns null.
+ *
+ * @test
+ * @run
+ */
+
+import org.f3.tools.script.F3ScriptContext;
+import org.f3.tools.script.F3ScriptCompiler;
+
+def context = new F3ScriptContext(vsgc4059.class.getClassLoader());
+def compiler:F3ScriptCompiler = getField(context, 'compiler') as F3ScriptCompiler;
+def classPath = java.lang.System.getProperty("java.class.path");
+def scrpt = "class A \{ var x; \}\nvar x = A \{ var f:Integer = 1, x:f \};\n";
+compiler.compile('Script', scrpt, null, null, classPath, null);
+
+function getField(obj:Object, fieldName:String):Object {
+    def field:java.lang.reflect.Field = obj.getClass().getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.get(obj);
+}

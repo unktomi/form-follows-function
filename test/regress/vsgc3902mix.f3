@@ -1,0 +1,41 @@
+/*
+ * Regression test VSGC-3902 : Compiled bind: bound explicit sequence out of sync with current invalidation model -- rewrite 
+ *
+ * mixed access
+ *
+ * @test
+ * @run
+ */
+
+class A {
+  override function toString() { "A" }
+}
+
+var mir : Object[];
+var a = A{};
+var str = "yo";
+var t = false;
+var n = 1.5;
+var s = [A{}, A{}, A{}];
+var b = false;
+def eb = bind [
+		a, 
+		str,
+		(if (t) A{} else null), 
+		n,
+		(if (t) A{} else null), 
+		s, 
+		b
+	] on replace oldV[a..b] = newV {
+		mir[a..b] = newV; 
+		println(if (mir==eb) "-----------" else "&%^*&@^*#@"); 
+		println(oldV); 
+		println("[{a}..{b}]"); 
+		println(newV); 
+		println(eb); 
+	};
+str = "x";
+insert A{} into s;
+t = true;
+a = null;
+n = 3.0;

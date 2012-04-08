@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxInst02neg.f3:10: MxInst02neg.M1 is a mixin; cannot be instantiated.
+var m1 : M1 = new M1()
+              ^
+1 error

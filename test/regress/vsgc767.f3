@@ -1,0 +1,21 @@
+/*
+ * Regression test for VSGC-767 : Wrong receiver found for supertype implicit this call
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+import java.util.BitSet;
+
+class Foo {
+    var bits : BitSet = BitSet {
+            public function toString():String {
+                return "Class: { getClass().getSuperclass() }";
+            }
+    }
+}
+
+System.out.println(Foo{}.bits);
+
+

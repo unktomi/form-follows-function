@@ -1,0 +1,10 @@
+/**
+ * Should-fail test VSGC-1449 : Check bound attributes changing
+ *
+ * This test should fail, but isn't failing
+ * @test
+ */
+
+var b = 0;
+var a = bind b+1;
+a++;

@@ -1,0 +1,21 @@
+/**
+ * VSGC-3173 : in case of inheritance (override) binding came before involved variables initialization causing division by zero exception.
+ *
+ * @test
+ * @run
+ */
+
+class Base {
+   var x : Long = 0;
+}
+
+class Derived extends Base {
+    var a = 2;
+    override var x = bind ((1 / a ) as Long);
+}
+
+var d = Derived {
+    a: 5
+}
+
+println( "d.a is {d.a}"); 

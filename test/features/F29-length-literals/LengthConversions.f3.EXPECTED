@@ -1,0 +1,17 @@
+complexLength = 5px + 6dp + 7sp + 8em + 9%
+as pixels = 139px
+as density-independent = 139dp
+as scale-independent = 139sp
+as ems = 9.928571em
+as a percentage = 139%
+as HD pixels = 277px
+as HD density-independent = 184.666667dp
+as HD scale-independent = 92.333333sp
+as HD ems = 9.892857em
+as HD percentage = 138.5%
+as LD pixels = 72.625px
+as LD density-independent = 96.833333dp
+as LD scale-independent = 193.666667sp
+as LD ems = 10.375em
+as LD percentage = 145.25%
+simpleLength = 6in

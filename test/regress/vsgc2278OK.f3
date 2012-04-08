@@ -1,0 +1,15 @@
+/**
+ * Regression test VSGC-2278 : Attribution should catch override of instance var when no 'override' keyword
+ *
+ * @compilefirst vsgc2278OKSub.f3
+ * @test
+ * @run
+ */
+
+class vsgc2278OK extends vsgc2278OKSub {
+  public var x;
+  public def y = 6;
+}
+
+var z = vsgc2278OK{ x: 'yada' }
+println(z.x);

@@ -1,0 +1,9 @@
+receiver is Mixee1
+name: Mixin1:name
+nameFun: Mixin1:nameFun
+receiver is Mixee2
+name: Mixin2:name
+nameFun: Mixin2:nameFun
+receiver is Mixee3
+name: Mixee:name
+nameFun: Mixee:nameFun

@@ -1,0 +1,4 @@
+bar1 replace=x
+bar2 replace=
+bar1 replace=null
+bar2 replace=y

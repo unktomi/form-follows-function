@@ -1,0 +1,13 @@
+/**
+ * Regress test for VSGC-3002: 
+ *  on-replace triggers should not be allowed inside bind
+ *
+ * @test/compile-error
+ */
+
+var x = bind for (i in [0..5]) {
+   var y = bind (i mod 2 == 0) on replace {
+       println("y changed");
+   }
+   y
+} 

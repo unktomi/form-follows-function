@@ -1,0 +1,16 @@
+/*
+ * @test/compile-error
+ */
+import f3.animation.Timeline;
+import f3.animation.KeyFrame;
+import f3.animation.Interpolator;
+
+var val1 = [1.0, 200.0, 250.0, 300.0];
+
+var timeLine1 = Timeline {
+    keyFrames: [
+        KeyFrame { 
+            time: 2s values: val1[0] => 300 tween Interpolator.LINEAR
+        }
+    ]
+}

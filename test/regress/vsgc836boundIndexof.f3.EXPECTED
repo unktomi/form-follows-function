@@ -1,0 +1,8 @@
+[ bar, foo, bar, foo, bar, foo, bar, foo, bar, foo ]
+[ 0, 2, 6, 12, 20 ]
+[ 0, 1, 2, 3 ]
+[ 0, 1, 2000, 3, 4000, 5000 ]
+[ bar, foo, bar, foo, bar, foo, bar, foo, bar, foo ]
+[ 0, 2, 6, 12, 20, 440 ]
+[ bar, foo ]
+[ 0, 3, 8, 15, 352 ]

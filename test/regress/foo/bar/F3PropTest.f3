@@ -1,0 +1,22 @@
+/**
+ * Sub test case intended to be used with vsgc697.f3
+ *
+ * @subtest
+ */
+package foo.bar;
+import java.lang.*;
+
+public class F3PropTest {
+    public function print(): Void {
+        System.out.println(##"source original string");
+
+        var test2 = new F3PropTest2();
+        test2.print();
+    }
+}
+
+public class F3PropTest2 {
+    public function print(): Void {
+        System.out.println(##"source original string in test 2");
+    }
+}

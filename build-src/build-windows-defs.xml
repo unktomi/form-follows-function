@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-windows-defs" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Defines common properties and macrodefs that are specific to the
+        system being used and the various system installed tools on the
+        systems. Such as Visual Studio, GNU make, Mac XCode, C/C++ compilers,
+        etc.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build-defs.xml file.
+
+    </description>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    <!-- Only certain repositories trigger a need for native compilation tools. -->
+    <condition property="f3.build.needs.visual.studio">
+        <or>
+            <available file="${f3.root.dir}/jogl" type="dir"/>
+            <available file="${f3.root.dir}/media" type="dir"/>
+            <available file="${f3.root.dir}/runtime" type="dir"/>
+        </or>
+    </condition>
+
+    <condition property="f3.build.needs.gplusplus.compiler">
+        <available file="${f3.root.dir}/tools" type="dir"/>
+    </condition>
+
+    <condition property="f3.build.needs.make.utility">
+        <or>
+            <available file="${f3.root.dir}/runtime" type="dir"/>
+            <available file="${f3.root.dir}/tools" type="dir"/>
+        </or>
+    </condition>
+
+    <property name="vs.property.generator"
+              location="${f3.root.build.src.dir}/genVSproperties.bat"/>
+    <condition property="run.vs.property.generator">
+        <and>
+            <available file="${vs.property.generator}" type="file"/>
+            <isset property="f3.build.needs.visual.studio"/>
+        </and>
+    </condition>
+
+    <!-- Our properties for the Visual Studio env variable values. -->
+    <property name="vs.properties"
+              location="${f3.build.dir}/vs.properties"/>
+
+    <!-- Location of windows cmd utility. -->
+    <property name="cmd.utility" location="${systemroot.path}/System32/cmd.exe"/>
+    <!-- Macrodefs for system specific tools to be shared by everyone. -->
+
+    <macrodef name="get-cygwin-path">
+        <sequential>
+            <exec executable="cygpath" outputproperty="cygwin.path" failonerror="true">
+                <arg value="-m"/>
+                <arg value="-s"/>
+                <arg value="/"/>
+            </exec>
+            <property name="gplusplus3.utility" 
+                      location="${cygwin.path}/bin/g++-3.exe"/>
+            <condition property="gplusplus.utility" 
+                       value="${gplusplus3.utility}"
+                       else="${cygwin.path}/bin/g++.exe">
+                <available file="${gplusplus3.utility}" type="file"/>
+            </condition>
+            <property name="make.utility"      
+                      location="${cygwin.path}/bin/make.exe"/>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-cl">
+        <!-- Does a Visual Studio compilation -->
+        <attribute name="dir"/>
+        <attribute name="options" default=""/>
+        <sequential>
+            <property file="${vs.properties}"/>
+            <property name="cl.utility" location="${windows.vs.MSVCDIR}/bin/cl.exe"/>
+            <echo message="STARTING: cd @{dir} ; ${cmd.utility} /A /C ${cl.utility} @{options}"/>
+            <exec dir="@{dir}"
+                  executable="${cmd.utility}"
+                  failonerror="true">
+                <env key="VCINSTALLDIR"  value="${windows.vs.VCINSTALLDIR}"/>
+                <env key="VSINSTALLDIR"  value="${windows.vs.VSINSTALLDIR}"/>
+                <env key="DEVENVDIR"     value="${windows.vs.DEVENVDIR}"/>
+                <env key="MSVCDIR"       value="${windows.vs.MSVCDIR}"/>
+                <env key="INCLUDE"       value="${windows.vs.INCLUDE}"/>
+                <env key="LIB"           value="${windows.vs.LIB}"/>
+                <env key="LIBPATH"       value="${windows.vs.LIBPATH}"/>
+                <env key="PATH"          value="${platform.home}/bin;${windows.vs.PATH}"/>
+                <env key="JAVA_HOME"     value="${platform.home}"/>
+                <env key="JDK_HOME"      value="${platform.home}"/>
+                <env key="WMSDK_DIR"     value="${wmsdk.path}"/>
+                <env key="DXSDK_DIR"     value="${dxsdk.path}"/>
+                <arg value="/A"/>
+                <arg value="/C"/>
+                <arg value="${cl.utility}"/>
+                <arg line="@{options}"/>
+            </exec>
+            <echo message="FINISHED: cd @{dir} ; ${cmd.utility} /A /C ${cl.utility} @{options}"/>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-gplusplus">
+        <attribute name="dir"/>
+        <attribute name="options" default=""/>
+        <sequential>
+            <get-cygwin-path/>
+            <echo message="STARTING: DO-GCC dir @{dir}"/>
+            <echo message="cd @{dir} ; ${cmd.utility} /A /C ${gplusplus.utility} @{options}"/>
+            <exec dir="@{dir}"
+                  executable="${cmd.utility}"
+                  failonerror="true">
+                <arg value="/A"/>
+                <arg value="/C"/>
+                <arg value="${gplusplus.utility}"/>
+                <arg line="@{options}"/>
+            </exec>
+            <echo message="FINISHED: DO-GCC dir @{dir}"/>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-make">
+        <!-- Does a Makefile build -->
+        <attribute name="dir"/>
+        <attribute name="target"/>
+        <attribute name="options" default=""/>
+        <sequential>
+            <get-cygwin-path/>
+            <property file="${vs.properties}"/>
+            <echo message="STARTING: DO-MAKE dir @{dir}"/>
+            <echo message="cd @{dir} ; ${cmd.utility} /A /C ${make.utility} @{options} @{target}"/>
+            <exec dir="@{dir}"
+                  executable="${cmd.utility}"
+                  failonerror="true">
+                <env key="VCINSTALLDIR"  value="${windows.vs.VCINSTALLDIR}"/>
+                <env key="VSINSTALLDIR"  value="${windows.vs.VSINSTALLDIR}"/>
+                <env key="DEVENVDIR"     value="${windows.vs.DEVENVDIR}"/>
+                <env key="MSVCDIR"       value="${windows.vs.MSVCDIR}"/>
+                <env key="INCLUDE"       value="${windows.vs.INCLUDE}"/>
+                <env key="LIB"           value="${windows.vs.LIB}"/>
+                <env key="LIBPATH"       value="${windows.vs.LIBPATH}"/>
+                <!-- <env key="PATH"          value="${windows.vs.PATH}"/> -->
+                <env key="JAVA_HOME"     value="${platform.home}"/>
+                <env key="JDK_HOME"      value="${platform.home}"/>
+                <env key="WMSDK_DIR"     value="${wmsdk.path}"/>
+                <env key="DXSDK_DIR"     value="${dxsdk.path}"/>
+                <arg value="/A"/>
+                <arg value="/C"/>
+                <arg value="${make.utility}"/>
+                <arg line="@{options}"/>
+                <arg value="@{target}"/>
+            </exec>
+            <echo message="FINISHED: DO-MAKE dir @{dir}"/>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="do-vs-build">
+        <!-- Does a Visual Studio project build -->
+        <attribute name="proj-dir"/>
+        <attribute name="build-type"/> <!-- "release" or "debug" -->
+        <attribute name="project"/>
+        <sequential>
+            <property file="${vs.properties}"/>
+            <property name="devenv.utility"  location="${windows.vs.DEVENVCMD}"/>
+            <echo message="STARTING: ${devenv.utility} @{proj-dir}"/>
+            <echo message="${cmd.utility} /A /C ${devenv.utility} /build @{build-type} @{project}"/>
+            <exec executable="${cmd.utility}" failonerror="true"
+                  dir="@{proj-dir}">
+                <env key="VCINSTALLDIR"  value="${windows.vs.VCINSTALLDIR}"/>
+                <env key="VSINSTALLDIR"  value="${windows.vs.VSINSTALLDIR}"/>
+                <env key="DEVENVDIR"     value="${windows.vs.DEVENVDIR}"/>
+                <env key="MSVCDIR"       value="${windows.vs.MSVCDIR}"/>
+                <env key="INCLUDE"       value="${windows.vs.INCLUDE}"/>
+                <env key="LIB"           value="${windows.vs.LIB}"/>
+                <env key="LIBPATH"       value="${windows.vs.LIBPATH}"/>
+                <env key="PATH"          value="${platform.home}/bin;${windows.vs.PATH}"/>
+                <env key="JAVA_HOME"     value="${platform.home}"/>
+                <env key="JDK_HOME"      value="${platform.home}"/>
+                <env key="WMSDK_DIR"     value="${wmsdk.path}"/>
+                <env key="DXSDK_DIR"     value="${dxsdk.path}"/>
+                <arg value="/A"/>
+                <arg value="/C"/>
+                <arg value="${devenv.utility}"/>
+                <arg value="/build"/>
+                <arg value="@{build-type}"/>
+                <arg value="@{project}"/>
+            </exec>
+            <echo message="FINISHED: proj-dir @{proj-dir}"/>
+        </sequential>
+    </macrodef>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <target name="needs-cl"
+            if="f3.build.needs.visual.studio"
+            unless="f3.skip.platform.checks">
+        <property file="${vs.properties}"/>
+        <property name="cl.utility" location="${windows.vs.MSVCDIR}/bin/cl.exe"/>
+        <echo message="Using ${cl.utility}."/>
+        <do-file-check file="${cl.utility}"/>
+        <do-cl dir="."/>
+    </target>
+
+    <target name="needs-devenv"
+            if="f3.build.needs.visual.studio"
+            unless="f3.skip.platform.checks">
+        <property file="${vs.properties}"/>
+        <property name="devenv.utility" location="${windows.vs.DEVENVCMD}"/>
+        <echo message="Using ${devenv.utility}."/>
+        <do-file-check file="${devenv.utility}"/>
+    </target>
+
+    <target name="needs-gplusplus"
+            if="f3.build.needs.gplusplus.compiler"
+            unless="f3.skip.platform.checks">
+        <get-cygwin-path/>
+        <echo message="Using ${gplusplus.utility}."/>
+        <do-file-check file="${gplusplus.utility}"/>
+    </target>
+
+    <target name="needs-make"
+            if="f3.build.needs.make.utility"
+            unless="f3.skip.platform.checks">
+        <get-cygwin-path/>
+        <echo message="Using ${make.utility}."/>
+        <do-file-check file="${make.utility}"/>
+        <do-make dir="." target="-version"/>
+    </target>
+
+    <!-- This target must be executed first to get windows.vs.* properties. -->
+    <target name="needs-vs-properties"
+            if="run.vs.property.generator">
+        <echo message="Using ${vs.property.generator} to get VS properties."/>
+        <mkdir dir="${f3.build.dir}"/>
+        <exec dir="." executable="cmd" output="${vs.properties}">
+            <arg value="/q"/>
+            <arg value="/c"/>
+            <arg value="${vs.property.generator}"/>
+        </exec>
+        <replace file="${vs.properties}" token="\" value="/"/>
+        <property file="${vs.properties}"/>
+        <property name="devenv.utility" location="${windows.vs.DEVENVCMD}"/>
+        <property name="cl.utility" location="${windows.vs.MSVCDIR}/bin/cl.exe"/>
+    </target>
+
+    <target name="-init-platform-defs"
+            depends="
+                needs-vs-properties,
+                needs-gplusplus,
+                needs-make,
+                needs-devenv,
+                needs-cl
+                ">
+        <do-file-check file="${cmd.utility}"/>
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+</project>

@@ -1,0 +1,2524 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="Expressions"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Expressions</title>
+
+  <para>F3 code consists of definitions and executable code; all
+  executable code is in the form of expressions. This chapter describes the
+  syntax, meaning, and use of expressions.</para>
+
+  <para>This chapter is organized by the syntactic structure of F3
+  expressions. Because the hierarchy of the syntax determines the precedence
+  of operators, the syntax of an expression may be expressed in terms of other
+  expression non-terminals which are unrelated (except by operator
+  precedence). For example, <link linkend="andExpression">orExpression</link>
+  is syntactically defined in terms of
+  <emphasis>typeExpression</emphasis>.</para>
+
+  <para><remark>[To do: add an introductory section in a conceptual rather
+  than syntactic order]</remark></para>
+
+  <sect1>
+    <title>expression</title>
+
+    <para>At the top level of expression syntax are the expressions that stand
+    alone and, with the exception of <emphasis>valueExpression</emphasis>,
+    have no value (are of Void type).</para>
+
+    <figure>
+      <title>expression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="expression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <sect2>
+      <title>insert</title>
+
+      <para>The <command>insert</command> expression is used to insert a value
+      (which may be a sequence) into a sequence.</para>
+
+      <figure>
+        <title>insert</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="insert.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>indexedSequenceForInsert</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="indexedSequenceForInsert.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para><command>insert-into</command> inserts into the sequence at the
+      end. The other forms allow you to specify where in the sequence the
+      value should be inserted by using an indexed expression.
+      <command>insert-before</command> inserts before the indexed element;
+      <command>insert-after</command> inserts after the indexed element. For
+      example:</para>
+
+      <programlisting>var names = ['Evelyn', 'Will'];
+insert 'Marsha' into names;
+println(names);
+insert ['Ron', 'Melissa'] before names[1];
+println(names);
+insert 'Daz' after names[3];
+println(names);</programlisting>
+
+      <para>Will print:</para>
+
+      <screen>[ Evelyn, Will, Marsha ]
+[ Evelyn, Ron, Melissa, Will, Marsha ]
+[ Evelyn, Ron, Melissa, Will, Daz, Marsha ]</screen>
+
+      <para>Note that inserting a sequence inserts the elements of the
+      sequence -- sequences are never nested.</para>
+
+      <para>Inserting before or after a negative index inserts at the
+      beginning of the sequence. Inserting before or after an index beyond the
+      end of the sequence inserts at the end of the sequence. Though neither
+      of these cases is implemented in V1.0 of the language.</para>
+
+      <para>An insert expression has no value, it is of Void type.</para>
+    </sect2>
+
+    <sect2>
+      <title>delete</title>
+
+      <para>The delete expression is used to delete an element or elements
+      from a sequence.</para>
+
+      <figure>
+        <title>delete</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="delete.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>Delete has four forms:</para>
+
+      <table>
+        <title>Form of Delete</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry><command>delete</command>
+              <emphasis>sequence</emphasis>[<emphasis>index</emphasis>]</entry>
+
+              <entry>Delete from <emphasis>sequence</emphasis> the element at
+              <emphasis>index</emphasis>. If there is no element at that
+              <emphasis>index</emphasis>, ignore the delete.</entry>
+            </row>
+
+            <row>
+              <entry><command>delete</command>
+              <emphasis>sequence</emphasis>[<emphasis>begin..end</emphasis>]</entry>
+
+              <entry>Delete from <emphasis>sequence</emphasis> the elements
+              from indicies <emphasis>begin</emphasis> to
+              <emphasis>end</emphasis> inclusive. If there is no element at
+              some of these indicies, those indicies are ignored. Note that,
+              more generally, this allows full slice syntax. See <link
+              linkend="slice">slices</link>.</entry>
+            </row>
+
+            <row>
+              <entry><command>delete</command> <emphasis>value</emphasis>
+              <command>from</command>
+              <emphasis>sequence</emphasis><emphasis></emphasis></entry>
+
+              <entry>Delete all occurrances of the value from the sequence. If
+              there are no occurrances of the value, no action is
+              taken.</entry>
+            </row>
+
+            <row>
+              <entry><command>delete</command>
+              <emphasis>sequence</emphasis><emphasis></emphasis></entry>
+
+              <entry>Delete all elements from the sequence -- but not the
+              sequence itself.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>For example:</para>
+
+      <programlisting>var names = [ 'Donna', 'Barb', 'Ron', 'Melissa', 'Will', 'Daz', 'Jim' ] ;
+println(names);
+delete 'Will' from names;
+println(names);
+delete names[1..3];
+println(names);
+delete names[0];
+println(names);
+delete names;
+println(names);
+</programlisting>
+
+      <para>Will print:</para>
+
+      <screen>[ Donna, Barb, Ron, Melissa, Will, Daz, Jim ]
+[ Donna, Barb, Ron, Melissa, Daz, Jim ]
+[ Donna, Daz, Jim ]
+[ Daz, Jim ]
+[ ]</screen>
+
+      <para>A delete expression has no value, it is of Void type.</para>
+    </sect2>
+
+    <sect2>
+      <title>while</title>
+
+      <para>The while expression evaluates its body (the expression after the
+      close-parenthesis) repeatedly as long as the Boolean condition (the
+      <emphasis>valueExpression</emphasis>) is true. Basically the same as a
+      while-loop in most languages.</para>
+
+      <figure>
+        <title>while</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="while.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>A while expression has no value, it is of Void type.</para>
+    </sect2>
+
+    <sect2>
+      <title>break</title>
+
+      <para>Evaluating a <command>break</command> causes the loop in which it
+      is lexically contained to terminate. Where a loop is either a
+      <command>while</command> or <command>for</command>-expression.</para>
+
+      <figure>
+        <title>break</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="break.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>A <command>break</command> always completes abruptly and thus has
+      no value.</para>
+    </sect2>
+
+    <sect2>
+      <title>continue</title>
+
+      <para>Evaluating a <command>continue</command> causes the loop it is
+      lexically contained to immediately complete the iteration currently
+      executing and attempt the next iteration. Where a loop is either a
+      <command>while</command> or <command>for</command>-expression.</para>
+
+      <figure>
+        <title>continue</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="continue.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>A <command>continue</command> always completes abruptly and thus
+      has no value.</para>
+    </sect2>
+
+    <sect2>
+      <title>throw</title>
+
+      <para>A throw expression causes an Exception to be thrown. See the <link
+      linkend="ErrorHandling">Error Handling chapter</link>.</para>
+
+      <figure>
+        <title>throw</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="throw.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>A throw expression always completes abruptly and thus has no
+      value.</para>
+    </sect2>
+
+    <sect2>
+      <title>return</title>
+
+      <para>A return expression causes return from a function, optionally with
+      the value of the function.</para>
+
+      <figure>
+        <title>return</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="return.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>try</title>
+
+      <para>Exceptions are caught by enclosing expressions in try
+      blocks.</para>
+
+      <figure>
+        <title>try</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="try.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para></para>
+
+      <figure>
+        <title>catchClause</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="catchClause.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>finallyClause</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="finallyClause.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The <command>try</command> <emphasis>block</emphasis> is executed
+      until either an exception is thrown or it finishes successfully. If an
+      exception is thrown, each <emphasis>catchClause</emphasis> is examined
+      in turn, to see whether the type of the exception object matches the
+      type declared in the <emphasis>formalParameter</emphasis> to the
+      <emphasis>catchClause</emphasis>. If a match is found, the
+      <emphasis>block</emphasis> of that <emphasis>catchClause</emphasis> is
+      executed; with the <emphasis>formalParameter</emphasis> set to the
+      exception object. No other <emphasis>catchClause</emphasis> will be
+      executed. If no matching <emphasis>catchClause</emphasis> is found, the
+      exception propagates out of the <command>try</command>.</para>
+
+      <para>The <command>try</command> expression may have a
+      <emphasis>finallyClause</emphasis>. A finallyClause provides a mechanism
+      for executing a section of code whether or not an exception is thrown.
+      Usuall the <emphasis>finallyClause</emphasis> is used to clean up or
+      release resources.</para>
+
+      <para>Neither a <emphasis>catchClause</emphasis> or
+      <emphasis>finallyClause</emphasis> is required, but one must be
+      present.</para>
+
+      <para>A try expression has no value, it is of Void type.</para>
+    </sect2>
+  </sect1>
+
+  <sect1>
+    <title>valueExpression</title>
+
+    <para></para>
+
+    <figure>
+      <title>valueExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="valueExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <sect2>
+      <title>ifExpression</title>
+
+      <para>The <emphasis>ifExpression</emphasis> is used to selectively
+      evaluate code.</para>
+
+      <figure>
+        <title>ifExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="if.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>If the <command>else</command> part is present and neither of the
+      <emphasis>expression</emphasis>s is of Void type, then the
+      <emphasis>ifExpression</emphasis> has a value. That value is the value
+      of the first <emphasis>expression</emphasis> if
+      <emphasis>valueExpression</emphasis> is true, and otherwise the value of
+      the second <emphasis>expression</emphasis>. The type of such an
+      <emphasis>ifExpression</emphasis> is the most specific type that has the
+      type of the first <emphasis>expression</emphasis> as a subtype and also
+      has the type of the second <emphasis>expression</emphasis> as a subtype.
+      For example:</para>
+
+      <programlisting>var x = if (bip) "Fern" else 2.68;</programlisting>
+
+      <para>Here, bip must be a Boolean variable. If bip is true the value of
+      x is "Fern". If bip is false the value of x is 2.68. The type of x is
+      Object as there is no more specific type that has String and Number as
+      subtypes.</para>
+
+      <para>If there is no <command>else</command> part or either
+      <emphasis>expression</emphasis> is of Void type, then the
+      <emphasis>ifExpression</emphasis> has Void type. For example:</para>
+
+      <programlisting>if (temp &gt; 1000) {
+   println("Reactor breach!")
+}</programlisting>
+
+      <para>Here the println will be executed if the temp is greater than
+      1000.</para>
+    </sect2>
+
+    <sect2>
+      <title xml:id="forExpression">forExpression</title>
+
+      <para>The <emphasis>forExpression</emphasis> iterates over one or more
+      sequences. The <emphasis>expression</emphasis> is called the body of the
+      <emphasis>forExpression</emphasis>. If the body is of Void type, then
+      the <emphasis>forExpression</emphasis> has Void. Otherwise the value of
+      the <emphasis>forExpression</emphasis> is a sequence consisting of each
+      body value.</para>
+
+      <figure>
+        <title>forExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="for.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>inClause</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="inClause.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>This example shows a simple <command>for</command>-expression
+      whose value is a sequence:</para>
+
+      <programlisting>var squares : Integer[] = for (x in [1..10]) x*x;
+</programlisting>
+
+      <para>The values of squares is <computeroutput>[ 1, 4, 9, 16, 25, 36,
+      49, 64, 81, 100 ]</computeroutput>. Note that the type of squares is
+      explicitly declared for illustrative purposes, type inference would
+      correctly determine that the type is Integer[].</para>
+
+      <para>This <command>for</command>-expression is of Void type. It is used
+      simply to initerate over the block:</para>
+
+      <programlisting>for (counter in [1..3]) {
+   println( "Help!" );
+}
+</programlisting>
+
+      <para>If there are multiple <emphasis>inClauses</emphasis>, the
+      right-most <emphasis>inClause</emphasis> is the inner-most loop, the
+      body is only evaluated for cases where the where-clause is true.
+      Thus:</para>
+
+      <programlisting>var words = for (length in [3..6], word in ['moose', 'wolf', 'turkey', 'bee'] where word.length() &gt;= length) word;
+</programlisting>
+
+      <para>Thus the value of words is:</para>
+
+      <screen>[ moose, wolf, turkey, bee, moose, wolf, turkey, moose, turkey, turkey ]</screen>
+
+      <para>Because of sequence flattenning and because null is never added to
+      a sequence, this is equivalent to:</para>
+
+      <programlisting>var words = for (length in [3..6]) for (word in ['moose', 'wolf', 'turkey', 'bee']) if (word.length() &gt;= length) word else null;</programlisting>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>newExpression</title>
+
+      <para>A newExpression can be used to create an instance of a Java class.
+      It allows the arguments to a Java constructor to be provided. It can
+      also be used to create an instance of a F3 class, but <link
+      linkend="objectLiteral">objectLiteral</link> is generally used for that
+      purpose.</para>
+
+      <figure>
+        <title>newExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="newExpression.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>For example:</para>
+
+      <programlisting>var stream = new java.io.FileInputStream("myBuddies.gif");</programlisting>
+
+      <para></para>
+    </sect2>
+  </sect1>
+
+  <sect1>
+    <title>assignmentExpression</title>
+
+    <para>An assignmentExpression assigns the value of the right-hand-side
+    (<emphasis>valueExpression</emphasis>) to the variable, sequence element,
+    or sequence slice referenced on the left-hand-side.</para>
+
+    <figure>
+      <title>assignmentExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="assignmentExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para>This example demonstrates sequence element, or sequence slice
+    assignment:</para>
+
+    <programlisting>var food = ['cheese', 'soda', 'fries', 'cupcake'];
+println( food );
+food[2] = 'eggplant';
+println( food );
+food[4] = 'measles';   <co linkends="lfo1" xml:id="cfo1" />
+println( food );
+food[0..1] = ['spinach', 'brocolli', 'apples'];   <co linkends="lfo2"
+        xml:id="cfo2" />
+println( food );
+food[4..20] = 'tomatoes';   <co linkends="lfo3" xml:id="cfo3" />
+println( food );
+</programlisting>
+
+    <calloutlist>
+      <callout arearefs="cfo1" xml:id="lfo1">
+        <simpara>assignments to out of range indices are ignored</simpara>
+      </callout>
+
+      <callout arearefs="cfo2" xml:id="lfo2">
+        <simpara>the size of the slice being assigned need not match the size
+        of the assigned sequence</simpara>
+      </callout>
+
+      <callout arearefs="cfo3" xml:id="lfo3">
+        <simpara>out-of-range portions of slice assignments are ignored. as in
+        all cases where sequences are required, singletons are automatically
+        converted</simpara>
+      </callout>
+    </calloutlist>
+
+    <para>As a result, the following is printed on the console:</para>
+
+    <screen>[ cheese, soda, fries, cupcake ]
+[ cheese, soda, eggplant, cupcake ]
+[ cheese, soda, eggplant, cupcake ]   <co linkends="lfo1" xml:id="fo1" />
+[ spinach, broccoli, apples, eggplant, cupcake ]   <co linkends="lfo2"
+        xml:id="fo2" />
+[ spinach, broccoli, apples, eggplant, tomatoes ]   <co linkends="lfo3"
+        xml:id="fo3" /></screen>
+
+    <para>The value of the assignment expression is the value of the variable,
+    element, or slice after the assignment. The type of the assignment
+    expression is the type of the variable, element, or slice.</para>
+  </sect1>
+
+  <sect1>
+    <title>assignmentOpExpression</title>
+
+    <figure>
+      <title>assignmentOpExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="assignOpExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <sect2>
+      <title>Assignment Operators</title>
+
+      <para>An assignmentOpExpression performs an arithmetic operation, then
+      assigns the result to the variable or sequence element referenced on the
+      left-hand-side.</para>
+
+      <table>
+        <title>Assignment Operators</title>
+
+        <tgroup cols="4">
+          <colspec align="center" />
+
+          <thead>
+            <row>
+              <entry align="center"> Operator</entry>
+
+              <entry align="center">Meaning </entry>
+
+              <entry align="center">Operand Types</entry>
+
+              <entry align="center">Result Type</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry morerows="4"><command>+=</command></entry>
+
+              <entry morerows="4">Add then assign</entry>
+
+              <entry>Integer += Integer</entry>
+
+              <entry>Integer</entry>
+            </row>
+
+            <row>
+              <entry>Integer += Number</entry>
+
+              <entry>Integer</entry>
+            </row>
+
+            <row>
+              <entry>Number += Integer</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Number += Number</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Duration += Duration</entry>
+
+              <entry>Duration</entry>
+            </row>
+
+            <row>
+              <entry morerows="4"><command>-=</command></entry>
+
+              <entry morerows="4">Subtract then assign</entry>
+
+              <entry>Integer -= Integer</entry>
+
+              <entry>Integer</entry>
+            </row>
+
+            <row>
+              <entry>Integer -= Number</entry>
+
+              <entry>Integer</entry>
+            </row>
+
+            <row>
+              <entry>Number -= Integer</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Number -= Number</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Duration -= Duration</entry>
+
+              <entry>Duration</entry>
+            </row>
+
+            <row>
+              <entry morerows="5"><command>*=</command></entry>
+
+              <entry morerows="5">Multiply then assign</entry>
+
+              <entry>Integer *= Integer</entry>
+
+              <entry>Integer</entry>
+            </row>
+
+            <row>
+              <entry>Integer *= Number</entry>
+
+              <entry>Integer (computed using Number)</entry>
+            </row>
+
+            <row>
+              <entry>Number *= Integer</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Number *= Number</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Duration *= Integer</entry>
+
+              <entry>Duration</entry>
+            </row>
+
+            <row>
+              <entry>Duration *= Number</entry>
+
+              <entry>Duration</entry>
+            </row>
+
+            <row>
+              <entry morerows="5"><command>/=</command></entry>
+
+              <entry morerows="5">Divide then assign</entry>
+
+              <entry>Integer /= Integer</entry>
+
+              <entry>Integer</entry>
+            </row>
+
+            <row>
+              <entry>Integer /= Number</entry>
+
+              <entry>Integer (computed using Number)</entry>
+            </row>
+
+            <row>
+              <entry>Number /= Integer</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Number /= Number</entry>
+
+              <entry>Number</entry>
+            </row>
+
+            <row>
+              <entry>Duration /= Integer</entry>
+
+              <entry>Duration</entry>
+            </row>
+
+            <row>
+              <entry>Duration /= Number</entry>
+
+              <entry>Duration</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>Tween Expressions</title>
+
+      <para>Tween expressions are used in animation, see the <link
+      linkend="Animation">Animation chapter</link>.</para>
+
+    </sect2>
+  </sect1>
+
+  <sect1 xml:id="andExpression">
+    <title>andExpression orExpression (Two Argument Boolean
+    Operations)</title>
+
+    <para>These provide the logical <command>and</command> and the logical
+    <command>or</command> operators. Both are cut-off operations, that is:
+    with <command>and</command>, if the left-hand-side is false then the value
+    is known to be false, so the right-hand-side is not evaluated; with
+    <command>or</command>, if the left-hand-side is true then the value is
+    known to be true, so the right-hand-side is not evaluated</para>
+
+    <figure>
+      <title>orExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="orExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>andExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="andExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <table>
+      <title>Binary Logical Operators</title>
+
+      <tgroup cols="4">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center"> Operator</entry>
+
+            <entry align="center">Meaning </entry>
+
+            <entry align="center">Operand Types</entry>
+
+            <entry align="center">Result Type</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><command>or</command></entry>
+
+            <entry>Logical or</entry>
+
+            <entry>Boolean or Boolean</entry>
+
+            <entry>Boolean</entry>
+          </row>
+
+          <row>
+            <entry><command>and</command></entry>
+
+            <entry>Logical and</entry>
+
+            <entry>Boolean and Boolean</entry>
+
+            <entry>Boolean</entry>
+          </row>
+
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>For example:</para>
+
+    <programlisting>var inRange : Boolean = (x &gt;= 0) and (x &lt;= 100);
+var done : Boolean = (timeRemaining &lt;= 0ms) or cancelled;</programlisting>
+
+    <para>Because of type inference, these variables don't need to be
+    explicitly declared as Boolean.</para>
+  </sect1>
+
+  <sect1>
+    <title>typeExpression</title>
+
+    <para>Two operators over data type.</para>
+
+    <figure>
+      <title>typeExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="typeExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <table>
+      <title>Binary Logical Operators</title>
+
+      <tgroup cols="4">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center"> Operator</entry>
+
+            <entry align="center">Meaning </entry>
+
+            <entry align="center">Operand Types</entry>
+
+            <entry align="center">Result Type</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><command>instanceof</command></entry>
+
+            <entry>Is this object of the specified type</entry>
+
+            <entry>Object instanceof Type</entry>
+
+            <entry>Boolean</entry>
+          </row>
+
+          <row>
+            <entry><command>as</command></entry>
+
+            <entry>Convert this object to the specified type</entry>
+
+            <entry>Object as Type</entry>
+
+            <entry>Object (of type Type)</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>For example:</para>
+
+    <programlisting>function toString(val : Object) : String {
+   if (val instanceof String) 
+      val as String 
+   else 
+      "Not a String"
+}</programlisting>
+
+    <para>This example function uses <command>instanceof</command> to check if
+    the input is a String, and if it is, it changes the type of the expression
+    to String using the <command>as</command> operator.</para>
+  </sect1>
+
+  <sect1>
+    <title>relationalExpression</title>
+
+    <para>A relational expression is a comparison between two values. The
+    result is Boolean: true or false.</para>
+
+    <figure>
+      <title>relationalExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="relationalExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>relationalOperator</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="relationalOperator.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <table>
+      <title>Relational Operators</title>
+
+      <tgroup cols="4">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center">Operator</entry>
+
+            <entry align="center">Meaning</entry>
+
+            <entry align="center">Operand Types</entry>
+
+            <entry align="center">Result Type</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><command>==</command></entry>
+
+            <entry>Equals (value)</entry>
+
+            <entry>Object == Object</entry>
+
+            <entry>Boolean</entry>
+          </row>
+
+          <row>
+            <entry><command>!=</command></entry>
+
+            <entry>Not equals (value)</entry>
+
+            <entry>Object != Object</entry>
+
+            <entry>Boolean</entry>
+          </row>
+
+          <row>
+            <entry morerows="4"><command>&lt;</command></entry>
+
+            <entry morerows="4">Less than</entry>
+
+            <entry>Integer &lt; Integer</entry>
+
+            <entry morerows="4">Boolean</entry>
+          </row>
+
+          <row>
+            <entry>Integer &lt; Number</entry>
+          </row>
+
+          <row>
+            <entry>Number &lt; Integer</entry>
+          </row>
+
+          <row>
+            <entry>Number &lt; Number</entry>
+          </row>
+
+          <row>
+            <entry>Duration &lt; Duration</entry>
+          </row>
+
+          <row>
+            <entry morerows="4"><command>&lt;=</command></entry>
+
+            <entry morerows="4">Less than or equal</entry>
+
+            <entry>Integer &lt;= Integer</entry>
+
+            <entry morerows="4">Boolean</entry>
+          </row>
+
+          <row>
+            <entry>Integer &lt;= Number</entry>
+          </row>
+
+          <row>
+            <entry>Number &lt;= Integer</entry>
+          </row>
+
+          <row>
+            <entry>Number &lt;= Number</entry>
+          </row>
+
+          <row>
+            <entry>Duration &lt;= Duration</entry>
+          </row>
+
+          <row>
+            <entry morerows="4"><command>&gt;</command></entry>
+
+            <entry morerows="4">Greater than</entry>
+
+            <entry>Integer &gt; Integer</entry>
+
+            <entry morerows="4">Boolean</entry>
+          </row>
+
+          <row>
+            <entry>Integer &gt; Number</entry>
+          </row>
+
+          <row>
+            <entry>Number &gt; Integer</entry>
+          </row>
+
+          <row>
+            <entry>Number &gt; Number</entry>
+          </row>
+
+          <row>
+            <entry>Duration &gt; Duration</entry>
+          </row>
+
+          <row>
+            <entry morerows="4"><command>&gt;=</command></entry>
+
+            <entry morerows="4">Greater than or equal</entry>
+
+            <entry>Integer &gt;= Integer</entry>
+
+            <entry morerows="4">Boolean</entry>
+          </row>
+
+          <row>
+            <entry>Integer &gt;= Number</entry>
+          </row>
+
+          <row>
+            <entry>Number &gt;= Integer</entry>
+          </row>
+
+          <row>
+            <entry>Number &gt;= Number</entry>
+          </row>
+
+          <row>
+            <entry>Duration &gt;= Duration</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>Note: for relational operators, when comparing Integer to Number,
+    the Integer will first be converted to Number.</para>
+
+    <para>For example:</para>
+
+    <programlisting>var x : Number = tonnage(current);
+if (x &gt; 20) {
+   println("It is big");
+}</programlisting>
+
+    <para>Note that, unlike Java, == and != are value comparisons, not
+    identity comparisons. So, the following will work:</para>
+
+    <programlisting>def input : String = userInput();
+if (input == "dabnabit") {
+   println("Censored");
+}</programlisting>
+
+    <para></para>
+  </sect1>
+
+  <sect1>
+    <title>additiveExpression multiplicativeExpression (Two Argument
+    Arithmetic Operations)</title>
+
+    <para>These are arithmetic operations which take two operands.</para>
+
+    <figure>
+      <title>additiveExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="additiveExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>multiplicativeExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="multiplicativeExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <table>
+      <title>Binary Arithmetic Operators</title>
+
+      <tgroup cols="4">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center"> Operator</entry>
+
+            <entry align="center">Meaning </entry>
+
+            <entry align="center">Operand Types</entry>
+
+            <entry align="center">Result Type</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry morerows="4"><command>+</command></entry>
+
+            <entry morerows="4">Add</entry>
+
+            <entry>Integer + Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry>Integer + Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number + Integer</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number + Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Duration + Duration</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry morerows="4"><command>-</command></entry>
+
+            <entry morerows="4">Subtract</entry>
+
+            <entry>Integer - Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry>Integer - Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number - Integer</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number - Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Duration - Duration</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry morerows="7"><command>*</command></entry>
+
+            <entry morerows="7">Multiply</entry>
+
+            <entry>Integer * Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry>Integer * Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number * Integer</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number * Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Integer * Duration</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry>Number * Duration</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry>Duration * Integer</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry>Duration * Number</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry morerows="6"><command>/</command></entry>
+
+            <entry morerows="6">Divide</entry>
+
+            <entry>Integer / Integer</entry>
+
+            <entry>??? (under discussion -- see VSGC-1381)</entry>
+          </row>
+
+          <row>
+            <entry>Integer / Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number / Integer</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Number / Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry>Duration / Integer</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry>Duration / Number</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry>Duration / Duration</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry><command>mod</command></entry>
+
+            <entry>Modulo (sign of result not defined for negative
+            operands)</entry>
+
+            <entry>Integer mod Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>Note: + does not operate over String.</para>
+
+    <para>Note: Duration / Duration is not supported in V1.0</para>
+
+    <para></para>
+  </sect1>
+
+  <sect1>
+    <title>unaryExpression</title>
+
+    <para></para>
+
+    <figure>
+      <title>unaryExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="unaryExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <table>
+      <title>Prefix Unary Operator</title>
+
+      <tgroup cols="4">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center">Operator</entry>
+
+            <entry align="center">Meaning</entry>
+
+            <entry align="center">Operand Type</entry>
+
+            <entry align="center">Result Type</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry morerows="2"><command>-</command></entry>
+
+            <entry morerows="2">Negation</entry>
+
+            <entry><command>-</command> Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry><command>-</command> Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry><command>-</command> Duration</entry>
+
+            <entry>Duration</entry>
+          </row>
+
+          <row>
+            <entry><command>not</command></entry>
+
+            <entry>Logical not</entry>
+
+            <entry><command>not</command> Boolean</entry>
+
+            <entry>Boolean</entry>
+          </row>
+
+          <row>
+            <entry><command>sizeof</command></entry>
+
+            <entry>Number of elements in a sequence</entry>
+
+            <entry><command>sizeof</command> Object</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry><command>reverse</command></entry>
+
+            <entry>Reverse the elements in a sequence</entry>
+
+            <entry><command>reverse</command> Object</entry>
+
+            <entry>Object</entry>
+          </row>
+
+          <row>
+            <entry morerows="1"><command>++</command></entry>
+
+            <entry morerows="1">Add one to the value of the operand, value is
+            updated value</entry>
+
+            <entry><command>++</command> Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry><command>++</command> Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry morerows="1"><command>--</command></entry>
+
+            <entry morerows="1">Subtract one from the value of the operand,
+            value is updated value</entry>
+
+            <entry><command>--</command> Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry><command>--</command> Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry><command>indexof</command></entry>
+
+            <entry>Current position in the sequence being iterated</entry>
+
+            <entry>n/a</entry>
+
+            <entry>Integer</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>This example demonstrates the three sequence operators:</para>
+
+    <programlisting>def endangered = ['Caribou', 'Ocelot', 'Puma', 'Sei'];
+println( endangered );
+def flipped = reverse endangered;
+println( flipped );
+println( sizeof endangered );
+for (mammal in endangered) {
+   println( 'Mammal #{ indexof mammal } is { mammal }' );
+}
+</programlisting>
+
+    <para>The console shows the following:</para>
+
+    <screen>[ Caribou, Ocelot, Puma, Sei ]
+[ Sei, Puma, Ocelot, Caribou ]
+4 
+Mammal #0 is Caribou 
+Mammal #1 is Ocelot 
+Mammal #2 is Puma 
+Mammal #3 is Sei</screen>
+
+    <para></para>
+  </sect1>
+
+  <sect1>
+    <title>suffixedExpression</title>
+
+    <para></para>
+
+    <para></para>
+
+    <figure>
+      <title>suffixedExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="suffixedExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <table>
+      <title>Postfix Increment/Decrement Operators</title>
+
+      <tgroup cols="4">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center">Operator</entry>
+
+            <entry align="center">Meaning</entry>
+
+            <entry align="center">Operand Type</entry>
+
+            <entry align="center">Result Type</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry morerows="1"><command>++</command></entry>
+
+            <entry morerows="1">Add one to the value of the operand, value is
+            the previous value</entry>
+
+            <entry><command>++</command> Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry><command>++</command> Number</entry>
+
+            <entry>Number</entry>
+          </row>
+
+          <row>
+            <entry morerows="1"><command>--</command></entry>
+
+            <entry morerows="1">Subtract one from the value of the operand,
+            value is the previous value</entry>
+
+            <entry><command>--</command> Integer</entry>
+
+            <entry>Integer</entry>
+          </row>
+
+          <row>
+            <entry><command>--</command> Number</entry>
+
+            <entry>Number</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>This example contrasts these postfix increment/decrement operators
+    with the prefix operators in unaryExpression:</para>
+
+    <programlisting>var x = 0;
+println( x++ );
+println( ++x );
+println( x-- );
+println( --x );</programlisting>
+
+    <para>The following is printed on the console:</para>
+
+    <screen>0 
+2 
+2 
+0</screen>
+
+    <para></para>
+  </sect1>
+
+  <sect1>
+    <title>postfixExpression</title>
+
+    <para></para>
+
+    <para></para>
+
+    <figure>
+      <title>postfixExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="postfixExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <sect2 xml:id="MemberAccess">
+      <title>Member Access</title>
+
+      <para>Access a member (variable or function) of a class instance.</para>
+
+      <figure>
+        <title>postfixExpression [Member Access clause]</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="memberAccess.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>This example shows member access using a dot of both a variable
+      (<command>aPair.good</command>) and a instance function
+      (<command>aPair.topsy()</command>):</para>
+
+      <programlisting>class Pair {
+   var good : String;
+   var bad : String;
+   function topsy() {
+      def tmp = good;
+      good = bad;
+      bad = tmp;
+   }
+}
+def aPair = Pair {
+   good: 'Sunflower Sprouts'
+   bad: 'Lard'
+}
+println( aPair.good );
+aPair.topsy();
+println( aPair.good );
+</programlisting>
+
+      <para>It will print:</para>
+
+      <screen>Sunflower Sprouts 
+Lard</screen>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>Function Invocation</title>
+
+      <para>Function invocation, also known as function call, is how functions
+      are, well..., called.</para>
+
+      <para></para>
+
+      <figure>
+        <title>postfixExpression [Function Invocation clause]</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="functionInvocation.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title></title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="expressionList.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>This is an example of calling a script function, see the <link
+      linkend="MemberAccess">Member Access section</link> for an example of
+      calling an instance function:</para>
+
+      <programlisting>function squared(x : Number) : Number { x * x }
+println( squared(14,2) );</programlisting>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>Sequence Select</title>
+
+      <para>A sequence select expression evaluates to a new sequence
+      containing selected elements of another sequence.</para>
+
+      <figure>
+        <title>postfixExpression [Sequence Select clause]</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="sequenceSelect.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>Elements are included in the resulting sequence if the Boolean
+      <emphasis>valueExpression</emphasis> evaluates to true. The
+      <emphasis>name</emphasis> provides a name for each element for use in
+      the <emphasis>valueExpression</emphasis>. For example:</para>
+
+      <programlisting>def seq = [1..100];
+def selected = seq[x | (x*x) &lt; 20];
+println( selected );</programlisting>
+
+      <para>The selected elements of seq are those whose square is less than
+      20. So the following is printed:</para>
+
+      <screen>[ 1, 2, 3, 4 ]</screen>
+
+      <para>Note that this selection could also have been done with the
+      equivalent <command>for</command>-expression:</para>
+
+      <programlisting>def selected = for (x in seq where (x*x) &lt; 20) x;</programlisting>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>Sequence Indexing</title>
+
+      <para>A sequence indexing expression accesses a single element of a
+      sequence at the supplied index. If no element exists at that index, the
+      sequence indexing expression will evaluate to the default value for the
+      element specifier of the sequence.</para>
+
+      <figure>
+        <title>postfixExpression [Index clause]</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="index.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>For example:</para>
+
+      <programlisting>def seq = [100..105];
+println( seq[0] );
+println( seq[3] );
+println( seq[22] );
+println( seq[-1] );</programlisting>
+
+      <para>Here the element specifier of seq is Integer, so the following is
+      printed -- since zero is the default value of Integer:</para>
+
+      <screen>100 
+103 
+0 
+0</screen>
+
+      <para>The type of a sequence indexing expression is that of the indexed
+      sequence's element specifier (the element type).</para>
+    </sect2>
+
+    <sect2 xml:id="slice">
+      <title>Sequence Slice</title>
+
+      <para>A sequence slice expression evaluates to a sequence which is a
+      portion of another sequence. The elements which make up the portion are
+      specified by a range of indices.</para>
+
+      <figure>
+        <title>postfixExpression [Slice clause]</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="slice.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The two <emphasis>valueExpression</emphasis>s give the beginning
+      and ending of the range. The beginning is always inclusive, the ending
+      of the range is inclusive unless the less-than sign is used. The ending
+      <emphasis>valueExpression</emphasis> is optional, and if absent, the
+      ending of the range is the last index of the sequence. For
+      example:</para>
+
+      <programlisting>def usprez = ['Washington', 'Adams', 'Jefferson', 'Madison', 'Monroe'];
+println( usprez[1..3] );
+println( usprez[1..&lt;3] );
+println( usprez[3..] );
+println( usprez[3..&lt;] );
+</programlisting>
+
+      <para>Will print to the console:</para>
+
+      <screen>[ Adams, Jefferson, Madison ]
+[ Adams, Jefferson ] 
+[ Madison, Monroe ] 
+[ Madison ]</screen>
+
+      <para>The type of a sequence slice expression is the type of the
+      sequence to which the slice clause is applied.</para>
+    </sect2>
+  </sect1>
+
+  <sect1>
+    <title>primaryExpression</title>
+
+    <para></para>
+
+    <para></para>
+
+    <figure>
+      <title>primaryExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="primaryExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <para></para>
+
+    <sect2>
+      <title>qualifiedName</title>
+
+      <para>A qualified name is a reference to a package or class. The
+      reference is specified by a dot separated list of package and subpackage
+      names.</para>
+
+      <figure>
+        <title>qualifiedName</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="qualifiedName.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para><command>java.lang.Object</command> is a qualified name
+      referencing the Object class in the lang subpackage of the java package.
+      These are some ways that qualified names are used:</para>
+
+      <programlisting>import java.util.GregorianCalendar;
+class FooWriter extends java.io.PrintWriter {}
+var baseFile = new java.io.File("base.txt");
+</programlisting>
+
+      <para></para>
+    </sect2>
+
+    <sect2 xml:id="objectLiteral">
+      <title>objectLiteral</title>
+
+      <para>An object literal is the primary way that new instances of a class
+      are created in F3. They also allow adding new functionality
+      to the instance including functions and additional on-replace clauses on
+      instance variables.</para>
+
+      <figure>
+        <title>objectLiteral</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="objectLiteral.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>objectLiteralPart</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="objectLiteralPart.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>objectLiteralInit</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="objectLiteralInit.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The <emphasis>qualifiedName</emphasis> must reference a F3
+      class.</para>
+
+      <para>For these examples assume a Point class defined like this:</para>
+
+      <programlisting>class Point {
+   var x : Number;
+   var y : Number;
+}
+</programlisting>
+
+      <para>An object literal creates an instance of the class and sets the
+      initial values of instance variables:</para>
+
+      <programlisting>def somewhere = Point {
+   x: 3.2
+   y: 7.8
+}
+</programlisting>
+
+      <para>Note that the instance variable initializers may be written in any
+      order and that the initializing expressions are evaluated in the order
+      written.</para>
+
+      <para>An object literal need not provide initializers for instance
+      variables, though some classes may require certain instance variables to
+      be initialized for proper functioning of an instance. Thus these are
+      valid:</para>
+
+      <programlisting>def default = Point {}
+def high = Point {
+   y: 92.1
+}</programlisting>
+
+      <para>See the <link linkend="Classes">Classes chapter</link> for more
+      information on instance variable initialization.</para>
+
+      <para>Variables and functions local to the object literal may be
+      supplied to assist in its construction. Here, the local variable radius
+      is defined.</para>
+
+      <programlisting>def location = Point {
+   def radius = 10.3;
+   x: radius * 2
+   y: radius * 5
+}
+</programlisting>
+
+      <para>Often local variables are used in the construction of nested
+      object literals to allow cross-referencing. For example:</para>
+
+      <programlisting>class Tree {
+   var value : String;
+   var children : Tree[];
+   var previousSibling : Tree;
+   function format(indent : String) : String {
+      "{indent}{value} "
+      "{if (previousSibling != null) '(prev:{previousSibling.value})' else ''}"
+      "\n"
+      "{for (kid in children) kid.format('   {indent}')}"
+   }
+}
+
+def root = Tree {
+   def tunicates = Tree {
+      value: 'Urochordata'
+   }
+   def skulledBeasts = Tree {
+      def hagfish = Tree {
+         value: 'Hyperotreti' 
+      }
+      def us = Tree {
+         value: 'Vertebrata'
+         previousSibling: hagfish
+      }
+      value: 'Craniata'
+      children: [ hagfish, us ]
+      previousSibling: tunicates
+   }
+   value: 'Chordata'
+   children: [ tunicates, skulledBeasts]
+}
+
+println( root.format("") );</programlisting>
+
+      <para>Which uses local <command>def</command>s within nested object
+      literals to build sibling relationships. Its output is:</para>
+
+      <screen>Chordata
+   Urochordata
+   Craniata (prev:Urochordata)
+      Hyperotreti
+      Vertebrata (prev:Hyperotreti)</screen>
+
+      <para>Additional on-replace clauses may be added to the Point example by
+      overriding an instance variable:</para>
+
+      <programlisting>def current = Point {
+   override var x on replace { println( "Changed x to {x}" ) }
+   override var y on replace { println( "Changed y to {y}" ) }
+   x: 66.6
+   y: 33.3
+}
+current.x = 99.9;</programlisting>
+
+      <para>This will print:</para>
+
+      <screen>Changed x to 66.6 
+Changed y to 33.3 
+Changed x to 99.9</screen>
+
+      <para>The instance variable initializer can be a unidirectionally or
+      bidirectionally bound expression, as this object literal (which keeps
+      its Point on a circle) demonstrates:</para>
+
+      <programlisting>import java.lang.Math.*;
+var angle = 0.0;
+def onCircle = Point {
+   x: bind cos(angle)
+   y: bind sin(angle)
+   override function toString() : String { "Point({%4.1f x}, {%4.1f y})" }
+}
+println( onCircle );
+angle = 0.5 * PI;
+println( onCircle );
+angle = PI;
+println( onCircle );
+angle = 1.5 * PI;
+println( onCircle );
+angle = 2 * PI;
+println( onCircle );
+</programlisting>
+
+      <para>The x instance variable of onCircle will be maintained as the
+      cosine of the angle, while y will be maintained as the sine. See the
+      <link linkend="Binding">Binding chapter</link> for more information of
+      bind. The toString() function (defined on Object) has been overridden in
+      the object literal to provide a better output format. This is what is
+      printed to the console:</para>
+
+      <screen>Point( 1.0, 0.0) Point( 0.0, 1.0) 
+Point(-1.0, 0.0) 
+Point(-0.0, -1.0) 
+Point( 1.0, -0.0)</screen>
+
+      <para>The value of an object literal is the new instance. The type of an
+      object literal is the class given in the
+      <emphasis>qualifiedName</emphasis>.</para>
+    </sect2>
+
+    <sect2>
+      <title><command>this</command></title>
+
+      <para>The <command>this</command> expression is a reference to the
+      current instance.</para>
+
+      <para><remark>[To do: add examples, syntax diagram,
+      description]</remark></para>
+
+      <para></para>
+    </sect2>
+
+    <sect2 xml:id="stringExpression">
+      <title>stringExpression</title>
+
+      <para></para>
+
+      <figure>
+        <title>simplified StringExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="stringExpression.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>Where the two QUOTE tokens are matching single or double
+      quote.</para>
+
+      <para>Like string literals, adjacent string expressions (and string
+      literals) are automatically concatenated at compile time.</para>
+
+      <para><remark>[To do: describe portable Formatter that handles the
+      common subset]</remark></para>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>explicitSequenceExpression</title>
+
+      <para>Creates a sequence by explicitly listing the elements of the
+      sequence.</para>
+
+      <figure>
+        <title>explicitSequenceExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="explicitSequenceExpression.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para><table>
+          <title>Explicit Sequence Expression Values</title>
+
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry align="center">Explicit Sequence Expression</entry>
+
+                <entry align="center">Value</entry>
+
+                <entry align="center">Discussion</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>['One', 'Two', 'Buckle', 'My', 'Shoe']</entry>
+
+                <entry>[ 'One', 'Two', 'Buckle', 'My', 'Shoe' ]</entry>
+
+                <entry>An explicit sequence of String</entry>
+              </row>
+
+              <row>
+                <entry>[4, 7, [9, 3], 2]</entry>
+
+                <entry>[ 4, 7, 9, 3, 2 ]</entry>
+
+                <entry>Sequences do not nest, so embedded sequences are
+                flattenned</entry>
+              </row>
+
+              <row>
+                <entry>var x = 32; [x, 4, x]</entry>
+
+                <entry>[ 32, 4, 32 ]</entry>
+
+                <entry>The explicit sequence component are
+                <emphasis>valueExpressions</emphasis>.</entry>
+              </row>
+
+              <row>
+                <entry>var seq = ['bop', 'a']; ['be', seq, 'lulu']</entry>
+
+                <entry>[ 'be', 'bop', 'a', 'lulu' ]</entry>
+
+                <entry>Again, sequences flatten</entry>
+              </row>
+
+              <row>
+                <entry>var nada = null; ['be', nada, 'lulu']</entry>
+
+                <entry>[ 'be', 'lulu' ]</entry>
+
+                <entry>null, is the absence of value, thus equivalent to the
+                empty sequence, which just flattens away.</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></para>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>rangeExpression</title>
+
+      <para>Creates a sequence which is a range of Integer or Number
+      values.</para>
+
+      <figure>
+        <title>rangeExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="rangeExpression.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The three <emphasis>valueExpressions</emphasis> that give the
+      beginning, ending and step of the sequence must either be of type
+      Integer or Number. If any of these are of type Number, the
+      <emphasis>rangeExpression</emphasis> is of type sequence of Number,
+      otherwise it is of type sequence of Integer.</para>
+
+      <para>The step <emphasis>valueExpression</emphasis> if absent, defaults
+      to one. The step may be negative. The values in the sequence are all
+      value between the beginning <emphasis>valueExpression</emphasis> and the
+      ending <emphasis>valueExpression</emphasis> where the values step by the
+      step <emphasis>valueExpression</emphasis>. The beginning
+      <emphasis>valueExpression</emphasis> is inclusive. The ending
+      <emphasis>valueExpression</emphasis> is inclusive unless the
+      <command>..&lt;</command> form is used.</para>
+
+      <para>Here are some range expressions, and their corresponding
+      values:</para>
+
+      <table>
+        <title>Range Expression Values</title>
+
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry align="center">Range Expression</entry>
+
+              <entry align="center">Value</entry>
+
+              <entry align="center">Discussion</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>[1..5]</entry>
+
+              <entry>[ 1, 2, 3, 4, 5 ]</entry>
+
+              <entry>No explicit step is provided, so the default of one is
+              used. Beginning and ending <emphasis>valueExpressions</emphasis>
+              are of Integer type so the sequence elements are of Integer
+              type.</entry>
+            </row>
+
+            <row>
+              <entry>[1..&lt;5]</entry>
+
+              <entry>[ 1, 2, 3, 4 ]</entry>
+
+              <entry>The less-than sign indicates one (inclusive) through five
+              (exclusive).</entry>
+            </row>
+
+            <row>
+              <entry>[1 .. 5.0]</entry>
+
+              <entry>[ 1.0, 2.0, 3.0, 4.0, 5.0 ]</entry>
+
+              <entry>The ending <emphasis>valueExpression</emphasis> is of
+              Number type so the sequence elements are of Number type.</entry>
+            </row>
+
+            <row>
+              <entry>[8.6 .. 12]</entry>
+
+              <entry>[ 8.6, 9.6, 10.6, 11.6 ]</entry>
+
+              <entry>8.6, then 1 + 8.6, etc</entry>
+            </row>
+
+            <row>
+              <entry>[1..9 step 2]</entry>
+
+              <entry>[ 1, 3, 5, 7, 9 ]</entry>
+
+              <entry>Explicit step of two: 1, 2 + 1, etc</entry>
+            </row>
+
+            <row>
+              <entry>[100..90 step -3]</entry>
+
+              <entry>[ 100, 97, 94, 91 ]</entry>
+
+              <entry>Negative step, values are decreasing.</entry>
+            </row>
+
+            <row>
+              <entry>[0..1 step 0.25]</entry>
+
+              <entry>[ 0.0, 0.25, 0.5, 0.75, 1.0 ]</entry>
+
+              <entry>Fractional step</entry>
+            </row>
+
+            <row>
+              <entry>[0..&lt;1 step 0.25]</entry>
+
+              <entry>[ 0.0, 0.25, 0.5, 0.75 ]</entry>
+
+              <entry>Exclusive of the ending.</entry>
+            </row>
+
+            <row>
+              <entry>[5..1]</entry>
+
+              <entry>[ ]</entry>
+
+              <entry>There are no values between five and one when stepping by
+              one, the resulting sequence is empty. Since the beginning and
+              ending values are literals, this can be detected by the
+              compiler, which prints a warning.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>The beginning, ending and step need not be literal values, but can
+      be arbitrary <emphasis>valueExpressions</emphasis>.</para>
+    </sect2>
+
+    <sect2>
+      <title>block</title>
+
+      <para>A block is a list of expressions. A block forms a scope.</para>
+
+      <figure>
+        <title>block</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="block.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The type of a block is the type of the final expression in the
+      block. The value of a block is the value of the last expression in the
+      block. For example:</para>
+
+      <programlisting>println( {
+   var sum = 0;
+   var counter = 10;
+   while (counter &gt; 0) {
+      sum += counter;
+      --counter;
+   }
+   "Sum is {sum}"
+} )</programlisting>
+
+      <para>The block printed by the println is</para>
+    </sect2>
+
+    <sect2>
+      <title>literal</title>
+
+      <para>Literal values are discussed in the <link linkend="Types">Types
+      and Values chapter</link>.</para>
+
+      <figure>
+        <title>literal</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="literal.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>functionExpression</title>
+
+      <para>A function expression allows you to express a function definition
+      as a value.</para>
+
+      <figure>
+        <title>functionExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="functionExpression.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>formalParameters</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="formalParameters.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>formalParameter</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="formalParameter.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>For example:</para>
+
+      <programlisting>var func : function(:Integer):Integer;
+func = function(n : Integer) { 1000 + n }
+println( func(7) );
+func = function(n : Integer) { n * n }
+println( func(7) );
+</programlisting>
+
+      <para>Here func is a variable declared to be of function type. func then
+      gets assigned a function which takes an Integer and adds one thousand to
+      it. The function stored in the variable can then be called, in this case
+      printing <computeroutput>1007</computeroutput>. Then func is reassigned
+      to a new function definition which squares the incoming Integer; this
+      time, func(7) is <computeroutput>49</computeroutput>.</para>
+
+      <para>Instance variable initializers are used to configure the initial
+      state of an instance. With instance variables of function type, function
+      expressions are used to configure actions for the instance.</para>
+
+      <para>This class builds a series of Strings based on an initial value
+      and a next function:</para>
+
+      <programlisting>class SeriesBuilder {
+   var initial : String;
+   var next : function(:String):String;
+   function series(count : Integer) : String[] {
+      var current = initial;
+      var result = [initial];
+      for (idx in [1..count]) {
+         current = next(current);
+         insert current into result;
+      }
+      result
+   }
+}
+
+def aba = SeriesBuilder {
+   initial: 'X'
+   next: function(curr : String) { "{curr}o{curr}" }
+}
+
+def shorten = SeriesBuilder {
+   initial: 'lambda'
+   next: function(curr : String) { curr.substring(1) }
+}
+
+def bop = SeriesBuilder {
+   initial: 'Lake'
+   next: function(curr : String) { ['Beach', 'Mountains', 'Desert'][curr.length() mod 3] }
+}
+
+println( aba.series(4) );
+println( shorten.series(5) );
+println( bop.series(5) );
+</programlisting>
+
+      <para>Three very different sequences of Strings are produced given the
+      three different initial value and next function pairs. The following is
+      printed:</para>
+
+      <screen>[ X, XoX, XoXoXoX, XoXoXoXoXoXoXoX, XoXoXoXoXoXoXoXoXoXoXoXoXoXoXoX ] 
+[ lambda, ambda, mbda, bda, da, a ]
+[ Lake, Mountains, Beach, Desert, Beach, Desert ]</screen>
+
+      <para></para>
+    </sect2>
+
+    <sect2>
+      <title>timelineExpression</title>
+
+      <para><emphasis>timelineExpression</emphasis> is used in animation. See
+      the <link linkend="Animation">Animation chapter</link>.</para>
+
+      <figure>
+        <title>timelineExpression</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="timelineExpression.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>keyFrameLiteralPart</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="keyFrameLiteralPart.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para></para>
+    </sect2>
+  </sect1>
+</chapter>

@@ -1,0 +1,102 @@
+/*
+ * KeyValue_TS200_01.f3
+ *
+ * @test
+ * @run
+ */
+
+/**
+ * @author Baechul Kim
+ */
+
+import f3.animation.*;
+import f3.lang.Duration;
+import java.lang.System;
+import java.lang.Thread;
+import java.lang.AssertionError;
+import java.lang.Throwable;
+import java.util.concurrent.TimeUnit;
+import org.f3.runtime.Pointer;
+
+var s:String = "abc";
+var bps = bind Pointer.make(s); 
+var ps = bps.unwrap();
+
+var i:Integer = 0;
+var bpi = bind Pointer.make(i); 
+var pi = bpi.unwrap();
+
+var b:Boolean = true;
+var bpb = bind Pointer.make(b); 
+var pb = bpb.unwrap();
+
+var n: Number = 1.0; 
+var bpn = bind Pointer.make(n); 
+var pn = bpn.unwrap();
+
+var d:Duration = 1s;
+var bpd = bind Pointer.make(d); 
+var pd = bpd.unwrap();
+
+var t : Timeline = Timeline {
+    keyFrames: [		
+		KeyFrame {
+			time: 1s
+			values: [
+				KeyValue {
+					target: ps 
+					value: function() { "def" }
+				},
+				KeyValue {
+					target: pi 
+					value: function() { 10 }
+				},
+				KeyValue {
+					target: pb
+					value: function() { false }
+				},
+				KeyValue {
+					target: pn 
+					value: function() { 10.0 }
+				},
+				KeyValue {
+					target: pd 
+					value: function() { 10s }
+				}
+			]
+			action: function() {
+				//System.out.println("After:");
+				//System.out.println("String: {s}");
+				//System.out.println("Integer: {i}");
+				//System.out.println("Boolean: {b}");
+				//System.out.println("Number: {n}");
+				//System.out.println("Duration: {d}");
+				
+				if(s != "def") {
+					throw new AssertionError("test failed: String");
+				}
+				if(i != 10) {
+					throw new AssertionError("test failed: Integer");
+				}
+				if(b != false) {
+					throw new AssertionError("test failed: Boolean");
+				}
+				if(n != 10.0) {
+					throw new AssertionError("test failed: Number");
+				}
+				if(d != 10s) {
+					throw new AssertionError("test failed: Duration");
+				}
+			}
+		}
+	]
+}
+
+//System.out.println("Before:");
+//System.out.println("String: {s}");
+//System.out.println("Integer: {i}");
+//System.out.println("Boolean: {b}");
+//System.out.println("Number: {n}");
+//System.out.println("Duration: {d}\n");
+t.play();
+

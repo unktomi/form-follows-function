@@ -1,0 +1,13 @@
+1234
+a*b : aaaab -- MATCH
+a*b : aacb -- no
+a*cb* : aacb -- MATCH
+a*cb* : cbbbb -- MATCH
+a*cb* : zzz -- no
+z* : zzz -- MATCH
+none brick -- null
+light brick -- red
+light grass -- green
+dark grass -- brown
+dark brick -- rust
+none brick -- null

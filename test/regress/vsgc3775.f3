@@ -1,0 +1,21 @@
+/**
+ * Regression test VSGC-3775 : ColorChooser sample hangs
+ *
+ * @test
+ * @run
+ */
+
+class A {
+   var x:Integer;
+}
+
+class B {
+   var a = A{x:0};
+}
+
+var b = B{};
+
+while (b.a.x != 5) {
+   println("Hello!");
+   b.a = A{x:++b.a.x};
+}

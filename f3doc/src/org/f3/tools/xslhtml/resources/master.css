@@ -1,0 +1,181 @@
+/*
+ * Copyright 2008-2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+
+#nav ul {
+	display: none;
+}
+
+#toggles { display: none; }
+
+#nav {
+	border-color: #878787;
+	border-style: groove;
+	border-left-width: 0px;
+	border-bottom-width: 2px;
+	border-right-width: 0px;
+	border-top-width: 0px;
+}
+
+h3 {
+	padding: .2em;
+	border-color: #73706e;
+	border-style: ridge;
+	border-width: 2px;
+	font-size: 150%;
+	background-color: #cbcdfc;
+}
+
+#toc table {
+	border-collapse: collapse;
+	border-color: #73706e;
+	border-style: ridge;
+	border-width: 2px;
+}
+
+#toc table th {
+	background-color: #cbcdfc;
+}
+
+#toc table td, #toc table th {
+	border-color: #73706e;
+	border-style: ridge;
+	border-width: 2px;
+}
+
+#toc dt, #toc dd {
+	padding: .2em;
+	border-color: #73706e;
+	border-style: ridge;
+	border-width: 2px;
+}
+
+#toc dt {
+	border-bottom-width: 0px;
+}
+
+#toc dd {
+	margin: 0px;
+	border-bottom-width: 0px;
+	border-top-width: 0px;
+}
+
+#toc dl {
+	border-left-width: 0px;
+	border-bottom-width: 2px;
+	border-right-width: 0px;
+	border-top-width: 0px;
+	border-color: #73706e;
+	border-style: ridge;
+}
+
+.member {
+	border-color: white;
+	border-left-width: 0px;
+	border-bottom-width: 0px;
+	border-right-width: 0px;
+	border-top-width: 2px;
+	border-style: ridge;
+}
+
+.member dl {
+	font-weight: bold;
+}
+
+.member dl * {
+	font-style: normal;
+	font-weight: normal;
+}
+
+.member dt {
+	font-family: "Courier New", Courier, Monaco, monospace;
+}
+
+
+
+
+/* === package and class lists === */
+
+#packageList, #classList {
+	padding-left: 0px;
+	list-style-type: none;
+}
+
+table#classList {
+        border: 1px solid black;
+        
+}
+
+table#classList td {
+        background-color: #dddddd;
+}
+
+/*
+#classList a {
+    background-color: #888888;
+}
+#classList a.needsreview {
+  background-color: #dddddd;
+}
+#classList a.reviewed {
+  background-color: #ffffff;
+}
+tr.needsreview td {
+  background-color: #dddddd;
+}*/
+
+.editor { border: 1px dashed red; background-color: #ffdddd; }
+
+.setonce { 
+        border: 1px solid yellow; 
+        background-color: #ffffcc; 
+        padding: 0.5em;
+    }
+
+.needsreview {
+  border: 1px solid blue;
+  background-color: #ccccff;
+  padding: 0.5em;
+}
+
+/* for inline examples */
+pre.example-code {
+    padding: .5em;
+    margin: 1em;
+    background-color: #e7e7e7;
+    border-color: #b5b5b5;
+    border-style: solid;
+    border-width: 1px;
+}
+
+img.example-screenshot {
+    margin: .5em;
+    padding: 5px;
+    border-color: #4a4a4a;
+    border-width: 1px;
+    border-style: solid;
+}
+
+pre code b { color: blue; }
+pre code i.comment { color: #aa0000; }
+pre code span.string-literal { color: green; }
+pre code span.number-literal { color: #ff00ff; }

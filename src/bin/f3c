@@ -1,0 +1,151 @@
+#!/bin/sh
+#
+# F3 compiler script for Linux/Solaris/OS X.
+#
+# Uses the same arguments as the JDK's javac command.
+#
+
+# $1 - var name
+# $2 - arg name, if empty do not escape the quotes and don't pass through cygpath
+# out: appends value of of ${default_toolkit}_${1} and concatenation with arg $2 to $jargs
+add_jarg() {
+    get_jarg $1 $2
+    if [ -n "${jarg}" ]; then
+        if [ -n "$2" ]; then
+            jargs="$jargs \"${2}${jarg}\""
+        else
+            jargs="$jargs ${jarg}"
+        fi
+    fi
+    unset jarg
+}
+
+# in:  $1 - var name
+# in:  $2 - do cygpath, if empty do not pass argument through cygpath
+# out: jarg is set to the value of ${default_toolkit}_${1}
+get_jarg() {
+    jarg=`eval echo \\${${default_toolkit}_${1}}`
+    if [ -n "${jarg}" ]; then
+        if [ -n "$2" -a "$platform" = "windows" ]; then
+            jarg=`cygpath --path --windows "$jarg"`
+        fi
+    fi
+}
+
+# resolve symlinks
+PRG=$0
+while [ -h "$PRG" ]; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
+    if expr "$link" : '^/' 2> /dev/null >/dev/null; then
+    PRG="$link"
+    else
+    PRG="`dirname "$PRG"`/$link"
+    fi
+done
+
+# detect Darwin and Cygwin environments
+case "`uname`" in
+  Darwin*) platform="macosx";;
+  CYGWIN*) platform="windows" ; PATHSEP=";";;
+  Linux*)  platform="linux";;
+  SunOS*)  platform="solaris";;
+esac
+
+if [ -n "$JAVA_HOME"  ] ; then
+    JAVA_CMD="$JAVA_HOME/bin/java"
+else
+  JAVA_CMD=`which java 2> /dev/null `
+  if [ -z "$JAVA_CMD" ] ; then
+      JAVA_CMD=java
+  fi
+fi
+
+if [ ! -x "$JAVA_CMD" ] ; then
+  echo 'Error: JAVA_HOME is not defined, cannot find "java" command.'
+  exit 1
+fi
+
+if [ -z "$CLASSPATH" ] ; then
+  USER_CP="."
+else
+  USER_CP="$CLASSPATH"
+  if [ "$platform" = "windows" ]; then
+    USER_CP=`cygpath --path --unix "$USER_CP"`
+  fi
+fi 
+
+classpath="$USER_CP"
+args=""
+jargs=""
+profile="desktop"
+
+parse_args() {
+while [ $# -gt 0 ] ; do
+    case "$1" in
+        -J*) jopt=`expr "X-$1" : 'X--J\(.*\)'`; jargs="$jargs \"$jopt\"";;
+        -cp | -classpath) shift; classpath="$classpath:$1";;
+        -profile) shift; profile="$1";;
+        -Xtoolkit) shift; toolkit="$1";;
+        *) args="$args \"$1\"";;
+    esac
+    shift
+done
+} 
+
+if [ $# -eq 0 ] ; then
+    args="-help"
+fi
+
+parse_args "$@" # process arguments on the command line
+
+f3_home=`dirname "$PRG"`/..
+
+if [ -f "${f3_home}/profiles/${profile}.properties" ]; then
+    eval `cat "${f3_home}/profiles/${profile}.properties" | tr ";" ":" | grep -v "^#" | sed 's/^\(.*\)$/\1;/'`
+else
+    echo "The profile '${profile}' is not supported. Use one of these:"
+    ls ${f3_home}/profiles | sed "s/\.properties//"
+    exit 1
+fi
+
+if [ -n "${toolkit}" ]; then
+  default_toolkit=${toolkit}
+fi
+
+get_jarg "compile_classpath" "true"
+if [ -n "${jarg}" ]; then
+  classpath="$classpath:$jarg"
+fi
+
+# Under Cygwin, convert certain environment variables back to Windows format
+if [ "$platform" = "windows" ] ; then
+  classpath=`cygpath --path --windows "$classpath"`
+  JAVA_CMD=`cygpath --unix "$JAVA_CMD"`
+fi
+
+add_jarg "compile_bootclasspath_prepend" "-Xbootclasspath/p:"
+add_jarg "compile_bootclasspath_append" "-Xbootclasspath/a:"
+add_jarg "compile_nativelibpath" "-Djava.library.path="
+
+extra_cp=""
+if [ "$profile" = "mobile" ]; then
+    extra_cp="-classpath '"$user_classpath"'"
+fi
+jargs="$jargs $extra_cp org.f3.tools.Main"
+
+get_jarg "compile_opts"
+if [ -n "$jarg" ]; then
+    jargs="$jargs $jarg"
+fi
+jargs="$jargs -classpath '"$classpath"'"
+
+get_jarg "compile_bootclasspath" "yes"
+if [ -n "$jarg" ]; then
+    jargs="$jargs -bootclasspath \"$jarg\""
+fi
+if [ -n "$args" ]; then
+    jargs="$jargs $args"
+fi
+
+eval '"$JAVA_CMD"' "$jargs"

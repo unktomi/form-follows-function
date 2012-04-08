@@ -1,0 +1,21 @@
+stop in = f3.lang.Builtins.println
+  value of obj = instance of org.f3.jdi.test.target.InvokeExceptionsTarget
+bb = false, except = com.sun.jdi.IncompatibleThreadStateException
+ii = 0, except = com.sun.jdi.IncompatibleThreadStateException
+nn = 0.0, except = com.sun.jdi.IncompatibleThreadStateException
+ss = null, except = com.sun.jdi.IncompatibleThreadStateException
+dd = null, except = com.sun.jdi.IncompatibleThreadStateException
+oo = null, except = com.sun.jdi.IncompatibleThreadStateException
+ff = null, except = com.sun.jdi.IncompatibleThreadStateException
+qq = null, except = com.sun.jdi.IncompatibleThreadStateException
+stat = 0, except = com.sun.jdi.IncompatibleThreadStateException
+obj = null, except = com.sun.jdi.IncompatibleThreadStateException
+Except = com.sun.jdi.IncompatibleThreadStateException
+bb = false
+ii = 0
+nn = 0.0
+ss = null
+dd = null
+oo = null
+ff = null
+qq = null

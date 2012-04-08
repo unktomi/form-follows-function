@@ -1,0 +1,4 @@
+test/should-fail/vsgc1106.f3:10: You cannot change the value(s) of 'initial' because it is a parameter.
+        initial = initial - amount;
+        ^
+1 error

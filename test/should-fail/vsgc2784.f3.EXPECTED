@@ -1,0 +1,11 @@
+test/should-fail/vsgc2784.f3:8: unexpected type
+found   : nativearray of Character
+required: Object[]
+delete arr;
+       ^
+test/should-fail/vsgc2784.f3:9: unexpected type
+found   : nativearray of Character
+required: Object[]
+insert 1 into arr;
+              ^
+2 errors

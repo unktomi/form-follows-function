@@ -1,0 +1,19 @@
+[0..-1] = 5
+=== insert front
+[0..4] = 5
+=== delete front
+[0..4] = 5
+=== insert seq[3]
+[2..4] = 3
+=== delete seq[3]
+[2..4] = 3
+=== insert
+=== delete seq[7]
+=== assign seq[3]
+[2..2] = 1
+=== assign seq[0]
+=== delete seq[2..4]
+[1..4] = 2
+=== insert ['c', 'd', 'e'] before seq[2]
+[1..2] = 4
+[ b, c, d, e, f ]

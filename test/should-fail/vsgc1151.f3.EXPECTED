@@ -1,0 +1,4 @@
+test/should-fail/vsgc1151.f3:8: x is already defined in f(java.lang.Object)
+var x:Object;
+^
+1 error

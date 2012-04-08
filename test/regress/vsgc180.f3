@@ -1,0 +1,27 @@
+/**
+ * regression test:  Bug vsgc-180
+ * @test
+ * @run
+ */
+import java.lang.Object;
+
+class Bar {
+	var a : Integer;
+    	public var enabled: Boolean = true;
+	public var action: function():Void;
+}
+
+class BarUser {
+	var b : Bar[] 
+	on replace oldValue[a..b] = newElements {
+	    for (newValue in newElements) {
+                var k = newValue.a;
+                newValue.action();
+	        var vvv = Object {
+		    public function isEnabled():Boolean {
+                        return newValue.enabled;
+		    }
+		}
+	    }
+	};
+}

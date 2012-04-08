@@ -1,0 +1,9 @@
+/**
+ * regression test for: VSGC-2977 - reference to foo is ambiguous when it merely overshadows.
+ * @compilefirst vsgc2977m.f3
+ * @compilefirst vsgc2977c.f3
+ * @test
+ */
+
+
+vsgc2977c{}.m();

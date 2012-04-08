@@ -1,0 +1,16 @@
+/**
+ * Regression test for VSGC-494 : Script importing
+ *
+ * @compilefirst vsgc494subloca.f3
+ * @test
+ * @run
+ */
+
+import vsgc494subloca.*;
+import java.lang.System;
+
+System.out.println(pkgDef);
+System.out.println(pkgFunction());
+var x = new pkgClass;
+System.out.println(x.thing);
+

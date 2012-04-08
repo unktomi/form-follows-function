@@ -1,0 +1,28 @@
+/*
+ * @subtest vsgc3121
+ */
+
+public mixin class vsgc3121Mixin {
+
+    var root:String = "test";
+
+    public bound function failsToCompile():String {
+        return root;
+    }
+
+    public function worksOk():String {
+        return root;
+    }
+
+
+}
+
+public class vsgc3121Impl extends vsgc3121Mixin {
+
+}
+
+public function get():vsgc3121Mixin {
+    return vsgc3121Impl{};
+}
+
+

@@ -1,0 +1,27 @@
+/**
+ * Regression test: VSGC-3589 : Compiled bind: bound sequence element
+ *
+ * Simple identifier references
+ *
+ * @test
+ * @run
+ */
+
+var seq = ["ox", "mule", "bull"];
+var k = 0;
+def bsi = bind seq[k];
+println(bsi);
+k = 1;
+println(bsi);
+delete seq[0];
+println(bsi);
+seq = ["ram", "deer"];
+println(bsi);
+k = 9;
+println(bsi);
+k = 0;
+println(bsi);
+seq = null;
+println(bsi);
+insert "done" into seq;
+println(bsi);

@@ -1,0 +1,121 @@
+/*
+ * mixin postinit block order execution
+ *
+ * @test/f3unit
+ * @run
+ */
+import f3.f3unit.*;
+
+var res: String = "";
+
+// used in testA01()
+mixin class A {
+   init { res ="{res}A"; }
+   postinit { res ="{res}a"; }
+}
+
+class B extends A {
+   init {res="{res}B";}; 
+   postinit {res="{res}b";}; 
+}
+
+// used in testA02()
+mixin class E extends A {
+   init {res="{res}E";}; 
+   postinit {res="{res}e";}; 
+}
+
+class C extends A, E {
+   init {res="{res}C";}; 
+   postinit {res="{res}c";}; 
+}
+
+// used in testA03()
+class D extends A, C, E {
+   init {res="{res}D";}; 
+   postinit {res="{res}d";}; 
+}
+
+// used in testA04()
+class F extends A {
+   init {res="{res}F";}; 
+   postinit {res="{res}f";}; 
+}
+
+// used in testA05()
+class G extends A {
+
+}
+
+// used in testA06()
+mixin class I {
+   init {res ="{res}I"; }
+   postinit {res ="{res}i"; }
+}
+
+class M {
+   init {res ="{res}M"; }
+   postinit {res ="{res}m"; }
+}
+
+class L extends A, M, I {
+   init {res ="{res}L"; }
+   postinit {res ="{res}l"; }
+}
+
+public class MxPost01 extends F3TestCase {
+/*
+ *  initializing in mixin and mixee
+ */
+    function testA01() {
+        res = "";
+        var x = B{};
+        assertEquals("ABab", res);
+    }
+/*
+ * initializing in mixee, mixin and super mixin
+ * INVALID TEST - need to be fixed if VSGC-3078 fixed
+ */
+    function INVALID_testA02() {
+        res = "";
+        var x = C{};
+        assertEquals("AAECaaec", res); // should be "AECaec"
+    }
+
+/*
+ * initializing in mixee, supeclass and in two mixin
+ * INVALID TEST - need to be fixed if VSGC-3078 fixed
+ */
+    function INVALID_testA03() {
+        res = "";
+        var x = D{};
+        assertEquals("AAECDaaecd", res); // should be "AECDaecd"
+    }
+
+/*
+ *  initializing in mixin and mixee
+ */
+    function testA04() {
+        res="";
+        var x = F{};
+        assertEquals("AFaf", res);
+    }
+
+/*
+ *  initializing in mixin
+ */
+    function testA05() {
+        res="";
+        var x = G{};
+        assertEquals("Aa", res);
+    }
+
+/*
+ *  initializing in mixee, mixin #1, supeclass, and mixin #2
+ */
+    function testA06() {
+        res="";
+        var x = L{};
+        assertEquals("MAILmail", res);
+    }
+}

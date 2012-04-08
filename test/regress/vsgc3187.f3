@@ -1,0 +1,10 @@
+/**
+ * VSGC-3187 : support script-level variables on mixin script-class
+ *
+ * @compilefirst vsgc3187mixin.f3
+ * @test
+ * @run
+ */
+
+println(vsgc3187mixin.VERBOSE);
+println(vsgc3187mixin.jj());

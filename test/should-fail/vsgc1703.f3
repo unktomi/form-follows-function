@@ -1,0 +1,17 @@
+/**
+ * Regression test VSGC-1703 : Disallow more than one of public, protected, package
+ *
+ * @test/compile-error
+ */
+
+class Foo {
+	public protected var x = 0;
+	public package var y = 0;
+	package protected var z = 0;
+	public protected package var zzz = 0;
+
+	public protected function f1() {}
+	public package function f2() {}
+	package protected function f3() {}
+	public protected package function f4() {}
+}

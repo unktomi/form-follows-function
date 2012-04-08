@@ -1,0 +1,56 @@
+/**
+ * Regression test VSGC-2466 : Lazy Binding: Operators -- runtime
+ *
+ * @test
+ * @run
+ */
+
+var by : Byte = 1;
+var sh : Short = 10;
+var ii : Integer = 100;
+var lo : Long = 2147383649;
+var fl : Float = 1234.5;
+var db : Double = 6.12e40;
+var bo : Boolean = true;
+
+function tby(x : Byte) : Byte { println("by = {x}"); x };
+function tsh(x : Short) : Short { println("sh = {x}"); x };
+function tii(x : Integer) : Integer { println("ii = {x}"); x };
+function tlo(x : Long) : Long { println("lo = {x}"); x };
+function tfl(x : Float) : Float { println("fl = {x}"); x };
+function tdb(x : Double) : Double { println("db = {x}"); x };
+function tbo(x : Boolean) : Boolean { println("bo = {x}"); x };
+
+def mby = bind lazy -tby(by);
+def msh = bind lazy -tsh(sh);
+def mii = bind lazy -tii(ii);
+def mlo = bind lazy -tlo(lo);
+def mfl = bind lazy -tfl(fl);
+def mdb = bind lazy -tdb(db);
+def nbo = bind lazy not tbo(bo);
+
+by = 0;
+sh = 0;
+ii = 0;
+lo = 0;
+fl = 0;
+db = 0;
+bo = false;
+
+by = 1;
+sh = 10;
+ii = 100;
+lo = 2147383649;
+fl = 1234.5;
+db = 6.12e40;
+bo = true;
+
+println( mby );
+println( msh );
+println( mii );
+println( mlo );
+println( mfl );
+println( mdb );
+println( nbo );
+
+

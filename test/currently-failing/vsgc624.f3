@@ -1,0 +1,27 @@
+/*
+ * vsgc624.f3
+ * @test
+ *
+ * Note to mobile: Sorry about the SE code,but per comment:
+ "The fact that "extends java.lang.Object" activates the bug suggests
+  that it is related to different handling between plain classes and
+  compound classes."
+ * If this is simplified to use compound classes,ie., extend an f3 class,
+ * it degenerates to vsgc1253 test case.
+ */
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+public class Test extends java.lang.Object {
+
+    var tickListener : ActionListener = ActionListener {
+        override
+        public function actionPerformed(evt:ActionEvent): Void {
+            update();
+        }
+    }    
+    
+    public function update(): Void {
+    }
+}

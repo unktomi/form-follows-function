@@ -1,0 +1,21 @@
+factor: NaN
+dummy.x = NaN, dummy.y = NaN
+Invalidate X count: 1
+Invalidate Y count: 1
+-- a --
+factor: 1.0
+dummy.x = 100.0, dummy.y = 100.0
+Invalidate X count: 2
+Invalidate Y count: 2
+-- set a.x --
+factor: 2.0
+dummy.x = 200.0, dummy.y = 200.0
+Invalidate X count: 3
+Invalidate Y count: 3
+-- set a.y --
+factor: 1.0
+dummy.x = 100.0, dummy.y = 100.0
+Invalidate X count: 4
+Invalidate Y count: 4
+X: 100.0
+Y: 100.0

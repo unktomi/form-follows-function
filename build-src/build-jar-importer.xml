@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-jar-importer" basedir=".">
+
+<!--
+/*
+* Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+*
+* This code is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License version 2 only, as
+* published by the Free Software Foundation.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+* version 2 for more details (a copy is included in the LICENSE file that
+* accompanied this code).
+*
+* You should have received a copy of the GNU General Public License version
+* 2 along with this work; if not, write to the Free Software Foundation,
+* Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+*
+* Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+* CA 95054 USA or visit www.sun.com if you need additional information or
+* have any questions.
+*/
+-->
+
+   <description>
+
+       Defines common properties and macros for getting special jar files
+       that are not freely or easily available from http: downloads.
+       See build-importer.xml for all other imported files.
+
+       In most cases, these files are available to download but either
+       involve a license acceptance step or are just too difficult to
+       automate their download.
+
+       *** Sub-repositories should NOT import this file. ***
+
+   </description>
+
+   <!-- The jar_import host or master location of these files. -->
+   <property name="f3.jar_import.host" value="f3.sfbay.sun.com"/>
+   <property name="f3.jar_import.url" value="http://${f3.jar_import.host}/closed_import"/>
+   <property name="f3.global.jar_import.zip" value="${f3.root.dir}/../jar_import.zip"/>
+
+   <!-- URL and destination names for all jar_import files. -->
+   <property name="f3.rt15.url" value="${f3.jar_import.url}/rt15.jar"/>
+   <property name="f3.rt15.jar" location="${f3.jar_import.dir}/rt15.jar"/>
+   <property name="f3.script-api.url" value="${f3.jar_import.url}/script-api.jar"/>
+   <property name="f3.script-api.jar" location="${f3.jar_import.dir}/script-api.jar"/>
+   <property name="f3.plugin_exports.url" value="${f3.jar_import.url}/plugin_exports.jar"/>
+   <property name="f3.plugin_exports.jar" location="${f3.jar_import.dir}/plugin_exports.jar"/>
+   <property name="f3.jnlp.url" value="${f3.jar_import.url}/jnlp.jar"/>
+   <property name="f3.jnlp.jar" location="${f3.jar_import.dir}/jnlp.jar"/>
+   <property name="f3.amble-fonts.url" value="${f3.jar_import.url}/amble-fonts.jar"/>
+   <property name="f3.amble-fonts.jar" location="${f3.jar_import.dir}/amble-fonts.jar"/>
+
+   <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+   <!-- Macrodefs -->
+   <macrodef name="f3-jar-importer-set-exists">
+       <sequential>
+           <condition property="f3.rt15.jar.exists">
+               <available file="${f3.rt15.jar}" type="file"/>
+           </condition>
+           <condition property="f3.jnlp.jar.exists">
+               <available file="${f3.jnlp.jar}" type="file"/>
+           </condition>
+           <condition property="f3.plugin_exports.jar.exists">
+               <available file="${f3.plugin_exports.jar}" type="file"/>
+           </condition>
+           <condition property="f3.script-api.jar.exists">
+               <available file="${f3.script-api.jar}" type="file"/>
+           </condition>
+           <condition property="f3.amble-fonts.jar.exists">
+               <available file="${f3.amble-fonts.jar}" type="file"/>
+           </condition>
+           <!-- Do all jar_import files exist. -->
+           <condition property="f3.all.jar_import.exists">
+               <and>
+                   <isset property="f3.rt15.jar.exists"/>
+                   <isset property="f3.jnlp.jar.exists"/>
+                   <isset property="f3.script-api.jar.exists"/>
+                   <isset property="f3.plugin_exports.jar.exists"/>
+                   <isset property="f3.amble-fonts.jar.exists"/>
+               </and>
+           </condition>
+       </sequential>
+   </macrodef>
+
+   <macrodef name="f3-jar-importer">
+       <attribute name="url"/>
+       <attribute name="file"/>
+       <sequential>
+           <delete file="@{file}"/>
+           <delete file="@{file}.temp"/>
+           <get src="@{url}" dest="@{file}.temp"/>
+           <move file="@{file}.temp" tofile="@{file}" verbose="true"/>
+           <delete file="@{file}.temp"/>
+       </sequential>
+   </macrodef>
+
+   <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+   <!-- Set exists properties. -->
+   <f3-jar-importer-set-exists/>
+
+   <!-- Does the global jar_import.zip file exist, and should we use it. -->
+   <condition property="use.global.jar_import.zip">
+       <and>
+           <available file="${f3.global.jar_import.zip}" type="file"/>
+           <not>
+               <isset property="f3.all.jar_import.exists"/>
+           </not>
+       </and>
+   </condition>
+
+   <!-- We need to re-set these properties after exploding any jar_import.zip. -->
+   <target name="-set-exists">
+       <f3-jar-importer-set-exists/>
+   </target>
+
+   <!-- Explode global jar_import.zip if needed and we have one. -->
+   <target name="-check-for-global-zip-jar-import"
+           if="use.global.jar_import.zip"
+           unless="f3.all.jar_import.exists">
+       <do-unzip-bundle zip="${f3.global.jar_import.zip}"
+                        dir="${f3.jar_import.dir}"/>
+   </target>
+
+   <!-- Get and explode jar_import.zip from hudson if needed, should, and can. -->
+   <target name="-check-for-hudson-zip-jar-import"
+           if="use.hudson.jar_import.zip"
+           unless="f3.all.jar_import.exists">
+       <do-get-previous-bundle name="jar_import"
+           url="${hudson.f3.jar_import.url}" dir="${f3.jar_import.dir}"/>
+   </target>
+
+   <!-- Check each individual file and download each separately. -->
+   <target name="-check-rt15"
+           unless="f3.rt15.jar.exists"
+           if="use.jar_import.host">
+       <mkdir dir="${f3.jar_import.dir}"/>
+       <f3-jar-importer url="${f3.rt15.url}" file="${f3.rt15.jar}"/>
+   </target>
+   <target name="-check-script-api"
+           unless="f3.script-api.jar.exists"
+           if="use.jar_import.host">
+       <mkdir dir="${f3.jar_import.dir}"/>
+       <f3-jar-importer url="${f3.script-api.url}" file="${f3.script-api.jar}"/>
+   </target>
+   <target name="-check-plugin-exports"
+           unless="f3.plugin_exports.jar.exists"
+           if="use.jar_import.host">
+       <mkdir dir="${f3.jar_import.dir}"/>
+       <f3-jar-importer url="${f3.plugin_exports.url}" file="${f3.plugin_exports.jar}"/>
+   </target>
+   <target name="-check-jnlp"
+           unless="f3.jnlp.jar.exists"
+           if="use.jar_import.host">
+       <mkdir dir="${f3.jar_import.dir}"/>
+       <f3-jar-importer url="${f3.jnlp.url}" file="${f3.jnlp.jar}"/>
+   </target>
+   <target name="-check-amble-fonts"
+           unless="f3.amble-fonts.jar.exists"
+           if="use.jar_import.host">
+       <mkdir dir="${f3.jar_import.dir}"/>
+       <f3-jar-importer url="${f3.amble-fonts.url}" file="${f3.amble-fonts.jar}"/>
+   </target>
+
+   <!-- Warning when items missing in jar_import -->
+   <target name="-jar_import-report" unless="f3.all.jar_import.exists">
+       <echo message="WARNING: Some or all of the jar_import files are not available."/>
+   </target>
+
+   <!-- Download or check jar imports. -->
+   <target name="-check-all-jar_imports"
+           depends="-check-rt15,
+                    -check-script-api,
+                    -check-plugin-exports,
+                    -check-jnlp,
+                    -check-amble-fonts,
+                    -jar_import-report"
+           unless="f3.all.jar_import.exists">
+   </target>
+
+   <!-- Make sure we have all the jar_import files. -->
+   <target name="all-jar_imports"
+           depends="-check-for-global-zip-jar-import,-set-exists"
+           unless="f3.all.jar_import.exists">
+               <!-- If we reached here, we need something still. -->
+       <condition property="use.hudson.jar_import.zip">
+           <and>
+               <not>
+                   <isset property="f3.open.only"/>
+               </not>
+               <not>
+                   <isset property="f3.all.jar_import.exists"/>
+               </not>
+               <isreachable host="${hudson.f3.host}" timeout="10"/>
+           </and>
+       </condition>
+       <!-- Try hudson server. -->
+       <antcall target="-check-for-hudson-zip-jar-import"/>
+       <!-- Reset exists properties. -->
+       <f3-jar-importer-set-exists/>
+       <!-- See if jar_import host should be used. -->
+       <condition property="use.jar_import.host">
+           <and>
+               <not>
+                   <isset property="f3.open.only"/>
+               </not>
+               <not>
+                   <isset property="f3.all.jar_import.exists"/>
+               </not>
+               <isreachable host="${f3.jar_import.host}" timeout="10"/>
+           </and>
+       </condition>
+       <!-- Last attempt, or final check on each jar_import file. -->
+       <antcall target="-check-all-jar_imports"/>
+   </target>
+
+   <target name="clean-jar_import">
+       <delete dir="${f3.jar_import.dir}"/>
+   </target>
+
+   <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+</project>

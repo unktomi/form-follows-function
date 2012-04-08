@@ -1,0 +1,17 @@
+/*
+ * function parameters are immutable, see vsgc-1106
+ *
+ * @test/compile-error
+ *
+ */
+
+function f( p1:Integer, p2:String, ps1:Integer[], ps2:String[]) {
+ps1 = [101,102,103];
+ps2 = ["Cannot","assign", "to", "ps2"];
+
+p1 = 5;
+p2 = "Oops";
+}
+
+f(0,"fdsa",[1,2,3], ["Hello", ", ","World","!"]);
+

@@ -1,0 +1,9 @@
+x init: false
+s init: false
+o init: false
+this init: false
+this postinit: true
+x run: true
+s run: true
+o run: true
+Done

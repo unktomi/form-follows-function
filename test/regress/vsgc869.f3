@@ -1,0 +1,14 @@
+/**
+ * Regression test for VSGC-869 - Visibility of catch-parameter
+ * This script should compile without any error.
+ *
+ * @test
+ * @compile vsgc869.f3
+ */
+
+try {
+}
+catch (ex: java.lang.NullPointerException) {
+}
+catch (ex: java.lang.Exception) {
+}

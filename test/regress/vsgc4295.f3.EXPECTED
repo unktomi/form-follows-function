@@ -1,0 +1,12 @@
+str1:  => one
+str2:  => one
+str2: one => two
+str1: one => two
+str2: two => three
+str1: two => three
+str3:  => four
+str4:  => four
+str3: four => five
+str4: four => five
+str3: five => six
+str4: five => six

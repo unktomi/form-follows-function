@@ -1,0 +1,16 @@
+/**
+ * Regression test for VSGC-494 : Script importing
+ *
+ * @compilefirst sub494/vsgc494sub.f3
+ * @test
+ * @run
+ */
+
+import sub494.vsgc494sub.*;
+import java.lang.System;
+
+System.out.println(scriptFunction());
+System.out.println(scriptDef);
+var x = new scriptClass;
+System.out.println(x.thing);
+

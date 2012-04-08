@@ -1,0 +1,11 @@
+/**
+ * VSGC-3621 : A var isn't set to a new value if oldValue.equals(newValue)
+ *
+ * @test
+ * @run
+ */
+
+var mc = new vsgc3621sub(17);
+println("before: {mc}");
+mc = new vsgc3621sub(17);
+println("after: {mc}");

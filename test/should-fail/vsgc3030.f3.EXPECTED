@@ -1,0 +1,6 @@
+test/should-fail/vsgc3030.f3:11: inconvertible types
+found   : vsgc3030.X
+required: vsgc3030.Y
+var y = x as Y;
+        ^
+1 error

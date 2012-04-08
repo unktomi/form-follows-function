@@ -1,0 +1,34 @@
+/**
+ * Regression test VSGC-3923 : oldValue is incorrect in on-replace of bound-for when body invalidated
+ *
+ * @test
+ * @run
+ */
+
+var counter : Integer = 0;
+class Rectangle {
+   var width:Integer;
+   def id = ++counter;
+   override function toString():String { "Rectangle[{id}]" };
+}
+
+class Parent {
+  var children:Object[]
+  on replace oldNodes[a..b] = newNodes {
+    println("size old/new/slice = {sizeof oldNodes}/{sizeof children}/{sizeof newNodes} from {a} to {b} - slice = {newNodes}");
+    var expectedSeq:Object[] =
+      [oldNodes[0..<a], newNodes, oldNodes[b+1..<sizeof oldNodes]];
+    if (children != expectedSeq)
+      println("*** ERROR: children:{children} expected:{expectedSeq}");
+  }
+}
+
+var val: Integer = 1;
+
+def p = Parent {
+    children:
+      bind for (i in [1..3]) Rectangle { width: val }//works w/o this
+}
+println("initialized - now update val");
+val = 2; //works w/o this
+println("after update:{p.children}"); 

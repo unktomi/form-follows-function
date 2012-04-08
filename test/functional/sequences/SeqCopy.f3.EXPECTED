@@ -1,0 +1,17 @@
+A.arr1 length: 100 checksum: 328350.
+B.arr1 length: 91 checksum: 325882.
+B.arr2 length: 100 checksum: 328350.
+C.arr1 length: 91 checksum: 325882.
+C.arr2 length: 89 checksum: 848947.
+D.arr1 length: 91 checksum: 325882.
+D.arr3 length: 91 checksum: 325882.
+E.arr1 length: 93 checksum: 80957740.
+E.arr3 length: 91 checksum: 325882.
+F.arr1 length: 93 checksum: 80957740.
+F.arr3 length: 91 checksum: 325882.
+F.arr4 length: 81 checksum: 43030085.
+Check slices.
+A.arr1 length: 101 checksum: 896750.
+A.arr2 length: 59 checksum: 349701.
+A.arr1 length: 35 checksum: 85085.
+A.arr2 length: 59 checksum: 376701.

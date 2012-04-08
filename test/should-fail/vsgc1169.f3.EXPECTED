@@ -1,0 +1,4 @@
+test/should-fail/vsgc1169.f3:11: Attempting to create a F3 class using new with a non-empty parameter list. Use object literal instead.
+var x =bind new InvalidConstArgTest(1); // Invalid call
+                                    ^
+1 error

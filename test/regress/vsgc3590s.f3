@@ -1,0 +1,20 @@
+/**
+ * Regression test: VSGC-3590 : Compiled bind: bound sequence: if-expression
+ *
+ * Direct query (String)
+ *
+ * @test
+ * @run
+ */
+
+var cond = true;
+var tSeq = ["circle", "square", "triangle"];
+var fSeq = ["here", "there", "everywhere"];
+def bif = bind if (cond) tSeq else fSeq;
+println(bif);
+insert "rectangle" into tSeq;
+println(bif);
+cond = false;
+println(bif);
+insert "nowhere" into fSeq;
+println(bif);

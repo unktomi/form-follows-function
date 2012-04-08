@@ -1,0 +1,14 @@
+stop in = org.f3.jdi.test.target.SetValueTarget
+field org.f3.jdi.test.target.SetValueTarget$sub.pubString: value = "pubString2"
+field org.f3.jdi.test.target.SetValueTarget$sub.sub$privString: value = "privString2"
+field org.f3.jdi.test.target.SetValueTarget$sub.pubInteger: value = 2
+field org.f3.jdi.test.target.SetValueTarget$sub.sub$privInteger: value = 2
+field org.f3.jdi.test.target.SetValueTarget$sub.pubNumber: value = 2.0
+field org.f3.jdi.test.target.SetValueTarget$sub.sub$privNumber: value = 2.0
+field org.f3.jdi.test.target.SetValueTarget$sub.pubBoolean: value = true
+field org.f3.jdi.test.target.SetValueTarget$sub.sub$privBoolean: value = true
+field org.f3.jdi.test.target.SetValueTarget$sub.pubDuration: value = instance of f3.lang.Duration
+field org.f3.jdi.test.target.SetValueTarget$sub.sub$privDuration: value = instance of f3.lang.Duration
+statString = "statString2"
+defStatString = "defStatString2"
+java.lang.IllegalArgumentException: Error: Cannot set value of a read-only field: org.f3.jdi.test.target.SetValueTarget.staticBinder

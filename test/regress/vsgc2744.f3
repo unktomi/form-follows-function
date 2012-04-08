@@ -1,0 +1,32 @@
+/**
+ * Regress test for VSGC-2744
+ *  More trimming in Locations conversion classes -- 
+ *  should be able to get rid of the ObjectLocation -> XxxLocation wrappers
+ *
+ * @test
+ * @run
+ */
+
+var str = "F3";  
+
+var bo : Object = bind str;
+
+// upcast implementation changed, make sure
+// still we can't update a bound var.
+try {
+   bo = "changed it";
+} catch (e: java.lang.RuntimeException) {
+   println("got exception as expected");
+}
+
+// check "bo" as a String and operate on it.
+println((bo as String).substring(0, 6));
+println((bo as String).length());
+
+str = "F3 is great";
+
+// bo should follow as 'str' is changed
+println(bo);
+println((bo as String).substring(0, 6));
+println((bo as String).length());
+

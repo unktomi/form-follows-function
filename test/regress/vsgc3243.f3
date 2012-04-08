@@ -1,0 +1,19 @@
+/*
+ * VSGC-3243:  Using mixin class causes IllegalArgumentException arising from f3.reflect.F3Local$VarMember.getValue.
+ *
+ * @compilefirst vsgc3243A.f3
+ * @compilefirst vsgc3243B.f3
+ * @test
+ * @run
+ *
+ */
+
+import f3.reflect.*;
+
+var b = vsgc3243B{};
+var context = F3Local.getContext();
+var mirror = context.mirrorOf(b); 
+var cls = context.findClass("vsgc3243B"); 
+var fld = cls.getVariable("a");
+var a = fld.getValue(mirror); 
+println("{a!=null}");

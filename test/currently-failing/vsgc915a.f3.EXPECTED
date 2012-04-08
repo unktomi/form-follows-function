@@ -1,0 +1,11 @@
+test\currently-failing\vsgc915a.f3:17: warning: possible loss of precision
+found   : Number
+required: Integer
+var i2: Integer = 3.5;
+                  ^
+test\currently-failing\vsgc915a.f3:20: warning: possible loss of precision
+found   : Number
+required: Integer
+i2 = -3.6;
+     ^
+2 warnings

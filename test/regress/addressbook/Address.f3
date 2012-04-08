@@ -1,0 +1,14 @@
+/*
+ * This is part of regression test for VSGC-2346.
+ * See also ../vsgc2346.f3.
+ *
+ * @subtest
+ */
+package addressbook;
+
+public class Address {
+  public var street: String;
+  public var city: String;
+  public var state: String;
+  public var zip: String;
+}

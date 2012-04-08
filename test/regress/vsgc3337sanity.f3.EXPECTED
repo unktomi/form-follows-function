@@ -1,0 +1,42 @@
+Scene.content on replace begin
+old value 
+first 0
+last -1
+new elements  Node-0 
+Scene.content on replace end
+Scene.content on replace begin
+old value  Node-0 
+first 1
+last 0
+new elements  Node-1 
+Scene.content on replace end
+Scene.content on replace begin
+old value  Node-0  Node-1 
+first 2
+last 1
+new elements  Node-2 
+Scene.content on replace end
+Scene.content on replace begin
+old value  Node-0  Node-1  Node-2 
+first 3
+last 2
+new elements  Node-3 
+Scene.content on replace end
+Scene.content on replace begin
+old value  Node-0  Node-1  Node-2  Node-3 
+first 4
+last 3
+new elements  Node-4 
+Scene.content on replace end
+Scene.content on replace begin
+old value  Node-0  Node-1  Node-2  Node-3  Node-4 
+first 5
+last 4
+new elements  Node-5 
+Scene.content on replace end
+Scene.content on replace begin
+old value  Node-0  Node-1  Node-2  Node-3  Node-4  Node-5 
+first 0
+last 5
+new elements 
+Scene.content on replace end

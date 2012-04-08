@@ -1,0 +1,60 @@
+<html>
+<head>
+    <title>F3-JDI additions/extensions to JDI</title>
+<!--
+ 
+Copyright (c) 1998, 2010, Oracle and/or its affiliates. All rights reserved.
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+
+This code is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 only, as
+published by the Free Software Foundation.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the LICENSE file that accompanied this code.
+
+This code is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+version 2 for more details (a copy is included in the LICENSE file that
+accompanied this code).
+
+You should have received a copy of the GNU General Public License version
+2 along with this work; if not, write to the Free Software Foundation,
+Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+
+Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+or visit www.oracle.com if you need additional information or have any
+questions.
+-->
+</head>
+<body bgcolor="white">
+This documentation describes the extensions and additions that have been made to the Java Debug Interface (JDI) in order to allow debugging of F3 programs.   These extensions and additions are called F3-JDI.
+<p>
+F3-JDI is implemented as a set of classes that wrap the normal JDI implementation classes.  These F3-JDI classes implement the JDI interfaces so that debuggers will in general just access the methods defined in the JDI interfaces.  Debuggers will only need to access these F3-JDI implementation classes directly in order to use the new classes and methods that have been added and thus are not in the JDI interfaces.
+<p>  
+<b>F3-JDI is experimental and subject to change in future releases.</b>
+<p>
+The F3-JDI classes are included in the file f3jdi.jar. In order for a client to use F3-JDI, f3jdi.jar must be on the client's classpath.  The client should first get a {@link com.sun.jdi.VirtualMachineManager} object:
+<p><CODE><blockquote>
+     com.sun.jdi.VirtualMachineManager vmm = org.f3.jdi.F3Bootstrap.virtualMachineManager();
+</CODE></blockquote>
+<p>
+This gives the client a F3 enabled VirtualMachineManager (org.f3.jdi.F3VirtualMachineManager).  
+The client can then get one of the following F3-JDI connectors from the VirtualMachineManager:
+<blockquote>
+<li>org.f3.jdi.connect.F3LaunchingConnector (this is the default connector)</li>
+<li>org.f3.jdi.connect.F3ProcessAttachingConnector</li>
+<li>org.f3.jdi.connect.F3RawLaunchingConnector</li>
+<li>org.f3.jdi.connect.F3SocketAttachingConnector</li>
+<li>org.f3.jdi.connect.F3SocketListeningConnector</li>
+<li>org.f3.jdi.connect.F3SharedMemoryAttachingConnector - currently only available on Windows</li>
+<li>org.f3.jdi.connect.F3SharedMemoryListeningConnector - currently only available on Windows</li>
+</blockquote>
+<p>
+The connector object can be used to obtain an {@link org.f3.jdi.F3VirtualMachine} as described in the JDI documentation.
+<p>
+This javadoc shows the classes and methods that F3-JDI adds to JDI, as well as the enhancements to existing JDI methods.
+Due to limitations of javadoc, the existing unmodified methods in these classes are also shown.   These methods have no javadoc comments, and behave as described in the JDI spec.
+
+</body>
+</html>

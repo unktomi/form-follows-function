@@ -1,0 +1,3 @@
+piu = 3.1415927 is boxed as java.lang.Float
+pif = 3.1415927 is boxed as java.lang.Float
+uniu = 1.59486E55 is boxed as java.lang.Double

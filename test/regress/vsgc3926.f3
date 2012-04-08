@@ -1,0 +1,35 @@
+/**
+ * VSGC-3926 : Exception in F3 compiler fails to build swat samples and applications.
+ *
+ * @test
+ */
+
+class Media {
+    var source : String;
+    var onError: function():Void;
+}
+
+public function getMedia(src:String): Media {
+    return null;
+}
+
+var medias : Media[];
+
+public function addMedia(src:String): Media {
+    var mediaToAdd: Media;
+    if(getMedia(src) == null) {
+        var error = false;
+        mediaToAdd = Media {
+            source: src
+            onError: function() {
+                error = true;
+            }
+        }
+        if(error) {
+            return null;
+        }
+        insert mediaToAdd into medias;
+    }
+
+    return mediaToAdd;
+}

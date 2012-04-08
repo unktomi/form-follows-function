@@ -1,0 +1,15 @@
+test/should-fail/vsgc268.f3:9: warning: possible loss of precision
+found   : Number
+required: Integer
+var ab:Integer = function(a:Number, b:Number):Integer { a + b; }
+                                                        ^
+test/should-fail/vsgc268.f3:9: incompatible types
+found   : function(:Number,:Number):Integer
+required: Integer
+var ab:Integer = function(a:Number, b:Number):Integer { a + b; }
+                 ^
+test/should-fail/vsgc268.f3:11: ab in vsgc268 cannot be applied to (Integer,Integer)
+System.out.println(ab(23,43));
+                   ^
+2 errors
+1 warning

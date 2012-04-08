@@ -1,0 +1,20 @@
+/* VSGC-593 : Subclass cannot be used as argument in bind context
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class Foo {}
+class Bar extends Foo {}
+class Baz {
+  function getBar() : Bar { new Bar }
+  function toFoo(x : Foo) : Integer {
+    51 
+  }
+  function doit() : Void {
+    var z = bind toFoo(getBar());
+    System.out.println(z);
+  }
+}
+(new Baz).doit()

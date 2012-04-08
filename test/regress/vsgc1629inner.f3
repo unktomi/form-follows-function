@@ -1,0 +1,21 @@
+/*
+ * Regression test VSGC-1629 : Enforce public-read modifier
+ * Inner access case.
+ *
+ * @test
+ */
+
+class Foo {}
+
+class reada {
+
+    public-read var running = false;
+
+    function createAdapter():Foo {
+        Foo {
+            function begin() : Void {
+                running = true;
+            }
+        }
+    }
+}

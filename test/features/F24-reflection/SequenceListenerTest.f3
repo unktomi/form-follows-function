@@ -1,0 +1,42 @@
+/*
+ * @test
+ * @run
+ * From the VSGC-3904 bug reported by Eamonn McManus.
+ */
+
+import f3.reflect.*;
+
+public class SequenceListenerTest {
+    public var x: Number;
+    public var seq: Object[];
+}
+
+class DummyListener extends F3ChangeListener {
+    var id: String;
+
+    override function onChange() {
+        println('{id} changed!');
+    }
+}
+
+public function run() {
+    def f3Context = F3Local.getContext();
+    def seqListenerClass = f3Context.makeClassRef(SequenceListenerTest.class);
+    def xVar = seqListenerClass.getVariable('x');
+    def seqVar = seqListenerClass.getVariable('seq');
+    def instance = SequenceListenerTest{};
+    def mirror = f3Context.mirrorOf(instance);
+    def xListener = DummyListener{id: "x"};
+    def seqListener = DummyListener{id: "Sequence"};
+    def xId = xVar.addChangeListener(mirror, xListener);
+    def seqId = seqVar.addChangeListener(mirror, seqListener);
+    instance.x = 1;
+    instance.seq = [1];
+    println('Removing listeners');
+    xVar.removeChangeListener(mirror, xId);
+    seqVar.removeChangeListener(mirror, seqId);
+    println('Listeners should no longer be triggered');
+    instance.x = 2;
+    instance.seq = [2];
+    println("Done.")
+}

@@ -1,0 +1,30 @@
+/**
+ * VSGC-4172 :  Order of initializing a variable causes a weird behavior with ListView.
+ *
+ * @test
+ * @run
+ */
+
+class ListView {
+    var items : String[];
+}
+
+class FillRect  {
+    init {
+    	var colorsStr;
+        colorsStr = [
+            "Color.BLACK", "Color.BLANCHEDALMOND", "Color.BLUEVIOLET", "Color.BROWN", "Color.BURLYWOOD", "Color.CADETBLUE",
+        ];
+
+        var colorBox = ListView {
+            items: for (x in colorsStr) x
+        }
+
+        var colorValue:String = bind colorsStr[1];
+        println(colorBox.items);    
+    }
+}
+
+function run() {
+    FillRect{};
+}

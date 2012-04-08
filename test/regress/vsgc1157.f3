@@ -1,0 +1,58 @@
+/**
+ * regression test: VSGC-1157 : Can't compare sequence to null in bound function; cannot find method eq_so(....
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class Less {}
+
+bound function doItl1(): Boolean {
+    var obj : Less = Less{};
+    var seq : Integer[] = [1, 2, 3];
+
+    [] != seq and
+    seq != null and 
+    null != seq and 
+    seq != [] and
+    [] != seq and
+    [] != obj and
+    obj != null and 
+    null != obj and 
+    obj != [] and
+    [] != obj
+}
+
+bound function doItnn(): Boolean {
+    var obj : Less = null;
+    var seq : Integer[] = null;
+    
+    seq == null and 
+    null == seq and 
+    seq == [] and
+    obj == null and 
+    null == obj
+}
+
+bound function doItls(): Boolean {
+    var obj : Less = Less{};
+    var seq : Less[] = [obj];
+
+    seq == obj and 
+    obj == seq and 
+    seq != null and 
+    null != seq and 
+    seq != [] and
+    [] != seq and
+    [] != obj and
+    obj != null and 
+    null != obj and 
+    obj != [] and
+    [] != obj
+}
+
+    System.out.println(doItl1());
+    System.out.println(doItnn());
+    System.out.println(doItls());

@@ -1,0 +1,22 @@
+/**
+ * VSGC-2706 : AbstractBoundComprehension: NPE during execution
+ *
+ * Number ranges
+ *
+ * @test
+ * @run
+ */
+
+def lower : Number[] = [1, 2, 29];
+def stepsize : Number[] = [10, 1, 1];
+var idx = 0;
+
+var range = bind for (i in [lower[idx]..30.0 step stepsize[idx]]) i;
+println(range);
+// step size changes to sync appearing while lower change un-step-synced
+idx = 1;
+println(range);
+idx = 0;
+println(range);
+idx = 2;
+println(range);

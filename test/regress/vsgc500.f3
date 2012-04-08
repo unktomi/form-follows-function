@@ -1,0 +1,77 @@
+/**
+ * VSGC-500 : Access members in outer class with explicit class name.
+ *
+ * @test
+ * @run
+ */
+
+// check that outer's shadowed member can accessed explicitly 
+class vsgc500 {
+    public var name = "vsgc500 class";
+    public var value = 1;
+    public function makeRunnable() {
+        java.lang.Runnable {
+            var name = "anonymous runnable class";
+            override public function run() {
+                println(name);         // prints this.name
+                println(vsgc500.name); // prints outer's name
+                // check assignment
+                vsgc500.name = "changed name of vsgc500";
+                vsgc500.value++;
+                println(vsgc500.name); // prints outer's name
+            }
+        }
+    }
+}
+
+vsgc500 {}.makeRunnable().run();
+
+// make sure two level deep is fine...
+class vsgc500_2 {
+    public var name = "vsgc500_2 class";
+
+    public function func() {
+        java.lang.Runnable {
+            var name = "anonymous runnable class";
+            override public function run() {
+                java.lang.Runnable {
+                    override public function run() {
+                        println(name); // prints outer's name
+                        println(vsgc500_2.name); // prints outer's outer's name
+                        // check assignment
+                        vsgc500_2.name = "changed name of vsgc500_2";
+                        println(vsgc500_2.name); // prints outer's outer's name
+                    }
+                }.run();
+            }
+        }.run();
+    }
+}
+
+vsgc500_2 {}.func();
+
+// check bind of OuterClass.name is fine too
+// and also check OuterClass methods either qualified
+// or unqualified
+class vsgc500_3 {
+    public var name = "vsgc500 class";
+
+    public function outerFunc() {
+        println("vsgc500_3.outerFunc called");
+    }
+
+    public function func() {
+        java.lang.Runnable {
+            override public function run() {
+                var n = bind vsgc500_3.name.toUpperCase(); // bind outer's name
+                println(n);
+                vsgc500_3.name = "changed name vsgc500_3";
+                println(n);
+                outerFunc();
+                vsgc500_3.outerFunc();
+            }
+        }.run();
+    }
+}
+
+vsgc500_3 {}.func();

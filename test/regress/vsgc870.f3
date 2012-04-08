@@ -1,0 +1,17 @@
+/* Regression test for VSGC-870 : NPE thrown during compilation
+ *
+ * @test
+ */
+
+import java.lang.System;
+
+var b = true;
+var isVisible = bind b;
+class A {
+    var action: function();
+}
+A {
+    action: function() {
+        var c = isVisible;
+    }
+}

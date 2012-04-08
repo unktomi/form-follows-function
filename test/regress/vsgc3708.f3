@@ -1,0 +1,37 @@
+/**
+ * VSGC-3708 :  Compiled bind: bind to a bound func fails.
+ *
+ * @test
+ * @run
+ */
+
+class Paint {
+    var name: String;
+    var size: Integer;
+};
+
+class Label {
+    var textFill: Paint;
+};
+
+var paintName = "RED";
+var paintSize = 10;
+
+bound function hoverFill(): Paint { 
+    Paint { name: paintName, size: paintSize } 
+}
+
+def label: Label = Label {
+    textFill: bind hoverFill();
+}
+
+println(label.textFill.name);
+println(label.textFill.size);
+
+// The following changes should be noticed by bound function
+paintName = "GREEN";
+paintSize = 15;
+
+println(label.textFill.name);
+println(label.textFill.size);
+

@@ -1,0 +1,4 @@
+test/should-fail/vsgc3443.f3:8: on invalidate triggers are not allowed inside bind
+   var u = bind (i mod 2 == 0) on invalidate { //error - trigger in bind context
+                               ^
+1 error

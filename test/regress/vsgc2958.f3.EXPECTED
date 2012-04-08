@@ -1,0 +1,4 @@
+test/regress/vsgc2958.f3:7: cyclic inheritance involving vsgc2958
+class vsgc2958 extends Runnable {
+^
+1 error

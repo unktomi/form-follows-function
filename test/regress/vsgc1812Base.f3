@@ -1,0 +1,7 @@
+/**
+ * @subtest
+ */
+
+public class vsgc1812Base {
+    protected function doIt():Void {}
+}

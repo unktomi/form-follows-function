@@ -1,0 +1,92 @@
+/*
+ * Overriding values of mixin variables
+ *
+ * @test/f3unit
+ * @run
+ */
+import f3.f3unit.*;
+
+// used in testA01()
+mixin class A {
+   var v: Integer = 5;
+   function getA() { return v; }
+}
+
+class B extends A {
+   function getB() { return v; }
+}
+
+// used in testA02()
+
+class C extends A{
+   override var v = 55;
+   function getC() { return v; }
+}
+
+// used in testA03()
+mixin class E extends A {
+   var vv = bind v;
+   function getE() { return vv; }
+}
+class D extends E {
+   override var vv;
+   function getD() { return vv; }
+}
+
+// used in testA04()
+class F extends E {
+   override var vv = 555;
+   function getF() { return vv; }
+}
+
+public class MxOvrVar01 extends F3TestCase {
+/*
+ *  initializing variable in mixin, checking the value in mixee
+ */
+    function testA01() {
+        var x = B{};
+        assertEquals(5, x.v);
+        var y:A = x;
+        assertEquals(5, y.v);
+    }
+/*
+ * initializing variable in mixin, overriding in a mixee, checking the value in mixee
+ */
+    function testA02() {
+        var x = C{};
+        assertEquals(55, x.v);
+        var y:A = x;
+        assertEquals(55, y.v);
+    }
+
+/*
+ * Declaring variable in a mixin: var vv = bind v. 
+ * Overriding it in a mixee without changing the default value. 
+ * Changing the value of far for the instance of the Mixee and checking that vv changed.
+ */
+    function testA03() {
+        var x = D{};
+        x.v = 105;
+        assertEquals(105, x.vv);
+        assertEquals(105, x.getD());
+        var z:E = x;
+        assertEquals(105, z.vv);
+        assertEquals(105, z.getE());
+    }
+
+/*
+ *  Declaring variable in a mixin: var vv = bind v. 
+ *  Overriding in a mixee changing the default value. 
+ *  Changing the value of v for the instance of the Mixee 
+ *  and checking that vv did not change.
+ */
+    function testA04() {
+        var x = F{};
+        x.v = 105;
+        assertEquals(555, x.vv);
+        assertEquals(555, x.getF());
+        var z:E = x;
+        assertEquals(555, z.vv);
+        assertEquals(555, z.getE());
+    }
+}

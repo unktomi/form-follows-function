@@ -1,0 +1,11 @@
+/* Regression test: VSGC-470:Problem with superclass method resolution
+ * @test
+ * @run
+ */
+import junit.framework.TestCase; 
+
+class Foo extends TestCase { 
+  function testFoo() : Void { 
+    assertEquals(1, 2); 
+  } 
+} 

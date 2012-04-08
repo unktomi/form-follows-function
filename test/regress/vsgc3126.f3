@@ -1,0 +1,32 @@
+/**
+ * VSGC-3126 : Regression : Exception in binding: java.lang.ClassCastException: in marina b05
+ *
+ * @test
+ * @run
+ */
+
+class Text {
+  var x : Boolean;
+  var onFunc: function():Void;
+}
+
+var effects: Boolean [] = [false, false, false];
+var Text_b: Text = Text {
+    x: bind effects[0],
+    onFunc: function() {
+      effects = [false, true, false];
+    }
+}
+
+class TextHolder {
+    var text : Text;
+}
+
+var th = TextHolder {
+  text: bind Text_b
+}
+
+th.text.onFunc();
+println(effects);
+
+

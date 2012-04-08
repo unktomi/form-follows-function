@@ -1,0 +1,32 @@
+/* VSGC-211:  Cannot locate var declared in a super class with Mulitple Inheritence
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+class Base1 { 
+    var a : Integer; 
+    var b : Integer; 
+
+    function foo() { a + b; } 
+    function moo() { a } 
+} 
+
+mixin class Base2 { 
+    var c : Integer; 
+
+    function bark() { c } 
+} 
+
+class Subclass extends Base1, Base2 { 
+    var d : Integer; 
+
+    override function foo() { a + b + c + d } 
+    function wahoo() { d } 
+} 
+
+
+var v = Subclass { a: 1 } 
+System.out.println("a={v.a}, b={v.b}, c={v.c}, d={v.d}"); 
+System.out.println("foo={v.foo()}, moo={v.moo()}, bark={v.bark()}, wahoo={v.wahoo()}"); 

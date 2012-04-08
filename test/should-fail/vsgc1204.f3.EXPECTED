@@ -1,0 +1,4 @@
+test/should-fail/vsgc1204.f3:6: 'void' type not allowed here
+var f = [if(true){"Always"}] ;
+         ^
+1 error

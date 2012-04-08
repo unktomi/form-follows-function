@@ -1,0 +1,22 @@
+/**
+ * Regression test VSGC-3663 : Compiled bind: sequence argument to bound invocation of non-bound function
+ *
+ * Sequence result
+ *
+ * @test
+ * @run
+ */
+
+var cnt = 0;
+function flurk(z : String[]) : Object[] { [ ++cnt, z ] }
+var seq = ["ha", "fa"];
+def bs = bind flurk(seq);
+println(bs);
+insert "ba" into seq;
+println(bs);
+delete seq;
+println(bs);
+insert ["na", "xa"] into seq;
+println(bs);
+delete "xa" from seq;
+println(bs);

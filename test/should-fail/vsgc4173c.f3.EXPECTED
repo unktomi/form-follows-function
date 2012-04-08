@@ -1,0 +1,49 @@
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious forward reference: variable i might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                           ^
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious forward reference: variable i might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                                  ^
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious forward reference: variable i might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                                       ^
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious forward reference: variable i might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                                                        ^
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious self reference: variable g might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                                                            ^
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious self reference: variable g might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                                                                   ^
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious self reference: variable g might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                                                                        ^
+test/should-fail/vsgc4173sub.f3:12: warning: Suspicious self reference: variable g might not have been initialized.
+   var g:function():Integer = function() { i; this.i; A.i; vsgc4173sub.A.i; g; this.g; A.g; vsgc4173sub.A.g; 1 }
+                                                                                                         ^
+test/should-fail/vsgc4173sub.f3:20: warning: Suspicious forward reference: variable f1 might not have been initialized.
+      var d1:function():Integer = function() { f1; d1; 1 }
+                                               ^
+test/should-fail/vsgc4173sub.f3:20: warning: Suspicious self reference: variable d1 might not have been initialized.
+      var d1:function():Integer = function() { f1; d1; 1 }
+                                                   ^
+test/should-fail/vsgc4173sub.f3:30: warning: Suspicious forward reference: variable g might not have been initialized.
+var e:function():Integer = function() { g; vsgc4173sub.g; e; vsgc4173sub.e; 1};
+                                        ^
+test/should-fail/vsgc4173sub.f3:30: warning: Suspicious forward reference: variable g might not have been initialized.
+var e:function():Integer = function() { g; vsgc4173sub.g; e; vsgc4173sub.e; 1};
+                                                      ^
+test/should-fail/vsgc4173sub.f3:30: warning: Suspicious self reference: variable e might not have been initialized.
+var e:function():Integer = function() { g; vsgc4173sub.g; e; vsgc4173sub.e; 1};
+                                                          ^
+test/should-fail/vsgc4173sub.f3:30: warning: Suspicious self reference: variable e might not have been initialized.
+var e:function():Integer = function() { g; vsgc4173sub.g; e; vsgc4173sub.e; 1};
+                                                                        ^
+test/should-fail/vsgc4173sub.f3:38: warning: Suspicious forward reference: variable f1 might not have been initialized.
+   var d1:function():Integer = function() { f1; d1; 1 }
+                                            ^
+test/should-fail/vsgc4173sub.f3:38: warning: Suspicious self reference: variable d1 might not have been initialized.
+   var d1:function():Integer = function() { f1; d1; 1 }
+                                                ^
+16 warnings

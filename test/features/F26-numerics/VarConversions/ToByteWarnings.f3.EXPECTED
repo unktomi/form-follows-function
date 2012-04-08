@@ -1,0 +1,21 @@
+test/features/F26-numerics/VarConversions/ToByteWarnings.f3:11: warning: possible loss of precision
+found   : Character
+required: Byte
+b = Values.cc;
+    ^
+test/features/F26-numerics/VarConversions/ToByteWarnings.f3:12: warning: possible loss of precision
+found   : Number
+required: Byte
+b = Values.ff;
+          ^
+test/features/F26-numerics/VarConversions/ToByteWarnings.f3:13: warning: possible loss of precision
+found   : Double
+required: Byte
+b = Values.dd;
+          ^
+test/features/F26-numerics/VarConversions/ToByteWarnings.f3:14: warning: possible loss of precision
+found   : Number
+required: Byte
+b = Values.nn;
+          ^
+4 warnings

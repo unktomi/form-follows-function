@@ -1,0 +1,8 @@
+/**
+ * Regression test VSGC-1721 : Script.f3: 'var a = 0; Script.a' fails
+ *
+ * @test
+ */
+
+var a = 0; 
+vsgc1721.a

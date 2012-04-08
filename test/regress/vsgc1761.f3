@@ -1,0 +1,17 @@
+/**
+ * Regression test VSGC-1761 : initialize$() on script-level not executed?
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+var foo on replace { System.out.println("foo changed to {foo}"); } // this trigger is never executed
+
+class Moo {
+    function dummy() { return foo; } // this makes sure foo becomes static, otherwise Moo can be ignored here, IMO
+}
+
+System.out.println("foo init to {foo}");
+foo = 1;

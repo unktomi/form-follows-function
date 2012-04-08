@@ -1,0 +1,23 @@
+cond : false
+else : false
+-Then
+Cond+
+cond : true
+then : true
+-Else
+Cond-
+cond : false
+else : true
+-Then
+Cond+
+cond : true
+then : false
+-Else
++Then
+then : true
+Cond-
+cond : false
+else : false
+-Then
++Else
+else : true
