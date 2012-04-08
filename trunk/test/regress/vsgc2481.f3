@@ -1,0 +1,55 @@
+/**
+ * VSGC-2481 : Support for bound comorehension of new types
+ *
+ * @test
+ * @run
+ */
+
+{
+   var bs : Byte[];
+   insert 4 into bs;
+   insert 44 into bs;
+   var y = bind for (xi in bs) xi;
+   println(y);
+}
+
+{
+   var ss : Short[];
+   insert 4 into ss;
+   insert 44 into ss;
+   var y = bind for (xi in ss) xi;
+   println(y);
+}
+
+{
+   var ls : Long[];
+   insert 4 into ls;
+   insert 44 into ls;
+   var y = bind for (xi in ls) xi;
+   println(y);
+}
+
+{
+   var fs : Float[];
+   insert 4 into fs;
+   insert 44 into fs;
+   var y = bind for (xi in fs) xi;
+   println(y);
+}
+
+{
+   var ds : Double[];
+   insert 4 into ds;
+   insert 44 into ds;
+   var y = bind for (xi in ds) xi;
+   println(y);
+}
+
+{
+   var cs : Character[];
+   insert 72 into cs;
+   insert 105 into cs;
+   var y = bind for (xi in cs) xi;
+   println(y);
+}
+

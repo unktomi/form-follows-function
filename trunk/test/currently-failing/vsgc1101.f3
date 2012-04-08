@@ -1,0 +1,7 @@
+/*
+ * @test/fail
+ */
+
+
+public class vsgc1101 extends vsgc1101.Tag {}
+public class Tag {} 

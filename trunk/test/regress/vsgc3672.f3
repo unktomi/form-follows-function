@@ -1,0 +1,479 @@
+/*
+ * Regression test: for VSGC-3672 : umbrella bug to cover all the cases of on replace misfiring.
+ *
+ * @test
+ * @run
+ */
+
+
+//----------------------------------------
+println("Replacing initial scalar value");
+
+class A1 {
+  var x = 10 on replace o = n { println("A1: {o} = {n}") }
+}
+
+class B1 extends A1 {
+  override var x on replace o = n { println("B1: {o} = {n}") }
+}
+
+class C1 extends B1 {
+  override var x on replace o = n { println("C1: {o} = {n}") }
+}
+
+var c1 = C1{};
+
+c1.x = 20;
+
+//----------------------------------------
+println("Replacing no initial scalar value");
+
+class A2 {
+  var x : Integer on replace o = n { println("A2: {o} = {n}") }
+}
+
+class B2 extends A2 {
+  override var x on replace o = n { println("B2: {o} = {n}") }
+}
+
+class C2 extends B2 {
+  override var x on replace o = n { println("C2: {o} = {n}") }
+}
+
+var c2 = C2{};
+
+c2.x = 20;
+
+//----------------------------------------
+println("Replacing bound initial scalar value");
+
+class A3 {
+  var w = 10;
+  var x = bind w on replace o = n { println("A3: {o} = {n}") }
+}
+
+class B3 extends A3 {
+  override var x on replace o = n { println("B3: {o} = {n}") }
+}
+
+class C3 extends B3 {
+  override var x on replace o = n { println("C3: {o} = {n}") }
+}
+
+var c3 = C3{};
+
+c3.w = 20;
+
+//----------------------------------------
+println("Replacing bound no initial scalar value");
+
+class A4 {
+  var w : Integer;
+  var x = bind w on replace o = n { println("A4: {o} = {n}") }
+}
+
+class B4 extends A4 {
+  override var x on replace o = n { println("B4: {o} = {n}") }
+}
+
+class C4 extends B4 {
+  override var x on replace o = n { println("C4: {o} = {n}") }
+}
+
+var c4 = C4{};
+
+c4.w = 20;
+
+//----------------------------------------
+println("Replacing initial scalar value - mixins");
+
+mixin class A1M {
+  var x = 10 on replace o = n { println("A1M: {o} = {n}") }
+}
+
+class B1M extends A1M {
+  override var x on replace o = n { println("B1M: {o} = {n}") }
+}
+
+class C1M extends B1M {
+  override var x on replace o = n { println("C1M: {o} = {n}") }
+}
+
+var c1M = C1M{};
+
+c1M.x = 20;
+
+//----------------------------------------
+println("Replacing no initial scalar value - mixins");
+
+mixin class A2M {
+  var x : Integer on replace o = n { println("A2M: {o} = {n}") }
+}
+
+class B2M extends A2M {
+  override var x on replace o = n { println("B2M: {o} = {n}") }
+}
+
+class C2M extends B2M {
+  override var x on replace o = n { println("C2M: {o} = {n}") }
+}
+
+var c2M = C2M{};
+
+c2M.x = 20;
+
+//----------------------------------------
+println("Replacing bound initial scalar value - mixins");
+
+mixin class A3M {
+  var w = 10;
+  var x = bind w on replace o = n { println("A3M: {o} = {n}") }
+}
+
+class B3M extends A3M {
+  override var x on replace o = n { println("B3M: {o} = {n}") }
+}
+
+class C3M extends B3M {
+  override var x on replace o = n { println("C3M: {o} = {n}") }
+}
+
+var c3M = C3M{};
+
+c3M.w = 20;
+
+//----------------------------------------
+println("Replacing bound no initial scalar value - mixins");
+
+mixin class A4M {
+  var w : Integer;
+  var x = bind w on replace o = n { println("A4M: {o} = {n}") }
+}
+
+class B4M extends A4M {
+  override var x on replace o = n { println("B4M: {o} = {n}") }
+}
+
+class C4M extends B4M {
+  override var x on replace o = n { println("C4M: {o} = {n}") }
+}
+
+var c4M = C4M{};
+
+c4M.w = 20;
+
+
+//----------------------------------------
+println("Replacing initial sequence value");
+
+class A1Seq {
+  var x = [1, 2, 3] on replace o = n { println("A1Seq: {o} = {n}") }
+}
+
+class B1Seq extends A1Seq {
+  override var x on replace o = n { println("B1Seq: {o} = {n}") }
+}
+
+class C1Seq extends B1Seq {
+  override var x on replace o = n { println("C1Seq: {o} = {n}") }
+}
+
+var c1Seq = C1Seq{};
+
+c1Seq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing no initial sequence value");
+
+class A2Seq {
+  var x : Integer[] on replace o = n { println("A2Seq: {o} = {n}") }
+}
+
+class B2Seq extends A2Seq {
+  override var x on replace o = n { println("B2Seq: {o} = {n}") }
+}
+
+class C2Seq extends B2Seq {
+  override var x on replace o = n { println("C2Seq: {o} = {n}") }
+}
+
+var c2Seq = C2Seq{};
+
+c2Seq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound initial sequence value");
+
+class A3Seq {
+  var w = [1, 2, 3];
+  var x = bind w on replace o = n { println("A3Seq: {o} = {n}") }
+}
+
+class B3Seq extends A3Seq {
+  override var x on replace o = n { println("B3Seq: {o} = {n}") }
+}
+
+class C3Seq extends B3Seq {
+  override var x on replace o = n { println("C3Seq: {o} = {n}") }
+}
+
+var c3Seq = C3Seq{};
+
+c3Seq.w = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound no initial sequence value");
+
+class A4Seq {
+  var w : Integer[];
+  var x = bind w on replace o = n { println("A4Seq: {o} = {n}") }
+}
+
+class B4Seq extends A4Seq {
+  override var x on replace o = n { println("B4Seq: {o} = {n}") }
+}
+
+class C4Seq extends B4Seq {
+  override var x on replace o = n { println("C4Seq: {o} = {n}") }
+}
+
+var c4Seq = C4Seq{};
+
+c4Seq.w = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing initial sequence value - mixins");
+
+mixin class A1MSeq {
+  var x = [1, 2, 3] on replace o = n { println("A1MSeq: {o} = {n}") }
+}
+
+class B1MSeq extends A1MSeq {
+  override var x on replace o = n { println("B1MSeq: {o} = {n}") }
+}
+
+class C1MSeq extends B1MSeq {
+  override var x on replace o = n { println("C1MSeq: {o} = {n}") }
+}
+
+var c1MSeq = C1MSeq{};
+
+c1MSeq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing no initial sequence value - mixins");
+
+mixin class A2MSeq {
+  var x : Integer[] on replace o = n { println("A2MSeq: {o} = {n}") }
+}
+
+class B2MSeq extends A2MSeq {
+  override var x on replace o = n { println("B2MSeq: {o} = {n}") }
+}
+
+class C2MSeq extends B2MSeq {
+  override var x on replace o = n { println("C2MSeq: {o} = {n}") }
+}
+
+var c2MSeq = C2MSeq{};
+
+c2MSeq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound initial sequence value - mixins");
+
+mixin class A3MSeq {
+  var w = [1, 2, 3];
+  var x = bind w on replace o = n { println("A3MSeq: {o} = {n}") }
+}
+
+class B3MSeq extends A3MSeq {
+  override var x on replace o = n { println("B3MSeq: {o} = {n}") }
+}
+
+class C3MSeq extends B3MSeq {
+  override var x on replace o = n { println("C3MSeq: {o} = {n}") }
+}
+
+var c3MSeq = C3MSeq{};
+
+c3MSeq.w = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound no initial sequence value - mixins");
+
+mixin class A4MSeq {
+  var w : Integer[];
+  var x = bind w on replace o = n { println("A4MSeq: {o} = {n}") }
+}
+
+class B4MSeq extends A4MSeq {
+  override var x on replace o = n { println("B4MSeq: {o} = {n}") }
+}
+
+class C4MSeq extends B4MSeq {
+  override var x on replace o = n { println("C4MSeq: {o} = {n}") }
+}
+
+var c4MSeq = C4MSeq{};
+
+c4MSeq.w = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing initial sequence value, detailed expression");
+
+class A1DetailSeq {
+  var x = [1, 2, 3] on replace o[b..e] = n { println("A1DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B1DetailSeq extends A1DetailSeq {
+  override var x on replace o[b..e] = n { println("B1DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C1DetailSeq extends B1DetailSeq {
+  override var x on replace o[b..e] = n { println("C1DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c1DetailSeq = C1DetailSeq{};
+
+c1DetailSeq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing no initial sequence value, detailed expression");
+
+class A2DetailSeq {
+  var x : Integer[] on replace o[b..e] = n { println("A2DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B2DetailSeq extends A2DetailSeq {
+  override var x on replace o[b..e] = n { println("B2DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C2DetailSeq extends B2DetailSeq {
+  override var x on replace o[b..e] = n { println("C2DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c2DetailSeq = C2DetailSeq{};
+
+c2DetailSeq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound initial sequence value, detailed expression");
+
+class A3DetailSeq {
+  var w = [1, 2, 3];
+  var x = bind w on replace o[b..e] = n { println("A3DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B3DetailSeq extends A3DetailSeq {
+  override var x on replace o[b..e] = n { println("B3DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C3DetailSeq extends B3DetailSeq {
+  override var x on replace o[b..e] = n { println("C3DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c3DetailSeq = C3DetailSeq{};
+
+c3DetailSeq.w = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound no initial sequence value, detailed expression");
+
+class A4DetailSeq {
+  var w : Integer[];
+  var x = bind w on replace o[b..e] = n { println("A4DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B4DetailSeq extends A4DetailSeq {
+  override var x on replace o[b..e] = n { println("B4DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C4DetailSeq extends B4DetailSeq {
+  override var x on replace o[b..e] = n { println("C4DetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c4DetailSeq = C4DetailSeq{};
+
+c4DetailSeq.w = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing initial value, detailed expression - mixins");
+
+mixin class A1MDetailSeq {
+  var x = [1, 2, 3] on replace o[b..e] = n { println("A1MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B1MDetailSeq extends A1MDetailSeq {
+  override var x on replace o[b..e] = n { println("B1MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C1MDetailSeq extends B1MDetailSeq {
+  override var x on replace o[b..e] = n { println("C1MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c1MDetailSeq = C1MDetailSeq{};
+
+c1MDetailSeq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing no initial value, detailed expression - mixins");
+
+mixin class A2MDetailSeq {
+  var x : Integer[] on replace o[b..e] = n { println("A2MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B2MDetailSeq extends A2MDetailSeq {
+  override var x on replace o[b..e] = n { println("B2MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C2MDetailSeq extends B2MDetailSeq {
+  override var x on replace o[b..e] = n { println("C2MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c2MDetailSeq = C2MDetailSeq{};
+
+c2MDetailSeq.x = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound initial value, detailed expression - mixins");
+
+mixin class A3MDetailSeq {
+  var w = [1, 2, 3];
+  var x = bind w on replace o[b..e] = n { println("A3MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B3MDetailSeq extends A3MDetailSeq {
+  override var x on replace o[b..e] = n { println("B3MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C3MDetailSeq extends B3MDetailSeq {
+  override var x on replace o[b..e] = n { println("C3MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c3MDetailSeq = C3MDetailSeq{};
+
+c3MDetailSeq.w = [10, 20, 30];
+
+//----------------------------------------
+println("Replacing bound no initial value, detailed expression - mixins");
+
+mixin class A4MDetailSeq {
+  var w : Integer[];
+  var x = bind w on replace o[b..e] = n { println("A4MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class B4MDetailSeq extends A4MDetailSeq {
+  override var x on replace o[b..e] = n { println("B4MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+class C4MDetailSeq extends B4MDetailSeq {
+  override var x on replace o[b..e] = n { println("C4MDetailSeq: {o}[{b}..{e}] = {n}") }
+}
+
+var c4MDetailSeq = C4MDetailSeq{};
+
+c4MDetailSeq.w = [10, 20, 30];
+
+
+

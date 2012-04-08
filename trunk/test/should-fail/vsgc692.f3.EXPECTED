@@ -1,0 +1,4 @@
+test/should-fail/vsgc692.f3:12: warning: empty sequence range literal, probably not what you meant.
+var seq2 = [ 10..1 ];
+           ^
+1 warning

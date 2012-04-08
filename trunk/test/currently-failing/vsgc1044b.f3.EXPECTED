@@ -1,0 +1,78 @@
+starting timeline (autoReverse=false, toggle=false)
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline finished (running=false)
+starting timeline (autoReverse=false, toggle=true)
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline finished (running=false)
+starting timeline (autoReverse=false, toggle=true)
+timeline tick 3.0ms - 3.0
+timeline tick 2.0ms - 2.0
+timeline tick 1.0ms - 1.0
+timeline tick 0.0ms - 0.0
+timeline tick 3.0ms - 3.0
+timeline tick 2.0ms - 2.0
+timeline tick 1.0ms - 1.0
+timeline tick 0.0ms - 0.0
+timeline tick 3.0ms - 3.0
+timeline tick 2.0ms - 2.0
+timeline tick 1.0ms - 1.0
+timeline tick 0.0ms - 0.0
+timeline finished (running=false)
+starting timeline (autoReverse=true, toggle=false)
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline tick 2.0ms - 2.0
+timeline tick 1.0ms - 1.0
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline finished (running=false)
+starting timeline (autoReverse=true, toggle=true)
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline tick 2.0ms - 2.0
+timeline tick 1.0ms - 1.0
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline finished (running=false)
+starting timeline (autoReverse=true, toggle=true)
+timeline tick 3.0ms - 3.0
+timeline tick 2.0ms - 2.0
+timeline tick 1.0ms - 1.0
+timeline tick 0.0ms - 0.0
+timeline tick 1.0ms - 1.0
+timeline tick 2.0ms - 2.0
+timeline tick 3.0ms - 3.0
+timeline tick 2.0ms - 2.0
+timeline tick 1.0ms - 1.0
+timeline tick 0.0ms - 0.0
+timeline finished (running=false)

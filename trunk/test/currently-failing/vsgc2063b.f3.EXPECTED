@@ -1,0 +1,13 @@
+---------create object------
+seq1 old:  with new: 34
+seq2 old:  with new: 34
+-------------test1----------
+seq1 old: 34 with new: 
+seq1 old: 34 with new: 5
+seq1 old: 534 with new: 5
+seq1 old: 534 with new: 6
+seq1 old: 564 with new: 6
+seq1 old: 564 with new: 7
+seq1 old: 567 with new: 7
+----------test2----------
+seq2 old: 34 with new: 4567

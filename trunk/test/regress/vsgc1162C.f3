@@ -1,0 +1,6 @@
+/*
+ * @test
+ * @compilefirst vsgc1162A.f3
+ * @compilefirst vsgc1162B.f3
+ */
+public class vsgc1162C extends vsgc1162B{} 

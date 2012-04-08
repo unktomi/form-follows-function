@@ -1,0 +1,42 @@
+test/functional/should-fail/AccessModifiersTest.f3:35: modifier public-read not allowed on a function
+	public-read function subtract(a1:Number,a2:Integer):java.lang.Double{
+	^
+test/functional/should-fail/AccessModifiersTest.f3:42: s has package initialization access in pack1.AccessData
+  	s:"Hi there !";
+  	^
+test/functional/should-fail/AccessModifiersTest.f3:43: a is not public in pack1.AccessData; cannot be accessed from outside package
+  	a:35;
+  	^
+test/functional/should-fail/AccessModifiersTest.f3:45: greet has script only (default) initialization access in pack1.AccessData
+	greet:"readonly";
+	^
+test/functional/should-fail/AccessModifiersTest.f3:51: a is not public in pack1.AccessData; cannot be accessed from outside package
+	 sub.a=27;
+	    ^
+test/functional/should-fail/AccessModifiersTest.f3:52: b has script only (default) write access in pack1.AccessData
+         sub.b=29;
+            ^
+test/functional/should-fail/AccessModifiersTest.f3:59: max has script only (default) access in pack1.AccessData
+        System.out.println(sub.max);
+                              ^
+test/functional/should-fail/AccessModifiersTest.f3:64: g(int) is not public in pack1.AccessData; cannot be accessed from outside package
+	var nonBindG=sub.g(10);
+	                ^
+test/functional/should-fail/AccessModifiersTest.f3:71: cannot find symbol
+symbol  : variable bindG
+location: class AccessModifiersTest
+	System.out.println("bindG = {bindG}");
+	                             ^
+test/functional/should-fail/AccessModifiersTest.f3:73: months has protected access in pack1.AccessData
+	System.out.println(sup.months); // months has package access
+	                      ^
+test/functional/should-fail/AccessModifiersTest.f3:76: fn() has protected access in pack1.AccessData
+	System.out.println(sup.fn());
+	                      ^
+test/functional/should-fail/AccessModifiersTest.f3:79: x has protected access in pack1.AccessData
+	System.out.println(sup.x()); //  x has package access
+	                      ^
+test/functional/should-fail/AccessModifiersTest.f3:31: modifiers (in this case public-read) not allowed on a local var
+	  public-read var result=a1*a2;
+	  ^
+13 errors

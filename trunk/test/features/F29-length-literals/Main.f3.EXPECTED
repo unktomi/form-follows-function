@@ -1,0 +1,19 @@
+Zero = 0px
+50dp = 50dp
+500mm = 50cm
+5cm = 5cm or 50mm
+1.5cm = 15mm or 0.59in
+2% = 2%
+5cm + 7mm = 57mm
+1in + 25cm + 15mm = 290.4mm
+120px = 120.0dp
+1cm + 1mm = 11mm
+1cm - 1mm = 9mm
+50dp * 2 = 100dp
+50dp / 2 = 25dp
+5cm < 5mm = false
+5cm <= 5mm = false
+5cm > 5mm = true
+5cm >= 5mm = true
+5cm == 5mm = false
+5cm != 5mm = true

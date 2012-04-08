@@ -1,0 +1,15 @@
+import java.lang.System;
+
+/*
+ * Feature test #19 -- multiple inheritance
+ *
+ * @test
+ * @compilefirst Base1.f3
+ * @compilefirst Base2.f3
+ * @compile Subclass.f3
+ * @run
+ */
+
+var v = Subclass { a: 1 }
+System.out.println("a={v.a}, b={v.b}, c={v.c}, d={v.d}");
+System.out.println("foo={v.foo()}, moo={v.moo()}, bark={v.bark()}, wahoo={v.wahoo()}");

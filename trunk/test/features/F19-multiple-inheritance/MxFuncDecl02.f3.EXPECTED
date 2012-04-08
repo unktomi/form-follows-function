@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxFuncDecl02.f3:14: warning: Function foo() overrides another, it should be declared 'override'.
+    public function foo() {}
+    ^
+1 warning

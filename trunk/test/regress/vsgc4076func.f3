@@ -1,0 +1,47 @@
+/**
+ * VSGC-4076 : Compiled bind optimization: convert immutable shreds bound->unbound
+ *
+ * sanity check: function invocation
+ *
+ * @test
+ * @run
+ */
+
+var ts = "--";
+var ti = 1;
+var s = "**";
+
+function show(v : String) {
+  println(v);
+  v
+}
+
+function f0() {
+  return "f0()";
+}
+
+function f1(s : String) {
+  return "f1({s})";
+}
+
+function f2(s : String, x : Integer) {
+  return "f2({s},{x})";
+}
+
+var b1 = bind show(f0());
+var b2 = bind show(f1("yo"));
+var b3 = bind show(f2("hi", 3));
+var b4 = bind show(f1(s));
+var b5 = bind show(f2(ts,6));
+var b6 = bind show(f2("za", ti));
+
+b1; b2; b3; b4; b5; b6;
+
+
+s = "QQ";
+b4;
+ts = "PP";
+b5;
+ti = 4;
+b6;
+

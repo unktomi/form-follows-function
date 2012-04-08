@@ -1,0 +1,14 @@
+/**
+ * Cannot infer "Void" return type in function with "Void" "return" statement
+ * @test
+ */
+
+var initialized = false;
+var myValue : Integer;
+
+function initialize () {
+    if (initialized) {
+        return;
+    }
+    myValue = 100;
+}

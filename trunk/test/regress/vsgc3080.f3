@@ -1,0 +1,17 @@
+/**
+ * Regression test VSGC-3080 : Statements executed out of order
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+}
+function run() {
+  println("start");
+  var fV = { println("set"); 14.2 };
+  Foo {
+    function blip() { fV }
+  }
+  println("end");
+}

@@ -1,0 +1,25 @@
+/*
+ * Regression: VSGC-2284 - Compiler does not exit script for an uncaught Runtime Exception in nested trigger.
+ *
+ * @test
+ * @run
+ *
+ */
+
+import java.lang.RuntimeException;
+
+try {
+    var x = bind 3 on replace {
+                     
+                     def y = 4 on replace {
+                                 
+                     println("1.This statement should always be printed. x value {x}");
+    
+                     throw new java.lang.RuntimeException("uncaught exception")
+                                }
+                                
+                     println("2.This statement should not be executed if exception thrown. x value {x}");
+                 }
+} catch (e:RuntimeException) {
+    println("3.This statement should be executed if exception thrown.");
+}

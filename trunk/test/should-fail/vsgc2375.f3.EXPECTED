@@ -1,0 +1,7 @@
+test/should-fail/vsgc2375.f3:7: non-static variable this cannot be referenced from a static context
+this;
+^
+test/should-fail/vsgc2375.f3:8: non-static variable this cannot be referenced from a static context
+{ this; }
+  ^
+2 errors

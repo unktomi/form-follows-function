@@ -1,0 +1,27 @@
+/*
+ * Regression test 
+ * VSGC-4011 : All invalidation must maintain matched invalidation-phase / trigger-phase call pairs.
+ *
+ * bound if sequence, on-replace 
+ *
+ * @test
+ * @run
+ */
+
+var i = 3;
+var max = 10;
+var big = ["a", "b", "c", "d"];
+var little = ["x"];
+def bif = bind if (i > max) big else little on replace [a..b] = newVal {
+             println("[{a}..{b}] = {sizeof newVal}")
+}
+
+i = 4;
+max = 20;
+println("now");
+i = 30; 
+max = 10;
+println("back");
+i = 1; 
+println("zap");
+little = [];

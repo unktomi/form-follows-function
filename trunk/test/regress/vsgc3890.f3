@@ -1,0 +1,82 @@
+/**
+ * Regress test for VSGC-3890.
+ *
+ *  Compiler crashes when multiple return type is used.
+ *
+ * @test
+ * @run
+ */
+
+function fb(){
+    if (false) {
+       return 1 as Byte;
+    }
+    print("Byte: ");
+}
+
+function fs(){
+    if (false) {
+       return 1 as Short;
+    }
+    print("Short: ");
+}
+
+
+function fi(){
+    if (false) {
+       return 1;
+    }
+    print("Integer: ");
+}
+
+function fn(){
+    if (false) {
+       return 1 as Number;
+    }
+    print("Number: ");
+}
+
+function fd(){
+    if (false) {
+       return 1 as Double;
+    }
+    print("Double: ");
+}
+
+function fbool(){
+    if (false) {
+       return true;
+    }
+    print("Boolean: ");
+}
+
+function fstr(){
+    if (false) {
+       return "hello!";
+    }
+    print("String: ");
+}
+
+function fseq(){
+    if (false) {
+       return [1,2,3];
+    }
+    print("Sequence: ");
+}
+
+function fdur(){
+    if (false) {
+       return 1ms;
+    }
+    print("Duration: ");
+}
+
+println(fb());
+println(fs());
+println(fi());
+println(fn());
+println(fd());
+println(fbool());
+println(fstr());
+println(fseq());
+println(fdur());

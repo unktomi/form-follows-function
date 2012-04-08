@@ -1,0 +1,8 @@
+import f3.lang.F3;
+/*
+ * F3.addShutdownMessage
+ *
+ * @test/fail
+ */
+
+F3.addShutdownAction( 0 )

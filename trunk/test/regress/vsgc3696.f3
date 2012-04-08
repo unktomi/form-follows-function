@@ -1,0 +1,15 @@
+/**
+ * VSGC-3696 :  Assigning a range expression does not make the compiler infer the seq type automatically, compiler crashes.
+ *
+ * @test
+ */
+public var itemsIndex: Integer = 0;
+
+public var listViewItems = bind if (itemsIndex == 0) {
+        for (i in [1..10]) "Item {i}"
+    } else if (itemsIndex == 5) {
+        // used to crash compile here..
+	[1..200];
+    } else {
+	["Apples", "oranges", "Grapes", "PineApples", "Chikku", "Banana"]
+    };

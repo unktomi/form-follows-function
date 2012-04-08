@@ -1,0 +1,4 @@
+test/should-fail/vsgc2923.f3:15: non-static variable x cannot be referenced from a static context
+vsgc2923.x = 90;
+        ^
+1 error

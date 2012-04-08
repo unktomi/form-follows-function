@@ -1,0 +1,18 @@
+/*
+ * Regression: VSGC-2821 - translation generates references to variable that have not been declared yet.
+ *
+ * @test
+ *
+ */
+
+public class Test {
+
+    function f() { 
+        var y: Boolean = false on replace {
+            if (y) {
+                x = false;
+            }
+        };
+        var x: Boolean = false;
+    }
+} 

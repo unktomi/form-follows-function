@@ -1,0 +1,5 @@
+test/should-fail/vsgc1700.f3:7: Sorry, I was trying to understand an indexed sequence in an insert statement but I got confused when I saw ';' which is a punctuation character.
+ Perhaps you are missing a '['.
+insert 10 after 5;
+                 ^
+1 error

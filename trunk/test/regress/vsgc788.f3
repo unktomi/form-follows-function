@@ -1,0 +1,34 @@
+/*
+ * Demostration that the work-around for VSGC-788 works
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class Rectangle {
+    var mouseOver = false;
+    var onMouseReleased : function(e : String) : Void;
+    var fill : String;
+    bound function isMouseOver() : Boolean { mouseOver }
+    bound function isMouseButtonDown(i : Integer) : Boolean { true }
+}
+
+function foo() {
+  var green = "green";
+  var red = "red";
+
+  var r:Rectangle;
+  r = Rectangle {
+          onMouseReleased: function(e) { if (r.isMouseOver()) { System.out.println("action: {e}") }}
+          fill: bind if (r.isMouseButtonDown(1) and r.isMouseOver()) { green } else { red }
+  }
+  r.onMouseReleased("initial");
+  System.out.println("fill: {r.fill}");
+  r.mouseOver = true;
+  r.onMouseReleased("pressed");
+  System.out.println("fill: {r.fill}");
+}
+
+foo()

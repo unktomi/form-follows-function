@@ -1,0 +1,53 @@
+/**
+ * VSGC-3921 : Compiled-bind: inflation and loops with break/continue
+ *
+ * @test
+ * @run
+ */
+
+var outer = [0..3];
+var inner = [10..13];
+
+function test() {
+    var x1 = for (xx in outer) {
+       var xxx = bind xx;
+       if (xxx == 2) break;
+       for (yy in inner) {
+            var yyy = bind yy;
+            if (yyy == 12) break else yyy;
+       }
+    }
+    println(x1);
+
+    var x2 = for (xx in outer) {
+       var xxx = bind xx;
+       if (xxx == 2) break;
+       for (yy in inner) {
+            var yyy = bind yy;
+            if (yyy == 12) continue else yyy;
+       }
+    }
+    println(x2);
+
+    var x3 = for (xx in outer) {
+       var xxx = bind xx;
+       if (xxx == 2) continue;
+       for (yy in inner) {
+            var yyy = bind yy;
+            if (yyy == 12) break else yyy;
+       }
+    }
+    println(x3);
+
+    var x4 = for (xx in outer) {
+       var xxx = bind xx;
+       if (xxx == 2) continue;
+       for (yy in inner) {
+            var yyy = bind yy;
+            if (yyy == 12) continue else yyy;
+       }
+    }
+    println(x4);
+}
+
+test();

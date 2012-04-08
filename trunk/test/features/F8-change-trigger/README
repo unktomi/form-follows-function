@@ -1,0 +1,9 @@
+Visage compiler feature test #8
+
+Demonstrated:
+ - Creating attributes with change triggers
+ - Trigger fires when attribute is directly updated
+ - Trigger fires when attribute is bound and value is recomputed
+ - Trigger fires when attribute is set via object literal
+ - Trigger fires when attribute is set via default value
+ - Trigger doesn't fire when attribute is assigned its current value

@@ -1,0 +1,10 @@
+/*
+ * Regression: VSGC-3274 - Internal Error in F3 compiler: get$scene() in ... cannot override get$scene() in f3.scene.Node; overriding method is static.
+ *
+ * @subtest
+ *
+ */
+
+public class vsgc3274A {
+public var x:Object;
+}

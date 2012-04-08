@@ -1,0 +1,40 @@
+/* Regression test for VSGC-809 : Triggers
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class T {
+  var x: Number = 0
+      on replace {System.out.println("x ={x}");}
+  var y: Number = bind x
+      on replace {System.out.println("y ={y}");}
+  var zx: Number = bind x
+      on replace {System.out.println("zx ={zx}");}
+  var zy: Number = bind y
+      on replace {System.out.println("zy ={zy}");}
+  var zy2: Number = bind y
+      on replace {System.out.println("zy2 ={zy2}");}
+  init {
+      x = 20;
+  }
+}
+
+System.out.println("A--------");
+
+var t = T {};
+
+System.out.println("B--------");
+t = T { x: 1};
+
+System.out.println("C--------");
+t.x=100;
+
+System.out.println("D--------");
+var u = bind t.x
+   on replace {System.out.println("ux ={u}");}
+
+t.x = 200;
+

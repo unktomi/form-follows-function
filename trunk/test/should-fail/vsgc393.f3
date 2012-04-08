@@ -1,0 +1,8 @@
+/*
+ * Regression test: VSGC-393:functions aren't checked for return -- CPU goes to 100%
+ *
+ * @test/fail
+ */
+function foo() : Integer {} 
+
+var bar = foo(); 

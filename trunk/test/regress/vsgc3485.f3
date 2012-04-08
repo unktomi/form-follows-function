@@ -1,0 +1,14 @@
+/**
+ * VSGC-3485 :  Compiler reports "Incompatible function types" but type are ok. (error depends on a "this." prefix).
+ *
+ * @test
+ */
+
+public mixin class MTrigger {
+    public var param : Object[];
+    public var actionMethod : function (param: Object[], src: MTrigger) : Void;
+    protected def imp_action = function () : Void {
+        // Used to crash in the back-end here.
+        this.actionMethod(this.param, this);
+    };
+} 

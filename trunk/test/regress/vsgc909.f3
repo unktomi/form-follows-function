@@ -1,0 +1,13 @@
+/**
+ * Regression test VSGC-909 : Scope of a variable differ from bind vs non-bind
+ *
+ * @test
+ * @run
+ */
+
+var a = {
+       var a2 = [1,2];
+       println(a2);
+       a2
+}
+println(a);

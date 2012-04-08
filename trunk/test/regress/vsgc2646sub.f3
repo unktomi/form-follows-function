@@ -1,0 +1,7 @@
+/**
+ * @subtest 
+ */
+
+public class vsgc2646sub {
+  public-init var x = 15.5;
+}

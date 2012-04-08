@@ -1,0 +1,6 @@
+test/should-fail/vsgc611.f3:29: unexpected type
+found   : Object
+required: Sequence (or nativearray)
+function f(llist) {return llist[0];}
+                          ^
+1 error

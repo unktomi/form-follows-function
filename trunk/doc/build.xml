@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project default="ref" name="f3-docs" basedir="..">
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="tools.dir" value="${basedir}/tools"/>
+
+    <import file="../tools-defs.xml" />
+
+    <property name="import.docbook-xsl.dir" value="${import.docbook.dir}/docbook-xsl-${import.docbook.version}"/>
+    <property name="doc.build.dir" value="${build.dir}/doc"/>
+    <property name="doc.dest.dir" value="${doc.build.dir}/html"/>
+    <property name="doc.src.dir" value="${basedir}/doc/reference"/>
+    <property name="html.style" value="${import.docbook-xsl.dir}/html/chunk.xsl"/>
+    <property name="xhtml.style" value="${import.docbook-xsl.dir}/xhtml/chunkfast.xsl"/>
+    <property name="langref.xsl.path" value="${doc.build.dir}/tmp/langref.xsl"/>
+    <property name="doc.name" value="F3Reference"/>
+
+    <!-- Choose between HTML and XHTML -->
+    <property name="chunk.style" value="${html.style}"/>
+
+    <path id="doc.build.class.path">
+        <path refid="saxon.class.path" />
+        <path refid="xincluder.class.path" />
+        <path refid="resolver.class.path"/>
+        <path location="${doc.build.dir}/tmp"/>
+    </path>
+
+    <target name="langspec"
+     description="Build language reference using make and xsltproc.">
+        <exec dir="doc/reference" command="make langref"/>
+    </target>
+
+    <target name="prepare">
+        <mkdir dir="${doc.build.dir}"/>
+        <mkdir dir="${doc.dest.dir}"/>
+        <mkdir dir="${doc.build.dir}/tmp"/>
+
+        <propertyfile file="${doc.build.dir}/tmp/CatalogManager.properties">
+            <entry key="catalogs" value="${import.docbook-xml.dir}/catalog.xml"/>
+            <entry key="relative-catalogs" value="false"/>
+            <entry key="static-catalog" value="yes"/>
+            <entry key="catalog-class-name" value="org.apache.xml.resolver.Resolver"/>
+            <entry key="verbosity" value="1"/>
+        </propertyfile>
+    </target>
+
+    <target name="ref"
+     description="Build language reference using Ant">
+        <antcall target="chunk-html"/>
+        <antcall target="copy-figures"/>
+    </target>
+
+    <target name="clean" description="Deletes all generated documentation.">
+        <delete dir="${doc.build.dir}"/>
+    </target>
+
+    <!-- Abstract targets -->
+
+   <target name="langref.xsl">
+     <makeurl property="chunk.url" file="${chunk.style}"/>
+     <filter token="chunk-xsl" value="${chunk.url}"/>
+     <copy file="doc/reference/langref-in.xsl" tofile="${langref.xsl.path}" filtering="true"/>
+     </target>
+     
+    <!-- arg: doc.name -->
+    <target name="chunk-html" depends="prepare,langref.xsl">
+        <makeurl property="doc.xml" file="${doc.src.dir}/${doc.name}.xml"/>
+        <java classname="com.elharo.xml.xinclude.SAXXIncluder" fork="true" 
+              dir="${doc.dest.dir}" failonerror="true">
+            <classpath refid="doc.build.class.path" />
+            <arg line="-r org.apache.xml.resolver.tools.CatalogResolver"/>
+            <arg value="${doc.xml}"/>
+            <redirector output="${doc.build.dir}/tmp/${doc.name}-xi-tmp.xml"/>
+        </java>
+
+        <java classname="com.icl.saxon.StyleSheet" fork="true"
+              dir="${doc.dest.dir}" failonerror="true">
+            <classpath refid="doc.build.class.path"/>
+            <arg line="-x org.apache.xml.resolver.tools.ResolvingXMLReader"/>
+            <arg line="-y org.apache.xml.resolver.tools.ResolvingXMLReader"/>
+            <arg line="-r org.apache.xml.resolver.tools.CatalogResolver"/>
+            <arg file="${doc.build.dir}/tmp/${doc.name}-xi-tmp.xml"/>
+            <arg file="${langref.xsl.path}"/>
+            <arg value="use.id.as.filename=1"/>
+            <arg value="root.filename=${doc.name}"/>
+            <arg value="chunk.section.depth=1"/>
+            <arg value="chunk.first.sections=1"/>
+            <arg value="draft.mode=no"/>
+<!--         <arg value="navig.graphics=1"/>-->
+        </java>
+
+        <delete file="${doc.build.dir}/tmp/${doc.name}-xi-tmp.html" failonerror="no"/>
+        <copy file="doc/reference/langref.css" tofile="${doc.dest.dir}/langref.css"/>
+    </target>
+        
+    <available property="ant.jar" value="${import.ant.jar}" file="${import.ant.jar}"/>
+    <pathconvert property="ant.jar">
+        <mapper type="regexp" from="${path.separator}([^${path.separator}]*ant.jar)${path.separator}" to="\1"/>
+        <path location="${path.separator}${java.class.path}${path.separator}"/>
+    </pathconvert>
+
+    <target name="taskdefs">
+        <mkdir dir="${doc.build.dir}/ant"/>
+        <javac srcdir="doc/antsrc"
+               destdir="${doc.build.dir}/ant"
+               classpath="${import.ant.jar}"/>
+        <taskdef name="tangle" classname="org.f3.ant.docbook.DocBookTangleTask">
+            <classpath>
+                <pathelement location="${ant.jar}"/>
+                <pathelement location="${doc.build.dir}/ant"/>               
+            </classpath>
+        </taskdef>
+        <taskdef name="f3c" classname="org.f3.tools.ant.F3AntTask">
+            <classpath>
+                <pathelement location="${ant.jar}"/>
+                <pathelement location="dist/lib/f3c.jar"/>
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="check-examples" depends="taskdefs">
+        <mkdir dir="${doc.build.dir}/gensrc"/>
+        <tangle srcdir="doc/langspec" destdir="${doc.build.dir}/gensrc"/>
+        <mkdir dir="${doc.build.dir}/classes"/>
+        <f3c destdir="${doc.build.dir}/classes"
+                 includes="**/*.f3"
+                 srcdir="${doc.build.dir}/gensrc" target="1.5"
+                 classpath="${doc.build.dir}/classes"
+                 compilerclasspath="dist/lib/f3c.jar"/>
+    </target>
+    
+    <target name="copy-figures">
+        <copy todir="${doc.dest.dir}" failonerror="true">
+            <fileset dir="${doc.src.dir}" includes="*.png"/>
+        </copy>
+    </target>
+
+</project>

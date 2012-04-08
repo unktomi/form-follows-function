@@ -1,0 +1,103 @@
+/*
+ * Assigning compatible values to a variable of the type Character.
+ * The code is expected to compile and run successfully. Warnings
+ * are not checked.
+ *
+ * @test/f3unit
+ * @run
+ */
+
+
+import f3.f3unit.F3TestCase;
+
+/* --------------------------------------------------------------
+ *            This block could live in a common f3 file
+ *            if (at)compilefirst worked with (at)test/f3unit
+ * -------------------------------------------------------------- */
+public def bb : Byte = 127;
+public def cc : Character = 65535;
+public def ii : Integer = 2147483647;
+public def ll : Long = 9223372036854775807;
+public def ss : Short = 32767;
+public def ff : Float = 3.4028234663852886E38;
+public def dd : Double = 1.7976931348623157E308;
+public def nn : Number = 3.1415926535;
+public def dduu : Duration = 600s;
+public def bboo : Boolean = true;
+public def sstt : String = "Hello, F3!";
+public def nul = null;
+public def iSeq : Integer[] = [ 1, 2, 3 ];
+public def fSeq : Float[] = [ 1.11, 2.22, 3.33 ];
+/* ------------------------------------------------------------ */
+
+var c : Character;
+
+public class ToCharacter extends F3TestCase {
+
+    function testToCharacter() {
+        c = bb;
+        assertEquals(127 as Character, c);
+        c = 127 as Byte;
+        assertEquals(127 as Character, c);
+
+        c = cc;
+        assertEquals65535();
+        c = 65535 as Character;
+        assertEquals65535();
+        c = 65535;
+        assertEquals65535();
+
+        c = ii;
+        c = 65535 as Integer;
+        assertEquals65535();
+
+        c = ll;
+        c = 65535 as Long;
+        assertEquals65535();
+
+        c = ss;
+        assertEquals(32767 as Character, c);
+        c = 32767 as Short;
+        assertEquals(32767 as Character, c);
+
+        c = ff;
+        c = java.lang.Float.NaN;
+        c = 65535.0 as Float;
+        assertEquals65535();
+        c = 65535.45 as Float;
+        assertEquals65535();
+
+        c = dd;
+        c = java.lang.Double.NaN;
+        c = 65535.0 as Double;
+        assertEquals65535();
+        c = 65535.45 as Double;
+        assertEquals65535();
+
+        c = nn;
+        c = 65535.0 as Number;
+        assertEquals65535();
+
+        /* Each of the following lines produces a compile-time error
+        c = dduu;
+        c = bboo;
+        c = sstt;
+        c = nul;
+        c = iSeq;
+        c = fSeq;
+        */
+
+        var seq1 = [ 65533..65535 ];
+        c = seq1[2];
+        assertEquals65535();
+
+        var seq2 = [ 121.11, 1750.35, 65535.0, 1434.9 ];
+        c = seq2[2];
+        assertEquals65535();
+    }
+
+    function assertEquals65535() {
+        assertEquals(65535 as Character, c);
+    }
+
+}

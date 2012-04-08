@@ -1,0 +1,33 @@
+/*
+ * Regression test: Test of having a multiplication operator in a sequence index
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class MyClass {
+  public var foo:String = "bar";
+}
+
+class vsgc481mul /*extends junit.framework.TestCase*/ {
+  var x:Integer = 2;
+  var y:Integer = 1;
+  var seq:MyClass[] = [MyClass{}, MyClass{},MyClass{}];
+  function boo(a : Integer) : MyClass { MyClass{} }
+
+  public function test() {
+    boo(x).foo = "yyy";
+    seq[y].foo = "www";
+    seq[x * y].foo = "zzz";
+//    assertEquals(seq[2].foo, "zzz")
+  }
+}
+
+// delete below to make a junit test, and reinstate commented out code
+var app = vsgc481mul{};
+app.test();
+
+System.out.println(app.seq[2].foo)
+

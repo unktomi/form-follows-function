@@ -1,0 +1,10 @@
+test/should-fail/vsgc1998.f3:14: You cannot change the value(s) of 'h' because it was declared as a 'def', perhaps it should be a 'var'?
+h[2] 	= 88;
+^
+test/should-fail/vsgc1998.f3:15: You cannot change the value(s) of 'y' because it was declared as a 'def', perhaps it should be a 'var'?
+g.y[3] 	= 88;
+ ^
+test/should-fail/vsgc1998.f3:28: You cannot change the value(s) of 's' because it was declared as a 'def', perhaps it should be a 'var'?
+s[0] = 2;
+^
+3 errors

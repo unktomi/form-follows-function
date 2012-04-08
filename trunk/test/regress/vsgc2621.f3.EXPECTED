@@ -1,0 +1,136 @@
+input: java.lang.Character 100,    cast as Character (then cast to Integer): 100
+input: java.lang.Character 100,    cast as Byte:      100
+input: java.lang.Character 100,    cast as Short:     100
+input: java.lang.Character 100,    cast as Integer:   100
+input: java.lang.Character 100,    cast as Long:      100
+input: java.lang.Character 100,    cast as Float:     100.0
+input: java.lang.Character 100,    cast as Double:    100.0
+input: java.lang.Character 100,    cast as Number:    100.0
+input: java.lang.Character 10000,    cast as Character (then cast to Integer): 10000
+input: java.lang.Character 10000,    cast as Byte:      16
+input: java.lang.Character 10000,    cast as Short:     10000
+input: java.lang.Character 10000,    cast as Integer:   10000
+input: java.lang.Character 10000,    cast as Long:      10000
+input: java.lang.Character 10000,    cast as Float:     10000.0
+input: java.lang.Character 10000,    cast as Double:    10000.0
+input: java.lang.Character 10000,    cast as Number:    10000.0
+input: java.lang.Character 14464,    cast as Character (then cast to Integer): 14464
+input: java.lang.Character 14464,    cast as Byte:      -128
+input: java.lang.Character 14464,    cast as Short:     14464
+input: java.lang.Character 14464,    cast as Integer:   14464
+input: java.lang.Character 14464,    cast as Long:      14464
+input: java.lang.Character 14464,    cast as Float:     14464.0
+input: java.lang.Character 14464,    cast as Double:    14464.0
+input: java.lang.Character 14464,    cast as Number:    14464.0
+input: java.lang.Byte 127,    cast as Character (then cast to Integer): 127
+input: java.lang.Byte 127,    cast as Byte:      127
+input: java.lang.Byte 127,    cast as Short:     127
+input: java.lang.Byte 127,    cast as Integer:   127
+input: java.lang.Byte 127,    cast as Long:      127
+input: java.lang.Byte 127,    cast as Float:     127.0
+input: java.lang.Byte 127,    cast as Double:    127.0
+input: java.lang.Byte 127,    cast as Number:    127.0
+input: java.lang.Short 500,    cast as Character (then cast to Integer): 500
+input: java.lang.Short 500,    cast as Byte:      -12
+input: java.lang.Short 500,    cast as Short:     500
+input: java.lang.Short 500,    cast as Integer:   500
+input: java.lang.Short 500,    cast as Long:      500
+input: java.lang.Short 500,    cast as Float:     500.0
+input: java.lang.Short 500,    cast as Double:    500.0
+input: java.lang.Short 500,    cast as Number:    500.0
+input: java.lang.Integer 100000,    cast as Character (then cast to Integer): 34464
+input: java.lang.Integer 100000,    cast as Byte:      -96
+input: java.lang.Integer 100000,    cast as Short:     -31072
+input: java.lang.Integer 100000,    cast as Integer:   100000
+input: java.lang.Integer 100000,    cast as Long:      100000
+input: java.lang.Integer 100000,    cast as Float:     100000.0
+input: java.lang.Integer 100000,    cast as Double:    100000.0
+input: java.lang.Integer 100000,    cast as Number:    100000.0
+input: java.lang.Long 89,    cast as Character (then cast to Integer): 89
+input: java.lang.Long 89,    cast as Byte:      89
+input: java.lang.Long 89,    cast as Short:     89
+input: java.lang.Long 89,    cast as Integer:   89
+input: java.lang.Long 89,    cast as Long:      89
+input: java.lang.Long 89,    cast as Float:     89.0
+input: java.lang.Long 89,    cast as Double:    89.0
+input: java.lang.Long 89,    cast as Number:    89.0
+input: java.lang.Float 42.6,    cast as Character (then cast to Integer): 42
+input: java.lang.Float 42.6,    cast as Byte:      42
+input: java.lang.Float 42.6,    cast as Short:     42
+input: java.lang.Float 42.6,    cast as Integer:   42
+input: java.lang.Float 42.6,    cast as Long:      42
+input: java.lang.Float 42.6,    cast as Float:     42.6
+input: java.lang.Float 42.6,    cast as Double:    42.599998474121094
+input: java.lang.Float 42.6,    cast as Number:    42.6
+input: java.lang.Double 8989.7978515625,    cast as Character (then cast to Integer): 8989
+input: java.lang.Double 8989.7978515625,    cast as Byte:      29
+input: java.lang.Double 8989.7978515625,    cast as Short:     8989
+input: java.lang.Double 8989.7978515625,    cast as Integer:   8989
+input: java.lang.Double 8989.7978515625,    cast as Long:      8989
+input: java.lang.Double 8989.7978515625,    cast as Float:     8989.798
+input: java.lang.Double 8989.7978515625,    cast as Double:    8989.7978515625
+input: java.lang.Double 8989.7978515625,    cast as Number:    8989.798
+input: Visage Number 89.6,    cast as Character (then cast to Integer): 89
+input: Visage Number 89.6,    cast as Byte:      89
+input: Visage Number 89.6,    cast as Short:     89
+input: Visage Number 89.6,    cast as Integer:   89
+input: Visage Number 89.6,    cast as Long:      89
+input: Visage Number 89.6,    cast as Float:     89.6
+input: Visage Number 89.6,    cast as Double:    89.5999984741211
+input: Visage Number 89.6,    cast as Number:    89.6
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Character (then cast to Integer): 31416
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Byte:      -72
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Short:     31416
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Integer:   31416
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Long:      31416
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Float:     31416.0
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Double:    31416.0
+input: java.util.concurrent.atomic.AtomicInteger 31416,    cast as Number:    31416.0
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Character (then cast to Integer): 52081
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Byte:      113
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Short:     -13455
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Integer:   77777777
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Long:      77777777
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Float:     7.7777776E7
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Double:    7.7777777E7
+input: java.util.concurrent.atomic.AtomicLong 77777777,    cast as Number:    7.7777776E7
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Character (then cast to Integer): 0
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Byte:      0
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Short:     0
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Integer:   0
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Long:      0
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Float:     0.8989899
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Double:    0.898989898989899
+input: java.math.BigDecimal0.89898989898989898989898989898989,    cast as Number:    0.8989899
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Character (then cast to Integer): 3309
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Byte:      -19
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Short:     3309
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Integer:   2039024877
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Long:      -2520471190199792403
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Float:     8.989899E31
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Double:    8.98989898989899E31
+input: java.math.BigInteger 89898989898989898989898989898989,    cast as Number:    8.989899E31
+input: java.lang.Double 256.0,    cast as Character (then cast to Integer): 256
+input: java.lang.Double 256.0,    cast as Byte:      0
+input: java.lang.Double 256.0,    cast as Short:     256
+input: java.lang.Double 256.0,    cast as Integer:   256
+input: java.lang.Double 256.0,    cast as Long:      256
+input: java.lang.Double 256.0,    cast as Float:     256.0
+input: java.lang.Double 256.0,    cast as Double:    256.0
+input: java.lang.Double 256.0,    cast as Number:    256.0
+input: java.lang.Double 2.147483647E9,    cast as Character (then cast to Integer): 65535
+input: java.lang.Double 2.147483647E9,    cast as Byte:      -1
+input: java.lang.Double 2.147483647E9,    cast as Short:     -1
+input: java.lang.Double 2.147483647E9,    cast as Integer:   2147483647
+input: java.lang.Double 2.147483647E9,    cast as Long:      2147483647
+input: java.lang.Double 2.147483647E9,    cast as Float:     2.14748365E9
+input: java.lang.Double 2.147483647E9,    cast as Double:    2.147483647E9
+input: java.lang.Double 2.147483647E9,    cast as Number:    2.14748365E9
+input: java.lang.Double 7.8787876510236672E16,    cast as Character (then cast to Integer): 65535
+input: java.lang.Double 7.8787876510236672E16,    cast as Byte:      -1
+input: java.lang.Double 7.8787876510236672E16,    cast as Short:     -1
+input: java.lang.Double 7.8787876510236672E16,    cast as Integer:   2147483647
+input: java.lang.Double 7.8787876510236672E16,    cast as Long:      78787876510236672
+input: java.lang.Double 7.8787876510236672E16,    cast as Float:     7.8787877E16
+input: java.lang.Double 7.8787876510236672E16,    cast as Double:    7.8787876510236672E16
+input: java.lang.Double 7.8787876510236672E16,    cast as Number:    7.8787877E16

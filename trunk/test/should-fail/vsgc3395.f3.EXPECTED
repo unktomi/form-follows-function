@@ -1,0 +1,4 @@
+test/should-fail/vsgc3395.f3:8: script variable s cannot be initialized inside object literal expression
+vsgc3395{s:""};
+         ^
+1 error

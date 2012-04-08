@@ -1,0 +1,7 @@
+/**
+ * @subtest vsgc1245A
+ */
+
+public class vsgc1245Asub {
+  public function foo() : Integer { 1 }
+}

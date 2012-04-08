@@ -1,0 +1,9 @@
+bb     = true
+by     = 89
+short  = 89
+int    = 89
+long   = 89
+float  = 89.6
+double = 89.7
+number = 22.5
+string = Hi there sailor

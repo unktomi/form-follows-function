@@ -1,0 +1,34 @@
+/**
+ * VSGC-2788 : Collapse bound conditional accesses into the single per-scipt BindingExpression
+ *
+ * verify that that defunct branches are not evaluated
+ *
+ * @test
+ * @run
+ */
+
+var a = 1;
+var b = 10;
+var c = 100;
+var d = 1000;
+var sw = true;
+function eval(x : Integer) : Integer { x }
+
+def bi = bind if (sw) eval(a+b) else eval(c+d);
+println(bi);
+b = 20;
+println(bi);
+sw = false;
+println(bi);
+c = 200;
+println(bi);
+a = 3;
+b = 30;
+println(bi);
+sw = true;
+println(bi);
+c = 300;
+d = 3000;
+println(bi);
+sw = false;
+println(bi);

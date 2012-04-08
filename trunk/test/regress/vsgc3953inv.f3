@@ -1,0 +1,98 @@
+/*
+ * VSGC-3953 : Compiled bind optimization: rewrite bound range for correctness, speed, and static footprint
+ *
+ * Test on-replace for ranges.
+ * Many variations are valid.  So EXPECTED may need to change.  But this is important to test.
+ *
+ * @test
+ * @run
+ */
+
+class na {
+  var bott = 1;
+  var topp = 7;
+  var hopp = 2;
+  function show(nm : String, val : Integer) : Integer { /*println("{nm}: {val}");*/ val}
+  var xx = bind [show("Lower", bott) .. show("Upper", topp) step  show("Step", hopp)];
+
+  function t1() {
+    println("-- t1 ");
+    println("Size: {sizeof xx}");
+    println("--------- ");
+  }
+
+  function t2() {
+    println("-- t2 ");
+    println("xx[3]: {xx[3]}");
+    println("Size: {sizeof xx}");
+    println("--------- ");
+  }
+
+  function t3() {
+    println("-- t3 ");
+    topp = 10;
+    println("Size: {sizeof xx}");
+    topp = 5;
+    println("Size: {sizeof xx}");
+    println("--------- ");
+  }
+
+  function t4() {
+    println("-- t4 ");
+    hopp = 1;
+    println("xx[5]: {xx[5]}");
+    hopp = 3;
+    println("xx[5]: {xx[5]}");
+    println("xx[2]: {xx[2]}");
+    println("--------- ");
+  }
+
+  function t5() {
+    println("-- t5 ");
+    println("Size: {sizeof xx}");
+    bott = 100;
+    topp = 200;
+    hopp = 20;
+    println("Size: {sizeof xx}");
+    println("--------- ");
+  }
+
+  function t6() {
+    println("-- t6 ");
+    println(xx);
+    topp = 5;
+    println(xx);
+    println("--------- ");
+  }
+}
+
+na{}.t1();
+na{}.t2();
+na{}.t3();
+na{}.t4();
+na{}.t5();
+na{}.t6();
+
+class nb extends na {
+  override var xx on replace [a..b] = newVal { println("[{a}..{b}] = {sizeof newVal}") }
+}
+
+nb{}.t1();
+nb{}.t2();
+nb{}.t3();
+nb{}.t4();
+nb{}.t5();
+nb{}.t6();
+
+
+class nc extends na {
+  override var xx on replace { println(xx) }
+}
+
+nc{}.t1();
+nc{}.t2();
+nc{}.t3();
+nc{}.t4();
+nc{}.t5();
+nc{}.t6();
+

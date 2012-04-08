@@ -1,0 +1,145 @@
+/*
+ * Test sequences created with range expressions that use variables
+ * of numeric types {Charactre,Byte,Long,Short,Float,Double} as a
+ * beginning, ending and a step of the sequence.
+ * Also check reverse operation and decrescent sequences with a negative step.
+ *
+ * @test/f3unit
+ * @run
+ */
+
+import f3.f3unit.F3TestCase;
+
+def c1 : Character = 0;
+def b1 : Byte = 100;
+def l1 : Long = 10000;
+def s1 : Short = 1000;
+def f1 : Float = 1200.1;
+def d1 : Double = 1200.1;
+
+public class Sequences extends F3TestCase {
+    def c2 : Character = 65535;
+    def b2 : Byte = 115;
+    def l2 : Long = 10300;
+    def s2 : Short = 1300;
+    def f2 : Float = 1400.3;
+    def d2 : Double = 1400.3;
+
+    function testByteSequence() {
+        var b3 : Byte = 5;
+        /* Compilation errors:
+         *  range start must be Integer or Number.
+         *  var bSeq1 : Byte[] = [ b1..b2 step b3 ];
+         *                         ^
+         *  range step must be Integer or Number.
+         *  var bSeq1 : Byte[] = [ b1..b2 step b3 ];
+         *                                     ^
+         *  See VSGC-2588
+         */
+//        var bSeq1 : Byte[] = [b1..b2 step b3];
+        var bSeq1 : Byte[] = [b1 as Integer..b2 as Integer step b3 as Integer];
+        assertEquals([100 as Byte, 105, 110, 115], bSeq1);
+        var bSeq2 : Byte[] = reverse bSeq1;
+        var bSeq3 : Byte[] = [b2 as Integer..b1 as Integer step -b3 as Integer];
+        assertEquals(bSeq2, bSeq3);
+    }
+
+    function testCharacterSequence() {
+        var c3 : Character = 65535;
+        /* Compilation error: range start, end
+         * and step must be Integer or Number. See VSGC-2588 */
+//        var cSeq1 : Character[] = [c1..c2 step c3];
+
+        /* Compilation eror. See VSGC-2583 */
+//        var cSeq1 : Character[] = [c1 as Integer..c2 as Integer step c3 as Integer];
+
+        var cSeq1 : Character[] = [0, 65535];
+        /* Does not work: "expected:<[ 0, 65535 ]> but was:<[  , ? ]>" */
+//        assertEquals([0, 65535], cSeq1);
+
+        var cSeq2 : Character[] = reverse cSeq1;
+        var cSeq3 : Character[] = reverse cSeq2;
+        assertEquals(cSeq1, cSeq3);
+    }
+
+    function testLongSequence() {
+        var l3 : Long = 100;
+        /* Compilation error: range start, end
+         * and step must be Integer or Number. See VSGC-2588 */
+//        var lSeq1 : Long[] = [l1..l2 step l3];
+        var lSeq1 : Long[] = [l1 as Integer..l2 as Integer step l3 as Integer];
+        assertEquals([10000 as Long, 10100, 10200, 10300], lSeq1);
+        var lSeq2 : Long[] = reverse lSeq1;
+        var lSeq3 : Long[] = [l2 as Integer..l1 as Integer step -l3 as Integer];
+        assertEquals(lSeq2, lSeq3);
+    }
+
+    function testShortSequence() {
+        var s3 : Short = 100;
+        /* Compilation error: range start, end
+         * and step must be Integer or Number. See VSGC-2588 */
+//        var sSeq1 : Short[] = [s1..s2 step s3];
+        var sSeq1 : Short[] = [s1 as Integer..s2 as Integer step s3 as Integer];
+        assertEquals([1000 as Short, 1100, 1200, 1300], sSeq1);
+        var sSeq2 : Short[] = reverse sSeq1;
+        var sSeq3 : Short[] = [s2 as Integer..s1 as Integer step -s3 as Integer];
+        assertEquals(sSeq2, sSeq3);
+    }
+
+    function testFloatSequence() {
+        var f3 : Float = 100.1;
+        var fSeq1 : Float[] = [f1..f2 step f3];
+        /* Does not work: " expected:<[ 1200.1, 1300.2, 1400.3 ]>
+         * but was:<[ 1200.1, 1300.2, 1400.2999 ]>"
+         * See also VSGC-2577 */
+//        assertEquals([1200.1, 1300.2, 1400.3], fSeq1);
+        var fSeq2 = reverse fSeq1;
+        var fSeq3 = [f2..f1 step -f3];
+        /* Uncomment when/if the previous assertion starts working */
+//        assertEquals(fSeq2, fSeq3);
+    }
+
+    function testDoubleSequence() {
+        var d3 : Double = 100.1;
+        var dSeq1 : Double[] = [d1..d2 step d3];
+        /* Does not work: "expected:<[ 1200.1, 1300.2, 1400.3 ]>
+         * but was:<[ 1200.0999755859375, 1300.199951171875,
+         *                                1400.2999267578125 ]>"
+         * See also VSGC-2577  */
+//        assertEquals([1200.1, 1300.2, 1400.3], dSeq1);
+        var dSeq2 = reverse dSeq1;
+        var dSeq3 = [d2..d1 step -d3];
+        /* Uncomment when/if the previous assertion starts working */
+//        assertEquals(dSeq2, dSeq3);
+    }
+    
+    function testMixedSequences() {
+        var mSeq1 = [c2, b2, l2, s2, f2, d2];
+        /* Does not work:
+         * "expected:<[ 65535.0, 115.0, 10300.0, 1300.0, 1400.3, 1400.3 ]>
+         * but was:<[ 65535.0, 115.0, 10300.0, 1300.0,
+         *            1400.300048828125, 1400.3 ]>"
+         * See VSGC-2587 */
+//        assertEquals([65535, 115, 10300, 1300, 1400.3, 1400.3], mSeq1);
+        assertEquals([65535, 115, 10300, 1300, f2, d2], mSeq1);
+
+        /* Compilation error: range start, end
+         * and step must be Integer or Number. See VSGC-2588 */
+//        var mSeq2 = [s2..l2 step 2000];
+        var mSeq2 = [s2 as Integer..l2 as Integer step 2000];
+        assertEquals([1300, 3300, 5300, 7300, 9300], mSeq2);
+        
+        var s4 : Short = 1401;
+        var stp = 0.3;
+        /* Compilation error: range start, end
+         * and step must be Integer or Number. See VSGC-2588 */
+//        var mSeq3 = [f2..s4 step stp];
+        var mSeq3 = [f2 as Number..s4 as Integer step stp];
+        /* Does not work:
+         * "expected:<[ 1400.3, 1400.6, 1400.9 ]>
+         * but was:<[ 1400.3, 1400.6001, 1400.9 ]>"
+         * See VSGC-2577 */
+//        assertEquals([1400.3, 1400.6, 1400.9], mSeq3);
+        assertEquals([1400.3, 1400.3 + stp, 1400.9], mSeq3)
+    }
+}

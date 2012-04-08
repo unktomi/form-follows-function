@@ -1,0 +1,8 @@
+test/should-fail/vsgc549a.f3:10: Sorry, I was trying to understand an identifier but I got confused when I saw 'insert' which is a keyword.
+ Perhaps you tried to use a keyword as the name of a variable (use <<keyword>> if you need to do this).
+    var insert: Number;
+        ^
+test/should-fail/vsgc549a.f3:10: You have forgotten the ';', which is needed to separate one expression from the next.
+    var insert: Number;
+       ^
+2 errors

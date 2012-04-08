@@ -1,0 +1,19 @@
+/**
+ * VSGC-3049: WeatherWidget sample causes a javadump
+ *
+ * @test
+ */
+
+class Foo {
+  var str : String;
+}
+
+public class u {
+  var url = "furb" on replace {
+    Foo {
+              var temp = "sog";
+              str: temp
+    }
+  }
+}
+

@@ -1,0 +1,5 @@
+Visage compiler feature test #1 -- block expression
+
+Demonstrated:
+- blocks are expressions that return return values to surrounding expressions
+- functions whose bodies are block expressions

@@ -1,0 +1,20 @@
+/*
+ * @test
+ * @run
+ * 
+ */
+
+// When this isuue will be fixed, please, update tests
+// features/F25-lazy-bind/Lz/lzClassInitSec.f3
+// features/F25-lazy-bind/Lz/lzClassVarSec.f3
+// features/F25-lazy-bind/Lz/lzGlobalVarSec.EXPECTED
+
+var value : Byte[] = [120 as Byte, 121 as Byte] as Byte[];
+def binded1 : Byte[] = bind lazy value;
+var binded2 : Byte[] = bind binded1;
+insert 121 into value;
+var result : Byte[] = binded2;
+def expected : Byte[] = [120 as Byte, 121 as Byte, 121 as Byte] as Byte[];
+if (result != expected)
+  println("FAILED: expected: {expected} received:{result}")
+else { print("result: "); println(result); }

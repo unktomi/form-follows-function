@@ -1,0 +1,19 @@
+import f3.ui.*; 
+
+class HelloWorldModel {
+    var saying: String;
+}
+
+var model = HelloWorldModel {
+    saying: "Hello World"
+};
+
+Frame {
+    title: "Hello World F3"
+    width: 200
+
+    content: Label {
+        text: bind model.saying
+    }
+    visible: true
+};

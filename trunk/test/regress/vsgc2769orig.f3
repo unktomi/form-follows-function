@@ -1,0 +1,21 @@
+/**
+ * VSGC-2769 : crash compiling bound function with for/if/else embedded within string expression
+ *
+ * original test case
+ *
+ * @test
+ * @run
+ */
+
+var focused = true;
+var mouseOver = true;
+var active = false;
+var disabled = false;
+
+bound function report(): String {
+    var states = [focused, mouseOver, active, disabled];
+    var names = ["focused", "mouseOver", "active", "disabled"];
+    "<{for (state in states) if (state) ",{names[indexof state]}" else ""}>"
+}
+
+println("{report()}");

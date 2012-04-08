@@ -1,0 +1,5 @@
+test/should-fail/vsgc846.f3:38: cannot find symbol
+symbol: class foo
+import foo
+       ^
+1 error

@@ -1,0 +1,166 @@
+/**
+ * VSGC-3280 : override var x on replace... fails in a Stage initializer
+ *
+ * @test
+ * @run
+ */
+
+class Nod {
+   var spx: Object = null  on replace {
+       println("spx on replace called for Nod {spx}");
+   }
+   public var px: Object = null  on replace {
+       println("px on replace called for Nod {px}");
+   }
+   var bx: Object = null  on replace {
+       println("bx on replace called for Nod {bx}");
+   }
+   def bbx = bind bx;
+
+   var sps: String = "" on replace {
+       println("sps on replace called for Nod {sps}");
+   }
+   public var ps: String = "" on replace {
+       println("ps on replace called for Nod {ps}");
+   }
+   var bs: String = "" on replace {
+       println("bs on replace called for Nod {bs}");
+   }
+   def bbs = bind bs;
+
+   var spn: Number = 0.0 on replace {
+       println("spn on replace called for Nod {spn}");
+   }
+   public var pn: Number = 0.0  on replace {
+       println("pn on replace called for Nod {pn}");
+   }
+   var bn: Number = 0.0  on replace {
+       println("bn on replace called for Nod {bn}");
+   }
+   def bbn = bind bn;
+
+   var spxv: Object = "rah"  on replace {
+       println("spxv on replace called for Nod {spxv}");
+   }
+   public var pxv: Object = "rah"  on replace {
+       println("pxv on replace called for Nod {pxv}");
+   }
+   var bxv: Object = "rah"  on replace {
+       println("bxv on replace called for Nod {bxv}");
+   }
+   def bbxv = bind bxv;
+
+   var spsv: String = "hello" on replace {
+       println("spsv on replace called for Nod {spsv}");
+   }
+   public var psv: String = "hello" on replace {
+       println("psv on replace called for Nod {psv}");
+   }
+   var bsv: String = "hello" on replace {
+       println("bsv on replace called for Nod {bsv}");
+   }
+   def bbsv = bind bsv;
+
+   var spnv: Number = 12.3 on replace {
+       println("spnv on replace called for Nod {spnv}");
+   }
+   public var pnv: Number = 12.3  on replace {
+       println("pnv on replace called for Nod {pnv}");
+   }
+   var bnv: Number = 12.3  on replace {
+       println("bnv on replace called for Nod {bnv}");
+   }
+   def bbnv = bind bnv;
+
+}
+
+class Grup extends Nod {
+
+    override var spx on replace {
+       println("spx on replace called for Grup {spx}");
+    }
+    override var px on replace {
+       println("px on replace called for Grup {px}");
+    }
+    override var bx on replace {
+       println("bx on replace called for Grup {bx}");
+    }
+
+    override var sps on replace {
+       println("sps on replace called for Grup {sps}");
+    }
+    override var ps on replace {
+       println("ps on replace called for Grup {ps}");
+    }
+    override var bs on replace {
+       println("bs on replace called for Grup {bs}");
+    }
+
+    override var spn on replace {
+       println("spn on replace called for Grup {spn}");
+    }
+    override var pn on replace {
+       println("pn on replace called for Grup {pn}");
+    }
+    override var bn on replace {
+       println("bn on replace called for Grup {bn}");
+    }
+
+    override var spxv on replace {
+       println("spxv on replace called for Grup {spxv}");
+    }
+    override var pxv on replace {
+       println("pxv on replace called for Grup {pxv}");
+    }
+    override var bxv on replace {
+       println("bxv on replace called for Grup {bxv}");
+    }
+
+    override var spsv on replace {
+       println("spsv on replace called for Grup {spsv}");
+    }
+    override var psv on replace {
+       println("psv on replace called for Grup {psv}");
+    }
+    override var bsv on replace {
+       println("bsv on replace called for Grup {bsv}");
+    }
+
+    override var spnv on replace {
+       println("spnv on replace called for Grup {spnv}");
+    }
+    override var pnv on replace {
+       println("pnv on replace called for Grup {pnv}");
+    }
+    override var bnv on replace {
+       println("bnv on replace called for Grup {bnv}");
+    }
+}
+
+def gg = Grup {};
+
+gg.spx = "sp-yo";
+gg.px = "p-yo";
+gg.bx = "b-yo";
+
+gg.sps = "sp-hi";
+gg.ps = "p-hi";
+gg.bs = "b-hi";
+
+gg.spn = 1;
+gg.pn = 2;
+gg.bn = 3;
+
+gg.spxv = "sp-yo";
+gg.pxv = "p-yo";
+gg.bxv = "b-yo";
+
+gg.spsv = "sp-hi";
+gg.psv = "p-hi";
+gg.bsv = "b-hi";
+
+gg.spnv = 1;
+gg.pnv = 2;
+gg.bnv = 3;
+
+

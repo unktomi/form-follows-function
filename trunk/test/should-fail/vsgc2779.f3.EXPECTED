@@ -1,0 +1,4 @@
+test/should-fail/vsgc2779.f3:9: x is already defined in vsgc2779
+  for (x in [0..5]) {
+       ^
+1 error

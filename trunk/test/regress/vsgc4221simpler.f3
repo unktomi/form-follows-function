@@ -1,0 +1,40 @@
+/*
+ * VSGC-4221 : Diamond shaped dependencies cause invalidations to be lost
+ *
+ * Simpler version (from bug report)
+ *
+ * @test
+ * @run
+ */
+
+class Scene {
+   var width:Number;
+   var height:Number;
+}
+
+function f(x:Number,y:Number,z:Number) {
+   println("dump [angle={x}, width = {y}, height = {z}]");
+   Object{}
+}
+
+var factor: Number = bind scene.width/scene.height on replace {}
+
+var X = bind lazy 100*factor on invalidate {println("invalidating photoWidth");};
+var Y = bind lazy 100*factor on invalidate {println("invalidating photoHeight");};
+var dummy:Object  =  bind f(0, X/2, Y/2) on replace {}
+
+var scene:Scene = Scene {
+    width:100;
+    height:100;
+}
+
+dummy;
+
+X; // <-------------------- remove this and it works just fine!!
+Y; // <-------------------- remove this and it works just fine!!
+
+scene.width = 240;
+scene.height = 360;
+
+dummy;
+

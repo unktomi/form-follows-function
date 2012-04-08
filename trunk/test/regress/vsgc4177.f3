@@ -1,0 +1,24 @@
+/**
+ * VSGC-4177 :  Indaba Internal compiler error : cannot find symbol symbol : method invalidate$BFunc$453$callback(int)
+ *
+ * @subtest
+ */
+
+class A {
+   var x = false;
+}
+
+public class vsgc4177 {
+
+  var a : A = bf(null);
+ 
+  bound function bf(callback: function():Void) : A {
+     null;
+  }
+  
+  public function bug() : Void {
+     a.x = false; // <----------- remove this and it compiles ok!
+  }
+} 
+
+

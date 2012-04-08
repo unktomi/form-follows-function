@@ -1,0 +1,28 @@
+/* VSGC-211: vsgc211b test -- Cannot locate var declared in a super class with Mulitple Inheritence
+ *
+ * @test
+ */
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+public mixin class vsgc211Widget {}
+
+public mixin class vsgc211ActionWidget extends vsgc211Widget {
+    /**
+     * Function which implements this widget's action.
+     */
+    public var action: function():Void;
+}
+
+class vsgc211Button extends vsgc211Widget, vsgc211ActionWidget {
+
+    init {
+        java.awt.event.ActionListener {
+            public function actionPerformed(e:java.awt.event.ActionEvent) {
+                if(action != null) {
+                   action();
+                }
+            }
+        };        
+    }
+}

@@ -1,0 +1,39 @@
+/**
+ * VSGC-3364 : chained binds sometimes leave bound variable uninitialized.
+ *
+ * @test
+ * @run
+ */
+
+class Holder { 
+    var value:Integer; 
+} 
+
+class Control { 
+    public var skin:Skin on replace { 
+        skin.control = this; 
+    } 
+    public var value:Integer; 
+} 
+
+class Skin { 
+    var control:Control; 
+    public var holder = Holder { 
+        value: bind control.value 
+    } 
+} 
+
+var value = 17; 
+
+var c1 = Control { 
+    value: /* bind */ value 
+    skin: Skin { } 
+}; 
+
+var c2 = Control { 
+    value: bind value 
+    skin: Skin { } 
+}; 
+
+println("{c1.skin.holder.value}"); // prints 17 as expected 
+println("{c2.skin.holder.value}"); // used to print 0, should print 17 

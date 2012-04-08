@@ -1,0 +1,16 @@
+test/should-fail/vsgc2293.f3:13: Cannot override 'one' -- this instance variable must be writable.
+     override var one   = 10;
+                  ^
+test/should-fail/vsgc2293.f3:14: Cannot override 'two' -- this instance variable must be writable.
+     override var two   = 10;
+                  ^
+test/should-fail/vsgc2293.f3:15: Cannot override 'three' -- 'three' is a 'def'.
+     override var three = 10;
+                  ^
+test/should-fail/vsgc2293.f3:16: Duplicate variable override: variable three already overridden in vsgc2293base
+     override def three = 10;
+                  ^
+test/should-fail/vsgc2293.f3:17: variable four declared 'override' but does not override another variable.
+     override var four  = 10;
+                  ^
+5 errors

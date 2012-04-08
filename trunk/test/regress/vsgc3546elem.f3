@@ -1,0 +1,16 @@
+/**
+ * VSGC-3546 : Internal bug in compiler: nativearray in bound-for -- cannot find symbol symbol : variable startPos$ 
+ *
+ * Element access in the face of null array or bad index
+ *
+ * @test
+ * @run
+ */
+
+var str = "gee hello there";
+var arr = str.split(" ");
+def ba = bind arr as String[];
+println("'{ba[-1]}'");
+println("'{ba[3]}'");
+arr = null;
+println("'{ba[0]}'");

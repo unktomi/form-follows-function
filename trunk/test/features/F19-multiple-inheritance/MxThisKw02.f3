@@ -1,0 +1,41 @@
+/*
+ * Test for 'this' keyword in mixin function bodies.
+ *
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+/*
+ * Use 'this' to access the variable declared in the same mixin
+ */
+mixin class Mixin1 {
+    public var bar1 : String = "bar1";
+    protected var bar2 : String = "bar2";
+    var bar3 : String = "bar3";
+
+    function getBars() {
+        "{this.bar1}{this.bar2}{this.bar3}"
+    }
+}
+
+class Mixee1 extends Mixin1 {}
+
+/*
+ * Use 'this' to access the variable declared in parent  mixin
+ */
+class Mixee2 extends Mixin1 {
+    function getBars2() {
+        "{this.bar1}{this.bar2}{this.bar3}"
+    }
+}
+
+public class MxThisKw02 extends F3TestCase {
+    function testThisKeywordVar() {
+        var m1 = Mixee1 {};
+        var m2 = Mixee2 {};
+        assertEquals("bar1bar2bar3", m1.getBars());
+        assertEquals("bar1bar2bar3", m2.getBars2());
+    }
+}
+

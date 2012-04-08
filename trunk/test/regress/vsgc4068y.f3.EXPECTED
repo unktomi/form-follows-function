@@ -1,0 +1,50 @@
+jj: var = 0.01
+white invalidate:  variable = 0.01, linearx = true
+yellow invalidate:  variable = 0.01, linearx = true
+on-replace Shapeless circle:Pint yellow:0.01
+on-replace Shapeless rectangle:Pint white:0.01
+jj: var = 0.0
+on-replace Shapeless rectangle:Pint white:0.0
+white invalidate:  variable = 0.0, linearx = true
+on-replace Shapeless circle:Pint yellow:0.0
+yellow invalidate:  variable = 0.0, linearx = true
+jj: var = 0.25
+on-replace Shapeless rectangle:Pint white:0.25
+white invalidate:  variable = 0.25, linearx = true
+on-replace Shapeless circle:Pint yellow:0.25
+yellow invalidate:  variable = 0.25, linearx = true
+jj: var = 0.5
+on-replace Shapeless rectangle:Pint white:0.5
+white invalidate:  variable = 0.5, linearx = true
+on-replace Shapeless circle:Pint yellow:0.5
+yellow invalidate:  variable = 0.5, linearx = true
+jj: var = 0.75
+on-replace Shapeless rectangle:Pint white:0.75
+white invalidate:  variable = 0.75, linearx = true
+on-replace Shapeless circle:Pint yellow:0.75
+yellow invalidate:  variable = 0.75, linearx = true
+jj: var = 1.0
+on-replace Shapeless rectangle:Pint white:1.0
+white invalidate:  variable = 1.0, linearx = true
+on-replace Shapeless circle:Pint yellow:1.0
+yellow invalidate:  variable = 1.0, linearx = true
+jj: var = 1.25
+on-replace Shapeless rectangle:Pint white:1.25
+white invalidate:  variable = 1.25, linearx = true
+on-replace Shapeless circle:Pint yellow:1.25
+yellow invalidate:  variable = 1.25, linearx = true
+jj: var = 1.5
+on-replace Shapeless rectangle:Pint white:1.5
+white invalidate:  variable = 1.5, linearx = true
+on-replace Shapeless circle:Pint yellow:1.5
+yellow invalidate:  variable = 1.5, linearx = true
+jj: var = 1.75
+on-replace Shapeless rectangle:Pint white:1.75
+white invalidate:  variable = 1.75, linearx = true
+on-replace Shapeless circle:Pint yellow:1.75
+yellow invalidate:  variable = 1.75, linearx = true
+jj: var = 2.0
+on-replace Shapeless rectangle:Pint white:2.0
+white invalidate:  variable = 2.0, linearx = true
+on-replace Shapeless circle:Pint yellow:2.0
+yellow invalidate:  variable = 2.0, linearx = true

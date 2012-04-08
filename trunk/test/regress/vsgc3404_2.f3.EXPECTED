@@ -1,0 +1,5 @@
+script start
+color = Color { value: 10 }, fill = Color { value: 1 }
+color = Color { value: 1 }, fill = Color { value: 1 }
+color = Color { value: 2 }, fill = Color { value: 2 }
+script end

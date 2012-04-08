@@ -1,0 +1,22 @@
+/**
+ * VSGC-2464 : Lazy Binding: Instanciation - runtime
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+   var id: String;
+   var x : Integer;
+   init {
+      println("Foo id={id}, x={x}");
+   }
+}
+
+var b = 11;
+def afe = bind     Foo  { id: 'Eager',  x: b }
+def afl = bind lazy Foo { id: 'Lazy',   x: b }
+b = 4;
+b = 99;
+b = 205;
+println( afl.id );

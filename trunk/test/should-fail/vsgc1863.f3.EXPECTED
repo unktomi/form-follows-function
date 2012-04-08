@@ -1,0 +1,4 @@
+test\should-fail\vsgc1863.f3:10: There must be no more than one 'run' function.
+function run() {
+^
+1 error

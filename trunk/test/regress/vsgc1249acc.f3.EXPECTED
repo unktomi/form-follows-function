@@ -1,0 +1,36 @@
+all implicit defaults
+i 0 => 0 init: false
+b false => false init: false
+n 0.0 => 0.0 init: false
+s // => // init: false
+q // => // init: false
+0 false false false 0.0 false // false // false
+0 true false true 0.0 true // true // true
+i 0 => 10 init: true
+b false => true init: true
+n 0.0 => 10.0 init: true
+s // => /blah/ init: true
+q // => /1/ init: true
+10 true true true 10.0 true /blah/ true /1/ true
+all explicit defaults
+i 0 => 0 init: true
+b false => false init: true
+n 0.0 => 0.0 init: true
+s // => // init: true
+q // => // init: true
+0 true false true 0.0 true // true // true
+0 true false true 0.0 true // true // true
+i 0 => 10 init: true
+b false => true init: true
+n 0.0 => 10.0 init: true
+s // => /blah/ init: true
+q // => /1/ init: true
+10 true true true 10.0 true /blah/ true /1/ true
+all nondefaults
+i 0 => 3 init: true
+b false => true init: true
+n 0.0 => 1.0 init: true
+s // => /yada/ init: true
+q // => /1/ init: true
+3 true true true 1.0 true /yada/ true /1/ true
+3 true true true 1.0 true /yada/ true /1/ true

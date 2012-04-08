@@ -1,0 +1,73 @@
+This directory contains JDI implementation for F3.
+
+How to build/test f3jdi.jar?
+
+* make sure that you set JAVA_HOME pointing to JDK6. F3-JDI uses JDK 6
+JDI interface and so requires JDK 6 to build and run.
+
+* make sure that you build compiler repo (by running "ant" in parent dir.
+
+* run "ant jar" or "ant" (builds and tests f3jdi.jar) in this directory.
+
+How to run command line F3-JDI debugger?
+
+In addition to a JDI implementation, there is also a command line debugger
+like "jdb". This implementation is derived from jdb implementation except 
+that this one uses F3-JDI connectors by default.
+
+To run command line debugger on Mac OS, you can use
+
+    java -jar f3jdi.jar <java-main-class>
+
+or to use F3 target programs:
+
+    java -jar f3jdi.jar -classpath <path-of-f3rt.jar>  \
+        org.f3.runtime.Main <f3-module-class>
+
+On Windows and Linux, you can use the following commands:
+
+    java -cp <path-of-tools.jar>:f3jdi.jar org.f3.tools.debug.tty.TTY \
+        <java-main-class>
+
+or to use F3 target programs:
+
+    java -cp <path-of-tools.jar>:f3jdi.jar org.f3.tools.debug.tty.TTY \
+        -classpath <path-of-f3rt.jar> org.f3.runtime.Main \
+        <f3-module-class>
+
+Notes on F3-JDI implementation:
+    
+* F3-JDI connectors are in org.f3.jdi.connect package.
+
+* org.f3.jdi, .event, .request packages have classes implementing
+interfaces of com.sun.jdi, com.sun.jdi.event, com.sun.jdi.request respectively.
+
+* F3-JDI implementing classes delegate to underlying platform JDI objects.
+The wrapping/unwrapping is primarily done in org.f3.jdi.F3Wrapper
+and org.f3.jdi.F3VirtualMachine.
+
+* F3ObjectType, F3SequenceType represent org.f3.runtime.F3Object
+and org.f3.runtime.sequence.Sequence types respectively.
+
+* Command line debugger implementation is org.f3.tools.debug.tty.TTY.
+See also: src/org/f3/tools/debug/README.
+
+* org.f3.tools.debug.tty.Debugger is programmatic interface to command
+line debugger. This is currently used for testing - but it can be in futue.
+
+* Testing:
+
+The TestScaffold framework for platform JDI testing has been customized to test
+F3-JDI. For a Java example, please refer to org.f3.jdi.test.FramesTest.
+Each F3-JDI test uses launching connector with a target/debugger program.
+The target/debuggee sources are in org.f3.jdi.test.target package.
+For example, FramesTarget.java is the debuggee used by FramesTest.java. There
+are also F3 examples. HelloTarget.f3, SequenceTarget.f3 are target F3
+programs. Corresponding debugger tests are HelloTest.java and SequenceTest.java.
+F3 debugger tests are derived from F3TestBase (which is derived from
+TestScaffold). This takes care using f3rt.jar in classpath of debuggee
+and also using org.f3.runtime.Main as the main class of the debuggee.
+
+To run the tests, run:
+
+    ant test

@@ -1,0 +1,16 @@
+invalidating X
+invalidating Y
+factor is NaN
+dump [x = NaN, y = NaN]
+invalidating X
+factor is 1.0
+dump [x = 100.0, y = 100.0]
+invalidating Y
+invalidating X
+factor is 2.0
+dump [x = 200.0, y = 200.0]
+invalidating Y
+invalidating X
+factor is 1.0
+dump [x = 100.0, y = 100.0]
+invalidating Y

@@ -1,0 +1,14 @@
+/**
+ * VSGC-3490 :  -Xjcov option causes NPE and assertion failure during compile.
+ *
+ * @compilearg -Xjcov
+ * @test
+ */
+
+class vsgc3490 {
+    var title : String;
+}
+
+vsgc3490 {
+    title: "Hello";
+}

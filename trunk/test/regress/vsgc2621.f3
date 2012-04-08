@@ -1,0 +1,106 @@
+/**
+ * VSGC-2621 : Cannot cast Double to Number
+ *
+ * @test
+ * @run
+ */
+
+// This test shows that you can cast any java.lang.Number or java.lang.Character to any numeric
+// or java.lang.Character type.
+
+class class1 {
+    var field1: Number;
+}
+
+
+
+// This gets an Object and casts it to each type
+function foo(str: String, obj): Void { 
+    println("input: {str},    cast as Character (then cast to Integer): {(obj as Character) as Integer}");
+    println("input: {str},    cast as Byte:      {obj as Byte}");
+    println("input: {str},    cast as Short:     {obj as Short}");
+    println("input: {str},    cast as Integer:   {obj as Integer}");
+    println("input: {str},    cast as Long:      {obj as Long}");
+    println("input: {str},    cast as Float:     {obj as Float}");
+    println("input: {str},    cast as Double:    {obj as Double}");
+    println("input: {str},    cast as Number:    {obj as Number}");
+}
+
+
+// These functions are just shortcuts for calling foo with each of the different
+// types.  Note that these calls to foo autobox 'val' so that it really becomes
+// an Object.
+function doCharacter(val: Character) {
+    foo("java.lang.Character {val as Integer}", val);
+}
+
+function doByte(val: Byte) {
+    foo("java.lang.Byte {val}", val);
+}  
+
+function doShort(val: Short) {
+    foo("java.lang.Short {val}", val);
+}  
+
+function doInteger(val: Integer) {
+    foo("java.lang.Integer {val}", val);
+}  
+
+function doLong(val: Long) {
+    foo("java.lang.Long {val}", val);
+}  
+
+function doFloat(val: Float) {
+    foo("java.lang.Float {val}", val);
+}  
+
+function doDouble(val: Double) {
+    foo("java.lang.Double {val}", val);
+}  
+
+function doNumber(val: Number) {
+    foo("F3 Number {val}", val);
+}
+
+function doAtomicInteger(val: java.util.concurrent.atomic.AtomicInteger) {
+    foo("java.util.concurrent.atomic.AtomicInteger {val}", val);
+}
+
+function doAtomicLong(val: java.util.concurrent.atomic.AtomicLong) {
+    foo("java.util.concurrent.atomic.AtomicLong {val}", val);
+}
+
+function doBigInteger(val: java.math.BigInteger) {
+    foo("java.math.BigInteger {val}", val);
+}
+
+function doBigDecimal(val: java.math.BigDecimal) {
+    foo("java.math.BigDecimal{val}", val);
+}
+
+doCharacter(100 as Character);
+doCharacter(10000 as Character);
+doCharacter(80000 as Character);
+
+doByte(127);
+doShort(500);
+doInteger(100000);
+doLong(89);
+doFloat(42.6);
+
+doDouble(8989.79798);
+
+doNumber(89.6);
+
+
+doAtomicInteger(new java.util.concurrent.atomic.AtomicInteger(31416));
+doAtomicLong(new java.util.concurrent.atomic.AtomicLong(77777777));
+doBigDecimal(new java.math.BigDecimal(".89898989898989898989898989898989"));
+doBigInteger(new java.math.BigInteger("89898989898989898989898989898989"));
+
+// some misc stuff
+doDouble(256);
+doDouble(java.lang.Integer.MAX_VALUE);
+doDouble(78787878787878878.7878787878);
+
+

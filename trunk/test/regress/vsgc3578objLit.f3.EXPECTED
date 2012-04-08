@@ -1,0 +1,11 @@
+new instance
+after z
+after bz
+new instance
+bz.x: 'hi'
+after z.x
+new instance
+bz.x: 'sa'
+after z = null
+new instance
+bz.x: ''

@@ -1,0 +1,44 @@
+/*
+ * Regression test: VSGC-2898: Same variable name in nested for loops internal compiler error
+ *
+ * @test
+ */
+
+function f1() {
+{var x;}
+{var x;}
+}
+
+function f2() {
+var x;
+var y = function(x) {}
+}
+
+function f3(x) {
+var y = function(x) {}
+}
+
+function f4() {
+var x;
+var y = function() {x}
+}
+
+function f5(x) {
+var y = function() {x}
+}
+
+function f6() {
+var x;
+var y = x on replace {var x;}
+}
+
+function f7(x) {
+var y = x on replace {var x;}
+}
+
+function f8(x) {
+var y1 = function(x) {}
+var y2 = function(x) {}
+}
+
+

@@ -1,0 +1,6 @@
+test/should-fail/vsgc115.f3:29: incompatible types
+found   : String
+required: Number
+var x:Number = new String("ss");
+               ^
+1 error

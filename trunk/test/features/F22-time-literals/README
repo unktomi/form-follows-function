@@ -1,0 +1,4 @@
+Visage compiler feature test #22
+
+Demonstrated:
+ - Duration literals, such as 2s, 3m, 4h

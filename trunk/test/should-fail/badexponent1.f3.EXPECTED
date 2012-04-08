@@ -1,0 +1,4 @@
+test/should-fail/badexponent1.f3:5: Numbers in scientific E notation must specify an exponent as E, optionally followed by - or +, then a numeric exponent.
+var v = 34e;
+          ^
+1 error

@@ -1,0 +1,9 @@
+/**
+ * Regression test VSGC-1769 : class level var not initialized in time
+ *
+ * @compilefirst vsgc1769sub.f3
+ * @test
+ * @run
+ */
+
+vsgc1769sub{}

@@ -1,0 +1,12 @@
+/**
+ * VSGC-2769 : crash compiling bound function with for-loop embedded within string expression
+ *
+ * related test case
+ *
+ * @test
+ * @run
+ */
+
+var states = [true];
+def bs = bind  "{for (state in states) ["--"] }";
+println(bs);

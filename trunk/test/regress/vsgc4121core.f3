@@ -1,0 +1,21 @@
+/**
+ * VSGC-4121 : DisplacementMapTest throws java.lang.IllegalArgumentException: Map data must be non-null
+ *
+ * Core of the issue
+ *
+ * @test
+ * @run
+ */
+
+class vsgc4121core {
+  var num = 4;
+
+  init {
+    num = 12345;
+    var furd = bind num;
+    var mine = num;
+    println(mine);
+  }
+}
+
+vsgc4121core{}

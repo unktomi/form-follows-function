@@ -1,0 +1,6 @@
+/*
+ * @subtest
+ */
+public class vsgc3243B extends vsgc3243A { 
+    public var b: Object; 
+} 

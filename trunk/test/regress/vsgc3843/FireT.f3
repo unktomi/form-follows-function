@@ -1,0 +1,19 @@
+/**
+ * VSGC-3843 : compiled-bind: compiler crashes while compiling F3Tester.
+ *
+ * @subtest
+ */
+import f3.animation.*;
+public mixin class FireT {
+        public def fps : Timeline = Timeline {
+        repeatCount: Timeline.INDEFINITE
+        keyFrames: [
+            KeyFrame {
+                time: 2s
+                canSkip: false
+                action: function() {
+                }
+            }
+        ]
+    }
+}

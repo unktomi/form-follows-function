@@ -1,0 +1,52 @@
+/**
+ * VSGC-3200 - Improper use of reflection in XML library.
+ *
+ * @compilefirst vsgc3200A.f3
+ * @test
+ * @run
+ */
+
+import f3.reflect.*;
+
+var context = F3Local.getContext();
+var classRef = context.findClass("vsgc3200A");
+println("Reflecting class {classRef.getName()}");
+
+var ma = classRef.getVariable("a");
+println(" Type of variable {ma.getName()} inferred as {ma.getType()}");
+
+var mb = classRef.getVariable("b");
+println(" Type of variable {mb.getName()} inferred as {mb.getType()}");
+
+class MyListenerA extends F3ChangeListener {
+  override function onChange() {
+    println("A works");
+  }
+}
+
+class MyListenerB extends F3ChangeListener {
+  override function onChange() {
+    println("B works");
+  }
+}
+
+var x = vsgc3200A {};
+
+println("Without listeners");
+x.a = 100;
+x.b = 200;
+
+var xMirror = context.mirrorOf(x); 
+var badgea = ma.addChangeListener(xMirror, MyListenerA{});
+var badgeb = mb.addChangeListener(xMirror, MyListenerB{});
+
+println("With listeners");
+x.a = 1000;
+x.b = 2000;
+
+ma.removeChangeListener(xMirror, badgea);
+mb.removeChangeListener(xMirror, badgeb);
+
+println("Removed listeners");
+x.a = 10000;
+x.b = 20000;

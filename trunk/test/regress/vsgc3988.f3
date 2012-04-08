@@ -1,0 +1,65 @@
+/**
+ * VSGC-3988 : Compiled bind optimization: Shredding of a shared selector increases complexity of update$ methods.
+ *
+ * @test
+ * @run
+ */
+
+//This test is for correctness and not to prove the optimization.
+
+class A { 
+    public var a : Integer; 
+    public var b : Integer; 
+    public var c : Integer; 
+    public var d : Integer; 
+} 
+
+class B { 
+    public var parent : A; 
+    public var a = bind parent.a; 
+    public var b = bind parent.b; 
+    public var c = bind parent.c; 
+    public var d = bind parent.d; 
+}
+
+var b = B {
+  parent : A {
+     a: 1, b: 2, c: 3, d: 4
+  }
+} 
+
+println(b.a);
+println(b.b);
+println(b.c);
+println(b.d);
+
+// change parent's vars
+b.parent.a = 2;
+b.parent.b = 4;
+b.parent.c = 6;
+b.parent.d = 8;
+
+println(b.a);
+println(b.b);
+println(b.c);
+println(b.d);
+
+// change parent
+b.parent = A { a: -1, b: -2, c: -3, d: - 4 };
+
+println(b.a);
+println(b.b);
+println(b.c);
+println(b.d);
+
+// change parent's vars
+b.parent.a = 1;
+b.parent.b = 3;
+b.parent.c = 5;
+b.parent.d = 7;
+
+println(b.a);
+println(b.b);
+println(b.c);
+println(b.d);
+

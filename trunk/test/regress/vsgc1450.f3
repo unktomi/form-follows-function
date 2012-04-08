@@ -1,0 +1,33 @@
+/**
+ * Regression test VSGC-1450 : object literal local in bind
+ *
+ * @test
+ * @run
+ */
+
+class DragNode { 
+  var onMouseDragged : function(Integer) : Void;
+  init {
+    println("Creating new DragNode");
+  }
+}
+ 
+class DragInfo {
+  var x : Integer;
+  function setX(v : Integer) : Void {
+    x = v
+  }
+}
+
+var dragNode = bind DragNode {
+  var drag = new DragInfo;
+  onMouseDragged:
+    function(newX : Integer):Void {
+      drag.setX(newX);
+    }
+}
+
+for (i in [1..10]) {
+  dragNode.onMouseDragged(i)
+}
+

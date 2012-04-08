@@ -1,0 +1,13 @@
+/**
+ * VSGC-2602 : Overriding a protected var in a different package fails
+ *
+ * @compilefirst sub2602/vsgc2602base.f3
+ * @test
+ */
+
+import sub2602.vsgc2602base;
+
+class vsgc2602b extends java.util.ArrayList, vsgc2602base {
+  override var minimumWidth = 1; 
+}
+

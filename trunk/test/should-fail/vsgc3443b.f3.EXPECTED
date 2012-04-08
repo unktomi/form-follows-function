@@ -1,0 +1,10 @@
+test\should-fail\vsgc3443b.f3:17: Variable y is undefined inside on-invalidate trigger.
+var y = bind x on invalidate { println("Hello! {y}"); } on replace { println("Hello! {y}"); };
+                                                ^
+test\should-fail\vsgc3443b.f3:9: Variable y is undefined inside on-invalidate trigger.
+   var y = bind x on invalidate { println("Hello! {y}"); } on replace { println("Hello! {y}"); };
+                                                   ^
+test\should-fail\vsgc3443b.f3:13: Variable y is undefined inside on-invalidate trigger.
+   override var y = bind x on invalidate { println("Hello! {y}"); } on replace { println("Hello! {y}"); };
+                                                            ^
+3 errors

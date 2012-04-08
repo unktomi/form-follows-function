@@ -1,0 +1,15 @@
+/**
+ * Regression test VSGC-1055 : Function calls with primitive receivers in bound contexts revert to non-bound behavior
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+var width = 0;
+var x = bind width.intValue();
+System.out.println(x);
+width = 5;
+System.out.println(x);
+

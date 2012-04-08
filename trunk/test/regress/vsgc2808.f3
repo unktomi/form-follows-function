@@ -1,0 +1,22 @@
+/**
+ * VSGC-2808 : Regression: bind to a field with a trigger causes the trigger to get fired twice
+ *
+ * @test
+ * @run
+ */
+
+class Thing {
+    public var type: String;
+}
+
+var obj: Thing;
+
+var boundToField = bind obj.type on replace {
+    println("boundToField: {boundToField}");
+}
+
+var boundToObj = bind obj on replace {
+    println("boundToObj: {boundToObj.type}");
+}
+ 
+obj = Thing{type: "Fred"};

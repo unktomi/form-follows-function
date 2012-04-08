@@ -1,0 +1,15 @@
+/**
+ * Regression test VSGC-2023 : float not boxed to Float in sequence creation
+ *
+ * @test
+ * @run
+ */
+
+class Stopper {
+  var fl : java.lang.Float
+}
+var stops : Stopper[] = [Stopper{fl: 2.3.floatValue()}];
+
+var fr = for (stop in stops) { stop.fl.floatValue() }
+println(fr)
+

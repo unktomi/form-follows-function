@@ -1,0 +1,25 @@
+
+----------------------------------------------------
+trigger: a1=0.0
+trigger: a1=10.0
+try to write to bound var
+SUCCESS: org.f3.runtime.AssignToBoundException: Cannot assign to bound variable
+
+----------------------------------------------------
+trigger: a2=
+trigger: a2=10.011.0
+try to write to bound seq var
+SUCCESS: org.f3.runtime.AssignToBoundException: Cannot mutate bound sequence
+
+----------------------------------------------------
+trigger: a3=0.0
+trigger: x3=10.0
+try to write to doubly bound var
+SUCCESS: org.f3.runtime.AssignToBoundException: Cannot assign to bound variable
+
+----------------------------------------------------
+trigger: a4=
+trigger: a4=10.011.0
+trigger: x4=10.011.0
+try to write to bound seq var
+SUCCESS: org.f3.runtime.AssignToBoundException: Cannot mutate bound sequence

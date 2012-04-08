@@ -1,0 +1,36 @@
+/**
+ * VSGC-3403 : ClassCastException when return type is missing in abstract 
+ *             function of a parent class
+ * @test/compile-error
+ */
+
+class Parent {
+    var getObjects:function();
+}
+
+class Child extends Parent {
+    var objects: Object[];
+    function run() {
+        // this should an error
+        objects = getObjects();
+    }
+}
+
+var objects: Object[];
+
+var getObjects:function() : Void;
+// this should an error
+objects = getObjects();
+
+function func() : Void {}
+// this should an error
+objects = func(); 
+
+var getObjectsVoidInferred : function();
+// this should be an error
+objects = getObjectsVoidInferred();
+
+function funcVoidInferred() {}
+// this should be an error
+objects = funcVoidInferred();
+

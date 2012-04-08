@@ -1,0 +1,20 @@
+/**
+ * VSGC-4092 : sequence bound-if with logical-and condition gives stale explicit sequence element
+ *
+ * Minimal version from JIRA
+ *
+ * @test
+ * @run
+ */
+
+var n = 5;
+var content =  bind if (true and n < 7) [4, n] else [0..n]
+     on replace oldValue[a..b] = newValue {
+        println("{n}: [{a}..{b}] = { newValue.toString()}");
+     };
+
+n = 7;
+println("---- before three ----");
+n = 3;
+println("---- after three ----");
+println(content);

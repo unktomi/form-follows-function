@@ -1,0 +1,6 @@
+/*
+ * @subtest vsgc306LinearGradient
+ */
+
+public mixin class vsgc306Paint {
+}

@@ -1,0 +1,17 @@
+/**
+ * VSGC-3184 : Incorrect ambiguous reference error 
+ *
+ * @test
+ */
+
+mixin class Colorable {
+   public var base: Integer;
+}
+
+public class xxx extends Colorable {
+    var color: Integer;
+    public override var base on replace {
+        // keep color in sync with base
+        color = base;
+    }
+}

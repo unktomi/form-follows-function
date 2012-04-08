@@ -1,0 +1,21 @@
+This directory contains code derived from JPDA example "tty" debugger.
+
+Main changes here:
+
+* Using org.f3.jdi.F3Bootstrap instead of com.sun.jdi.Bootstrap
+- so that F3-JDI connectors are found and used. (Note: on Mac classes.jar
+is on bootstrap path and so F3-JDI connectors will not be found unless we
+put f3jdi.jar on bootclasspath!. Using F3Bootstrap solves this issue).
+
+* package renaming:
+   com.sun.tools.example.debug.expr -> org.f3.tools.debug.expr
+   com.sun.tools.example.debug.tty -> org.f3.tools.debug.tty
+
+* TTY.java uses F3-JDI connectors instead of platform (java) connectors.
+
+* Static state of most classes like MessageOutput, Env, ThreadInfo are replaced
+with "instance" states and "env" object passed around to get proper state
+information. Also, MessageOutput has ability to set output and error streams
+with defaults being System.out and System.err respectively.
+
+* Debugger.java - programmatic alternative to TTY.java

@@ -1,0 +1,101 @@
+/**
+ * VSGC-2477 : Correct conversion problems that show-up when Number=Float
+ *
+ * @test
+ * @run
+ */
+
+function run() {
+	def bv : Byte = 16;
+	def sv : Short = 0x202;
+	def iv : Integer = 0x04040404;
+	def lv : Long = 0x08080808; //TODO: constants, separate issue 08;
+	def fv : Float = 2.5;
+	def dv : Double = 3.14159265358979323;
+
+	var bb : Byte;
+	var ss : Short;
+	var ii : Integer;
+	var ll : Long;
+	var ff : Float;
+	var dd : Double;
+
+	bb = bv;
+	ss = bv;
+	ii = bv;
+	ll = bv;
+	ff = bv;
+	dd = bv;
+	println( bb );
+	println( ss );
+	println( ii );
+	println( ll );
+	println( ff );
+	println( dd );
+
+	bb = sv;
+	ss = sv;
+	ii = sv;
+	ll = sv;
+	ff = sv;
+	dd = sv;
+	println( bb );
+	println( ss );
+	println( ii );
+	println( ll );
+	println( ff );
+	println( dd );
+
+	bb = iv;
+	ss = iv;
+	ii = iv;
+	ll = iv;
+	ff = iv;
+	dd = iv;
+	println( bb );
+	println( ss );
+	println( ii );
+	println( ll );
+	println( ff );
+	println( dd );
+
+	bb = lv;
+	ss = lv;
+	ii = lv;
+	ll = lv;
+	ff = lv;
+	dd = lv;
+	println( bb );
+	println( ss );
+	println( ii );
+	println( ll );
+	println( ff );
+	println( dd );
+
+	bb = fv;
+	ss = fv;
+	ii = fv;
+	ll = fv;
+	ff = fv;
+	dd = fv;
+	println( bb );
+	println( ss );
+	println( ii );
+	println( ll );
+	println( ff );
+	println( dd );
+
+	bb = dv;
+	ss = dv;
+	ii = dv;
+	ll = dv;
+	ff = dv;
+	dd = dv;
+	println( bb );
+	println( ss );
+	println( ii );
+	println( ll );
+	println( ff );
+	println( dd );
+}
+	

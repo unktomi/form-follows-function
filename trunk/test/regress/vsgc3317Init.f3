@@ -1,0 +1,17 @@
+/**
+ * VSGC-3317 : Optimize bound F3 var select with mutable selectors
+ *
+ * @compilefirst vsgc3317InitSubA.f3
+ * @compilefirst vsgc3317InitSubB.f3
+ * @test
+ * @run
+ */
+
+var jj2 = bind rot.x;
+var rot : vsgc3317InitSubB;
+
+function run() {
+  def anm = vsgc3317Init{}
+  anm.rot = vsgc3317InitSubB{}
+  println(anm.jj2);
+}

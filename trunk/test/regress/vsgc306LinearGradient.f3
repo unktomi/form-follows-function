@@ -1,0 +1,10 @@
+/* VSGC-306:  Not importing base class types.
+ *
+ * @test
+ * @compile vsgc306Gradient.f3
+ * @compile vsgc306LinearGradient.f3 
+ * @compile vsgc306Paint.f3
+ * @compile ./blah/canvas/vsgc306Transformable.f3 
+ */
+public class vsgc306LinearGradient extends vsgc306Gradient {
+}

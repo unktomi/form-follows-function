@@ -1,0 +1,12 @@
+/*
+ * Regression - VSGC-4375 - Compilation fails when using java classes with generics.
+ *
+ * @compilefirst vsgc4375Getter.java
+ * @compilefirst vsgc4375Processor.java
+ * @compilefirst vsgc4375DataContainer.f3
+ * @test
+ *
+ */
+
+
+vsgc4375DataContainer{data: "compilation not working"}.perform(new vsgc4375Processor());

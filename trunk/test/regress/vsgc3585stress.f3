@@ -1,0 +1,53 @@
+/**
+ * VSGC-3585 : Compiled bind: bound sequence: slice
+ *
+ * Stress test
+ *
+ * @test
+ * @run
+ */
+
+var seq : Object[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+var a = 1;
+var b = 5;
+var mir : Object[];
+def bsi = bind seq[a..b] on replace [st..en] = newV
+  { 
+                                    mir[st..en] = newV; 
+                                    if(mir != bsi) {
+                                         println("--MISMATCH");
+                                         println(bsi);
+                                         println(mir);
+                                    }
+  };
+
+function slurify() {
+  insert [3..6] after seq[3];
+  seq[3] = 'v';
+  insert 'a' before seq[0];
+  delete seq[2..10];
+  insert 'q' into seq;
+  seq[2..3] = [100..110];
+}
+
+function run() {
+  slurify();
+  a = -10;
+  slurify();
+  b = 90;
+  slurify();
+  a = 2;
+  slurify();
+  b = -4;
+  slurify();
+  a = 4;
+  slurify();
+  b = 5;
+  slurify();
+  a = 3;
+  slurify();
+  b = 3;
+  slurify();
+}
+
+

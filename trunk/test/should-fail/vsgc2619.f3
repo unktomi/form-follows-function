@@ -1,0 +1,14 @@
+/*
+ * Regression test: VSGC-2619: Allow duplicate variables defined in nested enclosing scopes
+ *
+ * @test/compile-error
+ */
+
+class Main {
+    public function f() {
+        var x : Integer;
+        {
+            var x : Integer;
+        }
+    }
+}

@@ -1,0 +1,7 @@
+test/should-fail/badbrace.f3:6: The character '}' should be escaped in a string literal to avoid confusion with embedded expressions such as "{ variable }".
+var v = "abcd } efghi";
+              ^
+test/should-fail/badbrace.f3:7: The character '}' should be escaped in a string literal to avoid confusion with embedded expressions such as "{ variable }".
+var v = 'abcd } efghi';
+              ^
+2 errors

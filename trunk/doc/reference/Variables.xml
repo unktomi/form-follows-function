@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="Variables"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title xml:id="Variables.title">Variables</title>
+
+  <para>This chapter discusses the declaration, use and scope of
+  variables.</para>
+
+  <sect1>
+    <title>def and var</title>
+
+    <para>Variables are declared with two keywords: <code>def</code> and
+    <code>var</code>. Variables which are defined once, and are never
+    assigned-to, are defined with <command>def</command>.</para>
+
+    <para><programlisting>def Z0 = 376.730313;</programlisting></para>
+
+    <para>Note that a bound variable (without inverse) is defined once and can
+    never be assigned. It should also be declared with
+    <command>def</command>:</para>
+
+    <para><programlisting>def x = bind y + z;</programlisting></para>
+
+    <para>See the <link linkend="Binding">Binding chapter</link>.</para>
+
+    <para>Variables that will or can be assigned-to should be declared with
+    <command>var</command>:</para>
+
+    <para><programlisting>var x = 0; 
+++x;</programlisting></para>
+
+    <para>Be sure to use <command>def</command> when the intent is that it is
+    a definition which will not change. Doing so is a useful tool that allows
+    the compiler to generate more efficient code and to better check the
+    correctness of programs. Using <command>def</command> is also important
+    for readers of this code (or documentation generated from it) helping them
+    understand what can change, and what cannot.</para>
+  </sect1>
+
+  <sect1>
+    <title>Kinds of Variables</title>
+
+    <para>Variables can be declared at the script level (script variable),
+    inside a class (instance variable), or within blocks (local
+    variable)</para>
+
+    <sect2>
+      <title>Script Variables</title>
+
+      <para>Script variables are variables which are declared at the top-level
+      of a script (as opposed to inside a class definition or block). Script
+      variables are visible through-out the entire script -- a member access
+      expression is not needed.</para>
+
+      <para><programlisting>var thing = "Thing"; 
+class A { 
+   function getThing() : String { thing } 
+}</programlisting></para>
+
+      <para>Without an added access modifer, script variables are not visible
+      outside the script. If access modifiers are added which make the script
+      variable visible outside the script, they may be accessed as members of
+      the script. Access modifiers for variables are:
+      <command>public</command>, <command>protected</command>,
+      <command>package</command>, <command>public-read</command>, and
+      <command>public-init</command> -- see the <link
+      linkend="Modifiers">Access Modifiers chapter</link>. For example, if
+      this is script Foo.f3:</para>
+
+      <para><programlisting>public def bohr = 0.529177e-10</programlisting></para>
+
+      <para>Then script Noof.f3 can access bohr:</para>
+
+      <para><programlisting>println(Foo.bohr)</programlisting></para>
+
+      <para>The lifetime of a script variable is from the time the script is
+      loaded until the end of program execution.</para>
+    </sect2>
+
+    <sect2 xml:id="InstanceVariables">
+      <title>Instance Variables</title>
+
+      <para>Instance variables are declared at the top-level of a class.
+      Within the declaring class (and its subclasses) instance variables are
+      accessed simply by use of the variable name. Otherside of the class,
+      there are accessed through the object of which they are a member. For
+      example:</para>
+
+      <para><programlisting>def anA = A{ rat: true }; 
+println(anA.rat); 
+class A { 
+   var rat : Boolean; 
+   function isIt() { rat }  
+}  
+class B { 
+   function wellisIt() { anA.rat } 
+}</programlisting></para>
+
+      <para>Access modifiers (<command>public</command>,
+      <command>protected</command>, <command>package</command>,
+      <command>public-read</command>, and <command>public-init</command>)
+      control the visiblity of instance variables. If no access modifers are
+      provided, instance variables are visible only within the script.</para>
+
+      <para>The lifetime of an instance variable is the lifetime of the class
+      instance.</para>
+    </sect2>
+
+    <sect2>
+      <title>Local Variables</title>
+
+      <para>Local variables are declared within blocks, including blocks which
+      are the bodies of functions. Local variables are visible only within the
+      inner-most block -- their scope includes the entire body of that block
+      (not just below the variable declaration). Member access expressions are
+      not applicable to local variables. Access modifiers must not be applied
+      to local variable declarations.</para>
+
+      <para><remark>[To do: explain why the whole-block scoping rule, and give
+      example]</remark></para>
+
+      <para>The lifetime of a local variable ends when the block is
+      exited.</para>
+
+      <para>Unlike script and instance variables, local variable declarations
+      are expressions, that is, they have type and value. Their type is the
+      type of the variable and their value is the value of the
+      variable.</para>
+    </sect2>
+
+    <sect2>
+      <title>Parameters, Induction Variables, and other Expression
+      Parameters</title>
+
+      <para>Function parameters are visible only within the function body.
+      For-expression induction variables are visible only within the
+      for-expression body. The scope of other expression parameters is their
+      expression.</para>
+
+      <para>They must not be assigned to.</para>
+
+      <para>See <link linkend="Functions">the Functions chapter</link>, the
+      <link linkend="forExpression">for-expression</link>, and <link
+      linkend="onReplaceClause">on replace</link> for syntax.</para>
+    </sect2>
+  </sect1>
+
+  <sect1>
+    <title>Syntax of Variable Declarations</title>
+
+    <para></para>
+
+    <figure>
+      <title>variableDeclaration</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="variableDeclaration.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>typeSpecifier</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="typeSpecifier.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <figure>
+      <title>initializingExpression</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="initializingExpression.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <table>
+      <title>Variable Modifiers</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><command>package</command></entry>
+
+            <entry>The variable can only be accessed within the package where
+            it is defined. See <link linkend="Modifiers">Access
+            Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>protected</command></entry>
+
+            <entry>The variable can be accessed from the package where it is
+            defined and from subclasses of the class where it is defined. See
+            <link linkend="Modifiers">Access Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>public</command></entry>
+
+            <entry>The variable can be accessed anywhere. See <link
+            linkend="Modifiers">Access Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>public-read</command></entry>
+
+            <entry>The <command>var</command> can be read anywhere. See <link
+            linkend="Modifiers">Access Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>public-init</command></entry>
+
+            <entry>The <command>var</command> can be initialized or read
+            anywhere. Where initialized means set (but not bound) in an object
+            literal. See <link linkend="Modifiers">Access
+            Modifiers</link>.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>While syntactically optional, an
+    <emphasis>initializingExpression</emphasis> is required with
+    <command>def</command>.</para>
+
+    <para>When <command>bind</command> is specified in the
+    <emphasis>initializingExpression</emphasis> the variable is kept updated
+    to the value of the <emphasis>expression</emphasis>. When <command>with
+    inverse</command> is specified, the <emphasis>expression</emphasis> must
+    be a simple variable reference and that variable is kept updated when the
+    variable being declared is changed. See <link linkend="Binding">the
+    Binding chapter</link> for details.</para>
+  </sect1>
+
+  <sect1 xml:id="onReplaceClause">
+    <title><command>on replace</command> Clause</title>
+
+    <para></para>
+
+    <figure>
+      <title>onReplaceClause</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="onReplaceClause.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para>The <emphasis>onReplaceClause</emphasis>, if present, causes the
+    block to be executed each time the value of the variable changes --
+    including the assignment of its initial value.</para>
+
+    <para>The optional parameters provide information about what is changed:
+    <command>on replace</command> <emphasis>oldValue</emphasis>
+    <command>[</command> <emphasis>firstIndex</emphasis> <command>..</command>
+    <emphasis>lastIndex</emphasis><command> ] =</command>
+    <emphasis>newElements</emphasis> <command>{</command> ...
+    <command>}</command></para>
+
+    <para>But these parameters are all optional, and in the simplest form none
+    of these are present:</para>
+
+    <para><programlisting>var x = 0 on replace { println("x is now: {x}") }</programlisting></para>
+
+    <para>The <emphasis>oldValue</emphasis> parameter provides the previous
+    value.</para>
+
+    <para><programlisting>var x = 0 on replace oldValue { println("x was {oldValue} and is now: {x}") }</programlisting></para>
+
+    <para>The remaining parameters are useful with sequences.</para>
+
+    <para><programlisting>var seq = ['A', 'B', 'C', 'D', 'E', 'F'] on replace oldValue[firstIdx .. lastIdx] = newElements { 
+    println("replaced {oldValue}[{firstIdx}..{lastIdx}] by {newElements} yielding {seq}") 
+} 
+seq[3] = '$'; 
+insert '#' into seq; 
+delete '$' from seq; 
+delete seq[2]; 
+seq[1..4] = ['X', 'Y']; 
+delete seq; </programlisting></para>
+
+    <para>Which prints:</para>
+
+    <screen>replaced [0..-1] by ABCDEF yielding ABCDEF
+replaced ABCDEF[3..3] by $ yielding ABC$EF
+replaced ABC$EF[6..5] by # yielding ABC$EF#
+replaced ABC$EF#[3..3] by  yielding ABCEF#
+replaced ABCEF#[2..2] by  yielding ABEF#
+replaced ABEF#[1..4] by XY yielding AXY
+replaced AXY[0..2] by  yielding</screen>
+
+    <para>Note that <emphasis>firstIndex</emphasis>,
+    <emphasis>lastIndex</emphasis> and <emphasis>newElements</emphasis> refer
+    only to the portion of the sequence which has changed,</para>
+
+    <para><remark>[To do: explain concept more. Note that it is inferior to
+    binding]</remark></para>
+
+    <para><remark>[To do: brief intro to slices, plus
+    cross-reference]</remark></para>
+  </sect1>
+
+  <sect1>
+    <title><command>isInitialized</command> Built-In Function</title>
+
+    <para>The built-in <command>isInitialized</command> function takes a
+    variable reference as its argument, and returns true if it has ever been
+    set. Note that only explicit sets are considered, if the variable starts
+    out with the <link linkend="DefaultValues">default value of the
+    type</link> this is not considered being set. One typical usage is to set
+    up uninitialized instance variables in the <link
+    linkend="initBlock"><command>init</command> block</link>:</para>
+
+    <programlisting>class Temperature {
+   var fahrenheit : Number;
+   var celcius : Number;
+   function show() { println( "Fahrenheit: {fahrenheit},  Celcius: {celcius}" ) }
+   init {
+      if (not isInitialized(fahrenheit)) {
+         fahrenheit = celcius * 9 / 5 + 32
+      } else {
+         celcius = (fahrenheit - 32) * 5 / 9
+      }
+   }
+}
+Temperature{fahrenheit: 98.6}.show();
+Temperature{celcius: 100}.show();
+</programlisting>
+
+    <para>This will print:</para>
+
+    <screen>Fahrenheit: 98.6,  Celcius: 37.0
+Fahrenheit: 212.0,  Celcius: 100.0</screen>
+
+    <para>If update is wanted any time the set occurs, then
+    <command>isInitialized</command> can be used in the <emphasis><link
+    linkend="onReplaceClause">onReplaceClause</link></emphasis>:</para>
+
+    <programlisting>class Temperature {
+   var fahrenheit : Number on replace {
+      if (isInitialized(fahrenheit)) {
+         celcius = (fahrenheit - 32) * 5 / 9
+      }
+   }
+   var celcius : Number on replace {
+      if (isInitialized(celcius)) {
+         fahrenheit = celcius * 9 / 5 + 32
+      }
+   }
+   function show() { println( "Fahrenheit: {fahrenheit},  Celcius: {celcius}" ) }
+}
+</programlisting>
+
+    <para>Note the <command>isInitialized</command> prevents the update when
+    the instance variables are initially set to the default value.</para>
+  </sect1>
+
+  <sect1>
+    <title>Pseudo-variables</title>
+
+    <para>Pseudo-variables are pre-defined variable definitions. They are
+    script-level <command>def</command>s and thus cannot be assigned to.
+    Currently there are three:</para>
+
+    <para><command>__PROFILE__ </command>is either one of "mobile", "desktop"
+    or "browser" depending on which environment the script is executing in.
+    </para>
+
+    <para><command>__FILE__</command><command> </command>is the string
+    representation of the URL from which the script containing the<command>
+    __FILE__ </command>was loaded.</para>
+
+    <para><command>__DIR__ </command>is the string representation of the URL
+    of the directory from which the script containing the<command> __DIR__
+    </command>was loaded.</para>
+
+    <para>They are typically used to reference resource files stored along
+    side the compiled sources. So if the script Foo.f3 is compiled, and the
+    resultant Foo.class is placed in the same directory with myIcon.gif, it
+    might be accessed in Foo.f3 with:</para>
+
+    <programlisting>Image {
+        url: "{__DIR__}myIcon.gif"
+    }</programlisting>
+
+    <para></para>
+  </sect1>
+</chapter>

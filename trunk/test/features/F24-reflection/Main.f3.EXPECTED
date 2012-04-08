@@ -1,0 +1,142 @@
+clsSquare=class Main.Square f3-class:true mixin:false
+Sq.super: [class MyRect]
+clsSimple=class Main.Simple f3-class:true mixin:false
+Simpl.super: [class Main.Square]
+Simpl.super (inherited also):
+  class Main.Simple
+  class Main.Square
+  class MyCanvasItem
+  class MyRect
+  class MyShape
+  class java.lang.Object
+  class org.f3.runtime.F3Base
+clsString=class java.lang.String f3-class:false mixin:false
+String .super (direct only):
+  class java.io.Serializable
+  class java.lang.CharSequence
+  class java.lang.Comparable
+  class java.lang.Object
+String .super (inherited also):
+  class java.io.Serializable
+  class java.lang.CharSequence
+  class java.lang.Comparable
+  class java.lang.Object
+  class java.lang.String
+String methods:
+  function java.lang.String.charAt(Integer):Character
+  function java.lang.String.checkBounds(JavaArray<Byte>,Integer,Integer):Void
+  function java.lang.String.codePointAt(Integer):Integer
+  function java.lang.String.codePointBefore(Integer):Integer
+  function java.lang.String.codePointCount(Integer,Integer):Integer
+  function java.lang.String.compareTo(java.lang.String):Integer
+  function java.lang.String.compareToIgnoreCase(java.lang.String):Integer
+  function java.lang.String.concat(java.lang.String):java.lang.String
+  function java.lang.String.contains(java.lang.CharSequence):Boolean
+  function java.lang.String.contentEquals(java.lang.CharSequence):Boolean
+  function java.lang.String.contentEquals(java.lang.StringBuffer):Boolean
+  function java.lang.String.copyValueOf(JavaArray<Character>):java.lang.String
+  function java.lang.String.copyValueOf(JavaArray<Character>,Integer,Integer):java.lang.String
+  function java.lang.String.endsWith(java.lang.String):Boolean
+  function java.lang.String.equals(java.lang.Object):Boolean
+  function java.lang.String.equalsIgnoreCase(java.lang.String):Boolean
+  function java.lang.String.format(java.lang.String,JavaArray<java.lang.Object>):java.lang.String
+  function java.lang.String.format(java.util.Locale,java.lang.String,JavaArray<java.lang.Object>):java.lang.String
+  function java.lang.String.getBytes():JavaArray<Byte>
+  function java.lang.String.getBytes(Integer,Integer,JavaArray<Byte>,Integer):Void
+  function java.lang.String.getBytes(java.lang.String):JavaArray<Byte>
+  function java.lang.String.getBytes(java.nio.charset.Charset):JavaArray<Byte>
+  function java.lang.String.getChars(Integer,Integer,JavaArray<Character>,Integer):Void
+  function java.lang.String.getChars(JavaArray<Character>,Integer):Void
+  function java.lang.String.hashCode():Integer
+  function java.lang.String.indexOf(Integer):Integer
+  function java.lang.String.indexOf(Integer,Integer):Integer
+  function java.lang.String.indexOf(java.lang.String):Integer
+  function java.lang.String.indexOf(java.lang.String,Integer):Integer
+  function java.lang.String.indexOf(JavaArray<Character>,Integer,Integer,JavaArray<Character>,Integer,Integer,Integer):Integer
+  function java.lang.String.intern():java.lang.String
+  function java.lang.String.isEmpty():Boolean
+  function java.lang.String.lastIndexOf(Integer):Integer
+  function java.lang.String.lastIndexOf(Integer,Integer):Integer
+  function java.lang.String.lastIndexOf(java.lang.String):Integer
+  function java.lang.String.lastIndexOf(java.lang.String,Integer):Integer
+  function java.lang.String.lastIndexOf(JavaArray<Character>,Integer,Integer,JavaArray<Character>,Integer,Integer,Integer):Integer
+  function java.lang.String.length():Integer
+  function java.lang.String.matches(java.lang.String):Boolean
+  function java.lang.String.offsetByCodePoints(Integer,Integer):Integer
+  function java.lang.String.regionMatches(Boolean,Integer,java.lang.String,Integer,Integer):Boolean
+  function java.lang.String.regionMatches(Integer,java.lang.String,Integer,Integer):Boolean
+  function java.lang.String.replace(Character,Character):java.lang.String
+  function java.lang.String.replace(java.lang.CharSequence,java.lang.CharSequence):java.lang.String
+  function java.lang.String.replaceAll(java.lang.String,java.lang.String):java.lang.String
+  function java.lang.String.replaceFirst(java.lang.String,java.lang.String):java.lang.String
+  function java.lang.String.split(java.lang.String):JavaArray<java.lang.String>
+  function java.lang.String.split(java.lang.String,Integer):JavaArray<java.lang.String>
+  function java.lang.String.startsWith(java.lang.String):Boolean
+  function java.lang.String.startsWith(java.lang.String,Integer):Boolean
+  function java.lang.String.subSequence(Integer,Integer):java.lang.CharSequence
+  function java.lang.String.substring(Integer):java.lang.String
+  function java.lang.String.substring(Integer,Integer):java.lang.String
+  function java.lang.String.toCharArray():JavaArray<Character>
+  function java.lang.String.toLowerCase():java.lang.String
+  function java.lang.String.toLowerCase(java.util.Locale):java.lang.String
+  function java.lang.String.toString():java.lang.String
+  function java.lang.String.toUpperCase():java.lang.String
+  function java.lang.String.toUpperCase(java.util.Locale):java.lang.String
+  function java.lang.String.trim():java.lang.String
+  function java.lang.String.valueOf(Boolean):java.lang.String
+  function java.lang.String.valueOf(Character):java.lang.String
+  function java.lang.String.valueOf(Double):java.lang.String
+  function java.lang.String.valueOf(Float):java.lang.String
+  function java.lang.String.valueOf(Integer):java.lang.String
+  function java.lang.String.valueOf(java.lang.Object):java.lang.String
+  function java.lang.String.valueOf(JavaArray<Character>):java.lang.String
+  function java.lang.String.valueOf(JavaArray<Character>,Integer,Integer):java.lang.String
+  function java.lang.String.valueOf(Long):java.lang.String
+Square methods:
+MyRect.methods: 
+  function MyRect.corners():java.awt.geom.Point2D[]
+  function MyRect.transformed(java.awt.geom.AffineTransform):MyShape
+MyRect variables: 
+  var MyRect.crners:java.awt.geom.Point2D[]
+MyRect variables (inherited also): 
+  crners : java.awt.geom.Point2D[] = ;
+  shapeFun1 : function(Integer,java.lang.String):java.lang.String = function(Integer,java.lang.String):java.lang.String{...};
+  shapeInt : Integer = 12;
+  static shapeIntDefault : Integer = 10;
+  shapeNum : Float = 1.5;
+  shapeStr : class java.lang.String = str1;
+Square attributes (only):
+  var atBlank : class java.lang.String
+  protected var atProt : class java.lang.String
+  public var atPub : class java.lang.String
+  public def cc : Integer
+Simple attributes (only):
+  public-init var at1 : class java.lang.Object
+  public-read package var func : function(java.lang.String):function():Void
+MyRect methods:
+  function MyRect.corners():java.awt.geom.Point2D[]
+  function MyRect.transformed(java.awt.geom.AffineTransform):MyShape
+MyRect.times1(Number): function MyRect.times1(Float):Float
+call times1(2.5): FloatValue(45.0)
+MyRect.shapeFun1 variable: var MyShape.shapeFun1:function(Integer,java.lang.String):java.lang.String
+ - apply(3,"abcdefg") => defg
+var MyShape.shapeIntDefault:Integer (static): IntegerValue(10)
+Created myRectRef2 = MyRect{shapeNum: 2.5}.
+call myRectRef2.times1(2.5): FloatValue(125.0)
+Allocated new MyRect: shapeInt:IntegerValue(20).
+After updating shapeFun1 to repeat:
+ - apply(3,"abc") => 
+Allocated new String: .
+Covariance test: val1-type: Main.B val2-type: Main.B.
+myAnonRectRef.getType: class <anonymous>
+myAnonRectRef.getClassType: class <anonymous>
+myAnonRectRef.super: [class MyRect]
+myAnonRectRef.super (inherited also):
+  class <anonymous>
+  class MyCanvasItem
+  class MyRect
+  class MyShape
+  class java.lang.Object
+  class org.f3.runtime.F3Base
+Main.getFunction("repeat"): function Main.repeat(Integer,java.lang.String):java.lang.String
+Bar.getFunctions(false): [function Bar.convert(JavaArray<java.lang.Object>):JavaArray<java.lang.Object>]

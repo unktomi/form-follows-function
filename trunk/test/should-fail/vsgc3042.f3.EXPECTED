@@ -1,0 +1,11 @@
+test/should-fail/vsgc3042.f3:9: incompatible types
+found   : void
+required: vsgc3042.A
+var x:A = if (true) {};
+                    ^
+test/should-fail/vsgc3042.f3:9: incompatible types
+found   : void
+required: vsgc3042.A
+var x:A = if (true) {};
+          ^
+2 errors

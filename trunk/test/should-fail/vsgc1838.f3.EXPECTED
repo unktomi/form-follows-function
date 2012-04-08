@@ -1,0 +1,6 @@
+test/should-fail/vsgc1838.f3:15: Type mismatch for bind with inverse
+found: String
+required: Object
+    to:bind hvf with inverse;
+            ^
+1 error

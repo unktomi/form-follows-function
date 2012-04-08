@@ -1,0 +1,8 @@
+/**
+ * @subtest vsgc2278.f3
+ */
+
+package class vsgc2278Sub {
+  public var x;
+  protected function y() {};
+}

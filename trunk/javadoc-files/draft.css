@@ -1,0 +1,8 @@
+/* For the "DRAFT" water mark. */
+body {
+        background-image: url('draft.png');
+        background-repeat: no-repeat;
+        background-position: top left;
+}
+
+.private { display: none; }

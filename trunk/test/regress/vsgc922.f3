@@ -1,0 +1,59 @@
+/*
+ * vsgc922 : Using reference to local variable in its own object literal definition CAUSES java.lang.VerifyError
+ *
+ * This bug was fixed back in April. The reported test case used GUI.
+ * This is base on that, obviously spoofed, but requires no gui.
+ * To reproduce:
+ * Change all var's to 'attribute' and you can compile and run to see VerifyError with an old enough build
+ *
+ * @test
+ * @run
+ */
+
+var f = Frame {
+
+    var img : ImajeVue = ImajeVue {
+        imaje : Imaje { url : "somedir/apic.jpg" };
+        onMouseClicked : function( ): Void {
+            img.imaje = Imaje{ url : "http://www.yoururl.com/pic/funnypic.gif" };
+        }
+    };
+
+    stuff : Canvass {
+        content : [
+            img
+        ]
+    }
+
+    visible : true
+    width : 100
+    height : 150
+    title : "vsgc-922"
+
+    test:function():Void {      img.onMouseClicked();    }
+
+}
+
+f.test();
+
+class Frame {
+ var stuff : Canvass;
+ var  visible:Boolean;
+  var width:Integer;
+  var height:Integer;
+  var title:String;
+  var test:function():Void;
+}
+
+class Canvass {
+  var content:ImajeVue[];
+}
+
+class ImajeVue {
+         var imaje:Imaje;
+         var onMouseClicked : function():Void;
+}
+
+class Imaje {
+ var url:String;
+}

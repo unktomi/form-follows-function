@@ -1,0 +1,18 @@
+/**
+ * Regression test for VSGC-3120 : Regression: binding to a sequence member throws CCE
+ *
+ * @test
+ * @run
+ */
+
+var flags: Boolean[] = [true, false];
+var b: Boolean = bind flags[0]; 
+println(b);
+
+var stuff: Short[] = [1, 2, 3];
+var n: Integer = bind stuff[1]; 
+println(n);
+var no: Object = bind stuff[2]; 
+println(no);
+
+0;

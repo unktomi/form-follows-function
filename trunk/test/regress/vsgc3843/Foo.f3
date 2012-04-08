@@ -1,0 +1,8 @@
+/**
+ * VSGC-3843 : compiled-bind: compiler crashes while compiling F3Tester.
+ *
+ * @compilefirst FireT.f3
+ * @compilefirst StaticT.f3
+ * @test
+ */
+public class Foo extends FireT, StaticT {}

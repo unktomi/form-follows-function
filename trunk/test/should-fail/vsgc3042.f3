@@ -1,0 +1,9 @@
+/**
+ * Regression test: VSGC-3042 : F3 compiler fails with an exception
+ *
+ * @test/compile-error
+ */
+
+mixin class A {}
+
+var x:A = if (true) {};

@@ -1,0 +1,11 @@
+/**
+ * @subtest
+ */
+
+package vsgc3975;
+
+public abstract class vsgc3975b {
+
+    protected var parent:vsgc3975b = null;
+
+}

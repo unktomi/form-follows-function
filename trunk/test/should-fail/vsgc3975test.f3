@@ -1,0 +1,17 @@
+/*
+ * Regression test
+ * VSGC-3975 : Compiled-bind: protected access error should be detected during attribution
+ *
+ * @compilefirst vsgc3975/vsgc3975b.f3
+ * @test/compile-error
+ *
+ */
+
+import vsgc3975.vsgc3975b;
+
+class vsgc3975test extends vsgc3975b {
+    function startup():Void {
+        this.parent = null; // this works ok
+        (this as vsgc3975b).parent = null; // error - parent is protected in vsgc3975b
+    }
+}

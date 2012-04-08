@@ -1,0 +1,14 @@
+/**
+ * VSGC-3010 : Regression: else of if is evaluated even if the if expression is true
+ *
+ * @test
+ * @run
+ */
+
+class Paint { 
+  var val : String;
+  public override function toString() : String { val }
+}
+var palette:Paint[];
+var paint:Paint = bind if (palette == null or sizeof palette == 0) then Paint{val: "TRUE"} else palette[7 mod sizeof palette];
+println("paint={paint}");

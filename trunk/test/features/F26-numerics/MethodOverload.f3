@@ -1,0 +1,346 @@
+/*
+ * Method overloading and numerics
+ *
+ * @test/f3unit
+ * @run
+ */
+import f3.f3unit.*;
+
+/**
+ * These constants will be used to match between types
+ */
+def isInt : Integer = 1;
+def isLong : Integer = 2;
+def isByte : Integer = 3;
+def isShort : Integer = 4;
+def isChar : Integer = 5;
+def isFloat : Integer = 6;
+def isDouble : Integer = 7;
+def isByteLong : Integer = 8;
+def isLongByte : Integer = 9;
+
+var returnType : Integer = 0;
+
+/**
+ * Parameters values
+ */
+var i : Integer = 30000;
+var l : Long = 2200000000;
+var b : Byte = 10;
+var s : Short = 30000;
+var c : Character = 10;
+var f : Float = 3.1415926535;
+var d : Double = 2.71828183;
+var n : Number = 2.2;
+//var dur : Duration = 22ms;
+
+/**
+ * Global functions with return value Integer.
+ * They return the argument type as an Integer value
+ */
+function testOverloadGlobalRetInt(x : Integer) : Integer { return isInt;}
+function testOverloadGlobalRetInt(x : Long) : Integer { return isLong;}
+function testOverloadGlobalRetInt(x : Byte) : Integer { return isByte;}
+function testOverloadGlobalRetInt(x : Short) : Integer { return isShort;}
+function testOverloadGlobalRetInt(x : Character) : Integer { return isChar;}
+function testOverloadGlobalRetInt(x : Float) : Integer { return isFloat;}
+function testOverloadGlobalRetInt(x : Double) : Integer { return isDouble;}
+function testOverloadGlobalRetInt(x : Byte, y : Long) : Integer { return isByteLong;}
+function testOverloadGlobalRetInt(x : Long, y : Byte) : Integer { return isLongByte;}
+
+/**
+ * Global functions with no return value (void).
+ * returnType variable will be assigned with the argument type as an Integer value
+ */
+function testOverloadGlobalRetVoid(x : Integer) { returnType = isInt;}
+function testOverloadGlobalRetVoid(x : Long) { returnType = isLong;}
+function testOverloadGlobalRetVoid(x : Byte) { returnType = isByte;}
+function testOverloadGlobalRetVoid(x : Short) { returnType = isShort;}
+function testOverloadGlobalRetVoid(x : Character) { returnType = isChar;}
+function testOverloadGlobalRetVoid(x : Float) { returnType = isFloat;}
+function testOverloadGlobalRetVoid(x : Double) { returnType = isDouble;}
+function testOverloadGlobalRetVoid(x : Byte, y : Long) { returnType = isByteLong;}
+function testOverloadGlobalRetVoid(x : Long, y : Byte) { returnType = isLongByte;}
+
+/**
+ * Testing global (script) function overloading
+ */
+class TesterGlobal {
+    function testGlobalRetInt() {
+        assertEquals(testOverloadGlobalRetInt(i), isInt);
+        assertEquals(testOverloadGlobalRetInt(l), isLong);
+        assertEquals(testOverloadGlobalRetInt(b), isByte);
+        assertEquals(testOverloadGlobalRetInt(s), isShort);
+        assertEquals(testOverloadGlobalRetInt(c), isChar);
+        assertEquals(testOverloadGlobalRetInt(f), isFloat);
+        assertEquals(testOverloadGlobalRetInt(d), isDouble);
+        assertEquals(testOverloadGlobalRetInt(n), isFloat);
+        //assertEquals(testOverloadGlobalRetInt(dur), isFloat);
+        assertEquals(testOverloadGlobalRetInt(b, l), isByteLong);
+        assertEquals(testOverloadGlobalRetInt(l, b), isLongByte);
+
+        assertEquals(testOverloadGlobalRetInt(10 as Integer), isInt);
+        assertEquals(testOverloadGlobalRetInt(10 as Long), isLong);
+        assertEquals(testOverloadGlobalRetInt(10 as Byte), isByte);
+        assertEquals(testOverloadGlobalRetInt(10 as Short), isShort);
+        assertEquals(testOverloadGlobalRetInt(10 as Character), isChar);
+        assertEquals(testOverloadGlobalRetInt(10 as Float), isFloat);
+        assertEquals(testOverloadGlobalRetInt(10 as Double), isDouble);
+        assertEquals(testOverloadGlobalRetInt(10 as Byte, 10 as Long), isByteLong);
+        assertEquals(testOverloadGlobalRetInt(10 as Long, 10 as Byte), isLongByte);
+
+        assertEquals(testOverloadGlobalRetInt(10), isInt);
+        assertEquals(testOverloadGlobalRetInt(3.1415926535), isFloat);
+        
+        /**** Comppile-time error: Integer out of range, issue vsgc2571 ****/
+        // assertEquals(testOverloadGlobalRetInt(2200000000 as Long), isLong);
+        // assertEquals(testOverloadGlobalRetInt(2200000000), isLong);
+    }
+
+    function testGlobalRetVoid() {
+        testOverloadGlobalRetVoid(i);
+        assertEquals(returnType, isInt);
+
+        testOverloadGlobalRetVoid(b);
+        assertEquals(returnType, isByte);
+
+        testOverloadGlobalRetVoid(s);
+        assertEquals(returnType, isShort);
+
+        testOverloadGlobalRetVoid(c);
+        assertEquals(returnType, isChar);
+
+        testOverloadGlobalRetVoid(f);
+        assertEquals(returnType, isFloat);
+
+        testOverloadGlobalRetVoid(d);
+        assertEquals(returnType, isDouble);
+
+        testOverloadGlobalRetVoid(n);
+        assertEquals(returnType, isFloat);
+
+        //testOverloadGlobalRetVoid(dur);
+        //assertEquals(returnType, isFloat);
+
+        testOverloadGlobalRetVoid(b, l);
+        assertEquals(returnType, isByteLong);
+
+        testOverloadGlobalRetVoid(l, b);
+        assertEquals(returnType, isLongByte);
+
+        testOverloadGlobalRetVoid(10);
+        assertEquals(returnType, isInt);
+
+        testOverloadGlobalRetVoid(3.1415926535);
+        assertEquals(returnType, isFloat);
+
+        /**** Comppile-time error: Integer out of range, issue vsgc2571 ****/
+        // testOverloadGlobalRetVoid(2200000000);
+        // assertEquals(returnType, isLong);
+    }
+}
+
+/**
+ * Testing instance function overloading
+ */
+class TesterInstance {
+    /**
+     * Instance functions with return value Integer.
+     * They return the argument type as an Integer value
+     */
+    function testOverloadInstanceRetInt(x : Integer) : Integer { return isInt;}
+    function testOverloadInstanceRetInt(x : Long) : Integer { return isLong;}
+    function testOverloadInstanceRetInt(x : Byte) : Integer { return isByte;}
+    function testOverloadInstanceRetInt(x : Short) : Integer { return isShort;}
+    function testOverloadInstanceRetInt(x : Character) : Integer { return isChar;}
+    function testOverloadInstanceRetInt(x : Float) : Integer { return isFloat;}
+    function testOverloadInstanceRetInt(x : Double) : Integer { return isDouble;}
+    function testOverloadInstanceRetInt(x : Byte, y : Long) : Integer { return isByteLong;}
+    function testOverloadInstanceRetInt(x : Long, y : Byte) : Integer { return isLongByte;}
+    
+    /**
+     * Testing instance function overloading
+     */
+    function testOverloadInstanceRetVoid(x : Integer) { returnType = isInt;}
+    function testOverloadInstanceRetVoid(x : Long) { returnType = isLong;}
+    function testOverloadInstanceRetVoid(x : Byte) { returnType = isByte;}
+    function testOverloadInstanceRetVoid(x : Short) { returnType = isShort;}
+    function testOverloadInstanceRetVoid(x : Character) { returnType = isChar;}
+    function testOverloadInstanceRetVoid(x : Float) { returnType = isFloat;}
+    function testOverloadInstanceRetVoid(x : Double) { returnType = isDouble;}
+    function testOverloadInstanceRetVoid(x : Byte, y : Long) { returnType = isByteLong;}
+    function testOverloadInstanceRetVoid(x : Long, y : Byte) { returnType = isLongByte;}
+
+    function testInstanceRetInt() {
+        assertEquals(testOverloadInstanceRetInt(i), isInt);
+        assertEquals(testOverloadInstanceRetInt(l), isLong);
+        assertEquals(testOverloadInstanceRetInt(b), isByte);
+        assertEquals(testOverloadInstanceRetInt(s), isShort);
+        assertEquals(testOverloadInstanceRetInt(c), isChar);
+        assertEquals(testOverloadInstanceRetInt(f), isFloat);
+        assertEquals(testOverloadInstanceRetInt(d), isDouble);
+        assertEquals(testOverloadInstanceRetInt(n), isFloat);
+        //assertEquals(testOverloadInstanceRetInt(dur), isFloat);
+        assertEquals(testOverloadInstanceRetInt(b, l), isByteLong);
+        assertEquals(testOverloadInstanceRetInt(l, b), isLongByte);
+
+        assertEquals(testOverloadInstanceRetInt(10 as Integer), isInt);
+        assertEquals(testOverloadInstanceRetInt(10 as Long), isLong);
+        assertEquals(testOverloadInstanceRetInt(10 as Byte), isByte);
+        assertEquals(testOverloadInstanceRetInt(10 as Short), isShort);
+        assertEquals(testOverloadInstanceRetInt(10 as Character), isChar);
+        assertEquals(testOverloadInstanceRetInt(10 as Float), isFloat);
+        assertEquals(testOverloadInstanceRetInt(10 as Double), isDouble);
+        assertEquals(testOverloadInstanceRetInt(10 as Byte, 10 as Long), isByteLong);
+        assertEquals(testOverloadInstanceRetInt(10 as Long, 10 as Byte), isLongByte);
+
+        assertEquals(testOverloadInstanceRetInt(10), isInt);
+        assertEquals(testOverloadInstanceRetInt(3.1415926535), isFloat);
+        
+        /**** Comppile-time error: Integer out of range, issue vsgc2571 ****/
+        // assertEquals(testOverloadInstanceRetInt(2200000000 as Long), isLong);
+        // assertEquals(testOverloadInstanceRetInt(2200000000), isLong);
+    }
+
+    function testInstanceRetVoid() {
+        testOverloadInstanceRetVoid(i);
+        assertEquals(returnType, isInt);
+
+        testOverloadInstanceRetVoid(b);
+        assertEquals(returnType, isByte);
+
+        testOverloadInstanceRetVoid(s);
+        assertEquals(returnType, isShort);
+
+        testOverloadInstanceRetVoid(c);
+        assertEquals(returnType, isChar);
+
+        testOverloadInstanceRetVoid(f);
+        assertEquals(returnType, isFloat);
+
+        testOverloadInstanceRetVoid(d);
+        assertEquals(returnType, isDouble);
+
+        testOverloadInstanceRetVoid(n);
+        assertEquals(returnType, isFloat);
+
+        //testOverloadInstanceRetVoid(dur);
+        //assertEquals(returnType, isFloat);
+
+        testOverloadInstanceRetVoid(b, l);
+        assertEquals(returnType, isByteLong);
+
+        testOverloadInstanceRetVoid(l, b);
+        assertEquals(returnType, isLongByte);
+
+        testOverloadInstanceRetVoid(10);
+        assertEquals(returnType, isInt);
+
+        testOverloadInstanceRetVoid(3.1415926535);
+        assertEquals(returnType, isFloat);
+
+        /**** Comppile-time error: Integer out of range, issue vsgc2571 ****/
+        // testOverloadInstanceRetVoid(2200000000);
+        // assertEquals(returnType, isLong);
+    }
+}
+
+/**
+ * Testing inherited instance functions overloading
+ */
+class TesterInherited extends TesterInstance {
+    function testInheritedRetInt() {
+        assertEquals(testOverloadInstanceRetInt(i), isInt);
+        assertEquals(testOverloadInstanceRetInt(l), isLong);
+        assertEquals(testOverloadInstanceRetInt(b), isByte);
+        assertEquals(testOverloadInstanceRetInt(s), isShort);
+        assertEquals(testOverloadInstanceRetInt(c), isChar);
+        assertEquals(testOverloadInstanceRetInt(f), isFloat);
+        assertEquals(testOverloadInstanceRetInt(d), isDouble);
+        assertEquals(testOverloadInstanceRetInt(n), isFloat);
+        //assertEquals(testOverloadInstanceRetInt(dur), isFloat);
+        assertEquals(testOverloadInstanceRetInt(b, l), isByteLong);
+        assertEquals(testOverloadInstanceRetInt(l, b), isLongByte);
+
+        assertEquals(testOverloadInstanceRetInt(10 as Integer), isInt);
+        assertEquals(testOverloadInstanceRetInt(10 as Long), isLong);
+        assertEquals(testOverloadInstanceRetInt(10 as Byte), isByte);
+        assertEquals(testOverloadInstanceRetInt(10 as Short), isShort);
+        assertEquals(testOverloadInstanceRetInt(10 as Character), isChar);
+        assertEquals(testOverloadInstanceRetInt(10 as Float), isFloat);
+        assertEquals(testOverloadInstanceRetInt(10 as Double), isDouble);
+        assertEquals(testOverloadInstanceRetInt(10 as Byte, 10 as Long), isByteLong);
+        assertEquals(testOverloadInstanceRetInt(10 as Long, 10 as Byte), isLongByte);
+
+        assertEquals(testOverloadInstanceRetInt(10), isInt);
+        assertEquals(testOverloadInstanceRetInt(3.1415926535), isFloat);
+        
+        /**** Comppile-time error: Integer out of range, issue vsgc2571 ****/
+        // assertEquals(testOverloadInstanceRetInt(2200000000 as Long), isLong);
+        // assertEquals(testOverloadInstanceRetInt(2200000000), isLong);
+    }
+
+    function testInheritedRetVoid() {
+        testOverloadInstanceRetVoid(i);
+        assertEquals(returnType, isInt);
+
+        testOverloadInstanceRetVoid(b);
+        assertEquals(returnType, isByte);
+
+        testOverloadInstanceRetVoid(s);
+        assertEquals(returnType, isShort);
+
+        testOverloadInstanceRetVoid(c);
+        assertEquals(returnType, isChar);
+
+        testOverloadInstanceRetVoid(f);
+        assertEquals(returnType, isFloat);
+
+        testOverloadInstanceRetVoid(d);
+        assertEquals(returnType, isDouble);
+
+        testOverloadInstanceRetVoid(n);
+        assertEquals(returnType, isFloat);
+
+        //testOverloadInstanceRetVoid(dur);
+        //assertEquals(returnType, isFloat);
+
+        testOverloadInstanceRetVoid(b, l);
+        assertEquals(returnType, isByteLong);
+
+        testOverloadInstanceRetVoid(l, b);
+        assertEquals(returnType, isLongByte);
+
+        testOverloadInstanceRetVoid(10);
+        assertEquals(returnType, isInt);
+
+        testOverloadInstanceRetVoid(3.1415926535);
+        assertEquals(returnType, isFloat);
+
+        /**** Comppile-time error: Integer out of range, issue vsgc2571 ****/
+        // testOverloadInstanceRetVoid(2200000000);
+        // assertEquals(returnType, isLong);
+    }
+}
+
+public class MethodOverload extends F3TestCase {
+    function testMethodOverloadGlobal() {
+        var tester = TesterGlobal{};
+        tester.testGlobalRetInt();
+        tester.testGlobalRetVoid();
+    }
+
+    function testMethodOverloadInstance() {
+        var tester = TesterInstance{};
+        tester.testInstanceRetInt();
+        tester.testInstanceRetVoid();
+    }
+
+    function testMethodOverloadInherited() {
+        var tester = TesterInherited{};
+        tester.testInheritedRetInt();
+        tester.testInheritedRetVoid();
+    }
+}
+
+

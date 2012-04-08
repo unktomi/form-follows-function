@@ -1,0 +1,70 @@
+test\should-fail\vsgc1250inverseBindTo.f3:51: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250inverseBindTo.Inh
+	Foo { toThis: bind memScr with inverse };   // ERROR: inherited, same package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:55: memIScr has script only (default) bind access in vsgc1250subFail
+	Foo { toThis: bind memIScr with inverse };   // ERROR: inherited, same package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:59: memRScr has script only (default) bind access in vsgc1250subFail
+	Foo { toThis: bind memRScr with inverse };   // ERROR: inherited, same package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:67: cannot find symbol
+symbol  : variable memPkg
+location: class vsgc1250inverseBindTo.InhA
+	Foo { toThis: bind memPkg with inverse };   // ERROR: inherited, different package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:68: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250inverseBindTo.InhA
+	Foo { toThis: bind memScr with inverse };   // ERROR: inherited, different package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:71: memIPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind memIPkg with inverse };   // ERROR: inherited, different package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:72: memIScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind memIScr with inverse };   // ERROR: inherited, different package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:75: memRPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind memRPkg with inverse };   // ERROR: inherited, different package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:76: memRScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind memRScr with inverse };   // ERROR: inherited, different package
+	                   ^
+test\should-fail\vsgc1250inverseBindTo.f3:127: memScr has script only (default) access in vsgc1250subFail
+	Foo { toThis: bind vf.memScr with inverse };   // ERROR: same package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:131: memIScr has script only (default) bind access in vsgc1250subFail
+	Foo { toThis: bind vf.memIScr with inverse };   // ERROR: same package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:135: memRScr has script only (default) bind access in vsgc1250subFail
+	Foo { toThis: bind vf.memRScr with inverse };   // ERROR: same package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:141: memPro has protected access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memPro with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:142: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	Foo { toThis: bind vf.memPkg with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:143: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memScr with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:145: memIPro has protected bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memIPro with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:146: memIPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memIPkg with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:147: memIScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memIScr with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:149: memRPro has protected bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memRPro with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:150: memRPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memRPkg with inverse };   // ERROR: different package
+	                     ^
+test\should-fail\vsgc1250inverseBindTo.f3:151: memRScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	Foo { toThis: bind vf.memRScr with inverse };   // ERROR: different package
+	                     ^
+21 errors

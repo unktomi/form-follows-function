@@ -1,0 +1,12 @@
+/**
+ * Regress test for VSGC-3023 - Duplicate variable declaration with second in "for" expression cause internal compiler error
+ *
+ * @test/compile-error
+ */
+
+function aaa() {
+    var aaa = 10;
+    for( k in [0..8]) {
+        var aaa = 10;
+    }
+}

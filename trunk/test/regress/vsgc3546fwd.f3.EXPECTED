@@ -1,0 +1,8 @@
+[0..-1] = [ ]
+[0..-1] = [ gee, hello, there ]
+[ gee, hello, there ]
+[0..2] = [ wow, man ]
+[0..1] = [ ]
+[0..-1] = [ , o,  man ]
+---
+[ , o,  man ]

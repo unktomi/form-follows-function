@@ -1,0 +1,46 @@
+test/should-fail/vsgc2898.f3:80: x is already defined in vsgc2898
+var x;
+^
+test/should-fail/vsgc2898.f3:9: x is already defined in f1()
+{var x;}
+ ^
+test/should-fail/vsgc2898.f3:13: x is already defined in f2()
+{var x;}
+ ^
+test/should-fail/vsgc2898.f3:19: x is already defined in f3()
+var x;
+^
+test/should-fail/vsgc2898.f3:23: x is already defined in f4(java.lang.Object)
+var x;
+^
+test/should-fail/vsgc2898.f3:27: x is already defined in f5(java.lang.Object)
+{var x;}
+ ^
+test/should-fail/vsgc2898.f3:32: x is already defined in f6()
+  for (x in [0..1]) {}
+       ^
+test/should-fail/vsgc2898.f3:37: x is already defined in f7(java.lang.Object)
+for (x in [0..1]) {}
+     ^
+test/should-fail/vsgc2898.f3:42: x is already defined in f8()
+{var x;}
+ ^
+test/should-fail/vsgc2898.f3:47: x is already defined in f9()
+{var x;}
+ ^
+test/should-fail/vsgc2898.f3:54: x is already defined in f10()
+var x;
+^
+test/should-fail/vsgc2898.f3:59: x is already defined in f11(java.lang.Object)
+var x;
+^
+test/should-fail/vsgc2898.f3:64: x is already defined in f12(java.lang.Object)
+{var x;}
+ ^
+test/should-fail/vsgc2898.f3:70: x is already defined in f13()
+  for (x in [0..1]) {}
+       ^
+test/should-fail/vsgc2898.f3:75: x is already defined in f14(java.lang.Object)
+for (x in [0..1]) {}
+     ^
+15 errors

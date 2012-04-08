@@ -1,0 +1,16 @@
+/*
+ * Regression: VSGC-3960 - Compiled bind optimization: Enforce access protection and remove qualification of private names
+ *
+ * @compilefirst vsgc3960prot/vsgc3960protA.f3
+ * @test/fail
+ *
+ */ 
+
+import vsgc3960prot.vsgc3960protA;
+
+public class vsgc3960protB extends vsgc3960protA { 
+    function startup():Void { 
+        this.parent = null; // this works ok 
+        (this as vsgc3960protA).parent = null; // this gets the error shown below
+    }
+}

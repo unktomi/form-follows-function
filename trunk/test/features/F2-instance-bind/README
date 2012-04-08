@@ -1,0 +1,13 @@
+Visage compiler feature test #2
+
+Demonstrated:
+ - unidirectional binding of module-level variables to expressions containing module-level variables
+ - binding to expressions that contain static functions
+ - type of module-level variables inferred from initializer
+ - interpolating arithmetic expressions into string literals
+
+Restrictions:
+ - bindings do not know about dynamic dependencies within functions, only static dependencies
+ - excessive manual boxing and unboxing in binding expressions and location access
+
+

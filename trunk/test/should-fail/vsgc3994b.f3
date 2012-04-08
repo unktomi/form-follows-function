@@ -1,0 +1,15 @@
+/*
+ * Regression test
+ * VSGC-3994 : Missing error message when variable override non-existent symbol whose clashes with an outer var
+ *
+ * @compilefirst vsgc3994sub.f3
+ * @test/compile-error
+ */
+
+class vsgc3994b extends vsgc3994sub {
+    override var x = "";
+}
+
+class Inner {
+    override var x = "";
+}

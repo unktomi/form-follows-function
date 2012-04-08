@@ -1,0 +1,6 @@
+/*
+ * Regression test for VSGC-3678 : Compiled-bind: isInitialized fails with mixins.
+ *
+ * @subtest
+ */
+public mixin class vsgc3678M { public var x; } 

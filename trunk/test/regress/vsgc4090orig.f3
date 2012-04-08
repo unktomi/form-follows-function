@@ -1,0 +1,58 @@
+/**
+ * VSGC-4090 : TreeView indentation breaks as bind no longer evaluated as in 1.2
+ *
+ * @compilefirst vsgc4090TreeItemBase.f3
+ * @test
+ * @run
+ */
+
+var itemlvl1:vsgc4090TreeItemBase;
+var itemlvl2:vsgc4090TreeItemBase;
+var itemlvl3:vsgc4090TreeItemBase;
+var itemlvl4:vsgc4090TreeItemBase;
+var itemlvl5:vsgc4090TreeItemBase;
+
+var simpleTree:vsgc4090TreeItemBase = vsgc4090TreeItemBase {
+    children: [
+        vsgc4090TreeItemBase { },
+        vsgc4090TreeItemBase { },
+        itemlvl1 = vsgc4090TreeItemBase { },
+        vsgc4090TreeItemBase { },
+        vsgc4090TreeItemBase {
+            children: [
+                vsgc4090TreeItemBase { },
+                itemlvl2 = vsgc4090TreeItemBase { },
+                vsgc4090TreeItemBase { },
+                vsgc4090TreeItemBase {
+                    children: [
+                        itemlvl3 = vsgc4090TreeItemBase { },
+                        vsgc4090TreeItemBase { },
+                        vsgc4090TreeItemBase { },
+                        vsgc4090TreeItemBase {
+                            children: [
+                                vsgc4090TreeItemBase { },
+                                itemlvl4 = vsgc4090TreeItemBase { },
+                                vsgc4090TreeItemBase { },
+                                vsgc4090TreeItemBase {
+                                    children: [
+                                        vsgc4090TreeItemBase { },
+                                        itemlvl5 = vsgc4090TreeItemBase { },
+                                        vsgc4090TreeItemBase { },
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        vsgc4090TreeItemBase { }
+    ]
+}
+
+println("level of simpleTree is {simpleTree.level}");
+println("level of itemlvl1 is {itemlvl1.level}");
+println("level of itemlvl2 is {itemlvl2.level}");
+println("level of itemlvl3 is {itemlvl3.level}");
+println("level of itemlvl4 is {itemlvl4.level}");
+println("level of itemlvl5 is {itemlvl5.level}");

@@ -1,0 +1,7 @@
+vsgc607.f3:17: Cannot assign to def round
+      round = "Linear";
+vsgc607.f3:18: Cannot assign to def count
+      count = 4321;
+vsgc607.f3:19: Cannot assign to def snurd
+      snurd = 1.41421356;
+3 errors

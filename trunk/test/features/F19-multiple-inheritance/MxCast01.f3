@@ -1,0 +1,48 @@
+/*
+ * Testing cast of mixins with "as" operator.
+ *
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+mixin class M1 { function foo1() : String { "M1" } }
+mixin class M2 extends M1 { function foo2() : String { "M2" } }
+mixin class M3 { function foo3() : String { "M3" } }
+mixin class M4 extends M2, M3 { function foo4() : String { "M4" } }
+
+class Mixee1 extends M1 {}
+class Mixee2 extends M2 {}
+class Mixee4 extends M4 {}
+
+public class MxCast01 extends F3TestCase {
+    /*
+     * Convert type to itself
+     */
+    function testTypeCast1() {
+        var m1 = Mixee1 {} as M1;
+        assertEquals("M1", m1.foo1());
+        var m = asM1(m1);
+        assertEquals("M1", (m as M1).foo1());
+    }
+    /*
+     * Convert type to different parents and back
+     */
+    function testTypeCast2() {
+        var m4 : Object = Mixee4 {};
+
+        var m43 = asM3(m4);
+        assertEquals("M3", m43.foo3());
+        assertEquals("M4", (m43 as M4).foo4());
+        var m42 : M2 = asM2(m4) as M2;
+        assertEquals("M2", m42.foo2());
+        assertEquals("M4", (m42 as M4).foo4());
+        var m41 = asM1(m4);
+        assertEquals("M1", m41.foo1());
+        assertEquals("M4", (m41 as M4).foo4());
+    }
+
+    function asM1(arg : Object) : M1 { arg as M1 }
+    function asM2(arg : Object) : M2 { arg as M2 }
+    function asM3(arg : Object) : M3 { arg as M3 }
+}

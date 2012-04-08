@@ -1,0 +1,37 @@
+/**
+This is not a spec but from an email from Robert Field dated
+Thu, 14 Aug 2008 00:12:54 -0700
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+For those not closely following 'dev' discussions and the commit logs...
+
+To remove problems with inconsistent semantics, initialization problems,
+and visibility problems for variables ('var' and 'def') at the
+script-level (top-level) of a script, new rules and functionality have
+been added --
+
+The new normal-form of script places the main-code (the code to be run
+when/if the script is explicitly invoked) into a run function:
+
+    function run(__ARGS__: String[]) : java.lang.Object {
+         //.. main-code here
+    }
+
+Which, if the command line arguments are not needed can simply be written:
+
+    function run() {
+         //.. main-code here
+    }
+
+But since we want to keep the ability to just start typing expressions
+into a text window, there will be a simple-form where no run function is
+given.  The simple-form will simply be to place the code to be run at
+the script level -- as is done now.  This simple-form is disallowed if
+the script is externally accessible, that is, if any of the script-level
+members have access modifiers ('public', 'package', 'public-readable').
+
+Casual and beginning users have no change in their usage.  While
+component writers can still make their scripts executable (for testing etc).
+
+-Robert
+*/

@@ -1,0 +1,5 @@
+Visage compiler feature test #7
+
+Demonstrated:
+ - Compiling multiple modules together on the same command line
+ - Instantiating and using a class defined in another module

@@ -1,0 +1,47 @@
+Building the F3 Compiler
+
+Building the F3 compiler Java 5 or 6 and Apache Ant 1.7.  
+
+The "ant -projecthelp" command displays the various build targets available.
+Here are some of the more commonly used ones:
+
+ all                Build and test all project artifacts
+ all-with-coverage  Build and test all project artifacts with coverage
+ binaries           Build compiler and compiler runtime binaries
+ bundle             Build distribution bundle
+ clean              Remove build products
+ compile            Compile project.
+ compiler-only      Build just the f3c compiler (no bin scripts, f3doc, etc)
+ debug              Debug project in IDE.
+ default            Deprecated; use 'binaries' instead
+ dist               Deprecated; use 'bundle' instead
+ docs               Build binaries, docs, and src.zip
+ help               Show help on targets
+ hudson-all         Build and test with coverage all project artifacts for nightly build
+ hudson-dev         Build and test all project artifacts for each developer push
+ jar                Build JAR.
+ javadoc            Build Javadoc.
+ langref            Build F3 Language Reference.
+ launcher           Copy command wrappers to dist/bin directory.
+ milestone-build    Milestone build target
+ run                Run a main class.
+ smoketest          Build binaries and run smoke tests
+ test               Build binaries and run tests
+ test-single        Run single unit test.
+                    eg: ant test-single -Dtest.f3.includes='**/vsgc2347.f3'
+ weekly-build       Weekly build target
+
+
+The command "ant help" will show additional help.
+
+Please file any bugs using our JIRA issue tracking system:
+
+    http://f3.org/jira/secure/Dashboard.jspa
+
+NOTE:  when the project is first checked-out, the NetBeans IDE will report 
+"unresolved library" warnings.  These warnings are resolved when building
+the project for the first time, as the necessary external libraries are
+copied from their respective project sites into this project directory.
+
+
+

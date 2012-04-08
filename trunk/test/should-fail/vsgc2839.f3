@@ -1,0 +1,7 @@
+/*
+ * Regression test: VSGC-2839: Compiler crash: 13 [30 ..50]
+ *
+ * @test/compile-error
+ */
+
+var x:Number[] = 13 [30 ..50];

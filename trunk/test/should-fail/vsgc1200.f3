@@ -1,0 +1,7 @@
+/**
+ * regression test: VSGC-1200 : Exception when compiling a variable assignment with an out-of-range value
+ *
+ * @test/compile-error
+ */
+
+var oops:Integer = 2147483648; // Integer.MAX_VALUE + 1

@@ -1,0 +1,6 @@
+/**
+ * @subtest
+ */
+public class vsgc3291PT {
+  public var urx : Integer
+}

@@ -1,0 +1,7 @@
+/*
+ * @subtest vsgc306LinearGradient
+ */
+
+import blah.canvas.*;
+public abstract class vsgc306Gradient extends vsgc306Transformable, vsgc306Paint  {
+}

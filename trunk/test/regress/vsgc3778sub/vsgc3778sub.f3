@@ -1,0 +1,11 @@
+/**
+ * Regression test VSGC-3778 : compiled-bind: new accessibility error since last work on bind object literals
+ *
+ * @subtest
+ */
+
+package vsgc3778sub;
+
+public class vsgc3778sub {
+    public-init package var x;
+}

@@ -1,0 +1,7 @@
+ABCD
+byte array : 65, 66, 67, 68, 
+short array : 1, 2, 3, 4, 
+int array : 1, 2, 3, 4, 
+long array : 1, 2, 3, 4, 
+float array : 1.0, 2.0, 3.0, 4.0, 
+double array : 1.0, 2.0, 3.0, 4.0, 

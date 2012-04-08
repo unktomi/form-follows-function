@@ -1,0 +1,15 @@
+/*
+ *
+ * Regression : VSGC-3987 - Compiled-bind: bad interaction between toplevel and nested mixins.
+ *
+ * @test
+ *
+ */
+
+mixin class vsgc3987 {}
+
+mixin class M extends vsgc3987 {}
+
+class A extends M {}
+
+class B extends M {}

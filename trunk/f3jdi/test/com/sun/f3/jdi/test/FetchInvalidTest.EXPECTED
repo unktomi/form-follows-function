@@ -1,0 +1,46 @@
+stop in = org.f3.jdi.test.target.FetchInvalidTarget$sam
+Field values for class = org.f3.jdi.test.target.FetchInvalidTarget
+  value of staticVar = 89.0
+  last exception = null
+  staticBinder is invalid
+  ReadOnly, Bound, Invalid flags for all fields
+    field = org.f3.jdi.test.target.FetchInvalidTarget.defStaticVar, true, false, false
+    field = org.f3.jdi.test.target.FetchInvalidTarget.staticVar, false, false, false
+    field = org.f3.jdi.test.target.FetchInvalidTarget.staticBinder, true, true, true
+    field = org.f3.jdi.test.target.FetchInvalidTarget.samObj, false, false, false
+  Values of all valid static fields
+  last exception = null
+   field1 = org.f3.jdi.test.target.FetchInvalidTarget.defStaticVar, value = 22.3
+   field1 = org.f3.jdi.test.target.FetchInvalidTarget.staticVar, value = 89.0
+   field1 = org.f3.jdi.test.target.FetchInvalidTarget.samObj, value = instance of org.f3.jdi.test.target.FetchInvalidTarget$sam
+  Values of all static fields
+   field2 = org.f3.jdi.test.target.FetchInvalidTarget.defStaticVar, value = 22.3
+   field2 = org.f3.jdi.test.target.FetchInvalidTarget.staticVar, value = 89.0
+   field2 = org.f3.jdi.test.target.FetchInvalidTarget.staticBinder, value = 89.0
+   field2 = org.f3.jdi.test.target.FetchInvalidTarget.samObj, value = instance of org.f3.jdi.test.target.FetchInvalidTarget$sam
+  ReadOnly, Bound, Invalid flags for staticBinder when it is valid
+    field = org.f3.jdi.test.target.FetchInvalidTarget.staticBinder, true, true, false
+
+Field values for object = instance of org.f3.jdi.test.target.FetchInvalidTarget$sam
+  value of ivar0 = 89.4
+  value of sam$ivar1 = 22.6
+  ivarBinder is invalid
+  Readonly, Bound, and Invalid flags for all fields
+    field = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivarDef, false, false, false
+    field = org.f3.jdi.test.target.FetchInvalidTarget$sam.pubivarDef, true, false, false
+    field = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivar0, false, false, false
+    field = org.f3.jdi.test.target.FetchInvalidTarget$sam.sam$ivar1, false, false, false
+    field = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivarBinder, true, true, true
+  Values of all valid object fields :
+   field3 = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivarDef, value = 33.0
+   field3 = org.f3.jdi.test.target.FetchInvalidTarget$sam.pubivarDef, value = 33.0
+   field3 = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivar0, value = 89.4
+   field3 = org.f3.jdi.test.target.FetchInvalidTarget$sam.sam$ivar1, value = 22.6
+  Values of all object fields:
+   field4 = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivarDef, value = 33.0
+   field4 = org.f3.jdi.test.target.FetchInvalidTarget$sam.pubivarDef, value = 33.0
+   field4 = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivar0, value = 89.4
+   field4 = org.f3.jdi.test.target.FetchInvalidTarget$sam.sam$ivar1, value = 22.6
+   field4 = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivarBinder, value = 22.6
+  ReadOnly, Bound, Invalid flags for ivarBinder when it is valid
+    field = org.f3.jdi.test.target.FetchInvalidTarget$sam.ivarBinder, true, true, false

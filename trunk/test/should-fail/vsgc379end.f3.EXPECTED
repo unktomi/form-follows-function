@@ -1,0 +1,3 @@
+test/should-fail/vsgc379end.f3:4: range end must be Integer or Number.
+var nonNumericEnd = [17.."z"];
+                     ^

@@ -1,0 +1,3 @@
+test/should-fail/vsgc379start.f3:4: range start must be Integer or Number.
+var nonNumericStart = ["a"..42];
+                       ^

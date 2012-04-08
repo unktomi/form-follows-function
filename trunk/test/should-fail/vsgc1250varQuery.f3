@@ -1,0 +1,158 @@
+/**
+ * Regression test VSGC-1250 : visibility modifiers
+ *
+ *     isInitialized() access
+ *
+ * @compilefirst vsgc1250/a/vsgc1250subFailA.f3
+ * @compilefirst vsgc1250subFail.f3
+ * @test/compile-error
+ */
+
+import vsgc1250.a.vsgc1250subFailA;
+
+public class vsgc1250varQuery {
+	public var memHerePub = 0;
+	protected var memHerePro = 0;
+	package var memHerePkg = 0;
+	var memHereScr = 0;
+
+	public-init protected var memHereIPro = 0;
+	public-init package var memHereIPkg = 0;
+	public-init var memHereIScr = 0;
+
+	public-read protected var memHereRPro = 0;
+	public-read package var memHereRPkg = 0;
+	public-read var memHereRScr = 0;
+}
+
+class Foo {
+	public var fooPub = 0;
+	protected var fooPro = 0;
+	package var fooPkg = 0;
+	var fooScr = 0;
+
+	public-init protected var fooIPro = 0;
+	public-init package var fooIPkg = 0;
+	public-init var fooIScr = 0;
+
+	public-read protected var fooRPro = 0;
+	public-read package var fooRPkg = 0;
+	public-read var fooRScr = 0;
+}
+
+class Inh extends vsgc1250subFail {
+    function memVarQuery() {
+	isInitialized(memPub);   // inherited, same package
+	isInitialized(memPro);   // inherited, same package
+	isInitialized(memPkg);   // inherited, same package
+	isInitialized(memScr);   // ERROR: inherited, same package
+
+	isInitialized(memIPro);   // inherited, same package
+	isInitialized(memIPkg);   // inherited, same package
+	isInitialized(memIScr);   // ERROR: inherited, same package
+
+	isInitialized(memRPro);   // inherited, same package
+	isInitialized(memRPkg);   // inherited, same package
+	isInitialized(memRScr);   // ERROR: inherited, same package
+    }
+}
+
+class InhA extends vsgc1250subFailA {
+    function memVarQuery() {
+	isInitialized(memPub);   // inherited, different package
+	isInitialized(memPro);   // inherited, different package
+	isInitialized(memPkg);   // ERROR: inherited, different package
+	isInitialized(memScr);   // ERROR: inherited, different package
+
+	isInitialized(memIPro);   // inherited, different package
+	isInitialized(memIPkg);   // ERROR: inherited, different package
+	isInitialized(memIScr);   // ERROR: inherited, different package
+
+	isInitialized(memRPro);   // inherited, different package
+	isInitialized(memRPkg);   // ERROR: inherited, different package
+	isInitialized(memRScr);   // ERROR: inherited, different package
+    }
+}
+
+function memInhVarQuery() {
+	var vf = Inh {};
+	vf.memVarQuery();
+}
+
+function memInhAVarQuery() {
+	var vf = InhA {};
+	vf.memVarQuery();
+}
+
+function memHereVarQuery() {
+	var vf = vsgc1250varQuery {};
+	isInitialized(vf.memHerePub);   // script class, select access
+	isInitialized(vf.memHerePro);   // script class, select access
+	isInitialized(vf.memHerePkg);   // script class, select access
+	isInitialized(vf.memHereScr);   // script class, select access
+
+	isInitialized(vf.memHereIPro);   // script class, select access
+	isInitialized(vf.memHereIPkg);   // script class, select access
+	isInitialized(vf.memHereIScr);   // script class, select access
+
+	isInitialized(vf.memHereRPro);   // script class, select access
+	isInitialized(vf.memHereRPkg);   // script class, select access
+	isInitialized(vf.memHereRScr);   // script class, select access
+}
+
+function memFooVarQuery() {
+	var vf = Foo {};
+	isInitialized(vf.fooPub);   // nested class
+	isInitialized(vf.fooPro);   // nested class
+	isInitialized(vf.fooPkg);   // nested class
+	isInitialized(vf.fooScr);   // nested class
+
+	isInitialized(vf.fooIPro);   // nested class
+	isInitialized(vf.fooIPkg);   // nested class
+	isInitialized(vf.fooIScr);   // nested class
+
+	isInitialized(vf.fooRPro);   // nested class
+	isInitialized(vf.fooRPkg);   // nested class
+	isInitialized(vf.fooRScr);   // nested class
+}
+
+function memSubVarQuery() {
+	var vf = vsgc1250subFail {};
+	isInitialized(vf.memPub);   // same package
+	isInitialized(vf.memPro);   // same package
+	isInitialized(vf.memPkg);   // same package
+	isInitialized(vf.memScr);   // ERROR: same package
+
+	isInitialized(vf.memIPro);   // same package
+	isInitialized(vf.memIPkg);   // same package
+	isInitialized(vf.memIScr);   // ERROR: same package
+
+	isInitialized(vf.memRPro);   // same package
+	isInitialized(vf.memRPkg);   // same package
+	isInitialized(vf.memRScr);   // ERROR: same package
+}
+
+function memSubAVarQuery() {
+	var vf = vsgc1250subFailA {};
+	isInitialized(vf.memPub);   // different package
+	isInitialized(vf.memPro);   // ERROR: different package
+	isInitialized(vf.memPkg);   // ERROR: different package
+	isInitialized(vf.memScr);   // ERROR: different package
+
+	isInitialized(vf.memIPro);   // ERROR: different package
+	isInitialized(vf.memIPkg);   // ERROR: different package
+	isInitialized(vf.memIScr);   // ERROR: different package
+
+	isInitialized(vf.memRPro);   // ERROR: different package
+	isInitialized(vf.memRPkg);   // ERROR: different package
+	isInitialized(vf.memRScr);   // ERROR: different package
+}
+
+function run() {
+	memInhVarQuery();
+	memInhAVarQuery();
+	memHereVarQuery();
+	memFooVarQuery();
+	memSubVarQuery();
+	memSubAVarQuery();
+}

@@ -1,0 +1,21 @@
+/**
+ * Regression test VSGC-3586 : Compiled bind: bound sequence: for-expression
+ *
+ * External bound update.
+ *
+ * @test
+ * @run
+ */
+
+var a = 0;
+var b = 5;
+var k = 2;
+def bf = bind for (x in [a..b]) { x * k };
+k = 1; // Updates before first access
+println(bf);
+k = 100;
+println(bf);
+a = 2;
+println(bf);
+k = 10;
+println(bf);

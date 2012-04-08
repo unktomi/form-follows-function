@@ -1,0 +1,26 @@
+/*
+ * Regression: VSGC-3955 - AssignToBoundException occurs modifiying the binder of a bind with inverse.
+ *
+ * @test
+ * @run
+ *
+ */
+
+
+
+class jjParent { 
+    var scene:jjParent = null; 
+    var content:jjParent = null; 
+    protected var children:jjParent on replace { 
+           this.scene = jjpp; // this works 
+           this.children = jjpp; // this throws AssignToBoundException 
+    } 
+} 
+
+class jjRoot extends jjParent { 
+       override var children = bind scene.content with inverse 
+} 
+
+var jjpp = jjParent{}; 
+
+var myroot = jjRoot{}; 

@@ -1,0 +1,26 @@
+/**
+ * VSGC-3046: Regression: recursion error compiling ScreenshotMaker sample
+ *
+ * @test
+ */
+
+class A {}
+
+public class B {
+	var done:Boolean;
+}
+
+function test():Void{
+	var status = "";
+	var a = A {                                                      
+		function f():Void {                                                           
+			var req = B {
+				override var done on replace{//1 without override compiles fine!                                                   					
+  					status = ""; //2 without this line compiles fine!
+				}
+			}                                                            
+		}
+	}
+}
+
+

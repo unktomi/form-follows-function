@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="Classes" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Classes</title>
+
+  <para>Classes represent kinds of things, whether they be concrete things,
+  graphical things, or conceptual things. And instances of classes represent
+  specific things. For example, in F3:</para>
+
+  <para><programlisting>class Shoe {
+   var color : String;
+   var size: Number;
+   var style : String;
+}
+
+def rubySlipper = Shoe {
+   color: "red"
+   size: 7
+   style: "slipper"
+}</programlisting></para>
+
+  <para>Here the class Shoe represents a kind of thing, and the instance
+  stored in rubySlipper is a representation of a concrete thing. Note that
+  there are instance variables that store the state of the instance.</para>
+
+  <para>Whereas the class CheckBox is a kind of graphical thing:</para>
+
+  <programlisting>public class CheckBox extends CustomNode, Resizable {
+   public var title : String;
+
+   public var visible : Boolean;
+
+   public var skin : Skin on replace oldSkin {
+      if (skin != null) then skin.control = this;
+      if (oldSkin != null) then oldSkin.control = null;
+   }
+
+   public function requestFocus() : Void {
+      if (visible) then skin.requestFocus();
+   }
+}   </programlisting>
+
+  <para>It extends two other classes (CustomNode and Resizable), therefore
+  including their instance variables and instance functions. CheckBox adds
+  three more instance variables, including skin which has an on-replace clause
+  to maintain a relationship between the skin and the CheckBox. It also adds
+  an instance function requestFocus.</para>
+
+  <para><remark>[To do: add a section on instance initialization (before the
+  instance variable initialization section). Then clean up the instance
+  variable initialization section]</remark></para>
+
+  <sect1>
+    <title>Syntax of Class Definition</title>
+
+    <para></para>
+
+    <figure>
+      <title>classDefinition</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="classDefinition.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <figure>
+      <title>extendsClause</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="superclasses.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <table>
+      <title>Class Modifiers</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><command>abstract</command></entry>
+
+            <entry>An abstract class cannot be instanciated.  That is, you cannot
+            <link linkend="objectLiteral">create instances</link> of an abstract class.</entry>
+          </row>
+
+          <row>
+            <entry><command>package</command></entry>
+
+            <entry>The class can only be accessed from the package where it is
+            defined. See <link linkend="Modifiers">Access
+            Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>protected</command></entry>
+
+            <entry>The class can only be accessed from the package where it is
+            defined and from subclasses of the class where it is defined. See
+            <link linkend="Modifiers">Access Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>public</command></entry>
+
+            <entry>The class can be accessed from anywhere. See <link
+            linkend="Modifiers">Access Modifiers</link>.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </sect1>
+
+  <sect1>
+    <title>Class Members</title>
+
+    <para></para>
+
+    <figure>
+      <title>classMember</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="classMember.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para></para>
+
+    <para><emphasis>functionDefinition</emphasis> and
+    <emphasis>variableDeclaration</emphasis> are covered in their respective
+    chapters. The remaining class members are covered below.</para>
+
+    <sect2 xml:id="initBlock">
+      <title><command>init</command> Block</title>
+
+      <para></para>
+
+      <figure>
+        <title>initBlock</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="initDefinition.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The <emphasis>initBlock</emphasis> is an optional block of code
+      which is executed as the final step of instance initialization.</para>
+    </sect2>
+
+    <sect2 xml:id="postinitBlock">
+      <title><command>postinit</command> Block</title>
+
+      <para></para>
+
+      <figure>
+        <title>postinitBlock</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="postinitDefinition.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para></para>
+
+      <para>The <emphasis>postInitBlock</emphasis> is an optional block of
+      code which is executed after instance initialization has
+      completed.</para>
+    </sect2>
+
+    <sect2>
+      <title>Variable Override Declaration</title>
+
+      <para></para>
+
+      <figure>
+        <title>variableOverrideDeclaration</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="variableOverrideDeclaration.png"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para></para>
+
+      <para>A <emphasis>variableOverrideDeclaration</emphasis> allows changing
+      the default value of a subclass' instance <command>var</command> and/or
+      adding an <emphasis>onReplaceClause</emphasis> for that
+      <command>var</command>. Either an
+      <emphasis>initializingExpression</emphasis> or an
+      <emphasis>onReplaceClause</emphasis> or both must be present. Note that
+      while an <emphasis>initializingExpression</emphasis> overrides the
+      default value, an <emphasis>onReplaceClause</emphasis> adds a block to
+      be executed on update -- any <emphasis>onReplaceClause</emphasis>
+      defined in a subclass is also executed on change to the variable -- this
+      is critical for maintaining subclass invariants..</para>
+    </sect2>
+
+    <sect2 xml:id="OverridingFunctions">
+      <title>Function Override Definition</title>
+
+      <para>You can change the definition of an instance function in a
+      subclass by overriding the function, using the
+      <command>override</command> modifier.</para>
+
+      <para>Here we override the definition of the function greeting in the
+      subclass Sub:</para>
+
+      <programlisting>class Base {
+   function greeting() : Void { 
+      println("Hi")
+   }
+}
+
+class Sub extends Base {
+   override function greeting() : Void { 
+      println("Howdy")
+   }
+}
+
+def b = Base {};
+def s = Sub {};
+
+b.greeting();
+s.greeting();
+</programlisting>
+
+      <para>This prints:</para>
+
+      <screen>Hi
+Howdy</screen>
+
+      <para>Java methods can also be overridden, For example, to change how an
+      object is printed its toString() method can be overridden:</para>
+
+      <programlisting>class Point { 
+   var x : Number; 
+   var y : Number; 
+   override function toString() : String {
+      "Point {x}, {y}"
+   } 
+} 
+
+def p = Point {x: 4.6 y: 8.9 };
+println( p );
+</programlisting>
+
+      <para>This prints</para>
+
+      <screen>Point 4.6, 8.9</screen>
+
+      <para></para>
+    </sect2>
+  </sect1>
+
+  <sect1>
+    <title>Inheritance</title>
+
+    <para>F3 classes may inherit from other F3 classes, from Java
+    interfaces, and from Java classes -- the <command>extends</command> clause
+    of the class definition lists these classes and interfaces.</para>
+
+    <para>A F3 class may inherit from one (F3 or Java) class, any
+    number of Java interfaces, and any number of certain (to be specified)
+    kinds of F3 classes.</para>
+  </sect1>
+
+  <sect1 xml:id="InstanceInitialization">
+    <title>Instance Initialization</title>
+
+    <para></para>
+
+    <sect2>
+      <title>Initialization Order</title>
+
+      <para>A new F3 class instance is initialized in this order:</para>
+
+      <itemizedlist spacing="compact">
+        <listitem>
+          <simpara>The object is created.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>The Java superclass default constructor, if any, is
+          executed.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>The values of the object literal's instance variable
+          initializers are computed (but not set).</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>The instance variables of F3 superclasses are
+          set.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>The instance variables of this class are set, in lexical
+          order.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>The <command>init</command> block, if any, is evaluated.
+          The instance is now initialized.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>The <command>postinit</command> block, if any, is
+          evaluated.</simpara>
+        </listitem>
+      </itemizedlist>
+
+      <para>The next section will cover how instance variables are set.</para>
+    </sect2>
+
+    <sect2>
+      <title>Instance Variable Initialization Avenues</title>
+
+      <para>The value of an instance variable at the end of initialization can
+      be set in any of several ways: value provided in the object literal, the
+      initial value specified in the variable declaration, an
+      <emphasis>initializingExpression</emphasis> on a variable override
+      declaration, or an assignment in an <emphasis>initBlock</emphasis>.
+      These avenues are discussed below.</para>
+
+      <para>Class instances are created with object literal expression (a
+      <emphasis>newExpression</emphasis> can be considered, for these purposes
+      as equivalent to an object literal that sets no instance variables). For
+      example:</para>
+
+      <para><programlisting>var fu = Foo { x: 14 }</programlisting></para>
+
+      <para>Here the instance variable x in Foo is set by the object literal
+      to be 14 (note: x may have been declared in a superclass of Foo).</para>
+
+      <para>The declaration of an instance variable explicitly or implicitly
+      sets a default value for the variable. For example it could be set
+      explicitly:</para>
+
+      <para><programlisting>class Foo {
+   var x = 99;
+}</programlisting></para>
+
+      <para>Here x has an <emphasis>initializingExpression</emphasis>.</para>
+
+      <para>If no <emphasis>initializingExpression</emphasis> is provided, the
+      default value for the type is the default value of the type of the
+      instance variable -- see the <link linkend="Types">Types and Values
+      chapter</link>. For example:</para>
+
+      <para><programlisting>class Answers {
+   var ungulate : Boolean;
+}</programlisting></para>
+
+      <para>Since false is the default value for the Boolean type, the default
+      value of ungulate is false.</para>
+
+      <para>A <emphasis>variableOverrideDeclaration</emphasis> can override
+      the default value. For example:</para>
+
+      <programlisting>class Shed {
+   var siding = "aluminum";
+}
+
+class FancyShed extends Shed {
+   override var siding = "copper";
+}</programlisting>
+
+      <para>Here FancyShed overrides the default value of siding. Note that a
+      <emphasis>variableOverrideDeclaration</emphasis> that does not have an
+      <emphasis>initializingExpression</emphasis> will not override the
+      default value.</para>
+
+      <para>Exactly one of the above will set the initial value. If the value
+      is provided in the object literal, that will be used. Otherwise, if an
+      override for the variable provides an
+      <emphasis>initializingExpression</emphasis> it will be used. If it is
+      not overridden, an explicit <emphasis>initializingExpression</emphasis>
+      will supply the initial value. Failing all that, the default value for
+      the type will be used.</para>
+
+      <para>After one of the above has set the instance variable, the
+      <emphasis>initBlock</emphasis>, if present, is executed. This block can
+      reset the instance variable.</para>
+    </sect2>
+  </sect1>
+</chapter>

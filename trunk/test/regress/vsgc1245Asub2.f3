@@ -1,0 +1,7 @@
+/**
+ * @subtest vsgc1245A
+ */
+
+public class vsgc1245Asub2 extends vsgc1245Asub {
+  override function foo() : Integer { 2 }
+}

@@ -1,0 +1,8 @@
+/**
+ * Should-fail test VSGC-1776 : Check for malformed 'run()' function parameters
+ *
+ * @test/compile-error
+ */
+
+function run(arg : String) {
+}

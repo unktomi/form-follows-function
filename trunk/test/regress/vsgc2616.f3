@@ -1,0 +1,10 @@
+/**
+ * VSGC-2616 : Incorrect error message: 'var' overrides member main(java.lang.String[])
+ *
+ * @compilefirst vsgc2616base.f3
+ * @test
+ */
+
+class vsgc2616 extends vsgc2616base {
+    public-init var main: Number;
+}

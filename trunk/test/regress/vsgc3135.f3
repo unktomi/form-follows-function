@@ -1,0 +1,12 @@
+/*
+ * Regression: VSGC-3135 - internal compiler error on deletion integer from long sequence.
+ *
+ * @test
+ * @run
+ *
+ */
+
+var s:Long[] = [0, 1, 2, 3];
+println("{s}");
+delete 1 from s;
+println("{s}");

@@ -1,0 +1,13 @@
+/**
+ * Regression test: VSGC-3183 : incompatible type error for sequence composed of classes that share base type and mixin
+ *
+ * @test
+ */
+
+mixin class M {}
+class Base {}
+class B extends Base, M {}
+class C extends Base, M {}
+
+var a1:Base[] = [B{}, C{}];
+var a2:M[] = [B{}, C{}];

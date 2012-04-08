@@ -1,0 +1,13 @@
+Duration object literal, millis=50 = 50.0ms
+500ms = 500ms
+5s = 5000ms or 05 seconds
+1.5s = 1500ms or 01.500 seconds
+2m = 120000ms or 02 minutes
+5s + 750ms = 5750ms or 05.750 seconds
+1h + 25m + 15s = 5115000ms
+t=120s t.toMinutes() = 2.0
+2m.toSeconds() = 120.0
+1m + 1s = 61000ms
+1m - 1s = 59000ms
+50ms * 2 = 100ms
+50ms / 2 = 25ms

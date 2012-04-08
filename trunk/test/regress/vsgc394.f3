@@ -1,0 +1,11 @@
+/* Regression test: VSGC-394:NPE when initializing var to the value of a superclass var
+ * @test
+ * @run
+ */
+class Foo {
+    public var attr: String = "HI";
+}
+class Bar extends Foo {
+    public var foo : String = attr;
+}
+Bar{}

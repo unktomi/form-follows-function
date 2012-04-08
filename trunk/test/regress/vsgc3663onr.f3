@@ -1,0 +1,17 @@
+/**
+ * Regression test VSGC-3663 : Compiled bind: sequence argument to bound invocation of non-bound function
+ *
+ * on-replace
+ *
+ * @test
+ * @run
+ */
+
+function len(z : String[]) : Integer { sizeof z }
+var seq = ["ha", "fa"];
+var cnt = 0;
+def bs = bind len(seq) on replace { println(++cnt) }
+insert "ba" into seq;
+delete seq;
+insert ["na", "xa"] into seq;
+delete "xa" from seq;

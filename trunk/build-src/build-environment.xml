@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-environment" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Checks and prints the environment variables for F3 project.
+        Where necessary, environment variable settings or system file
+        locations may be placed into properties here.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build-defs.xml file.
+
+    </description>
+
+    <property environment="env"/>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    <!-- Checks the environment variables. -->
+
+    <macrodef name="find-default-dir">
+        <attribute name="property"/>
+        <attribute name="evalue"/>
+        <attribute name="dvalue"/>
+        <sequential>
+            <condition property="@{property}" value="@{evalue}">
+                <available file="@{evalue}" type="dir"/>
+            </condition>
+            <condition property="@{property}" value="@{dvalue}">
+                <available file="@{dvalue}" type="dir"/>
+            </condition>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="find-default-val">
+        <attribute name="property"/>
+        <attribute name="var"/>
+        <attribute name="dvalue"/>
+        <sequential>
+            <condition property="@{property}" value="${env.@{var}}" else="@{dvalue}">
+                <isset property="env.@{var}"/>
+            </condition>
+        </sequential>
+    </macrodef>
+
+    <tstamp>
+        <format property="f3.built.today"
+                pattern="yyyy/MM/dd HH:mm:ss"/>
+    </tstamp>
+
+    <find-default-dir property="dxsdk.path"
+                  evalue="${env.DXSDK_DIR}"
+                  dvalue="C:/DXSDK"/>
+    
+    <find-default-dir property="wmsdk.path"
+                  evalue="${env.WMSDK_DIR}"
+                  dvalue="C:/WMSDK/WMFSDK95"/>
+
+    <find-default-dir property="systemroot.path"
+                  evalue="${env.SystemRoot}"
+                  dvalue="C:/WINDOWS"/>
+
+    <condition property="hudson.current.build.url"
+               value="${env.HUDSON_URL}">
+        <isset property="env.HUDSON_URL"/>
+    </condition>
+
+    <find-default-val property="hudson.current.job.name"
+                  var="JOB_NAME"
+                  dvalue="not_hudson/label=${platform}"/>
+
+    <find-default-val property="hudson.current.build.number"
+                  var="BUILD_NUMBER"
+                  dvalue="0000"/>
+
+    <find-default-val property="hudson.current.build.id"
+                  var="BUILD_ID"
+                  dvalue="${f3.built.today} (non-hudson build)"/>
+
+    <!-- The job.name looks like "somename/label=linux-i586" so extract the "somename" -->
+    <dirname property="hudson.current.job.name.tmp" file="${hudson.current.job.name}"/>
+    <basename property="hudson.current.job.basename" file="${hudson.current.job.name.tmp}"/>
+
+    <property name="f3.build.number"
+              value="${hudson.current.build.number}"/>
+    <property name="f3.build.id"
+              value="${hudson.current.build.id}"/>
+    <property name="f3.job.name"
+              value="${hudson.current.job.name}"/>
+    
+    <property name="f3.timestamp.product"
+              value="Product: ${f3.product.name}-${f3.release.version}${f3.release.milestone}"/>
+    <property name="f3.timestamp.platform"
+              value="Platform: ${platform}"/>
+    <property name="f3.timestamp.build.number"
+              value="Build-Number: ${f3.build.number}"/>
+    <property name="f3.timestamp.build.id"
+              value="Build-ID: ${f3.build.id}"/>
+    <property name="f3.timestamp.string"
+              value="${f3.timestamp.product}${line.separator}${f3.timestamp.platform}${line.separator}${f3.timestamp.build.number}${line.separator}${f3.timestamp.build.id}"/>
+
+    <!-- Get the hudson properties. -->
+
+    <property file="${f3.root.dir}/hudson.properties"/>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+    <!-- Macrodefs -->
+
+    <!-- Print out an environment variable value -->
+    <macrodef name="print-env">
+        <attribute name="name"/>
+        <sequential>
+            <condition property="env.@{name}.value"
+                       value="${env.@{name}}" 
+                       else="">
+                <isset property="env.@{name}"/>
+            </condition>
+            <echo level="info"
+		  message="    @{name}=${env.@{name}.value}"/>
+        </sequential>
+    </macrodef>
+
+    <target name="-check-windows" if="isWindows">
+        <echo level="info"
+	      message="Windows Environment Variable Settings:"/>
+        <echo level="info"
+	      message="--------------------------------------"/>
+        <print-env name="JAVA_HOME"/>
+        <print-env name="PATH"/>
+        <print-env name="VS71COMNTOOLS"/>
+    </target>
+
+    <target name="-check-macosx" if="isMacOSX">
+        <echo level="info"
+	      message="MacOSX Environment Variable Settings:"/>
+        <echo level="info"
+	      message="-------------------------------------"/>
+        <print-env name="JAVA_HOME"/>
+        <print-env name="PATH"/>
+        <print-env name="LD_LIBRARY_PATH"/>
+        <print-env name="LD_LIBRARY_PATH32"/>
+        <print-env name="LD_LIBRARY_PATH64"/>
+    </target>
+
+    <target name="-check-solaris" if="isSolaris">
+        <echo level="info"
+	      message="Solaris Environment Variable Settings:"/>
+        <echo level="info"
+	      message="-------------------------------------"/>
+        <print-env name="JAVA_HOME"/>
+        <print-env name="PATH"/>
+        <print-env name="LD_LIBRARY_PATH"/>
+        <print-env name="LD_LIBRARY_PATH32"/>
+        <print-env name="LD_LIBRARY_PATH64"/>
+    </target>
+
+    <target name="-check-linux" if="isLinux">
+        <echo level="info"
+	      message="Linux Environment Variable Settings:"/>
+        <echo level="info"
+	      message="-----------------------------------"/>
+        <print-env name="JAVA_HOME"/>
+        <print-env name="PATH"/>
+        <print-env name="LD_LIBRARY_PATH"/>
+        <print-env name="LD_LIBRARY_PATH32"/>
+        <print-env name="LD_LIBRARY_PATH64"/>
+    </target>
+    
+    <property name="f3.ant.version.needed" value="1.7.1"/>
+    
+    <target name="-check-ant">
+        <fail message="You need at least ant version ${f3.ant.version.needed}">
+            <condition>
+                <not>
+                    <antversion atleast="${f3.ant.version.needed}"/>
+                </not>
+            </condition>
+        </fail>
+    </target>
+
+    <target name="check-environment"
+            depends="-check-ant, 
+                     -check-windows,
+                     -check-macosx,
+                     -check-solaris,
+                     -check-linux">
+    </target>
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+</project>

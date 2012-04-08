@@ -1,0 +1,20 @@
+/**
+ * Regression test VSGC-3586 : Compiled bind: ABORT not implemented F3Indexof - non-bound-for with bound-index-of
+ *
+ * Original
+ *
+ * @test
+ * @run
+ */
+
+class Path {
+  var fill: Integer
+}
+
+var rng = [0..3];
+
+for (xx in rng) {
+    Path {
+        fill: bind indexof xx;
+    }
+}

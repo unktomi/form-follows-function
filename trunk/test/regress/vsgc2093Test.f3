@@ -1,0 +1,13 @@
+/*
+ * @subtest vsgc2093 
+ */
+import javax.swing.JApplet;
+
+public function getInstance():vsgc2093Test {
+       return new vsgc2093Test;
+}
+
+public class vsgc2093Test extends JApplet, java.lang.Runnable, vsgc2093Foo {
+       override public function run():Void {
+       }
+}

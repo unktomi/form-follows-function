@@ -1,0 +1,9 @@
+/*
+ * Regression: VSGC-2080 - F3 Compiler fails if tried to bind a sequence which contains String expression "F3".split("").
+ *
+ * @test
+ *
+ */
+
+var splitter:String='';
+var i:String[] = bind ["F3".split(splitter)];

@@ -1,0 +1,14 @@
+import f3.lang.F3;
+/*
+ * F3.addShutdownMessage
+ *
+ * @test
+ * @run
+ */
+
+function shutdown() {
+ println("Test F3.addShutdownAction");
+}
+
+F3.addShutdownAction( shutdown )
+

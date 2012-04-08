@@ -1,0 +1,8 @@
+test/should-fail/vsgc3654a.f3:22: Not allowed in bind context =
+      [firstInner = 
+       ^
+test/should-fail/vsgc3654a.f3:20: Missing variable initializer for firstInner
+Variables defined in bind must be initialized explicitly.
+    var firstInner : Inner;
+    ^
+2 errors

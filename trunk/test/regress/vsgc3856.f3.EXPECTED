@@ -1,0 +1,7 @@
+trigger: bindee2 = false
+trigger: visible = false
+bindee2 = false, caret.visible = false
+--1
+trigger: bindee2 = true
+trigger: visible = true
+bindee2 = true, caret.visible = true

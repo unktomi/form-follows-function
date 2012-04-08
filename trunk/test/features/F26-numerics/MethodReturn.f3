@@ -1,0 +1,192 @@
+/*
+ * Method return type
+ *
+ * @test/f3unit
+ * @run
+ */
+import f3.f3unit.*;
+
+/**
+ * These constants will be used to match between types
+ */
+def isInt : Integer = 1;
+def isLong : Integer = 2;
+def isByte : Integer = 3;
+def isShort : Integer = 4;
+def isChar : Integer = 5;
+def isFloat : Integer = 6;
+def isDouble : Integer = 7;
+
+/**
+ * Parameters values
+ */
+var i : Integer = 30000;
+var l : Long = 2200000000;
+var b : Byte = 10;
+var s : Short = 30000;
+var c : Character = 10;
+var f : Float = 3.1415926535;
+var d : Double = 2.71828183;
+var n : Number = 2.2;
+
+/**
+ * Global functions with different return values.
+ */
+function testInteger() : Integer { return i;}
+function testLong() : Long { return l;}
+function testByte() : Byte { return b;}
+function testShort() : Short { return s;}
+function testChar() : Character { return c;}
+function testFloat() : Float { return f;}
+function testDouble() : Double { return d;}
+function testNumber() : Number { return n;}
+
+function testOverloadGlobalRetInt(x : Integer) : Integer { return isInt;}
+function testOverloadGlobalRetInt(x : Long) : Integer { return isLong;}
+function testOverloadGlobalRetInt(x : Byte) : Integer { return isByte;}
+function testOverloadGlobalRetInt(x : Short) : Integer { return isShort;}
+function testOverloadGlobalRetInt(x : Character) : Integer { return isChar;}
+function testOverloadGlobalRetInt(x : Float) : Integer { return isFloat;}
+function testOverloadGlobalRetInt(x : Double) : Integer { return isDouble;}
+
+/**
+ * Testing global (script) function overloading
+ */
+class TesterGlobal {
+    function testGlobal() {
+        assertEquals(testInteger(), i);
+        assertEquals(testLong(), l);
+        assertEquals(testByte(), b);
+        assertEquals(testShort(), s);
+        assertEquals(testChar(), c);
+        // Doesn't compile for different reasons
+        //assertEquals(testFloat(), f);
+        //assertEquals(testDouble(), d);
+        //assertEquals(testNumber(), n);
+
+        // global function as argument to global function
+        assertEquals(testOverloadGlobalRetInt(testInteger()), isInt);
+        assertEquals(testOverloadGlobalRetInt(testLong()), isLong);
+        assertEquals(testOverloadGlobalRetInt(testByte()), isByte);
+        assertEquals(testOverloadGlobalRetInt(testShort()), isShort);
+        assertEquals(testOverloadGlobalRetInt(testChar()), isChar);
+        assertEquals(testOverloadGlobalRetInt(testFloat()), isFloat);
+        assertEquals(testOverloadGlobalRetInt(testDouble()), isDouble);
+        assertEquals(testOverloadGlobalRetInt(testNumber()), isFloat);
+    }
+}
+
+/**
+ * Testing instance function overloading
+ */
+class TesterInstance {
+    /**
+     * Instance functions with different return values.
+     */
+    function testIntegerInst() : Integer { return i;}
+    function testLongInst() : Long { return l;}
+    function testByteInst() : Byte { return b;}
+    function testShortInst() : Short { return s;}
+    function testCharInst() : Character { return c;}
+    function testFloatInst() : Float { return f;}
+    function testDoubleInst() : Double { return d;}
+    function testNumberInst() : Number { return n;}
+
+    /**
+     * Instance functions with return value Integer.
+     * They return the argument type as an Integer value
+     */
+    function testOverloadInstanceRetInt(x : Integer) : Integer { return isInt;}
+    function testOverloadInstanceRetInt(x : Long) : Integer { return isLong;}
+    function testOverloadInstanceRetInt(x : Byte) : Integer { return isByte;}
+    function testOverloadInstanceRetInt(x : Short) : Integer { return isShort;}
+    function testOverloadInstanceRetInt(x : Character) : Integer { return isChar;}
+    function testOverloadInstanceRetInt(x : Float) : Integer { return isFloat;}
+    function testOverloadInstanceRetInt(x : Double) : Integer { return isDouble;}
+
+    function testInstance() {
+        assertEquals(testIntegerInst(), i);
+        assertEquals(testLongInst(), l);
+        assertEquals(testByteInst(), b);
+        assertEquals(testShortInst(), s);
+        assertEquals(testCharInst(), c);
+        //assertEquals(testFloatInst(), f);
+        //assertEquals(testDoubleInst(), d);
+        //assertEquals(testNumberInst(), n);
+
+        // instance function as argument to instance function
+        assertEquals(testOverloadInstanceRetInt(testIntegerInst()), isInt);
+        assertEquals(testOverloadInstanceRetInt(testLongInst()), isLong);
+        assertEquals(testOverloadInstanceRetInt(testByteInst()), isByte);
+        assertEquals(testOverloadInstanceRetInt(testShortInst()), isShort);
+        assertEquals(testOverloadInstanceRetInt(testCharInst()), isChar);
+        assertEquals(testOverloadInstanceRetInt(testFloatInst()), isFloat);
+        assertEquals(testOverloadInstanceRetInt(testDoubleInst()), isDouble);
+        assertEquals(testOverloadInstanceRetInt(testNumberInst()), isFloat);
+
+        // global function as argument to instance function
+        assertEquals(testOverloadGlobalRetInt(testInteger()), isInt);
+        assertEquals(testOverloadGlobalRetInt(testLong()), isLong);
+        assertEquals(testOverloadGlobalRetInt(testByte()), isByte);
+        assertEquals(testOverloadGlobalRetInt(testShort()), isShort);
+        assertEquals(testOverloadGlobalRetInt(testChar()), isChar);
+        assertEquals(testOverloadGlobalRetInt(testFloat()), isFloat);
+        assertEquals(testOverloadGlobalRetInt(testDouble()), isDouble);
+        assertEquals(testOverloadGlobalRetInt(testNumber()), isFloat);
+    }
+}
+
+/**
+ * Testing inherited instance functions overloading
+ */
+class TesterInherited extends TesterInstance {
+    function testInherited() {
+        assertEquals(testIntegerInst(), i);
+        assertEquals(testLongInst(), l);
+        assertEquals(testByteInst(), b);
+        assertEquals(testShortInst(), s);
+        assertEquals(testCharInst(), c);
+        //assertEquals(testFloatInst(), f);
+        //assertEquals(testDoubleInst(), d);
+        //assertEquals(testNumberInst(), n);
+
+        // inherited function as argument to inherited function
+        assertEquals(testOverloadInstanceRetInt(testIntegerInst()), isInt);
+        assertEquals(testOverloadInstanceRetInt(testLongInst()), isLong);
+        assertEquals(testOverloadInstanceRetInt(testByteInst()), isByte);
+        assertEquals(testOverloadInstanceRetInt(testShortInst()), isShort);
+        assertEquals(testOverloadInstanceRetInt(testCharInst()), isChar);
+        assertEquals(testOverloadInstanceRetInt(testFloatInst()), isFloat);
+        assertEquals(testOverloadInstanceRetInt(testDoubleInst()), isDouble);
+        assertEquals(testOverloadInstanceRetInt(testNumberInst()), isFloat);
+
+        // global function as argument to inherited function
+        assertEquals(testOverloadGlobalRetInt(testInteger()), isInt);
+        assertEquals(testOverloadGlobalRetInt(testLong()), isLong);
+        assertEquals(testOverloadGlobalRetInt(testByte()), isByte);
+        assertEquals(testOverloadGlobalRetInt(testShort()), isShort);
+        assertEquals(testOverloadGlobalRetInt(testChar()), isChar);
+        assertEquals(testOverloadGlobalRetInt(testFloat()), isFloat);
+        assertEquals(testOverloadGlobalRetInt(testDouble()), isDouble);
+        assertEquals(testOverloadGlobalRetInt(testNumber()), isFloat);
+    }
+}
+
+public class MethodReturn extends F3TestCase {
+    function testMethodGlobal() {
+        var tester = TesterGlobal{};
+        tester.testGlobal();
+    }
+
+    function testMethodInstance() {
+        var tester = TesterInstance{};
+        tester.testInstance();
+    }
+
+    function testMethodInherited() {
+        var tester = TesterInherited{};
+        tester.testInherited();
+    }
+}
+
+

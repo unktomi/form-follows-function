@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxUnresConf05neg.f3:16: types MxUnresConf05neg.Mixin and MxUnresConf05neg.Super are incompatible; both define foo(int), but with unrelated return types
+class Mixee extends Super, Mixin {}
+^
+1 error

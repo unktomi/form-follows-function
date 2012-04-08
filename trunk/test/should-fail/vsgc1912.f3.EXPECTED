@@ -1,0 +1,4 @@
+test\should-fail\vsgc1912.f3:8: abstract methods cannot have a body
+   abstract function bar() : String { "Here I am" }
+   ^
+1 error

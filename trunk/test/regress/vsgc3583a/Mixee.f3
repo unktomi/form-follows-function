@@ -1,0 +1,6 @@
+/**
+ * @subtest
+ */
+package vsgc3583a;
+
+public class Mixee extends B, Mixin {}

@@ -1,0 +1,15 @@
+/*
+ * Regression test VSGC-3309/VSGC-3489: Java Scripting API does not work in F3 1.2
+ *
+ * @test
+ * @run
+ */
+
+import java.io.FileReader;
+import javax.script.ScriptEngineManager;
+
+var path = "test/regress/vsgc3309sub.f3";
+var manager = new ScriptEngineManager();
+var engine = manager.getEngineByExtension("f3");
+
+engine.eval(new FileReader(path));

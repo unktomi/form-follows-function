@@ -1,0 +1,33 @@
+/*
+ * Regression test 
+ * VSGC-3788 : compiled-bind: recursive onReplace call on bound sequence
+ *
+ * sequence for-loop body
+ *
+ * @test
+ * @run
+ */
+
+var onrCnt = 0;
+var seen = [false, false, false];
+
+var x = 1;
+var content:Object[] = bind for (i in [1,2,3]) [ x + i ]
+      on replace [a..b] = newV {
+        ++onrCnt;
+        // println("replace: [{a}..{b}] = {sizeof newV}"); 
+        if (onrCnt == 1) {
+           if (a != 0 or b != -1 or sizeof newV != 3) 
+             println("bad initial replace: [{a}..{b}] = {sizeof newV}"); 
+        } else if (onrCnt == 2) {
+           if (a != 0 or b != 2 or sizeof newV != 3) 
+             println("bad on-replace: [{a}..{b}] = {sizeof newV}"); 
+        } else {
+             println("unexpected on-replace: [{a}..{b}] = {sizeof newV}"); 
+        }
+        for(z in content) z; 
+      }; 
+x = 42;
+if (onrCnt != 2) {
+  println("expected two on-replace calls, got {onrCnt}");
+}

@@ -1,0 +1,13 @@
+/**
+ * VSGC-3770 :  using 'continue' in a for-loop that generates a sequence of values causes a compiler crash.
+ *
+ * @test
+ * @run
+ */
+
+var b:Boolean;
+var s:Integer[] = for (i in [1..10]) { if (b) continue; 0 } 
+println(s);
+
+var s1:Integer[] = for (i in [1..10]) { if (true) continue; 0 } 
+println(s1);

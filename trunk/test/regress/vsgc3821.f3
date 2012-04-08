@@ -1,0 +1,44 @@
+/*
+ * Regression: VSGC-3821 - runtime/ tests: Scene content is not a child of scene.
+ *
+ * @test
+ * @run
+ *
+ */
+
+
+
+class jjParent { 
+    var scene:jjScene = null; 
+    var jjcnt = 0; 
+    protected var children:jjParent[] on replace oldNodes[a..b] = newNodes { 
+       // The bug is that a recursive call is done to this but in that call, children is not set to newNodes. This happens 
+       // whether newNodes is empty (as in this test) or is not empty. 
+       println("jjx: Parent-{++jjcnt}, set children"); 
+
+       if (sizeof children != sizeof newNodes) { 
+           println("BUG: sizeof children = {sizeof children}, sizeof newNodes = {sizeof newNodes}"); 
+           java.lang.System.exit(1); 
+       } 
+       if (sizeof newNodes != 0) { 
+           // this recursive call causes the problem - newNodes is empty but children doesn't get set to empty. 
+           this.children = []; 
+       } 
+       println("jjx: Parent-{--jjcnt}, exit"); 
+    } 
+} 
+
+class jjScene { 
+    def root = jjRoot{scene:this}; 
+    var content: jjParent[]; 
+} 
+
+class jjRoot extends jjParent { 
+       override var children = bind scene.content with inverse on replace oldx = newx { println("jjx: Root: set-children");} 
+} 
+
+
+var child = jjParent {}; 
+
+// setting content causes parent.children to be modified via the override var children in jjRoot. 
+var p2 = jjScene { content: [ child ] }; 

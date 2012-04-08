@@ -1,0 +1,4 @@
+test/should-fail/vsgc1866.f3:8: Attempting to create a F3 class using new with a non-empty parameter list. Use object literal instead.
+new Sample(1);
+           ^
+1 error

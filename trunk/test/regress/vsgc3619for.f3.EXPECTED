@@ -1,0 +1,6 @@
+vv1: for (ii in [aa..2]) ii
+vv2: for (ii in [aa..2] where ii == 2) ii
+vv3: for (ii in [0..2] where ii == aa) ii
+vv4: for (ii in [0..2] where ii == 2) aa
+vv5: seqy[yy | yy < aa]
+All Done

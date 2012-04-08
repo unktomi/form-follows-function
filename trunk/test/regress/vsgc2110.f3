@@ -1,0 +1,9 @@
+/**
+ * Regression test VSGC-2110 : 
+ *
+ * @compilefirst vsgc2110Color.f3
+ * @test
+ */
+
+var a = 3;
+var b  = bind if (a < 2) vsgc2110Color {} else vsgc2110Color.RED;

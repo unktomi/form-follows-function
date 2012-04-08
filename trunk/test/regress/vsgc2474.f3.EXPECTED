@@ -1,0 +1,6 @@
+x0 = 2.5 is boxed as java.lang.Float
+x1 = 22.5 is boxed as java.lang.Float
+x2 = 22.5 is boxed as java.lang.Double
+x3 = 2323213 is boxed as java.lang.Integer
+x4 = 455345543545435435 is boxed as java.lang.Long
+x5 = 2200000000 is boxed as java.lang.Long

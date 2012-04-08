@@ -1,0 +1,3 @@
+on-replace [0..-1] = 1
+on-replace [1..0] = 1
+Orr

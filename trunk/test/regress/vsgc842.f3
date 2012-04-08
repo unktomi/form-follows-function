@@ -1,0 +1,14 @@
+/*
+ * Regression test for VSGC-842. F3c successfully compiles code that 
+ * throws java.lang.VerifyError when run
+ *
+ * @test
+ * @compilearg -XDfwdRefError=false
+ * @run
+ */ 
+ 
+var z:Integer = {
+        var a = if(z==10) 12 else 34;
+        a;
+
+} 

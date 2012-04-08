@@ -1,0 +1,17 @@
+/* VSGC-320a: cannot locate another method in same class
+ * @test
+ * @run
+ */
+import java.lang.Object;
+
+class vsgc320a {
+    var inUpdateSelection: Boolean;
+    public function updateSelection(oldIndex:Integer, newIndex:Integer):Void {
+    }
+
+    public var tabs: Object[]
+        on replace oldValue[a..b] = newElements { };
+
+    public var selectedIndex: Number = -1
+        on replace old  { updateSelection(1.0, selectedIndex); };
+}

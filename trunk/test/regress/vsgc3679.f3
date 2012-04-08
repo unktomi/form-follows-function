@@ -1,0 +1,20 @@
+/**
+ * VSGC-3679 : Compiled-bind: array access/assigment is broken
+ *
+ * @test
+ */
+
+class A {
+var arr:nativearray of Number = [1,2] as nativearray of Number;
+}
+
+var a = A{};
+a.arr[0] -= 0.5; //qualified access from function - getter/setter should be used
+
+var arr:nativearray of Number = [1,2] as nativearray of Number;
+arr[0] -= 0.5; //non-qualified access from script - getter/setter should be used
+
+function f() {
+ var arr:nativearray of Number = [1,2] as nativearray of Number;
+ arr[0] -= 0.5; //non-qualified access from function - no getter/setter should be used
+}

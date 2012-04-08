@@ -1,0 +1,41 @@
+/*
+ * VSGC-4166 : IllegalStateException thrown with a toolbar added to a panel
+ *
+ * @test
+ * @run
+ */
+
+class Rectangle {
+    var width : Integer;
+    var height : Integer;
+    init {
+       println("rectangle initializedi rectangle {width}, {height}");
+    }
+}
+
+class Button {
+    var text : String;
+    var graphic : Rectangle;
+    init {
+       println("button initialized {text}, {graphic.width}, {graphic.height}");
+    }
+}
+
+class Group {
+    var content : Button[];
+    init {
+       println("group initialized");
+    }
+}
+
+
+def rect:Rectangle = Rectangle { width: 40 height: 20 }
+
+class ButtonBindTest {
+    init {
+        def button = Button { text: "OK", graphic: bind rect };
+        var group:Group = Group { content: [ button ] };
+    }
+}
+
+var bt = ButtonBindTest {};

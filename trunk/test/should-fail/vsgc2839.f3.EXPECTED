@@ -1,0 +1,6 @@
+test/should-fail/vsgc2839.f3:7: unexpected type
+found   : Integer
+required: Object[]
+var x:Number[] = 13 [30 ..50];
+                 ^
+1 error

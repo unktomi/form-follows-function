@@ -1,0 +1,37 @@
+/**
+ * VSGC-3180 : incorrect inInstanceContext for function value in on-replace block
+ *
+ * non-library equivalent of originally observed failure
+ *
+ * @test
+ */
+
+import f3.animation.*;
+
+class vsgc3180orig {
+  function updateTime() {}
+
+  var updateTimeline : Timeline;
+
+  var media on replace {
+    try {
+      if (media != null) {
+        if (updateTimeline == null) {
+          updateTimeline = Timeline {
+            repeatCount: Timeline.INDEFINITE
+            keyFrames: [
+               KeyFrame {
+                 time: 100ms
+                 canSkip: true
+                 action: function() {
+                   updateTime()
+                 }
+               }
+             ]
+           }
+         }
+       }
+     } finally {
+     }
+   }
+}

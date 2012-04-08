@@ -1,0 +1,16 @@
+test/should-fail/vsgc1249bad.f3:15: The argument to the function isInitialized must be a reference to an instance 'var'.
+     isInitialized(22); // not a variable reference
+     ^
+test/should-fail/vsgc1249bad.f3:16: The argument to the function isInitialized must be a reference to an instance 'var'.
+     isInitialized(hazmat); // not a variable reference
+     ^
+test/should-fail/vsgc1249bad.f3:17: The argument to the function isInitialized must be a reference to an instance 'var'.
+     isInitialized(hazmat()); // not a variable reference
+     ^
+test/should-fail/vsgc1249bad.f3:20: The argument to the function isInitialized must be a reference to an instance 'var'.
+     isInitialized(two); // not a 'var' reference
+     ^
+test/should-fail/vsgc1249bad.f3:21: The argument to the function isInitialized must be a reference to an instance 'var'.
+     isInitialized(localVar); // not a instance variable reference
+     ^
+5 errors

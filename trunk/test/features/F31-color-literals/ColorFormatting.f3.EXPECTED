@@ -1,0 +1,8 @@
+normal: color(5%, 33%, 6%)
+normalAlpha: color(73%, 33%, 83%, 87%)
+capital: COLOR(5%, 33%, 6%)
+alternate: #0d550f
+alternate capital alpha: #BA55D3|DF
+width: '       color(5%, 33%, 6%)'
+left-justification: 'color(5%, 33%, 6%)       '
+precision: color(5.098%, 33.333%, 5.882%)

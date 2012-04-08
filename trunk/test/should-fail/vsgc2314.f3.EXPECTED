@@ -1,0 +1,4 @@
+test\should-fail\vsgc2314.f3:10: Sorry, I was trying to understand a type specification but I got confused when I saw '.'.
+for( is2.indexOf(i2) == -1) {
+        ^
+1 error

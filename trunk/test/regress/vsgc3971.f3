@@ -1,0 +1,8 @@
+/**
+ * VSGC-3971 : Compiler crashes when compiling f3 source with bi-directional binds on sliders, checkboxes
+ *
+ * @compilefirst vsgc3971sub.f3
+ * @test
+ */
+
+var x = bind vsgc3971sub.a with inverse;

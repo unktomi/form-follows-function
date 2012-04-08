@@ -1,0 +1,99 @@
+/*
+ * Regress test for VSGC-3476: add support for invalidate triggers and invalidate statements for non-bound vars
+ *
+ * @test
+ * @run
+ */
+
+class Base {
+   var b:Byte = 1;
+   var c:Character = 1;
+   var s:Short = 1;
+   var i:Integer = 1;
+   var n:Number = 1;
+   var d:Double = 1;
+   var bool:Boolean = true;
+   var o:Object = "Hello";
+   var seq = [b, c, i];
+
+   var bb:Byte = b;
+   var bc:Character = c;
+   var bs:Short = s;
+   var bi:Integer = i;
+   var bn:Number = n;
+   var bd:Double = d;
+   var bbool:Boolean = bool;
+   var bo:Object = o;
+   var bseq = seq;
+}
+
+class Main extends Base {
+   override var bb = b on invalidate { println("Inside on-invalidate bb..."); }
+   override var bc = c on invalidate { println("Inside on-invalidate bc..."); }
+   override var bs = s on invalidate { println("Inside on-invalidate bs..."); }
+   override var bi = i on invalidate { println("Inside on-invalidate bi..."); }
+   override var bn = n on invalidate { println("Inside on-invalidate bn..."); }
+   override var bd = d on invalidate { println("Inside on-invalidate bd..."); }
+   override var bbool = bool on invalidate { println("Inside on-invalidate bbool..."); }
+   override var bo = o on invalidate { println("Inside on-invalidate bo..."); }
+   override var bseq = seq on invalidate { println("Inside on-invalidate bseq..."); }
+}
+
+var m = Main{};
+
+println("explicitly invalidating m.bb");
+invalidate m.bb; //this one calls the trigger
+println("forcing validation of m.bb");
+m.bb; //force validation of bb's contents
+println("implicitly invalidating m.bb");
+m.bb=2; //this one calls the trigger
+
+println("explicitly invalidating m.bc");
+invalidate m.bc; //this one calls the trigger
+println("forcing validation of m.bc");
+m.bc; //force validation of bc's contents
+println("implicitly invalidating m.bc");
+m.bc=2; //this one calls the trigger
+
+println("explicitly invalidating m.bs");
+invalidate m.bs; //this one calls the trigger
+println("forcing validation of m.bs");
+m.bs; //force validation of bs's contents
+println("implicitly invalidating m.bs");
+m.bs=2; //this one calls the trigger
+
+println("explicitly invalidating m.bi");
+invalidate m.bi; //this one calls the trigger
+println("forcing validation of m.bi");
+m.bi; //force validation of bi's contents
+println("implicitly invalidating m.bi");
+m.bi=2; //this one calls the trigger
+
+println("explicitly invalidating m.bn");
+invalidate m.bn; //this one calls the trigger
+println("forcing validation of m.bn");
+m.bn; //force validation of bn's contents
+println("implicitly invalidating m.bn");
+m.bn=2; //this one calls the trigger
+
+println("explicitly invalidating m.bd");
+invalidate m.bd; //this one calls the trigger
+println("forcing validation of m.bd");
+m.bd; //force validation of bd's contents
+println("implicitly invalidating m.bd");
+m.bd=2; //this one calls the trigger
+
+println("explicitly invalidating m.bo");
+invalidate m.bo; //this one calls the trigger
+println("forcing validation of m.bo");
+m.bo; //force validation of bo's contents
+println("implicitly invalidating m.bo");
+m.bo="NewHello"; //this one calls the trigger
+
+//note - validating the sequence will also result in an on invalidate trigger call
+println("explicitly invalidating m.bseq");
+invalidate m.bseq; //this one calls the trigger
+println("forcing validation of m.bseq");
+m.bseq; //force validation of bseq's contents
+println("implicitly invalidating m.bseq");
+m.bseq=[1, 2, 3]; //this one calls the trigger

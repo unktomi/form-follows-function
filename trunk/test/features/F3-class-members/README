@@ -1,0 +1,10 @@
+Visage compiler feature test #3
+
+Demonstrated:
+ - Visage class with attributes and functions
+ - Attribute initializers
+ - Binding of attributes to attribute-valued expressions
+
+Restrictions:
+ - bindings do not know about dynamic dependencies within functions, only static dependencies
+ 

@@ -1,0 +1,13 @@
+/*
+ * @test/f3unit
+ */
+ 
+public class SequenceTest extends f3.f3unit.F3TestCase {
+    function testSimple() {
+        assertEquals([1, 2], [1, 2]);
+    }
+
+    function testSimpleMessage() {
+        assertEquals("message", [3, 4], [3, 4]);
+    }
+}

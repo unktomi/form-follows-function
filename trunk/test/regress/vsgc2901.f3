@@ -1,0 +1,14 @@
+/*
+ * Regression: VSGC-2901 - When A Variable Bind A Super Variable,Compiler Error.
+ *
+ * @test
+ *
+ */
+
+class A { var x; }
+
+class B extends A {
+
+var y = bind A.x; //replacing it with 'bind x' compiles fine!
+
+}

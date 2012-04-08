@@ -1,0 +1,45 @@
+/* 
+ * test for the generic localization functionality with F3 properties files
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+import java.util.*;
+
+import f3.util.StringLocalizer;
+
+// save the default locale for testing
+var curLoc = Locale.getDefault();
+
+try {
+    // set the default locale to Japan
+    Locale.setDefault(Locale.JAPAN);
+
+    // create localizer object literal with defaults
+    var localizer = StringLocalizer { key: "source original string" };
+
+    // This prints translated string in vsgc698_ja.f3properties
+    System.out.println(localizer.localizedString);
+
+    // This prints translated string in foo/bar/F3PropTestResources_ja.f3properties
+    StringLocalizer.associate("foo.bar.F3PropTestResources", "", "vsgc698.f3");
+    localizer = StringLocalizer { key: "source original string" };
+    System.out.println(localizer.localizedString);
+
+    // create another localizer object literal with defaults
+    StringLocalizer.dissociate("", "vsgc698.f3");
+    var localizer2 = StringLocalizer { key: "EXPLICIT_KEY", defaultString: "default string" };
+
+    // This prints translated string in vsgc698_ja.f3properties
+    System.out.println(localizer2.localizedString);
+
+    // This prints the 'default string'
+    localizer2.key = "EXPLICIT_KEY2";
+    System.out.println(localizer2.localizedString);
+
+} finally {
+    // restore the default locale
+    Locale.setDefault(curLoc);
+}

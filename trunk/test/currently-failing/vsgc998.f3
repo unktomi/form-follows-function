@@ -1,0 +1,18 @@
+/*
+*
+* Regression test for VSGC-998: Override problem when extending Object
+* @test/fail
+*
+*/
+
+import java.lang.Object;
+class Bar {
+function x() {
+  println("BAR");
+}
+}
+class Foo extends Object,Bar {
+function x() {
+ println("FOO");
+} 
+} 

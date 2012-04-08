@@ -1,0 +1,25 @@
+test/should-fail/vsgc4173sub.f3:11: warning: Suspicious forward reference: variable g might not have been initialized.
+   var f:Integer = 1 on invalidate { g; this.g; A.g; vsgc4173sub.A.g; };
+                                     ^
+test/should-fail/vsgc4173sub.f3:11: warning: Suspicious forward reference: variable g might not have been initialized.
+   var f:Integer = 1 on invalidate { g; this.g; A.g; vsgc4173sub.A.g; };
+                                            ^
+test/should-fail/vsgc4173sub.f3:11: warning: Suspicious forward reference: variable g might not have been initialized.
+   var f:Integer = 1 on invalidate { g; this.g; A.g; vsgc4173sub.A.g; };
+                                                 ^
+test/should-fail/vsgc4173sub.f3:11: warning: Suspicious forward reference: variable g might not have been initialized.
+   var f:Integer = 1 on invalidate { g; this.g; A.g; vsgc4173sub.A.g; };
+                                                                  ^
+test/should-fail/vsgc4173sub.f3:19: warning: Suspicious forward reference: variable d1 might not have been initialized.
+      var c1:Integer = 1 on invalidate { d1; };
+                                         ^
+test/should-fail/vsgc4173sub.f3:29: warning: Suspicious forward reference: variable e might not have been initialized.
+var d:Integer = 1 on invalidate { e; vsgc4173sub.e; };
+                                  ^
+test/should-fail/vsgc4173sub.f3:29: warning: Suspicious forward reference: variable e might not have been initialized.
+var d:Integer = 1 on invalidate { e; vsgc4173sub.e; };
+                                                ^
+test/should-fail/vsgc4173sub.f3:37: warning: Suspicious forward reference: variable d1 might not have been initialized.
+   var c1:Integer = 1 on invalidate { d1 };
+                                      ^
+8 warnings

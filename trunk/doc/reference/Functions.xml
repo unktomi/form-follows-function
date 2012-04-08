@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="Functions"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Functions</title>
+
+  <para>Functions provide a way to reuse an expression at different points in
+  your script.<remark></remark></para>
+
+  <sect1>
+    <title>Function Syntax</title>
+
+    <para></para>
+
+    <para><remark>[To do: text description of syntax]</remark></para>
+
+    <figure>
+      <title>functionDefinition</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="functionDefinition.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>formalParameters</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="formalParameters.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>formalParameter</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="formalParameter.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <figure>
+      <title>typeSpecifier</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="typeSpecifier.png"></imagedata>
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <table>
+      <title>Function Modifiers</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><command>abstract</command></entry>
+
+            <entry>An instance function declaration without a body. The
+            defining class must also be abstract. A concrete (non-abstract)
+            class will need to <link
+            linkend="OverridingFunctions">override</link> the function to
+            provide a definition.</entry>
+          </row>
+
+          <row>
+            <entry><command>bound</command></entry>
+
+            <entry>A <link linkend="BoundFunctions"><emphasis>bound
+            function</emphasis></link> allows a bound context to extend into a
+            function call.</entry>
+          </row>
+
+          <row>
+            <entry><command>override</command></entry>
+
+            <entry>An <link linkend="OverridingFunctions">instance function
+            can override</link> the definition in its superclass if the
+            override modifier is used.</entry>
+          </row>
+
+          <row>
+            <entry><command>package</command></entry>
+
+            <entry>The function can only be called from the package where it
+            is defined. See <link linkend="Modifiers">Access
+            Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>protected</command></entry>
+
+            <entry>The function can only be called from the package where it
+            is defined and from subclasses of the class where it is defined.
+            See <link linkend="Modifiers">Access Modifiers</link>.</entry>
+          </row>
+
+          <row>
+            <entry><command>public</command></entry>
+
+            <entry>The function can be called from anywhere. See <link
+            linkend="Modifiers">Access Modifiers</link>.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </sect1>
+
+  <sect1>
+    <title>Kinds of Functions</title>
+
+    <para>Functions can be declared at the script level (script function) or
+    inside a class (instance function). Local functions are not yet
+    supported.</para>
+
+    <para></para>
+
+    <sect2>
+      <title>Script Functions</title>
+
+      <para>Script functions are declared at the top-level of a script, not
+      inside a class definition. Script functions are visible throughout the
+      entire script -- a member access expression is not needed.</para>
+
+      <para><programlisting>function square(x : Number) : Number { x * x }
+println( square(7) )</programlisting></para>
+
+      <para>If access modifiers are added which make the script function
+      visible outside the script, they may be accessed as members of the
+      script. For example, if this is script Foo.f3:</para>
+
+      <para><programlisting>public function square(x : Number) : Number { x * x }</programlisting></para>
+
+      <para>Then script Bar.f3 can access square:</para>
+
+      <para><programlisting>println(Foo.square(10))</programlisting></para>
+    </sect2>
+
+    <sect2>
+      <title>Instance Functions</title>
+
+      <para>Instance functions are declared at the top-level of a class.
+      Instance functions are visible through-out the entire script -- a member
+      access expression is not needed within the class (or its subclasses) but
+      is needed outside of the class.</para>
+
+      <para><programlisting>class Scale { 
+   var factor : Number; 
+   function transform(x : Number) : Number { factor * x } 
+} 
+var tf = Scale { factor: 25.0 } 
+println(tf.transform(10.0))</programlisting></para>
+    </sect2>
+  </sect1>
+
+  <sect1>
+    <title>Type Inference</title>
+
+    <para>Type inferencing can generally determine the return type of a
+    function. In most cases the parameter types can be determined by type
+    inference as well.</para>
+
+    <para>However, functions which, by virtue of their access modifiers, are
+    visible outside the script should be explicitly typed.</para>
+
+    <para><remark>[To do: detail on type inference]</remark></para>
+  </sect1>
+
+  <sect1>
+    <title>Parameter passing</title>
+
+    <para>When called in a bound context, the parameters of a bound function
+    are passed by reference and the return value is by reference as well. In
+    all other cases, non-bound functions and bound functions called form
+    non-bound contexts, parameters are passed by value and the the return
+    value is by value.</para>
+  </sect1>
+</chapter>

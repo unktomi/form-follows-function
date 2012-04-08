@@ -1,0 +1,52 @@
+import java.lang.System;
+import java.lang.Exception;
+import java.util.Random;
+import f3.util.Sequences;
+
+/**
+  * Functional test : Function vs sequence
+  *			(Sequences.sort)
+  * @test
+  * @run
+  */
+  
+var r = new Random();
+var a: Integer[] = for(i in [0..200]) { r.nextInt() };
+var foo: Integer[] = Sequences.sort(a) as Integer[];
+sort(0, 200);
+if(not a.equals(foo)){ throw new Exception("Test case failed!!!")}
+
+function sort(left:Integer, right:Integer):Void {
+        var pivotIndex=0;
+        if( left < right ) {
+                pivotIndex = partition(left, right);
+                sort( left, pivotIndex-1);
+                sort( pivotIndex+1, right);
+        }
+}
+function partition(left:Integer, right:Integer) : Integer {
+	var p = a[left];
+	var l = left;
+	var r = right+1;
+	while(true) {
+		l++; r--;
+		while( (a[l] <= p) and (l < right )) {
+			l++;
+		}
+		while( a[r] > p ) {
+			r--;
+		}
+		if( l >= r ) {
+			break;
+		}
+		swapSeqValues(l,r);
+	}
+	swapSeqValues(left,r);
+	return r;
+}
+function swapSeqValues(i:Integer, j:Integer) {
+	var temp=0;
+	temp = a[i];
+	a[i] = a[j];
+	a[j] = temp;
+}

@@ -1,0 +1,31 @@
+/*
+ * Regression test VSGC-4035 : Ensemble gets duplicate children exception
+ *
+ * Original non-GUI
+ *
+ * @test
+ * @run
+ */
+
+class A {
+  override function toString() { "A" }
+}
+
+class B {
+  var content : A[]
+     on replace oldValue[a..b] = newValue { 
+	println("---- on-replace [{a}..{b}] = {newValue.toString()}");
+	println(oldValue);
+	println(content);
+}
+}
+var cond = true;
+bound function isWhatever() {cond};
+var a = A{}
+def eb = B { content: bind [
+  if (isWhatever() and cond) a else null,
+  if (isWhatever() and cond) a else null,
+  if (isWhatever() and cond) a else null
+]};
+cond = false;
+cond = true;

@@ -1,0 +1,865 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="Types" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title xml:id="Types.title">Types and Values</title>
+
+  <para>This chapter covers the data types and values which can be represented
+  and manipulated in F3.<remark></remark></para>
+
+  <sect1>
+    <title>F3 Data Types</title>
+
+    <para>F3 data types, hereafter called F3 types, describe
+    the kinds of values a F3 expression can have. Every F3 variable,
+    function, and expression has a type, most often determined from context.
+    F3 variables can explicitly declare their type; a function can
+    explicitly declare the types of its parameters and the type of its return
+    value. F3 types (with the exception of <link
+    linkend="Void">Void</link>) consist of an <emphasis>element
+    specifier</emphasis> and a <emphasis>cardinality</emphasis>. The element
+    specifier determines what the type holds and the cardinality determines
+    how many of them can be held.</para>
+
+    <sect2>
+      <title>Element Specifier</title>
+
+      <para>Element specifiers are classes or function signatures. Classes
+      include both F3 classes and Java classes. These are some example
+      representations of element specifiers which are classes:</para>
+
+      <programlisting>MyClass
+java.util.Map
+Duration
+f3.animation.Timeline
+Integer</programlisting>
+
+      <para>A function signature consists of the parameter types and return
+      type -- function signatures are unnamed and are not tied to particular
+      functions which might implement the signature. These are some example
+      representations of element specifiers which are function
+      signatures:</para>
+
+      <programlisting>function(:Number):Boolean
+function(:Integer,:Integer):SplotchedBall
+function():Integer</programlisting>
+
+      <para>See <link linkend="FunctionTypes">Function Types</link> for more
+      information.</para>
+
+      <para>All element specifiers are subtypes of java.lang.Object.</para>
+
+      <para>[In formal type systems the element specifier would be called the
+      <emphasis>ground type</emphasis>]</para>
+    </sect2>
+
+    <sect2>
+      <title>Cardinality</title>
+
+      <para>The cardinality of a type determines how many elements can be held
+      in a F3 type. The three cardinalities are
+      <emphasis>optional</emphasis>, <emphasis>required</emphasis>, and
+      <emphasis>sequence</emphasis>.</para>
+
+      <sect3>
+        <title>Cardinality: Optional (0 or 1)</title>
+
+        <para>Optional cardinality means there can be one element or no
+        elements. This is the cardinality associated with most types,
+        currently including all user defined classes. If you define a class
+        Foo, then the F3 type "Foo" has class Foo as its element specifier
+        and optional as its cardinality. For example:</para>
+
+        <programlisting>var x : Foo;</programlisting>
+
+        <para>Says that x can hold an instance of Foo (one element) or can
+        hold null, the nonexistent value (no elements).</para>
+      </sect3>
+
+      <sect3>
+        <title>Cardinality: Required (1)</title>
+
+        <para>Required cardinality means there must be one element. This is
+        the cardinality associated with the built-in types String, Integer,
+        Number, Boolean, and Duration. For example:</para>
+
+        <programlisting>var k : Integer;</programlisting>
+
+        <para>Says that k holds one Integer.</para>
+
+        <para>The nonexistent value, null, is not a permitted value for types
+        with required cardinality. Attempts to assign null to a type with
+        required cardinality will be converted to the default value (see the
+        <link linkend="DefaultValues">Default Values section</link>). Attempts
+        to convert null to a type with required cardinality will be converted
+        to the default value.</para>
+      </sect3>
+
+      <sect3>
+        <title>Cardinality: Sequence (0-n)</title>
+
+        <para>Sequence cardinality means there can be any number of elements,
+        including zero. This is the cardinality associated with explicitly
+        declared sequences. For example:</para>
+
+        <programlisting>var seq : Integer[];</programlisting>
+
+        <para>Says that seq can hold any number of Integers.</para>
+      </sect3>
+    </sect2>
+  </sect1>
+
+  <sect1 xml:id="DefaultValues">
+    <title xml:id="DefaultValues.title">Default Values</title>
+
+    <para>Each F3 type has an associated default value. The default
+    variable is the value of a variable before it is set. It is also the value
+    of an expression of that type if an error is encountered. For types with
+    optional cardinality their default value is null. For example:</para>
+
+    <programlisting>var x : Foo; 
+println(x);</programlisting>
+
+    <para>Will print null since x has not been set.</para>
+
+    <para>For types with sequence cardinality their default value is the empty
+    sequence of their element specifier. For example:</para>
+
+    <programlisting>var seq : Integer[]; 
+println(sizeof seq);</programlisting>
+
+    <para>Will print zero as the size of seq since seq has not been set and
+    its initial value will be an empty sequence of Integer.</para>
+
+    <para>Each required type has its own default value, as shown in the <link
+    linkend="TypeChart">Type Chart</link>.</para>
+
+    <programlisting>var k : Integer; 
+println(k);</programlisting>
+
+    <para>Will print zero since k has not been set and the default value for
+    Integer is 0.</para>
+  </sect1>
+
+  <sect1>
+    <title>Value Types</title>
+
+    <para>Some types are <emphasis>value types</emphasis>. Value types have
+    the following characteristics:</para>
+
+    <itemizedlist>
+      <listitem>
+        <simpara>they are immutable -- they do not have internal state that
+        can be changed (for example, you can't change the characters in a
+        String)</simpara>
+      </listitem>
+
+      <listitem>
+        <simpara>they have required cardinality (and thus are subclasses of
+        java.lang.Object)</simpara>
+      </listitem>
+
+      <listitem>
+        <simpara>they have a default value different from null</simpara>
+      </listitem>
+    </itemizedlist>
+
+    <para>Currently, the only value types are String, Integer, Number,
+    Boolean, and Duration. These types have built-in support in the
+    language:</para>
+
+    <itemizedlist>
+      <listitem>
+        <simpara>they have a built-in literal format</simpara>
+      </listitem>
+
+      <listitem>
+        <simpara>they, with the exception of Duration, have built-in
+        operations that return values of the type</simpara>
+      </listitem>
+    </itemizedlist>
+
+    <para>String, Integer, Number, Boolean, and Duration are discussed in this
+    section.</para>
+
+    <sect2>
+      <title>String</title>
+
+      <para>String represents character strings. The default value for the
+      String type is the empty string ("").</para>
+
+      <sect3>
+        <title>String Literal Syntax</title>
+
+        <blockquote>
+          <programlisting>    StringLiteral:
+            OneStringLiteral
+            StringLiteral OneStringLiteral
+
+    OneStringLiteral:
+            <command>"</command> DoubleQuoteStringCharacters<subscript>opt</subscript> <command>"</command>
+            <command>'</command> SingleQuoteStringCharacters<subscript>opt</subscript> <command>'</command>
+
+    DoubleQuoteStringCharacters:
+            DoubleQuoteStringCharacter
+            DoubleQuoteStringCharacters DoubleQuoteStringCharacter
+
+    DoubleQuoteStringCharacter:
+            InputCharacter but not <command>"</command>, <command>{</command>, <command>}</command> or <command>\</command>
+            <command>\</command> InputCharacter
+
+    SingleQuoteStringCharacters:
+            SingleQuoteStringCharacter
+            SingleQuoteStringCharacters SingleQuoteStringCharacter
+
+    SingleQuoteStringCharacter:
+            InputCharacter but not <command>'</command>, <command>{</command>, <command>}</command> or <command>\</command>
+            <command>\</command> InputCharacter
+</programlisting>
+        </blockquote>
+
+        <para>Literals are bracketed in either single or double quotes. That
+        is, a double quote followed by a sequence of characters (here
+        "sequence" does not refer to the cardinality) and ending with a double
+        quote. For example:</para>
+
+        <programlisting>"brown cow"</programlisting>
+
+        <para>Or a single quote followed by a sequence of characters and
+        ending with a single quote. For example:</para>
+
+        <programlisting>'This is so %#@*^ exciting!'</programlisting>
+
+        <para>If the sequence of characters includes braces ('{' or '}') it is
+        a <link linkend="stringExpression">string-expression</link>. Any
+        character may be escaped with the backslash character ('\') -- this is
+        useful for including the brace, quote, and backslash characters. Note
+        that single quotes may be included in double quoted strings without
+        being escaped, and visa versa. For example:</para>
+
+        <programlisting>"Then she said 'shazam', and abruptly left"</programlisting>
+
+        <para>The sequence of characters must not include carriage-return or
+        linefeed. Two adjacent strings are automatically merged at
+        compile-time -- this is convenient for making multiple line strings.
+        Thus:</para>
+
+        <programlisting>def greeting = "Hello "
+'there';
+println( greeting );</programlisting>
+
+        <para>will print:</para>
+
+        <screen>Hello there</screen>
+
+        <para></para>
+      </sect3>
+
+      <sect3>
+        <title>Localization of String Literal</title>
+
+        <para>When an application displays some text to a user, you'd
+        like the text to be in the user's own language.  "Localization" is
+        a mechanism to be able to replace a string literal by a translation
+        selected at run-time.</para>
+        <para>If a double hash sign <code>##</code> is prefixed to a string literal,
+        F3 substitutes the string literal with a localized one at 
+        run-time, if F3 finds appropriate localization in F3 properties files
+        on the classpath.  A F3 properties file contains localized strings for a 
+        locale as <code>&quot;key&quot; = &quot;value&quot;</code> pairs.  
+        Localized strings are searched using the original string literals as keys.
+        If no localized string is found, the original string literal is used as a default.
+        Optionally, explicit keys can be specified with square brackets
+        (<code>[]</code>).  For example:</para>
+
+        <programlisting>def mon = ##&quot;Monday&quot;;
+def about = ##[ABOUT]&quot;F3 is a cool scripting language!&quot;;
+println( mon );
+println( about );</programlisting>
+
+        <para>Suppose this script is <code>Foo.f3</code>, and there is a F3 
+        properties file for French <code>Foo_fr.f3properties</code>, which contains the
+        following localization:</para>
+
+        <programlisting>&quot;Monday&quot; = &quot;Lundi&quot;
+&quot;ABOUT&quot; = &quot;F3 est un langage de script cool !&quot;</programlisting>
+
+        <para>The script will print:</para>
+
+        <screen>Lundi
+F3 est un langage de script cool !</screen>
+
+        <para>in French locale.  You can also provide layered properties files
+        for finer grained control.  For example, you can provide localized texts that 
+        are France specific in <code>Foo_fr_FR.f3properties</code>, and keep 
+        other French localized texts that are country independent in 
+        <code>Foo_fr.f3properties</code>.  Then the F3 searches the 
+        appropriate localized texts by attempting the following fallback
+        search in French France (<code>fr_FR</code>) locale:
+        <programlisting>Foo_fr_FR.f3properties
+Foo_fr.f3properties
+(original string)</programlisting>
+
+        For more information on the locale and how the F3 properties
+        file is located, refer to <code>java.util.Locale</code> and 
+        <code>java.util.ResourceBundle</code> classes of the Java platform.</para>
+
+        <para>The encoding of a F3 properties file is
+        <code>UTF-8</code>.  Other encodings can be specified with
+        the <code>@charset</code> directive.  For example:</para>
+
+        <programlisting>@charset &quot;ISO-8859-1&quot;;</programlisting>
+
+        <para>is specified in the first line of the F3 properties file, the
+        file is read in <code>ISO-8859-1</code> encoding.  If the string literal contains <link linkend="stringExpression">string-expressions</link>, corresponding properties
+        should only contain the <code>FORMAT_STRING_LITERAL</code> parts
+        of the string expressions, without curly braces and expression parts.  For
+        example:
+        <programlisting>def gCal = new GregorianCalendar(1995, Calendar.MAY, 23);
+def bday = ##&quot;The birthday of Duke is {%1$tB gCal} {%2$te gCal}, {%3$tY gCal}.&quot;;</programlisting>
+        Then a F3 properties file that contains the localized text for 
+        &quot;<code>bday</code>&quot; should look like (e.g., for French):
+        <programlisting>&quot;The birthday of Duke is %1$tB %2$te, %3$tY.&quot; = &quot;L'anniversaire du duc est le %2$te %1$tB %3$tY.&quot;</programlisting>
+        Note that the position of those <code>FORMAT_STRING_LITERAL</code> parts
+        (indicated by <code>[argument_index]$</code>) may change in localized texts.</para>
+      </sect3>
+
+      <sect3>
+        <title>Operations over String</title>
+
+        <para>String-expressions are of String type -- see the <link
+        linkend="Expressions">Expressions chapter</link></para>
+      </sect3>
+    </sect2>
+
+    <sect2>
+      <title>Integer</title>
+
+      <blockquote>
+        <programlisting>    IntegerLiteral:
+            DecimalIntegerLiteral
+            HexIntegerLiteral       
+            OctalIntegerLiteral
+
+    DecimalIntegerLiteral:
+            <command>0</command>
+            NonZeroDigit Digitsopt
+
+    Digits:
+            Digit
+            Digits Digit
+
+    Digit:
+            <command>0</command>
+            NonZeroDigit
+
+    NonZeroDigit: one of
+            <command>1 2 3 4 5 6 7 8 9</command>
+
+
+    HexIntegerLiteral:
+            <command>0 x</command> HexDigits
+            <command>0 X</command> HexDigits
+
+    HexDigits:
+            HexDigit
+            HexDigit HexDigits
+
+    HexDigit: one of
+            <command>0 1 2 3 4 5 6 7 8 9 a b c d e f A B C D E F</command>
+
+
+    OctalIntegerLiteral:
+            <command>0</command> OctalDigits
+
+    OctalDigits:
+            OctalDigit
+            OctalDigit OctalDigits
+
+    OctalDigit: one of
+            <command>0 1 2 3 4 5 6 7</command>
+</programlisting>
+      </blockquote>
+
+      <para>The Integer type represents integers in the range -2147483648 to
+      2147483647, inclusive. The default value for the Integer type is zero
+      (0).</para>
+
+      <sect3>
+        <title>Integer Literal Syntax.</title>
+
+        <para>Integers may be represented in decimal, octal, or hexidecimal
+        formats. Decimal format is the digit 1 through 9 followed by digits in
+        the range 0 through 9, or simply 0 by itself. Octal format is the
+        digit 0 followed by digits in the range 0 through 7. Hexidecimal
+        format is the digit 0 following by 'x' or 'X' then followed by digits
+        in the range 0 through 9 or A through F (upper or lower case). These
+        are all valid Integer literals:</para>
+
+        <programlisting>145
+0
+012
+0xFF</programlisting>
+      </sect3>
+
+      <sect3>
+        <title>Operations over Integer</title>
+
+        <para>Arithmetic operators (+, -, *, /, and <command>mod</command>)
+        operate over and return Integer. Comparison operators (==, &lt;,
+        &gt;=, etc) operate over Integer. The <command>sizeof</command>
+        operator returns Integer.</para>
+      </sect3>
+    </sect2>
+
+    <sect2>
+      <title>Number</title>
+
+      <para>The Number type represents floating-point numbers.</para>
+
+      <sect3>
+        <title>Number Literal Syntax</title>
+
+        <blockquote>
+          <programlisting>NumberLiteral:
+      Digits . Digits<subscript>opt</subscript> ExponentPart<subscript>opt</subscript> 
+      <command>.</command> Digits ExponentPart<subscript>opt</subscript> 
+      Digits ExponentPart<subscript>opt</subscript> 
+
+ExponentPart:
+        ExponentIndicator SignedInteger
+
+ExponentIndicator: one of
+        <command>e E</command>
+
+SignedInteger:
+        Sign<subscript>opt</subscript> Digits
+
+Sign: one of
+        <command>+ -</command>
+</programlisting>
+        </blockquote>
+
+        <para>The following are valid Number literals:</para>
+
+        <programlisting>12.3
+0.629
+3.9e4
+1.7662E-34</programlisting>
+
+        <para></para>
+      </sect3>
+
+      <sect3>
+        <title>Operations over Number</title>
+
+        <para>Arithmetic operators (+, -, *, and /) operate over and return
+        Number. The comparison operators (==, &lt;, &gt;=, etc) operate over
+        Number.</para>
+      </sect3>
+    </sect2>
+
+    <sect2>
+      <title>Boolean</title>
+
+      <para>Boolean represents the values true and false.</para>
+
+      <sect3>
+        <title>Boolean Literal Syntax</title>
+
+        <blockquote>
+          <programlisting>    BooleanLiteral: one of
+            <command>true false</command>
+</programlisting>
+        </blockquote>
+
+        <para>The two, and only, Boolean literals are:</para>
+
+        <programlisting>true
+false</programlisting>
+
+        <para></para>
+      </sect3>
+
+      <sect3>
+        <title>Operations over Boolean</title>
+
+        <para>The <command>not</command>, <command>and</command>, and
+        <command>or</command> operators operate over and return Boolean. The
+        comparison operators (==, &lt;, &gt;=, etc) return Boolean. The
+        <command>if</command>-expression and
+        <command>while</command>-expression take Boolean as their
+        condition.</para>
+      </sect3>
+    </sect2>
+
+    <sect2>
+      <title>Duration</title>
+
+      <para>Duration represents an amount of time.</para>
+
+      <sect3>
+        <title>Duration Literal Syntax</title>
+
+        <blockquote>
+          <programlisting>    DurationLiteral:
+        IntegerLiteral TimeUnit
+        NumberLiteral TimeUnit
+
+    TimeUnit: one of
+        <command>ms  s  m  h</command></programlisting>
+        </blockquote>
+
+        <para>For example:</para>
+
+        <programlisting>10s
+4ms
+0.5h</programlisting>
+
+        <para>Where 10s is ten seconds, 4ms is four milliseconds, 010m is
+        eight minutes, and 0.5h is half an hour.</para>
+      </sect3>
+    </sect2>
+  </sect1>
+
+  <sect1 xml:id="FunctionTypes">
+    <title>Function Types</title>
+
+    <para>A function type represents the set of function definitions with a
+    given signature -- that is, the functions which have the given parameter
+    types and return type.</para>
+
+    <para>For example, the variable myFunc is declared as being of a function
+    type:</para>
+
+    <programlisting>var myFunc : function(:Object,:Integer):String;</programlisting>
+
+    <para>The variable myFunc can hold function definitions which take an
+    Object and an Integer as parameters and returns a String.</para>
+
+    <para>Function types have <command>null</command> as their default value.
+    So, myFunc is initially <command>null</command>, we can give it a value by
+    assignment or initialization. This would be a valid assignment to
+    myFunc:</para>
+
+    <programlisting>myFunc = function(obj : Object, k : Integer) { "Here is the Object: {obj}, and the Integer: {k}" }</programlisting>
+
+    <para>The function definition currently held in myFunc can be called like
+    any other function:</para>
+
+    <programlisting>println( myFunc(4s, 777) );
+println( myFunc(null, 1234) );
+</programlisting>
+
+    <para>Which would print:</para>
+
+    <screen>Here is the Object: 4000.0ms, and the Integer: 777
+Here is the Object: null, and the Integer: 1234</screen>
+
+    <para>The variable, of course, can be reassigned to any function with
+    those parameters and return type:</para>
+
+    <programlisting>myFunc = function(obj : Object, k : Integer) { "So!" }</programlisting>
+
+    <para></para>
+  </sect1>
+
+  <sect1>
+    <title>Sequence Types</title>
+
+    <para>Sequences hold a sequence of Object values. Said another way, they
+    have sequence cardinality and any Object as the element specifier. </para>
+
+    <para>Sequences can be constructed explicitly:</para>
+
+    <programlisting>[ 76, 9, 34, 2]
+['red', 'green', 'blue']
+</programlisting>
+
+    <para>Or specified as ranges:</para>
+
+    <programlisting>[100 .. 200]</programlisting>
+
+    <para>Some examples of variables of sequence type:</para>
+
+    <para><programlisting>var nodes : CustomNode[];
+var numbers : Number[];
+def primes = [2, 3, 5, 7, 11];
+</programlisting></para>
+
+    <para>Here the expression <code>[2, 3, 5, 7, 11]</code> is of
+    <code>Integer[]</code> type, so <code>primes</code> is type inferenced to
+    <code>Integer[]</code> type.</para>
+
+    <para>Note that unlike arrays in Java, F3 sequences are NOT Objects.
+    That means that sequences cannot contain sequences, Nested sequences are
+    automatically flattened. The null value in a sequence context is converted
+    to the empty sequence []. For example, the following are all
+    equalivant:</para>
+
+    <para><programlisting>[45, 9, 88, 13]
+[[45, 9], [88, 13]]
+[45, null, 9, [], 88, [13]]</programlisting></para>
+
+    <para>Automatic flattening is particularly useful in for-loops</para>
+
+    <para><programlisting>for (x in [1..5]) {
+   [x, x*x]
+}</programlisting></para>
+
+    <para>Which would have the value:</para>
+
+    <para><programlisting>[1, 1, 2, 4, 3, 9, 4, 16, 5, 25]</programlisting></para>
+
+    <para>Sequences are immutable -- there are thus no operations to modify
+    the value of a sequence. But there are, however, operations to modify the
+    value of a variable of sequence type. The <code>insert</code> and
+    <code>delete</code> expressions, assignment, and element assignment all
+    set a new sequence value into a variable.</para>
+  </sect1>
+
+  <sect1 xml:id="TypeChart">
+    <title>Type Chart</title>
+
+    <para></para>
+
+    <table>
+      <title></title>
+
+      <tgroup cols="6">
+        <colspec colname="t2" />
+
+        <colspec colname="decl" />
+
+        <colspec colname="dflt" />
+
+        <colspec colname="element" />
+
+        <colspec colname="card" />
+
+        <colspec colname="lit" />
+
+        <thead>
+          <row>
+            <entry align="center"><para>Type</para></entry>
+
+            <entry align="center"><para>Declaration</para></entry>
+
+            <entry align="center"><para>Default Value</para></entry>
+
+            <entry align="center"><para>Element Specifier</para></entry>
+
+            <entry align="center"><para>Cardinality</para></entry>
+
+            <entry align="center"><para>Literal or Creation
+            Examples</para></entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><para><literal>String</literal></para></entry>
+
+            <entry><para><literal>: String</literal></para></entry>
+
+            <entry><para><literal>""</literal></para></entry>
+
+            <entry><para><literal>java.lang.String</literal></para></entry>
+
+            <entry><para>1 Required</para></entry>
+
+            <entry><para><literal>"Brownian"</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><literal>Integer</literal></para></entry>
+
+            <entry><para><literal>: Integer</literal></para></entry>
+
+            <entry><para><literal>0</literal></para></entry>
+
+            <entry><para><literal>java.lang.Integer</literal></para></entry>
+
+            <entry><para>1 Required</para></entry>
+
+            <entry><para><literal>1956</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><literal>Number</literal></para></entry>
+
+            <entry><para><literal>: Number</literal></para></entry>
+
+            <entry><para><literal>0.0</literal></para></entry>
+
+            <entry><para><literal>java.lang.Double</literal></para></entry>
+
+            <entry><para>1 Required</para></entry>
+
+            <entry><para><literal>1.4142</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><literal>Boolean</literal></para></entry>
+
+            <entry><para><literal>: Boolean</literal></para></entry>
+
+            <entry><para><literal>false</literal></para></entry>
+
+            <entry><para><literal>java.lang.Boolean</literal></para></entry>
+
+            <entry><para>1 Required</para></entry>
+
+            <entry><para><literal>true</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><literal>Duration</literal></para></entry>
+
+            <entry><para><literal>: Duration</literal></para></entry>
+
+            <entry><para><literal>0ms</literal></para></entry>
+
+            <entry><para><literal>f3.lang.Duration</literal></para></entry>
+
+            <entry><para>1 Required</para></entry>
+
+            <entry><para><literal>47s</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><literal>Object</literal></para></entry>
+
+            <entry><para><literal>: Object</literal></para></entry>
+
+            <entry><para><literal>null</literal></para></entry>
+
+            <entry><para><literal>java.lang.Object</literal></para></entry>
+
+            <entry><para>0-1 Optional</para></entry>
+
+            <entry><para><literal>new Object</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><emphasis>other class types</emphasis></para></entry>
+
+            <entry><para><literal>:
+            </literal><emphasis>ClassName</emphasis></para></entry>
+
+            <entry><para><literal>null</literal></para></entry>
+
+            <entry><para><emphasis>ClassName</emphasis></para></entry>
+
+            <entry><para>0-1 Optional</para></entry>
+
+            <entry><para><literal>Point {x: 3 y: 9}</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><emphasis>function types</emphasis></para></entry>
+
+            <entry><para><literal>:
+            function(</literal><emphasis>name</emphasis><literal> :
+            </literal><emphasis>ParamType</emphasis><literal>,
+            </literal><emphasis>...</emphasis><literal>) : </literal>
+            <emphasis>ReturnType</emphasis></para></entry>
+
+            <entry><para><literal>null</literal></para></entry>
+
+            <entry><para><literal>function(</literal><emphasis>name</emphasis><literal>
+            : </literal><emphasis>ParamType</emphasis><literal>,
+            </literal><emphasis>...</emphasis><literal>) : </literal>
+            <emphasis>ReturnType</emphasis></para></entry>
+
+            <entry><para>0-1 Optional</para></entry>
+
+            <entry><para><literal>function(x:Integer):String {" {x}
+            "}</literal></para></entry>
+          </row>
+
+          <row>
+            <entry><para><emphasis>sequence types</emphasis></para></entry>
+
+            <entry><para><literal>:
+            </literal><emphasis>ElementSpec</emphasis><literal>[]</literal></para></entry>
+
+            <entry><para><literal>[]</literal></para></entry>
+
+            <entry><para><emphasis>ElementSpec</emphasis></para></entry>
+
+            <entry><para>0-n Sequence</para></entry>
+
+            <entry><para><literal>[9, 14, 21, 4]</literal></para></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para></para>
+
+    <para></para>
+  </sect1>
+
+  <sect1>
+    <title>Putting it Together -- Type Examples</title>
+
+    <para>Here are some definitions and uses of variables of required types:
+    Integer, Number, Boolean, and String</para>
+
+    <programlisting>var x : Number;       // x initially 0.0
+var m : Integer;      // m initially 0
+var isBig : Boolean;  // isBig initially false
+var word : String;    // word initially ""
+m = 42;
+x = 0.25 * m + 2.1e4;
+isBig = x &gt; 1000;
+word = if (isBig) "Big" else "Small";
+</programlisting>
+
+    <para>Here is a definition and use of a variable of optional type:</para>
+
+    <programlisting>class Foo {
+  var zing : Integer;
+}
+var fu : foo;         // fu initially null
+fu = Foo {zing: 17}</programlisting>
+
+    <para>And a definition and use of a sequence type:</para>
+
+    <programlisting>var names : String[];        // names initially []
+names = ['Olof', 'Ellen', 'Steve', 'Claire'];
+insert 'Bonnie' into names;  // add 'Bonnie' to the end of names sequence
+names[1] = 'Donna';           // set the element at 1 (previously 'Ellen') to 'Donna'
+</programlisting>
+
+    <para>Note that sequences are immutable, so technically, each line above
+    assigns a new sequence to names.</para>
+
+    <para></para>
+  </sect1>
+
+  <sect1 xml:id="Void">
+    <title>Void Type</title>
+
+    <para>Void type is an odd duck that is only used to indicate that an
+    expression does not have a value. Examples of expressions of Void type are
+    the while-expression and calls to functions which have no return value.
+    The only time Void can be used to explicitly declare a type is to declare
+    the return type of a function which does not return a value:</para>
+
+    <programlisting>function gab(val : Number) : Void {
+   var remains = val;
+   while (remains &gt; 1.0) {
+      println( remains );
+      remains = remains / 2;
+   }
+}</programlisting>
+
+    <para></para>
+  </sect1>
+</chapter>

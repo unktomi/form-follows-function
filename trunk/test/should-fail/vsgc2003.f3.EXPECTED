@@ -1,0 +1,4 @@
+test/should-fail/vsgc2003.f3:7: print(:Object) in f3.lang.Builtins cannot be applied to (String,String)
+print(s, s);
+^
+1 error

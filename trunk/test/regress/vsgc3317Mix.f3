@@ -1,0 +1,9 @@
+/**
+ * VSGC-3317 : Optimize bound F3 var select with mutable selectors
+ *
+ * @subtest vsgc3317MixImpl.f3
+ */
+
+public mixin class vsgc3317Mix {
+  public var text : String
+}

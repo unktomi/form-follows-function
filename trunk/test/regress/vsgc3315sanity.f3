@@ -1,0 +1,32 @@
+/**
+ * VSGC-3315 : Optimize away bound select processing when selector is immutable
+ *
+ * Sanity test: effected selects still work
+ *
+ * @test
+ * @run
+ */
+
+public class sel {
+  var x = 7;
+  def s = this;
+  var vs = this;
+  public def bsx = bind s.x;
+  public def bvsx = bind vs.x;
+  public def bt = bind this.x;
+  public def bs = bind s;
+  public def xbs = bind bs.x;
+  function show() {
+    println("x = {x}");
+    println("bsx = {bsx}");
+    println("bvsx = {bvsx}");
+    println("bt = {bt}");
+  }
+}
+
+function run() {
+  def z = sel{}
+  z.show();
+  z.x = 999;
+  z.show();
+}

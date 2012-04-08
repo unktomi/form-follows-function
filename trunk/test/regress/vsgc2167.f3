@@ -1,0 +1,41 @@
+/**
+ * Regression test VSGC-2167 : need to fix translation of INT *= NUMBER
+ *
+ * @test
+ * @run
+ */
+
+var x : Integer = 20;
+public var y : Integer = 1000;
+var a : Number = 0.03;
+public var b : Number = 0.002;
+
+function run() {
+  var z : Integer = 100;
+  var c : Number = 0.1;
+
+  z *= 0.25;
+  println(z);
+
+  x *= 0.5;
+  println(x);
+
+  y *= 0.345;
+  println(y);
+
+  z *= 2;
+  println(z);
+
+  x *= 2;
+  println(x);
+
+  y *= 2;
+  println(y);
+
+  a *= 2;
+  b *= 2;
+  c *= 2;
+  println(a);
+  println(b);
+  println(c);
+}

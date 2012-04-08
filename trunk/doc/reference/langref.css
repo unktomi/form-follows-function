@@ -1,0 +1,98 @@
+h2 { 
+     padding-top: 12pt;
+     font-family: sans-serif;
+     font-weight: bold;
+     font-size: 124%;
+     color: #305070; 
+    } 
+    
+h2 code {font-size: 133%;}    
+    
+h3 { 
+     padding-top: 8pt;
+     font-family: sans-serif;
+     font-weight: bold;
+     font-style: normal;
+     font-size: 100%;
+     color:#305070; 
+    } 
+
+h4 { 
+     padding-top: 8pt;
+     font-family: sans-serif;
+     font-weight: bold;
+     font-style: italic;
+     font-size: 100%;
+     color:#305070; 
+    } 
+    
+p   { padding-top: 8pt;}
+
+li  { padding-top: 8pt;}
+
+p.hide {visibility: hidden;}
+
+pre {padding-top: 6pt;
+     padding-bottom: 6pt;
+     padding-left: 6pt;
+     background-color: #ddddee;
+     border-color: white;
+     margin-left: 24pt;
+     margin-right: 44pt;
+}
+
+table { background-color: #ffffbb;
+	border-collapse: collapse; 
+        border-top: 1px solid #224488; 
+        border-bottom: 1px solid #224488; 
+        border-left: 1px solid #224488; 
+	border-right: 1px solid #224488; 
+	padding-top: 12pt;
+	padding-left: 12pt;
+	margin-left: 12pt;
+        width: 92%; 
+}
+	    
+table.data { background-color: #eeeeff;
+	border-collapse: collapse; 
+        border-top: 1px solid black; 
+        border-bottom: 1px solid black; 
+	border-left: 1px solid white; 
+	border-right: 1px solid white;
+        margin-left: 24pt; 
+        width: 67%;
+      }
+      
+caption {font-family:arial; font-style:italic; font-weight: bold; color: #224488; }
+       
+.style1 {font-family: "Courier New", Courier, monospace}
+
+pre.screen  {background-color: lightgrey; }
+
+blockquote pre.programlisting  {
+     background-color: #ffe8e8;
+     font-family:times;
+     font-size: smaller;
+}
+
+pre.red {color: red; }
+
+.red {color: red; }
+
+
+table.oper {
+width: 80%;
+margin-left: 24pt;
+border-collapse: collapse;
+background-color:#eeeeFF;
+border-top:thin solid black;
+border-bottom: thin solid black;
+border-left: 1px solid white; 
+border-right: 1px solid white;
+}
+td {padding-top: 3pt; padding-bottom: 3pt; }
+th {font-family: arial; font-weight:bold; font-size: smaller; }
+
+      
+       
+       

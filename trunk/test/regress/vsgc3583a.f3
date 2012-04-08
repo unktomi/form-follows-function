@@ -1,0 +1,8 @@
+/*
+ * Regress test for VSGC-3583a: Crash during attribution
+ *
+ * @compile vsgc3583a/Mixee.f3
+ * @compilearg -sourcepath
+ * @compilearg test/regress
+ * @test
+ */

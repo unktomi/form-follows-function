@@ -1,0 +1,10 @@
+/**
+ * Regression test VSGC-1720 : Compiler throws ClassCastException for the following function definition
+ *
+ * @test
+ */
+
+function func ( ) : Integer { ;
+ 
+var num: Number
+} ;

@@ -1,0 +1,61 @@
+test/should-fail/vsgc4072b.f3:27: warning: Illegal forward reference: variable b is not initialized.
+   override var a = b; //warn
+                    ^
+test/should-fail/vsgc4072b.f3:28: warning: Illegal forward reference: variable c is not initialized.
+   override var b = this.c; //warn
+                        ^
+test/should-fail/vsgc4072b.f3:29: warning: Illegal forward reference: variable d is not initialized.
+   override var c = A.d; //warn
+                     ^
+test/should-fail/vsgc4072b.f3:30: warning: Illegal forward reference: variable e is not initialized.
+   override var d = vsgc4072b.A.e; //warn
+                               ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal forward reference: variable i is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                      ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal forward reference: variable i is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                              ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal forward reference: variable i is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                      ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal forward reference: variable i is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                           ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal forward reference: variable i is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                                          ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal self reference: variable h is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                                              ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal self reference: variable h is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                                                      ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal self reference: variable h is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                                                              ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal self reference: variable h is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                                                                   ^
+test/should-fail/vsgc4072b.f3:34: warning: Illegal self reference: variable h is not initialized.
+   override var h = { i; super.i; this.i; A.i; vsgc4072b.A.i; h; super.h; this.h; A.h; vsgc4072b.A.h; } //warn
+                                                                                                  ^
+test/should-fail/vsgc4072b.f3:37: warning: Illegal self reference: variable m is not initialized.
+   override var m = m; //warn
+                    ^
+test/should-fail/vsgc4072b.f3:38: warning: Illegal self reference: variable n is not initialized.
+   override var n = this.n; //warn
+                        ^
+test/should-fail/vsgc4072b.f3:39: warning: Illegal self reference: variable o is not initialized.
+   override var o = A.o; //warn
+                     ^
+test/should-fail/vsgc4072b.f3:40: warning: Illegal self reference: variable p is not initialized.
+   override var p = vsgc4072b.A.p; //warn
+                               ^
+test/should-fail/vsgc4072b.f3:41: warning: Illegal forward reference: variable r is not initialized.
+   override var q = super.r; //warn
+                         ^
+test/should-fail/vsgc4072b.f3:42: warning: Illegal self reference: variable r is not initialized.
+   override var r = super.r; //warn
+                         ^
+20 warnings

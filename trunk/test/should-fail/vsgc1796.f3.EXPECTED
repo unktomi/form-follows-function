@@ -1,0 +1,6 @@
+test/should-fail/vsgc1796.f3:4: cannot find symbol
+symbol  : class KeyEvent
+location: package java.awt
+var x = java.awt.KeyEvent.VK_Z;
+                ^
+1 error

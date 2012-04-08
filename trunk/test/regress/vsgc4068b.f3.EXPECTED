@@ -1,0 +1,23 @@
+on-replace  a: 0.0
+START
+x = 0
+x = 1
+on-replace  a: A1
+x = 2
+on-replace  a: 2.0
+x = 3
+on-replace  a: A1
+x = 4
+on-replace  a: 4.0
+x = 5
+on-replace  a: A1
+x = 6
+on-replace  a: 6.0
+x = 7
+on-replace  a: A1
+x = 8
+on-replace  a: 8.0
+x = 9
+on-replace  a: A1
+x = 10
+on-replace  a: 10.0

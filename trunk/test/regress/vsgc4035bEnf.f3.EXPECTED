@@ -1,0 +1,10 @@
+old seq is  [0..-1]- new seq is: A2(FIRST)A4(FIRST)
+START
+old seq is A2(FIRST)A4(FIRST) [0..1]- new seq is: A2(SECOND)A4(SECOND)
+AFTER SECOND
+old seq is A2(SECOND)A4(SECOND) [0..1]- new seq is: A2(THIRD)A4(THIRD)
+AFTER THIRD
+old seq is A2(THIRD)A4(THIRD) [0..1]- new seq is: 
+CHANGED b
+AFTER SECOND
+AFTER THIRD

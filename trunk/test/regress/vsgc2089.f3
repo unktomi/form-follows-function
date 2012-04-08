@@ -1,0 +1,58 @@
+/*
+ * vsgc2089.f3
+ *
+ * Created on Aug 26, 2008, 10:28:47 AM
+ */
+
+
+import f3.lang.F3;
+
+/**
+ * Example F3 showing the usage of F3.addShutdownAction() with an
+ * explicit F3.exit() call.
+ * The exit occurs when the script when F3.exit is called.
+ *
+ * Output from this script will be as follows:
+ * vsgc2089 Script
+ * Exiting Script
+ * Running Exit Action1
+ * Running Exit Action2
+ *
+ * @test
+ * @run
+ * @author sgw
+ */
+
+// Show that we are starting the Script
+println("vsgc2089 Script");
+
+/*
+ * A void Function that takes no arguments will be placed on the
+ * exit action stack by the addShutdownAction to be executed at the
+ * time the script exits either implicitly or explicitly.
+ */
+var runAtExit1 = function() : Void {
+    println("Running Exit Action1");
+}
+var runAtExit2 = function() : Void {
+    println("Running Exit Action2");
+    F3.exit();
+    println("Should not reach this - Exit Action2");
+}
+
+/*
+ * Add the runAtExit function to the stack for the Shutdown Actions
+ * this stack will be executed when the F3 exits.
+ */
+var ra1 = F3.addShutdownAction(runAtExit1);
+var ra2 = F3.addShutdownAction(runAtExit2);
+
+println("Exiting Script");
+/*
+ * Script will now call F3.exit();
+ */
+F3.exit();
+/*
+ * F3.exit() should not return here
+ */
+println("Should not reach here");

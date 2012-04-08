@@ -1,0 +1,46 @@
+/**
+ * Regression test VSGC-3773 : Compiled bind: scoping of bound object literal initializers
+ *
+ * With the previouls model --
+ * (1) changes to non-bound initializers create new object literals. 
+ * Non-bound initializer values are moved over to the new object.
+ * But since the bind is internal this can't be done for bound initializers.
+ *
+ * @test
+ * @run
+ */
+
+class A {
+  var str : String;
+  var x = 0;
+  init {
+    println("Create A {str} = {x}")
+  }
+}
+
+class B {
+  var k : A	on replace { println("k") };
+  var l : A	on replace { println("l") };
+  init {
+    println("Create B")
+  }
+}
+
+var c = 1;
+var d = 1;
+
+def z = bind B {
+		k: bind A { str: "top" x: c }
+		l: A { str: "bot" x: d }
+               }
+		on replace { println("z") };
+
+
+for (i in [12..15]) {
+  println("--- d = {i}");
+  d = i
+}
+for (i in [12..15]) {
+  println("--- c = {i}");
+  c = i
+}

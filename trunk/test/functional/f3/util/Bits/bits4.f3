@@ -1,0 +1,122 @@
+/**
+ * Test f3.util.Bits functions using Longs.
+ *
+ * @test
+ * @run
+ */
+
+import f3.util.Bits;
+import f3.util.Sequences;
+
+
+/**
+ * some test check functions
+ */
+ /** assert check for Boolean true */
+function myassert( msg:String, expr:Boolean ) { 
+	if( expr != true){ throw new java.lang.Exception("{msg}: {expr} != true "); }
+}
+
+/** insert into sequence if is unique */
+ function insertu(i:Long,is:Long[]): Long[] {
+  var is2:Long[]  = is;
+  var i2:Long = i;
+  for( ii:Long in is2 ) 
+    if(ii == i2 ){ 	    return is2; 	 }
+  insert i2 into is2;
+  return is2;
+ }
+
+/*
+ * bitshift make for an easy way to convert an integer to a binary string
+ *  Algorithm is simple:
+ *  do until N < 0
+ *    If N mod 2 == 0, prepend 0, shift right 1
+ *    else prepend 1, shift right 1
+*/
+function convertToBinaryString(N:Long):String {
+ var binN:String = "";
+ var n:Long = N;
+ while (n > 0) { 
+	 if( n mod 2 == 0) {
+	     binN = "0{binN}";
+	 } else { binN = "1{binN}"; }
+	 n = Bits.shiftRight(n,1);
+ }
+ return binN;
+}
+
+/** try out the binary conversion function */
+var testseq =["1 = 1","8 = 1000","15 = 1111","22 = 10110","29 = 11101","36 = 100100","43 = 101011","50 = 110010",
+"57 = 111001","64 = 1000000","71 = 1000111","78 = 1001110","85 = 1010101","92 = 1011100","99 = 1100011"];
+
+var bstrings:String[];
+for ( N in [1..105 step 7] ) {
+   insert "{N} = {convertToBinaryString(N)}" into bstrings;
+//   println("{N} = {convertToBinaryString(N)}")
+}
+myassert("shiftright:check binary string conversions", testseq == bstrings);
+
+
+/*
+ * shiftRight; should have no effect after number reaches 0
+ */
+var baseseq:Long[] = [ 4, 2, 1, 0, 0 ];
+var newseq:Long[];
+var testnum:Long = 8;
+for( r in [ 1..5]) {
+ var r2:Long = Bits.shiftRight( testnum, r );
+ insert r2 into newseq;
+// println("{testnum} shifted right by {r} = {r2}");
+}
+myassert( "shiftRight when N==0", baseseq==newseq);
+
+/** check shiftLeft and shiftRight */
+testnum = 1;
+var long1:Long = 1;
+var ints1 = bind for( l in [0..30]) Bits.shiftLeft( long1, l );
+var m:Long = ints1[sizeof ints1-1] as Long;
+var ints2 = bind for( r in [ 0..30]) Bits.shiftRight( m,r);
+
+/** two sequences should be inverses of eachother */
+myassert ("check shiftLeft,shiftRight", ints1 == reverse(ints2));
+//nice visual of binary representations:
+var asc:String[];
+for ( n:Long in ints1 ) {
+ insert convertToBinaryString(n) into asc;
+// println("{n} = {convertToBinaryString(n)}");
+}
+
+ var desc:String[];
+for ( n:Long in ints2 ) {
+ insert convertToBinaryString(n) into desc;
+// println("{n} = {convertToBinaryString(n)}");
+}
+myassert ("use shiftRight for convert to binary string representation", asc == reverse(desc));
+
+
+/** bitOr */
+for ( n in [ 0..sizeof ints1-1] )
+  if( ints1[n] == Bits.bitOr( ints1[n], ints2[n]) ) {
+     myassert("check bitOr", Bits.bitOr( ints1[n], ints2[n])==32768);
+  }
+
+/** bitAnd */
+for ( n in [ 0..sizeof ints1] ) {
+ if ( Bits.bitAnd( ints1[n], ints2[n]) != 0 )
+     myassert("check bitAnd", Bits.bitAnd( ints1[n], ints2[n])==32768);
+
+ }
+
+/** bitXor */
+var xorseq1:Long[] = [ 1073741825, 536870914, 268435460, 134217736, 67108880, 33554464, 16777280, 8388736, 4194560, 2097664, 1049600, 526336,
+ 266240, 139264, 81920, 0 ];
+
+var xorseq2:Long[];
+for ( n in [ 0..sizeof ints1] ) {	
+  xorseq2 = insertu(Bits.bitXor( ints1[n], ints2[n]), xorseq2);
+ }
+myassert("bitXor check", xorseq1==xorseq2);
+
+	  
+

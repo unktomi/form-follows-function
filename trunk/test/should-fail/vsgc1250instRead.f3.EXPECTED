@@ -1,0 +1,28 @@
+test\should-fail\vsgc1250instRead.f3:48: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250instRead.Inh
+	System.out.println( memScr );   // ERROR: inherited, same package
+	                    ^
+test\should-fail\vsgc1250instRead.f3:63: cannot find symbol
+symbol  : variable memPkg
+location: class vsgc1250instRead.InhA
+	System.out.println( memPkg );   // ERROR: inherited, different package
+	                    ^
+test\should-fail\vsgc1250instRead.f3:65: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250instRead.InhA
+	System.out.println( memScr );   // ERROR: inherited, different package
+	                    ^
+test\should-fail\vsgc1250instRead.f3:124: memScr has script only (default) access in vsgc1250subFail
+	System.out.println( vf.memScr );   // ERROR: same package
+	                      ^
+test\should-fail\vsgc1250instRead.f3:138: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	System.out.println( vf.memPkg );   // ERROR: different package
+	                      ^
+test\should-fail\vsgc1250instRead.f3:139: memPro has protected access in vsgc1250.a.vsgc1250subFailA
+	System.out.println( vf.memPro );   // ERROR: different package
+	                      ^
+test\should-fail\vsgc1250instRead.f3:140: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	System.out.println( vf.memScr );   // ERROR: different package
+	                      ^
+7 errors

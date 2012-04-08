@@ -1,0 +1,4 @@
+test/should-fail/vsgc2225.f3:8: script class vsgc2225 cannot extend another class in the same script
+class vsgc2225 extends A {}
+^
+1 error

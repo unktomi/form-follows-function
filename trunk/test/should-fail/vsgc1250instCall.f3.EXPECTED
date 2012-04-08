@@ -1,0 +1,28 @@
+test\should-fail\vsgc1250instCall.f3:33: cannot find symbol
+symbol  : function memFScr()
+location: class vsgc1250instCall.Inh
+	System.out.println( memFScr() );   // ERROR: inherited, same package
+	                    ^
+test\should-fail\vsgc1250instCall.f3:41: cannot find symbol
+symbol  : function memFPkg()
+location: class vsgc1250instCall.InhA
+	System.out.println( memFPkg() );   // ERROR: inherited, different package
+	                    ^
+test\should-fail\vsgc1250instCall.f3:42: cannot find symbol
+symbol  : function memFScr()
+location: class vsgc1250instCall.InhA
+	System.out.println( memFScr() );   // ERROR: inherited, different package
+	                    ^
+test\should-fail\vsgc1250instCall.f3:77: memFScr() has script only (default) access in vsgc1250subFail
+	System.out.println( vf.memFScr() );   // ERROR: same package
+	                      ^
+test\should-fail\vsgc1250instCall.f3:83: memFPro() has protected access in vsgc1250.a.vsgc1250subFailA
+	System.out.println( vf.memFPro() );   // ERROR: different package
+	                      ^
+test\should-fail\vsgc1250instCall.f3:84: memFPkg() is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	System.out.println( vf.memFPkg() );   // ERROR: different package
+	                      ^
+test\should-fail\vsgc1250instCall.f3:85: memFScr() has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	System.out.println( vf.memFScr() );   // ERROR: different package
+	                      ^
+7 errors

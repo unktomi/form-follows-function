@@ -1,0 +1,4 @@
+test/should-fail/vsgc4021.f3:9: day is already defined in vsgc4021
+   for(day in weekDays[day | day == "Mo"]) {
+                       ^
+1 error

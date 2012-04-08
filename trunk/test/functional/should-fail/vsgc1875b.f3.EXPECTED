@@ -1,0 +1,4 @@
+test\functional\should-fail\vsgc1875b.f3:14: months has script only (default) bind access in vsgc1875a
+    months:bind str; // binding a public-init variable
+    ^
+1 error

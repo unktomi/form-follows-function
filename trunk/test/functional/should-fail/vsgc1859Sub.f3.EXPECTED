@@ -1,0 +1,4 @@
+test/functional/should-fail/vsgc1859Sub.f3:16: s has script only (default) bind access in vsgc1859
+ var f2=vsgc1859Sub{ x:bind f1.s with inverse; };  
+                              ^
+1 error

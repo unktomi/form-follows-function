@@ -1,0 +1,13 @@
+/**
+ * Regression test VSGC-2235 : Compiler crash: bind to instanciation of Java varargs constructor (not implemented)
+ *
+ * @test
+ * @run
+ */
+
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+// the following line threw an exception during compilation:
+var ef = bind new FileNameExtensionFilter("Video", "avi", "mov", "mp4", "mpg");
+var ext : String[] = ef.getExtensions();
+println(ext);

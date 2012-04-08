@@ -1,0 +1,11 @@
+import java.lang.System;
+/*
+ * VSGC-1875 public-init variable is boundable from outside the script
+ *
+ * @subtest
+ *
+ */
+
+package class vsgc1875a{
+  public-init var months=["January","February","August","September"]; // public-init variable
+}

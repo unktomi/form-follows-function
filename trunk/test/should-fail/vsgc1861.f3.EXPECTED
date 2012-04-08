@@ -1,0 +1,10 @@
+test\should-fail\vsgc1861.f3:8: warning: The access modifier public includes the access of public-read.
+public public-read var obj : Object;
+^
+test\should-fail\vsgc1861.f3:11: warning: The access modifier public includes the access of public-init.
+  public public-init var bar : Integer;
+  ^
+test\should-fail\vsgc1861.f3:12: warning: The access modifier public includes the access of public-read.
+  public public-read var num = 2.2;
+  ^
+3 warnings

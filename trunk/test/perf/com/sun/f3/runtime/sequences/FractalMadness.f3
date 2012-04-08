@@ -1,0 +1,145 @@
+package org.f3.runtime.sequences;
+
+import java.util.Random;
+import java.lang.System;
+
+public class FractalMadness extends Test {
+
+    override function start(args: String) {
+        EXTENT = java.lang.Integer.parseInt(args);
+        print ("Running Fractal Madness (size {EXTENT}): ");
+        
+        var start: Integer = System.nanoTime() / 1000000;
+        drawWhole();
+        var time: Integer = System.nanoTime() / 1000000 - start;
+        
+        println ("{time} ms");
+        new TestResult(time);
+    }
+
+    public-init var EXTENT = 512;
+    var ROUGHNESS = 6.0 / EXTENT;
+    var seeds = new Random;
+    var seed0 = seeds.nextLong();
+    var seed1 = seeds.nextLong();
+    var random0 : Random;
+    var random1 : Random;
+    var SLIDE_LENGTH = 40;
+    var slide = SLIDE_LENGTH;
+
+    var inflectSeed0 = seeds.nextLong();
+    var inflectSeed1 = seeds.nextLong();
+    var inflectRandom0 : Random;
+    var inflectRandom1 : Random;
+    var INFLECT_SLIDE_LENGTH = 400;
+    var inflectSlide = INFLECT_SLIDE_LENGTH;
+
+    var redInflect : Number;
+    var greenInflect : Number;
+    var blueInflect : Number;
+
+    // var pixels : Integer[] = for (y in [0..<EXTENT], x in [0..<EXTENT]) 0xFF000000;
+    var pixels : Integer[] = for (y in [0..<EXTENT], x in [0..<EXTENT]) -16777216;
+    
+    function resetSlide() : Void {
+       if (--slide == 0) {
+           seed0 = seed1;
+           seed1 = seeds.nextLong();
+           slide = SLIDE_LENGTH;
+       }
+       random0 = new Random(seed0);
+       random1 = new Random(seed1);
+    }
+
+    function random() : Number {
+        (random0.nextDouble() * slide + random1.nextDouble() * (SLIDE_LENGTH - slide)) / SLIDE_LENGTH
+    }
+
+    function resetInflectSlide() : Void {
+        if (--inflectSlide == 0) {
+            inflectSeed0 = inflectSeed1;
+            inflectSeed1 = seeds.nextLong();
+            inflectSlide = INFLECT_SLIDE_LENGTH;
+        }
+        inflectRandom0 = new Random(inflectSeed0);
+        inflectRandom1 = new Random(inflectSeed1);
+    }
+
+    function inflectRandom() : Number {
+        (inflectRandom0.nextDouble() * inflectSlide + inflectRandom1.nextDouble() * (INFLECT_SLIDE_LENGTH - inflectSlide)) / INFLECT_SLIDE_LENGTH
+    }
+
+    var redFold   : Number = 3.0;
+    var greenFold : Number = 3.0;
+    var blueFold  : Number = 3.0;
+
+    function colorFoldCoefficient() {
+        var rnd = inflectRandom();
+        return if (rnd > 0.98) 8.0 else if (rnd > 0.92) 6.0 else if (rnd > 0.80) 4.0 else 2.0;
+    }
+
+    function drawWhole() : Void {
+        resetInflectSlide();
+        redInflect   = inflectRandom();
+        greenInflect = inflectRandom();
+        blueInflect  = inflectRandom();
+
+        redFold   = 5 * inflectRandom();
+        greenFold = 5 * inflectRandom();
+        blueFold  = 5 * inflectRandom();
+
+        ROUGHNESS = (inflectRandom() * 14.0) / EXTENT;
+
+        resetSlide();
+        drawSection(0, 0, EXTENT, random(), random(), random(), random());
+    }
+	
+    function drawSection(x : Integer, y : Integer, extent : Integer,  topRight : Number,  bottomRight : Number,  bottomLeft : Number, topLeft : Number) : Void {
+        var middle = (topRight + bottomRight + bottomLeft + topLeft) / 4;
+        if (extent > 1) {
+            var midRight = (topRight + bottomRight) / 2;
+            var midBottom = (bottomRight + bottomLeft) / 2;
+            var midLeft = (bottomLeft + topLeft) / 2;
+            var midTop = (topLeft + topRight) / 2;
+
+            var newExtent = extent / 2;
+
+            middle = jiggle(middle, extent);		
+
+            drawSection(x,             y + newExtent, newExtent,  midTop,   middle,      midLeft,    topLeft);
+            drawSection(x,             y,             newExtent,  topRight, midRight,    middle,     midTop);
+            drawSection(x + newExtent, y,             newExtent,  midRight, bottomRight, midBottom,  middle);
+            drawSection(x + newExtent, y + newExtent, newExtent,  middle,   midBottom,   bottomLeft, midLeft);
+        } else {
+            drawPixel(x, y, middle);
+        }
+    }
+
+    function colorFold(clr : Number, offset : Number, mult : Number) : Integer {
+        var scale = (clr + offset) * mult;
+        var fold = scale as Integer;
+        var folded = if (fold mod 2 == 0) scale - fold else fold + 1 - scale;
+        return (folded * 0xFF) as Integer;
+    }
+
+    function drawPixel(x : Integer, y: Integer, clr : Number) : Void {
+        var ired   = colorFold(clr, redInflect,   redFold);
+        var igreen = colorFold(clr, greenInflect, greenFold);
+        var iblue  = colorFold(clr, blueInflect,  blueFold);
+
+//        var color = 0xFF000000 + (ired * 0x10000) + (igreen * 0x100) + iblue;
+        var color = -16777216 + (ired * 0x10000) + (igreen * 0x100) + iblue;
+        pixels[y * EXTENT + x] = color;  // HERE IS THE PROBLEM
+    }
+
+    function jiggle(value : Number, extent : Integer) : Number {
+        var displacement = (random() - 0.5) * extent * ROUGHNESS;
+        var displaced = value + displacement;
+        if (displaced < 0) {
+            displaced = 0;
+        } else if (displaced > 1.0) {
+            displaced = 0.99999; 
+        }
+        displaced
+    }
+}

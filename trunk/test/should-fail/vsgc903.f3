@@ -1,0 +1,13 @@
+/*
+ * Should complain that:
+ * "non-static method bar() cannot be referenced from a static context"
+ *
+ * @test/fail
+ */
+
+var notbug = vsgc903{ value:123 }
+var bug = vsgc903{ value:bar() }
+class vsgc903 {
+    var value;
+    function bar() { 123 }
+}

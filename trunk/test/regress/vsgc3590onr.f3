@@ -1,0 +1,25 @@
+/**
+ * Regression test: VSGC-3590 : Compiled bind: bound sequence: if-expression
+ *
+ * On-replace
+ *
+ * @test
+ * @run
+ */
+
+var cond = true;
+var tSeq = ["circle", "square", "triangle"];
+var fSeq = ["here", "there", "everywhere"];
+def bif = bind if (cond) tSeq else fSeq
+          on replace [start..end] = newValues { println("{start}..{end} = {sizeof newValues}") }
+println("insert true");
+insert "rectangle" into tSeq;
+println("insert false");
+insert "lost" into fSeq;
+println("switch arms");
+cond = false;
+println("delete false");
+delete "lost" from fSeq;
+println("insert false");
+insert "nowhere" into fSeq;
+println(bif);

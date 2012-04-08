@@ -1,0 +1,99 @@
+import java.lang.System;
+
+/*
+ * @test
+ * Test tag should be:  test/fail
+ *
+ * This should fail with many errors but it compiles with none.
+ * The issue is that Strings cannot be null.
+ * When fixed, assign to SQE to split up into many tests
+ */
+
+/*
+ * Script level local variables
+ */
+
+/* assignment */
+var myString = "hello";
+myString = null;
+
+/* declaration of var and def */
+var snull:String = null;
+def dsnull:String = null;
+
+function thisTakesString( msg:String) { System.out.println(msg); }
+thisTakesString(null);
+
+function thisReturnsString( ):String { return null; }
+thisReturnsString();
+
+function thisTakesSequenceOfString( ss:String[] ) { System.out.println("Sequence of Strings as Parm: {ss}" ); }
+
+
+/*
+ * Sequence of Strings
+ */
+var sarry = [ "Hello","null" ];
+
+//this fails:
+//var nsarry = [ "Hello","null",null];
+
+//but a String var already initialized as null...
+var nsarry = [ "Hello","null",snull];
+
+//and a String array can have an element replaced
+sarry[1] = null;
+thisTakesSequenceOfString(  sarry );
+
+//and and uninitialized String sequence
+var usArray:String[];
+usArray[0] = null;
+
+
+/* This currently results in an interesting error message.
+       var nullStrings : String[] = ["Add","Null", null ];
+
+  NoStringNulls.f3:24: reference to add is ambiguous, both method add(T) in org.f3.runtime.sequence.SequenceBuilder<java.lang.String>
+  and method add(org.f3.runtime.sequence.Sequence<? extends T>) in org.f3.runtime.sequence.SequenceBuilder<java.lang.String>
+  match  var nullStrings : String[] = [null,null,null ];
+                             ^
+  1 error
+
+  The error message should not be an ambiguity error. :)
+ */
+
+
+
+/*
+ * Class variables
+ */
+class sn {
+ var s:String = null;
+ def sd:String = null;
+ function setString( _s:String) { s = _s; }
+ function returnSTring() : String { return null; }
+}
+
+var anSN:sn = new sn();
+ /* This should create two problems
+  * 1. passing a null to function that takes string and
+  * 2. it assings the parm to a String.
+  */
+anSN.setString( null );
+
+
+//Object literal
+var snOL = sn {
+    s:null;
+}
+
+
+
+
+
+
+
+
+
+
+

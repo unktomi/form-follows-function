@@ -1,0 +1,79 @@
+/*
+ * Test method overloading with numeric parameters
+ *
+ * @test/f3unit
+ * @run
+ */
+import f3.f3unit.*;
+import f3.lang.F3;
+
+public class NumOverload1 extends F3TestCase {
+
+function overloadFoo(i : Integer):String {return "Integer";}
+function overloadFoo(i : Long):String {return "Long";}
+function overloadFoo(i : Byte):String {return "Byte";}
+function overloadFoo(i : Character):String {return "Character";}
+function overloadFoo(i : Short):String {return "Short";}
+//function overloadFoo(i : Float):String {return "Float";} // overloadFoo(float) is already defined
+function overloadFoo(i : Double):String {return "Double";}
+//function overloadFoo(i : Number):String {return "Number";} // overloadFoo(float) is already defined
+function overloadFoo(i : String):String {return "String";}
+function overloadFoo(i : Duration):String {return "Duration";}
+    public function testInteger() {
+        var i : Integer = 987654321;
+        var r = overloadFoo(i);
+        assertEquals("Integer", r);
+    }
+    function testLong() {
+        var i : Long = 123456789;
+        var r = overloadFoo(i);
+        assertEquals("Long", r);
+    }
+    function testByte() {
+//        var i : Byte = 123456789; //Byte out of range
+        var i : Byte = 55;
+        var r = overloadFoo(i);
+        assertEquals("Byte", r);
+    }
+    function testCharacter() {
+        var i : Character = 123456789; //warning: possible loss of precision
+        var r = overloadFoo(i);
+        assertEquals("Character", r);
+    }
+    function testShort() {
+//        var i : Short = 123456789;  //Short out of range
+        var i : Short = 5555;
+        var r = overloadFoo(i);
+        assertEquals("Short", r);
+    }
+    function testFloat() {
+        var i : Float = 123456789;
+        var r = overloadFoo(i);
+// VSGC-2408#87
+//        assertEquals("Float", r);   
+    }
+    function testDouble() {
+        var i : Double = 123456789;
+        var r = overloadFoo(i);
+        assertEquals("Double", r);
+    }
+    function testNumber() {
+        var i : Number = 123456789;
+        var r = overloadFoo(i);
+// VSGC-2408#87
+//        assertEquals("Number", r);
+    }
+    function testString() {
+//        var i : String = 123456789; // incompatible types
+        var i : String = "123456789";
+        var r = overloadFoo(i);
+        assertEquals("String", r);
+    }
+    function testDuration() {
+//        var i : Duration = 123456789; //incompatible types
+        var i : Duration = 123456789ms;
+        var r = overloadFoo(i);
+        assertEquals("Duration", r);
+    }
+
+}

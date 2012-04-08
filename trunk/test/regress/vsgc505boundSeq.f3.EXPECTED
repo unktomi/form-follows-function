@@ -1,0 +1,42 @@
+[5..8 step 2] == 57  pass
+    [0..2] == 57  pass
+    [0..<2] == 57  pass
+    [0..] == 57  pass
+    [0..<] == 5  pass
+[5..<8 step 2] == 57  pass
+[3..8 step 2] == 357  pass
+    [0..2] == 357  pass
+    [0..<2] == 35  pass
+    [0..] == 357  pass
+    [0..<] == 35  pass
+[3..<8 step 2] == 357  pass
+[3..9 step 2] == 3579  pass
+    [0..2] == 357  pass
+    [0..<2] == 35  pass
+    [0..] == 3579  pass
+    [0..<] == 357  pass
+[3..<9 step 2] == 357  pass
+[3..9 step 3] == 369  pass
+    [0..2] == 369  pass
+    [0..<2] == 36  pass
+    [0..] == 369  pass
+    [0..<] == 36  pass
+[3..<9 step 3] == 36  pass
+[3..9 step 3] == 369  pass
+    [1..2] == 69  pass
+    [1..<2] == 6  pass
+    [1..] == 69  pass
+    [1..<] == 6  pass
+[3..<9 step 3] == 36  pass
+[3..9 step 3] == 369  pass
+    [1..1] == 6  pass
+    [1..<1] ==   pass
+    [1..] == 69  pass
+    [1..<] == 6  pass
+[3..<9 step 3] == 36  pass
+[3..9 step 3] == 369  pass
+    [1..99] == 69  pass
+    [1..<99] == 69  pass
+    [1..] == 69  pass
+    [1..<] == 6  pass
+[3..<9 step 3] == 36  pass

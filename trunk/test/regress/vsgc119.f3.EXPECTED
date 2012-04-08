@@ -1,0 +1,15 @@
+a: =>newV=0
+x: =>newV=0
+y: => oldV = 0, newV=0
+z: => oldV = 0
+zz: = Ralph
+a: =>newV=1
+x: =>newV=2
+y: => oldV = 0, newV=3
+z: => oldV = 0
+zz: = Laura
+seq: lowIndex = 0 highIndex = -1 oldValue =>  newValue = 12345678910
+seq: lowIndex = 2 highIndex = 2 oldValue => 12345678910 newValue = 0
+seq: lowIndex = 4 highIndex = 4 oldValue => 12045678910 newValue = 0
+seq: lowIndex = 10 highIndex = 9 oldValue => 12040678910 newValue = 11
+seq: lowIndex = 0 highIndex = 0 oldValue => 1204067891011 newValue = 

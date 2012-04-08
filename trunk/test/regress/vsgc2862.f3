@@ -1,0 +1,11 @@
+/**
+ * Regression test VSGC-2862 : Compiler allows public-read, public-init vars in a baseclass to be duplicated in a subclass
+ *
+ * @test/fail
+ * @compilefirst vsgc2862a.f3
+ */
+
+class vsgc2862 extends vsgc2862a { 
+    var xxread: Number; 
+    var xxinit: Number; 
+} 

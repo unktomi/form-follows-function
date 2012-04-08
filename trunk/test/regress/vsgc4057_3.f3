@@ -1,0 +1,18 @@
+/**
+ * VSGC-4057 : post increment bug.
+ *
+ * @test
+ * @run
+ */
+
+var x = 1;
+var a = A{};
+println("{sayHello(0)}{a.m({var j = x; sayHello(1); x = x + 1;j})}");
+
+function sayHello(x) {
+    println("hello{x}!");
+    x;
+}
+class A {
+    function m(x) {x;}
+}

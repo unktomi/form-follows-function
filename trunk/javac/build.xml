@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="javac" default="all" basedir=".">
+    <description>Builds the OpenJDK javac compiler.</description>
+    <property file="nbproject/project.properties"/>
+    <property environment="env"/>
+    
+    <property name="langtools.build.xml" value="${jdk.langtools.dir}/make/build.xml"/>
+    <property name="langtools.dist.lib.dir" value="${jdk.langtools.dir}/dist/lib"/>
+    
+    <target name="check-langtools-dir">
+        <fail unless="jdk.langtools.dir" 
+              message="jdk.langtools.dir property not set in private/project.properties"/>
+        <condition property="has-langtools-dir">
+            <available file="${jdk.langtools.dir}"/>
+        </condition>
+    </target>
+
+    <target name="init" depends="check-langtools-dir">
+        <fail unless="has-langtools-dir" message="OpenJDK langtools directory not found"/>
+    </target>
+    
+    <target name="all" depends="init" description="Builds the f3c.jar and f3doc.jar files.">
+        <ant antfile="${langtools.build.xml}" target="build-javadoc" inheritall="false">
+            <property name="boot.java.home" value="${env.JAVA_HOME}"/>
+            <property name="javac.target" value="1.5"/>
+            <property name="javac.debuglevel" value="lines,vars,source"/>
+        </ant>
+        <ant antfile="renamer/build.xml" inheritall="false" target="run-renamer">
+            <property name="in.jar" location="${langtools.dist.lib.dir}/f3c.jar"/>
+            <property name="out.jar" location="../lib/f3c.jar"/>
+        </ant>
+        <ant antfile="renamer/build.xml" inheritall="false" target="run-renamer">
+            <property name="in.jar" location="${langtools.dist.lib.dir}/f3doc.jar"/>
+            <property name="out.jar" location="../lib/f3doc.jar"/>
+        </ant>
+    </target>
+    
+    <target name="clean" depends="init" description="Deletes all generated files and directories.">
+        <ant antfile="${langtools.build.xml}" target="clean" inheritall="false"/>
+        <ant antfile="renamer/build.xml" inheritall="false" target="clean"/>
+    </target>
+    
+</project>

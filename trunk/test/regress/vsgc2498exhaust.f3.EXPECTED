@@ -1,0 +1,34 @@
+dur1 = 20ms. dur2 = 100ms, f = 2.0, d = 10.0, i = 4
+20ms + 100ms = 120ms
+20ms - 100ms = -80ms
+2.0 * 20ms = 40ms
+20ms * 2.0 = 40ms
+10.0 * 20ms = 200ms
+20ms * 10.0 = 200ms
+4 * 20ms = 80ms
+20ms * 4 = 80ms
+20ms / 100ms = 0.2
+100ms / 2.0 = 50ms
+100ms / 10.0 = 10ms
+100ms / 4 = 25ms
+20ms < 100ms = true
+20ms > 100ms = false
+20ms == 100ms = false
+20ms != 100ms = true
+dur1 = 2000ms. dur2 = 5000ms, f = 0.25, d = 0.1, i = 50
+2000ms + 5000ms = 7000ms
+2000ms - 5000ms = -3000ms
+0.25 * 2000ms = 500ms
+2000ms * 0.25 = 500ms
+0.1 * 2000ms = 200ms
+2000ms * 0.1 = 200ms
+50 * 2000ms = 100000ms
+2000ms * 50 = 100000ms
+2000ms / 5000ms = 0.4
+5000ms / 0.25 = 20000ms
+5000ms / 0.1 = 49999ms
+5000ms / 50 = 100ms
+2000ms < 5000ms = true
+2000ms > 5000ms = false
+2000ms == 5000ms = false
+2000ms != 5000ms = true

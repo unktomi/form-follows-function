@@ -1,0 +1,26 @@
+/**
+ * Regress test for VSGC-3065 - Complex bind causes null as value for some parts of bind chain.
+ *
+ * @test
+ * @run
+ */
+
+abstract class A { 
+     protected var test: Object on replace { println("A.test changed to {test}"); } 
+     protected var b = B { 
+        test: bind test 
+    }; 
+} 
+
+class B { 
+    var test:Object on replace { println("B.test changed to {test}"); }; 
+} 
+
+class C extends A { 
+    override var test = bind testLocal on replace { println("D.test changed to {test}"); } 
+    public var testLocal:Object on replace { println("D.testLocal changed to {test}"); } 
+} 
+
+var c = C{ testLocal: "Hello" }; 
+
+println(">>> c.b.test = {c.b.test}");

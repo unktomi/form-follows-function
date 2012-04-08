@@ -1,0 +1,8 @@
+/**
+ * @subtest
+ */
+
+public class vsgc2862a { 
+    public-read var xxread: Number; 
+    public-init var xxinit: Number; 
+} 

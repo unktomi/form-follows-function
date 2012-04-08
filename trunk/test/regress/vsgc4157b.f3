@@ -1,0 +1,13 @@
+/**
+ * VSGC-4157 : Compiler fails with an internal error when compiling code using bound function
+ *
+ * @test
+ */
+
+function bug(x) {}
+
+bound function f() {
+    return "";
+}
+
+bug(f);

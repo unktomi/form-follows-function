@@ -1,0 +1,4 @@
+init childSet
+dummy...
+children: childSet=1234 size old=0 children=0 new=0 [0..-1] = [ ] - oldNodes = [ ]
+children: childSet=1234 size old=0 children=2 new=2 [0..-1] = [ XRectangle:2.0, XRectangle:99.0 ] - oldNodes = [ ]

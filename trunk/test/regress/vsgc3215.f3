@@ -1,0 +1,17 @@
+/**
+ * Regression test VSGC-3215 : Compiler error of "missing return value" on multiple conditional returns
+ *
+ * @test
+ */
+
+def condA = true;
+def condB = true;
+
+function missingReturnValue() {
+    if (condA) {
+        return;
+    }
+    if (condB) {
+        return;
+    }
+}

@@ -1,0 +1,25 @@
+Black = color(0%, 0%, 0%)
+color(0%, 0%, 0%)
+color(0%, 0%, 0%)
+color(0%, 0%, 0%)
+color(0%, 0%, 0%)
+MediumOrchid = color(73%, 33%, 83%)
+color(73%, 33%, 87%)
+color(73%, 33%, 87%)
+color(73%, 33%, 83%)
+color(73%, 33%, 83%)
+Magenta = color(75%, 25%, 75%)
+hsb(300deg, .667, .75) = color(75%, 25%, 75%)
+hsl(300deg, .5, .5) = color(75%, 25%, 75%)
+(Black + MediumOrchid) / 2 = color(36%, 17%, 41%)
+MediumOrchid - Black + Black = color(73%, 33%, 83%)
+RED + LIME + BLUE = color(100%, 100%, 100%, 300%)
+MediumOrchid / MediumOrchid = 1.000
+MediumOrchid / White = 0.630
+MediumOrchid * 2 = color(146%, 67%, 165%, 200%)
+MediumOrchid < White = true
+MediumOrchid <= White = true
+MediumOrchid > White = false
+MediumOrchid >= White = false
+MediumOrchid == White = false
+MediumOrchid != White = true

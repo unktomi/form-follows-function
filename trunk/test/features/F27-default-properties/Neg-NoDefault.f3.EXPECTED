@@ -1,0 +1,3 @@
+test\features\F27-default-properties\Neg-NoDefault.f3:12: No default variable has been declared for class Neg-NoDefault.NoDefault.
+    ["a", "b", "c"]
+    ^

@@ -1,0 +1,11 @@
+/**
+ * Regression test for VSGC-1629 : Enforce public-read modifier
+ *
+ * @compile vsgc1629One.f3
+ * @test/compile-error
+ */
+
+var uno = vsgc1629One { twub: 222 };  // should fail
+uno.twub = 666; // should fail
+
+

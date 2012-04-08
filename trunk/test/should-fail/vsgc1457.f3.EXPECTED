@@ -1,0 +1,4 @@
+test\should-fail\vsgc1457.f3:4: 'void' type not allowed here
+var v:Void;
+      ^
+1 error

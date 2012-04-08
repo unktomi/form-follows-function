@@ -1,0 +1,21 @@
+test/regress/vsgc2166.f3:8: warning: possible loss of precision
+found   : Number
+required: Integer
+x*= 0.5;
+^
+test/regress/vsgc2166.f3:9: warning: possible loss of precision
+found   : Number
+required: Integer
+x+=0.5;
+^
+test/regress/vsgc2166.f3:10: warning: possible loss of precision
+found   : Number
+required: Integer
+x-=0.5;
+^
+test/regress/vsgc2166.f3:11: warning: possible loss of precision
+found   : Number
+required: Integer
+x/=0.5;
+^
+4 warnings

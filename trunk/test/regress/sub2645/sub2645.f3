@@ -1,0 +1,20 @@
+/**
+ * VSGC-2645 : package name = file name causes javadump
+ *
+ * @subtest
+ */
+
+package sub2645;
+
+public var w: Number;
+
+public class fred {
+    public var width:Number;
+}
+
+public var r = fred {
+        width: bind w;
+}
+
+public class sub2645 {
+}

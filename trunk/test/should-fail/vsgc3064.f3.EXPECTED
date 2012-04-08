@@ -1,0 +1,4 @@
+test/should-fail/vsgc3064.f3:18: It looks like you are missing a ',' delimiter or perhaps have a malformed expression here?
+  42 42
+    ^
+1 error

@@ -1,0 +1,12 @@
+/*
+ * Regression: VSGC-3960 - Compiled bind optimization: Enforce access protection and remove qualification of private names
+ *
+ * @compilefirst vsgc3960staticA.f3
+ * @test
+ *
+ */ 
+
+def CSS:String[] = vsgc3960staticA.CSS;
+
+public class vsgc3960staticB extends vsgc3960staticA {
+}

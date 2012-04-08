@@ -1,0 +1,12 @@
+/**
+ * Should-fail test VSGC-1868 : Non-runnable scripts shouldn't be runnable (shouldn't have run, f3$run$ or main)
+ *
+ * @test
+ * @run/fail
+ */
+
+public class Foo {
+  // Whatever
+}
+
+var x = Foo{};

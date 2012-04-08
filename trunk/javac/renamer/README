@@ -1,0 +1,12 @@
+Initalizing the Renamer:
+
+The renamer is built on the classfile library of javac in the langtools repository, at the time of this writing the classfile is available with the latest
+langtools version tag b70+. Until the main javac sources are brought upto
+date with this we need a separate source base.
+
+1. Similar to the previous step, copy in b70+ langtools repository, under 
+   a directory called langtools
+2. Invoke the ant script in the parent(javac) directory. 
+
+Optionally the renamer can be built independently of javac directory,
+for other usese by invoking the ant script in this directory 

@@ -1,0 +1,67 @@
+/**
+ * Should-fail test VSGC-1910 : Check that the modifiers used are appropriate for the member kind (function, var, def, class)
+ *
+ * @test/compile-error
+ */
+
+public-read class dPRead {}
+public-init class dPInit {}
+override class dOverride {}
+abstract class dAbstract {}  // OK
+bound class dBound {}
+
+public-read function cPRead() {}
+public-init function cPInit() {}
+override function cOverride() {}
+abstract function cAbstract();
+bound function cBound() { 1 }  // OK
+
+public-read def aPRead = 1;  // OK
+public-read var bPRead = 1;  // OK
+
+public-init def aPInit = 1;
+public-init var bPInit = 1;
+
+abstract def aAbstract = 1;
+abstract var bAbstract = 1;
+
+bound def aBound = 1;
+bound var bBound = 1;
+
+class Foo0 {
+    function cOverrideInst() {}
+}
+
+abstract class Foo extends Foo0 {
+    public-read function cPReadInst() {}
+    public-init function cPInitInst() {}
+    override function cOverrideInst() {}  // OK
+    abstract function cAbstractInst();  // OK
+    bound function cBoundInst() { 1 }  // OK
+
+    public-read def aPReadInst = 1;  // OK
+    public-read var bPReadInst = 1;  // OK
+
+    public-init def aPInitInst = 1;
+    public-init var bPInitInst = 1;  // OK
+
+    abstract def aAbstractInst = 1;
+    abstract var bAbstractInst = 1;
+
+    bound def aBoundInst = 1;
+    bound var bBoundInst = 1;
+}
+
+function bar() : Void {
+    public-read def aPReadLocal = 1; 
+    public-read var bPReadLocal = 1; 
+
+    public-init def aPInitLocal = 1;
+    public-init var bPInitLocal = 1;
+
+    abstract def aAbstractLocal = 1;
+    abstract var bAbstractLocal = 1;
+
+    bound def aBoundLocal = 1;
+    bound var bBoundLocal = 1;
+}

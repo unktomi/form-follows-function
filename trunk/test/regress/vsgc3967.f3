@@ -1,0 +1,33 @@
+/*
+ * VSGC-3967 : Apparently incorrect handling of binding
+ *
+ * @test
+ * @run
+ */
+
+public class D {
+   override function toString() { "D" }
+}
+
+public class A {
+   public var parentA: A on invalidate { println("invalidated parentA {this}") }
+   public var d: D = null;
+
+   // this didn't work: combinedD was never invalidated
+   public var combinedD:D = bind if (d == null) parentA.combinedD else d on invalidate { println("invalidated combinedD {this}") }
+   override function toString() { "A" }
+}
+
+class B extends A {
+   public var content: A[];
+   override function toString() { "B" }
+}
+
+public function run() {
+     var b = B {
+       d: D {};
+       content: A {}
+     };
+     for (a in b.content) {a.parentA = b};
+     println(b.content[0].combinedD); /// incorrectly printed null
+} 

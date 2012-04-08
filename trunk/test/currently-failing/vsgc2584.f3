@@ -1,0 +1,38 @@
+/*
+ * No warning for the lossy type casts { Short; Integer; Long } => Byte
+ * Please update test/features/F26-numerics/VarConversions/ToByteWarnings.f3
+ * when this issue is resolved.
+ *
+ * @test/warning
+ */
+
+var b : Byte;
+var i : Integer;
+var s : Short;
+var l : Long;
+
+b = i;
+b = s;
+b = l;
+
+
+/*****************************
+The following precision loss warnings are expected:
+
+test/currently-failing/vsgc2584.f3:14: warning: possible loss of precision
+found   : Integer
+required: Byte
+b = i;
+    ^
+test/currently-failing/vsgc2584.f3:15: warning: possible loss of precision
+found   : Short
+required: Byte
+b = s;
+    ^
+test/currently-failing/vsgc2584.f3:16: warning: possible loss of precision
+found   : Long
+required: Byte
+b = l;
+    ^
+3 warnings
+******************************/

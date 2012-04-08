@@ -1,0 +1,4 @@
+test/should-fail/vsgc2677-c.f3:8: Sorry, I was trying to understand a sequence creation expression but I got confused when I found an extra ',' which is a punctuation character that should not be there.
+se= [5,,];
+      ^
+1 error

@@ -1,0 +1,68 @@
+/**
+ * Regression test for VSGC-2068 : Use NullChecker for select
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+  var bits : java.util.BitSet;
+  var dim : java.awt.Dimension;
+  var oo : Foo;
+  var flo : Number;
+  var lamb : function() : Integer;
+
+  override function toString() { 'Foo {flo}' }
+}
+
+function gogo() {
+  var p : Foo;
+  println(p.bits);
+  println(p.dim);
+  println(p.oo);
+  println(p.flo);
+  println(p.lamb);
+  println(p.bits.flip);
+  println(p.dim.width);
+  println(p.oo.oo);
+  println(p.oo.flo);
+  println(p.oo.lamb);
+
+  p = Foo{}
+  println('-----');
+  println(p.bits);
+  println(p.dim);
+  println(p.oo);
+  println(p.flo);
+  println(p.lamb);
+  println(p.bits.flip);
+  println(p.dim.width);
+  println(p.oo.oo);
+  println(p.oo.flo);
+  println(p.oo.lamb);
+
+  var d = new java.awt.Dimension;
+  d.width = 777;
+
+  p = Foo {
+	bits: new java.util.BitSet
+	dim: d
+	oo: Foo{
+		oo: Foo{}
+		flo: 12.34
+		lamb: function() { println('bah'); 22 }
+	    }
+	flo: 3.141592653
+	lamb: function() { println('yes Mr President'); 100 }
+      }
+  println('-----');
+  println(p.oo);
+  println(p.flo);
+  println(p.lamb());
+  println(p.dim.width);
+  println(p.oo.oo);
+  println(p.oo.flo);
+  println(p.oo.lamb());
+}
+
+gogo();

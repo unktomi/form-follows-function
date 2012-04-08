@@ -1,0 +1,41 @@
+/**
+ * VSGC-4076 : Compiled bind optimization: convert immutable shreds bound->unbound
+ *
+ * sanity check: for-expressions
+ *
+ * @test
+ * @run
+ */
+
+var x = 1;
+var y = 3;
+var z = 1;
+var s = "*";
+var e = 2;
+
+function show(sq : String[]) {
+  println(sq);
+  sq
+}
+
+var b1 = bind show(for (i in [0..8 step 2]) "Z");
+var b2 = bind show(for (i in [x..8 step 2]) "o");
+var b3 = bind show(for (i in [0..y step 2]) "-");
+var b4 = bind show(for (i in [0..8 step z]) "T");
+var b5 = bind show(for (i in [0..8 step 2]) s);
+var b6 = bind show(for (i in [0..8 step 2] where i > 4) "4");
+var b7 = bind show(for (i in [0..8 step 2] where i > e) "e");
+
+b1; b2; b3; b4; b5; b6; b7;
+
+x = 4;
+b2;
+y = 6;
+b3;
+z = 2;
+b4;
+s = "x";
+b5;
+e = 4;
+b7;
+

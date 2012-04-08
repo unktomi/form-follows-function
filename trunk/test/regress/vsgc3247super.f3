@@ -1,0 +1,25 @@
+/**
+ * VSGC-3247 : Slacker Binding: general case
+ *
+ * @compilefirst vsgc3247sub.f3
+ * @test
+ * @run
+ */
+
+class vsgc3247super extends vsgc3247sub {
+  override var b on replace { println("vsgc3247super.b {b}") }
+  override var c = 234;
+  override var d = bind x * 100;
+}
+
+function run() {
+  def m = vsgc3247super {
+    e: 123
+    f: bind 666
+  }
+  m.b;
+  m.show();
+  m.x = 7777;
+  m.show();
+}
+

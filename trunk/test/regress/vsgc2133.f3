@@ -1,0 +1,15 @@
+/**
+ * Regression test VSGC-2133 : Restore elision for classes with init {} blocks
+ *
+ * @compilearg -XDoptstats="i"
+ * @test/warning
+ */
+
+public class Foo {
+  var a = 3;
+  def b = 4;
+
+  init {
+    a = 7;
+  }
+}

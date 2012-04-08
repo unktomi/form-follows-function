@@ -1,0 +1,23 @@
+/**
+ * VSGC-4175 :  Indaba Internal compiler error incompatible types found : org.f3.runtime.Pointer required: f3.scene.control.Button
+ *
+ * @test
+ * @run
+ */
+
+class TextButton {
+    var name: String;
+    public override function toString() : String {
+        return "TextButton \{ name: \"{name}\" \}";
+    }
+}
+
+bound function createTextButton(text: String) {
+    return TextButton { name: text };
+}
+
+var buttons = bind [
+    createTextButton("OK")
+];
+
+println(buttons);

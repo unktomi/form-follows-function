@@ -1,0 +1,16 @@
+/**
+ * VSGC-3952 : Samples: Mosaic fails with an NPE in initVars$
+ *
+ * Original, self-referential version
+ *
+ * @compilefirst vsgc3952mix.f3
+ * @compilefirst vsgc3952sub.f3
+ * @test
+ * @run
+ */
+
+var sb : vsgc3952sub = vsgc3952sub {
+  thing: bind (sb.furb)
+}
+
+println(sb.thing)

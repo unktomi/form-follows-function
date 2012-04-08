@@ -1,0 +1,6 @@
+test/should-fail/vsgc124.f3:8: unexpected type
+found   : Integer
+required: Sequence (or nativearray)
+System.out.println("i = {i[i]}"); 
+                         ^
+1 error

@@ -1,0 +1,551 @@
+\documentclass{article}
+\usepackage{semantic}
+
+\reservestyle{\operator}{\textbf}
+\reservestyle{\keyword}{\texttt}
+\keyword{Null,Void,Object,Integer,Number,Boolean,String,Duration}
+\keyword{Int8,Int16,UInt16,Int32,Int64,Float32,Float64,IntXx,FloatXx}
+\keyword{Byte,Short,Character,Integer,Long,Float,Double,int,float}
+\keyword{null,true,false}
+\keyword{class,extends,function,Required,Optional,Sequence,JavaArray,JavaXxx}
+\operator{req,opt,seq,optof,isopt,arr,sizeof,default}
+\mathlig{!=}{\mathrel{\texttt{!=}}}
+
+\newcommand{\convertsto}{\mathrel{\tilde{\rightarrow}}}
+\newcommand{\req}{\<req>\;}
+\newcommand{\opt}{\<opt>\;}
+\newcommand{\seq}{\<seq>\;}
+\newcommand{\arr}{\<arr>\;}
+\newcommand{\optof}{\<optof>\;}
+\newcommand{\isopt}{\<isopt>\;}
+\newcommand{\sizeof}{\<sizeof>\;}
+\newcommand{\default}{\<default>\;}
+\newcommand{\alt}{\;|\;}
+\newcommand{\sqb}{\texttt{[]}}
+\newcommand{\class}[3]{\<class> \; #1 \; \<extends> \; \bar{#2} \; \{ #3 \} }
+
+\begin{document}
+
+\section{The abstract type system}
+
+For sake of clarity, we first develop an an \emph{abstract type
+system} for F3, whose syntax is divorced from the surface syntax
+of the F3 language.  After defining the typing rules in the
+abstract type system, we then map the F3 language syntax to the
+abstract type system to form the \emph{user type system}.  Not all
+types in the abstract type system are necessarily denotable or
+expressible in the user type system.
+
+\subsection{Ground types and cardinalities}
+
+Most F3 types are built from a combination of an element type and
+a ``cardinality''; the useful cardinalities are ``exactly one'' (a
+\emph{required} type), ``zero or one'' (an \emph{optional} type), and
+``zero or more'' (a \emph{sequence} type).  The element type defines
+the type of the elements that a variable of that type may take on.  We
+use the term \emph{ground type} to define a type that can be combined
+with a cardinality to yield a F3 type.  All Java classes are valid
+as \emph{ground types}, as are all F3 classes, as well as the
+predefined classes \<Int32>, \<Float64>, and \<Boolean>.  The unary
+cardinality operators (or type constructors) \<req>, \<opt>, and
+\<seq>, define required, optional, and sequence type respectively.
+
+Required types act much like the primitive types in Java; they cannot
+be null.  Optional types act much like reference types in Java; they
+either hold a reference to an instance of the element type, or they
+hold null.  Sequence types hold an ordered set of zero or more non-null values.  
+Sequence elements can be extracted from a sequence value using the familiar
+$x[e]$ notation.  The empty sequence is indicated by a null value, $\sqb$ (see section \ref{sec:null}.)  
+
+Function types are identified with the usual arrow notation ($T ->
+S$); for simplicity we consider only unary functions.  Higher-arity
+functions are handled by currying; nullary functions will be handled
+by introducing a \<Void> type.
+
+The metavariables $A$, $B$, and $C$ (and their derivatives) range over
+class names (whether defined in Java or F3, including interfaces).  Where
+they appear with a $J$ subscript ($A_J$), they represent Java classes; where they
+appear with an $F$ subscript, they represent F3 classes.  
+The metavariables $E$, $F$, and $G$ range over the ground types.  The
+metavariables $S$, $T$, $U$, and $V$ range over all types.
+
+\begin{figure}[htpb]
+\begin{eqnarray*}
+     P &::=& \<Int32> \alt \<Float64> \alt \<Boolean> \\
+     G &::=& P \alt C \alt T -> S \\
+     T &::=& \req G
+           \alt \opt G
+           \alt \seq G 
+           \alt \optof T \\
+     L &::=& \class{A_{F}}{B}{ \bar{T}\; \bar{f} } \\
+     e &::=& x \alt f(e) \alt x[e] \alt x.y \alt \sizeof x \alt \<true> \alt \<false> 
+\end{eqnarray*}
+\caption{Basic type syntax}
+\label{basic-type-syntax}
+\end{figure}
+
+The notation $\bar{A}$ in the syntax rules and typing judgements
+indicates a list of zero or more elements that would match the
+metavariable $A$; where $\bar{A}$ appears, the elements of $\bar{A}$
+are identified as $A_i$.  It is used, for example, in the syntax for
+defining a class to indicate that a F3 class may have multiple
+superclasses.  When it appears in the conclusion of a typing
+judgement, it means that the conclusion is true for all the elements
+that match the metavariable $A$.
+
+We do not yet treat Java primitives in this section; we assume only
+the existence of the ground types \<Int32>, \<Float64>, and
+\<Boolean>.  The basic syntax for defining types in the abstract type
+system is shown in figure \ref{basic-type-syntax}, and the basic
+typing rules are shown in figure \ref{basic-type-rules}.  The
+metafunction $fields$ is defined as in Featherweight Java; it is a set
+of $(name, type)$ pairs describing the instance variables of a class.
+Similarly, the metafunction $methods$ describes the methods of a
+class.  (TODO: Provide formal definitions.)
+
+It is also desirable to be able to take a type and convert it to
+a type of another cardinality.  The type operator \<optof> yields a type that is
+of the same ground type but with an optional cardinality, as follows:
+
+\begin{eqnarray*}
+\optof \req G &=& \opt G \\
+\optof \opt G &=& \opt G \\
+\optof \seq G &=& \seq G \\
+\end{eqnarray*}
+
+\begin{figure}[htpb]
+
+\[
+\inference[\textsc{T-Idx}]{
+  \Gamma |- x : \seq G & \Gamma |- t : \opt \<Int32>
+}{
+  \Gamma |- x[t] : \opt G
+}
+\]
+
+\[
+\inference[\textsc{T-App-Opt}]{
+  \Gamma |- f : \opt (T -> S) & \Gamma |- x : T
+}{
+  \Gamma |- f(x) : \optof S
+}
+\]
+\[
+\inference[\textsc{T-App}]{
+  \Gamma |- f : \req (T -> S) & \Gamma |- x : T
+}{
+  \Gamma |- f(x) : S
+}
+\]
+
+\[
+  \inference[\textsc{T-Field}]{
+    \Gamma |- e_0 : \req C_0 &
+    \mathit{fields}(C_0) = \bar{C} \; \bar{f}
+  }{
+    \Gamma |- e_0.f_i : C_i
+  }
+\]
+\[
+  \inference[\textsc{T-Field-Opt}]{
+    \Gamma |- e_0 : \opt C_0 &
+    \mathit{fields}(C_0) = \bar{C} \; \bar{f}
+  }{
+    \Gamma |- e_0.f_i : \optof C_i
+  }
+\]
+
+\begin{eqnarray*}
+\sizeof x &:& \<Int32> \\
+\<true> &:& \<Boolean> \\
+\<false> &:& \<Boolean> \\
+\end{eqnarray*}
+
+\caption{Basic typing rules}
+\label{basic-type-rules}
+\end{figure}
+
+\subsection{Null}
+\label{sec:null}
+
+The special type \<Null> has only the single distinguished value
+\<null>.  In F3, as in SQL, \<null> represents a nonexistent
+value.  The special type $\<Null>\sqb$ has only the single distinguished
+value $\sqb$, which is equal to \<null> but has a different static type.  
+Figure \ref{null-typing} shows the syntax and typing
+assertions associated with adding \<Null> to the type system.
+
+\begin{figure}[htpb]
+\begin{eqnarray*}
+     T &::=& \dots 
+             \alt \<Null> \alt \<Null>\sqb \\
+     e &::=& \dots 
+             \alt \<null> \alt \sqb \\
+\end{eqnarray*}
+\begin{eqnarray*}
+    \<Null> &<:& \<Null>\sqb \\
+    \<Null> &<:& \opt G \\
+    \<Null>\sqb &<:& \seq G \\
+    \optof \<Null> &=& \<Null> \\
+    \optof \<Null>\sqb &=& \<Null>\sqb \\
+    \<null> &:& \<Null> \\
+    \sqb &:& \<Null>\sqb \\
+\end{eqnarray*}
+
+\caption{Null}
+\label{null-typing}
+\end{figure}
+
+
+\subsubsection{Null conversions}
+\label{sec:null-conversions}
+
+Optional types can be converted to their corresponding required type
+by coercing null values to a \emph{default value} for the
+corresponding ground type.  The default values are defined by:
+
+\begin{eqnarray*}
+  \default \<IntXx> &=& 0 \\
+  \default \<FloatXx> &=& 0.0 \\
+  \default \<Boolean> &=& \<false> \\
+  \default \<String>  &=& \textrm{``''} \\
+  \default \<Duration>  &=& 0ms \\
+  \default G  &=& \<null> \textrm{ (otherwise)}  \\
+\end {eqnarray*}
+
+We use the operator $\convertsto$ to indicate that one type is
+convertible to another; type conversions come into play when subtyping
+fails.  We can statically convert $\opt G$ to $\req
+G$ as needed so long as $G$ has a non-null default value:
+
+\[
+\inference{\default G != \<null>}{\opt G \convertsto \req G}
+\]
+
+The conversion algorithm is straightforward; if the value is \<null>,
+it is replaced with the default value for that type, otherwise the
+value is simply interpreted as a value of the required type.  This
+conversion is needed because many expressions that ``usually'' yield a
+non-null value but are of optional type (such as sequence indexing,
+member selection, and function invocation) may sometimes yield \<null>.
+In the following program:
+
+\begin{verbatim}
+var x : Integer[] = [1, 2, 3];
+var y : Integer = x[23];
+\end{verbatim}
+
+The type of $y$ is $\req \<Int32>$, but the type of $x[23]$ is $\opt
+\<Int32>$ and it evaluates to \<null>.  The right-hand side is evaluated,
+yielding \<null>; when assigned to $y$, it is converted to the default
+type for $\<Int32>$, which is zero.
+
+We can also dynamically convert $\seq G$ to $\opt G$ when the size of
+the sequence is zero or one, throwing a runtime exception if the size
+of the sequence is greater than one.
+
+
+\subsection{Object}
+
+The Java type \texttt{java.lang.Object} (referred to simply as
+\<Object>) is significant, though does not form a ``top'' type as it
+does in Java; instead each cardinality of \<Object> forms a ``top''
+type for the class hierarchy for that cardinality:
+
+\begin{eqnarray*}
+    \req G &<:& \req \<Object> \\
+    \opt G &<:& \opt \<Object> \\
+    \seq G &<:& \seq \<Object> \\
+\end{eqnarray*}
+
+
+\subsection{Subtyping}
+
+Figure \ref{basic-subtype} shows the subtyping rules for the types
+defined in Figure \ref{basic-type-syntax}.  Rules \textsc{S-Refl},
+\textsc{S-Trans}, \textsc{S-Cov}, and \textsc{T-Sub} are standard, and
+borrowed from $\lambda_{<:}$ (the simply typed lambda calculus with
+subtyping).  \textsc{S-Java} shows how Java subtyping maps to F3
+subtyping; \textsc{S-Card} and \textsc{S-Extends} show the subtyping
+relationships for cardinality types and class types in F3.  
+
+\begin{figure}[htpb]
+\[ \inference[\textsc{S-Refl}]{}{T <: T}
+\]
+
+\[ 
+\inference[\textsc{S-Trans}]{
+T <: S & S <: U
+}{
+T <: U
+}
+\]
+
+\[ 
+\inference[\textsc{S-Arrow}]{
+T <: S & U <: V
+}{
+\req (V -> T) <: \req (U -> S) 
+}
+\]
+\[ 
+\inference[\textsc{S-Arrow-Opt}]{
+T <: S & U <: V
+}{
+\opt (V -> T) <: \opt (U -> S) 
+}
+\]
+\[ 
+\inference[\textsc{S-Arrow-Seq}]{
+T <: S & U <: V
+}{
+\seq (V -> T) <: \seq (U -> S) 
+}
+\]
+
+\[ 
+\inference[\textsc{T-Sub}]{
+\Gamma |- t : S & S <: T
+}{
+\Gamma |- t : T
+}
+\]
+
+\[ \inference[\textsc{S-Card}]{}{\req G <: \opt G <: \seq G}
+\]
+
+\[
+  \inference[\textsc{S-Java}]{
+    A_J <: B_J
+  }{
+    \req A_J <: \req B_J \;\;\;\; \opt A_J <: \opt B_J \;\;\;\; \seq A_J <: \seq B_J
+  }
+\]
+
+\[
+  \inference[\textsc{S-Extends}]{
+    \class{A_F}{B}{\dots}
+  }{
+    \req A_F <: \req \bar{B} \;\;\;\; \opt A_F <: \opt \bar{B} \;\;\;\; \seq A_F <: \seq \bar{B}
+  }
+\]
+\caption{Basic subtyping rules}
+\label{basic-subtype}
+\end{figure}
+
+
+\subsection{Operational semantics}
+
+We offer a small-step operational semantics for portions of the
+evaluation for sequence indexing, class member selection, and function
+invocation that illustrate the conditions under which these operations
+evaluate to \<null>.  Where these rules do not apply, evaluation
+proceeds under the expected interpretation (choose the $i^{th}$
+element of the sequence, fetch the instance variable, invoke the
+method.)  We follow the convention that the metavariables $v$ and $w$ 
+represent final values, where the other lower case metavariables represent
+arbitrary terms.  
+
+\subsubsection{Sequence indexing}
+
+Figure \ref{index-semantics} shows the small-step operational
+semantics for sequence element expressions of the form $x[i]$.  Informally, they
+require that $x$ be evaluated before $i$, and that index expressions
+where the sequence or index is \<null> evaluate to \<null>.
+
+\begin{figure}[htpb]
+\[ \inference{e \mapsto e'}{e[i] \mapsto e'[i]} \]
+
+\[ \inference{v \texttt{ != } \<null> & i \mapsto i'}{v[i] \mapsto v[i']} \]
+
+\[ \inference{}{\<null>[i] \mapsto \<null>} \]
+
+\[ \inference{}{v[\<null>] \mapsto \<null>} \]
+
+\[ \inference{w < 0 \texttt{ || } w >= \sizeof v}
+{v[w] \mapsto \<null>} \]
+
+\caption{Operational semantics for sequence indexing}
+\label{index-semantics}
+\end{figure}
+
+\subsubsection{Function invocation}
+
+Figure \ref{function-semantics} shows the operational semantics for
+function invocation.  Informally, it requires that the function
+reference be evaluated before the argument, and that invoking a \<null>
+function value evalutes to \<null>.
+
+\begin{figure}[htpb]
+\[ \inference{f \mapsto f'}{f(x) \mapsto f'(x)} \]
+
+\[ \inference{x \mapsto x' & v != \<null>}{v(x) \mapsto v(x')} \]
+
+\[ \inference{}{\<null>(x) \mapsto \<null>} \]
+\caption{Operational semantics for function application}
+\label{function-semantics}
+\end{figure}
+
+\subsubsection{Member selection}
+
+Figure \ref{member-semantics} shows the operational semantics for
+class member selection.  Informally, it shows that member selection on
+\<null> object references evalutes to \<null>.
+
+\begin{figure}[htpb]
+\[ \inference{a \mapsto a'}{a.x \mapsto a'.x} \]
+
+\[ \inference{}{\<null>.x \mapsto \<null>} \]
+\caption{Operational semantics for member selection}
+\label{member-semantics}
+\end{figure}
+
+
+\section{The user type system}
+
+Not all types in the abstract type system are denotable or expressible
+in the user type system.  Figure \ref{user-types} shows the mapping of
+type names in the user type system to their corresponding concrete
+types.  
+
+\begin{figure}[htpb]
+\begin{eqnarray*}
+  \<Integer> &:=& \req \<Int32> \\
+  \<Number> &:=& \req \<Float64> \\
+  \<Boolean> &:=& \req \<Boolean> \\
+  \<String> &:=& \req \texttt{java.lang.String} \\
+  \<Duration> &:=& \req \texttt{f3.lang.Duration} \\
+  \<function>(T) : U &:=& \opt (T -> U) \\
+  G &:=& \opt G \;(\textrm{except as above}) \\
+  G\sqb &:=& \seq G \\
+  \texttt{Required<G>} &:=& \req G \textrm{ (proposed)}\\
+  \texttt{Optional<G>} &:=& \opt G \textrm{ (proposed)}\\
+  \texttt{Sequence<G>} &:=& \seq G \textrm{ (proposed)}\\
+\end{eqnarray*}
+
+\caption{User type system}
+\label{user-types}
+\end{figure}
+
+The name mappings are chosen so that the default for numbers, strings,
+and booleans is non-nullable, while the defaults for other types is
+nullable.  (Most imperative languages, such as Java and C\#, treat
+numbers specially in this way.)  However, it is desirable to allow
+users to denote any of the cardinalities for a given ground type; 
+figure \ref{user-types} shows some proposed syntax for this.
+
+
+\section{Java primitive types}
+
+While the ``built-in'' types \<Integer> and \<Number> are generally
+enough for standalone programs, since F3 classes can extend Java
+classes, the type system needs to accomodate Java primitives.  We can
+easily add new ground types for the additional Java primitives
+(\<Int8>, \<Int16>, \<UInt16>, \<Int64>, and \<Float32>) to the abstract type system: 
+
+\[
+     P ::= \<Int8> \alt \<Int16> \alt \<UInt16> \alt \<Int32> \alt \<Int64> \alt \<Float32> \alt \<Float64> \alt \<Boolean> 
+\]
+
+Similarly, we can add names for these types to the user type system as we defined \<Integer>
+and \<Boolean>.  We will use the convention \<JavaXxx> where Xxx is the name of the associated wrapper class (e.g., \<Byte>, \<Double>, etc) to represent non-nullable (required) types in the user type
+system.  \<Number> would continue to be a synonym for \<Float64>, preserving the desirable subtyping relationship
+
+\[ \<Integer> <: \<Number> \]
+
+\subsection{Primitives in Java type signatures}
+
+F3 code can access Java fields and call Java methods.  Where a Java
+type signature (method or field) contains a primitive type, F3 interprets this 
+as a required type (e.g., a \<float> is interpreted has having type $\req \<Float32>$.)  
+Reference types in Java type signatures are treated as optional types.  
+For example, when assigning the
+result of a Java method that return \<String> to a F3 variable, the type
+of the method return value is $\opt \<String>$, and so it would have to be converted
+to a value of type $\req \<String>$ as described in section \ref{sec:null-conversions}.  
+
+\subsection{Primitive conversions}
+
+We introduce subtyping relationships corresponding to the
+widening conversions for primitive types in Java:
+
+\[ \<Int8> <: \<Int16> <: \<Int32> <: \<Int64> \]
+\[ \<UInt16> <: \<Int32> \]
+\[ \<Int32> <: \<Float64> \]
+\[ \<Float32> <: \<Float64> \]
+
+We also introduce (lossy) narrowing conversions for the opposite
+direction, possibly with a compiler warning:
+
+\[ \<Int64> \convertsto \<Int32> \convertsto \<Int16> \convertsto \<Int8> \]
+\[ \<Int32> \convertsto \<UInt16> \]
+\[ \<Float64> \convertsto \<Int32> \]
+\[ \<Float64> \convertsto \<Float32> \]
+
+
+\subsection{Java arrays}
+
+While it is possible to convert between Java arrays and F3
+sequences, the conversion is expensive.  To reduce the need for
+conversion, we introduce array types into the type system.  Where
+array types appear in Java type signatures, they are treated as array
+types rather than converting to sequences.  
+
+We can introduce arrays into the F3 type system by slighly refactoring the 
+syntax of ground types and adding an $\arr$ type constructor, introducing (possibly nested)
+arrays of primitive types and reference types: 
+
+\begin{eqnarray*}
+      G_{J} &::=& P \alt C \alt \arr G_{J} \\
+      G &::=& G_{J} \alt T -> S \\
+\end{eqnarray*}
+
+The corresponding form in the user type system for an array of type $G_{J}$ would be
+\texttt{JavaArray<$G_{J}$>}:
+
+\[
+  \texttt{JavaArray<$G_{J}$>} := \opt \arr G_{J} \textrm{ (proposed)} \\
+\]
+
+Accesses to array variables
+would be restricted to element-fetch, element-set, and \<sizeof>,
+rather than the full set of sequence operations.  (Note that in this
+formulation arrays are denotable but not expressible, making them
+largely useful only for accessing existing Java arrays and overriding
+Java methods that take array arguments.  Given that the purpose of
+introducing arrays into the type system is largely for
+interoperability, this may be an acceptable restriction.)  
+Partial typing rules for Java arrays are shown in figure \ref{fig:arrays}.  
+The operational semantics for Java arrays are not yet determined; we may
+want to throw NPE and AIOOBE for erroneous index expressions instead of
+evaluating to \<null>.  
+
+\begin{figure}[htbp]
+
+\[
+\inference[\textsc{T-PrimArr}]{
+  \Gamma |- x : \req \arr P & \Gamma |- t : \req \<Int32>
+}{
+  \Gamma |- x[t] : \req P
+}
+\]
+
+\[
+\inference[\textsc{T-Arr}]{
+  \Gamma |- x :\req \arr C & \Gamma |- t : \req \<Int32>
+}{
+  \Gamma |- x[t] : \opt C
+}
+\]
+
+\caption{Typing rules for Java arrays}
+\label{fig:arrays}
+\end{figure}
+
+
+%% Denotable / expressible
+%% Void
+
+%% \section{Maps}
+
+\end{document}

@@ -1,0 +1,43 @@
+// Visage sample properties file
+/*
+	comments go here
+*/
+
+// comment symbols embedded in properties
+"deceiving key1: /*" = "magirawashii key1: */"
+"deceiving key2: //" = "magirawashii key2: //"
+
+// multi-line property with embedded comments
+'Hello, World!'  /* comment */
+= // comment 
+'Konnichwa Sekai!' // comment 
+
+// a property containing formatting 
+"Duke's birthday: %1$tm %2$te, %3$tY." =
+"Duke no tanjoubi wa %3$tY nen %1$tm gatsu %2$te nichi desu."
+
+// explicit key tests
+"FILE_VERB" = "Hokan suru"
+"FILE_NOUN" = "shorui"
+"KEY_WITH_SAME_VALUE" = "KEY_WITH_SAME_VALUE"
+
+// escape sequence tests in source file
+'Hello,	World!' = "Konnichiwa (Tab)Sekai!"
+
+// escape sequence tests in properties file
+'Hello,\040EscapeOctalSpace!' = "Konnichiwa EscapeOctalSpace!"
+'Hello,\u0020UnicodeEscapeSpace!' = "Konnichiwa UnicodeEscapeSpace!"
+'Hello,\tTab!' = "Konnichiwa Tab!"
+'Hello,\'Single Quotes\'' = 'Konnichiwa \'Single Quotes\''
+"Hello,\"Double Quotes\"" = "Konnichiwa \"Double Quotes\""
+
+// multiple line tests
+'Unix style
+new line' = 'Unix keishiki no
+kaigyo'
+'Windows style
+new line' = 'Windows keishiki no
+kaigyo'
+'Mac style
+new line' = 'Mac keishiki no
+kaigyo'

@@ -1,0 +1,57 @@
+/*
+ * Regression test for VSGC-2627.
+ *
+ * No rerender of custom component when 
+ * bound to external variable.
+ *
+ * @test
+ * @run
+ */
+
+var items = ["Monday", "Tuesday", "Wednesday"];
+var table = SimpleTable {
+    // items: bind items with inverse // <<--- This works
+    items: bind items // <-- This used to fail, verify
+}
+
+class TextNode {
+    var content: String;
+}
+
+class Group {
+    var content: TextNode[];
+}
+
+class SimpleTable {
+    var items : String[] on replace {
+        println(items);
+    };
+
+    var group: Group = Group {
+        content: bind [
+            for(i in [0..<sizeof items]) {
+                TextNode {
+                    content: items[i]
+                }
+            }
+        ]
+    }
+
+    var theContent: TextNode[] = bind group.content on replace {
+        println("theContent: sizeof(group.content) = {sizeof(group.content)}");
+    }
+}
+
+function run() {
+    println("BEFORE INSERT:");
+    println("    sizeof(items) = {sizeof(items)}");
+    println("    sizeof(table.items) = {sizeof(table.items)}");
+    println("    sizeof(table.group.content) = {sizeof(table.group.content)}");
+
+    insert "Thursday" into items;
+
+    println("AFTER INSERT:");
+    println("    sizeof(items) = {sizeof(items)}");
+    println("    sizeof(table.items) = {sizeof(table.items)}");
+    println("    sizeof(table.group.content) = {sizeof(table.group.content)}");
+}

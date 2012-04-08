@@ -1,0 +1,7 @@
+/*
+ * @subtest vsgc1310Applet
+ */
+
+public class vsgc1310Application {
+    public var content: Component;
+} 

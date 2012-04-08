@@ -1,0 +1,13 @@
+/*
+ * Regression test 
+ * VSGC-3927 : SWAT failure : JawbreakerGame compiler crash -- F3ClassSymbol cannot be cast to F3VarSymbol
+ *
+ * Original extraction
+ *
+ * @compilefirst vsgc3927origSub.f3
+ * @test
+ * @run
+ */
+
+var tc = bind vsgc3927origSub.timeLimit[0];
+println(tc);

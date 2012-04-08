@@ -1,0 +1,10 @@
+test\should-fail\vsgc1250newInstance.f3:32: vsgc1250subFail.cScr has script only (default) access in vsgc1250subFail
+	var x3 = vsgc1250subFail.cScr {};
+	                        ^
+test\should-fail\vsgc1250newInstance.f3:37: vsgc1250.a.vsgc1250subFailA.cPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	var x2 = vsgc1250subFailA.cPkg {};
+	                         ^
+test\should-fail\vsgc1250newInstance.f3:38: vsgc1250.a.vsgc1250subFailA.cScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	var x3 = vsgc1250subFailA.cScr {};
+	                         ^
+3 errors

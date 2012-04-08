@@ -1,0 +1,23 @@
+/**
+ * VSGC-3903 : Ensemble hangs due to improper non-local return.
+ *
+ * This class used to hang at runtime.
+ * 
+ * @test
+ * @run
+ */
+
+class Rect { 
+    var ww: Integer; 
+} 
+
+function getBar(p1: Integer): Rect { 
+    if (p1 == 0) return Rect{}; 
+    Rect{ 
+       ww: bind p1; 
+    } 
+} 
+
+getBar(22); 
+println("done"); 
+

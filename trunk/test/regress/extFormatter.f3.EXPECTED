@@ -1,0 +1,11 @@
+default: passed
+2008-w01-1
+08-w01-1
+52-0
+53-1
+%tx: passed
+Today is 12/31/07.
+%tEx: passed
+ja_JP %tEc: passed
+th_TH_TH %tEc: passed
+Dec 31, 2550

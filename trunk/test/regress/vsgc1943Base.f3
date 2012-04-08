@@ -1,0 +1,7 @@
+/**
+ * @subtest vsgc1943.f3
+ */
+
+public class vsgc1943Base {
+    public var content:String[];
+}

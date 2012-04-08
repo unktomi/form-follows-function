@@ -1,0 +1,5 @@
+Visage compiler feature test #12 -- bidirectional binding
+ 
+Demonstrated:
+ - bind with inverse for an attribute
+ - bind with inverse for a local variable

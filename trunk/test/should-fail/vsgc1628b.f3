@@ -1,0 +1,9 @@
+/**
+ * @subtest
+ */
+
+def sonono = 33;
+
+class vsgc1628 {
+  def nono = 55
+}

@@ -1,0 +1,4 @@
+test/should-fail/vsgc3152.f3:16: Not allowed in bind context keyframe literal
+        at(1s) {
+        ^
+1 error

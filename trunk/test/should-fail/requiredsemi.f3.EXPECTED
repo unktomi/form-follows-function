@@ -1,0 +1,25 @@
+test/should-fail/requiredsemi.f3:9: You have forgotten the ';', which is needed to separate one expression from the next.
+package pack.me.up  // Error
+                  ^
+test/should-fail/requiredsemi.f3:14: You have forgotten the ';', which is needed to separate one expression from the next.
+import something.we.relyon	// Error
+                          ^
+test/should-fail/requiredsemi.f3:21: You have forgotten the ';', which is needed to separate one expression from the next.
+	abstract function jim()		// Error
+	                       ^
+test/should-fail/requiredsemi.f3:37: You have forgotten the ';', which is needed to separate one expression from the next.
+	override var t = 99		// Error
+	                   ^
+test/should-fail/requiredsemi.f3:45: You have forgotten the ';', which is needed to separate one expression from the next.
+  var x  // Error - requires SEMI
+       ^
+test/should-fail/requiredsemi.f3:49: You have forgotten the ';', which is needed to separate one expression from the next.
+if (a) b else c   // Error Requires SEMI
+               ^
+test/should-fail/requiredsemi.f3:53: You have forgotten the ';', which is needed to separate one expression from the next.
+g = 99 // Error
+      ^
+test/should-fail/requiredsemi.f3:57: You have forgotten the ';', which is needed to separate one expression from the next.
+  var x  // Error - requires SEMI
+       ^
+8 errors

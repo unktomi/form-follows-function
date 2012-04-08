@@ -1,0 +1,42 @@
+/**
+ * Regression test VSGC-2422 : Specifying explicit superclass used wrong select.
+ *
+ * @test
+ */
+
+mixin class Base { 
+    var b = "Base Value";
+    
+    function doIt1() { 
+       Base.b;
+    } 
+    
+    function doIt2() { 
+        Base.doIt1();
+    } 
+}
+
+class Super { 
+    var a = "Super Value";
+    
+    function doItA() { 
+        Super.a;
+    } 
+    
+    function doItB() { 
+        Super.doItA();
+    } 
+}
+
+class Derived extends Super, Base {
+
+  function doit() {
+    Super.a;
+    Super.doItA();
+    Super.doItB();
+    super.doItB();
+    Base.b;
+    Base.doIt1();
+    Base.doIt2();
+  }
+}

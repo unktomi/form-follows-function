@@ -1,0 +1,96 @@
+/*
+ * @test
+ * @run
+ *
+ * VSGC-929
+ */
+import java.lang.System;
+import java.util.*;
+
+// Save the current default locale
+var currentLocale: Locale = Locale.getDefault();
+// Set the default locale to ja_JP
+Locale.setDefault(Locale.JAPAN);
+
+try {
+    // 2007-12-31 (Monday) is the first day of week 1 in 2008
+    // (week-based) in ISO 8601.
+    var cal = new GregorianCalendar(2007, Calendar.DECEMBER, 31);
+    var s = "{cal.getTime()}";
+    if (s.equals(cal.getTime().toString())) {
+	System.out.println("default: passed");
+    } else {
+	System.out.println("default: failed");
+    }
+
+    // European style date designation (2008-w01-1)
+    s = "{%tG-w%<tV-%<tu cal}";
+    System.out.println(s);
+    // 2-digit version (08-w01-1)
+    s = "{%tg-w%<tV-%<tu cal}";
+    System.out.println(s);
+
+    // 24-hour before the date
+    // 2007-12-30 (Sun) is 52-0
+    s = "{%tU-%<tw cal.getTimeInMillis()-24*3600000}";
+    System.out.println(s);
+
+    s = "{%tW-%<tu cal.getTime()}";
+    System.out.println(s);
+
+    // 2007-12-31 in Japanese format.
+    s = "{%tx cal}";
+    if (s.equals("2007\u5e7412\u670831\u65e5")) {
+	System.out.println("%tx: passed");
+    } else {
+	System.out.println("%tx: failed");
+    }
+
+    // Expect en_US 
+    s = ##"Today is {%tD cal}.";
+    System.out.println(s);
+
+    // If the runtime has Japanese imperial calendar support, test it.
+    var jcal = Calendar.getInstance(new Locale("ja", "JP", "JP"));
+    if (not (jcal instanceof GregorianCalendar)) {
+        // 2007-12-31 in Japanese imperial calendar format.
+        // (Heisei 19.12.31)
+        s = "{%tEx cal}";
+        if (s.equals("\u5e73\u621019\u5e7412\u670831\u65e5")) {
+            System.out.println("%tEx: passed");
+        } else {
+            System.out.println("%tEx: failed");
+        }
+
+        // Expect localized format for ja_JP
+        s = ##"Today is {cal.getTime()}.";
+        // Ignore the time zone abbreviation
+        if (s.startsWith("Kyou wa \u5e73\u621019\u5e7412\u670831\u65e5 0\u664200\u520600\u79d2")) {
+            System.out.println("ja_JP %tEc: passed");
+        } else {
+            System.out.println("ja_JP %tEc: failed");
+        }
+    } else {
+        // The runtime doesn't have the Japanese imperial calendar support.
+        System.out.println("%tEx: passed");
+        System.out.println("ja_JP %tEc: passed");
+    }
+    
+    // Thai calendar tests
+    Locale.setDefault(new Locale("th", "TH", "TH"));
+    s = "{ %tEc cal}";
+    if (s.equals("\u0e53\u0e51 \u0e18.\u0e04. \u0e52\u0e55\u0e55\u0e50, \u0e50:\u0e50\u0e50:\u0e50\u0e50")) {
+        System.out.println("th_TH_TH %tEc: passed");
+    } else {
+        System.out.println("th_TH_TH %tEc: failed");
+    }
+
+    // Unusual en_TH locale
+    // Expect Thai Buddhist calendar date in English
+    Locale.setDefault(new Locale("en", "TH"));
+    s = "{ %tEx cal}";
+    System.out.println(s);
+} finally {
+    // restore the default locale
+    Locale.setDefault(currentLocale);
+}

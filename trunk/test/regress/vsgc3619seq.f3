@@ -1,0 +1,106 @@
+/**
+ *  vsgc-3619: Compiled bind: dependent state/mode -- non-bound initalizers of bound object literal
+ *
+ *  Assure that new objects are created when a non bound initializer changes, and that
+ *  the initted ivar contains the updated value.
+ *
+ * @test
+ * @run
+ */
+class Foo {
+    var xx: Integer;
+    var seqx: Integer[];
+    var strx: String;
+    var foox: Foo;
+}
+
+function bar(p1: Integer) : Integer {
+   return p1;
+}
+
+var aa: Integer = 1;
+var bb: Integer = 2;
+var hash: Integer;
+var test: String;
+
+print("vv1: [aa..2]");
+aa = 1;
+def vv1 = bind Foo{seqx:               [aa..2]};
+hash = java.lang.System.identityHashCode(vv1);
+aa = 1;
+if (hash != java.lang.System.identityHashCode(vv1)) {
+    print(": failed !=");
+}
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv1)) {
+    print(": failed ==");
+}
+if (vv1.seqx != [aa..2]) {
+    print(": failed seqx = {vv1.seqx}");
+}
+println("");
+
+
+print("vv2: [0..2 step aa]");
+aa = 1;
+def vv2 = bind Foo{seqx:               [0..2 step aa]};
+hash = java.lang.System.identityHashCode(vv2);
+aa = 1;
+if (hash != java.lang.System.identityHashCode(vv2)) {
+    print(": failed !=");
+}
+aa = 2;
+if (hash == java.lang.System.identityHashCode(vv2)) {
+    print(": failed ==");
+}
+if (vv2.seqx != [0..2 step aa]) {
+    print(": failed seqx = {test}");
+}
+println("");
+
+
+print("vv3: seqy");
+var seqy = [0..10];
+def vv3 = bind Foo{seqx:                 seqy};
+hash = java.lang.System.identityHashCode(vv3);
+seqy = [30..40];
+if (hash == java.lang.System.identityHashCode(vv3)) {
+    print(": failed ==");
+}
+if (vv3.seqx != seqy) {
+    print(": failed seqx = {vv3.seqx}");
+}
+println("");
+
+
+/****
+  test of seq[yy | yy < aa] is in a different file
+****/
+
+print("vv4: seq[aa]");
+seqy = [0..10];
+aa = 1;
+def vv4 = bind Foo{xx:                 seqy[aa]};
+hash = java.lang.System.identityHashCode(vv4);
+aa = 1;
+if (hash != java.lang.System.identityHashCode(vv4)) {
+    print(": failed !=");
+}
+seqy = [0..10];
+if (hash != java.lang.System.identityHashCode(vv4)) {
+    print(": failed !=");
+}
+
+aa = 2;
+var hashNew = java.lang.System.identityHashCode(vv4);
+if (hash == hashNew) {
+    print(": failed ==");
+}
+if (vv4.xx != seqy[aa] ) {
+    print(": failed xx = {vv4.xx}");
+}
+
+// Todo:  add test of [1,1,1] where aa changes but seqy[aa] does not
+
+println("");
+println("All Done");

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="build-zips" basedir=".">
+
+<!--
+/*
+ * Copyright 2009 Sun Microsystems, Inc.  All Rights Reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * CA 95054 USA or visit www.sun.com if you need additional information or
+ * have any questions.
+ */
+-->
+
+    <description>
+
+        Defines targets to create developer zip bundles.
+
+        *** Sub-repositories should NOT import this file. ***
+
+        This file is imported by the build.xml file only.
+
+    </description>
+
+    <!-- The files to put into zip bundles. -->
+    <fileset dir="${f3.sdk.dir}"
+             includes="**"
+             id="f3.sdk.all.files"/>
+    <fileset dir="${f3.docs.dir}"
+             includes="**"
+             id="f3.docs.all.files"/>
+    <fileset dir="${f3.xml.docs.dir}"
+             includes="**"
+             id="f3.xml.docs.all.files"/>
+    <fileset dir="${f3.samples.dir}"
+             includes="**"
+             id="f3.samples.all.files"/>
+    <fileset dir="${f3.deployed.dir}"
+             includes="**"
+             id="f3.deployed.all.files"/>
+    <fileset dir="${f3.rtdeployed.dir}"
+             includes="**"
+             id="f3.rtdeployed.all.files"/>
+    <fileset dir="${import.dir}"
+             includes="**"
+             id="f3.import.all.files"/>
+    <fileset dir="${f3.jar_import.dir}"
+             includes="**"
+             id="f3.jar_import.all.files"/>
+
+    <!-- Target to create destination directory for zip bundles. -->
+    <target name="-create-bundles-dir">
+        <mkdir dir="${f3.bundles.dir}"/>
+    </target>
+
+    <!-- The sdk zip bundle -->
+    <target name="check-sdk-zip">
+        <uptodate property="f3.sdk.is.unchanged"
+                  targetfile="${f3.sdk.zip}">
+            <srcfiles refid="f3.sdk.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-sdk"
+            unless="f3.sdk.is.unchanged"
+            depends="-create-bundles-dir, check-sdk-zip">
+        <zip file="${f3.sdk.zip}" >
+            <fileset refid="f3.sdk.all.files" />
+        </zip>
+    </target>
+
+    <!-- The xml docs zip bundle -->
+    <target name="check-xml-docs-zip">
+        <uptodate property="f3.xml.docs.is.unchanged"
+                  targetfile="${f3.xml.docs.zip}">
+            <srcfiles refid="f3.xml.docs.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-xml-docs"
+            unless="f3.xml.docs.is.unchanged"
+            depends="-create-bundles-dir, check-xml-docs-zip">
+        <zip file="${f3.xml.docs.zip}" >
+            <fileset refid="f3.xml.docs.all.files" />
+        </zip>
+    </target>
+
+    <!-- The docs zip bundle -->
+    <target name="check-docs-zip">
+        <uptodate property="f3.docs.is.unchanged"
+                  targetfile="${f3.docs.zip}">
+            <srcfiles refid="f3.docs.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-docs"
+            unless="f3.docs.is.unchanged"
+            depends="-create-bundles-dir, check-docs-zip">
+        <zip file="${f3.docs.zip}" >
+            <fileset refid="f3.docs.all.files" />
+        </zip>
+    </target>
+
+    <!-- The samples zip bundle -->
+    <target name="check-samples-zip">
+        <uptodate property="f3.samples.is.unchanged"
+                  targetfile="${f3.samples.zip}">
+            <srcfiles refid="f3.samples.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-samples"
+            unless="f3.samples.is.unchanged"
+            depends="-create-bundles-dir, check-samples-zip">
+        <zip file="${f3.samples.zip}" >
+            <fileset refid="f3.samples.all.files" />
+        </zip>
+    </target>
+
+    <!-- The deployed zip bundle -->
+    <target name="check-deployed-zip">
+        <uptodate property="f3.deployed.is.unchanged"
+                  targetfile="${f3.deployed.zip}">
+            <srcfiles refid="f3.deployed.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-deployed"
+            unless="f3.deployed.is.unchanged"
+            depends="-create-bundles-dir, check-deployed-zip">
+        <zip file="${f3.deployed.zip}" >
+            <fileset refid="f3.deployed.all.files" />
+        </zip>
+    </target>
+
+    <!-- The rt-deployed zip bundle -->
+    <target name="check-rtdeployed-zip">
+        <uptodate property="f3.rtdeployed.is.unchanged"
+                  targetfile="${f3.rtdeployed.zip}">
+            <srcfiles refid="f3.rtdeployed.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-rtdeployed"
+            unless="f3.rtdeployed.is.unchanged"
+            depends="-create-bundles-dir, check-rtdeployed-zip">
+        <zip file="${f3.rtdeployed.zip}" >
+            <fileset refid="f3.rtdeployed.all.files" />
+        </zip>
+    </target>
+
+    <!-- The jar_import zip bundle -->
+    <target name="check-jar_import-zip">
+        <uptodate property="f3.jar_import.is.unchanged"
+                  targetfile="${f3.jar_import.zip}">
+            <srcfiles refid="f3.jar_import.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-jar_import"
+            unless="f3.jar_import.is.unchanged"
+            depends="-create-bundles-dir, check-jar_import-zip">
+        <zip file="${f3.jar_import.zip}" >
+            <fileset refid="f3.jar_import.all.files" />
+        </zip>
+    </target>
+
+    <!-- The import zip bundle -->
+    <target name="check-import-zip">
+        <uptodate property="f3.import.is.unchanged"
+                  targetfile="${f3.import.zip}">
+            <srcfiles refid="f3.import.all.files"/>
+        </uptodate>
+    </target>
+    <target name="zip-import"
+            unless="f3.import.is.unchanged"
+            depends="-create-bundles-dir,check-import-zip">
+        <zip file="${f3.import.zip}" >
+            <fileset refid="f3.import.all.files" />
+        </zip>
+    </target>
+
+    <!-- Create all zip bundles. -->
+    <target name="all-zips"
+            depends="zip-sdk,
+                     zip-xml-docs,
+                     zip-docs,
+                     zip-samples,
+                     zip-deployed,
+                     zip-rtdeployed,
+                     zip-jar_import,
+                     zip-import"/>
+
+</project>

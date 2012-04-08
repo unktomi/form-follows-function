@@ -1,0 +1,37 @@
+/*
+ * Regression test 
+ * VSGC-4035 : Ensemble gets duplicate children exception
+ *
+ * Reincarnation of VSGC-4035. Enforced sequence
+ *
+ * @test
+ * @run
+ */
+
+class A { var id:String; override function toString() { id } }
+
+class Container {
+   var x:A[];
+   var seq : A[] = bind x on replace oldSeq[a..b] = newSeq {
+      println("old seq is {oldSeq} [{a}..{b}]- new seq is: {seq}")
+   }
+}
+
+var b = false;
+var n = "FIRST";
+
+var c = Container{
+  x : bind if (b) [] else for (id in [1..5]) if (id mod 2 == 0) [A{ id: "A{id}({n})" }] else []
+};
+
+println("START");
+n = "SECOND";
+println("AFTER SECOND");
+n = "THIRD";
+println("AFTER THIRD");
+b = true;
+println("CHANGED b");
+n = "SECOND";
+println("AFTER SECOND");
+n = "THIRD";
+println("AFTER THIRD"); 

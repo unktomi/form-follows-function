@@ -1,0 +1,648 @@
+by by -- 5 < 5   NOT!
+by sh -- 5 < 5   NOT!
+by ii -- 5 < 5   NOT!
+by lo -- 5 < 5   NOT!
+by fl -- 5 < 5.0   NOT!
+by db -- 5 < 5.0   NOT!
+sh by -- 5 < 5   NOT!
+sh sh -- 5 < 5   NOT!
+sh ii -- 5 < 5   NOT!
+sh lo -- 5 < 5   NOT!
+sh fl -- 5 < 5.0   NOT!
+sh db -- 5 < 5.0   NOT!
+ii by -- 5 < 5   NOT!
+ii sh -- 5 < 5   NOT!
+ii ii -- 5 < 5   NOT!
+ii lo -- 5 < 5   NOT!
+ii fl -- 5 < 5.0   NOT!
+ii db -- 5 < 5.0   NOT!
+lo by -- 5 < 5   NOT!
+lo sh -- 5 < 5   NOT!
+lo ii -- 5 < 5   NOT!
+lo lo -- 5 < 5   NOT!
+lo fl -- 5 < 5.0   NOT!
+lo db -- 5 < 5.0   NOT!
+fl by -- 5.0 < 5   NOT!
+fl sh -- 5.0 < 5   NOT!
+fl ii -- 5.0 < 5   NOT!
+fl lo -- 5.0 < 5   NOT!
+fl fl -- 5.0 < 5.0   NOT!
+fl db -- 5.0 < 5.0   NOT!
+db by -- 5.0 < 5   NOT!
+db sh -- 5.0 < 5   NOT!
+db ii -- 5.0 < 5   NOT!
+db lo -- 5.0 < 5   NOT!
+db fl -- 5.0 < 5.0   NOT!
+db db -- 5.0 < 5.0   NOT!
+by by -- 5 <= 5   
+by sh -- 5 <= 5   
+by ii -- 5 <= 5   
+by lo -- 5 <= 5   
+by fl -- 5 <= 5.0   
+by db -- 5 <= 5.0   
+sh by -- 5 <= 5   
+sh sh -- 5 <= 5   
+sh ii -- 5 <= 5   
+sh lo -- 5 <= 5   
+sh fl -- 5 <= 5.0   
+sh db -- 5 <= 5.0   
+ii by -- 5 <= 5   
+ii sh -- 5 <= 5   
+ii ii -- 5 <= 5   
+ii lo -- 5 <= 5   
+ii fl -- 5 <= 5.0   
+ii db -- 5 <= 5.0   
+lo by -- 5 <= 5   
+lo sh -- 5 <= 5   
+lo ii -- 5 <= 5   
+lo lo -- 5 <= 5   
+lo fl -- 5 <= 5.0   
+lo db -- 5 <= 5.0   
+fl by -- 5.0 <= 5   
+fl sh -- 5.0 <= 5   
+fl ii -- 5.0 <= 5   
+fl lo -- 5.0 <= 5   
+fl fl -- 5.0 <= 5.0   
+fl db -- 5.0 <= 5.0   
+db by -- 5.0 <= 5   
+db sh -- 5.0 <= 5   
+db ii -- 5.0 <= 5   
+db lo -- 5.0 <= 5   
+db fl -- 5.0 <= 5.0   
+db db -- 5.0 <= 5.0   
+by by -- 5 > 5   NOT!
+by sh -- 5 > 5   NOT!
+by ii -- 5 > 5   NOT!
+by lo -- 5 > 5   NOT!
+by fl -- 5 > 5.0   NOT!
+by db -- 5 > 5.0   NOT!
+sh by -- 5 > 5   NOT!
+sh sh -- 5 > 5   NOT!
+sh ii -- 5 > 5   NOT!
+sh lo -- 5 > 5   NOT!
+sh fl -- 5 > 5.0   NOT!
+sh db -- 5 > 5.0   NOT!
+ii by -- 5 > 5   NOT!
+ii sh -- 5 > 5   NOT!
+ii ii -- 5 > 5   NOT!
+ii lo -- 5 > 5   NOT!
+ii fl -- 5 > 5.0   NOT!
+ii db -- 5 > 5.0   NOT!
+lo by -- 5 > 5   NOT!
+lo sh -- 5 > 5   NOT!
+lo ii -- 5 > 5   NOT!
+lo lo -- 5 > 5   NOT!
+lo fl -- 5 > 5.0   NOT!
+lo db -- 5 > 5.0   NOT!
+fl by -- 5.0 > 5   NOT!
+fl sh -- 5.0 > 5   NOT!
+fl ii -- 5.0 > 5   NOT!
+fl lo -- 5.0 > 5   NOT!
+fl fl -- 5.0 > 5.0   NOT!
+fl db -- 5.0 > 5.0   NOT!
+db by -- 5.0 > 5   NOT!
+db sh -- 5.0 > 5   NOT!
+db ii -- 5.0 > 5   NOT!
+db lo -- 5.0 > 5   NOT!
+db fl -- 5.0 > 5.0   NOT!
+db db -- 5.0 > 5.0   NOT!
+by by -- 5 >= 5   
+by sh -- 5 >= 5   
+by ii -- 5 >= 5   
+by lo -- 5 >= 5   
+by fl -- 5 >= 5.0   
+by db -- 5 >= 5.0   
+sh by -- 5 >= 5   
+sh sh -- 5 >= 5   
+sh ii -- 5 >= 5   
+sh lo -- 5 >= 5   
+sh fl -- 5 >= 5.0   
+sh db -- 5 >= 5.0   
+ii by -- 5 >= 5   
+ii sh -- 5 >= 5   
+ii ii -- 5 >= 5   
+ii lo -- 5 >= 5   
+ii fl -- 5 >= 5.0   
+ii db -- 5 >= 5.0   
+lo by -- 5 >= 5   
+lo sh -- 5 >= 5   
+lo ii -- 5 >= 5   
+lo lo -- 5 >= 5   
+lo fl -- 5 >= 5.0   
+lo db -- 5 >= 5.0   
+fl by -- 5.0 >= 5   
+fl sh -- 5.0 >= 5   
+fl ii -- 5.0 >= 5   
+fl lo -- 5.0 >= 5   
+fl fl -- 5.0 >= 5.0   
+fl db -- 5.0 >= 5.0   
+db by -- 5.0 >= 5   
+db sh -- 5.0 >= 5   
+db ii -- 5.0 >= 5   
+db lo -- 5.0 >= 5   
+db fl -- 5.0 >= 5.0   
+db db -- 5.0 >= 5.0   
+by by -- 5 == 5   
+by sh -- 5 == 5   
+by ii -- 5 == 5   
+by lo -- 5 == 5   
+by fl -- 5 == 5.0   
+by db -- 5 == 5.0   
+sh by -- 5 == 5   
+sh sh -- 5 == 5   
+sh ii -- 5 == 5   
+sh lo -- 5 == 5   
+sh fl -- 5 == 5.0   
+sh db -- 5 == 5.0   
+ii by -- 5 == 5   
+ii sh -- 5 == 5   
+ii ii -- 5 == 5   
+ii lo -- 5 == 5   
+ii fl -- 5 == 5.0   
+ii db -- 5 == 5.0   
+lo by -- 5 == 5   
+lo sh -- 5 == 5   
+lo ii -- 5 == 5   
+lo lo -- 5 == 5   
+lo fl -- 5 == 5.0   
+lo db -- 5 == 5.0   
+fl by -- 5.0 == 5   
+fl sh -- 5.0 == 5   
+fl ii -- 5.0 == 5   
+fl lo -- 5.0 == 5   
+fl fl -- 5.0 == 5.0   
+fl db -- 5.0 == 5.0   
+db by -- 5.0 == 5   
+db sh -- 5.0 == 5   
+db ii -- 5.0 == 5   
+db lo -- 5.0 == 5   
+db fl -- 5.0 == 5.0   
+db db -- 5.0 == 5.0   
+by by -- 5 != 5   NOT!
+by sh -- 5 != 5   NOT!
+by ii -- 5 != 5   NOT!
+by lo -- 5 != 5   NOT!
+by fl -- 5 != 5.0   NOT!
+by db -- 5 != 5.0   NOT!
+sh by -- 5 != 5   NOT!
+sh sh -- 5 != 5   NOT!
+sh ii -- 5 != 5   NOT!
+sh lo -- 5 != 5   NOT!
+sh fl -- 5 != 5.0   NOT!
+sh db -- 5 != 5.0   NOT!
+ii by -- 5 != 5   NOT!
+ii sh -- 5 != 5   NOT!
+ii ii -- 5 != 5   NOT!
+ii lo -- 5 != 5   NOT!
+ii fl -- 5 != 5.0   NOT!
+ii db -- 5 != 5.0   NOT!
+lo by -- 5 != 5   NOT!
+lo sh -- 5 != 5   NOT!
+lo ii -- 5 != 5   NOT!
+lo lo -- 5 != 5   NOT!
+lo fl -- 5 != 5.0   NOT!
+lo db -- 5 != 5.0   NOT!
+fl by -- 5.0 != 5   NOT!
+fl sh -- 5.0 != 5   NOT!
+fl ii -- 5.0 != 5   NOT!
+fl lo -- 5.0 != 5   NOT!
+fl fl -- 5.0 != 5.0   NOT!
+fl db -- 5.0 != 5.0   NOT!
+db by -- 5.0 != 5   NOT!
+db sh -- 5.0 != 5   NOT!
+db ii -- 5.0 != 5   NOT!
+db lo -- 5.0 != 5   NOT!
+db fl -- 5.0 != 5.0   NOT!
+db db -- 5.0 != 5.0   NOT!
+by by -- 66 < 66   NOT!
+by sh -- 66 < 5   NOT!
+by ii -- 66 < 5   NOT!
+by lo -- 66 < 5   NOT!
+by fl -- 66 < 5.0   NOT!
+by db -- 66 < 5.0   NOT!
+sh by -- 66 < 5   NOT!
+sh sh -- 66 < 66   NOT!
+sh ii -- 66 < 5   NOT!
+sh lo -- 66 < 5   NOT!
+sh fl -- 66 < 5.0   NOT!
+sh db -- 66 < 5.0   NOT!
+ii by -- 66 < 5   NOT!
+ii sh -- 66 < 5   NOT!
+ii ii -- 66 < 66   NOT!
+ii lo -- 66 < 5   NOT!
+ii fl -- 66 < 5.0   NOT!
+ii db -- 66 < 5.0   NOT!
+lo by -- 66 < 5   NOT!
+lo sh -- 66 < 5   NOT!
+lo ii -- 66 < 5   NOT!
+lo lo -- 66 < 66   NOT!
+lo fl -- 66 < 5.0   NOT!
+lo db -- 66 < 5.0   NOT!
+fl by -- 66.0 < 5   NOT!
+fl sh -- 66.0 < 5   NOT!
+fl ii -- 66.0 < 5   NOT!
+fl lo -- 66.0 < 5   NOT!
+fl fl -- 66.0 < 66.0   NOT!
+fl db -- 66.0 < 5.0   NOT!
+db by -- 66.0 < 5   NOT!
+db sh -- 66.0 < 5   NOT!
+db ii -- 66.0 < 5   NOT!
+db lo -- 66.0 < 5   NOT!
+db fl -- 66.0 < 5.0   NOT!
+db db -- 66.0 < 66.0   NOT!
+by by -- 66 <= 66   
+by sh -- 66 <= 5   NOT!
+by ii -- 66 <= 5   NOT!
+by lo -- 66 <= 5   NOT!
+by fl -- 66 <= 5.0   NOT!
+by db -- 66 <= 5.0   NOT!
+sh by -- 66 <= 5   NOT!
+sh sh -- 66 <= 66   
+sh ii -- 66 <= 5   NOT!
+sh lo -- 66 <= 5   NOT!
+sh fl -- 66 <= 5.0   NOT!
+sh db -- 66 <= 5.0   NOT!
+ii by -- 66 <= 5   NOT!
+ii sh -- 66 <= 5   NOT!
+ii ii -- 66 <= 66   
+ii lo -- 66 <= 5   NOT!
+ii fl -- 66 <= 5.0   NOT!
+ii db -- 66 <= 5.0   NOT!
+lo by -- 66 <= 5   NOT!
+lo sh -- 66 <= 5   NOT!
+lo ii -- 66 <= 5   NOT!
+lo lo -- 66 <= 66   
+lo fl -- 66 <= 5.0   NOT!
+lo db -- 66 <= 5.0   NOT!
+fl by -- 66.0 <= 5   NOT!
+fl sh -- 66.0 <= 5   NOT!
+fl ii -- 66.0 <= 5   NOT!
+fl lo -- 66.0 <= 5   NOT!
+fl fl -- 66.0 <= 66.0   
+fl db -- 66.0 <= 5.0   NOT!
+db by -- 66.0 <= 5   NOT!
+db sh -- 66.0 <= 5   NOT!
+db ii -- 66.0 <= 5   NOT!
+db lo -- 66.0 <= 5   NOT!
+db fl -- 66.0 <= 5.0   NOT!
+db db -- 66.0 <= 66.0   
+by by -- 66 > 66   NOT!
+by sh -- 66 > 5   
+by ii -- 66 > 5   
+by lo -- 66 > 5   
+by fl -- 66 > 5.0   
+by db -- 66 > 5.0   
+sh by -- 66 > 5   
+sh sh -- 66 > 66   NOT!
+sh ii -- 66 > 5   
+sh lo -- 66 > 5   
+sh fl -- 66 > 5.0   
+sh db -- 66 > 5.0   
+ii by -- 66 > 5   
+ii sh -- 66 > 5   
+ii ii -- 66 > 66   NOT!
+ii lo -- 66 > 5   
+ii fl -- 66 > 5.0   
+ii db -- 66 > 5.0   
+lo by -- 66 > 5   
+lo sh -- 66 > 5   
+lo ii -- 66 > 5   
+lo lo -- 66 > 66   NOT!
+lo fl -- 66 > 5.0   
+lo db -- 66 > 5.0   
+fl by -- 66.0 > 5   
+fl sh -- 66.0 > 5   
+fl ii -- 66.0 > 5   
+fl lo -- 66.0 > 5   
+fl fl -- 66.0 > 66.0   NOT!
+fl db -- 66.0 > 5.0   
+db by -- 66.0 > 5   
+db sh -- 66.0 > 5   
+db ii -- 66.0 > 5   
+db lo -- 66.0 > 5   
+db fl -- 66.0 > 5.0   
+db db -- 66.0 > 66.0   NOT!
+by by -- 66 >= 66   
+by sh -- 66 >= 5   
+by ii -- 66 >= 5   
+by lo -- 66 >= 5   
+by fl -- 66 >= 5.0   
+by db -- 66 >= 5.0   
+sh by -- 66 >= 5   
+sh sh -- 66 >= 66   
+sh ii -- 66 >= 5   
+sh lo -- 66 >= 5   
+sh fl -- 66 >= 5.0   
+sh db -- 66 >= 5.0   
+ii by -- 66 >= 5   
+ii sh -- 66 >= 5   
+ii ii -- 66 >= 66   
+ii lo -- 66 >= 5   
+ii fl -- 66 >= 5.0   
+ii db -- 66 >= 5.0   
+lo by -- 66 >= 5   
+lo sh -- 66 >= 5   
+lo ii -- 66 >= 5   
+lo lo -- 66 >= 66   
+lo fl -- 66 >= 5.0   
+lo db -- 66 >= 5.0   
+fl by -- 66.0 >= 5   
+fl sh -- 66.0 >= 5   
+fl ii -- 66.0 >= 5   
+fl lo -- 66.0 >= 5   
+fl fl -- 66.0 >= 66.0   
+fl db -- 66.0 >= 5.0   
+db by -- 66.0 >= 5   
+db sh -- 66.0 >= 5   
+db ii -- 66.0 >= 5   
+db lo -- 66.0 >= 5   
+db fl -- 66.0 >= 5.0   
+db db -- 66.0 >= 66.0   
+by by -- 66 == 66   
+by sh -- 66 == 5   NOT!
+by ii -- 66 == 5   NOT!
+by lo -- 66 == 5   NOT!
+by fl -- 66 == 5.0   NOT!
+by db -- 66 == 5.0   NOT!
+sh by -- 66 == 5   NOT!
+sh sh -- 66 == 66   
+sh ii -- 66 == 5   NOT!
+sh lo -- 66 == 5   NOT!
+sh fl -- 66 == 5.0   NOT!
+sh db -- 66 == 5.0   NOT!
+ii by -- 66 == 5   NOT!
+ii sh -- 66 == 5   NOT!
+ii ii -- 66 == 66   
+ii lo -- 66 == 5   NOT!
+ii fl -- 66 == 5.0   NOT!
+ii db -- 66 == 5.0   NOT!
+lo by -- 66 == 5   NOT!
+lo sh -- 66 == 5   NOT!
+lo ii -- 66 == 5   NOT!
+lo lo -- 66 == 66   
+lo fl -- 66 == 5.0   NOT!
+lo db -- 66 == 5.0   NOT!
+fl by -- 66.0 == 5   NOT!
+fl sh -- 66.0 == 5   NOT!
+fl ii -- 66.0 == 5   NOT!
+fl lo -- 66.0 == 5   NOT!
+fl fl -- 66.0 == 66.0   
+fl db -- 66.0 == 5.0   NOT!
+db by -- 66.0 == 5   NOT!
+db sh -- 66.0 == 5   NOT!
+db ii -- 66.0 == 5   NOT!
+db lo -- 66.0 == 5   NOT!
+db fl -- 66.0 == 5.0   NOT!
+db db -- 66.0 == 66.0   
+by by -- 66 != 66   NOT!
+by sh -- 66 != 5   
+by ii -- 66 != 5   
+by lo -- 66 != 5   
+by fl -- 66 != 5.0   
+by db -- 66 != 5.0   
+sh by -- 66 != 5   
+sh sh -- 66 != 66   NOT!
+sh ii -- 66 != 5   
+sh lo -- 66 != 5   
+sh fl -- 66 != 5.0   
+sh db -- 66 != 5.0   
+ii by -- 66 != 5   
+ii sh -- 66 != 5   
+ii ii -- 66 != 66   NOT!
+ii lo -- 66 != 5   
+ii fl -- 66 != 5.0   
+ii db -- 66 != 5.0   
+lo by -- 66 != 5   
+lo sh -- 66 != 5   
+lo ii -- 66 != 5   
+lo lo -- 66 != 66   NOT!
+lo fl -- 66 != 5.0   
+lo db -- 66 != 5.0   
+fl by -- 66.0 != 5   
+fl sh -- 66.0 != 5   
+fl ii -- 66.0 != 5   
+fl lo -- 66.0 != 5   
+fl fl -- 66.0 != 66.0   NOT!
+fl db -- 66.0 != 5.0   
+db by -- 66.0 != 5   
+db sh -- 66.0 != 5   
+db ii -- 66.0 != 5   
+db lo -- 66.0 != 5   
+db fl -- 66.0 != 5.0   
+db db -- 66.0 != 66.0   NOT!
+by by -- 66 < 66   NOT!
+by sh -- 5 < 66   
+by ii -- 5 < 66   
+by lo -- 5 < 66   
+by fl -- 5 < 66.0   
+by db -- 5 < 66.0   
+sh by -- 5 < 66   
+sh sh -- 66 < 66   NOT!
+sh ii -- 5 < 66   
+sh lo -- 5 < 66   
+sh fl -- 5 < 66.0   
+sh db -- 5 < 66.0   
+ii by -- 5 < 66   
+ii sh -- 5 < 66   
+ii ii -- 66 < 66   NOT!
+ii lo -- 5 < 66   
+ii fl -- 5 < 66.0   
+ii db -- 5 < 66.0   
+lo by -- 5 < 66   
+lo sh -- 5 < 66   
+lo ii -- 5 < 66   
+lo lo -- 66 < 66   NOT!
+lo fl -- 5 < 66.0   
+lo db -- 5 < 66.0   
+fl by -- 5.0 < 66   
+fl sh -- 5.0 < 66   
+fl ii -- 5.0 < 66   
+fl lo -- 5.0 < 66   
+fl fl -- 66.0 < 66.0   NOT!
+fl db -- 5.0 < 66.0   
+db by -- 5.0 < 66   
+db sh -- 5.0 < 66   
+db ii -- 5.0 < 66   
+db lo -- 5.0 < 66   
+db fl -- 5.0 < 66.0   
+db db -- 66.0 < 66.0   NOT!
+by by -- 66 <= 66   
+by sh -- 5 <= 66   
+by ii -- 5 <= 66   
+by lo -- 5 <= 66   
+by fl -- 5 <= 66.0   
+by db -- 5 <= 66.0   
+sh by -- 5 <= 66   
+sh sh -- 66 <= 66   
+sh ii -- 5 <= 66   
+sh lo -- 5 <= 66   
+sh fl -- 5 <= 66.0   
+sh db -- 5 <= 66.0   
+ii by -- 5 <= 66   
+ii sh -- 5 <= 66   
+ii ii -- 66 <= 66   
+ii lo -- 5 <= 66   
+ii fl -- 5 <= 66.0   
+ii db -- 5 <= 66.0   
+lo by -- 5 <= 66   
+lo sh -- 5 <= 66   
+lo ii -- 5 <= 66   
+lo lo -- 66 <= 66   
+lo fl -- 5 <= 66.0   
+lo db -- 5 <= 66.0   
+fl by -- 5.0 <= 66   
+fl sh -- 5.0 <= 66   
+fl ii -- 5.0 <= 66   
+fl lo -- 5.0 <= 66   
+fl fl -- 66.0 <= 66.0   
+fl db -- 5.0 <= 66.0   
+db by -- 5.0 <= 66   
+db sh -- 5.0 <= 66   
+db ii -- 5.0 <= 66   
+db lo -- 5.0 <= 66   
+db fl -- 5.0 <= 66.0   
+db db -- 66.0 <= 66.0   
+by by -- 66 > 66   NOT!
+by sh -- 5 > 66   NOT!
+by ii -- 5 > 66   NOT!
+by lo -- 5 > 66   NOT!
+by fl -- 5 > 66.0   NOT!
+by db -- 5 > 66.0   NOT!
+sh by -- 5 > 66   NOT!
+sh sh -- 66 > 66   NOT!
+sh ii -- 5 > 66   NOT!
+sh lo -- 5 > 66   NOT!
+sh fl -- 5 > 66.0   NOT!
+sh db -- 5 > 66.0   NOT!
+ii by -- 5 > 66   NOT!
+ii sh -- 5 > 66   NOT!
+ii ii -- 66 > 66   NOT!
+ii lo -- 5 > 66   NOT!
+ii fl -- 5 > 66.0   NOT!
+ii db -- 5 > 66.0   NOT!
+lo by -- 5 > 66   NOT!
+lo sh -- 5 > 66   NOT!
+lo ii -- 5 > 66   NOT!
+lo lo -- 66 > 66   NOT!
+lo fl -- 5 > 66.0   NOT!
+lo db -- 5 > 66.0   NOT!
+fl by -- 5.0 > 66   NOT!
+fl sh -- 5.0 > 66   NOT!
+fl ii -- 5.0 > 66   NOT!
+fl lo -- 5.0 > 66   NOT!
+fl fl -- 66.0 > 66.0   NOT!
+fl db -- 5.0 > 66.0   NOT!
+db by -- 5.0 > 66   NOT!
+db sh -- 5.0 > 66   NOT!
+db ii -- 5.0 > 66   NOT!
+db lo -- 5.0 > 66   NOT!
+db fl -- 5.0 > 66.0   NOT!
+db db -- 66.0 > 66.0   NOT!
+by by -- 66 >= 66   
+by sh -- 5 >= 66   NOT!
+by ii -- 5 >= 66   NOT!
+by lo -- 5 >= 66   NOT!
+by fl -- 5 >= 66.0   NOT!
+by db -- 5 >= 66.0   NOT!
+sh by -- 5 >= 66   NOT!
+sh sh -- 66 >= 66   
+sh ii -- 5 >= 66   NOT!
+sh lo -- 5 >= 66   NOT!
+sh fl -- 5 >= 66.0   NOT!
+sh db -- 5 >= 66.0   NOT!
+ii by -- 5 >= 66   NOT!
+ii sh -- 5 >= 66   NOT!
+ii ii -- 66 >= 66   
+ii lo -- 5 >= 66   NOT!
+ii fl -- 5 >= 66.0   NOT!
+ii db -- 5 >= 66.0   NOT!
+lo by -- 5 >= 66   NOT!
+lo sh -- 5 >= 66   NOT!
+lo ii -- 5 >= 66   NOT!
+lo lo -- 66 >= 66   
+lo fl -- 5 >= 66.0   NOT!
+lo db -- 5 >= 66.0   NOT!
+fl by -- 5.0 >= 66   NOT!
+fl sh -- 5.0 >= 66   NOT!
+fl ii -- 5.0 >= 66   NOT!
+fl lo -- 5.0 >= 66   NOT!
+fl fl -- 66.0 >= 66.0   
+fl db -- 5.0 >= 66.0   NOT!
+db by -- 5.0 >= 66   NOT!
+db sh -- 5.0 >= 66   NOT!
+db ii -- 5.0 >= 66   NOT!
+db lo -- 5.0 >= 66   NOT!
+db fl -- 5.0 >= 66.0   NOT!
+db db -- 66.0 >= 66.0   
+by by -- 66 == 66   
+by sh -- 5 == 66   NOT!
+by ii -- 5 == 66   NOT!
+by lo -- 5 == 66   NOT!
+by fl -- 5 == 66.0   NOT!
+by db -- 5 == 66.0   NOT!
+sh by -- 5 == 66   NOT!
+sh sh -- 66 == 66   
+sh ii -- 5 == 66   NOT!
+sh lo -- 5 == 66   NOT!
+sh fl -- 5 == 66.0   NOT!
+sh db -- 5 == 66.0   NOT!
+ii by -- 5 == 66   NOT!
+ii sh -- 5 == 66   NOT!
+ii ii -- 66 == 66   
+ii lo -- 5 == 66   NOT!
+ii fl -- 5 == 66.0   NOT!
+ii db -- 5 == 66.0   NOT!
+lo by -- 5 == 66   NOT!
+lo sh -- 5 == 66   NOT!
+lo ii -- 5 == 66   NOT!
+lo lo -- 66 == 66   
+lo fl -- 5 == 66.0   NOT!
+lo db -- 5 == 66.0   NOT!
+fl by -- 5.0 == 66   NOT!
+fl sh -- 5.0 == 66   NOT!
+fl ii -- 5.0 == 66   NOT!
+fl lo -- 5.0 == 66   NOT!
+fl fl -- 66.0 == 66.0   
+fl db -- 5.0 == 66.0   NOT!
+db by -- 5.0 == 66   NOT!
+db sh -- 5.0 == 66   NOT!
+db ii -- 5.0 == 66   NOT!
+db lo -- 5.0 == 66   NOT!
+db fl -- 5.0 == 66.0   NOT!
+db db -- 66.0 == 66.0   
+by by -- 66 != 66   NOT!
+by sh -- 5 != 66   
+by ii -- 5 != 66   
+by lo -- 5 != 66   
+by fl -- 5 != 66.0   
+by db -- 5 != 66.0   
+sh by -- 5 != 66   
+sh sh -- 66 != 66   NOT!
+sh ii -- 5 != 66   
+sh lo -- 5 != 66   
+sh fl -- 5 != 66.0   
+sh db -- 5 != 66.0   
+ii by -- 5 != 66   
+ii sh -- 5 != 66   
+ii ii -- 66 != 66   NOT!
+ii lo -- 5 != 66   
+ii fl -- 5 != 66.0   
+ii db -- 5 != 66.0   
+lo by -- 5 != 66   
+lo sh -- 5 != 66   
+lo ii -- 5 != 66   
+lo lo -- 66 != 66   NOT!
+lo fl -- 5 != 66.0   
+lo db -- 5 != 66.0   
+fl by -- 5.0 != 66   
+fl sh -- 5.0 != 66   
+fl ii -- 5.0 != 66   
+fl lo -- 5.0 != 66   
+fl fl -- 66.0 != 66.0   NOT!
+fl db -- 5.0 != 66.0   
+db by -- 5.0 != 66   
+db sh -- 5.0 != 66   
+db ii -- 5.0 != 66   
+db lo -- 5.0 != 66   
+db fl -- 5.0 != 66.0   
+db db -- 66.0 != 66.0   NOT!

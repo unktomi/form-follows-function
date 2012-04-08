@@ -1,0 +1,18 @@
+/**
+ * VSGC-3188 : java.lang.ClassCastException when binding with super.x.
+ * 
+ * @test
+ * @run
+ */
+
+class A { var x=10; } 
+
+class B extends A { 
+
+var y = bind super.x; // <= used to crash in back-end
+
+} 
+
+var b = B{}; 
+
+println("b.y={b.y}"); 

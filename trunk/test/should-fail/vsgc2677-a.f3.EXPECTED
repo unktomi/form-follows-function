@@ -1,0 +1,13 @@
+test/should-fail/vsgc2677-a.f3:9: Sorry, I was trying to understand a sequence creation expression but I got confused when I saw ',' which is a punctuation character.
+se= [,];
+     ^
+test/should-fail/vsgc2677-a.f3:11: Sorry, I was trying to understand a sequence creation expression but I got confused when I saw ',' which is a punctuation character.
+se= [,6,];
+     ^
+test/should-fail/vsgc2677-a.f3:11: You have forgotten the ';', which is needed to separate one expression from the next.
+se= [,6,];
+      ^
+test/should-fail/vsgc2677-a.f3:11: You have forgotten the ';', which is needed to separate one expression from the next.
+se= [,6,];
+       ^
+4 errors

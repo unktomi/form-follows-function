@@ -1,0 +1,29 @@
+/**
+ * VSGC-2416 : Parser and tree generation: mixin keyword for classes
+ *
+ * @test
+ * @run
+ */
+
+mixin class Sized {
+  var width : Number;
+  var height : Number;
+  public function area() : Number { width * height }
+}
+
+class Nodule {
+  var title : String 
+}
+
+class FredNodule extends Nodule, Sized {
+  var trousers : String
+}
+
+def fred = FredNodule {
+  trousers: "Tweed"
+  title: "Fred"
+  width: 1.5
+  height: 3
+}
+
+println( fred.area() );

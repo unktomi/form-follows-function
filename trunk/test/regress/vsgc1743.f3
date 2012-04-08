@@ -1,0 +1,16 @@
+/**
+ * Test for VSGC-1743:  Problem with "inconvertible types"
+ *
+ * @test
+ */
+
+import java.lang.Math;
+import java.lang.System;
+
+var showArea:Boolean = true;
+
+bound function getAreaOrCircumference(radius:Integer) {
+    var circumference = Math.round(2 * Math.PI * radius) as Integer;
+    var area = Math.round(Math.PI * radius * radius) as Integer;
+    if (showArea) "Area: {area}" else "Circumference: {circumference}"
+}

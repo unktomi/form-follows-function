@@ -1,0 +1,14 @@
+/*
+ * vsgc-23
+ * @test
+ * @run
+ */
+import java.lang.System;
+import java.lang.Exception;
+
+var bool = true;
+if (bool) then {
+    System.out.println("Oh, joy!");
+} else {
+    throw new Exception("Oops...");
+};

@@ -1,0 +1,27 @@
+test/features/F26-numerics/VarConversions/ToByteErrors.f3:11: incompatible types
+found   : f3.lang.Duration
+required: Byte
+b = Values.dduu;
+          ^
+test/features/F26-numerics/VarConversions/ToByteErrors.f3:12: incompatible types
+found   : Boolean
+required: Byte
+b = Values.bboo;
+          ^
+test/features/F26-numerics/VarConversions/ToByteErrors.f3:13: incompatible types
+found   : String
+required: Byte
+b = Values.sstt;
+          ^
+test/features/F26-numerics/VarConversions/ToByteErrors.f3:14: incompatible types
+found   : Object
+required: Byte
+b = Values.nul;
+          ^
+test/features/F26-numerics/VarConversions/ToByteErrors.f3:15: A sequence is not a valid expression for this operation, I am looking for an expression that yields 'Byte'
+b = Values.iSeq;
+          ^
+test/features/F26-numerics/VarConversions/ToByteErrors.f3:16: A sequence is not a valid expression for this operation, I am looking for an expression that yields 'Byte'
+b = Values.fSeq;
+          ^
+6 errors

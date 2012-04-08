@@ -1,0 +1,21 @@
+/*
+ * Regression test: VSGC-391:init not run on superclass
+ *
+ * @test
+ * @run
+ */
+import java.lang.System; 
+
+class Foo { 
+    init { 
+        System.out.println("Foo init"); 
+    } 
+} 
+
+class Bar extends Foo {
+    init { 
+       java.lang.System.out.println("Bar init"); 
+    }
+} 
+
+Bar {} 

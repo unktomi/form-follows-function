@@ -1,0 +1,15 @@
+/**
+ * VSGC-4252 : Regression: NegativeArraySizeException in bound for
+ *
+ * @test
+ * @run
+ */
+
+class RecordSet {
+    bound function all(): String[] { // passes if no 'bound'
+        ["hi"]
+    }
+}
+var v = bind sizeof (null as RecordSet).all();
+println(v);
+

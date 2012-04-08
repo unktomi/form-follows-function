@@ -1,0 +1,25 @@
+test/should-fail/vsgc4173sub.f3:13: warning: Suspicious forward reference: variable l might not have been initialized.
+   var i:Object[] = [a => l, b => this.l, c => A.l, d => vsgc4173sub.A.l];
+                          ^
+test/should-fail/vsgc4173sub.f3:13: warning: Suspicious forward reference: variable l might not have been initialized.
+   var i:Object[] = [a => l, b => this.l, c => A.l, d => vsgc4173sub.A.l];
+                                      ^
+test/should-fail/vsgc4173sub.f3:13: warning: Suspicious forward reference: variable l might not have been initialized.
+   var i:Object[] = [a => l, b => this.l, c => A.l, d => vsgc4173sub.A.l];
+                                                ^
+test/should-fail/vsgc4173sub.f3:13: warning: Suspicious forward reference: variable l might not have been initialized.
+   var i:Object[] = [a => l, b => this.l, c => A.l, d => vsgc4173sub.A.l];
+                                                                      ^
+test/should-fail/vsgc4173sub.f3:21: warning: Suspicious forward reference: variable g1 might not have been initialized.
+      var f1:Object[] = [a1 => g1];
+                               ^
+test/should-fail/vsgc4173sub.f3:31: warning: Suspicious forward reference: variable h might not have been initialized.
+var g:Object[] = [a => h, b => vsgc4173sub.h];
+                       ^
+test/should-fail/vsgc4173sub.f3:31: warning: Suspicious forward reference: variable h might not have been initialized.
+var g:Object[] = [a => h, b => vsgc4173sub.h];
+                                          ^
+test/should-fail/vsgc4173sub.f3:39: warning: Suspicious forward reference: variable g1 might not have been initialized.
+   var f1:Object[] = [a1 => g1];
+                            ^
+8 warnings

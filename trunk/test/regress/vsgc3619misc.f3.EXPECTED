@@ -1,0 +1,14 @@
+vv1: aa + bb
+vv2: bar(aa)
+vv6: if (aa == 1) 1 else 2
+vv7: if (1 == 1) aa else 10
+vv8: [aa..2]
+vv9: [0..2 step aa]
+vv10: {aa}
+vv11: "abc{%d aa}"
+vv12: Foo{xx: aa}
+vv13: {aa}
+vv14: seqy
+vv16: seq[aa]
+vv17: new java.lang.Integer(aa)
+All Done

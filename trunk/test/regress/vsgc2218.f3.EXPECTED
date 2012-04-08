@@ -1,0 +1,4 @@
+cast from java String should be empty: //
+cast from java String method should be empty: //
+cast to Duration from Java Object should be 0ms: 0ms
+cast to Duration from Java Object should be 0ms: 0ms

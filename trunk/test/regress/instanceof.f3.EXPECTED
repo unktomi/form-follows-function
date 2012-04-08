@@ -1,0 +1,5 @@
+a instanceof A
+b instanceof A
+b instanceof B
+c instanceof C
+not (a instanceof B)

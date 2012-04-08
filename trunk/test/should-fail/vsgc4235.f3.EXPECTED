@@ -1,0 +1,4 @@
+test/should-fail/vsgc4235.f3:12: variable f declared 'override' but does not override another variable.
+   override var f = function() {[]};
+                ^
+1 error

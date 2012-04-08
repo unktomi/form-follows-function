@@ -1,0 +1,4 @@
+test/should-fail/vsgc683a.f3:38: A sequence is not a valid expression for this operation, I am looking for an expression that yields 'vsgc683a.Node'
+    content: [Node {}]
+             ^
+1 error

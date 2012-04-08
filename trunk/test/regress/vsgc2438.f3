@@ -1,0 +1,86 @@
+/**
+ * Regression test for VSGC-2438 : full numeric type Locations
+ *
+ * @test
+ * @run
+ */
+public var ch0 : Character;
+public var by0 : Byte;
+public var sh0 : Short;
+public var ln0 : Long;
+public var fl0 : Float;
+public var db0 : Double;
+
+public var chCurr : Character;
+public var byCurr : Byte;
+public var shCurr : Short;
+public var lnCurr : Long;
+public var flCurr : Float;
+public var dbCurr : Double;
+
+public var chPrev : Character;
+public var byPrev : Byte;
+public var shPrev : Short;
+public var lnPrev : Long;
+public var flPrev : Float;
+public var dbPrev : Double;
+
+function run() {
+println(ch0);
+println(by0);
+println(sh0);
+println(ln0);
+println(fl0);
+println(db0);
+
+{
+	byPrev = 0;
+	byCurr = byPrev + 1;
+	while (byCurr > byPrev) {
+		byPrev = byCurr;
+		byCurr = byCurr * 2;
+	}
+	println(byPrev);
+}
+
+{
+	shPrev = 0;
+	shCurr = shPrev + 1;
+	while (shCurr > shPrev) {
+		shPrev = shCurr;
+		shCurr = shCurr * 2;
+	}
+	println(shPrev);
+}
+
+{
+	lnPrev = 0;
+	lnCurr = lnPrev + 1;
+	while (lnCurr > lnPrev) {
+		lnPrev = lnCurr;
+		lnCurr = lnCurr * 2;
+	}
+	println(lnPrev);
+}
+
+{
+	flPrev = 0;
+	flCurr = flPrev + 1;
+	while (flCurr != java.lang.Float.POSITIVE_INFINITY) {
+		flPrev = flCurr;
+		flCurr = flCurr * 2;
+	}
+	println(flPrev);
+}
+
+{
+	dbPrev = 0;
+	dbCurr = dbPrev + 1;
+	while (dbCurr != java.lang.Double.POSITIVE_INFINITY) {
+		dbPrev = dbCurr;
+		dbCurr = dbCurr * 2;
+	}
+	println(dbPrev);
+}
+
+}

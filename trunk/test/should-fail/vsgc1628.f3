@@ -1,0 +1,11 @@
+/**
+ * Regression test for VSGC-1628 : Enforce 'def' non-assignability across scripts
+ *
+ * @test/fail
+ * @compilefirst vsgc1628b.f3
+ */
+
+var x = vsgc1628b {nono: 7};
+x.nono = 4;
+vsgc1628.sonono = 5;
+

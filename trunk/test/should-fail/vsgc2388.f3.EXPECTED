@@ -1,0 +1,11 @@
+test/should-fail/vsgc2388.f3:5: inconvertible types
+found   : String
+required: Integer
+var x = '12' as Integer;
+        ^
+test/should-fail/vsgc2388.f3:6: inconvertible types
+found   : String
+required: java.lang.Number
+var y = '12' as java.lang.Number
+        ^
+2 errors

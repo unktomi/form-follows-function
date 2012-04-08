@@ -1,0 +1,29 @@
+/**
+ * VSGC-3247 : Slacker Binding: general case
+ *
+ * @subtest
+ */
+
+public class vsgc3247sub {
+  public var x = 7;
+  public var v = this;
+  function foo(z : Integer) : Integer { z }
+  public var a = bind v.x;
+  public var b = bind v.x;
+  public var c = bind v.x;
+  public var d = bind v.x;
+  public var e = bind v.x;
+  public var f = bind v.x;
+  public var g = bind v.x;
+
+  public function show() {
+    println("x = {x}");
+    println("a = {a}");
+    println("b = {b}");
+    println("c = {c}");
+    println("d = {d}");
+    println("e = {e}");
+    println("f = {f}");
+    println("g = {g}");
+  }
+}

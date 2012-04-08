@@ -1,0 +1,12 @@
+/**
+ * Regression test VSGC-3990 : Lagging update of bound-if sequence
+ *
+ * @test
+ * @run
+ */
+
+var cond = true;
+def bi = bind if (cond) [1..3] else [];
+def bc = bind cond on replace { print("cond: {cond} -- size: {sizeof bi} -- content: "); println(bi) };
+println(bi);
+cond = false;

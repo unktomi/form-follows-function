@@ -1,0 +1,16 @@
+import junit.framework.*;
+import java.lang.System;
+
+/*
+ * @subtest vsgc169a.f3
+ */
+
+public class vsgc169b {
+    package function foo() {
+        System.out.println("blah");
+    }
+
+    function fail(message : String) {
+        System.out.println("Failed: {message}");
+    }
+}

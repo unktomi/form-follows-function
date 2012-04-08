@@ -1,0 +1,15 @@
+/**
+ * Regression test VSGC-2103 : Elide object literal inited and public-init initable member vars
+ *
+ * @compilearg -XDoptstats="i"
+ * @test/warning
+ */
+
+public class Foo {
+  public-init var c : String;
+}
+
+public function run() {
+  def ff = Foo {c: "Hi"};
+  ff.c
+}

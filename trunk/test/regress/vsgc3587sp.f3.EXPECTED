@@ -1,0 +1,30 @@
+[ a, b, c, d, e, f, g ]
+[ a, b, c, d, e, f, g ]
+-
+[ g, f, e, d, c, b, a ]
+[ g, f, e, d, c, b, a ]
+--------
+[ a, x, e, f, g ]
+[ a, x, e, f, g ]
+-
+[ g, f, e, x, a ]
+[ g, f, e, x, a ]
+--------
+[ a, x, e, f, g, z ]
+[ a, x, e, f, g, z ]
+-
+[ z, g, f, e, x, a ]
+[ z, g, f, e, x, a ]
+--------
+[ @, x, e, f, g, z ]
+[ @, x, e, f, g, z ]
+-
+[ z, g, f, e, x, @ ]
+[ z, g, f, e, x, @ ]
+--------
+[ @, e, f, g, z ]
+[ @, e, f, g, z ]
+-
+[ z, g, f, e, @ ]
+[ z, g, f, e, @ ]
+--------

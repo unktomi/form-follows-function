@@ -1,0 +1,21 @@
+/**
+ * Regression test VSGC-2851 : Mixins: samples/SpringAnimation gets an NPE at com.sun.scenario.scenegraph.f3.F3Node.setTransformMatrix(F3Node.java:388)
+ *
+ * @test
+ * @compilefirst vsgc2851a.f3
+ * @compilefirst vsgc2851b.f3
+ * @run
+ */
+
+class sub extends vsgc2851b { 
+} 
+
+var jj: sub = sub{}; 
+function run() { 
+  var xx: String = jj.getit(); 
+  if (xx == null) { 
+      println("fails: {xx}"); 
+  } else { 
+      println("passes: {xx}"); 
+  } 
+} 

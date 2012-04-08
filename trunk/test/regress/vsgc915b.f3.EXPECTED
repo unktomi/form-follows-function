@@ -1,0 +1,4 @@
+(Integer)0x100000001L = 1
+(Integer)0x100000002L = 2
+(Integer)3.5 = 3
+(Integer)-3.6 = -3

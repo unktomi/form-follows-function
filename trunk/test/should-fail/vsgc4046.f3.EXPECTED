@@ -1,0 +1,4 @@
+test/should-fail/vsgc4046.f3:8: Not allowed in bind context try/catch block
+    try {
+    ^
+1 error

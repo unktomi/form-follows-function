@@ -1,0 +1,43 @@
+/* regression test for VSGC-1099
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class TextField {};
+
+class Button {
+    var text: String;
+    var action: function();
+}
+
+class Frame {
+    var content: Button;
+    var visible: Boolean;
+}
+
+class Foo {
+
+    function foo() {
+        var tf = TextField{};
+        var button: Button = Button {
+            text: "Click me"
+            action: function() {                
+                button.text = "foo";
+            }
+        };
+        
+        Frame {
+            content: button
+            visible: true
+        }
+    }
+}
+        
+var f = Foo{};
+var frame = f.foo();
+System.out.println("Text: {frame.content.text}");
+frame.content.action();
+System.out.println("Text: {frame.content.text}");

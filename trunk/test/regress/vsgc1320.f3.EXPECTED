@@ -1,0 +1,17 @@
+Integer[-1]: 0
+Integer[n]: 0
+
+Number[-1]: 0.0
+Number[n]: 0.0
+
+Boolean[-1]: false
+Boolean[n]: false
+
+Object[-1]: null
+Object[n]: null
+
+String[-1]: 
+String[n]: 
+
+Duration[-1]: 0ms
+Duration[n]: 0ms

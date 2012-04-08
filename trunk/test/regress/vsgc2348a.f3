@@ -1,0 +1,8 @@
+/*
+ * Check for passing null to array type - don't convert to sequence.
+ * (Note that the test program in VSGC-2348 is buggy in itself;
+ * see VSGC-2355.)
+ * @test
+ */
+var c : java.awt.Color = null;
+c.getRGBComponents(null)

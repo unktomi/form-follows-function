@@ -1,0 +1,4 @@
+test/should-fail/vsgc892b.f3:7: illegal generic type for instanceof
+System.out.println(x instanceof Integer[]);
+                                ^
+1 error

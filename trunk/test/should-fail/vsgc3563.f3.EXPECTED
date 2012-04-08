@@ -1,0 +1,5 @@
+test/should-fail/vsgc3563.f3:11: Missing variable initializer for y
+Variables defined in bind must be initialized explicitly.
+var a = bind A { var y; }
+                 ^
+1 error

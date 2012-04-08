@@ -1,0 +1,12 @@
+x: removed [ ] and added [ 1, 2, 3 ]
+y: removed [ ] and added [ 1, 2, 3 ]
+Inserting 4
+y: removed [ ] and added [ 4 ]
+x: removed [ ] and added [ 4 ]
+Inserting 5
+y: removed [ ] and added [ 5 ]
+x: removed [ ] and added [ 5 ]
+Inserting 6
+y: removed [ ] and added [ 6 ]
+x: removed [ ] and added [ 6 ]
+Done

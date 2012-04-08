@@ -1,0 +1,29 @@
+/*
+ * Regression test: VSGC-387: Compiler says boolean/int/double/java.lang.String when it means Boolean/Integer/Double/String
+ *
+ * @test/compile-error
+ *
+ * This should produce:
+ *
+ *     vsgc387a.f3:29: incompatible types
+ *     found   : Boolean
+ *     required: Number
+ *     var foo : Number = true;
+ *                        ^
+ *     1 error
+ *     
+ * instead of
+ *
+ *     vsgc387a.f3:29: incompatible types
+ *     found   : boolean
+ *     required: double
+ *     var foo : Number = true;
+ *                        ^
+ *     1 error
+ * 
+ * There doesn't seem to be a way to provide .EXPECTED files 
+ * for tests that are expected to fail compilation.
+ *
+ */
+
+var foo : Number = true;

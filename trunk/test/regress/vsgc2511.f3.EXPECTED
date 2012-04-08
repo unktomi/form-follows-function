@@ -1,0 +1,4 @@
+Integer.valueOf("0123"): 123.
+Integer.MAX_VALUE: 2147483647.
+Double.isInfinite(2.0): false.
+String.valueOf("abc"): abc.

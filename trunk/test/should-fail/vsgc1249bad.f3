@@ -1,0 +1,23 @@
+/**
+ * Should fail test VSGC-1249 : Provide isInitialized() method for variables
+ *
+ * @test/compile-error
+ */
+
+class Foo {
+   function hazmat() { 99 }
+   var oneGoodApple = 0;
+   def two = 2;
+
+   function whatsGood() {
+     var localVar = 3;
+
+     isInitialized(22); // not a variable reference
+     isInitialized(hazmat); // not a variable reference
+     isInitialized(hazmat()); // not a variable reference
+     isInitialized(oneGoodApple); // this shouldn't fail
+     isInitialized(this.oneGoodApple); // nor, should this fail
+     isInitialized(two); // not a 'var' reference
+     isInitialized(localVar); // not a instance variable reference
+   }
+}

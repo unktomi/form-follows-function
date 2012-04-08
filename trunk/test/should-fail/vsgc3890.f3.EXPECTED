@@ -1,0 +1,4 @@
+test/should-fail/vsgc3890.f3:13: warning: void block value in non-void function
+   println("void");
+   ^
+1 warning

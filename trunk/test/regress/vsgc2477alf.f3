@@ -1,0 +1,17 @@
+/**
+ * VSGC-2477 : Correct conversion problems that show-up when Number=Float
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+    public function f(param1 : Integer) : Float {
+        if (param1 == 0) {
+            return 2.0;
+        }
+	3.0
+    }
+}
+
+println( (new Foo).f(0) );

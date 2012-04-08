@@ -1,0 +1,162 @@
+/* 
+ * Copyright 2008-2009 Sun Microsystems, Inc.  All Rights Reserved. 
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER. 
+ * 
+ * This code is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License version 2 only, as 
+ * published by the Free Software Foundation. 
+ * 
+ * This code is distributed in the hope that it will be useful, but WITHOUT 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
+ * version 2 for more details (a copy is included in the LICENSE file that 
+ * accompanied this code). 
+ * 
+ * You should have received a copy of the GNU General Public License version 
+ * 2 along with this work; if not, write to the Free Software Foundation, 
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA. 
+ * 
+ * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara, 
+ * CA 95054 USA or visit www.sun.com if you need additional information or 
+ * have any questions. 
+ */
+
+html, body { padding: 0px; margin: 0px; height: 100%; }
+
+/* top header */
+#top-header 			{ color: white; background-color: #0c60ae; margin: 0px; padding: 0px; position: relative; height: 72px; }
+#top-header h1 			{ margin: 0px; padding: .2em; }
+#top-header h1 a 		{ color: white; text-decoration: none; }
+#top-header h1 a:hover 	{ text-decoration: underline; }
+#top-header h1 b 		{ color: #fff; }
+#top-header h1 i 		{ font-style: normal; font-weight: normal; display: inline; font-size: 30%; }
+#top-header h3 			{ font-style: normal; font-weight: normal; font-size: 80%; text-align: right; margin: 0px; padding-bottom: 5px;}
+#top-header h3 a 		{ font-size: 9pt; text-decoration: none; font-weight: bold; clear: both; color: #7dd6ff; padding: 2px; outline: 0 none;}
+
+#top-header #master-index-link 	{ float: left; }
+#master-index-link 				{ text-indent: 4px; }
+#profile-switcher 				{ position: absolute; bottom: 0; right: 10px; color: #aaadaf; }
+#profile-switcher .selected 	{ color: #fff; }
+#collapse-expand-switcher 				{ position: absolute; bottom: 0; right: 180px; color: #aaadaf; }
+#collapse-expand-switcher .selected 	{ color: #fff; }
+
+
+/* ============= classes list ============== */
+
+#classes-toc li					{ }
+#classes-toc li h4 				{ font-size: 9pt; font-weight: bold; }
+#classes-toc li .content 		{ font-size: 8.25pt; font-weight: bold; background-color: #E9EAEC; }
+#classes-toc 					{ font-size: 75%; float: left; width: 200px; padding: 12px 0 0 0; margin: 0; }
+#classes-toc .header 			{ padding: .5em; margin: 0px; font-weight: normal; color: white; background-color: #323232; font-style: normal; }
+#classes-toc .header a 			{ text-decoration: none; color: white; }
+#classes-toc .header a:hover 	{ color: #4fb5ff; }
+#classes-toc .content 			{ height: 0; overflow: hidden; padding: 0px; font-size: 90%; color: black; list-style-type: none; margin: 0px; background: #e6e6e6; }
+#classes-toc .content li 		{ padding: .3em .3em .3em 2em; }
+#classes-toc .content a 		{ text-decoration: none; color: #0c60af; }
+#classes-toc .content a:hover 	{ text-decoration: underline; color: #098cec; }
+#classes-toc .selected-class 	{ background: #fff url(images/Visage_highlight_dot.png) no-repeat 8px 50%; }
+
+#copyright 	{ padding: .5em; margin: 0px; font-weight: normal; color: white; background-color: #323232; font-style: normal; }
+ 
+
+/* ================== main content : general =============== */ 
+
+/* not sure about the font-size: 10pt in these rules */ 
+#content 	{ background-color: white; font-size: 10pt; color: black; border: 1px solid #fff; margin: 0 0 0 200px; padding: 0 30px 100px 30px; } 
+#nav 		{ background-color: white; font-size: 10pt; color: black; border: 1px solid #fff; margin: 30px 0 0 0; padding: 0 30px; } 
+
+/* #content { height: 100%; } disabled because it breaks when the content div is longer than the viewport*/ 
+#content h3 { padding: 30px 0 0 0; font-weight: bold; font-size: 16.5pt; color: #0c60ae; border: none; margin: 0px; } 
+
+/* main class header */ 
+#nav h1 i 	{ font-style: normal; font-weight: normal; } #nav h1, #nav h1 i { font-weight: bold; font-size: 16.5pt; } #nav h2 { font-size: 10.5pt; } 
+
+/* navigation tabs */ 
+#tabs 		{ padding: 0px; font-size: 10.5pt; color: black; } #tabs li { display: inline; font-style: normal; font-weight: normal; } 
+
+/* package summary list */ 
+#content .package-docs 				{ border-collapse: collapse; } 
+#content .package-docs td 			{ vertical-align: top; } 
+#content .package-docs .name 		{ font-size: 10.5pt } 
+#content .package-docs .description { color: black; font-size: 10.5pt; } 
+#content .package-docs code 		{ font-size: 90%; } 
+
+/* overview */ 
+.overview img 				{ padding: 10px; border-color: #b2adb7; border-style: solid; border-width: 1px; background-color: white; } 
+.overview pre.example-code 	{ padding: 1em; } 
+.overview img 				{ padding: 1em; } 
+#content #toc h4 			{ font-size: 12pt; font-family: Arial; font-weight: bold; } 
+
+/* fields / vars summary */ 
+.fields 			{ font-size: 10.5pt; border-collapse: collapse; } 
+.fields th 			{ text-align: left; text-align: center; font-weight: bold; padding: .5em; vertical-align: top; } 
+.fields td 			{ background-color: white; vertical-align: top; padding-right: .5em; padding-left: .5em; padding-top: 0.5em; padding-bottom: 0.5em; vertical-align: top; } 
+.fields td.type, 
+.fields td.type i 	{ font-style: normal; font-weight: normal; } 
+.fields,
+ .fields td 		{ border: 1px solid #7B7A7C; } 
+.fields td.access 	{ white-space: nowrap; } 
+
+/* methods / function summary */ 
+.method 			{ padding: .3em; margin: 0px; background-color: #b7b7b7; } 
+dt.method, 
+dd.method 			{ padding: 0.5em; margin: 0px; background-color: #e6e6e6; } 
+dt.method 			{ margin-top: 8px; font-size: 11pt; border-bottom-width: 0px; background-color: #E9EAEC; } 
+dd.method 			{ border-top-width: 0px; background-color: white; margin-bottom: 8px; background-color: #f5f5f5; } 
+dd.method dl 		{ padding: 0.5em; font-size: 11pt; background-color: white; color: #3e3c3f; } 
+dl.parameters, 
+dl.returns 			{ border: 1px solid #AAADAF; margin: 2px 0 8px 0; } 
+dl.parameters dt 	{ font-weight: bold; } 
+
+dd.method dl.parameters dt, 
+dd.method dl.parameters dd, 
+dd.method dl.returns dt, 
+dd.method dl.returns dd { color: black; font-size: 9pt; } 
+
+.long-desc-open 		{ outline: 0px none; color: #098CEC!important; } 
+.private, 
+.profile-private 		{ display: none; } 
+
+/* common colors */ 
+
+/* dark grey text*/ 
+h3, 
+#content .package-docs .name, 
+#content .package-docs code, 
+#content #toc h4 , 
+.fields th				{ color: #3E3C3F; } 
+
+/* dark grey background */ 
+body, #classes-toc .header, 
+.fields th 				{ background-color: #3E3C3F; } 
+
+/* light grey background w/ slightly darker border*/ 
+#nav, 
+.overview pre.example-code { background-color: #e9eaec; } 
+
+/* med gray links */ 
+body a, 
+#tabs a 		{ color: #098CEC; } 
+body a:hover, 
+#tabs a:hover 	{ color: #0c60ae; } 
+
+/* orange */ 
+#nav h1, 
+#nav h1 a, 
+.overview pre.example-code b { color: #0c60ae; } 
+
+/* white text */ 
+.fields th 		{ color: white; } 
+
+/* black text */ 
+.fields td, 
+.fields td a 						{ color: black; } 
+#toc .fields tr:nth-child(even) td 	{ background-color: #e6e6e6; } 
+.tooltip 							{ color: white; } 
+.tip 								{ background-color: #D2EDFF; border: 1px solid #AAADAF; width: 200px; padding: 0.5em; } 
+
+/* Master List Styles */ 
+#master-list A 			{ color: 4fb5ff; } 
+#master-list A:hover 	{ color: #098CEC; } 
+#master-list LI 		{ color: #AAADAF; } 
+

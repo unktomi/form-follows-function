@@ -1,0 +1,19 @@
+Visage compiler feature test #5
+
+Demonstrated:
+ - Integer sequence literals with constant values
+ - Range literals
+ - indexing into sequences with constant indices
+ - insert constant at end
+ - delete by position
+ - delete by value
+ - out-of-range deletion
+ - sizeof operator
+ - indexing by predicate
+ - simple foreach comprehension
+
+Not yet demonstrated:
+ - Mixed literals, combining ranges and values
+ - out of range indexing
+ - insert constant at begin
+ - indexing by predicate using indexof

@@ -1,0 +1,21 @@
+/**
+ * Regression test: VSGC-2564 : BrickBreaker sample won't compile
+ *
+ * @test
+ * @run
+ */
+
+class Nd {
+  override function toString() : String { "Nd" }
+}
+class Bonus extends Nd {}
+class Text extends Nd {}
+
+var content : Nd[] = [
+  for (i in [0..4]) {
+    def bonus = Bonus {};
+    def text = Text {};
+    [bonus, text]
+  }
+];
+println(content);

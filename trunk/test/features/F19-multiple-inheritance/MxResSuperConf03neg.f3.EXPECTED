@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxResSuperConf03neg.f3:16: The type-qualifier MxResSuperConf03neg.Mixin1 cannot be used in this context; the qualifier must denote a direct superclass of MxResSuperConf03neg.Mixee.
+        Mixin1.foo();
+              ^
+1 error

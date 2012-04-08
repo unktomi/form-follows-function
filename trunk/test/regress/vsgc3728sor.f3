@@ -1,0 +1,50 @@
+/*
+ * VSGC-3728 : Compiled bind: bind-with-inverse of sequence
+ *
+ * Select of object.  On-replace on binder.
+ *
+ * @test
+ * @run
+ * 
+ */
+
+class A {
+  var bse : Object[] 
+}
+
+class B {
+  def a = A{};
+  var bsr = bind a.bse with inverse
+       on replace [a..b] = nv { println("[{a}..{b}] = {sizeof nv}") };
+  
+  function show() {
+    print("a.bse: ");
+    println(a.bse);
+    print("bsr: ");
+    println(bsr);
+  }
+  
+  function testa() {
+    insert 45 into a.bse;
+    insert "gulp" into a.bse;
+    insert [1..5] into a.bse;
+    a.bse[5] = "Leah";
+    delete a.bse[4];
+    show();
+    delete a.bse;
+    show();
+  }
+
+  function testb() {
+    insert 45 into bsr;
+    insert "gulp" into bsr;
+    insert [1..5] into bsr;
+    bsr[5] = "Leah";
+    delete bsr[4];
+    show();
+    delete bsr;
+    show();
+  }
+}
+B{}.testa();
+B{}.testb();

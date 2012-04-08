@@ -1,0 +1,9 @@
+Visage compiler feature test #6
+
+Demonstrated:
+ - Binding to individual sequence elements
+ - Updating binding in face of index change, insertion and deletion
+ - Sequence-valued bind expressions
+ - Unidirectional binding only
+
+ 

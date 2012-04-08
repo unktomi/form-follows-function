@@ -1,0 +1,20 @@
+/**
+ * VSGC-2712 : Lazy binding thwarted by some constructs
+ *
+ * @test
+ * @run
+ */
+
+class Foo { 
+   var x : Integer
+}
+
+var y = 1;
+
+function f(z : Integer) : Integer { println("y={y}");  z }
+
+def a = bind lazy Foo {x: 3 + f( y )};
+y = 3;
+y = 4;
+y = 5;
+println(a.x);

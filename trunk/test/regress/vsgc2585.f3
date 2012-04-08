@@ -1,0 +1,8 @@
+/*
+ * @test
+ * @run
+ */
+import org.f3.runtime.sequence.Sequence;
+var marks : Sequence = [123];
+java.lang.System.out.println("marks[0] = {marks[0]}");
+

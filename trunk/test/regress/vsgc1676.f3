@@ -1,0 +1,21 @@
+/**
+ * regression test: VSGC-1676 : Compiler throws ArrayIndexOutOfBoudsException with 'return' inside variable initialization
+ *
+ * @test
+ */
+
+function fn1( ) : String {
+ 
+ var num : Number =
+ {
+ 
+  try {
+  return fn1() ;
+  }
+  catch ( var1 : java.lang.Exception ) {
+  } ;
+ 
+   0.08114680022326659
+ } ;
+ return 'Some input' } 
+ 

@@ -1,0 +1,5 @@
+test/should-fail/vsgc1450sf.f3:17: Missing variable initializer for dragX
+Variables defined in bind must be initialized explicitly.
+  var dragX : Integer; 
+  ^
+1 error

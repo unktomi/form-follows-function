@@ -1,0 +1,12 @@
+on-replace [0..-1] = [ A1(FIRST), A2(FIRST), A3(FIRST) ]
+old seq is [ ]
+new seq is: [ A1(FIRST), A2(FIRST), A3(FIRST) ]
+START
+on-replace [0..2] = [ A1(SECOND), A2(SECOND), A3(SECOND) ]
+old seq is [ A1(FIRST), A2(FIRST), A3(FIRST) ]
+new seq is: [ A1(SECOND), A2(SECOND), A3(SECOND) ]
+AFTER SECOND
+on-replace [0..2] = [ A1(THIRD), A2(THIRD), A3(THIRD) ]
+old seq is [ A1(SECOND), A2(SECOND), A3(SECOND) ]
+new seq is: [ A1(THIRD), A2(THIRD), A3(THIRD) ]
+AFTER THIRD

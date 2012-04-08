@@ -1,0 +1,6 @@
+test/should-fail/vsgc2245.f3:5: unexpected type
+found   : String
+required: Object[]
+insert "V" into k;
+                ^
+1 error

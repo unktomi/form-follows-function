@@ -1,0 +1,6 @@
+test/should-fail/vsgc1122a.f3:14: incompatible types
+found   : java.lang.Number
+required: Number[]
+var fields:Number[] = for (i in [0..2]) fmt.parse(nos[i]);
+                                        ^
+1 error

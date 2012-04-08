@@ -1,0 +1,19 @@
+test/should-fail/vsgc1193.f3:11: Note: Need explicit type for func2 because of cycle in initialization.
+var func2 = function () {
+^
+test/should-fail/vsgc1193.f3:12: This is the cyclic reference to func2 that prevents type inference.
+       return func2;
+              ^
+test/should-fail/vsgc1193.f3:7: Note: Need explicit type for func1 because of cycle in definition.
+function func1(){
+^
+test/should-fail/vsgc1193.f3:8: This is the cyclic reference to func1 that prevents type inference.
+       return func1;
+              ^
+test/should-fail/vsgc1193.f3:16: Note: Need explicit type for func3 because of cycle in definition.
+  function func3(x:A){
+  ^
+test/should-fail/vsgc1193.f3:17: This is the cyclic reference to func3 that prevents type inference.
+       return x.func3;
+               ^
+3 errors

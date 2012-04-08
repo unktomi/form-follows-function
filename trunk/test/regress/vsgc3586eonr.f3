@@ -1,0 +1,84 @@
+/**
+ * Regression test VSGC-3586 : Compiled bind: bound sequence: for-expression
+ *
+ * On-replace. Insertions/Deletions of input sequence.
+ *
+ * @test
+ * @run
+ */
+
+var tracking = for (i in [0..10]) false;
+var failCnt = 0;
+var passCnt = 0;
+
+function clear() { for (i in [0..10]) tracking[i] = false }
+
+function dump() {
+  var coll = "";
+  for (i in [0..10]) {
+    coll = if (tracking[i]) "{coll}X" else "{coll}.";
+  }
+  println(coll);
+}
+
+function check(what : String, start : Integer, end : Integer) {
+  var failed = false;
+  for (i in [0..<start]) 
+    if (tracking[i]) {
+      println("Error {what} unexpected on-replace at {i}");
+      failed = true;
+    }
+  for (i in [start..<end]) 
+    if (not tracking[i]) {
+      println("Error {what} expected on-replace at {i}");
+      failed = true;
+    }
+  for (i in [end..10])
+    if (tracking[i]) {
+      println("Error {what} unexpected on-replace at {i}");
+      failed = true;
+    }
+  clear();
+  if (failed) {
+    ++failCnt
+  } else {
+    ++passCnt
+  }
+}
+
+var a = 0;
+var b = 10;
+var k = 1;
+def bf = bind for (x in [a..b]) { x * k } 
+    on replace [low..high] = newVal { 
+        for (ii in [low..high]) { tracking[ii] = true }
+    };
+check('init', 0, 0);
+a = 1;
+check('a = 1', 0, 1);
+b = 5;
+check('b = 5', 5, 10);
+b = 3;
+check('b = 3', 3, 5);
+k = 2;
+check('k=2', 0, 3);
+b = 6;
+check('b=6', 6, 6);
+k = 3;
+check('k=3', 0, 6);
+k = 3;
+check('repeat', 0, 0);
+k = 4;
+check('k=4', 0, 6);
+a = 2;
+check('a=2', 0, 1);
+k = 5;
+check('k=5', 0, 5);
+k = 6;
+check('k=6', 0, 5);
+a = 4;
+check('a=4', 0, 2);
+k = 7;
+check('k=7', 0, 3);
+
+println("Fail count: {failCnt}, Pass count: {passCnt}");

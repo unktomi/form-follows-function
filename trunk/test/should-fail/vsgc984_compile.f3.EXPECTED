@@ -1,0 +1,7 @@
+test/should-fail/vsgc984_compile.f3:7: illegal unicode escape
+var s = "{%tB\udefg%<tY\x new java.util.Date()}";
+                  ^
+test/should-fail/vsgc984_compile.f3:7: illegal escape character
+var s = "{%tB\udefg%<tY\x new java.util.Date()}";
+                        ^
+2 errors

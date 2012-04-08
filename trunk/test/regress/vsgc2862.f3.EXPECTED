@@ -1,0 +1,7 @@
+test/regress/vsgc2862.f3:2: 'var' overrides member 'xxread' in 'vsgc2862a'; use 'override'.
+    var xxread: Number; 
+    ^
+test/regress/vsgc2862.f3:3: 'var' overrides member 'xxinit' in 'vsgc2862a'; use 'override'.
+    var xxinit: Number; 
+    ^
+2 errors

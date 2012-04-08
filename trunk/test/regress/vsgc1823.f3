@@ -1,0 +1,16 @@
+/**
+ * Regression test VSGC-1823 : bad translation of bound function with variable declaration as function value
+ *
+ * @test
+ */
+
+class Foo{
+  var context:Integer;
+  // Non-bound function
+  function nonboundFunc(x:Integer):Integer{var sum=x+context;} //compiles
+
+  // bounded functions
+  bound function boundFunc1(x:Integer):Integer{var sum=x+context;} // Fail to compile
+  bound function boundFunc2(x:Integer):Integer{var sum=x+context; sum;} // compiles
+}
+

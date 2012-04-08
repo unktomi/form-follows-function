@@ -1,0 +1,14 @@
+/*
+* Regression test:  An exception has occurred in the F3 compiler
+*
+* @compilearg -sourcepath
+* @compilearg test/should-fail
+* @test/compile-error
+*/
+public class vsgc4038test {
+var test:vsgc4038sub;
+public function func() {
+test.f;
+1
+}
+}

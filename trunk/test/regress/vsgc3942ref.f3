@@ -1,0 +1,55 @@
+/**
+ * VSGC-3942 : missing updates on bind to external script-level var
+ *
+ * From varioius contexts
+ *
+ * @compilefirst vsgc3942refSub.f3
+ * @test
+ * @run
+ */
+
+var z = 9;
+public class A {
+   def ax = bind vsgc3942refSub.val;
+   def az = bind z;
+   init {
+     println("+A");
+     println("ax: {ax}");
+     vsgc3942refSub.val = 66;
+     println("ax: {ax}");
+     println("az: {az}");
+     z = 33;
+     println("az: {az}");
+     println("-A");
+   }
+}
+def x = bind vsgc3942refSub.val;
+def bz = bind z;
+
+class vsgc3942ref {
+   var ii = 0;
+   def vx = bind vsgc3942refSub.val;
+   def vii = bind ii;
+   def vz = bind z;
+   init {
+     println("+v1");
+     println("vx: {vx}");
+     vsgc3942refSub.val = 55;
+     println("vx: {vx}");
+     println("vii: {vii}");
+     ii = 77;
+     println("vii: {vii}");
+     println("vz: {vz}");
+     z = 11;
+     println("vz: {vz}");
+     println("-v1");
+   }
+}
+
+function run() {
+  vsgc3942ref{};
+  println(A{}.ax);
+  println(x);
+  vsgc3942refSub.val = 9999;
+  println(x);
+}

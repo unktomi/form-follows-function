@@ -1,0 +1,70 @@
+test\should-fail\vsgc1250varQuery.f3:48: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250varQuery.Inh
+	isInitialized(memScr);   // ERROR: inherited, same package
+	              ^
+test\should-fail\vsgc1250varQuery.f3:52: memIScr has script only (default) access in vsgc1250subFail
+	isInitialized(memIScr);   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250varQuery.f3:56: memRScr has script only (default) access in vsgc1250subFail
+	isInitialized(memRScr);   // ERROR: inherited, same package
+	^
+test\should-fail\vsgc1250varQuery.f3:64: cannot find symbol
+symbol  : variable memPkg
+location: class vsgc1250varQuery.InhA
+	isInitialized(memPkg);   // ERROR: inherited, different package
+	              ^
+test\should-fail\vsgc1250varQuery.f3:65: cannot find symbol
+symbol  : variable memScr
+location: class vsgc1250varQuery.InhA
+	isInitialized(memScr);   // ERROR: inherited, different package
+	              ^
+test\should-fail\vsgc1250varQuery.f3:68: memIPkg has package access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(memIPkg);   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250varQuery.f3:69: memIScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(memIScr);   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250varQuery.f3:72: memRPkg has package access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(memRPkg);   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250varQuery.f3:73: memRScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(memRScr);   // ERROR: inherited, different package
+	^
+test\should-fail\vsgc1250varQuery.f3:124: memScr has script only (default) access in vsgc1250subFail
+	isInitialized(vf.memScr);   // ERROR: same package
+	                ^
+test\should-fail\vsgc1250varQuery.f3:128: memIScr has script only (default) access in vsgc1250subFail
+	isInitialized(vf.memIScr);   // ERROR: same package
+	^
+test\should-fail\vsgc1250varQuery.f3:132: memRScr has script only (default) access in vsgc1250subFail
+	isInitialized(vf.memRScr);   // ERROR: same package
+	^
+test\should-fail\vsgc1250varQuery.f3:138: memPro has protected access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memPro);   // ERROR: different package
+	                ^
+test\should-fail\vsgc1250varQuery.f3:139: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	isInitialized(vf.memPkg);   // ERROR: different package
+	                ^
+test\should-fail\vsgc1250varQuery.f3:140: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memScr);   // ERROR: different package
+	                ^
+test\should-fail\vsgc1250varQuery.f3:142: memIPro has protected access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memIPro);   // ERROR: different package
+	^
+test\should-fail\vsgc1250varQuery.f3:143: memIPkg has package access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memIPkg);   // ERROR: different package
+	^
+test\should-fail\vsgc1250varQuery.f3:144: memIScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memIScr);   // ERROR: different package
+	^
+test\should-fail\vsgc1250varQuery.f3:146: memRPro has protected access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memRPro);   // ERROR: different package
+	^
+test\should-fail\vsgc1250varQuery.f3:147: memRPkg has package access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memRPkg);   // ERROR: different package
+	^
+test\should-fail\vsgc1250varQuery.f3:148: memRScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	isInitialized(vf.memRScr);   // ERROR: different package
+	^
+21 errors

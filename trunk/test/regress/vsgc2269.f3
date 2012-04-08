@@ -1,0 +1,28 @@
+/**
+ * Regression test VSGC-2269 : *= and /= for Duration do not compile
+ *
+ * @test
+ * @run
+ */
+
+public var x : Duration = 100ms;
+
+function run() {
+	x *= 1.5;
+	x *= 2;
+	println(x);
+
+	x /= 1.5;
+	x /= 2;
+	println(x);
+
+	var y = 100s;
+	y *= 1.5;
+	y *= 2;
+	println(y);
+
+	y /= 1.5;
+	y /= 2;
+	println(y);
+
+}

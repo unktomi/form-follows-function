@@ -1,0 +1,35 @@
+/**
+ * VSGC-4252 : Regression: NegativeArraySizeException in bound for
+ *
+ * @test
+ * @run
+ */
+
+class RecordSet {
+    var greet = "hi";
+    public bound function all(): String[] {   // passes if no 'bound'
+        [greet]
+    }
+}
+
+class jjx {
+    var items: String[];
+}
+
+var rs = RecordSet {}
+
+def rsa = bind rs.all() on invalidate { println("zzz") };
+
+var obj1 = jjx {
+    items: bind for(record in rsa) record
+}
+
+println(obj1.items);
+rs = RecordSet { greet: "low" }
+println(obj1.items);
+rs = null;
+println(obj1.items);
+rs = RecordSet { greet: "jus" }
+println(obj1.items);
+rs = RecordSet { greet: "revido" }
+println(obj1.items);

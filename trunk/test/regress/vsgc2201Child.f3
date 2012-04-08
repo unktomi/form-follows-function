@@ -1,0 +1,14 @@
+/**
+ * @compilefirst vsgc2201Parent.java
+ * @test
+ * @run
+ */
+public class vsgc2201Child extends vsgc2201Parent {
+    public function foo(): Void {
+        firePropertyChange("data", 1, 2);
+    }
+}
+function run() {
+  var ch = vsgc2201Child {};
+  ch.foo();
+}

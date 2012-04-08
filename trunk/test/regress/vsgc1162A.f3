@@ -1,0 +1,5 @@
+/*
+ * @subtest vsgc1162C
+ */
+public class vsgc1162A {}
+public class A1 {} 

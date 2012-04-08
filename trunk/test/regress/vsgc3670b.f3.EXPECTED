@@ -1,0 +1,4 @@
+Create Baffle#1:4
+Create Nerf#1:cnt=2,baf=Baffle#1:4
+Create Nerf#2:cnt=3,baf=Baffle#1:4
+Create Nerf#3:cnt=4,baf=Baffle#1:4

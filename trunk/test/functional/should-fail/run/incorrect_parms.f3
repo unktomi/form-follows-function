@@ -1,0 +1,11 @@
+/*
+ * vsgc-1776: check for malformed main
+ * Incorrect run parameters
+ * @test/fail
+ */
+import java.lang.*;
+
+function run(__ARGS__ : Integer[]) {
+ System.out.println("FAIL: Should get compile error for incorrect run method");
+
+}

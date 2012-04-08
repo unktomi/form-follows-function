@@ -1,0 +1,4 @@
+test/should-fail/vsgc3994c.f3:14: Duplicate variable override: variable x already overridden in vsgc3994c.A
+override var x = 2; //?
+             ^
+1 error

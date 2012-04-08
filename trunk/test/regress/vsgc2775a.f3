@@ -1,0 +1,18 @@
+/* VSGC-2775 : Collapse bound member select accesses into the single per-scipt BindingExpression
+ *
+ * @test
+ * @run
+ */
+
+class A { function f(v : String) : String { "A {v}" } }
+class B extends A { override function f(v : String) : String { "B {v}" } }
+var a = A{}
+var x = "zero";
+def b = bind a.f(x);
+println(b);
+x = "one";
+println(b);
+a = B{}
+println(b);
+x = "two";
+println(b);

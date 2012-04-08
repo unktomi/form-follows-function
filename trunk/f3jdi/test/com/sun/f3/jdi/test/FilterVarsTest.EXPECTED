@@ -1,0 +1,37 @@
+------ fields for class org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub
+------ all fields ------
+field = org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub.Mixin1$mixivar1
+field = org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub.subivar1
+field = org.f3.jdi.test.target.FilterVarsTarget.FilterVarsTarget$baseivar1
+field = org.f3.jdi.test.target.FilterVarsTarget.FilterVarsTarget$baseivar2
+field = org.f3.jdi.test.target.FilterVarsTarget.baseivar3
+field = org.f3.jdi.test.target.FilterVarsTarget.FilterVarsTarget$ivarOverride
+field = org.f3.jdi.test.target.FilterVarsTarget.obj
+field = org.f3.jdi.test.target.FilterVarsTarget.bb
+field = org.f3.jdi.test.target.FilterVarsTarget.binder1
+field = org.f3.jdi.test.target.FilterVarsTarget.binder2
+field = org.f3.jdi.test.target.FilterVarsTarget.binder3
+
+----- exclude inherited fields ------
+field = org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub.Mixin1$mixivar1
+field = org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub.subivar1
+
+----- visible fields ------
+field = org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub.Mixin1$mixivar1
+field = org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub.subivar1
+field = org.f3.jdi.test.target.FilterVarsTarget.FilterVarsTarget$baseivar1
+field = org.f3.jdi.test.target.FilterVarsTarget.FilterVarsTarget$baseivar2
+field = org.f3.jdi.test.target.FilterVarsTarget.baseivar3
+field = org.f3.jdi.test.target.FilterVarsTarget.FilterVarsTarget$ivarOverride
+field = org.f3.jdi.test.target.FilterVarsTarget.obj
+field = org.f3.jdi.test.target.FilterVarsTarget.bb
+field = org.f3.jdi.test.target.FilterVarsTarget.binder1
+field = org.f3.jdi.test.target.FilterVarsTarget.binder2
+field = org.f3.jdi.test.target.FilterVarsTarget.binder3
+
+----- fields by name ------
+field = null
+field = org.f3.jdi.test.target.FilterVarsTarget.FilterVarsTarget$baseivar1
+field = null
+field = org.f3.jdi.test.target.FilterVarsTarget$FilterVarsTargetSub.subivar1
+field = org.f3.jdi.test.target.FilterVarsTarget.obj

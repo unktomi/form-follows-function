@@ -1,0 +1,4 @@
+test\should-fail\vsgc1913.f3:8: missing method body, or declare abstract
+    function bar() : String
+    ^
+1 error

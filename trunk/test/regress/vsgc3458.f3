@@ -1,0 +1,14 @@
+/*
+ *
+ * Regression: VSGC-3458 - Internal error when using instanceof operator and numerical types.
+ *
+ * @test
+ * @run
+ *
+ */
+
+var a = 1.0; //Number 
+var b = 1; //Integer
+
+println("a: {if(a instanceof Number)'Number' else 'Integer'}");
+println("b: {if(b instanceof Number)'Number' else 'Integer'}");

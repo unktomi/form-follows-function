@@ -1,0 +1,16 @@
+invalidating photoWidth
+invalidating photoHeight
+factor is 0.0
+dump [angle=0.0, width = 0.0, height = 0.0]
+invalidating photoWidth
+factor is 0.41666666
+dump [angle=0.0, width = 20.833332, height = 20.833332]
+invalidating photoHeight
+invalidating photoWidth
+factor is 0.3125
+dump [angle=0.0, width = 15.625, height = 15.625]
+invalidating photoHeight
+invalidating photoWidth
+factor is 1.0
+dump [angle=0.0, width = 50.0, height = 50.0]
+invalidating photoHeight

@@ -1,0 +1,14 @@
+import java.lang.System;
+
+/*
+ *
+ * VSGC-1938 ConcurrentModificationException is thrown if a variable is assgined in two different places simultaneously
+ * @compilefirst vsgc1938a.f3
+ * @test
+ * @run
+ */
+
+function run(args :String[]){    
+  vsgc1938a.size=9;
+  for (cell in vsgc1938a.grid) {System.out.println("x={cell.x} y={cell.y}");};
+} 

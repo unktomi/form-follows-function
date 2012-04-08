@@ -1,0 +1,13 @@
+/*
+ * Regression test
+ * VSGC-3924 : Unexpected type assertion in F3TreeMaker.java
+ *
+ * @test
+ */
+
+if (true)  [] else null;
+if (true)  null else [];
+if (true)  [null] else [];
+if (true)  [] else [null];
+if (true)  [null] else null;
+if (true)  null else [null];

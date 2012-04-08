@@ -1,0 +1,7 @@
+test/should-fail/badoctal.f3:5: Numbers starting with a leading 0 are assumed to be octal, but this one contains characters other than 0 to 7.
+var v = 054689;
+        ^
+test/should-fail/badoctal.f3:6: Octal numbers (numbers with a leading 0) cannot be used to form floating point literals. Is this a typo?
+v = 077.234;
+       ^
+2 errors

@@ -1,0 +1,8 @@
+/*
+ * @test
+ * @compilefirst vsgc2093Foo.f3
+ * @compilefirst vsgc2093Test.f3
+ */
+
+var t:vsgc2093Test = vsgc2093Test.getInstance();
+java.lang.System.out.println("t.class:{t.getClass()}");

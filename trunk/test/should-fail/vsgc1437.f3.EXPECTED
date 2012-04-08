@@ -1,0 +1,10 @@
+test/should-fail/vsgc1437.f3:9: + cannot be applied to strings. Use a string expression "{a}{x}"
+var z = a + x;
+        ^
+test/should-fail/vsgc1437.f3:10: + cannot be applied to strings. Use a string expression "yo{a}"
+var y = "yo" + a;
+        ^
+test/should-fail/vsgc1437.f3:11: + cannot be applied to strings. Use a string expression "tada{a}"
+var q = "tada" + a + true + "--" + x;
+        ^
+3 errors

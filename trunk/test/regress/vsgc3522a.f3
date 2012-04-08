@@ -1,0 +1,11 @@
+/*
+ * @subtest vsgc3522
+ */
+import f3.animation.*;
+
+public class vsgc3522a {
+    var baseTime:Number = 19.9;
+    function ff1() {
+        baseTime => 99.9;
+    }
+}

@@ -1,0 +1,1656 @@
+diff --git a/src/share/classes/com/sun/tools/javac/code/Symtab.java b/src/share/classes/com/sun/tools/javac/code/Symtab.java
+--- a/src/share/classes/com/sun/tools/javac/code/Symtab.java
++++ b/src/share/classes/com/sun/tools/javac/code/Symtab.java
+@@ -55,8 +55,10 @@ public class Symtab {
+     /** Get the symbol table instance. */
+     public static Symtab instance(Context context) {
+         Symtab instance = context.get(symtabKey);
+-        if (instance == null)
++        if (instance == null) {
+             instance = new Symtab(context);
++            instance.enterOperators();
++        }
+         return instance;
+     }
+ 
+@@ -219,7 +221,7 @@ public class Symtab {
+      *  @param res      The operation's result type.
+      *  @param opcode   The operation's bytecode instruction.
+      */
+-    private void enterBinop(String name,
++    protected void enterBinop(String name,
+                             Type left, Type right, Type res,
+                             int opcode) {
+         predefClass.members().enter(
+@@ -236,7 +238,7 @@ public class Symtab {
+      *  @param opcode1     First opcode.
+      *  @param opcode2     Second opcode.
+      */
+-    private void enterBinop(String name,
++    protected void enterBinop(String name,
+                             Type left, Type right, Type res,
+                             int opcode1, int opcode2) {
+         enterBinop(
+@@ -249,7 +251,7 @@ public class Symtab {
+      *  @param res      The operation's result type.
+      *  @param opcode   The operation's bytecode instruction.
+      */
+-    private OperatorSymbol enterUnop(String name,
++    protected OperatorSymbol enterUnop(String name,
+                                      Type arg,
+                                      Type res,
+                                      int opcode) {
+@@ -268,7 +270,7 @@ public class Symtab {
+     /** Enter a class into symbol table.
+      *  @param    The name of the class.
+      */
+-    private Type enterClass(String s) {
++    protected Type enterClass(String s) {
+         return reader.enterClass(names.fromString(s)).type;
+     }
+ 
+@@ -420,6 +422,11 @@ public class Symtab {
+             arrayClass);
+         arrayClass.members().enter(arrayCloneMethod);
+ 
++        nullcheck = enterUnop("<*nullchk*>", objectType, objectType, nullchk);
++     }
++
++    public void enterOperators() {
++
+         // Enter operators.
+         enterUnop("+", doubleType, doubleType, nop);
+         enterUnop("+", floatType, floatType, nop);
+@@ -451,7 +458,6 @@ public class Symtab {
+         enterUnop("--", byteType, byteType, isub);
+ 
+         enterUnop("!", booleanType, booleanType, bool_not);
+-        nullcheck = enterUnop("<*nullchk*>", objectType, objectType, nullchk);
+ 
+         // string concatenation
+         enterBinop("+", stringType, objectType, stringType, string_add);
+diff --git a/src/share/classes/com/sun/tools/javac/comp/Attr.java b/src/share/classes/com/sun/tools/javac/comp/Attr.java
+--- a/src/share/classes/com/sun/tools/javac/comp/Attr.java
++++ b/src/share/classes/com/sun/tools/javac/comp/Attr.java
+@@ -68,18 +68,18 @@ public class Attr extends JCTree.Visitor
+     protected static final Context.Key<Attr> attrKey =
+         new Context.Key<Attr>();
+ 
+-    final Name.Table names;
+-    final Log log;
+-    final Symtab syms;
+-    final Resolve rs;
+-    final Check chk;
+-    final MemberEnter memberEnter;
+-    final TreeMaker make;
+-    final ConstFold cfolder;
++    protected final Name.Table names;
++    public final Log log;
++    public final Symtab syms;
++    protected final Resolve rs;
++    protected final Check chk;
++    protected final MemberEnter memberEnter;
++    protected final TreeMaker make;
++    protected final ConstFold cfolder;
+     final Enter enter;
+     final Target target;
+-    final Types types;
+-    final Annotate annotate;
++    protected final Types types;
++    protected final Annotate annotate;
+ 
+     public static Attr instance(Context context) {
+         Attr instance = context.get(attrKey);
+@@ -120,7 +120,7 @@ public class Attr extends JCTree.Visitor
+ 
+     /** Switch: relax some constraints for retrofit mode.
+      */
+-    boolean relax;
++    protected boolean relax;
+ 
+     /** Switch: support generics?
+      */
+@@ -166,7 +166,7 @@ public class Attr extends JCTree.Visitor
+      *  @param pkind    The expected kind (or: protokind) of the tree
+      *  @param pt       The expected type (or: prototype) of the tree
+      */
+-    Type check(JCTree tree, Type owntype, int ownkind, int pkind, Type pt) {
++    protected Type check(JCTree tree, Type owntype, int ownkind, int pkind, Type pt) {
+         if (owntype.tag != ERROR && pt.tag != METHOD && pt.tag != FORALL) {
+             if ((ownkind & ~pkind) == 0) {
+                 owntype = chk.checkType(tree.pos(), owntype, pt);
+@@ -339,19 +339,19 @@ public class Attr extends JCTree.Visitor
+ 
+     /** Visitor argument: the current environment.
+      */
+-    Env<AttrContext> env;
++    public Env<AttrContext> env;
+ 
+     /** Visitor argument: the currently expected proto-kind.
+      */
+-    int pkind;
++    protected int pkind;
+ 
+     /** Visitor argument: the currently expected proto-type.
+      */
+-    Type pt;
++    protected Type pt;
+ 
+     /** Visitor result: the computed type.
+      */
+-    Type result;
++    protected Type result;
+ 
+     /** Visitor method: attribute a tree, catching any completion failure
+      *  exceptions. Return the tree's type.
+@@ -392,13 +392,13 @@ public class Attr extends JCTree.Visitor
+     /** Derived visitor method: attribute an expression tree with
+      *  no constraints on the computed type.
+      */
+-    Type attribExpr(JCTree tree, Env<AttrContext> env) {
++    protected Type attribExpr(JCTree tree, Env<AttrContext> env) {
+         return attribTree(tree, env, VAL, Type.noType);
+     }
+ 
+     /** Derived visitor method: attribute a type tree.
+      */
+-    Type attribType(JCTree tree, Env<AttrContext> env) {
++    public Type attribType(JCTree tree, Env<AttrContext> env) {
+         Type result = attribTree(tree, env, TYP, Type.noType);
+         return result;
+     }
+@@ -437,7 +437,7 @@ public class Attr extends JCTree.Visitor
+ 
+     /** Attribute a type argument list, returning a list of types.
+      */
+-    List<Type> attribTypes(List<JCExpression> trees, Env<AttrContext> env) {
++    protected List<Type> attribTypes(List<JCExpression> trees, Env<AttrContext> env) {
+         ListBuffer<Type> argtypes = new ListBuffer<Type>();
+         for (List<JCExpression> l = trees; l.nonEmpty(); l = l.tail)
+             argtypes.append(chk.checkRefType(l.head.pos(), attribType(l.head, env)));
+@@ -470,7 +470,7 @@ public class Attr extends JCTree.Visitor
+         attribStats(typarams, env);
+     }
+ 
+-    void attribBounds(List<JCTypeParameter> typarams) {
++    protected void attribBounds(List<JCTypeParameter> typarams) {
+         for (JCTypeParameter typaram : typarams) {
+             Type bound = typaram.type.getUpperBound();
+             if (bound != null && bound.tsym instanceof ClassSymbol) {
+@@ -1326,7 +1326,7 @@ public class Attr extends JCTree.Visitor
+          *  @param tree   The application node
+          *  @param env    The environment current at the application.
+          */
+-        boolean checkFirstConstructorStat(JCMethodInvocation tree, Env<AttrContext> env) {
++        protected boolean checkFirstConstructorStat(JCMethodInvocation tree, Env<AttrContext> env) {
+             JCMethodDecl enclMethod = env.enclMethod;
+             if (enclMethod != null && enclMethod.name == names.init) {
+                 JCBlock body = enclMethod.body;
+@@ -2053,7 +2053,7 @@ public class Attr extends JCTree.Visitor
+          *  @param pkind      The set of expected kinds.
+          *  @param pt         The expected type.
+          */
+-        Type checkId(JCTree tree,
++        protected Type checkId(JCTree tree,
+                      Type site,
+                      Symbol sym,
+                      Env<AttrContext> env,
+@@ -2679,7 +2679,7 @@ public class Attr extends JCTree.Visitor
+     }
+ 
+     /** Finish the attribution of a class. */
+-    private void attribClassBody(Env<AttrContext> env, ClassSymbol c) {
++    protected void attribClassBody(Env<AttrContext> env, ClassSymbol c) {
+         JCClassDecl tree = (JCClassDecl)env.tree;
+         assert c == tree.sym;
+ 
+@@ -2768,7 +2768,7 @@ public class Attr extends JCTree.Visitor
+     }
+         // where
+         /** check if a class is a subtype of Serializable, if that is available. */
+-        private boolean isSerializable(ClassSymbol c) {
++        protected boolean isSerializable(ClassSymbol c) {
+             try {
+                 syms.serializableType.complete();
+             }
+@@ -2779,7 +2779,7 @@ public class Attr extends JCTree.Visitor
+         }
+ 
+         /** Check that an appropriate serialVersionUID member is defined. */
+-        private void checkSerialVersionUID(JCClassDecl tree, ClassSymbol c) {
++        protected void checkSerialVersionUID(JCClassDecl tree, ClassSymbol c) {
+ 
+             // check for presence of serialVersionUID
+             Scope.Entry e = c.members().lookup(names.serialVersionUID);
+@@ -2804,7 +2804,7 @@ public class Attr extends JCTree.Visitor
+                 log.warning(TreeInfo.diagnosticPositionFor(svuid, tree), "constant.SVUID", c);
+         }
+ 
+-    private Type capture(Type type) {
++    protected Type capture(Type type) {
+         return types.capture(type);
+     }
+ }
+diff --git a/src/share/classes/com/sun/tools/javac/comp/AttrContext.java b/src/share/classes/com/sun/tools/javac/comp/AttrContext.java
+--- a/src/share/classes/com/sun/tools/javac/comp/AttrContext.java
++++ b/src/share/classes/com/sun/tools/javac/comp/AttrContext.java
+@@ -40,23 +40,23 @@ public class AttrContext {
+ 
+     /** The scope of local symbols.
+      */
+-    Scope scope = null;
++    public Scope scope = null;
+ 
+     /** The number of enclosing `static' modifiers.
+      */
+-    int staticLevel = 0;
++    public int staticLevel = 0;
+ 
+     /** Is this an environment for a this(...) or super(...) call?
+      */
+-    boolean isSelfCall = false;
++    public boolean isSelfCall = false;
+ 
+     /** Are we evaluating the selector of a `super' or type name?
+      */
+-    boolean selectSuper = false;
++    public boolean selectSuper = false;
+ 
+     /** Are arguments to current function applications boxed into an array for varargs?
+      */
+-    boolean varArgs = false;
++    public boolean varArgs = false;
+ 
+     /** A list of type variables that are all-quantifed in current context.
+      */
+@@ -64,11 +64,11 @@ public class AttrContext {
+ 
+     /** A record of the lint/SuppressWarnings currently in effect
+      */
+-    Lint lint;
++    public Lint lint;
+ 
+     /** Duplicate this context, replacing scope field and copying all others.
+      */
+-    AttrContext dup(Scope scope) {
++    public AttrContext dup(Scope scope) {
+         AttrContext info = new AttrContext();
+         info.scope = scope;
+         info.staticLevel = staticLevel;
+@@ -82,7 +82,7 @@ public class AttrContext {
+ 
+     /** Duplicate this context, copying all fields.
+      */
+-    AttrContext dup() {
++    public AttrContext dup() {
+         return dup(scope);
+     }
+ 
+diff --git a/src/share/classes/com/sun/tools/javac/comp/Check.java b/src/share/classes/com/sun/tools/javac/comp/Check.java
+--- a/src/share/classes/com/sun/tools/javac/comp/Check.java
++++ b/src/share/classes/com/sun/tools/javac/comp/Check.java
+@@ -56,13 +56,13 @@ public class Check {
+     protected static final Context.Key<Check> checkKey =
+         new Context.Key<Check>();
+ 
+-    private final Name.Table names;
++    public final Name.Table names;
+     private final Log log;
+     private final Symtab syms;
+     private final Infer infer;
+     private final Target target;
+     private final Source source;
+-    private final Types types;
++    public final Types types;
+     private final boolean skipAnnotations;
+     private final TreeInfo treeinfo;
+ 
+@@ -241,7 +241,7 @@ public class Check {
+      *  @param v             The symbol.
+      *  @param s             The scope.
+      */
+-    void checkTransparentVar(DiagnosticPosition pos, VarSymbol v, Scope s) {
++    public void checkTransparentVar(DiagnosticPosition pos, VarSymbol v, Scope s) {
+         if (s.next != null) {
+             for (Scope.Entry e = s.next.lookup(v.name);
+                  e.scope != null && e.sym.owner == v.owner;
+@@ -262,7 +262,7 @@ public class Check {
+      *  @param c             The symbol.
+      *  @param s             The scope.
+      */
+-    void checkTransparentClass(DiagnosticPosition pos, ClassSymbol c, Scope s) {
++    public void checkTransparentClass(DiagnosticPosition pos, ClassSymbol c, Scope s) {
+         if (s.next != null) {
+             for (Scope.Entry e = s.next.lookup(c.name);
+                  e.scope != null && e.sym.owner == c.owner;
+@@ -284,7 +284,7 @@ public class Check {
+      *  @param name          The class name.
+      *  @param s             The enclosing scope.
+      */
+-    boolean checkUniqueClassName(DiagnosticPosition pos, Name name, Scope s) {
++    public boolean checkUniqueClassName(DiagnosticPosition pos, Name name, Scope s) {
+         for (Scope.Entry e = s.lookup(name); e.scope == s; e = e.next()) {
+             if (e.sym.kind == TYP && e.sym.name != names.error) {
+                 duplicateError(pos, e.sym);
+@@ -310,7 +310,7 @@ public class Check {
+      *    enclClass is the flat name of the enclosing class,
+      *    classname is the simple name of the local class
+      */
+-    Name localClassName(ClassSymbol c) {
++    public Name localClassName(ClassSymbol c) {
+         for (int i=1; ; i++) {
+             Name flatname = names.
+                 fromString("" + c.owner.enclClass().flatname +
+@@ -330,7 +330,7 @@ public class Check {
+      *  @param found      The type that was found.
+      *  @param req        The type that was required.
+      */
+-    Type checkType(DiagnosticPosition pos, Type found, Type req) {
++    public Type checkType(DiagnosticPosition pos, Type found, Type req) {
+         if (req.tag == ERROR)
+             return req;
+         if (found.tag == FORALL)
+@@ -570,7 +570,7 @@ public class Check {
+      *  @param flags         The set of modifiers given in a definition.
+      *  @param sym           The defined symbol.
+      */
+-    long checkFlags(DiagnosticPosition pos, long flags, Symbol sym, JCTree tree) {
++    public long checkFlags(DiagnosticPosition pos, long flags, Symbol sym, JCTree tree) {
+         long mask;
+         long implicit = 0;
+         switch (sym.kind) {
+@@ -740,7 +740,7 @@ public class Check {
+     /** Visitor method: Validate a type expression, if it is not null, catching
+      *  and reporting any completion failures.
+      */
+-    void validate(JCTree tree) {
++    public void validate(JCTree tree) {
+         try {
+             if (tree != null) tree.accept(validator);
+         } catch (CompletionFailure ex) {
+@@ -750,14 +750,14 @@ public class Check {
+ 
+     /** Visitor method: Validate a list of type expressions.
+      */
+-    void validate(List<? extends JCTree> trees) {
++    public void validate(List<? extends JCTree> trees) {
+         for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail)
+             validate(l.head);
+     }
+ 
+     /** Visitor method: Validate a list of type parameters.
+      */
+-    void validateTypeParams(List<JCTypeParameter> trees) {
++    public void validateTypeParams(List<JCTypeParameter> trees) {
+         for (List<JCTypeParameter> l = trees; l.nonEmpty(); l = l.tail)
+             validate(l.head);
+     }
+@@ -1077,7 +1077,7 @@ public class Check {
+      *  @param origin       The class of which the overriding method
+      *                      is a member.
+      */
+-    void checkOverride(JCTree tree,
++    public void checkOverride(JCTree tree,
+                        MethodSymbol m,
+                        MethodSymbol other,
+                        ClassSymbol origin) {
+@@ -1403,7 +1403,7 @@ public class Check {
+      *  @param pos          Position to be used for error reporting.
+      *  @param c            The class.
+      */
+-    void checkAllDefined(DiagnosticPosition pos, ClassSymbol c) {
++    public void checkAllDefined(DiagnosticPosition pos, ClassSymbol c) {
+         try {
+             MethodSymbol undef = firstUndef(c, c);
+             if (undef != null) {
+@@ -1545,7 +1545,7 @@ public class Check {
+      *  method conform to the method they implement.
+      *  @param tree         The class definition whose members are checked.
+      */
+-    void checkImplementations(JCClassDecl tree) {
++    public void checkImplementations(JCClassDecl tree) {
+         checkImplementations(tree, tree.sym);
+     }
+ //where
+@@ -1584,7 +1584,7 @@ public class Check {
+      *  @param pos          Position to be used for error reporting.
+      *  @param c            The class whose interfaces are checked.
+      */
+-    void checkCompatibleSupertypes(DiagnosticPosition pos, Type c) {
++    public void checkCompatibleSupertypes(DiagnosticPosition pos, Type c) {
+         List<Type> supertypes = types.interfaces(c);
+         Type supertype = types.supertype(c);
+         if (supertype.tag == CLASS &&
+@@ -1606,7 +1606,7 @@ public class Check {
+      *  @param pos          Position to be used for error reporting.
+      *  @param type         The type whose interfaces are checked.
+      */
+-    void checkClassBounds(DiagnosticPosition pos, Type type) {
++    public void checkClassBounds(DiagnosticPosition pos, Type type) {
+         checkClassBounds(pos, new HashMap<TypeSymbol,Type>(), type);
+     }
+ //where
+@@ -1829,7 +1829,7 @@ public class Check {
+         }
+     }
+ 
+-    void checkDeprecatedAnnotation(DiagnosticPosition pos, Symbol s) {
++    public void checkDeprecatedAnnotation(DiagnosticPosition pos, Symbol s) {
+         if (allowAnnotations &&
+             lint.isEnabled(Lint.LintCategory.DEP_ANN) &&
+             (s.flags() & DEPRECATED) != 0 &&
+@@ -1845,7 +1845,7 @@ public class Check {
+ 
+     /** Check for cycles in the graph of annotation elements.
+      */
+-    void checkNonCyclicElements(JCClassDecl tree) {
++    public void checkNonCyclicElements(JCClassDecl tree) {
+         if ((tree.sym.flags_field & ANNOTATION) == 0) return;
+         assert (tree.sym.flags_field & LOCKED) == 0;
+         try {
+@@ -1903,7 +1903,7 @@ public class Check {
+     /** Check for cycles in the graph of constructors calling other
+      *  constructors.
+      */
+-    void checkCyclicConstructors(JCClassDecl tree) {
++    public void checkCyclicConstructors(JCClassDecl tree) {
+         Map<Symbol,Symbol> callMap = new HashMap<Symbol, Symbol>();
+ 
+         // enter each constructor this-call into the map
+diff --git a/src/share/classes/com/sun/tools/javac/comp/ConstFold.java b/src/share/classes/com/sun/tools/javac/comp/ConstFold.java
+--- a/src/share/classes/com/sun/tools/javac/comp/ConstFold.java
++++ b/src/share/classes/com/sun/tools/javac/comp/ConstFold.java
+@@ -42,7 +42,7 @@ import static com.sun.tools.javac.jvm.By
+  *  This code and its internal interfaces are subject to change or
+  *  deletion without notice.</b>
+  */
+-strictfp class ConstFold {
++    public strictfp class ConstFold {
+     protected static final Context.Key<ConstFold> constFoldKey =
+         new Context.Key<ConstFold>();
+ 
+@@ -153,7 +153,7 @@ strictfp class ConstFold {
+      *  @param left      The type of the operation's left operand.
+      *  @param right     The type of the operation's right operand.
+      */
+-    Type fold2(int opcode, Type left, Type right) {
++    public Type fold2(int opcode, Type left, Type right) {
+         try {
+             if (opcode > ByteCodes.preMask) {
+                 // we are seeing a composite instruction of the form xcmp; ifxx.
+@@ -330,7 +330,7 @@ strictfp class ConstFold {
+      *                    ttype.
+      *  @param ttype      The target type of the coercion.
+      */
+-     Type coerce(Type etype, Type ttype) {
++    public Type coerce(Type etype, Type ttype) {
+          // WAS if (etype.baseType() == ttype.baseType())
+          if (etype.tsym.type == ttype.tsym.type)
+              return etype;
+diff --git a/src/share/classes/com/sun/tools/javac/comp/Enter.java b/src/share/classes/com/sun/tools/javac/comp/Enter.java
+--- a/src/share/classes/com/sun/tools/javac/comp/Enter.java
++++ b/src/share/classes/com/sun/tools/javac/comp/Enter.java
+@@ -95,11 +95,11 @@ public class Enter extends JCTree.Visito
+ 
+     Log log;
+     Symtab syms;
+-    Check chk;
+-    TreeMaker make;
+-    ClassReader reader;
++    protected Check chk;
++    protected TreeMaker make;
++    protected ClassReader reader;
+     Annotate annotate;
+-    MemberEnter memberEnter;
++    protected MemberEnter memberEnter;
+     Lint lint;
+     JavaFileManager fileManager;
+ 
+@@ -135,7 +135,7 @@ public class Enter extends JCTree.Visito
+     /** A hashtable mapping classes and packages to the environments current
+      *  at the points of their definitions.
+      */
+-    Map<TypeSymbol,Env<AttrContext>> typeEnvs =
++    protected Map<TypeSymbol,Env<AttrContext>> typeEnvs =
+             new HashMap<TypeSymbol,Env<AttrContext>>();
+ 
+     /** Accessor for typeEnvs
+@@ -156,7 +156,7 @@ public class Enter extends JCTree.Visito
+     /** The queue of all classes that might still need to be completed;
+      *  saved and initialized by main().
+      */
+-    ListBuffer<ClassSymbol> uncompleted;
++    protected ListBuffer<ClassSymbol> uncompleted;
+ 
+     /** A dummy class to serve as enclClass for toplevel environments.
+      */
+@@ -219,7 +219,7 @@ public class Enter extends JCTree.Visito
+      *  where the local scope is for type variables, and the this and super symbol
+      *  only, and members go into the class member scope.
+      */
+-    Scope enterScope(Env<AttrContext> env) {
++    public Scope enterScope(Env<AttrContext> env) {
+         return (env.tree.getTag() == JCTree.CLASSDEF)
+             ? ((JCClassDecl) env.tree).sym.members_field
+             : env.info.scope;
+@@ -235,7 +235,7 @@ public class Enter extends JCTree.Visito
+ 
+     /** Visitor result: the computed type.
+      */
+-    Type result;
++    protected Type result;
+ 
+     /** Visitor method: enter all classes in given tree, catching any
+      *  completion failure exceptions. Return the tree's type.
+@@ -243,7 +243,7 @@ public class Enter extends JCTree.Visito
+      *  @param tree    The tree to be visited.
+      *  @param env     The environment visitor argument.
+      */
+-    Type classEnter(JCTree tree, Env<AttrContext> env) {
++    protected Type classEnter(JCTree tree, Env<AttrContext> env) {
+         Env<AttrContext> prevEnv = this.env;
+         try {
+             this.env = env;
+@@ -258,7 +258,7 @@ public class Enter extends JCTree.Visito
+ 
+     /** Visitor method: enter classes of a list of trees, returning a list of types.
+      */
+-    <T extends JCTree> List<Type> classEnter(List<T> trees, Env<AttrContext> env) {
++    protected <T extends JCTree> List<Type> classEnter(List<T> trees, Env<AttrContext> env) {
+         ListBuffer<Type> ts = new ListBuffer<Type>();
+         for (List<T> l = trees; l.nonEmpty(); l = l.tail)
+             ts.append(classEnter(l.head, env));
+@@ -404,7 +404,7 @@ public class Enter extends JCTree.Visito
+     //where
+         /** Does class have the same name as the file it appears in?
+          */
+-        private static boolean classNameMatchesFileName(ClassSymbol c,
++        protected static boolean classNameMatchesFileName(ClassSymbol c,
+                                                         Env<AttrContext> env) {
+             return env.toplevel.sourcefile.isNameCompatible(c.name.toString(),
+                                                             JavaFileObject.Kind.SOURCE);
+diff --git a/src/share/classes/com/sun/tools/javac/comp/Flow.java b/src/share/classes/com/sun/tools/javac/comp/Flow.java
+--- a/src/share/classes/com/sun/tools/javac/comp/Flow.java
++++ b/src/share/classes/com/sun/tools/javac/comp/Flow.java
+@@ -295,7 +295,7 @@ public class Flow extends TreeScanner {
+ 
+     /** Complain that pending exceptions are not caught.
+      */
+-    void errorUncaught() {
++    protected void errorUncaught() {
+         for (PendingExit exit = pendingExits.next();
+              exit != null;
+              exit = pendingExits.next()) {
+diff --git a/src/share/classes/com/sun/tools/javac/comp/Infer.java b/src/share/classes/com/sun/tools/javac/comp/Infer.java
+--- a/src/share/classes/com/sun/tools/javac/comp/Infer.java
++++ b/src/share/classes/com/sun/tools/javac/comp/Infer.java
+@@ -67,7 +67,7 @@ public class Infer {
+     public static class NoInstanceException extends RuntimeException {
+         private static final long serialVersionUID = 0;
+ 
+-        boolean isAmbiguous; // exist several incomparable best instances?
++        public boolean isAmbiguous; // exist several incomparable best instances?
+ 
+         JCDiagnostic diagnostic;
+ 
+diff --git a/src/share/classes/com/sun/tools/javac/comp/MemberEnter.java b/src/share/classes/com/sun/tools/javac/comp/MemberEnter.java
+--- a/src/share/classes/com/sun/tools/javac/comp/MemberEnter.java
++++ b/src/share/classes/com/sun/tools/javac/comp/MemberEnter.java
+@@ -65,7 +65,7 @@ public class MemberEnter extends JCTree.
+     private final Enter enter;
+     private final Log log;
+     private final Check chk;
+-    private final Attr attr;
++    protected final Attr attr;
+     private final Symtab syms;
+     private final TreeMaker make;
+     private final ClassReader reader;
+@@ -115,7 +115,7 @@ public class MemberEnter extends JCTree.
+      *  enter, as we only need to look up types.  This avoids
+      *  unnecessarily deep recursion.
+      */
+-    boolean completionEnabled = true;
++    protected boolean completionEnabled = true;
+ 
+     /* ---------- Processing import clauses ----------------
+      */
+@@ -126,7 +126,7 @@ public class MemberEnter extends JCTree.
+      *  @param toScope   The (import) scope in which imported classes
+      *               are entered.
+      */
+-    private void importAll(int pos,
++    protected void importAll(int pos,
+                            final TypeSymbol tsym,
+                            Env<AttrContext> env) {
+         // Check that packages imported from exist (JLS ???).
+@@ -414,7 +414,7 @@ public class MemberEnter extends JCTree.
+ 
+     /** Enter members for a class.
+      */
+-    void finishClass(JCClassDecl tree, Env<AttrContext> env) {
++    protected void finishClass(JCClassDecl tree, Env<AttrContext> env) {
+         if ((tree.mods.flags & Flags.ENUM) != 0 &&
+             (types.supertype(tree.sym.type).tsym.flags() & Flags.ENUM) == 0) {
+             addEnumMembers(tree, env);
+@@ -684,7 +684,7 @@ public class MemberEnter extends JCTree.
+  * Type completion
+  *********************************************************************/
+ 
+-    Type attribImportType(JCTree tree, Env<AttrContext> env) {
++    public Type attribImportType(JCTree tree, Env<AttrContext> env) {
+         assert completionEnabled;
+         try {
+             // To prevent deep recursion, suppress completion of some
+@@ -769,7 +769,7 @@ public class MemberEnter extends JCTree.
+     }
+ 
+     /** Queue processing of an attribute default value. */
+-    void annotateDefaultValueLater(final JCExpression defaultValue,
++    protected void annotateDefaultValueLater(final JCExpression defaultValue,
+                                    final Env<AttrContext> localEnv,
+                                    final MethodSymbol m) {
+         annotate.later(new Annotate.Annotator() {
+diff --git a/src/share/classes/com/sun/tools/javac/comp/Resolve.java b/src/share/classes/com/sun/tools/javac/comp/Resolve.java
+--- a/src/share/classes/com/sun/tools/javac/comp/Resolve.java
++++ b/src/share/classes/com/sun/tools/javac/comp/Resolve.java
+@@ -52,8 +52,8 @@ public class Resolve {
+         new Context.Key<Resolve>();
+ 
+     Name.Table names;
+-    Log log;
+-    Symtab syms;
++    protected Log log;
++    protected Symtab syms;
+     Check chk;
+     Infer infer;
+     ClassReader reader;
+@@ -114,7 +114,7 @@ public class Resolve {
+     /** An environment is "static" if its static level is greater than
+      *  the one of its outer environment
+      */
+-    static boolean isStatic(Env<AttrContext> env) {
++    public static boolean isStatic(Env<AttrContext> env) {
+         return env.info.staticLevel > env.outer.info.staticLevel;
+     }
+ 
+@@ -1074,7 +1074,7 @@ public class Resolve {
+      *  @param typeargtypes  The invocation's type arguments,
+      *                   if we looked for a method.
+      */
+-    Symbol access(Symbol sym,
++    public Symbol access(Symbol sym,
+                   DiagnosticPosition pos,
+                   Type site,
+                   Name name,
+@@ -1100,7 +1100,7 @@ public class Resolve {
+ 
+     /** Same as above, but without type arguments and arguments.
+      */
+-    Symbol access(Symbol sym,
++    public Symbol access(Symbol sym,
+                   DiagnosticPosition pos,
+                   Type site,
+                   Name name,
+@@ -1369,7 +1369,7 @@ public class Resolve {
+      * @param c             The qualifier.
+      * @param name          The identifier's name.
+      */
+-    Symbol resolveSelf(DiagnosticPosition pos,
++    public Symbol resolveSelf(DiagnosticPosition pos,
+                        Env<AttrContext> env,
+                        TypeSymbol c,
+                        Name name) {
+@@ -1443,7 +1443,7 @@ public class Resolve {
+ 
+     /** A localized string describing a given kind.
+      */
+-    static JCDiagnostic kindName(int kind) {
++    public static JCDiagnostic kindName(int kind) {
+         switch (kind) {
+         case PCK: return JCDiagnostic.fragment("kindname.package");
+         case TYP: return JCDiagnostic.fragment("kindname.class");
+@@ -1494,7 +1494,7 @@ public class Resolve {
+ 
+     /** A localized string describing a given set of kinds.
+      */
+-    static JCDiagnostic kindNames(int kind) {
++    public static JCDiagnostic kindNames(int kind) {
+         StringBuffer key = new StringBuffer();
+         key.append("kindname");
+         if ((kind & VAL) != 0)
+@@ -1551,9 +1551,9 @@ public class Resolve {
+      *  Instances of this class indicate "Symbol not found".
+      *  Instances of subclass indicate other errors.
+      */
+-    private class ResolveError extends Symbol {
++    protected class ResolveError extends Symbol {
+ 
+-        ResolveError(int kind, Symbol sym, String debugName) {
++        protected ResolveError(int kind, Symbol sym, String debugName) {
+             super(kind, 0, null, null, null);
+             this.debugName = debugName;
+             this.sym = sym;
+@@ -1566,7 +1566,7 @@ public class Resolve {
+         /** The symbol that was determined by resolution, or errSymbol if none
+          *  was found.
+          */
+-        final Symbol sym;
++        public final Symbol sym;
+ 
+         /** The symbol that was a close mismatch, or null if none was found.
+          *  wrongSym is currently set if a simgle method with the correct name, but
+@@ -1627,7 +1627,7 @@ public class Resolve {
+          *  @param typeargtypes  The invocation's type arguments,
+          *                   if we looked for a method.
+          */
+-        void report(Log log, DiagnosticPosition pos, Type site, Name name,
++        public void report(Log log, DiagnosticPosition pos, Type site, Name name,
+                     List<Type> argtypes, List<Type> typeargtypes) {
+             if (name != name.table.error) {
+                 JCDiagnostic kindname = absentKindName(kind);
+@@ -1709,7 +1709,7 @@ public class Resolve {
+          *  @param typeargtypes  The invocation's type arguments,
+          *                   if we looked for a method.
+          */
+-        void report(Log log, DiagnosticPosition pos, Type site, Name name,
++        public void report(Log log, DiagnosticPosition pos, Type site, Name name,
+                     List<Type> argtypes, List<Type> typeargtypes) {
+             if (sym.owner.type.tag != ERROR) {
+                 if (sym.name == sym.name.table.init && sym.owner != site.tsym)
+@@ -1749,7 +1749,7 @@ public class Resolve {
+          *  @param typeargtypes  The invocation's type arguments,
+          *                   if we looked for a method.
+          */
+-        void report(Log log,
++        public void report(Log log,
+                     DiagnosticPosition pos,
+                     Type site,
+                     Name name,
+@@ -1785,7 +1785,7 @@ public class Resolve {
+          *  @param typeargtypes  The invocation's type arguments,
+          *                   if we looked for a method.
+          */
+-        void report(Log log, DiagnosticPosition pos, Type site, Name name,
++        public void report(Log log, DiagnosticPosition pos, Type site, Name name,
+                     List<Type> argtypes, List<Type> typeargtypes) {
+             AmbiguityError pair = this;
+             while (true) {
+diff --git a/src/share/classes/com/sun/tools/javac/jvm/ClassReader.java b/src/share/classes/com/sun/tools/javac/jvm/ClassReader.java
+--- a/src/share/classes/com/sun/tools/javac/jvm/ClassReader.java
++++ b/src/share/classes/com/sun/tools/javac/jvm/ClassReader.java
+@@ -68,7 +68,7 @@ public class ClassReader extends ClassFi
+     protected static final Context.Key<ClassReader> classReaderKey =
+         new Context.Key<ClassReader>();
+ 
+-    Annotate annotate;
++    protected Annotate annotate;
+ 
+     /** Switch: verbose output.
+      */
+@@ -113,15 +113,15 @@ public class ClassReader extends ClassFi
+ 
+     /** The log to use for verbose output
+      */
+-    final Log log;
++    public final Log log;
+ 
+     /** The symbol table. */
+-    Symtab syms;
++    public Symtab syms;
+ 
+-    Types types;
++    public Types types;
+ 
+     /** The name table. */
+-    final Name.Table names;
++    protected final Name.Table names;
+ 
+     /** Force a completion failure on this name
+      */
+@@ -140,7 +140,7 @@ public class ClassReader extends ClassFi
+     /** A hashtable containing the encountered top-level and member classes,
+      *  indexed by flat names. The table does not contain local classes.
+      */
+-    private Map<Name,ClassSymbol> classes;
++    protected Map<Name,ClassSymbol> classes;
+ 
+     /** A hashtable containing the encountered packages.
+      */
+@@ -152,7 +152,7 @@ public class ClassReader extends ClassFi
+ 
+     /** The path name of the class file currently being read.
+      */
+-    protected JavaFileObject currentClassFile = null;
++    public JavaFileObject currentClassFile = null;
+ 
+     /** The class or method currently being read.
+      */
+@@ -281,7 +281,7 @@ public class ClassReader extends ClassFi
+ 
+     /** Read a character.
+      */
+-    char nextChar() {
++    protected char nextChar() {
+         return (char)(((buf[bp++] & 0xFF) << 8) + (buf[bp++] & 0xFF));
+     }
+ 
+@@ -455,7 +455,7 @@ public class ClassReader extends ClassFi
+ 
+     /** Read signature and convert to type.
+      */
+-    Type readType(int i) {
++    protected Type readType(int i) {
+         int index = poolIdx[i];
+         return sigToType(buf, index + 3, getChar(index + 1));
+     }
+@@ -491,7 +491,7 @@ public class ClassReader extends ClassFi
+ 
+     /** Read name.
+      */
+-    Name readName(int i) {
++    protected Name readName(int i) {
+         return (Name) (readPool(i));
+     }
+ 
+@@ -502,14 +502,14 @@ public class ClassReader extends ClassFi
+     /** The unread portion of the currently read type is
+      *  signature[sigp..siglimit-1].
+      */
+-    byte[] signature;
+-    int sigp;
++    protected byte[] signature;
++    protected int sigp;
+     int siglimit;
+     boolean sigEnterPhase = false;
+ 
+     /** Convert signature to type, where signature is a name.
+      */
+-    Type sigToType(Name sig) {
++    protected Type sigToType(Name sig) {
+         return sig == null
+             ? null
+             : sigToType(sig.table.names, sig.index, sig.len);
+@@ -620,11 +620,11 @@ public class ClassReader extends ClassFi
+         }
+     }
+ 
+-    byte[] signatureBuffer = new byte[0];
+-    int sbp = 0;
++    protected byte[] signatureBuffer = new byte[0];
++    protected int sbp = 0;
+     /** Convert class signature to type, where signature is implicit.
+      */
+-    Type classSigToType() {
++    protected Type classSigToType() {
+         if (signature[sigp] != 'L')
+             throw badClassFile("bad.class.signature",
+                                Convert.utf2string(signature, sigp, 10));
+@@ -723,7 +723,7 @@ public class ClassReader extends ClassFi
+     /** Convert (implicit) signature to list of types
+      *  until `terminator' is encountered.
+      */
+-    List<Type> sigToTypes(char terminator) {
++    protected List<Type> sigToTypes(char terminator) {
+         List<Type> head = List.of(null);
+         List<Type> tail = head;
+         while (signature[sigp] != terminator)
+@@ -836,7 +836,7 @@ public class ClassReader extends ClassFi
+ 
+     /** Read member attribute.
+      */
+-    void readMemberAttr(Symbol sym, Name attrName, int attrLen) {
++    protected void readMemberAttr(Symbol sym, Name attrName, int attrLen) {
+         //- System.err.println(" z " + sym + ", " + attrName + ", " + attrLen);
+         if (attrName == names.ConstantValue) {
+             Object v = readPool(nextChar());
+@@ -1033,7 +1033,7 @@ public class ClassReader extends ClassFi
+ 
+     /** Read member attributes.
+      */
+-    void readMemberAttrs(Symbol sym) {
++    protected void readMemberAttrs(Symbol sym) {
+         char ac = nextChar();
+         for (int i = 0; i < ac; i++) {
+             Name attrName = readName(nextChar());
+@@ -1101,7 +1101,7 @@ public class ClassReader extends ClassFi
+ 
+     /** Attach annotations.
+      */
+-    void attachAnnotations(final Symbol sym) {
++    protected void attachAnnotations(final Symbol sym) {
+         int numAttributes = nextChar();
+         if (numAttributes != 0) {
+             ListBuffer<CompoundAnnotationProxy> proxies =
+@@ -1113,7 +1113,7 @@ public class ClassReader extends ClassFi
+                 else
+                     proxies.append(proxy);
+             }
+-            annotate.later(new AnnotationCompleter(sym, proxies.toList()));
++            annotate.later(new AnnotationCompleter(sym, proxies.toList(), this));
+         }
+     }
+ 
+@@ -1139,7 +1139,7 @@ public class ClassReader extends ClassFi
+     void attachAnnotationDefault(final Symbol sym) {
+         final MethodSymbol meth = (MethodSymbol)sym; // only on methods
+         final Attribute value = readAttributeValue();
+-        annotate.later(new AnnotationDefaultCompleter(meth, value));
++        annotate.later(new AnnotationDefaultCompleter(meth, value, this));
+     }
+ 
+     Type readTypeOrClassSymbol(int i) {
+@@ -1157,7 +1157,7 @@ public class ClassReader extends ClassFi
+         return readType(i);
+     }
+ 
+-    CompoundAnnotationProxy readCompoundAnnotation() {
++    protected CompoundAnnotationProxy readCompoundAnnotation() {
+         Type t = readTypeOrClassSymbol(nextChar());
+         int numFields = nextChar();
+         ListBuffer<Pair<Name,Attribute>> pairs =
+@@ -1243,7 +1243,7 @@ public class ClassReader extends ClassFi
+ 
+     /** A temporary proxy representing a compound attribute.
+      */
+-    static class CompoundAnnotationProxy extends Attribute {
++    public static class CompoundAnnotationProxy extends Attribute {
+         final List<Pair<Name,Attribute>> values;
+         public CompoundAnnotationProxy(Type type,
+                                       List<Pair<Name,Attribute>> values) {
+@@ -1271,11 +1271,17 @@ public class ClassReader extends ClassFi
+         }
+     }
+ 
+-    class AnnotationDeproxy implements ProxyVisitor {
+-        private ClassSymbol requestingOwner = currentOwner.kind == MTH
+-            ? currentOwner.enclClass() : (ClassSymbol)currentOwner;
++    static public class AnnotationDeproxy implements ProxyVisitor {
++        protected ClassReader classReader;
++        protected ClassSymbol requestingOwner;
+ 
+-        List<Attribute.Compound> deproxyCompoundList(List<CompoundAnnotationProxy> pl) {
++        public AnnotationDeproxy(ClassReader classReader) {
++            this.classReader = classReader;
++            requestingOwner = classReader.currentOwner.kind == MTH
++                ? classReader.currentOwner.enclClass() : (ClassSymbol)classReader.currentOwner;
++        }
++
++        protected List<Attribute.Compound> deproxyCompoundList(List<CompoundAnnotationProxy> pl) {
+             // also must fill in types!!!!
+             ListBuffer<Attribute.Compound> buf =
+                 new ListBuffer<Attribute.Compound>();
+@@ -1285,7 +1291,7 @@ public class ClassReader extends ClassFi
+             return buf.toList();
+         }
+ 
+-        Attribute.Compound deproxyCompound(CompoundAnnotationProxy a) {
++        protected Attribute.Compound deproxyCompound(CompoundAnnotationProxy a) {
+             ListBuffer<Pair<Symbol.MethodSymbol,Attribute>> buf =
+                 new ListBuffer<Pair<Symbol.MethodSymbol,Attribute>>();
+             for (List<Pair<Name,Attribute>> l = a.values;
+@@ -1312,29 +1318,29 @@ public class ClassReader extends ClassFi
+                 failure = ex;
+             }
+             // The method wasn't found: emit a warning and recover
+-            JavaFileObject prevSource = log.useSource(requestingOwner.classfile);
++            JavaFileObject prevSource = classReader.log.useSource(requestingOwner.classfile);
+             try {
+                 if (failure == null) {
+-                    log.warning("annotation.method.not.found",
++                    classReader.log.warning("annotation.method.not.found",
+                                 container,
+                                 name);
+                 } else {
+-                    log.warning("annotation.method.not.found.reason",
++                    classReader.log.warning("annotation.method.not.found.reason",
+                                 container,
+                                 name,
+                                 failure.getMessage());
+                 }
+             } finally {
+-                log.useSource(prevSource);
++                classReader.log.useSource(prevSource);
+             }
+             // Construct a new method type and symbol.  Use bottom
+             // type (typeof null) as return type because this type is
+             // a subtype of all reference types and can be converted
+             // to primitive types by unboxing.
+             MethodType mt = new MethodType(List.<Type>nil(),
+-                                           syms.botType,
++                                           classReader.syms.botType,
+                                            List.<Type>nil(),
+-                                           syms.methodClass);
++                                           classReader.syms.methodClass);
+             return new MethodSymbol(PUBLIC | ABSTRACT, name, mt, container.tsym);
+         }
+ 
+@@ -1391,8 +1397,8 @@ public class ClassReader extends ClassFi
+                 }
+             }
+             if (enumerator == null) {
+-                log.error("unknown.enum.constant",
+-                          currentClassFile, enumTypeSym, proxy.enumerator);
++                classReader.log.error("unknown.enum.constant",
++                          classReader.currentClassFile, enumTypeSym, proxy.enumerator);
+                 result = new Attribute.Error(enumTypeSym.type);
+             } else {
+                 result = new Attribute.Enum(enumTypeSym.type, enumerator);
+@@ -1402,7 +1408,7 @@ public class ClassReader extends ClassFi
+         public void visitArrayAttributeProxy(ArrayAttributeProxy proxy) {
+             int length = proxy.values.length();
+             Attribute[] ats = new Attribute[length];
+-            Type elemtype = types.elemtype(type);
++            Type elemtype = classReader.types.elemtype(type);
+             int i = 0;
+             for (List<Attribute> p = proxy.values; p.nonEmpty(); p = p.tail) {
+                 ats[i++] = deproxy(elemtype, p.head);
+@@ -1415,52 +1421,62 @@ public class ClassReader extends ClassFi
+         }
+     }
+ 
+-    class AnnotationDefaultCompleter extends AnnotationDeproxy implements Annotate.Annotator {
++    static public class AnnotationDefaultCompleter extends AnnotationDeproxy implements Annotate.Annotator {
+         final MethodSymbol sym;
+         final Attribute value;
+-        final JavaFileObject classFile = currentClassFile;
++        final JavaFileObject classFile;
++        protected ClassReader classReader;
+         public String toString() {
+             return " ClassReader store default for " + sym.owner + "." + sym + " is " + value;
+         }
+-        AnnotationDefaultCompleter(MethodSymbol sym, Attribute value) {
++        AnnotationDefaultCompleter(MethodSymbol sym, Attribute value, ClassReader classReader) {
++            super(classReader);
++            this.classReader = classReader;
+             this.sym = sym;
+             this.value = value;
++            classFile = classReader.currentClassFile;
+         }
+         // implement Annotate.Annotator.enterAnnotation()
+         public void enterAnnotation() {
+-            JavaFileObject previousClassFile = currentClassFile;
++            JavaFileObject previousClassFile = classReader.currentClassFile;
+             try {
+-                currentClassFile = classFile;
++                classReader.currentClassFile = classFile;
+                 sym.defaultValue = deproxy(sym.type.getReturnType(), value);
+             } finally {
+-                currentClassFile = previousClassFile;
++                classReader.currentClassFile = previousClassFile;
+             }
+         }
+     }
+ 
+-    class AnnotationCompleter extends AnnotationDeproxy implements Annotate.Annotator {
+-        final Symbol sym;
+-        final List<CompoundAnnotationProxy> l;
+-        final JavaFileObject classFile;
++    static public class AnnotationCompleter extends AnnotationDeproxy implements Annotate.Annotator {
++        protected final Symbol sym;
++        protected final List<CompoundAnnotationProxy> l;
++        protected final JavaFileObject classFile;
++        protected ClassReader classReader;
++
+         public String toString() {
+             return " ClassReader annotate " + sym.owner + "." + sym + " with " + l;
+         }
+-        AnnotationCompleter(Symbol sym, List<CompoundAnnotationProxy> l) {
++
++        public AnnotationCompleter(Symbol sym, List<CompoundAnnotationProxy> l, ClassReader classReader) {
++            super(classReader);
+             this.sym = sym;
+             this.l = l;
+-            this.classFile = currentClassFile;
++            this.classReader = classReader;
++            this.classFile = classReader.currentClassFile;
++            
+         }
+         // implement Annotate.Annotator.enterAnnotation()
+         public void enterAnnotation() {
+-            JavaFileObject previousClassFile = currentClassFile;
++            JavaFileObject previousClassFile = classReader.currentClassFile;
+             try {
+-                currentClassFile = classFile;
++                classReader.currentClassFile = classFile;
+                 List<Attribute.Compound> newList = deproxyCompoundList(l);
+                 sym.attributes_field = ((sym.attributes_field == null)
+                                         ? newList
+                                         : newList.prependList(sym.attributes_field));
+             } finally {
+-                currentClassFile = previousClassFile;
++                classReader.currentClassFile = previousClassFile;
+             }
+         }
+     }
+@@ -1483,7 +1499,7 @@ public class ClassReader extends ClassFi
+ 
+     /** Read a method.
+      */
+-    MethodSymbol readMethod() {
++    protected MethodSymbol readMethod() {
+         long flags = adjustMethodFlags(nextChar());
+         Name name = readName(nextChar());
+         Type type = readType(nextChar());
+@@ -1679,7 +1695,7 @@ public class ClassReader extends ClassFi
+     long adjustFieldFlags(long flags) {
+         return flags;
+     }
+-    long adjustMethodFlags(long flags) {
++    protected long adjustMethodFlags(long flags) {
+         if ((flags & ACC_BRIDGE) != 0) {
+             flags &= ~ACC_BRIDGE;
+             flags |= BRIDGE;
+diff --git a/src/share/classes/com/sun/tools/javac/jvm/ClassWriter.java b/src/share/classes/com/sun/tools/javac/jvm/ClassWriter.java
+--- a/src/share/classes/com/sun/tools/javac/jvm/ClassWriter.java
++++ b/src/share/classes/com/sun/tools/javac/jvm/ClassWriter.java
+@@ -414,7 +414,7 @@ public class ClassWriter extends ClassFi
+ 
+     /** Return signature of given type
+      */
+-    Name typeSig(Type type) {
++    public Name typeSig(Type type) {
+         assert sigbuf.length == 0;
+         //- System.out.println(" ? " + type);
+         assembleSig(type);
+diff --git a/src/share/classes/com/sun/tools/javac/jvm/Code.java b/src/share/classes/com/sun/tools/javac/jvm/Code.java
+--- a/src/share/classes/com/sun/tools/javac/jvm/Code.java
++++ b/src/share/classes/com/sun/tools/javac/jvm/Code.java
+@@ -132,7 +132,7 @@ public class Code {
+ 
+     /** The current machine state (registers and stack).
+      */
+-    State state;
++    public State state;
+ 
+     /** Is it forbidden to compactify code, because something is
+      *  pointing to current location?
+@@ -153,7 +153,7 @@ public class Code {
+      *  We need this to emit line numbers lazily, which we need to do
+      *  because of jump-to-jump optimization.
+      */
+-    int pendingStatPos = Position.NOPOS;
++    public int pendingStatPos = Position.NOPOS;
+ 
+     /** Set true when a stackMap is needed at the current PC. */
+     boolean pendingStackMap = false;
+@@ -1423,7 +1423,6 @@ public class Code {
+         State newState = state;
+         for (; chain != null; chain = chain.next) {
+             assert state != chain.state;
+-            assert target > chain.pc || state.stacksize == 0;
+             if (target >= cp) {
+                 target = cp;
+             } else if (get1(target) == goto_) {
+@@ -1569,7 +1568,7 @@ public class Code {
+  * Simulated VM machine state
+  ****************************************************************************/
+ 
+-    class State implements Cloneable {
++    public class State implements Cloneable {
+         /** The set of registers containing values. */
+         Bits defined;
+ 
+@@ -1577,7 +1576,7 @@ public class Code {
+         Type[] stack;
+ 
+         /** The first stack position currently unused. */
+-        int stacksize;
++        public int stacksize;
+ 
+         /** The numbers of registers containing locked monitors. */
+         int[] locks;
+diff --git a/src/share/classes/com/sun/tools/javac/jvm/Gen.java b/src/share/classes/com/sun/tools/javac/jvm/Gen.java
+--- a/src/share/classes/com/sun/tools/javac/jvm/Gen.java
++++ b/src/share/classes/com/sun/tools/javac/jvm/Gen.java
+@@ -56,7 +56,7 @@ public class Gen extends JCTree.Visitor 
+     protected static final Context.Key<Gen> genKey =
+         new Context.Key<Gen>();
+ 
+-    private final Log log;
++    protected final Log log;
+     private final Symtab syms;
+     private final Check chk;
+     private final Resolve rs;
+@@ -172,7 +172,7 @@ public class Gen extends JCTree.Visitor 
+ 
+     /** Code buffer, set by genMethod.
+      */
+-    private Code code;
++    protected Code code;
+ 
+     /** Items structure, set by genMethod.
+      */
+@@ -188,7 +188,7 @@ public class Gen extends JCTree.Visitor 
+ 
+     /** The number of code-gen errors in this class.
+      */
+-    private int nerrs = 0;
++    protected int nerrs = 0;
+ 
+     /** A hash table mapping syntax trees to their ending source positions.
+      */
+@@ -657,15 +657,15 @@ public class Gen extends JCTree.Visitor 
+ 
+     /** Visitor argument: The current environment.
+      */
+-    Env<GenContext> env;
++    protected Env<GenContext> env;
+ 
+     /** Visitor argument: The expected type (prototype).
+      */
+-    Type pt;
++    protected Type pt;
+ 
+     /** Visitor result: The item representing the computed value.
+      */
+-    Item result;
++    protected Item result;
+ 
+     /** Visitor method: generate code for a definition, catching and reporting
+      *  any completion failures.
+@@ -1628,14 +1628,14 @@ public class Gen extends JCTree.Visitor 
+ 
+     public void visitBreak(JCBreak tree) {
+         Env<GenContext> targetEnv = unwind(tree.target, env);
+-        assert code.state.stacksize == 0;
++        //assert code.state.stacksize == 0;
+         targetEnv.info.addExit(code.branch(goto_));
+         endFinalizerGaps(env, targetEnv);
+     }
+ 
+     public void visitContinue(JCContinue tree) {
+         Env<GenContext> targetEnv = unwind(tree.target, env);
+-        assert code.state.stacksize == 0;
++        //assert code.state.stacksize == 0;
+         targetEnv.info.addCont(code.branch(goto_));
+         endFinalizerGaps(env, targetEnv);
+     }
+@@ -2261,7 +2261,7 @@ public class Gen extends JCTree.Visitor 
+     /** code generation contexts,
+      *  to be used as type parameter for environments.
+      */
+-    static class GenContext {
++    public static class GenContext {
+ 
+         /** A chain for all unresolved jumps that exit the current environment.
+          */
+diff --git a/src/share/classes/com/sun/tools/javac/jvm/Items.java b/src/share/classes/com/sun/tools/javac/jvm/Items.java
+--- a/src/share/classes/com/sun/tools/javac/jvm/Items.java
++++ b/src/share/classes/com/sun/tools/javac/jvm/Items.java
+@@ -185,7 +185,7 @@ public class Items {
+ 
+     /** The base class of all items, which implements default behavior.
+      */
+-    abstract class Item {
++    public abstract class Item {
+ 
+         /** The type code of values represented by this item.
+          */
+@@ -197,7 +197,7 @@ public class Items {
+ 
+         /** Generate code to load this item onto stack.
+          */
+-        Item load() {
++        public Item load() {
+             throw new AssertionError();
+         }
+ 
+@@ -281,7 +281,7 @@ public class Items {
+             super(typecode);
+         }
+ 
+-        Item load() {
++        public Item load() {
+             return this;
+         }
+ 
+@@ -315,7 +315,7 @@ public class Items {
+             super(Code.typecode(type));
+         }
+ 
+-        Item load() {
++        public Item load() {
+             code.emitop0(iaload + typecode);
+             return stackItem[typecode];
+         }
+@@ -358,7 +358,7 @@ public class Items {
+             this.isSuper = isSuper;
+         }
+ 
+-        Item load() {
++        public Item load() {
+             code.emitop0(aload_0);
+             return stackItem[typecode];
+         }
+@@ -370,7 +370,7 @@ public class Items {
+ 
+     /** An item representing a local variable.
+      */
+-    class LocalItem extends Item {
++    public class LocalItem extends Item {
+ 
+         /** The variable's register.
+          */
+@@ -387,7 +387,7 @@ public class Items {
+             this.reg = reg;
+         }
+ 
+-        Item load() {
++        public Item load() {
+             if (reg <= 3)
+                 code.emitop0(iload_0 + Code.truncate(typecode) * 4 + reg);
+             else
+@@ -438,7 +438,7 @@ public class Items {
+             this.member = member;
+         }
+ 
+-        Item load() {
++        public Item load() {
+             code.emitop2(getstatic, pool.put(member));
+             return stackItem[typecode];
+         }
+@@ -479,7 +479,7 @@ public class Items {
+             this.nonvirtual = nonvirtual;
+         }
+ 
+-        Item load() {
++        public Item load() {
+             code.emitop2(getfield, pool.put(member));
+             return stackItem[typecode];
+         }
+@@ -546,7 +546,7 @@ public class Items {
+             }
+         }
+ 
+-        Item load() {
++        public Item load() {
+             switch (typecode) {
+             case INTcode: case BYTEcode: case SHORTcode: case CHARcode:
+                 int ival = ((Number)value).intValue();
+@@ -666,7 +666,7 @@ public class Items {
+             this.lhs = lhs;
+         }
+ 
+-        Item load() {
++        public Item load() {
+             lhs.stash(typecode);
+             lhs.store();
+             return stackItem[typecode];
+@@ -724,7 +724,7 @@ public class Items {
+             this.falseJumps = falsejumps;
+         }
+ 
+-        Item load() {
++        public Item load() {
+             Chain trueChain = null;
+             Chain falseChain = jumpFalse();
+             if (!isFalse()) {
+diff --git a/src/share/classes/com/sun/tools/javac/resources/compiler.properties b/src/share/classes/com/sun/tools/javac/resources/compiler.properties
+--- a/src/share/classes/com/sun/tools/javac/resources/compiler.properties
++++ b/src/share/classes/com/sun/tools/javac/resources/compiler.properties
+@@ -614,6 +614,15 @@ compiler.misc.resume.abort=\
+ compiler.misc.resume.abort=\
+     R)esume, A)bort>
+ 
++compiler.misc.version.resource.missing=\
++    Resource bundle missing for version {0}.
++compiler.misc.version.unknown=\
++    Unknown version {0}.
++
++## temporary message until try-catch-block in expression is implemented
++compiler.err.catch.within.expression=\
++    Sorry, currently not implemented: try-catch-block within expression.
++
+ #####
+ 
+ ##
+diff --git a/src/share/classes/com/sun/tools/javac/tree/Pretty.java b/src/share/classes/com/sun/tools/javac/tree/Pretty.java
+--- a/src/share/classes/com/sun/tools/javac/tree/Pretty.java
++++ b/src/share/classes/com/sun/tools/javac/tree/Pretty.java
+@@ -56,7 +56,7 @@ public class Pretty extends JCTree.Visit
+      *  the output even though that detail would not be valid java
+      *  soruce.
+      */
+-    private final boolean sourceOutput;
++    protected final boolean sourceOutput;
+ 
+     /** The output stream on which trees are printed.
+      */
+@@ -81,19 +81,19 @@ public class Pretty extends JCTree.Visit
+ 
+     /** Align code to be indented to left margin.
+      */
+-    void align() throws IOException {
++    public void align() throws IOException {
+         for (int i = 0; i < lmargin; i++) out.write(" ");
+     }
+ 
+     /** Increase left margin by indentation width.
+      */
+-    void indent() {
++    public void indent() {
+         lmargin = lmargin + width;
+     }
+ 
+     /** Decrease left margin by indentation width.
+      */
+-    void undent() {
++    public void undent() {
+         lmargin = lmargin - width;
+     }
+ 
+@@ -134,16 +134,16 @@ public class Pretty extends JCTree.Visit
+      *************************************************************************/
+ 
+     /** Exception to propogate IOException through visitXXX methods */
+-    private static class UncheckedIOException extends Error {
++    protected static class UncheckedIOException extends Error {
+         static final long serialVersionUID = -4032692679158424751L;
+-        UncheckedIOException(IOException e) {
++        public UncheckedIOException(IOException e) {
+             super(e.getMessage(), e);
+         }
+     }
+ 
+     /** Visitor argument: the current precedence level.
+      */
+-    int prec;
++    protected int prec;
+ 
+     /** Visitor method: print expression tree.
+      *  @param prec  The current precedence level.
+diff --git a/src/share/classes/com/sun/tools/javac/tree/TreeInfo.java b/src/share/classes/com/sun/tools/javac/tree/TreeInfo.java
+--- a/src/share/classes/com/sun/tools/javac/tree/TreeInfo.java
++++ b/src/share/classes/com/sun/tools/javac/tree/TreeInfo.java
+@@ -57,9 +57,9 @@ public class TreeInfo {
+ 
+     /** The names of all operators.
+      */
+-    private Name[] opname = new Name[JCTree.MOD - JCTree.POS + 1];
++    protected Name[] opname = new Name[JCTree.MOD - JCTree.POS + 1];
+ 
+-    private TreeInfo(Context context) {
++    protected TreeInfo(Context context) {
+         context.put(treeInfoKey, this);
+ 
+         Name.Table names = Name.Table.instance(context);
+diff --git a/src/share/classes/com/sun/tools/javac/tree/TreeMaker.java b/src/share/classes/com/sun/tools/javac/tree/TreeMaker.java
+--- a/src/share/classes/com/sun/tools/javac/tree/TreeMaker.java
++++ b/src/share/classes/com/sun/tools/javac/tree/TreeMaker.java
+@@ -67,12 +67,12 @@ public class TreeMaker implements JCTree
+     public JCCompilationUnit toplevel;
+ 
+     /** The current name table. */
+-    Name.Table names;
++    protected Name.Table names;
+ 
+-    Types types;
++    protected Types types;
+ 
+     /** The current symbol table. */
+-    Symtab syms;
++    protected Symtab syms;
+ 
+     /** Create a tree maker with null toplevel and NOPOS as initial position.
+      */
+@@ -87,7 +87,7 @@ public class TreeMaker implements JCTree
+ 
+     /** Create a tree maker with a given toplevel and FIRSTPOS as initial position.
+      */
+-    TreeMaker(JCCompilationUnit toplevel, Name.Table names, Types types, Symtab syms) {
++    protected TreeMaker(JCCompilationUnit toplevel, Name.Table names, Types types, Symtab syms) {
+         this.pos = Position.FIRSTPOS;
+         this.toplevel = toplevel;
+         this.names = names;
+diff --git a/src/share/classes/com/sun/tools/javac/tree/TreeTranslator.java b/src/share/classes/com/sun/tools/javac/tree/TreeTranslator.java
+--- a/src/share/classes/com/sun/tools/javac/tree/TreeTranslator.java
++++ b/src/share/classes/com/sun/tools/javac/tree/TreeTranslator.java
+@@ -46,7 +46,10 @@ public class TreeTranslator extends JCTr
+ 
+     /** Visitor result field: a tree
+      */
+-    protected JCTree result;
++// Visage change
++    public
++// Visage change
++    JCTree result;
+ 
+     /** Visitor method: Translate a single node.
+      */
+diff --git a/src/share/classes/com/sun/tools/javac/util/Log.java b/src/share/classes/com/sun/tools/javac/util/Log.java
+--- a/src/share/classes/com/sun/tools/javac/util/Log.java
++++ b/src/share/classes/com/sun/tools/javac/util/Log.java
+@@ -203,6 +203,10 @@ public class Log {
+      */
+     private char[] buf = null;
+ 
++    /** The length of useful data in buf
++     */
++    private int bufLen = 0;
++
+     /** The position in the buffer at which last error was reported
+      */
+     private int bp;
+@@ -256,6 +260,7 @@ public class Log {
+      */
+     protected void setBuf(char[] newBuf) {
+         buf = newBuf;
++        bufLen = buf.length;
+         bp = 0;
+         lineStart = 0;
+         line = 1;
+@@ -324,7 +329,7 @@ public class Log {
+             return;
+ 
+         int lineEnd = lineStart;
+-        while (lineEnd < buf.length && buf[lineEnd] != CR && buf[lineEnd] != LF)
++        while (lineEnd < bufLen && buf[lineEnd] != CR && buf[lineEnd] != LF)
+             lineEnd++;
+         if (lineEnd - lineStart == 0)
+             return;
+@@ -336,12 +341,15 @@ public class Log {
+         writer.flush();
+     }
+ 
+-    protected static char[] getCharContent(JavaFileObject fileObject) throws IOException {
++    protected void initBuf(JavaFileObject fileObject) throws IOException {
+         CharSequence cs = fileObject.getCharContent(true);
+         if (cs instanceof CharBuffer) {
+-            return JavacFileManager.toArray((CharBuffer)cs);
++            CharBuffer cb = (CharBuffer) cs;
++            buf = JavacFileManager.toArray(cb);
++            bufLen = cb.limit();
+         } else {
+-            return cs.toString().toCharArray();
++            buf = cs.toString().toCharArray();
++            bufLen = buf.length;
+         }
+     }
+ 
+@@ -353,7 +361,7 @@ public class Log {
+             return false;
+         try {
+             if (buf == null) {
+-                buf = getCharContent(currentSource());
++                initBuf(currentSource());
+                 lineStart = 0;
+                 line = 1;
+             } else if (lineStart > pos) { // messages don't come in order
+@@ -361,10 +369,10 @@ public class Log {
+                 line = 1;
+             }
+             bp = lineStart;
+-            while (bp < buf.length && bp < pos) {
++            while (bp < bufLen && bp < pos) {
+                 switch (buf[bp++]) {
+                 case CR:
+-                    if (bp < buf.length && buf[bp] == LF) bp++;
++                    if (bp < bufLen && buf[bp] == LF) bp++;
+                     line++;
+                     lineStart = bp;
+                     break;
+@@ -374,7 +382,7 @@ public class Log {
+                     break;
+                 }
+             }
+-            return bp <= buf.length;
++            return bp <= bufLen;
+         } catch (IOException e) {
+             //e.printStackTrace();
+             // FIXME: include e.getLocalizedMessage() in error message
+@@ -704,7 +712,7 @@ public class Log {
+         if (findLine(pos)) {
+             int column = 0;
+             for (bp = lineStart; bp < pos; bp++) {
+-                if (bp >= buf.length)
++                if (bp >= bufLen)
+                     return 0;
+                 if (buf[bp] == '\t')
+                     column = (column / TabInc * TabInc) + TabInc;
+diff --git a/src/share/classes/com/sun/tools/javac/util/Paths.java b/src/share/classes/com/sun/tools/javac/util/Paths.java
+--- a/src/share/classes/com/sun/tools/javac/util/Paths.java
++++ b/src/share/classes/com/sun/tools/javac/util/Paths.java
+@@ -89,7 +89,7 @@ public class Paths {
+ 
+     private static boolean NON_BATCH_MODE = System.getProperty("nonBatchMode") != null;// TODO: Use -XD compiler switch for this.
+     private static Map<File, PathEntry> pathExistanceCache = new ConcurrentHashMap<File, PathEntry>();
+-    private static Map<File, java.util.List<String>> manifestEntries = new ConcurrentHashMap<File, java.util.List<String>>();
++    private static Map<File, java.util.List<File>> manifestEntries = new ConcurrentHashMap<File, java.util.List<File>>();
+     private static Map<File, Boolean> isDirectory = new ConcurrentHashMap<File, Boolean>();
+     private static Lock lock = new ReentrantLock();
+ 
+@@ -369,13 +369,13 @@ public class Paths {
+         // filenames, but if we do, we should redo all path-related code.
+         private void addJarClassPath(File jarFile, boolean warn) {
+             try {
+-                java.util.List<String> manifestsList = manifestEntries.get(jarFile);
++                java.util.List<File> manifestsList = manifestEntries.get(jarFile);
+                 if (!NON_BATCH_MODE) {
+                     lock.lock();
+                     try {
+                         if (manifestsList != null) {
+-                            for (String entr : manifestsList) {
+-                                addFile(new File(entr), warn);
++                            for (File entr : manifestsList) {
++                                addFile(entr, warn);
+                             }
+                             return;
+                         }
+@@ -386,7 +386,7 @@ public class Paths {
+                 }
+ 
+                 if (!NON_BATCH_MODE) {
+-                    manifestsList = new ArrayList<String>();
++                    manifestsList = new ArrayList<File>();
+                     manifestEntries.put(jarFile, manifestsList);
+                 }
+ 
+@@ -412,7 +412,7 @@ public class Paths {
+                         if (!NON_BATCH_MODE) {
+                             lock.lock();
+                             try {
+-                                manifestsList.add(elt);
++                                manifestsList.add(f);
+                             }
+                             finally {
+                                 lock.unlock();

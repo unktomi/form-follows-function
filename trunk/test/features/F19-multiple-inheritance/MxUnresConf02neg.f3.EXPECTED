@@ -1,0 +1,4 @@
+test/features/F19-multiple-inheritance/MxUnresConf02neg.f3:16: types MxUnresConf02neg.Mixin and MxUnresConf02neg.Super are incompatible; both define bar, but with unrelated types
+class Mixee extends Super, Mixin {
+^
+1 error

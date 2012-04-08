@@ -1,0 +1,21 @@
+/* VSGC-2775 : Collapse bound member select accesses into the single per-scipt BindingExpression
+ *
+ * @test
+ * @run
+ */
+
+class XYZ {
+    var n:Float = 1.0;
+}
+
+var xyz = XYZ{};
+
+def b : Double = bind xyz.n;
+println(b);
+xyz.n = 2.25;
+println(b);
+def zzz = XYZ{};
+zzz.n = 4;
+println(b);
+xyz = zzz;
+println(b);

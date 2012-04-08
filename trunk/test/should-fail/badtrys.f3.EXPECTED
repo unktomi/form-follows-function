@@ -1,0 +1,28 @@
+test/should-fail/badtrys.f3:8: This 'catch' block has been orphaned and has no 'try' to which it belongs.
+catch (e : Exception) {}
+^
+test/should-fail/badtrys.f3:9: This 'catch' block has been orphaned and has no 'try' to which it belongs.
+catch (e : Exception) {}
+^
+test/should-fail/badtrys.f3:13: This 'finally' block has been orphaned and has no 'try' to which it belongs.
+finally {}
+^
+test/should-fail/badtrys.f3:14: This 'finally' block has been orphaned and has no 'try' to which it belongs.
+finally {}
+^
+test/should-fail/badtrys.f3:18: A 'try'...'catch'...'finally' construct must have at least one 'catch' clause or a 'finally' clause, or both. This one has neither.
+try {
+^
+test/should-fail/badtrys.f3:29: You must declare a finally block as the last part of a 'try'...'catch'...'finally' construct. This one comes before subsequent 'catch' clauses.
+finally {
+^
+test/should-fail/badtrys.f3:40: You have too many 'finally' clauses for the associated 'try' block; there can be only one.
+finally {}
+^
+test/should-fail/badtrys.f3:46: You must declare a finally block as the last part of a 'try'...'catch'...'finally' construct. This one comes before subsequent 'catch' clauses.
+finally {}
+^
+test/should-fail/badtrys.f3:48: You have too many 'finally' clauses for the associated 'try' block; there can be only one.
+finally {}
+^
+9 errors

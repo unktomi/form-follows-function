@@ -1,0 +1,21 @@
+/**
+ * Test general private attributes.
+ *
+ * @compilefirst vsgc728One.f3
+ * @test
+ * @run
+ */
+
+public class Three extends vsgc728One.One, vsgc728One.Two {
+    var attr : String;
+    public function getAttr3() :String { attr; }
+    public function setAttr3(val :String) :Void  { attr = val }
+}
+
+function run( ) {
+    var xx = Three {};
+    xx.setAttr1(12);
+    xx.setAttr3("xx3");
+    println("xx.attr1: {xx.getAttr1()} .attr2: {xx.getAttr2()} .attr3: {xx.getAttr3()}.");
+}
+

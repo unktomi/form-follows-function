@@ -1,0 +1,31 @@
+/**
+ * Regression test: VSGC-3619 : Compiled bind: dependent state/mode -- non-bound initalizers of bound object literal
+ *
+ * Identifier reference to same level (instance) var in bound object literal (of top) from non-bound initializer
+ *
+ * @test
+ * @run
+ */
+
+class vsgc3619identTop {
+  var a : Integer
+}
+
+class Test {
+  var x = 10;
+  def ol = bind vsgc3619identTop { a: x }
+  
+  function doit() {
+    println(ol.a);
+    def hash1 = java.lang.System.identityHashCode(ol);
+    --x;
+    if (hash1 == java.lang.System.identityHashCode(ol)) println("Error: No new object for --x");
+    println(ol.a);
+    --x;
+    println(ol.a);
+    --x;
+    println(ol.a);
+  }
+}
+
+Test{}.doit()

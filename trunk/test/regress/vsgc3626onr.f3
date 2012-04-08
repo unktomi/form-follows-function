@@ -1,0 +1,34 @@
+/**
+ * Regression test: VSGC-3626 : Compiled bind: bound sequence: type-cast
+ *
+ * Bound type cast over sequence -- on-replace
+ *
+ * @test
+ * @run
+ */
+
+var a = 1.5;
+var b = 5.5;
+def range = bind [a..b];
+def cor : Object[] = bind range on replace [start..end] = newValue { println("{start}..{end} = {sizeof newValue}") }
+a = 3.25;
+b = 7.5;
+
+println("---");
+var a2 = 1.5;
+var b2 = 5.5;
+def range2 = bind [a2..b2];
+def cor2 = bind range2 as Object[] on replace [start..end] = newValue { println("{start}..{end} = {sizeof newValue}") }
+a2 = 3.25;
+b2 = 7.5;
+
+println("---");
+var seq = ["gerp", "snef"];
+def csr = bind seq as Object[] on replace [start..end] = newValue { println("{start}..{end} = {newValue}") }
+insert "jum" into seq;
+delete seq[0];
+
+println("---");
+println(cor);
+println(cor2);
+println(csr);

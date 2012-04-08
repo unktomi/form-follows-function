@@ -1,0 +1,17 @@
+/**
+ * Regress test for VSGC-3226: Error when attaching a trigger to a nativearray type
+ *
+ * @test
+ * @run
+ */
+
+var text = "Zero";
+var chars:nativearray of Character = bind text.toCharArray() on replace {
+    println("Fired {text}")
+};
+var chars_2:nativearray of Character = bind chars;
+var chars_3:Character[] = bind chars;
+println("start");
+text = "One";
+text = "Two";
+text = "Three";

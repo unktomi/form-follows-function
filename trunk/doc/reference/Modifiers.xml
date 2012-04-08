@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter version="5.0" xml:id="Modifiers"
+         xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Access Modifiers</title>
+
+  <para>The following access modifiers apply to script and instance members:
+  instance functions, script functions, instance variables, and script
+  variables. With the exception of protected access, they also apply to
+  classes.</para>
+
+  <table>
+    <title>Primary Access Modifiers</title>
+
+    <tgroup cols="2">
+      <tbody>
+        <row>
+          <entry></entry>
+
+          <entry>Script only access: This is the default when no primary
+          access modifier is supplied. Script only access means that it can
+          only be accessed within the script where it is defined</entry>
+        </row>
+
+        <row>
+          <entry><command>package</command></entry>
+
+          <entry>Package access: Can only be accessed within the package where
+          it is defined.</entry>
+        </row>
+
+        <row xml:id="protected">
+          <entry><command>protected</command></entry>
+
+          <entry>Protected access: Can be accessed from the package where it
+          is defined and from subclasses of the class where it is defined.
+          That is probably all you really need to know about protected access
+          -- but if you want the details, read on.... A protected member of an
+          object may be accessed from outside the package in which it is
+          declared only by code that is responsible for the implementation of
+          that object. Which means: Let C be the class in which a protected
+          member m is declared. Access is permitted only within the body of a
+          subclass S of C. In addition, if Id denotes an instance variable or
+          instance function, then: If the access is by a qualified name Q.Id,
+          where Q is an ExpressionName, then the access is permitted if and
+          only if the type of the expression Q is S or a subclass of S. If the
+          access is by a variable access expression E.Id, where E is a Primary
+          expression, or by a function invocation expression E.Id(. . .),
+          where E is a Primary expression, then the access is permitted if and
+          only if the type of E is S or a subclass of S.</entry>
+        </row>
+
+        <row>
+          <entry><command>public</command></entry>
+
+          <entry>Public access: can be accessed anywhere.</entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </table>
+
+  <para>These primary access modifiers apply to all forms of access: creation
+  and reference to classes, calling functions, reading and writing of script
+  or instance variables, and overriding and setting or binding in an object
+  literal of an instance variable.</para>
+
+  <para>Because of the central use of object literals in F3, instance
+  variables tend to be externally visiable -- and therefore need more refined
+  access modifiers. Two access modifiers apply only to instance and script
+  <command>var</command>.</para>
+
+  <table>
+    <title><command>var</command> Access Modifiers</title>
+
+    <tgroup cols="2">
+      <tbody>
+        <row>
+          <entry><command>public-read</command></entry>
+
+          <entry>The <command>var</command> can be read anywhere.</entry>
+        </row>
+
+        <row>
+          <entry><command>public-init</command></entry>
+
+          <entry>The <command>var</command> can be initialized or read
+          anywhere. Where initialized means set (but not bound) in an object
+          literal.</entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </table>
+
+  <para>Note that <command>public-read</command> is permitted with
+  <command>def</command>, but that it is equivalent to
+  <command>public</command>.</para>
+
+  <para>These access modifiers are additive with the primary access modifiers.
+  Here are some examples:</para>
+
+  <table>
+    <title>Access Modifier Examples</title>
+
+    <tgroup cols="2">
+      <tbody>
+        <row>
+          <entry>var x;</entry>
+
+          <entry>Declare a variable. The variable can be initialized (in an
+          object literal), can be overridden (in a subclass), can be read,
+          assigned, or bound (in the default expression or in an object
+          literal initialization). The default access permission is script
+          only access, so, without access modifiers, a variable can be
+          initialized, overridden, read, assigned, or bound from within the
+          script only.</entry>
+        </row>
+
+        <row>
+          <entry>def x = 100;</entry>
+
+          <entry>Define x. What you see is what you get. Definitions cannot be
+          changed. They cannot be initialized (in an object literal), cannot
+          be overridden (in a subclass), and cannot be assigned to. The value
+          of the definition can be read. Since the default access permission
+          is script only access, without access modifiers, a definition can be
+          read from within the script only. The definition can be to a bound
+          expression.</entry>
+        </row>
+
+        <row>
+          <entry>public var x;</entry>
+
+          <entry>Declare a public variable. This variable can be initialized,
+          overridden, read, assigned, or bound from anywhere.</entry>
+        </row>
+
+        <row>
+          <entry>public def x = "Hi";</entry>
+
+          <entry>A public definition of x. This definition can be read
+          anywhere. A definition cannot be assigned, initialized (in an object
+          literal) or overridden no matter what the access
+          permissions.</entry>
+        </row>
+
+        <row>
+          <entry>protected var x;</entry>
+
+          <entry>Declare a variable accessible from the package or subclasses.
+          (see <link linkend="protected">protected, above, for the twisty
+          parts</link>)</entry>
+        </row>
+
+        <row>
+          <entry>protected def x = bind z;</entry>
+
+          <entry>Define x which is readable from the package or
+          subclasses.</entry>
+        </row>
+
+        <row>
+          <entry>package var x;</entry>
+
+          <entry>Declare a variable accessible from the package.</entry>
+        </row>
+
+        <row>
+          <entry>package def x = 42;</entry>
+
+          <entry>Define x to be package readable.</entry>
+        </row>
+
+        <row>
+          <entry>public-read var x;</entry>
+
+          <entry>A variable which can be read anywhere, but can only be
+          initialized or written (assigned or bound) within the script (since
+          script access is the default).</entry>
+        </row>
+
+        <row>
+          <entry>public-read package var x;</entry>
+
+          <entry>A variable which can be read anywhere, but can only be
+          initialized or written (assigned or bound) within the
+          package.</entry>
+        </row>
+
+        <row>
+          <entry>public-init var x;</entry>
+
+          <entry>A variable which can be initialized (by an object literal) or
+          read anywhere, but can only be written (assigned or bound) within
+          the script (since script only access is the default).</entry>
+        </row>
+
+        <row>
+          <entry>public-init package var x;</entry>
+
+          <entry>A variable which can be initialized (by an object literal) or
+          read anywhere, but can only be written (assigned or bound) within
+          the package.</entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </table>
+</chapter>

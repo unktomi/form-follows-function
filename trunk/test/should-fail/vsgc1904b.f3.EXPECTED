@@ -1,0 +1,5 @@
+test/should-fail/vsgc1904b.f3:10: Loose expressions are not permitted in scripts with exported ('public', etc) members.
+Any expressions to be run on script invocation should be moved into run().
+System.out.println("Startup");
+^
+1 error

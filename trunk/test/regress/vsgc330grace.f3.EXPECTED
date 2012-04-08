@@ -1,0 +1,40 @@
+1234
+0
+0
+bonzo
+
+
+[ peter, paul, mary ]
+[ ]
+[ ]
+Foo
+null
+null
+---------------------
+0
+0
+0
+
+
+
+[ ]
+[ ]
+[ ]
+null
+null
+null
+---------------------
+1234
+1234
+1234
+bonzo
+bonzo
+bonzo
+[ peter, paul, mary ]
+[ peter, paul, mary ]
+[ peter, paul, mary ]
+Foo
+Foo
+Foo
+---------------------
+null

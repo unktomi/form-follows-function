@@ -1,0 +1,24 @@
+/**
+ * Regression test VSGC-2205 : Literal null or an Object value of null when cast to String/Duration must be converted to default value
+ *
+ * @test
+ * @run
+ */
+
+class A {
+  var s : Duration;
+}
+
+function run() {
+  var c = null as Duration;
+  println("init cast: {c}");
+  var d = 14ms;
+  d = null as Duration;
+  println("assign cast: {d}");
+
+  var nuo : Object = null;
+  var h : Duration = nuo as Duration;
+  println("init cast Object: {h}");
+  h = nuo as Duration;
+  println("assign cast Object: {h}");
+}

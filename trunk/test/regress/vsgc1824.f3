@@ -1,0 +1,18 @@
+/**
+ * Regression test VSGC-1824 : Can't call varargs method with several arguments
+ *
+ * @test
+ * @run
+ */
+
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+// the following lines are compiled:
+new FileNameExtensionFilter("Video", "avi");
+new FileNameExtensionFilter("Video", "avi", "mov");
+new FileNameExtensionFilter("Video", ["avi", "mov", "mp4", "mpg"]);
+
+// the following line threw an exception during compilation:
+var ef = new FileNameExtensionFilter("Video", "avi", "mov", "mp4", "mpg");
+var ext : String[] = ef.getExtensions();
+println(ext);

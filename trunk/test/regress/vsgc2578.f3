@@ -1,0 +1,35 @@
+/*
+ * Compile-time error:
+ *
+ *   setAsShort(short) in org.f3.runtime.location.ShortVariable
+ *   cannot be applied to (int)
+ *             s++;
+ *             ^
+ * @test
+ * @run
+ */
+
+
+// doesn't happen with a script var
+var ss : Short = 99;
+
+class vsgc2578 {
+    // only happens with an instance variable
+    public var s : Short = 99;
+
+    function test() {
+        // doesn't happen with a local var
+        var sss : Short = 99;
+        sss++;
+        println(sss);
+        sss--;
+        println(sss);
+        // Each of the following 2 lines caused a compilation failure
+        s++;
+        println(s);
+        s--;
+        println(s);
+    }
+}
+
+vsgc2578{}.test();

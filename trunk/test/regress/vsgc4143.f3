@@ -1,0 +1,29 @@
+/**
+ * VSGC-4143 : Dynamic property bind using Pointer.bind() always attaches to property with varIndex = 0
+ *
+ * This SDK independent test case is derived from SDK dependent test case
+ * attached in JIRA.
+ *
+ * @test
+ * @run
+ */
+
+import org.f3.runtime.Pointer;
+
+var justDummyFilling = "this is wrong!";
+var textVar = "after bound";
+
+class Text {
+    var content : String;
+}
+
+var textNode = Text {
+    content: "no bind yet ..."
+};
+
+var bindings = Pointer.make( textNode.content).bind( Pointer.make(textVar));
+println(textNode.content);
+
+textVar = "after var update!"; 
+println(textNode.content);
+

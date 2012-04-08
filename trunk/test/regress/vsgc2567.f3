@@ -1,0 +1,17 @@
+/**
+ * VSGC-2567 : Cannot assign min long to variable
+ *
+ * @test
+ * @run
+ */
+
+def MAXLONG:Long =  9223372036854775807;
+def MINLONG:Long = -9223372036854775808; 
+def MAXINT:Integer = 2147483647;
+def MININT:Integer = -2147483648;
+
+println(MAXLONG);
+println(MINLONG);
+println(MAXINT);
+println(MININT);
+

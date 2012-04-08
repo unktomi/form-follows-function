@@ -1,0 +1,15 @@
+/**
+ * regression test: VSGC-2958 : NPE when binding a method from inherited F3 class
+ * @test/fail
+ */
+
+mixin class Runnable {
+public function run(): Void {
+   println("I am a runnable");
+}
+}
+
+class vsgc2958 extends Runnable {
+}
+
+vsgc2958 {}.run();

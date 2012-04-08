@@ -1,0 +1,310 @@
+import java.lang.System;
+
+/*
+ * @test
+ * @compilefirst ../../TestUtils.f3
+ * @run
+ */
+
+/**
+ *
+ *
+ * This set of tests is mainly within priority classes.
+ * Where appropriate check associativity (order of evaluation).
+ *
+ *
+ * BUGS:
+ * vsgc-1414: Table 5.1 - order of evaluation for *,/,% should be left to right
+ * vsgc-1415: unary minus should have higher precedence than add and sub and evaluates right to left instead of left to right
+ * vsgc-1416: Table 5.1 -  divide and assign is listed twice
+ *
+Priority  	F3 Operator  	Operation  			Java Operator  	Order of Evaluation
+1 	          =				assign operator 			= 						Right to Left
+_______________________________________________________________________________
+2 	         += 			add and assign 			+=
+ 	         -= 			subtract and assign 		-+
+ 	         *= 			multiply and assign 		*=
+ 	         /= 			divide and assign 		/=
+ 	         %= 			remainder and assign 	%=
+ 	         /= 			divide and assign 		/=
+_______________________________________________________________________________
+3 	         or 			logical or 	|| 									Right to Left
+_______________________________________________________________________________
+4 	         and 			logical and 				&& 					Right to Left
+_______________________________________________________________________________
+5 	         instanceof 	inheritance operator 	instanceof 			Right to Left
+ 	         as 			cast operator 				n/a
+ 	         sizeof 		array length 				n/a
+ 	         indexof 		ordinal position 			n/a
+ 	         new 			instantiation 				new
+ 	         op() 			function call 				n/a
+ 	         x.op() 		member function call 	
+_______________________________________________________________________________
+6 	         == 			equality 					== 					Left to Right
+ 	         != 			inequality 					!=
+ 	         <= 			less than or equal 		<=
+ 	         <- 	  	
+ 	         < > 			lt / gt 						< >
+_______________________________________________________________________________
+7 	         + 				addition 					+ 						Right to Left
+ 	         - 				subtraction; uniary negation 	-
+_______________________________________________________________________________
+8 	         * 				multiplication 			* 						Right to Left
+ 	         / 				division 	/
+         mod 				remainder 	
+ 	         => 			animation
+_______________________________________________________________________________
+9 	         ++ (prefixed) 	assign 					++ 					Right to Left
+ 	         -- (prefixed) 	assign 					--
+_______________________________________________________________________________
+10 	      ++ (suffixed) 	assign 					++ 					Right to Left
+ 	         -- (suffixed) 	assign 					--
+_______________________________________________________________________________
+*/
+var DEBUG=false;
+
+var TWO = 2;
+var FOUR = 4;
+function debugOut(msg:String) { if(DEBUG){ System.out.println(msg);  } };
+var TA:TestUtils = new TestUtils();
+function line() { if(DEBUG) { System.out.println("__________________________");} }
+
+/**
+ * Some basic tests of various operators against the equals operator(lowest precedence);
+ * start with += and -=.
+ */ 
+function test1() {
+   var i1 = 1; var i2 = 2; var i3 = 3;
+	var n1 = 1.0; var n2 = 2.0; var n3 = 3.0;
+   i1 = 13;
+	var expr = "test1:  i1 -= i2;  ";
+	var v = i1 -= i2;
+	TA.checkI(v, 11, expr);
+
+	expr = "test1:  i2 += i1 -= 10";
+	v = i2 += i1 -= 10;
+	TA.checkI(v,3,expr);
+
+	expr = "test1:  v -= i2 -= i1;";
+	v -= i2 -= i1;
+	TA.checkI(v,1,expr);
+
+   expr = "test1: N = n1 /= i2;  ";
+	var N = n1 /= i2;
+	TA.checkB( N==0.5,expr);
+
+	expr = "test1: N = {n1} *= {n3};  ";
+	N = n1 *= n3;
+	TA.checkB(N==1.5,expr);
+	expr = "test1:  n2 /= n3 += n1 -= 0.5";
+	N =  n2 /= n3 += n1 -= 0.5;
+	TA.checkN(N,0.5,expr);
+
+	/**
+	 * This has some ambiguity to it. Does n2 at N=n2 start at 0.5 or 1.0?
+	 */
+	 expr = "test1:  n2 /= n3 += n2 += 0.5";
+	N =  n2 /= n3 += n2 += 0.5;
+	/* Apparently it starts at 0.5, but so does javac. */
+ 	TA.checkN(N, 0.1,expr);
+}
+/**
+ *    *=, /=, %=
+ */
+function test2() {
+   var N=2.25; var n1 = 5.0; var n2=2.0; var n3=3.0;
+   debugOut("N={N} n1={n1}   n2={n2}  n3={n3}");
+	var expr = "test2:  N *= n3 = n1 %= n2;  ";
+	N *= n3 = n1 = n1 mod n2;   //replace A%=B with A = A mod B (typ.)
+	TA.checkN(N,2.25,expr);
+	TA.checkN(n3,1.0,expr);
+
+   var i1 = 2; var i2 = 4; var i3 = 9; var i5 = 5;
+	expr = "test2:  i1 *=  i2  /= i9 %= i5";
+	var prod = i1 *=  i2  /= i3 = i3 mod i5;
+	TA.checkI(prod,2,expr);
+
+   i1 = 2; i2 = 4; i3 = 9; i5 = 5;
+	expr = "test2:  i5 *=  i3  /= i2 %= i1"; 
+	try { 	prod = i5 *=  i3  /= i2 = i2 mod i1; }
+	catch( e:java.lang.ArithmeticException) { TA.checkI(i2,0,expr); }
+
+   i1 = 2; i2 = 4; i3 = 3; i5 = 5;
+	expr = "test2:  i1 *=  i2  /= i9 %= i5";
+	prod = i1 *=  i2  /= i5 = i5 mod i3;
+	TA.checkI(prod,4,expr);
+
+   i1 = 81; i2 = 4; i3 = 3; i5 = 15;
+	expr = "test2:  i1 %=  i2  *= i9 /= i5";
+	i1 = i1 mod (i2  *= i5 /= i3); //no %=, add ()'s to force right to left order.
+	TA.checkI(i1,1,expr);
+
+}
+
+/**
+*  logical and / or 
+*/
+function test3() {
+	var b:Boolean = true and false;
+	TA.checkB( b == false, "var b:Boolean = true and false;");
+
+	b = true or false and true;
+	TA.checkB( b == true,"b = true or false and true;");
+
+	b = false or false and true;
+	TA.checkB( b == false, "b = false or false and true;");
+
+	b = false and false or true;
+	TA.checkB( b == true, "b = false and false or true;" );
+
+   //demonstrate it evaluates 'and' before 'or' so this is "(false and true) or true".
+	//straight left to right would result in true.
+	b = false and true or true; 
+	TA.checkB( b == true, "b = false and true or true;" );
+
+}
+
+/**
+ *  operators of equal priority are grouped according to their order of evaluation... I think
+ *  so that 2*5%7 == (2*5)%7 and not 2*(5%7).
+ */
+function test4() {
+   var i1 = 1; var i2=2;
+	var expr = "Test4: var b2 = {i1} += {i2} + {TWO} * 5 % 7;  ";
+	var b2 = i1 += i2 + 2 * 5 mod 7 ;
+	TA.checkI(b2,6,expr);
+}
+
+/**
+ * instanceof, as 
+ */
+ class A { function fooA():Integer{ return 1; } }
+ mixin class B { function fooB():Integer{ return 11; } }
+ class AA extends A { function fooAA():Integer{ return 101; } }
+ class BA extends B,A { function fooAB():Integer{ return 102; } }
+ function callFoo( obj:java.lang.Object ) {
+   if( obj instanceof BA ) { return (obj as BA).fooAB(); }
+   else if(obj instanceof AA) { return (obj as AA).fooAA(); }
+   else if(obj instanceof B) { return (obj as BA).fooB(); }
+   else if(obj instanceof A) { return (obj as A).fooA(); }
+	return 0;
+ }
+
+ function test5() {
+ var a:A = new A;
+ var aa:AA = new AA;
+ var b:B = new BA;
+ var ba:BA = new BA;
+  TA.checkB( a instanceof A, "instanceof");
+  TA.checkB( aa instanceof A, "instanceof superclass"); //check subclass instance is instance of super class
+  TA.checknotB( a instanceof AA, "super not instanceof subclass"); //check subclass instance is instance of super class
+  TA.checkB( b instanceof A, "instanceof");
+
+	TA.checkB( ba instanceof B, "ba instanceof B");
+	TA.checkB( ba instanceof A, "ba instanceof A");
+	TA.checkI( callFoo(a),1,"a.foo");
+  TA.checkI( callFoo(b),102,"b.foo");
+	TA.checkI( callFoo(aa),101,"aa.foo");
+	TA.checkI( callFoo(ba),102,"ba.foo");
+}
+
+/**
+ * Test operators from priorities 1,6,7,8,9,10
+ */
+function test6() {
+	var i1=1;	var i2=2; var i3=3;
+	var expr = "Test6: var A = EIGHT == FOUR-- + --i1 + i2 * ++i3/2; ";
+	var A = 8 == FOUR-- + --i1 + i2 * ++i3 / 2 ; //should give me true
+	TA.checkB(A==true, expr);
+}
+
+/**
+ *
+ */
+ function test7() {
+    var i5 = 5;
+	 var i2 = 2;
+	 var i1 = 1;
+	 var expr1 = "i5 + i2 - i1";
+	 var sum =  i5 + i2 - i1;
+	 TA.checkI( sum, 6,expr1);
+
+	 var expr2 = "i5-i2+i1";
+	 sum = i5-i2+i1;
+	 TA.checkI(sum,4,expr2);
+
+    //unary negation is actually applied before +,- operations
+	 var expr3 = "i2 + -i5 +i1";
+	 sum = i2 + -i5 +i1;
+	 TA.checkI(sum,-2,expr3);
+
+ 	 var expr4 = "i2 - -i5 +i1";
+	 sum = i2 - -i5 +i1;
+	 TA.checkI(sum,8,expr4);
+ }
+
+/**
+ * left to right associativity of *,/,%
+ */
+function test8() {
+	var expr1 = "3*8%5";
+	var d1 = 3 * 8 mod 5;
+	var expr2 = "8%5*3";
+	var d2 = 8 mod 5 * 3;
+	var expr3 = "3*15/2";
+	var d3 = 3*15.0/2;
+	var expr4 = "15/2*3";
+	var d4 = 15.0/2*3;
+	TA.checkB( d1==4    , expr1 ); 
+	TA.checkB( d2==9    , expr2 );
+	TA.checkN( d3,22.5 , expr3 );
+	TA.checkN( d4,22.5 , expr4 );
+}
+
+function test9() {
+	var i2 = 2;
+	var i5 = 5;
+	var i8 = 8;
+	var expr = "i2++ + i5++ + i8++";
+	var sum = i2++ + i5++ + i8++;
+	TA.checkI( sum,15,expr);
+
+	expr = "++i2 + ++i5 + ++i8";
+	sum = ++i2 + ++i5 + ++i8;
+   TA.checkI( sum, 21,expr);
+
+	//reset
+	i2 = 2; i5 = 5; i8=8;
+
+	expr = "i2-- + --i5 - i8--";
+	sum = i2-- + --i5 - i8--; // should = -2;
+	TA.checkI(sum,-2,expr);   // 
+
+	expr = "i2 + i5 + i8";
+	sum = i2 + i5 + i8;
+	TA.checkI(sum,12 , expr);
+
+	expr = "i2++ + i5++ + i8++";
+	sum = i2++ + i5++ + i8++;
+	TA.checkI(sum,12,expr);
+
+	TA.checkIs([i2,i5,i8],[2,5,8],"check on vars after all post-incremented");
+	expr = "i8-- - i5-- - i2--";
+	sum = i8-- - i5-- - i2--;
+	TA.checkI(sum,1,expr);
+	TA.checkIs([i2,i5,i8],[1,4,7],"check on vars after all post-decremented");
+
+}
+
+test1();
+test2();
+test3();
+test4();
+test5();
+test6();
+test7();
+test8();
+test9();
+
+TA.report();  
+

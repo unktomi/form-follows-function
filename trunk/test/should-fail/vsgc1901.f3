@@ -1,0 +1,5 @@
+/*
+ * @test/compile-error
+ */
+import f3.animation.KeyFramexx;
+import f3.xxanimation.KeyFrame;

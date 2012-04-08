@@ -1,0 +1,13 @@
+/**
+ * Regress test VSGC-3012
+ *   crash in backend: simple code with bind..with inverse crashes in backend 
+ *
+ * The following code used to crash the compiler in back-end.
+ *
+ * @test
+ * @run
+ */
+
+var x = 10;
+
+var y = bind x with inverse;

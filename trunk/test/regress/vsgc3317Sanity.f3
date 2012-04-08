@@ -1,0 +1,29 @@
+/**
+ * VSGC-3317 : Optimize bound F3 var select with mutable selectors
+ *
+ * @test
+ * @run
+ */
+
+public class sel {
+  public var x = 7;
+  public var vs = this;
+  public def bvsx = bind vs.x;
+  public def bvsxc : Number = bind vs.x;
+  public def bvsxs : Integer[] = bind vs.x;
+  public def bvsxm = bind 2 * vs.x;
+  function show() {
+    println("x = {x}");
+    println("bvsx = {bvsx}");
+    println("bvsxc = {bvsxc}");
+    print("bvsxs = "); println(bvsxs);
+    println("bvsxm = {bvsxm}");
+  }
+}
+
+function run() {
+  def z = sel{}
+  z.show();
+  z.x = 999;
+  z.show();
+}

@@ -1,0 +1,10 @@
+/**
+ * Regression test VSGC-3785 : compiled-bind: 5 errors when compiling liveconnect
+ *
+ * @compilefirst vsgc3785Sub.f3
+ * @test
+ */
+
+class Test {
+   var mn = vsgc3785Sub.MapNode{function f() {}}
+}

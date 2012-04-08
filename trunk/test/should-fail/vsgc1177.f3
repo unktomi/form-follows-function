@@ -1,0 +1,6 @@
+/* Test for a cycle involing the module class.
+ * @test/compile-error
+ */
+
+class vsgc1177 extends vsgc1177.A{}
+class A extends vsgc1177{}

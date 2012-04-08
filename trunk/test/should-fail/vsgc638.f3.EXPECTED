@@ -1,0 +1,4 @@
+test/should-fail/vsgc638.f3:7: You cannot change the value(s) of 'localSeq' because it is a parameter.
+    localSeq[0] = 4; 
+    ^
+1 error

@@ -1,0 +1,12 @@
+/*
+ * Regression: VSGC-2877 - Compiler crash: attempt to derefence a toString method on a number.
+ *
+ * @test
+ *
+ */
+
+var i:Integer = 5;
+
+var IString = i.toString(); //this is good
+
+var IString2 = i.toString; //this is not good

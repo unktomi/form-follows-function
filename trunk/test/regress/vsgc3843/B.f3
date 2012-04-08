@@ -1,0 +1,19 @@
+/**
+ * VSGC-3843 :  compiled-bind: compiler crashes while compiling F3Tester.
+ *
+ * @test
+ */
+var num=0;
+class B {
+   var x:Integer;
+}
+
+function updateContent():Void {
+   var line = 0;
+   while (true) {
+      B { 
+         x: bind num + line
+      }
+      line++;
+    }
+}

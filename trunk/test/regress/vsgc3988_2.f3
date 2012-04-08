@@ -1,0 +1,28 @@
+/**
+ * VSGC-3988 : Compiled bind optimization: Shredding of a shared selector increases complexity of update$ methods.
+ *
+ * @test
+ * @run
+ */
+
+public class Image {
+   public var progress: Integer;
+}
+
+public class ImageLoadingSpinner {
+   public var image: Image;
+   public var progress = bind image.progress on replace {
+      println("progress updated to {progress}");
+   }
+}
+
+var img = Image {};
+public var spinner = ImageLoadingSpinner {
+    image: bind img,
+};
+
+function run () {
+    img.progress = 1;
+    img.progress = 2;
+    img.progress = 3;
+}

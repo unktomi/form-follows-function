@@ -1,0 +1,30 @@
+-----------
+[ ]
+[0..-1]
+[ A, yo, 1.5, A, A, A, false ]
+[ A, yo, 1.5, A, A, A, false ]
+-----------
+[ A, yo, 1.5, A, A, A, false ]
+[1..1]
+[ x ]
+[ A, x, 1.5, A, A, A, false ]
+-----------
+[ A, x, 1.5, A, A, A, false ]
+[6..5]
+[ A ]
+[ A, x, 1.5, A, A, A, A, false ]
+-----------
+[ A, x, 1.5, A, A, A, A, false ]
+[2..2]
+[ A, 1.5, A ]
+[ A, x, A, 1.5, A, A, A, A, A, false ]
+-----------
+[ A, x, A, 1.5, A, A, A, A, A, false ]
+[0..0]
+[ ]
+[ x, A, 1.5, A, A, A, A, A, false ]
+-----------
+[ x, A, 1.5, A, A, A, A, A, false ]
+[2..2]
+[ 3.0 ]
+[ x, A, 3.0, A, A, A, A, A, false ]

@@ -1,0 +1,168 @@
+Replacing initial scalar value
+A1: 0 = 10
+B1: 0 = 10
+C1: 0 = 10
+A1: 10 = 20
+B1: 10 = 20
+C1: 10 = 20
+Replacing no initial scalar value
+A2: 0 = 0
+B2: 0 = 0
+C2: 0 = 0
+A2: 0 = 20
+B2: 0 = 20
+C2: 0 = 20
+Replacing bound initial scalar value
+A3: 0 = 10
+B3: 0 = 10
+C3: 0 = 10
+A3: 10 = 20
+B3: 10 = 20
+C3: 10 = 20
+Replacing bound no initial scalar value
+A4: 0 = 0
+B4: 0 = 0
+C4: 0 = 0
+A4: 0 = 20
+B4: 0 = 20
+C4: 0 = 20
+Replacing initial scalar value - mixins
+A1M: 0 = 10
+B1M: 0 = 10
+C1M: 0 = 10
+A1M: 10 = 20
+B1M: 10 = 20
+C1M: 10 = 20
+Replacing no initial scalar value - mixins
+A2M: 0 = 0
+B2M: 0 = 0
+C2M: 0 = 0
+A2M: 0 = 20
+B2M: 0 = 20
+C2M: 0 = 20
+Replacing bound initial scalar value - mixins
+A3M: 0 = 10
+B3M: 0 = 10
+C3M: 0 = 10
+A3M: 10 = 20
+B3M: 10 = 20
+C3M: 10 = 20
+Replacing bound no initial scalar value - mixins
+A4M: 0 = 0
+B4M: 0 = 0
+C4M: 0 = 0
+A4M: 0 = 20
+B4M: 0 = 20
+C4M: 0 = 20
+Replacing initial sequence value
+A1Seq:  = 123
+B1Seq:  = 123
+C1Seq:  = 123
+A1Seq: 123 = 102030
+B1Seq: 123 = 102030
+C1Seq: 123 = 102030
+Replacing no initial sequence value
+A2Seq:  = 
+B2Seq:  = 
+C2Seq:  = 
+A2Seq:  = 102030
+B2Seq:  = 102030
+C2Seq:  = 102030
+Replacing bound initial sequence value
+A3Seq:  = 123
+B3Seq:  = 123
+C3Seq:  = 123
+A3Seq: 123 = 102030
+B3Seq: 123 = 102030
+C3Seq: 123 = 102030
+Replacing bound no initial sequence value
+A4Seq:  = 
+B4Seq:  = 
+C4Seq:  = 
+A4Seq:  = 102030
+B4Seq:  = 102030
+C4Seq:  = 102030
+Replacing initial sequence value - mixins
+A1MSeq:  = 123
+B1MSeq:  = 123
+C1MSeq:  = 123
+A1MSeq: 123 = 102030
+B1MSeq: 123 = 102030
+C1MSeq: 123 = 102030
+Replacing no initial sequence value - mixins
+A2MSeq:  = 
+B2MSeq:  = 
+C2MSeq:  = 
+A2MSeq:  = 102030
+B2MSeq:  = 102030
+C2MSeq:  = 102030
+Replacing bound initial sequence value - mixins
+A3MSeq:  = 123
+B3MSeq:  = 123
+C3MSeq:  = 123
+A3MSeq: 123 = 102030
+B3MSeq: 123 = 102030
+C3MSeq: 123 = 102030
+Replacing bound no initial sequence value - mixins
+A4MSeq:  = 
+B4MSeq:  = 
+C4MSeq:  = 
+A4MSeq:  = 102030
+B4MSeq:  = 102030
+C4MSeq:  = 102030
+Replacing initial sequence value, detailed expression
+A1DetailSeq: [0..-1] = 123
+B1DetailSeq: [0..-1] = 123
+C1DetailSeq: [0..-1] = 123
+A1DetailSeq: 123[0..2] = 102030
+B1DetailSeq: 123[0..2] = 102030
+C1DetailSeq: 123[0..2] = 102030
+Replacing no initial sequence value, detailed expression
+A2DetailSeq: [0..-1] = 
+B2DetailSeq: [0..-1] = 
+C2DetailSeq: [0..-1] = 
+A2DetailSeq: [0..-1] = 102030
+B2DetailSeq: [0..-1] = 102030
+C2DetailSeq: [0..-1] = 102030
+Replacing bound initial sequence value, detailed expression
+A3DetailSeq: [0..-1] = 123
+B3DetailSeq: [0..-1] = 123
+C3DetailSeq: [0..-1] = 123
+A3DetailSeq: 123[0..2] = 102030
+B3DetailSeq: 123[0..2] = 102030
+C3DetailSeq: 123[0..2] = 102030
+Replacing bound no initial sequence value, detailed expression
+A4DetailSeq: [0..-1] = 
+B4DetailSeq: [0..-1] = 
+C4DetailSeq: [0..-1] = 
+A4DetailSeq: [0..-1] = 102030
+B4DetailSeq: [0..-1] = 102030
+C4DetailSeq: [0..-1] = 102030
+Replacing initial value, detailed expression - mixins
+A1MDetailSeq: [0..-1] = 123
+B1MDetailSeq: [0..-1] = 123
+C1MDetailSeq: [0..-1] = 123
+A1MDetailSeq: 123[0..2] = 102030
+B1MDetailSeq: 123[0..2] = 102030
+C1MDetailSeq: 123[0..2] = 102030
+Replacing no initial value, detailed expression - mixins
+A2MDetailSeq: [0..-1] = 
+B2MDetailSeq: [0..-1] = 
+C2MDetailSeq: [0..-1] = 
+A2MDetailSeq: [0..-1] = 102030
+B2MDetailSeq: [0..-1] = 102030
+C2MDetailSeq: [0..-1] = 102030
+Replacing bound initial value, detailed expression - mixins
+A3MDetailSeq: [0..-1] = 123
+B3MDetailSeq: [0..-1] = 123
+C3MDetailSeq: [0..-1] = 123
+A3MDetailSeq: 123[0..2] = 102030
+B3MDetailSeq: 123[0..2] = 102030
+C3MDetailSeq: 123[0..2] = 102030
+Replacing bound no initial value, detailed expression - mixins
+A4MDetailSeq: [0..-1] = 
+B4MDetailSeq: [0..-1] = 
+C4MDetailSeq: [0..-1] = 
+A4MDetailSeq: [0..-1] = 102030
+B4MDetailSeq: [0..-1] = 102030
+C4MDetailSeq: [0..-1] = 102030

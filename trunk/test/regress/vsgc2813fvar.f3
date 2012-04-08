@@ -1,0 +1,33 @@
+/**
+ * VSGC-2813 : For-loop over range generates unnecessary garbage objects on heap
+ *
+ * Literal range elements
+ *
+ * @test
+ * @run
+ */
+
+var lo = 1.0;
+var hi = 9.0;
+for (xxx in [lo..hi])
+   println(xxx);
+println("------");
+for (xxx in [lo..<hi])
+   println(xxx);
+println("------");
+var st = 2.0;
+for (xxx in [lo..hi step st])
+   println(xxx);
+println("------");
+for (xxx in [lo..<hi step st])
+   println(xxx);
+println("------");
+lo = 9;
+hi = 1;
+st = -2;
+for (xxx in [lo..hi step st])
+   println(xxx);
+println("------");
+for (xxx in [lo..<hi step st])
+   println(xxx);
+println("------");

@@ -1,0 +1,88 @@
+test\should-fail\vsgc1910.f3:7: modifier public-read not allowed on a class
+public-read class dPRead {}
+^
+test\should-fail\vsgc1910.f3:8: modifier public-init not allowed on a class
+public-init class dPInit {}
+^
+test\should-fail\vsgc1910.f3:9: modifier override not allowed on a class
+override class dOverride {}
+^
+test\should-fail\vsgc1910.f3:11: modifier bound not allowed on a class
+bound class dBound {}
+^
+test\should-fail\vsgc1910.f3:13: modifier public-read not allowed on a script level function
+public-read function cPRead() {}
+^
+test\should-fail\vsgc1910.f3:14: modifier public-init not allowed on a script level function
+public-init function cPInit() {}
+^
+test\should-fail\vsgc1910.f3:15: modifier override not allowed on a script level function
+override function cOverride() {}
+^
+test\should-fail\vsgc1910.f3:16: modifier abstract not allowed on a script level function
+abstract function cAbstract();
+^
+test\should-fail\vsgc1910.f3:22: modifier public-init not allowed on a def
+public-init def aPInit = 1;
+^
+test\should-fail\vsgc1910.f3:23: modifier public-init not allowed on a script level var
+public-init var bPInit = 1;
+^
+test\should-fail\vsgc1910.f3:25: modifier abstract not allowed on a def
+abstract def aAbstract = 1;
+^
+test\should-fail\vsgc1910.f3:26: modifier abstract not allowed on a script level var
+abstract var bAbstract = 1;
+^
+test\should-fail\vsgc1910.f3:28: modifier bound not allowed on a def
+bound def aBound = 1;
+^
+test\should-fail\vsgc1910.f3:29: modifier bound not allowed on a script level var
+bound var bBound = 1;
+^
+test\should-fail\vsgc1910.f3:36: modifier public-read not allowed on a function
+    public-read function cPReadInst() {}
+    ^
+test\should-fail\vsgc1910.f3:37: modifier public-init not allowed on a function
+    public-init function cPInitInst() {}
+    ^
+test\should-fail\vsgc1910.f3:45: modifier public-init not allowed on a def
+    public-init def aPInitInst = 1;
+    ^
+test\should-fail\vsgc1910.f3:48: modifier abstract not allowed on a def
+    abstract def aAbstractInst = 1;
+    ^
+test\should-fail\vsgc1910.f3:49: modifier abstract not allowed on an instance var
+    abstract var bAbstractInst = 1;
+    ^
+test\should-fail\vsgc1910.f3:51: modifier bound not allowed on a def
+    bound def aBoundInst = 1;
+    ^
+test\should-fail\vsgc1910.f3:52: modifier bound not allowed on an instance var
+    bound var bBoundInst = 1;
+    ^
+test\should-fail\vsgc1910.f3:56: modifiers (in this case public-read) not allowed on a local def
+    public-read def aPReadLocal = 1; 
+    ^
+test\should-fail\vsgc1910.f3:57: modifiers (in this case public-read) not allowed on a local var
+    public-read var bPReadLocal = 1; 
+    ^
+test\should-fail\vsgc1910.f3:59: modifiers (in this case public-init) not allowed on a local def
+    public-init def aPInitLocal = 1;
+    ^
+test\should-fail\vsgc1910.f3:60: modifiers (in this case public-init) not allowed on a local var
+    public-init var bPInitLocal = 1;
+    ^
+test\should-fail\vsgc1910.f3:62: modifiers (in this case abstract) not allowed on a local def
+    abstract def aAbstractLocal = 1;
+    ^
+test\should-fail\vsgc1910.f3:63: modifiers (in this case abstract) not allowed on a local var
+    abstract var bAbstractLocal = 1;
+    ^
+test\should-fail\vsgc1910.f3:65: modifiers (in this case bound) not allowed on a local def
+    bound def aBoundLocal = 1;
+    ^
+test\should-fail\vsgc1910.f3:66: modifiers (in this case bound) not allowed on a local var
+    bound var bBoundLocal = 1;
+    ^
+29 errors

@@ -1,0 +1,64 @@
+/**
+ * Regression test VSGC-2136 : f3.reflectF3VarMember.setValue fails for elided instance var
+ *
+ * @test
+ * @run
+ */
+
+import f3.reflect.*;
+import java.util.*;
+
+class vsgc2136 {
+    var x : Integer = 11;
+    var y : String = "why";
+    public var xp : Integer = 22;
+    public var yp : String = "oh";
+
+    function show() {
+	println( x );
+	println( y );
+	println( xp );
+	println( yp );
+    }  
+}
+
+    function getVarValue(object : Object, name : String) : F3Value {
+        var objectValue : F3ObjectValue = F3Local.getContext().mirrorOf(object);
+        var cls : F3ClassType = objectValue.getType();
+        var attrs = cls.getMembers( F3MemberFilter.acceptAttributes(name), false );
+        var attr : F3VarMember  = attrs.get(0) as F3VarMember;
+        return attr.getValue(objectValue);
+    }
+
+
+    function setVarValue(object : Object, name : String, value : Object) {
+        var objectValue : F3ObjectValue = F3Local.getContext().mirrorOf(object);
+        var cls : F3ClassType = objectValue.getType();
+        var attrs = cls.getMembers( F3MemberFilter.acceptAttributes(name), false);
+        var attr = attrs.get(0) as F3VarMember;
+        var mirrored : F3Value;
+        if (value instanceof F3Value)
+            mirrored = value as F3Value
+        else
+            mirrored = F3Local.getContext().mirrorOf(value);
+        attr.setValue(objectValue, mirrored);
+    }
+
+var a = vsgc2136{};
+println( getVarValue(a, "x").getValueString() );
+println( getVarValue(a, "y").getValueString() );
+println( getVarValue(a, "xp").getValueString() );
+println( getVarValue(a, "yp").getValueString() );
+
+setVarValue(a, "x", 1001);
+setVarValue(a, "y", "what");
+setVarValue(a, "xp", 2002);
+setVarValue(a, "yp", "ah");
+
+println( getVarValue(a, "x").getValueString() );
+println( getVarValue(a, "y").getValueString() );
+println( getVarValue(a, "xp").getValueString() );
+println( getVarValue(a, "yp").getValueString() );
+
+a.show();
+

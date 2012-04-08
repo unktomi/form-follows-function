@@ -1,0 +1,29 @@
+/*
+ * Regression test VSGC-2658 : Mixin translation: generate correct instanceof / cast idiom based on mixin/non-mixin status (as per 4.3 of mixin doc)
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.*;
+
+mixin class A {
+}
+
+class B extends A {
+}
+
+class C extends B {
+}
+
+var b = new B();
+var c = new C();
+
+System.out.println("c instanceof C = {c instanceof C}");
+System.out.println("c instanceof B = {c instanceof B}");
+System.out.println("c instanceof A = {c instanceof A}");
+
+var x = c as C;
+var y = c as B;
+var z = c as A;
+

@@ -1,0 +1,150 @@
+Replacing initial scalar value
+A1
+B1
+C1
+A1
+B1
+C1
+Replacing no initial scalar value
+A2
+B2
+C2
+Replacing bound initial scalar value
+A3
+B3
+C3
+Replacing bound no initial scalar value
+A4
+B4
+C4
+Replacing initial scalar value - mixins
+A1M
+B1M
+C1M
+A1M
+B1M
+C1M
+Replacing no initial scalar value - mixins
+A2M
+B2M
+C2M
+Replacing bound initial scalar value - mixins
+A3M
+B3M
+C3M
+Replacing bound no initial scalar value - mixins
+A4M
+B4M
+C4M
+Replacing initial sequence value
+A1Seq
+B1Seq
+C1Seq
+A1Seq
+B1Seq
+C1Seq
+Replacing no initial sequence value
+A2Seq
+B2Seq
+C2Seq
+A2Seq
+B2Seq
+C2Seq
+Replacing bound initial sequence value
+A3Seq
+B3Seq
+C3Seq
+A3Seq
+B3Seq
+C3Seq
+Replacing bound no initial sequence value
+A4Seq
+B4Seq
+C4Seq
+A4Seq
+B4Seq
+C4Seq
+Replacing initial sequence value - mixins
+A1MSeq
+B1MSeq
+C1MSeq
+A1MSeq
+B1MSeq
+C1MSeq
+Replacing no initial sequence value - mixins
+A2MSeq
+B2MSeq
+C2MSeq
+A2MSeq
+B2MSeq
+C2MSeq
+Replacing bound initial sequence value - mixins
+A3MSeq
+B3MSeq
+C3MSeq
+A3MSeq
+B3MSeq
+C3MSeq
+Replacing bound no initial sequence value - mixins
+A4MSeq
+B4MSeq
+C4MSeq
+A4MSeq
+B4MSeq
+C4MSeq
+Replacing initial sequence value, detailed expression
+A1DetailSeq
+B1DetailSeq
+C1DetailSeq
+A1DetailSeq
+B1DetailSeq
+C1DetailSeq
+Replacing no initial sequence value, detailed expression
+A2DetailSeq
+B2DetailSeq
+C2DetailSeq
+A2DetailSeq
+B2DetailSeq
+C2DetailSeq
+Replacing bound initial sequence value, detailed expression
+A3DetailSeq
+B3DetailSeq
+C3DetailSeq
+A3DetailSeq
+B3DetailSeq
+C3DetailSeq
+Replacing bound no initial sequence value, detailed expression
+A4DetailSeq
+B4DetailSeq
+C4DetailSeq
+A4DetailSeq
+B4DetailSeq
+C4DetailSeq
+Replacing initial value, detailed expression - mixins
+A1MDetailSeq
+B1MDetailSeq
+C1MDetailSeq
+A1MDetailSeq
+B1MDetailSeq
+C1MDetailSeq
+Replacing no initial value, detailed expression - mixins
+A2MDetailSeq
+B2MDetailSeq
+C2MDetailSeq
+A2MDetailSeq
+B2MDetailSeq
+C2MDetailSeq
+Replacing bound initial value, detailed expression - mixins
+A3MDetailSeq
+B3MDetailSeq
+C3MDetailSeq
+A3MDetailSeq
+B3MDetailSeq
+C3MDetailSeq
+Replacing bound no initial value, detailed expression - mixins
+A4MDetailSeq
+B4MDetailSeq
+C4MDetailSeq
+A4MDetailSeq
+B4MDetailSeq
+C4MDetailSeq

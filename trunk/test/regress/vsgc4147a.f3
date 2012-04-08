@@ -1,0 +1,25 @@
+/*
+ * VSGC-4147: non-bound sequence object literal initializer for var bound in class is broken
+ *
+ * @test
+ * @run
+ */
+
+public class A {
+  public var n = "Wilbur";
+  public var seq = bind [n] on replace [a..b] = newVal { println("on-replace [{a}..{b}] = {sizeof newVal}") } ;
+}
+
+class B {
+  var a = A {
+    seq: ["Orr"]
+  }
+  init {
+    insert "Harbin" into a.seq;
+  }
+}
+
+function run() {
+  def aa = B{}.a;
+  println(aa.seq[0])
+}

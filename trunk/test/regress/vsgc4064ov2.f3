@@ -1,0 +1,22 @@
+/*
+ * Regression test 
+ * VSGC-4064 : bound-for over sequence triggers in inconsistent states
+ *
+ * Initially full, change size, using oldValue
+ *
+ * @test
+ * @run
+ */
+
+class A {
+  override function toString() { "A" }
+}
+var x = [A{}, A{}, A{}];
+def eb = bind for (i in [1..3]) x on replace oldValue[a..b] = newValue { 
+	println("---- on-replace [{a}..{b}] = {newValue.toString()}");
+	println(oldValue);
+	println(eb);
+}
+x = [A{}];
+x = null;
+x = [A{}, A{}];

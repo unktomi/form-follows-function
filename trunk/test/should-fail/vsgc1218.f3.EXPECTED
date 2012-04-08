@@ -1,0 +1,4 @@
+test/should-fail/vsgc1218.f3:4: 'void' type not allowed here
+function func(g:Void):Void{
+                ^
+1 error

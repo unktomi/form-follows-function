@@ -1,0 +1,7 @@
+/**
+ * VSGC-3759 : Compiled bind: Cannot find symbol: method size$seq(), seq is a Sequence defined at the top level in a separate file - the qualifier is missing
+ *
+ * @subtest
+ */
+
+public var seq : Integer[] = [1..2];

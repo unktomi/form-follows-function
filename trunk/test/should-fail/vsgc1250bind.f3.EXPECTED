@@ -1,0 +1,64 @@
+test\should-fail\vsgc1250bind.f3:51: memScr has script only (default) access in vsgc1250subFail
+	    memScr: bind toThis,   // ERROR: inherited, same package
+	    ^
+test\should-fail\vsgc1250bind.f3:55: memIScr has script only (default) bind access in vsgc1250subFail
+	    memIScr: bind toThis,   // ERROR:  inherited, same package
+	    ^
+test\should-fail\vsgc1250bind.f3:59: memRScr has script only (default) bind access in vsgc1250subFail
+	    memRScr: bind toThis,   // ERROR: inherited, same package
+	    ^
+test\should-fail\vsgc1250bind.f3:69: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	    memPkg: bind toThis,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250bind.f3:70: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	    memScr: bind toThis,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250bind.f3:73: memIPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	    memIPkg: bind toThis,   // ERROR:  inherited, different package
+	    ^
+test\should-fail\vsgc1250bind.f3:74: memIScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	    memIScr: bind toThis,   // ERROR:  inherited, different package
+	    ^
+test\should-fail\vsgc1250bind.f3:77: memRPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	    memRPkg: bind toThis,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250bind.f3:78: memRScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	    memRScr: bind toThis,   // ERROR: inherited, different package
+	    ^
+test\should-fail\vsgc1250bind.f3:132: memScr has script only (default) access in vsgc1250subFail
+	    memScr: bind toThis,   // ERROR: same package
+	    ^
+test\should-fail\vsgc1250bind.f3:136: memIScr has script only (default) bind access in vsgc1250subFail
+	    memIScr: bind toThis,   // ERROR:  same package
+	    ^
+test\should-fail\vsgc1250bind.f3:140: memRScr has script only (default) bind access in vsgc1250subFail
+	    memRScr: bind toThis,   // ERROR: same package
+	    ^
+test\should-fail\vsgc1250bind.f3:147: memPro has protected access in vsgc1250.a.vsgc1250subFailA
+	    memPro: bind toThis,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250bind.f3:148: memPkg is not public in vsgc1250.a.vsgc1250subFailA; cannot be accessed from outside package
+	    memPkg: bind toThis,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250bind.f3:149: memScr has script only (default) access in vsgc1250.a.vsgc1250subFailA
+	    memScr: bind toThis,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250bind.f3:151: memIPro has protected bind access in vsgc1250.a.vsgc1250subFailA
+	    memIPro: bind toThis,   // ERROR:  different package
+	    ^
+test\should-fail\vsgc1250bind.f3:152: memIPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	    memIPkg: bind toThis,   // ERROR:  different package
+	    ^
+test\should-fail\vsgc1250bind.f3:153: memIScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	    memIScr: bind toThis,   // ERROR:  different package
+	    ^
+test\should-fail\vsgc1250bind.f3:155: memRPro has protected bind access in vsgc1250.a.vsgc1250subFailA
+	    memRPro: bind toThis,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250bind.f3:156: memRPkg has package bind access in vsgc1250.a.vsgc1250subFailA
+	    memRPkg: bind toThis,   // ERROR: different package
+	    ^
+test\should-fail\vsgc1250bind.f3:157: memRScr has script only (default) bind access in vsgc1250.a.vsgc1250subFailA
+	    memRScr: bind toThis,   // ERROR: different package
+	    ^
+21 errors

@@ -1,0 +1,6 @@
+test/should-fail/vsgc683b.f3:32: incompatible types
+found   : String
+required: vsgc683b.Node
+var n:Node = "";
+             ^
+1 error

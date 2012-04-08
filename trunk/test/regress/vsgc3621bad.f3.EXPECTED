@@ -1,0 +1,4 @@
+[ constructed instance #1
+before: #1 : a=17
+[ constructed instance #2
+after: #2 : a=17

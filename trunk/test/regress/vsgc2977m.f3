@@ -1,0 +1,7 @@
+/**
+ * @subtest
+ */
+
+public mixin class vsgc2977m {
+   public function m() {}
+}

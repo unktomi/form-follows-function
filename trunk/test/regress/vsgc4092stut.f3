@@ -1,0 +1,23 @@
+/**
+ * VSGC-4092 : sequence bound-if with logical-and condition gives stale explicit sequence element
+ *
+ * Elements evaluated minimal number of times
+ *
+ * @test
+ * @run
+ */
+
+class sve2 {
+  var x = 4;
+  var sx = [2];
+  function foo(z : Integer) { println("Foo z: {z}"); z}
+  var seq = bind [foo(x)];
+}
+var aa = sve2{};
+println(aa.seq);
+aa.x = 13;
+aa.x = 99;
+println(aa.seq);
+println(aa.seq);
+println(aa.seq);
+println(aa.seq);

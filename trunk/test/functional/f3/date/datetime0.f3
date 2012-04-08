@@ -1,0 +1,253 @@
+/*
+ * Tests for f3.date.DateTime
+ *
+ * @test
+ * @run
+ */
+
+import f3.date.DateTime;
+
+import java.lang.Exception;
+import java.lang.RuntimeException;
+import java.lang.System;
+
+var start:Long = System.currentTimeMillis();
+var dt = DateTime { };
+var end:Long = System.currentTimeMillis();
+if (dt.instant < start or dt.instant > end) {
+    error("must be {start} <= dt.instant={dt.instant}"
+                               " <= {end}");
+}
+
+var roundTripDataXML:String[] = [
+    "2010-03-31T23:12:01",
+    "2010-03-31T23:12:01.9",
+    "2010-03-31T23:12:01.09",
+    "2010-03-31T23:12:01.99",
+    "2010-03-31T23:12:01.009",
+    "2010-03-31T23:12:01.999",
+    "2010-03-31T23:12:01.28",
+    "-2010-03-31T23:12:01.28",
+    "2010-03-31T23:12:01Z",
+    "2010-03-31T23:12:01.28Z",
+    "-2010-03-31T23:12:01.28Z",
+    "2010-03-31T23:12:01-07:00",
+    "2010-03-31T23:12:01.28-07:00",
+    "-2010-03-31T23:12:01.28-07:00",
+    "2010-03-31T23:12:01+09:00",
+    "2010-03-31T23:12:01.28+09:00",
+    "-2010-03-31T23:12:01.28+09:00",
+];
+
+for (str in roundTripDataXML) {
+    //println("parsing {str}");
+    dt = DateTime.impl_parseXMLDateTime(str);
+    var x = dt.impl_toString();
+    if (x != str) {
+        //println("{str} != {x}");
+        error("{str} != {x}");
+
+    }
+}
+
+var specialCaseDataXML:String[] = [
+    // input vs. expected output
+    "2009-03-25T12:23:34.0004",  "2009-03-25T12:23:34",
+    "2009-03-25T12:23:34.99999", "2009-03-25T12:23:34.999",
+    "2009-12-31T24:00:00",       "2010-01-01T00:00:00",
+];
+
+for (i in [0..<sizeof(specialCaseDataXML) step 2]) {
+    var str = specialCaseDataXML[i];
+    var expected = specialCaseDataXML[i + 1];
+    dt = DateTime.impl_parseXMLDateTime(str);
+    var got:String = dt.impl_toString();
+    if (got != expected) {
+        error("\"{expected}\" != \"{got}\"");
+    }
+}
+
+var badDataXML:String[] = [
+    "999-03-24T12:23:34.567",           // invalid year
+    "0000-03-24T12:23:34.567",          // invalid year
+    "02009-03-24T12:23:34.567",         // invalid year (leading "0")
+    "2009-3-24T12:23:34.567",           // invalid month
+    "2009-003-24T12:23:34.567",         // invalid month
+    "2009-03-4T24T12:23:34.567",        // invalid day of month
+    "2009-03-004T12:23:34.567",         // invalid day of month
+    "2009-03-24T1:23:34.567",           // invalid hour of day
+    "2009-03-24T012:23:34.567",         // invalid hour of day
+    "2009-03-24T24:01:00",              // invalid hour of day
+    "2009-03-24T24:00:01",              // invalid hour of day
+    "2009-03-24T24:00:00.001",          // invalid hour of day
+    "2009-03-24T12:3:34.567",           // invalid minute
+    "2009-03-24T12:23:4.567",           // invalid second
+    "2009-03-24T12:23:34.",             // missing fractional second digits
+    "2009-03-24T12:23:34.567-7",        // incomplete time zone
+    "2009-03-24T12:23:34.567-07:2",     // invalid time zone minutes
+    "2009-03-24T12:23:34.567-07:60",    // >59 time zone minutes
+    "2009-03-24T12:23:34.567-15:00",    // >14 hours time zone
+    "2009-03-24T12:23:34.567-14:01",    // >14 hours time zone
+    "2009-13-24T12:23:34.567-07:00",    // >12 month
+    "2009-03-32T12:23:34.567-07:00",    // invalid day of month (>31 in March)
+    "2009-03-24T24:23:34.567-07:00",    // >23 hour of day
+    "2009-03-24T12:60:34.567-07:00",    // >59 minute
+    "2009-03-24T12:23:61.567-07:00",    // >59 second (no leapsecond support)
+    "2009-02-29T12:23:34.567-07:00",    // Feb. 29 in a non-leap year
+    "2010-03-31T23:12:01-07:00x",       // trailing characters
+    "--T::-:",
+];
+
+var err:String = null;
+
+for (str in badDataXML) {
+    try {
+        //println("Parsing {str}");
+        dt = DateTime.impl_parseXMLDateTime(str);
+        err = "didn't throw an exception with {str}, got {dt.impl_toString()}";
+        break;
+    } catch (e:Exception) {
+        // OK
+    }
+}
+
+if (err != null) {
+    error(err);
+}
+
+/*
+ * RFC822 format tests
+ */
+
+var roundTripData822:String[] = [
+    "Sun, 29 Mar 2009 20:28:39 +0900",
+    "Sun, 29 Mar 2009 20:28:39 +0959",
+    "Sun, 01 Mar 2009 20:28:39 GMT",
+    "Sun, 01 Mar 2009 20:28:39 PST",
+    "Sun, 01 Mar 2009 20:28:39 MST",
+    "Sun, 01 Mar 2009 20:28:39 CST",
+    "Sun, 01 Mar 2009 20:28:39 EST",
+    "Sun, 29 Mar 2009 20:28:39 PDT",
+    "Sun, 29 Mar 2009 20:28:39 MDT",
+    "Sun, 29 Mar 2009 20:28:39 CDT",
+    "Sun, 29 Mar 2009 20:28:39 EDT",
+    "Sun, 01 Nov 2009 01:30:00 PDT", // disambiguate dst-std transition
+    "Sun, 01 Nov 2009 01:30:00 PST", // disambiguate dst-std transition
+    "Sun, 29 Oct 2006 01:30:00 PDT", // disambiguate dst-std transition
+    "Sun, 29 Oct 2006 01:30:00 PST", // disambiguate dst-std transition
+    "Mon, 21 Jun 2010 15:00:00 MDT", // Denver vs. Phoenix
+    "Mon, 21 Jun 2010 15:00:00 MST", // Denver vs. Phoenix
+];
+
+for (str in roundTripData822) {
+    //println("Parsing {str}");
+    dt = DateTime.impl_parseRFC822DateTime(str);
+    var got:String = dt.impl_toRFC822String();
+    if (str != got) {
+        error("{str} != {got}");
+    }
+}
+
+var specialCaseData822:String[] = [
+    // input vs. expected output
+    "Sun, 1 Mar 2009 20:28:39 PST", "Sun, 01 Mar 2009 20:28:39 PST",
+    "29 Mar 2009 20:28:39 +0900", "Sun, 29 Mar 2009 20:28:39 +0900",
+    "29 Mar 2009 20:28:39 PDT",   "Sun, 29 Mar 2009 20:28:39 PDT",
+    "29 Mar 2009 20:28 PDT",      "Sun, 29 Mar 2009 20:28:00 PDT",
+    "Sun, 29 Mar 09 20:28:39 PDT","Sun, 29 Mar 2009 20:28:39 PDT",      // Y2K
+    "9 Aug 89 02:14:00 +0900",    "Wed, 09 Aug 1989 02:14:00 +0900",    // Y2K
+    "29 Feb 00 02:14 +0900",      "Tue, 29 Feb 2000 02:14:00 +0900",    // Y2K
+    "29 Mar 09 20:28:39 PDT",     "Sun, 29 Mar 2009 20:28:39 PDT",      // Y2K
+    "Sun, 29 Mar 09 20:28:39 UT", "Sun, 29 Mar 2009 20:28:39 GMT",      // Y2K
+    // Allow invalid U.S. local time stamps (RT-5989)
+    "Mon, 25 Dec 2000 01:02:03 EDT", "Mon, 25 Dec 2000 01:02:03 -0400",
+    "Mon, 19 Jun 2000 01:02:03 EST", "Mon, 19 Jun 2000 01:02:03 -0500",
+    "Sun, 02 Apr 2006 02:45:00 CST", "Sun, 02 Apr 2006 02:45:00 -0600",
+    "Sun, 02 Apr 2006 02:45:00 CDT", "Sun, 02 Apr 2006 02:45:00 -0500",
+    "Sun, 08 Mar 2009 02:00:00 PST", "Sun, 08 Mar 2009 02:00:00 -0800",
+    "Sun, 08 Mar 2009 02:00:00 PDT", "Sun, 08 Mar 2009 02:00:00 -0700",
+    "Sun, 08 Mar 2009 02:30:00 PST", "Sun, 08 Mar 2009 02:30:00 -0800",
+    "Sun, 08 Mar 2009 02:30:00 PDT", "Sun, 08 Mar 2009 02:30:00 -0700",
+    // Military single letter time zones
+    "Sun, 29 Mar 09 20:28:39 A",  "Sun, 29 Mar 2009 20:28:39 -0100",
+    "Sun, 29 Mar 09 20:28:39 B",  "Sun, 29 Mar 2009 20:28:39 -0200",
+    "Sun, 29 Mar 09 20:28:39 C",  "Sun, 29 Mar 2009 20:28:39 -0300",
+    "Sun, 29 Mar 09 20:28:39 D",  "Sun, 29 Mar 2009 20:28:39 -0400",
+    "Sun, 29 Mar 09 20:28:39 E",  "Sun, 29 Mar 2009 20:28:39 -0500",
+    "Sun, 29 Mar 09 20:28:39 F",  "Sun, 29 Mar 2009 20:28:39 -0600",
+    "Sun, 29 Mar 09 20:28:39 G",  "Sun, 29 Mar 2009 20:28:39 -0700",
+    "Sun, 29 Mar 09 20:28:39 H",  "Sun, 29 Mar 2009 20:28:39 -0800",
+    "Sun, 29 Mar 09 20:28:39 I",  "Sun, 29 Mar 2009 20:28:39 -0900",
+    "Sun, 29 Mar 09 20:28:39 K",  "Sun, 29 Mar 2009 20:28:39 -1000",
+    "Sun, 29 Mar 09 20:28:39 L",  "Sun, 29 Mar 2009 20:28:39 -1100",
+    "Sun, 29 Mar 09 20:28:39 M",  "Sun, 29 Mar 2009 20:28:39 -1200",
+    "Sun, 29 Mar 09 20:28:39 N",  "Sun, 29 Mar 2009 20:28:39 +0100",
+    "Sun, 29 Mar 09 20:28:39 O",  "Sun, 29 Mar 2009 20:28:39 +0200",
+    "Sun, 29 Mar 09 20:28:39 P",  "Sun, 29 Mar 2009 20:28:39 +0300",
+    "Sun, 29 Mar 09 20:28:39 Q",  "Sun, 29 Mar 2009 20:28:39 +0400",
+    "Sun, 29 Mar 09 20:28:39 R",  "Sun, 29 Mar 2009 20:28:39 +0500",
+    "Sun, 29 Mar 09 20:28:39 S",  "Sun, 29 Mar 2009 20:28:39 +0600",
+    "Sun, 29 Mar 09 20:28:39 T",  "Sun, 29 Mar 2009 20:28:39 +0700",
+    "Sun, 29 Mar 09 20:28:39 U",  "Sun, 29 Mar 2009 20:28:39 +0800",
+    "Sun, 29 Mar 09 20:28:39 V",  "Sun, 29 Mar 2009 20:28:39 +0900",
+    "Sun, 29 Mar 09 20:28:39 W",  "Sun, 29 Mar 2009 20:28:39 +1000",
+    "Sun, 29 Mar 09 20:28:39 X",  "Sun, 29 Mar 2009 20:28:39 +1100",
+    "Sun, 29 Mar 09 20:28:39 Y",  "Sun, 29 Mar 2009 20:28:39 +1200",
+    "Sun, 29 Mar 09 20:28:39 Z",  "Sun, 29 Mar 2009 20:28:39 +0000",
+];
+
+for (i in [0..<sizeof(specialCaseData822) step 2]) {
+    var str = specialCaseData822[i];
+    //println("Parsing {str}");
+    var expected = specialCaseData822[i + 1];
+    dt = DateTime.impl_parseRFC822DateTime(str);
+    var got:String = dt.impl_toRFC822String();
+    if (got != expected) {
+        error("\"{got}\" != \"{expected}\"");
+    }
+}
+
+var badData822:String[] = [
+    "Sun, 01 Nar 2009 20:28:39 PST",        // invalid month
+    "Sun, 01 03 2009 20:28:39 PST",         // invalid month
+    "Foo, 29 Mar 2009 20:28 PDT",           // invalid day of week
+    "Mon, 29 Mar 2009 20:28 PDT",           // inconsistent day of week
+    "Sun, 41 Mar 2009 20:28:39 PST",        // invalid day of month
+    "Sun, 01 Mar 2009 24:28:39 PST",        // invalid hour
+    "Sun, 01 Mar 2009 20:68:39 PST",        // invalid minute
+    "Sun, 01 Mar 2009 20:28:69 PST",        // invalid second
+    "Sun, 29 Mar 2009 20:28:39.999 PDT",    // invalid fractional seconds
+    "Sun, 01 Mar 2009 20:28:39 J",          // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39 JST",        // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39 HST",        // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39 0700",       // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39 -070",       // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39 -07000",     // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39 +0760",      // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39 -0760",      // invalid time zone
+    "Sun, 01 Mar 2009 20:28:39",            // no time zone
+    "Sun 29 Mar 2009 20:28:39 PDT",         // no comma
+    "Sun, 29 Feb 2009 20:28:39 PST",        // Feb. 29 in a non-leap year
+    "Sun, 01 Mar 2009 20:28:39 PST ",       // extra space at the end
+    "Wed,",
+];
+
+for (str in badData822) {
+    try {
+        //println("Parsing {str}");
+        dt = DateTime.impl_parseRFC822DateTime(str);
+        err = "didn't throw an exception with {str}, got {dt.impl_toRFC822String()}";
+        break;
+    } catch (e:Exception) {
+        // OK
+    }
+}
+
+if (err != null) {
+    error(err);
+}
+
+
+function error(msg:String):Void {
+    throw new RuntimeException(msg);
+}

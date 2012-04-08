@@ -1,0 +1,20 @@
+/*
+ * Regression: VSGC-2397 - Compiler throws an NPE on trying to animate contents of a sequence.
+ *
+ * @test
+ * @run
+ *
+ */
+
+import f3.animation.*;
+
+var txt1 = ["J"];
+var txt2 = ["a"];
+var txt = [txt1];
+var t = Timeline {
+keyFrames: [
+KeyFrame { time: 0s values: txt => txt1},
+KeyFrame { time: 0s values: txt => [txt,txt2]},
+        ]
+     };
+t.play();

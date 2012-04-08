@@ -1,0 +1,32 @@
+/**
+ * VSGC-4106 : Strict declaration order initialization: bound sequences
+ *
+ * Check there are no noisy invalidations
+ *
+ * @test
+ * @run
+ */
+
+public class XRectangle {
+    override function toString() { "XRectangle" }
+}
+
+public class XGroup {
+
+    protected var children = bind content on replace [a..b] = newNodes {
+       println("[{a}..{b}] = {sizeof newNodes}"); 
+       children.toString();
+    }
+
+    public var content: XRectangle[];
+}
+
+var gg = XGroup {
+            content: bind [
+                XRectangle {}
+            ]
+        }
+
+function run() {
+  gg
+}

@@ -1,0 +1,20 @@
+-----all triggers fire at creation, even to default values------
+Boolean new value: false
+String old:  new:
+Integer old:0  newvalue:0==i:0
+-----triggers do not fire unless value changes------
+-----set Boolean 6 times; false, false, true, true,false, false-----
+Boolean new value: true
+Boolean new value: false
+-----set Integer 6 times; first to 0, 0, 500, 500,0, 0 -----
+Integer old:0  newvalue:500==i:500
+Integer old:500  newvalue:0==i:0
+-----set String 6 times; first to "", "", Hello, Hello, "",""-----
+String old:  new:Hello
+String old:Hello  new:
+========= results ================
+Tests:      9
+Passed:     0
+Failed:     0
+GoldenFile: 9 output comparisons
+==================================

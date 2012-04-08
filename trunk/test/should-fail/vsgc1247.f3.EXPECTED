@@ -1,0 +1,4 @@
+test/should-fail/vsgc1247.f3:4: cannot apply a function which expects (int) to (int,int)
+var sq=(function (x:Integer):Integer{x*x})(2,3); 
+       ^
+1 error

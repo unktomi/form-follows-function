@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="f3tracker" default="all" basedir=".">
+    <property name="builddir" location="${basedir}/../../build/buildtools/f3btrace"/>
+    <property name="f3.home" location="${basedir}/../../../artifacts/sdk"/>
+    <property name="srcdir"   location="${basedir}/src"/>
+    <property name="btrace_scriptsdir"   location="${basedir}/btrace_scripts"/>
+    <property name="btrace.script" location="${btrace_scriptsdir}/F3BtraceTracker"/>
+    <property name="target.jar" location="${basedir}/../../../samples/SmokeParticles/dist/SmokeParticles.jar"/>
+
+    <target name="clean">
+        <delete dir="${builddir}"/>
+    </target>
+    
+    <target name="init">
+        <tstamp/>
+        <fail message="property btrace.home must be set" unless="btrace.home"/>
+        <echo message="   btrace.home=${btrace.home}"/>
+        
+        <delete dir="${builddir}"/>
+        <mkdir dir="${builddir}"/>
+    </target>
+    
+    <target name="compile" depends="init">
+        <javac srcdir="${srcdir}" destdir="${builddir}"/>
+        <javac srcdir="${btrace_scriptsdir}" destdir="${builddir}">
+            <classpath>
+              <pathelement location="${btrace.home}/build/btrace-client.jar"/>
+              <pathelement location="${f3.home}/lib/shared/f3rt.jar"/>
+            </classpath>
+        </javac>
+    </target>
+    
+    <target name="run" depends="compile">
+        <java classname="F3BTraceRunner" fork="true" classpath="${builddir}" 
+              failonerror="true" dir="${builddir}" >
+            <sysproperty key="build.dir"    value="${builddir}"/>
+            <sysproperty key="f3.home"  value="${f3.home}"/>
+            <sysproperty key="btrace.home"  value="${btrace.home}"/>
+            <sysproperty key="base.dir"     value="${basedir}"/>
+            <sysproperty key="F3BTraceRunner.vmoptions" value="${F3BTraceRunner.vmoptions}"/>
+            <arg value="--script"/>
+            <arg value="${btrace.script}"/>
+            <arg value="--jar"/>
+            <arg value="${target.jar}"/>
+        </java>
+    </target>
+
+    <target name="all" depends="compile"/>
+</project>

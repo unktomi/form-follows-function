@@ -1,0 +1,125 @@
+import java.lang.Exception;
+/*
+ * simple functions to find max and min of given numeric types
+ * @test
+ * @run
+ */
+
+var bDebug=true;
+function debugOut(msg:String) { if(bDebug==true) println(msg); }
+
+function findMaxByte( ) : Byte {
+ var m:Byte = 1;
+ var temp:Byte = 1;
+ while ( temp > 0 ){ m = temp++; }
+ return m;
+}
+debugOut("MaxByte:  {findMaxByte()}");
+
+function findMinByte( ) : Byte {
+ var m:Byte = -1;
+ var temp:Byte = -1;
+ while ( temp  < 0 ){ m = temp--; }
+ return m;
+}
+debugOut("MinByte:  {findMinByte()}");
+
+
+function findMaxShort( ) : Short {
+ var m:Short = 1;
+ var temp:Short = 1;
+ while ( temp > 0 ){ m = temp++;}
+ return m;
+}
+debugOut("MaxShort:  {findMaxShort()}");
+
+function findMinShort( ) : Short {
+ var m:Short = -1;
+ var temp:Short = -1;
+ while ( temp < 0 ){ m = temp--;}
+ return m;
+}
+debugOut("MinShort:  {findMinShort()}");
+
+function findMaxInteger( ) : Integer {
+ var m:Integer = 1;
+ var temp:Integer = 1;
+ while ( temp > 0 ){ m = temp; temp+=10000;}
+ temp = m;
+ while ( temp > 0 ){ m = temp; temp+=100;}
+ temp = m;
+ while ( temp > 0 ){ m = temp++;}
+ return m;
+}
+debugOut("MaxInteger:  {findMaxInteger()}");
+
+function findMinInteger( ) : Integer {
+ var m:Integer = -1;
+ var temp:Integer = -1;
+ while ( temp < 0 ){ m = temp; temp-=100000;}
+ temp = m;
+ while ( temp < 0 ){ m = temp; temp-=100;}
+ temp = m;
+ while ( temp < 0 ){ m = temp--;}
+ return m;
+}
+debugOut("MinInteger:  {findMinInteger()}");
+
+
+ var longinc:Long = 1000000000000;
+function findMaxLong( ) : Long {
+ var m:Long = 1;
+ var temp:Long = 1;
+ while ( temp > 0 ){ m = temp; temp+=longinc;  }
+ temp = m;
+ while ( temp > 0 ){ m = temp; temp+=1000000000;}
+ temp = m;
+ while ( temp > 0 ){ m = temp; temp+=1000000;}
+ temp = m;
+ while ( temp > 0 ){ m = temp; temp+=100;}
+ temp = m;
+ while ( temp > 0 ){ m = temp++;}
+ return m;
+}
+debugOut("MaxLong:  {findMaxLong()}");
+
+function findMinLong( ) : Long {
+ var m:Long = -1;
+ var temp:Long = -1;
+ while ( temp < 0 ){ m = temp; temp-=longinc;  }
+ temp = m;
+ while ( temp < 0 ){ m = temp; temp-=1000000000;}
+ temp = m;
+ while ( temp < 0 ){ m = temp; temp-=1000000;}
+ temp = m;
+ while ( temp < 0 ){ m = temp; temp-=100;}
+ temp = m;
+ while ( temp < 0 ){ m = temp--;}
+ return m;
+}
+debugOut("MinLong:  {findMinLong()}");
+
+
+if( findMinByte() != -128 ) throw new Exception("error in findMinByte");
+if( findMaxByte() !=  127 ) throw new Exception("error in findMaxByte");
+
+if( findMinShort() != -32768 ) throw new Exception("error in findMinShort");
+if( findMaxShort() !=  32767 ) throw new Exception("error in findMaxShort");
+
+
+def MAXINT:Integer=2147483647;
+def MININT:Integer=-2147483647;
+if( findMinInteger() != MININT-1 ) throw new Exception("error in findMinInteger");
+if( findMaxInteger() !=  MAXINT ) throw new Exception("error in findMaxInteger");
+
+def MAXLONG:Long =  9223372036854775807;
+// bug vsgc-2567 - comiler won't allow number smaller than min int on right side of assignment
+//def MINLONG:Long = -9223372036854775807-1;
+//if( findMaxLong() != MAXLONG   ) throw new Exception("error in findMaxLong");
+
+// bug vsgc-2543 - comparison operator does not accpet min Long value
+//if( findMinLong() != -9223372036854775808 ) throw new Exception("error in findMinLong");
+//if( findMinLong() != -9223372036854775807 - 1 ) throw new Exception("error in findMinLong");
+//if( findMinLong() != MINLONG ) throw new Exception("error in findMinLong");
+
+

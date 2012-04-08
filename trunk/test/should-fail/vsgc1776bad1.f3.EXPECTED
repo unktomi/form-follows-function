@@ -1,0 +1,6 @@
+test\should-fail\vsgc1776bad1.f3:7: 'run' function must either have no parameters or one parameter of type 'String[]'.
+Use:     function run()    or
+Or use:  function run(args : String[])
+function run(arg : String) {
+^
+1 error

@@ -1,0 +1,10 @@
+test/should-fail/vsgc1773a.f3:19: warning: Illegal forward reference: variable v is not initialized.
+Foo { a:v; } //not allowed - v is referenced from the same named scope
+        ^
+test/should-fail/vsgc1773a.f3:10: warning: Illegal forward reference: variable w is not initialized.
+var x = w; //not allowed - w is referenced from the same named scope
+        ^
+test/should-fail/vsgc1773a.f3:11: warning: Illegal forward reference: variable z is not initialized.
+var y = z; //not allowed, even if z is a def variable initialized by an object literal
+        ^
+3 warnings

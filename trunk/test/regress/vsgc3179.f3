@@ -1,0 +1,21 @@
+/*
+ * Regression: VSGC-3179 - Duplicate override of same variable in object literal causes compiler crash.
+ *
+ * @test/fail
+ *
+ */
+
+class CustomerAddress {
+    public var name:String;
+    public var addressLine1: String;
+    public var addressLine2: String;
+    public var city: String;
+    public var postalCode: String;
+    public var stateProv:String;
+    public var country:String;
+}
+
+var ca = CustomerAddress {
+    override var name on replace { println("name = {name}"); }
+    override var name on replace { println("name = {name}"); }
+}

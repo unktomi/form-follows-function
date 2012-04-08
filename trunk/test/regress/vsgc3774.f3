@@ -1,0 +1,15 @@
+/*
+ * Regression :  VSGC-3774 - names of public generated vars/funcs change in multiple file compile vs. single file compile.
+ *
+ * @compilefirst vsgc3774A.f3
+ * @test
+ */
+public class vsgc3774 extends vsgc3774A { 
+      protected var nodes:Integer[] on replace oldNodes[a..b] = newNodes { 
+          println("newNodes = {newNodes}"); 
+      } 
+      var labeled = bind nodes; 
+} 
+
+var fred : Integer[]; 
+var jjobj = vsgc3774{ labeled: bind fred };

@@ -1,0 +1,13 @@
+/**
+ * Should fail test VSGC-2887 : Compiler crash: at(0s) { println(...); scale=>0.3; ...}
+ *
+ * @test/compile-error
+ */
+
+import f3.animation.Timeline;
+
+Timeline {
+    keyFrames: [
+        at (0s) { println("hi") }
+    ]
+}

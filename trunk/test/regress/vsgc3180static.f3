@@ -1,0 +1,17 @@
+/**
+ * VSGC-3180 : incorrect inInstanceContext for function value in on-replace block
+ *
+ * test in static context
+ *
+ * @test
+ * @run
+ */
+
+function value() { "life" }
+
+var thing on replace {
+  var doit = function() {
+      value()
+  }
+  println(doit())
+}

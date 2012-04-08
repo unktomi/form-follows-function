@@ -1,0 +1,26 @@
+/**
+ * Regression test VSGC-2024 : Sequence upcast construction failure
+ *
+ * @test
+ * @run
+ */
+
+class MyGroup {
+  var content : Object[]
+}
+
+class MyMessageView {
+  var text : String;
+  override function toString() : String { text }
+}
+
+var messages : MyMessageView[] = [MyMessageView {text: "hello"}];
+
+var mg = MyGroup {
+  content: bind messages
+}
+
+println(mg.content[0]);
+
+
+   

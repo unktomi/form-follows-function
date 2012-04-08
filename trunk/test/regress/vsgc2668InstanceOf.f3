@@ -1,0 +1,10 @@
+/**
+ * VSGC-2668 : Regression: crash: no bound conversion of instance to sequence of superclass 
+ *
+ * @test
+ * @run
+ */
+
+var k = vsgc2668InstanceOf{};
+var zzz : Object[] = bind k instanceof vsgc2668InstanceOf;
+println(zzz);

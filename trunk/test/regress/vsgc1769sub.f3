@@ -1,0 +1,11 @@
+/**
+ * @subtest
+ */
+
+var FOO_DEF = "HELLO";
+
+public class vsgc1769sub {
+    init {
+        java.lang.System.out.println("FOO_DEF is {FOO_DEF}");
+    }
+}

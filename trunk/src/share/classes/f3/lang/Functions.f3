@@ -1,0 +1,19 @@
+package f3.lang;
+
+public bound function head(xs:Object[]):Object {
+    return xs[0];
+}
+
+public bound function tail(xs:Object[]):Object[] {
+    return xs[1..];
+}
+
+public bound function map(input:Object[], f:function(obj:Object):Object[]):Object[] {
+    if (input == []) []
+    else {
+        var x = head(input);
+        var xs = tail(input);
+        [f(x), map(xs, f)];
+    }
+}
+

@@ -1,0 +1,16 @@
+/**
+ * Regress test for VSGC-4128.
+ *
+ *  Add flag to turn forward reference warnings into errors
+ *
+ * @compilearg -XDfwdRefError=true
+ * @test/compile-error
+ */
+
+class A {
+var x;
+}
+
+class B extends A {
+override var x on replace { var y = z; var z = 1; }
+}

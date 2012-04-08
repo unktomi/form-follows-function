@@ -1,0 +1,7 @@
+test\should-fail\vsgc1891.f3:7: modifier public-init not allowed on a def
+public-init def max=100;
+^
+test\should-fail\vsgc1891.f3:11: modifier public-init not allowed on a def
+   public-init def min=1;
+   ^
+2 errors

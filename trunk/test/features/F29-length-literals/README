@@ -1,0 +1,4 @@
+Visage compiler feature test #29
+
+Demonstrated:
+ - Length literals, such as 2mm, 3px, 4%

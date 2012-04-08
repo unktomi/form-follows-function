@@ -1,0 +1,4 @@
+test/should-fail/vsgc1213.f3:10: Bound function must not be void.
+   bound function func2(){
+   ^
+1 error

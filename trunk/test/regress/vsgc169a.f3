@@ -1,0 +1,13 @@
+import vsgc169b;
+
+/*
+ * Not true, useless but shouldn't fail:  Should fail with error on import line (VSGC-169)
+ * @test
+ * @compilefirst vsgc169b.f3
+ */
+
+class vsgc169a extends vsgc169b {
+    function moo() {
+        foo();
+    }
+}

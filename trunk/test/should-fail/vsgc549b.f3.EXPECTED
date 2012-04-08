@@ -1,0 +1,4 @@
+test/should-fail/vsgc549b.f3:10: There is a garbled class member definition starting here, I have tried to ignore it. Class members can be 'var', 'def', 'function', 'init' or 'postinit' only.
+    whatever: Number;
+    ^
+1 error

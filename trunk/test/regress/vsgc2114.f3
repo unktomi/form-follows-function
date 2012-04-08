@@ -1,0 +1,23 @@
+/**
+ * Regression test VSGC-2114 : NPE when running RT_423Test -- should be caught
+ *
+ * @test
+ * @run
+ */
+
+class Foo {
+  function oh(gezz : String) { println(gezz) }
+}
+
+class Bar extends Foo {}
+
+function gogo() {
+  var ff : Foo = Bar{};
+  (ff as Bar).oh('good');
+  ff = null;
+  (ff as Bar).oh('BAD');
+  ff = Bar{};
+  (ff as Bar).oh('good');
+}
+
+gogo()

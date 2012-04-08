@@ -1,0 +1,29 @@
+test/should-fail/badstring.f3:6: Unterminated string literal - missing ' or ".
+var v = "unterminated string
+        ^
+test/should-fail/badstring.f3:7: Unterminated string literal - missing ' or ".
+v = 'unterminated string
+    ^
+test/should-fail/badstring.f3:8: Unterminated string literal - missing ' or ".
+v = "{v} unterminated string
+    ^
+test/should-fail/badstring.f3:9: Unterminated string literal - missing ' or ".
+v = '{v} unterminated string
+    ^
+test/should-fail/badstring.f3:6: You have forgotten the ';', which is needed to separate one expression from the next.
+var v = "unterminated string
+                            ^
+test/should-fail/badstring.f3:7: You have forgotten the ';', which is needed to separate one expression from the next.
+v = 'unterminated string
+                        ^
+test/should-fail/badstring.f3:8: You have forgotten the ';', which is needed to separate one expression from the next.
+v = "{v} unterminated string
+                            ^
+test/should-fail/badstring.f3:9: You have forgotten the ';', which is needed to separate one expression from the next.
+v = '{v} unterminated string
+                            ^
+test/should-fail/badstring.f3:12: Sorry, I was trying to understand a compound string element but I got confused when I hit the end of the script..
+ Perhaps you are missing a '} " string literal'.
+v = "{v   + x
+             ^
+9 errors

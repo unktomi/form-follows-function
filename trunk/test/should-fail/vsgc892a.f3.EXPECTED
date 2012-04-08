@@ -1,0 +1,7 @@
+test/should-fail/vsgc892a.f3:7: return outside method
+var c = { return a; }
+          ^
+test/should-fail/vsgc892a.f3:7: 'void' type not allowed here
+var c = { return a; }
+^
+2 errors

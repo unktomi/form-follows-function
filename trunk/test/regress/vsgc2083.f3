@@ -1,0 +1,36 @@
+/**
+ * regression test: VSGC-2083 : No null checks when assigning to a Java field
+ *
+ * @test
+ * @run
+ */
+
+function hi(greeting : String) : Integer {
+  println(greeting);
+  7
+}
+
+function gogo() {
+var d : java.awt.Dimension = null;
+d.width = hi('bam'); 
+++d.width;
+d.width += hi('pop');
+println(d.width);
+
+d = new java.awt.Dimension();
+d.width = hi('oh'); 
+println(d.width--);
+println(--d.width);
+println(d.width++);
+println(++d.width);
+d.width += hi('ah');
+println(d.width);
+
+var k = 10;
+k = 99;
+k -= 9;
+println(++k);
+println(k++);
+}
+
+gogo()

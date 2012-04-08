@@ -1,0 +1,10 @@
+test\should-fail\maxint.f3:8: Integer out of range: 8573157376.
+var h : Integer = 0x1FF000000;  // Should fail
+                  ^
+test\should-fail\maxint.f3:10: Integer out of range: 2147483648.
+var i : Integer = 2147483648;	// Should fail
+                  ^
+test\should-fail\maxint.f3:12: Integer out of range: -2147483649.
+var n : Integer = -2147483649;	// Should fail
+                  ^
+3 errors

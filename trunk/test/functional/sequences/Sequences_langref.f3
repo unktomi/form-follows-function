@@ -1,0 +1,163 @@
+/*
+ * Sample from language ref at M2 section on "Sequences"
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+var failures=0;
+var passes=0;
+function compareis( seq1:Integer[], seq2:Integer[],msg:String) {
+	if(seq1!= seq2) {
+		System.out.println("FAILED: {msg}: {seq1}!={seq2}");
+		failures++
+    } else { passes++;}
+}
+
+function comparess( seq1:String[], seq2:String[],msg:String) {
+	if(seq1!= seq2) {
+		System.out.println("FAILED: {msg}: {seq1}!={seq2}");
+		failures++
+    } else { passes++;}
+}
+
+function comparei( i1:Integer, i2:Integer,msg:String) {
+	if(i1!=i2) {
+		System.out.println("FAILED: {msg}: {i1}!={i2}");
+		failures++
+    } else { passes++;}
+}
+
+function check(istrue:Boolean,msg:String) {	
+	if(istrue != true) { failures++; System.out.println("FAILED: {msg}"); }
+	 else {passes++; } 
+	 }
+
+var week_days = ["Mon","Tue","Wed","Thur","Fri"];
+var days = [week_days, ["Sat","Sun"]];
+comparess(days,["Mon","Tue","Wed","Thur","Fri","Sat","Sun"],"Flattening of sequences");
+
+
+//In addition, a single object is equal to a sequence of one object:
+//1 == [1]; // returns true
+//check( (1==[1]),"compare int with single value sequence");   // vsgc-833 - this return false.
+
+
+/*
+ * "Sequence types are declared with the []  annotation:"
+ */
+var xs:Number[]; // sequence of Number
+var strs:String[]; // sequence of String
+
+/*
+ * The elements of a sequence must have a common type, which may be Object. 
+ * Sequences may be indexed like Java programming language arrays:
+ */
+var wednesday = days[2];
+check(wednesday=="Wed","Sequences may be indexed like Java programming language arrays");
+
+/*
+ * There is also a shorthand notation using ".." for sequences whose elements form an arithmetic series, as in:
+ *
+ * This shorthand eliminates the need to manually type out each element.
+ */
+var nums = [1..100];
+
+
+/*
+vsgc-834: In the section on Sequnces there are two samples showing usage of the"shorthand notation" for declaring a sequence:
+
+The following example provides definitions of the factorial function, and of a number "result" which is the sum of the odd numbers between 1 and 100:
+
+function fac(n:Number[]) {return product([1..n]);}
+var result = sum([1..100 step 2]);
+
+There are a couple issues
+1) this seems to imply there may be built in product() and sum() functions.
+2) The parameter to fac() should be just a Number not a number sequence of Numbers. 
+
+NOTE: I fixed the code below so it compiles, and wrote product and sum functions.
+*/
+function product(seq:Number[]):Number { var prod=1.0; for(p in seq){ prod = prod*p;} return prod; }
+function sum(seq:Integer[]):Integer { var s=0; for(a in seq){ s = s+a;} return s; }
+
+/*
+ * The following example provides definitions of the factorial function, 
+ * and of a number "result" which is the sum of the odd numbers between 1 and 100:
+ */
+function fac(n:Number):Number {return product([1 .. n]);}
+var result = sum([1..100 step 2]);
+comparei(result,2500,"sum function demonstrings range notation");
+
+
+/*
+ * Predicates:
+ * "The [] operator also expresses selection in the form of predicates. Predicates take the form:
+ *  sequence[variableName| booleanExp]
+ * For example:"
+ */
+nums = [1,2,3,4];
+var numsGreaterThanTwo = nums[n|n > 2];
+compareis(numsGreaterThanTwo,[3,4],"predicate example");
+
+/*
+ * Sequence slices and operators
+ */
+nums = [1..5];
+var x = 6;
+compareis(nums,[1,2,3,4,5],"Compare basic skip range declaration");
+
+insert x into nums; // result is [1,2,3,4,5,6]
+compareis(nums,[1,2,3,4,5,6],"Compare insert into");
+
+x++;
+insert x before nums[0]; // result is [7,1,2,3,4,5,6]
+compareis(nums,[7,1,2,3,4,5,6],"Insert before");
+
+x++;
+insert x after nums[3]; // result is [7,1,2,3,8,4,5,6]
+compareis(nums,[7,1,2,3,8,4,5,6],"Insert after");
+
+nums = [1..5];
+delete 2 from nums; // result is [1,3,4,5]
+compareis(nums,[1,3,4,5],"Delete specific value");
+
+delete nums[0];// result is [3,4,5]
+compareis(nums,[3,4,5],"Compare basic skip range declaration");
+
+nums = [1..10]; // result is [1,2,3,4,5,6,7,8,9,10]
+delete nums[3..7]; // result is []
+compareis(nums,[1,2,3,9,10],"Delete a slice.");
+
+delete nums; // result is []
+compareis(nums,[],"Delete sequence.");
+
+
+nums = [1..10];
+delete nums[5..]; // result is [1,2,3,4,5]
+compareis(nums,[1,2,3,4,5],"Delete range using list comprehension [5..]");
+
+delete nums[0..<]; // result is [5]
+compareis(nums,[5],"Delete range using list comprehension [0..<]");
+
+nums = [1..5];
+comparei(sizeof nums,5,"Sizeof operator on sequence");
+
+//The indexof operator returns the ordinal position of an element within a sequence:
+nums = [1,2,3,4];
+var numsExceptTheFirstTwo = nums[n|indexof n > 1];
+compareis(numsExceptTheFirstTwo,[3,4],"list comprehension: nums[n|indexof n>1]");
+
+//The reverse operator reverses the sequence:
+nums = [1..5];
+compareis(reverse nums,[5,4,3,2,1],"reverse operator on sequence");
+
+
+/*
+ * Print result
+ */
+var results = "tests {failures+passes}; failed:{failures}; passed:{passes}";
+if( failures > 0 ) { throw new java.lang.Exception( results ); }
+
+//System.out.println( {results} );

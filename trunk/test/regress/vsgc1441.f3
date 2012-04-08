@@ -1,0 +1,21 @@
+/**
+ * regression test: VSGC-1441 : Compiler throws AssertionError with for loop containing try/finally blocks
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+for ( n : Number in {
+  var arr:Number[] =[0.2,0.5];
+  try {
+    delete 0.2 from arr
+  }
+  finally { 
+    insert 0.6 into arr
+  }
+  arr
+} ) {
+  System.out.println(n)
+}

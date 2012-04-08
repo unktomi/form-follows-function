@@ -1,0 +1,11 @@
+/**
+ * Should-fail test VSGC-2278 : Attribution should catch override of instance var when no 'override' keyword
+ *
+ * @compilefirst vsgc2278Sub.f3
+ * @test/compile-error
+ */
+
+class vsgc2278 extends vsgc2278Sub {
+  var x;
+  def y = 6;
+}

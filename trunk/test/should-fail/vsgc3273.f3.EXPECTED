@@ -1,0 +1,4 @@
+test/should-fail/vsgc3273.f3:13: vsgc3273.C is not abstract and does not override abstract method m() in vsgc3273.A
+class C extends A, B { }
+^
+1 error

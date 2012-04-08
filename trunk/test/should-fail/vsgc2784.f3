@@ -1,0 +1,9 @@
+/*
+ * Regression test for VSGC-2784 : Attribute array declaration and use
+ *
+ * @test/compile-error
+ */
+
+var arr:nativearray of Character = "Hello!".toCharArray();
+delete arr;
+insert 1 into arr;

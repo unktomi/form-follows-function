@@ -1,0 +1,20 @@
+/**
+ * Regression test VSGC-1014 : Non primitive Locations should be represented as ObjectLocation<Wrapper>
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+class Foo {
+  var ob = new java.lang.Float(1);
+  var ff = ob.floatValue();
+  var bb = ob.byteValue();
+  var ss = ob.shortValue();
+}
+
+var ooh = Foo{}
+System.out.println(ooh.ff);
+System.out.println(ooh.bb);
+System.out.println(ooh.ss);

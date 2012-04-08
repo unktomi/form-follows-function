@@ -1,0 +1,9 @@
+/**
+ * regression test:  VSGC-2837 - Mixins: script-private vars no longer hidden -- var with same name as var in subclass, but with different type fails
+ * @test
+ * @compilefirst vsgc2837a.f3
+ */
+
+public class vsgc2837 extends vsgc2837a {
+    var responseHeader: Boolean;
+}

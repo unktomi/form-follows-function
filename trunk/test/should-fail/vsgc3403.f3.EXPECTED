@@ -1,0 +1,26 @@
+test/should-fail/vsgc3403.f3:23: incompatible types
+found   : void
+required: Object[]
+objects = getObjects();
+          ^
+test/should-fail/vsgc3403.f3:27: incompatible types
+found   : void
+required: Object[]
+objects = func(); 
+          ^
+test/should-fail/vsgc3403.f3:31: incompatible types
+found   : void
+required: Object[]
+objects = getObjectsVoidInferred();
+          ^
+test/should-fail/vsgc3403.f3:35: incompatible types
+found   : void
+required: Object[]
+objects = funcVoidInferred();
+          ^
+test/should-fail/vsgc3403.f3:15: incompatible types
+found   : void
+required: Object[]
+        objects = getObjects();
+                  ^
+5 errors

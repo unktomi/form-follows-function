@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>F3 Compiler</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>F3 Compiler</name>
+            <properties>
+                <property name="ant.script">build.xml</property>
+            </properties>
+            <folders>
+                <source-folder>
+                    <label>build/gensrc</label>
+                    <location>build/gensrc</location>
+                </source-folder>
+                <source-folder>
+                    <label>test/unit/src</label>
+                    <location>test/unit/src</location>
+                </source-folder>
+                <source-folder>
+                    <label>src</label>
+                    <location>src</location>
+                </source-folder>
+                <source-folder>
+                    <label>F3 Compiler</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>build/gensrc</label>
+                    <type>java</type>
+                    <location>build/gensrc</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>src/share/classes</label>
+                    <type>java</type>
+                    <location>src/share/classes</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>test/unit/src</label>
+                    <type>java</type>
+                    <location>test/unit/src</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>test/src</label>
+                    <type>java</type>
+                    <location>test/src</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>test/sandbox</label>
+                    <type>java</type>
+                    <location>test/sandbox</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <script>${ant.script}</script>
+                    <target>jar</target>
+                </action>
+                <action name="clean">
+                    <script>${ant.script}</script>
+                    <target>clean</target>
+                </action>
+                <action name="javadoc">
+                    <script>${ant.script}</script>
+                    <target>javadoc</target>
+                </action>
+                <action name="run">
+                    <script>${ant.script}</script>
+                    <target>run</target>
+                </action>
+                <action name="test">
+                    <script>${ant.script}</script>
+                    <target>test</target>
+                </action>
+                <action name="rebuild">
+                    <script>${ant.script}</script>
+                    <target>clean</target>
+                    <target>jar</target>
+                </action>
+                <action name="debug.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>debug-selected-file-in-src</target>
+                    <context>
+                        <property>debug.class</property>
+                        <folder>test/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="run.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-selected-file-in-src</target>
+                    <context>
+                        <property>run.class</property>
+                        <folder>test/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="run.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-selected-file-in-sandbox</target>
+                    <context>
+                        <property>run.class</property>
+                        <folder>test/sandbox</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="debug.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>debug-selected-file-in-sandbox</target>
+                    <context>
+                        <property>debug.class</property>
+                        <folder>test/sandbox</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+                <action name="debug">
+                    <script>nbproject/ide-targets.xml</script>
+                    <target>debug-nb</target>
+                </action>
+            </ide-actions>
+            <export>
+                <type>folder</type>
+                <location>build/classes</location>
+                <script>${ant.script}</script>
+                <build-target>jar</build-target>
+            </export>
+            <export>
+                <type>folder</type>
+                <location>build/classes</location>
+                <script>${ant.script}</script>
+                <build-target>jar</build-target>
+            </export>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>build/gensrc</label>
+                        <location>build/gensrc</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>src/share/classes</label>
+                        <location>src/share/classes</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>test/unit/src</label>
+                        <location>test/unit/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>test/src</label>
+                        <location>test/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>test/sandbox</label>
+                        <location>test/sandbox</location>
+                    </source-folder>
+                    <source-file>
+                        <location>${ant.script}</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="javadoc"/>
+                    <ide-action name="run"/>
+                    <ide-action name="test"/>
+                    <action>
+                        <script>${ant.script}</script>
+                        <label>Debug</label>
+                        <target>debug</target>
+                    </action>
+                    <ide-action name="debug"/>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/3">
+            <compilation-unit>
+                <package-root>build/gensrc</package-root>
+                <classpath mode="compile">lib/javac.jar:build/classes:build/gensrc:import/antlr-3.1.3/antlr-3.1.3</classpath>
+                <built-to>build/classes</built-to>
+                <source-level>1.6</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>test/unit/src</package-root>
+                <unit-tests/>
+                <classpath mode="compile">import/junit-4.4/junit-4.4.jar</classpath>
+                <source-level>1.6</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>src/share/classes</package-root>
+                <classpath mode="compile">lib/javac.jar:lib/javadoc.jar:lib/org-netbeans-modules-java-j2seproject-copylibstask.jar:lib/script-api.jar:build/classes:lib/plugin_exports.jar:import/antlr-3.1.3/antlr-3.1.3/lib/antlr-3.1.3.jar:import/ant-1.7.1/apache-ant-1.7.1/lib/ant.jar</classpath>
+                <built-to>build/classes</built-to>
+                <source-level>1.6</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>test/src</package-root>
+                <unit-tests/>
+                <classpath mode="compile">build/classes:lib/javac.jar:import/junit-4.4/junit-4.4.jar:import/ant-1.7.1/apache-ant-1.7.1/lib/ant.jar</classpath>
+                <source-level>1.6</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>test/sandbox</package-root>
+                <unit-tests/>
+                <classpath mode="compile">build/classes:lib/javac.jar:import/junit-4.4/junit-4.4.jar:import/antlr-3.1.3/antlr-3.1.3/lib/antlr-3.1.3.jar</classpath>
+                <source-level>1.6</source-level>
+            </compilation-unit>
+        </java-data>
+    </configuration>
+</project>

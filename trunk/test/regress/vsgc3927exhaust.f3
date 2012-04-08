@@ -1,0 +1,220 @@
+/*
+ * Regression test 
+ * VSGC-3927 : SWAT failure : JawbreakerGame compiler crash -- F3ClassSymbol cannot be cast to F3VarSymbol
+ *
+ * Exhaustive test of references to external script-level var
+ *
+ * @compilefirst vsgc3927exhaustSub.f3
+ * @test
+ * @run
+ */
+
+//assign
+vsgc3927exhaustSub.i = 7;
+vsgc3927exhaustSub.ibi = 7;
+vsgc3927exhaustSub.o = 7;
+vsgc3927exhaustSub.obi = 7;
+vsgc3927exhaustSub.s = 7;
+vsgc3927exhaustSub.sbi = 7;
+
+//assign op
+vsgc3927exhaustSub.i += 7;
+vsgc3927exhaustSub.ibi += 7;
+
+// binary
+var x1 = vsgc3927exhaustSub.i + vsgc3927exhaustSub.id + vsgc3927exhaustSub.ib + vsgc3927exhaustSub.ibi;
+var x1b = bind vsgc3927exhaustSub.i + vsgc3927exhaustSub.id + vsgc3927exhaustSub.ib + vsgc3927exhaustSub.ibi;
+
+// for
+var x2 = for (i in vsgc3927exhaustSub.sbi where i <= vsgc3927exhaustSub.i) { "burp" };
+var x2b = bind for (i in vsgc3927exhaustSub.sbi where i <= vsgc3927exhaustSub.i) { "burp" };
+
+// if
+var x3 = if (vsgc3927exhaustSub.b) vsgc3927exhaustSub.i else vsgc3927exhaustSub.id;
+var x3b = bind if (vsgc3927exhaustSub.b) vsgc3927exhaustSub.i else vsgc3927exhaustSub.id;;
+var x3bs = bind if (vsgc3927exhaustSub.b) vsgc3927exhaustSub.s else vsgc3927exhaustSub.sd;;
+
+// instanceof
+var x4 = vsgc3927exhaustSub.o instanceof Integer;
+var x4b = bind vsgc3927exhaustSub.o instanceof Integer;
+
+// member select
+var x5 = vsgc3927exhaustSub.c.x;
+var x5b = bind vsgc3927exhaustSub.c.x;
+var x5bb = bind vsgc3927exhaustSub.cb.x;
+var x5bi = bind vsgc3927exhaustSub.c.x with inverse;
+
+// sequence delete
+delete vsgc3927exhaustSub.id from vsgc3927exhaustSub.s;
+delete vsgc3927exhaustSub.s[0];
+delete vsgc3927exhaustSub.s;
+
+// sequence explicit
+var x6 = [vsgc3927exhaustSub.id, vsgc3927exhaustSub.odb, vsgc3927exhaustSub.c.x, vsgc3927exhaustSub.sd];
+var x6b = bind [vsgc3927exhaustSub.id, vsgc3927exhaustSub.odb, vsgc3927exhaustSub.c.x, vsgc3927exhaustSub.sd];
+
+// sequence indexed
+var x7 = vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id];
+var x7b = bind vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id];
+
+// sequence insert
+insert vsgc3927exhaustSub.id into vsgc3927exhaustSub.s;
+
+// sequence range
+var x8 = [vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i step vsgc3927exhaustSub.id];
+var x8b = bind [vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i step vsgc3927exhaustSub.id];
+
+// sequence slice
+var x9 = vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i];
+var x9b = bind vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i];
+
+// unary
+var xa = reverse vsgc3927exhaustSub.sdb;
+var xab = bind reverse vsgc3927exhaustSub.sdb;
+var xax = ++vsgc3927exhaustSub.i;
+var xax2 = vsgc3927exhaustSub.i--;
+var xan = not vsgc3927exhaustSub.b;
+
+function foo() {
+//assign
+vsgc3927exhaustSub.i = 7;
+vsgc3927exhaustSub.ibi = 7;
+vsgc3927exhaustSub.o = 7;
+vsgc3927exhaustSub.obi = 7;
+vsgc3927exhaustSub.s = 7;
+vsgc3927exhaustSub.sbi = 7;
+
+//assign op
+vsgc3927exhaustSub.i += 7;
+vsgc3927exhaustSub.ibi += 7;
+
+// binary
+var v1 = vsgc3927exhaustSub.i + vsgc3927exhaustSub.id + vsgc3927exhaustSub.ib + vsgc3927exhaustSub.ibi;
+var v1b = bind vsgc3927exhaustSub.i + vsgc3927exhaustSub.id + vsgc3927exhaustSub.ib + vsgc3927exhaustSub.ibi;
+
+// for
+var v2 = for (i in vsgc3927exhaustSub.sbi where i <= vsgc3927exhaustSub.i) { "burp" };
+var v2b = bind for (i in vsgc3927exhaustSub.sbi where i <= vsgc3927exhaustSub.i) { "burp" };
+
+// if
+var v3 = if (vsgc3927exhaustSub.b) vsgc3927exhaustSub.i else vsgc3927exhaustSub.id;
+var v3b = bind if (vsgc3927exhaustSub.b) vsgc3927exhaustSub.i else vsgc3927exhaustSub.id;;
+var v3bs = bind if (vsgc3927exhaustSub.b) vsgc3927exhaustSub.s else vsgc3927exhaustSub.sd;;
+
+// instanceof
+var v4 = vsgc3927exhaustSub.o instanceof Integer;
+var v4b = bind vsgc3927exhaustSub.o instanceof Integer;
+
+// member select
+var v5 = vsgc3927exhaustSub.c.x;
+var v5b = bind vsgc3927exhaustSub.c.x;
+var v5bb = bind vsgc3927exhaustSub.cb.x;
+var v5bi = bind vsgc3927exhaustSub.c.x with inverse;
+
+// sequence delete
+delete vsgc3927exhaustSub.id from vsgc3927exhaustSub.s;
+delete vsgc3927exhaustSub.s[0];
+delete vsgc3927exhaustSub.s;
+
+// sequence explicit
+var v6 = [vsgc3927exhaustSub.id, vsgc3927exhaustSub.odb, vsgc3927exhaustSub.c.x, vsgc3927exhaustSub.sd];
+var v6b = bind [vsgc3927exhaustSub.id, vsgc3927exhaustSub.odb, vsgc3927exhaustSub.c.x, vsgc3927exhaustSub.sd];
+
+// sequence indexed
+var v7 = vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id];
+var v7b = bind vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id];
+
+// sequence insert
+insert vsgc3927exhaustSub.id into vsgc3927exhaustSub.s;
+
+// sequence range
+var v8 = [vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i step vsgc3927exhaustSub.id];
+var v8b = bind [vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i step vsgc3927exhaustSub.id];
+
+// sequence slice
+var v9 = vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i];
+var v9b = bind vsgc3927exhaustSub.sd[vsgc3927exhaustSub.id .. vsgc3927exhaustSub.i];
+
+// unary
+var va = reverse vsgc3927exhaustSub.sdb;
+var vab = bind reverse vsgc3927exhaustSub.sdb;
+var vax = ++vsgc3927exhaustSub.i;
+var vax2 = vsgc3927exhaustSub.i--;
+var van = not vsgc3927exhaustSub.b;
+
+println(vsgc3927exhaustSub.i);
+println(vsgc3927exhaustSub.id);
+println(vsgc3927exhaustSub.ib);
+println(vsgc3927exhaustSub.idb);
+println(vsgc3927exhaustSub.ibi);
+
+println(vsgc3927exhaustSub.o);
+println(vsgc3927exhaustSub.od);
+println(vsgc3927exhaustSub.ob);
+println(vsgc3927exhaustSub.odb);
+println(vsgc3927exhaustSub.obi);
+
+println(vsgc3927exhaustSub.s);
+println(vsgc3927exhaustSub.sd);
+println(vsgc3927exhaustSub.sb);
+println(vsgc3927exhaustSub.sdb);
+println(vsgc3927exhaustSub.sbi);
+
+println(vsgc3927exhaustSub.b);
+
+println(v1);
+println(v1b);
+println(v2);
+println(v2b);
+println(v3);
+println(v3b);
+println(v3bs);
+println(v4);
+println(v4b);
+println(v5);
+println(v5b);
+println(v5bb);
+println(v5bi);
+println(v6);
+println(v6b);
+println(v7b);
+println(v8);
+println(v8b);
+println(v9);
+println(v9b);
+println(va);
+println(vab);
+println(vax);
+println(vax2);
+println(van);
+
+}
+
+
+println(x1);
+println(x1b);
+println(x2);
+println(x2b);
+println(x3);
+println(x3b);
+println(x3bs);
+println(x4);
+println(x4b);
+println(x5);
+println(x5b);
+println(x5bb);
+println(x5bi);
+println(x6);
+println(x6b);
+println(x7b);
+println(x8);
+println(x8b);
+println(x9);
+println(x9b);
+println(xa);
+println(xab);
+println(xax);
+println(xax2);
+println(xan);
+
+foo();

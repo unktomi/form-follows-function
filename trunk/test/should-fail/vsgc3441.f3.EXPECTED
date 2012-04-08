@@ -1,0 +1,13 @@
+test/should-fail/vsgc3441.f3:8: Duplicate trigger definition.
+var x1 = bind y on replace {} on invalidate {} on replace {} on invalidate {};
+                                               ^
+test/should-fail/vsgc3441.f3:8: Duplicate trigger definition.
+var x1 = bind y on replace {} on invalidate {} on replace {} on invalidate {};
+                                                             ^
+test/should-fail/vsgc3441.f3:9: Duplicate trigger definition.
+var x2 = bind y on invalidate {} on replace {} on invalidate {} on replace {};
+                                               ^
+test/should-fail/vsgc3441.f3:9: Duplicate trigger definition.
+var x2 = bind y on invalidate {} on replace {} on invalidate {} on replace {};
+                                                                ^
+4 errors

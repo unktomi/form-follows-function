@@ -1,0 +1,25 @@
+/**
+ * Regression test: VSGC-3578 : Compiled bind: translation of non-transformative bound sequences: identifier and member select
+ *
+ * Bound sequence implicit member select to script-level with on-replace 
+ *
+ * @test
+ * @run
+ */
+
+
+var x = ["hi", "low"];
+println("after x");
+
+class Y {
+  var y = bind x on replace oldSlice[a..b] = newSlice { 
+        println("y: removed {oldSlice[a..b].toString()} and added {newSlice.toString()}"); 
+      };
+}
+
+def bz = Y { };
+println("after bz");
+println("bz.y: {bz.y.toString()}");
+x = "sa";
+println("after z.x");
+println("bz.y: {bz.y.toString()}");

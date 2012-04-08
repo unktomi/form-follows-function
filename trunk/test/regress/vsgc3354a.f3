@@ -1,0 +1,28 @@
+/**
+ * VSGC-3354 : Compiler change causing sample app positioning problems
+ *
+ * Self-reference causes forward-reference causes lack of update on init.
+ *
+ * @test
+ * @run
+ */
+
+def GOODNESS = 55.55;
+
+class BIL {
+    public var width : Number;
+}
+
+class MyText {
+    var transX : Number;
+    public-read var bil = BIL { width: GOODNESS };
+}
+
+function run() {
+    var nt : MyText = MyText {
+       transX: bind nt.bil.width;
+    }
+    if (nt.transX != GOODNESS) {
+       println("Bad result: {nt.transX}");
+    }
+}

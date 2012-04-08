@@ -1,0 +1,11 @@
+rats
+rats
+shake
+shake
+fo.a: shake
+fo.c: rattle
+fo.b: shake
+ho.b: rats
+fo.a: roll
+fo.c: rattle
+fo.b: roll

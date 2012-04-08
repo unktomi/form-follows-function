@@ -1,0 +1,47 @@
+/**
+ * regression test: VSGC-2952 : Mixins: Duplicate vars from mixins are not dropped if script private
+ * @test
+ * @run
+ */
+
+mixin class Football {
+ var count:Integer = 1024 on replace {
+   println("In Football: count={count}.");
+ }
+
+ function play() {
+   println("Football playing");
+   count++;
+ }
+}
+
+mixin class Video {
+ var count:Integer = 2048 on replace {
+   println("In Video: count={count}.");
+ }
+
+ function play() {
+   println("Video playing");
+   count++;
+ }
+}
+
+class FootballVideo extends Football, Video {
+ var countInFootball = bind (this as Football).count;
+ var countInVideo = bind (this as Video).count;
+
+ function playFootball() {
+   Football.play();
+ }
+
+ function playVideo() {
+   Video.play();
+ }
+}
+
+var o = FootballVideo {};
+o.playFootball();
+o.playVideo();
+o.playFootball();
+println("o.countInFootball={o.countInFootball}.");
+println("o.countInVideo={o.countInVideo}.");

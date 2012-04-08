@@ -1,0 +1,57 @@
+/*
+ * Should fail test for VSGC-2651 : fix for VSGC-833 crashes compiler on test of incomparable types
+ *
+ * @test/compile-error
+ */
+
+import java.util.*;
+import java.lang.System;
+
+//references
+
+class A {}
+var a:A = null;
+var x:Object = null;
+
+(a == (x as java.lang.String));
+((x as java.lang.String) == a);
+
+([a] == (x as java.lang.String));
+((x as java.lang.String) == [a]);
+
+(a == [(x as java.lang.String)]);
+([(x as java.lang.String)] == a);
+
+([a] == [(x as java.lang.String)]);
+([(x as java.lang.String)] == [a]);
+
+((x as ArrayList) == (x as HashSet));
+((x as ArrayList) == [(x as HashSet)]);
+([(x as ArrayList)] == (x as HashSet));
+([(x as ArrayList)] == [(x as HashSet)]);
+
+(a == (x as ArrayList));
+([a] == (x as ArrayList));
+(a == [(x as ArrayList)]);
+([a] == [(x as ArrayList)]);
+
+((x as ArrayList) == a);
+([(x as ArrayList)] == a);
+((x as ArrayList) == [a]);
+([(x as ArrayList)] == [a]);
+
+//primitives
+
+System.out.println(1 == false);
+
+System.out.println([1] == false);
+System.out.println(false == [1]);
+
+System.out.println([false] == 1);
+System.out.println(1 == [false]);
+
+System.out.println([false] == [1]);
+System.out.println([1] == [false]);
+
+System.out.println(1 == null);
+System.out.println(null == 1);

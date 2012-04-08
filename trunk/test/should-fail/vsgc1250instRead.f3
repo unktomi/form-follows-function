@@ -1,0 +1,158 @@
+/**
+ * Regression test VSGC-1250 : visibility modifiers
+ *
+ * Read component.
+ *
+ * @compilefirst vsgc1250/a/vsgc1250subFailA.f3
+ * @compilefirst vsgc1250subFail.f3
+ * @test/compile-error
+ */
+import java.lang.System;
+import vsgc1250.a.vsgc1250subFailA;
+
+public class vsgc1250instRead {
+	public var memHerePub = 0;
+	protected var memHerePro = 0;
+	package var memHerePkg = 0;
+	var memHereScr = 0;
+
+	public-init protected var memHereIPro = 0;
+	public-init package var memHereIPkg = 0;
+	public-init var memHereIScr = 0;
+
+	public-read protected var memHereRPro = 0;
+	public-read package var memHereRPkg = 0;
+	public-read var memHereRScr = 0;
+}
+
+class Foo {
+	public var fooPub = 0;
+	protected var fooPro = 0;
+	package var fooPkg = 0;
+	var fooScr = 0;
+
+	public-init protected var fooIPro = 0;
+	public-init package var fooIPkg = 0;
+	public-init var fooIScr = 0;
+
+	public-read protected var fooRPro = 0;
+	public-read package var fooRPkg = 0;
+	public-read var fooRScr = 0;
+}
+
+class Inh extends vsgc1250subFail {
+    function memRead() {
+	System.out.println( memPub );   // inherited, same package
+	System.out.println( memPkg );   // inherited, same package
+	System.out.println( memPro );   // inherited, same package
+	System.out.println( memScr );   // ERROR: inherited, same package
+
+	System.out.println( memIPkg );   // inherited, same package
+	System.out.println( memIPro );   // inherited, same package
+	System.out.println( memIScr );   // inherited, same package
+
+	System.out.println( memRPro );   // inherited, same package
+	System.out.println( memRPkg );   // inherited, same package
+	System.out.println( memRScr );   // inherited, same package
+    }
+}
+
+class InhA extends vsgc1250subFailA {
+    function memRead() {
+	System.out.println( memPub );   // inherited, different package
+	System.out.println( memPkg );   // ERROR: inherited, different package
+	System.out.println( memPro );   // inherited, different package
+	System.out.println( memScr );   // ERROR: inherited, different package
+
+	System.out.println( memIPkg );   // inherited, different package
+	System.out.println( memIPro );   // inherited, different package
+	System.out.println( memIScr );   // inherited, different package
+
+	System.out.println( memRPro );   // inherited, different package
+	System.out.println( memRPkg );   // inherited, different package
+	System.out.println( memRScr );   // inherited, different package
+    }
+}
+
+function memInhRead() {
+	var vf = Inh {};
+	vf.memRead();
+}
+
+function memInhARead() {
+	var vf = InhA {};
+	vf.memRead();
+}
+
+function memHereRead() {
+	var vf = vsgc1250instRead {};
+	System.out.println( vf.memHerePub );   // script class, select access
+	System.out.println( vf.memHerePkg );   // script class, select access
+	System.out.println( vf.memHerePro );   // script class, select access
+	System.out.println( vf.memHereScr );   // script class, select access
+
+	System.out.println( vf.memHereIPkg );   // script class, select access
+	System.out.println( vf.memHereIPro );   // script class, select access
+	System.out.println( vf.memHereIScr );   // script class, select access
+
+	System.out.println( vf.memHereRPro );   // script class, select access
+	System.out.println( vf.memHereRPkg );   // script class, select access
+	System.out.println( vf.memHereRScr );   // script class, select access
+}
+
+function memFooRead() {
+	var vf = Foo {};
+	System.out.println( vf.fooPub );   // nested class
+	System.out.println( vf.fooPkg );   // nested class
+	System.out.println( vf.fooPro );   // nested class
+	System.out.println( vf.fooScr );   // nested class
+
+	System.out.println( vf.fooIPkg );   // nested class
+	System.out.println( vf.fooIPro );   // nested class
+	System.out.println( vf.fooIScr );   // nested class
+
+	System.out.println( vf.fooRPro );   // nested class
+	System.out.println( vf.fooRPkg );   // nested class
+	System.out.println( vf.fooRScr );   // nested class
+}
+
+function memSubRead() {
+	var vf = vsgc1250subFail {};
+	System.out.println( vf.memPub );   // same package
+	System.out.println( vf.memPkg );   // same package
+	System.out.println( vf.memPro );   // same package
+	System.out.println( vf.memScr );   // ERROR: same package
+
+	System.out.println( vf.memIPkg );   // same package
+	System.out.println( vf.memIPro );   // same package
+	System.out.println( vf.memIScr );   // same package
+
+	System.out.println( vf.memRPro );   // same package
+	System.out.println( vf.memRPkg );   // same package
+	System.out.println( vf.memRScr );   // same package
+}
+
+function memSubARead() {
+	var vf = vsgc1250subFailA {};
+	System.out.println( vf.memPub );   // different package
+	System.out.println( vf.memPkg );   // ERROR: different package
+	System.out.println( vf.memPro );   // ERROR: different package
+	System.out.println( vf.memScr );   // ERROR: different package
+
+	System.out.println( vf.memIPkg );   // different package
+	System.out.println( vf.memIPro );   // different package
+	System.out.println( vf.memIScr );   // different package
+
+	System.out.println( vf.memRPro );   // different package
+	System.out.println( vf.memRPkg );   // different package
+	System.out.println( vf.memRScr );   // different package
+}
+
+function run( ) {
+	memInhRead();
+	memInhARead();
+	memHereRead();
+	memFooRead();
+	memSubRead();
+	memSubARead();
+}

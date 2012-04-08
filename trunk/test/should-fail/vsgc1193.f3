@@ -1,0 +1,19 @@
+/*
+ * VSGC-1192: Compiler crashes when function returns its own type
+ *
+ * @test/compile-error
+ */
+
+function func1(){
+       return func1;
+}
+
+var func2 = function () {
+       return func2;
+}
+
+class A {
+  function func3(x:A){
+       return x.func3;
+  }
+}

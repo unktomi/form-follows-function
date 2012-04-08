@@ -1,0 +1,15 @@
+/*
+ * Regression test VSGC-1087 : bound interpolator, et. al.
+ *
+ * @test/fail
+ */
+
+class Foo {
+  var x : Integer
+}
+
+var y = [77, 88];
+var idx = 0;
+Foo {
+  x: bind y[idx] with inverse
+}

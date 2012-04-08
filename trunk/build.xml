@@ -1,0 +1,1545 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="F3 Compiler" default="binaries" basedir="." xmlns:cpptask="antlib:net.sf.antcontrib.cpptasks">
+    <description>Builds, tests, and runs the f3-compiler project.</description>
+
+    <property name="build.defs" location="build-defs.xml"/>
+    <condition property="build.defs.missing">
+       <not>
+         <available file="${build.defs}" type="file" property="ignored"/>
+       </not>
+    </condition>
+
+    <tstamp>
+        <format property="date.stamp" pattern="yyyy-MM-dd"/>
+    </tstamp>
+
+    <property name="top-repo" value="f3-compiler~soma-setup"/>
+    <property name="top-url" value="http://kenai.com/hg/${top-repo}"/>
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+
+    <!-- there must be a way to not duplicate this message -->
+    <fail if="build.defs.missing">
+:
+    ${build.defs} does not exist.  
+
+    Your f3-compiler repo must be under the top level repository, ${top-repo}.
+    You should do this:
+      cd ..
+      hg clone ${top-url}
+      mv f3-compiler ${top-repo}
+
+    And then, you must create the ${top-repo}/import/ directory containing all the external
+    packages that are needed to build:
+      download file import.zip from
+        http://kenai.com/projects/f3-compiler/downloads
+      cp ...../import.zip .
+      cd ${top-repo}
+      ant import
+
+    You don't really have to download import.zip.  If it does not exist, then the 'ant import' command
+    will use http to fetch all the needed packages.  But, this is slow and prone to timeouts.
+
+    After doing the above, you can cd f3-compiler and do your build.
+    </fail>
+
+    <import file="${build.defs}"/>
+
+    <!-- 
+        If the f3.build.number is not set to a real value, then we are building outside hudson.  Use
+        userName-date instead.
+    -->
+    <condition property="build.number.string" value="${user.name}-${date.stamp}" else="${f3.build.number}">
+       <matches string="${f3.build.number}" pattern="^0*$"/>
+    </condition>
+
+    <property name="f3doc.dir" value="${basedir}/f3doc"/>
+    <property name="launcher.dir" value="${basedir}/launcher"/>
+    <property environment="env" />
+    <condition property="exe" value=".exe" else="">
+      <isset property="isWindows"/>
+    </condition>
+
+    <import file="tools-defs.xml"/>
+
+    <property name="antlr.grammarv4p" value="v4Parser" />
+    <property name="antlr.grammarv4l" value="v4Lexer" />
+
+    <target name="jj">
+    <echo>
+
+    </echo>
+    </target>
+
+    <!-- Here are targets required by the upper level build.xml.   -->
+
+    <target name="f3-clean"     depends="clean"/>
+    <target name="f3-clean-sdk" depends="init,-do-f3-clean-sdk"/>
+    <target name="f3-clean-deploy" depends="init,-do-f3-clean-deploy"/>
+    <target name="f3-sdk"       depends="init,-do-f3-sdk"/>
+    <target name="f3-test"      depends="smoketest"/>
+    <target name="f3-full-test"/>
+    <target name="f3-samples"/>
+    <target name="f3-deploy"    depends="init,-do-f3-deploy"/>
+    <target name="f3-sdk-docs"  depends="init,-do-f3-sdk-docs"/>
+
+    <!-- Here are popular targets for building in this dir -->
+    <target name="help"       depends="-do-help" description="Show help on targets"/>
+    <target name="binaries"   depends="jar,f3doc,launcher" description="Build compiler and compiler runtime binaries"/>
+
+<!-- jjh: temporarily changed to dev-test until the tests on the exclude lists can be fixed
+    <target name="test"       depends="binaries,-do-test" description="Build binaries and run tests"/>
+-->
+    <target name="test"       depends="dev-test" description="Build binaries and run tests"/>
+
+
+    <target name="smoketest"  depends="-init-smoke-test,binaries,-do-test" description="Build binaries and run smoke tests"/>
+    <target name="docs"       depends="binaries,source-zip,-do-docs" description="Build binaries, docs, and src.zip"/>
+    <target name="all"        depends="docs,test,pack-jars" description="Build and test all project artifacts"/>
+    <target name="bundle"     depends="docs,pack-jars,-do-bundle" description="Build distribution bundle"/>
+    <target name="clean"      depends="-do-clean" description="Remove build products"/>
+
+    <!-- This can be called by the user, but it would be a NOP -->
+    <target name="init" depends="-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-presetdef-jar">
+        <!-- If we are building from hudson, we need to use the formatters in the junit tasks. -->
+        <condition property="use-formatters" value="true" else="false">
+            <isset property="hudson-build"/>
+        </condition>
+    </target>
+
+    <!-- Deprecated targets -->
+    <target name="default" depends="binaries"  description="Deprecated; use 'binaries' instead"/>
+    <target name="dist"    depends="bundle"  description="Deprecated; use 'bundle' instead"/>
+
+    <target name="-do-help">
+      <echo> 
+    Main developer targets:
+      name="dev-..."                                           description="temp targets to assist in move to compiled bind"
+            dev-test:    run tests that are not on the exclude list (ie, don't hang, and don't contain 'lazy')
+            dev-no-hang: run tests that are not on the hang list
+            dev-pass:    run tests that are expected to pass.  
+            dev-fail:    run tests that are currently failing - see lists in project.properties
+            dev-check:   find unexpected passes and unexpected failures in a previous dev-* test run.  EG
+                            ant dev-test dev-check
+            dev-xxx:     run tests named in file -Dxxx=filename; default filename is ./xxx.
+
+      name="help"
+      name="jar"                                               description="Build compiler .jar files"
+      name="binaries"   depends="jar,f3doc,launcher"       description="Build compiler and compiler runtime binaries"
+      name="test"       depends="binaries,-do-test"            description="Build binaries and run all tests"
+           To run a single framework/xxxTest.java, do
+               ant test -Dincludes=framework/xxxTest.java
+           or for example
+               ant test -Dincludes=launchers/VersionTest.java
+           To run a subset, say f3unit/ of the F3CompilerTest tests, do
+               ant test -Dtest.f3.roots=test/f3unit -Dincludes=framework/F3CompilerTest.java
+
+      name="docs"       depends="binaries,source-zip,-do-docs" description="Build binaries, docs, and src.zip"
+      name="all"        depends="docs,test,pack-jars"          description="Build and test all project artifacts"
+      name="bundle"     depends="docs,pack-jars,-do-bundle"    description="Build distribution bundle"
+      name="clean"      depends="-do-clean"                    description="Remove build products"
+      name="all-with-coverage" depends="-init-coverage, all, findbugs, plot-data, coverage-report"
+                               description="Build and test all project artifacts with coverage"
+
+      name="smoketest"         description="Run tests that interface to SDK code"
+
+      name="test-single" depends="init,-do-not-recompile,compile-test-single,-pre-test-run-single,
+                                  -do-test-run-single,-post-test-run-single" 
+                               description="Run single unit test."
+            E.G.   ant test-single -Dtest.f3.includes='**/vsgc2347.f3'
+            or     ant test-single -Dtest.f3.includes=vsgc2347.f3
+
+
+    Your f3-compiler repo must be under the top level repository, ${top-repo}.
+    You should do this:
+      cd ..
+      hg clone ${top-url}
+      mv f3-compiler ${top-repo}
+
+    And then, you must create the ${top-repo}/import/ directory containing all the external
+    packages that are needed to build:
+      download file import.zip from
+        http://kenai.com/projects/f3-compiler/downloads
+      cp ...../import.zip .
+      cd ${top-repo}
+      ant import
+
+    You don't really have to download import.zip.  If it does not exist, then the 'ant import' command
+    will use http to fetch all the needed packages.  But, this is slow and prone to timeouts.
+
+    After doing the above, you can cd f3-compiler and do your build.
+
+       </echo>
+     </target>
+
+
+    <target name="-do-test"  depends="init,compile-test,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse"/>
+    <!--
+       We don't build docs as part of the f3-sdk target; the api docs that go into the SDK 
+       are built by a process outside this repo.
+    -->
+    <target name="-do-f3-sdk" depends="binaries,source-zip">
+        <copy todir="${f3.sdk.dir}">
+          <fileset dir="${dist.dir}" includes="${dist.contents}"/>
+        </copy>
+        <chmod dir="${f3.sdk.dir}" perm="a+x" type="both" includes="${dist.executables}"/>
+    </target>
+
+    <target name="-do-f3-clean-sdk">
+         <delete includeemptydirs="true">
+            <fileset dir="${f3.sdk.dir}" includes="${dist.contents}"/>
+          </delete>
+    </target>
+
+    <target name="-do-f3-deploy" depends="binaries">
+        <copy todir="${f3.deployed.dir}">
+          <fileset dir="${dist.dir}/lib" includes="${deployed.contents}"/>
+        </copy>
+    </target>
+
+    <target name="-do-f3-sdk-docs" depends="docs">
+        <copy todir="${f3.sdk.api.docs.dir}">
+            <fileset dir="${basedir}/javadoc-files">
+                <include name="draft.*"/>
+                <include name="*.css"/>
+                <include name="*.js"/>
+                <include name="*.png"/>
+            </fileset>
+        </copy>
+        <mkdir dir="${f3.xml.docs.dir}"/>
+        <copy file="${build.dir}/docs/javacode.xml"
+              tofile="${f3.xml.docs.dir}/f3-compiler_javacode.xml"/>
+        <copy file="build/docs/f3code.xml"
+              tofile="${f3.xml.docs.dir}/f3-compiler_f3code.xml"/>
+    </target>
+
+    <target name="-do-f3-clean-deploy">
+         <delete includeemptydirs="true">
+            <fileset dir="${f3.deployed.dir}" includes="${deployed.contents}"/>
+          </delete>
+    </target>
+
+    <target name="-bundle-init">
+        <mkdir dir="${bundle.dir}"/>
+    </target>
+
+    <target name="-bundle-zip">
+        <zip basedir="dist" compress="true" destfile="${zip.bundle}" includes="${bundle.includes}"/>
+    </target>
+    
+    <target name="-bundle-tgz">
+        <tar basedir="dist" longfile="fail" compression="gzip" destfile="${tgz.bundle}" includes="${bundle.includes}"/>
+    </target>
+
+    <target name="-do-bundle" depends="-bundle-init,-bundle-zip,-bundle-tgz"/>
+
+    <target name="hudson-dev" depends="-hudson-init, all, findbugs, plot-data, coverage-report, hudson-post-build"
+            description="Build and test all project artifacts for each developer push"/>
+    
+    <target name="hudson-all" depends="-hudson-init, -init-coverage, all, findbugs, plot-data, coverage-report, hudson-post-build"
+            description="Build and test with coverage all project artifacts for nightly build"/>
+
+    <target name="all-with-coverage" depends="-init-coverage, all, findbugs, plot-data, coverage-report"
+            description="Build and test all project artifacts with coverage"/>
+
+    <target name="-hudson-init">
+        <!-- This must be done before init on a build done by hudson in order to tell the junit task to use 
+             the output formatters.  Hudson needs this to graph errors, but we don't want to use them from non
+             Hudson builds because they causes two copies of the result to be written to stdout.
+        -->
+        <property name="hudson-build" value="true"/>
+    </target>
+
+    <target name="compiler-only" depends="jar"
+            description="Build just the f3c compiler (no bin scripts, f3doc, etc)"/>
+
+    <available property="ant.jar" value="${import.ant.jar}" file="${import.ant.jar}"/>
+    <!-- if the previous location is not correct than find the ant.jar from the java.class.path value -->
+    <pathconvert property="ant.jar">
+        <mapper type="regexp" from="${path.separator}([^${path.separator}]*ant.jar)${path.separator}" to="\1"/>
+        <path location="${path.separator}${java.class.path}${path.separator}"/>
+    </pathconvert>
+
+    <target name="check-ant">
+        <fail message="Ant version 1.7.0 or later is required to build F3.">
+            <condition>
+                <not>
+                    <antversion atleast="1.7.0"/>
+                </not>
+            </condition>
+        </fail>
+    </target>
+
+    <target name="check-jdk-1.5">
+        <available property="has-jdk-1.5" classname="java.lang.Appendable"/>
+    </target>
+
+    <target name="tool-paths">
+        <!-- Define actual properties for the known paths so they can be used in the properties file -->
+        <property name="ant.class.path" refid="ant.class.path"/>
+        <property name="junit.class.path" refid="junit.class.path"/>
+        <property name="findbugs.class.path" refid="findbugs.class.path"/>
+        <property name="saxon.class.path" refid="saxon.class.path"/>
+        <property name="xincluder.class.path" refid="xincluder.class.path"/>
+        <property name="antlr.class.path" refid="antlr.class.path"/>
+        <property name="antlr-runtime.class.path" refid="antlr-runtime.class.path"/>
+        <property name="antlrworks.class.path" refid="antlrworks.class.path"/>
+        <property name="cobertura.class.path" refid="cobertura.class.path"/>
+    </target>
+
+    <target name="single-f3-test-check" if="test.f3.includes">
+        <property name="test.class" value="framework.F3CompilerTest"/>
+        <property name="test.includes" value="**/F3CompilerTest.java"/>
+        <property name="javac.includes" value="**/F3CompilerTest.java"/>
+        <property name="test-sys-prop.test.f3.includes" value="${test.f3.includes}"/>
+    </target>
+
+
+    <target name="-pre-init" depends="check-ant,check-jdk-1.5,tool-paths,single-f3-test-check">
+        <fail unless="has-jdk-1.5">You need JDK 1.5 or higher to build F3.</fail>
+        <echo message="JDK version ${java.version}"/>
+        <echo message="Ant version ${ant.version}"/>
+    </target>
+
+    <target name="-post-init">
+        <property name="antlr.grammarv4l.file" value="${antlr.src.dir}/${antlr.grammarv4l}.g" />
+        <property name="antlr.grammarv4p.file" value="${antlr.src.dir}/${antlr.grammarv4p}.g" />
+    </target>
+
+    <!-- jar file creation: external runtime jar contents are included to reduce classpath issues -->
+    <target depends="init,compile,-pre-jar" if="manifest.available+main.class+mkdist.available" name="-do-jar-with-libraries">
+        <jar compress="${jar.compress}" destfile="${dist.jar}" manifest="${manifest.file}">
+            <fileset dir="${build.classes.dir}"/>
+            <zipfileset src="${file.reference.javac.jar}" excludes="META-INF/**/,javax/annotation/**/,com/sun/tools/javac/processing"/>
+            <zipfileset src="${antlr-runtime.class.path}" excludes="META-INF/**/,org/antlr/runtime/debug/**/,org/antlr/runtime/misc/**/"/>
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </manifest>
+        </jar>
+        <!-- make CLASS.LIST file using "jar tf" command -->
+        <exec executable="jar" failonerror="true"
+              output="${build.classes.dir}/META-INF/CLASS.LIST">
+            <arg value="tf"/>
+            <arg value="${dist.jar}"/>
+        </exec>
+        <taskdef name="bytecode-verify" classname="org.f3.tools.bytecodeverifier.VerifierTask">
+            <classpath>
+                 <pathelement location="${ant.jar}"/>
+                 <pathelement location="${build.buildtools.dir}/"/>
+                 <path refid="asm.class.path"/>
+            </classpath>
+        </taskdef>
+        <bytecode-verify path="${dist.jar}" verbose="false"/>
+<!--
+        <jar compress="${jar.compress}" destfile="${dist.jar}" manifest="${manifest.file}">
+            <fileset dir="${build.classes.dir}"/>
+            <zipfileset src="${file.reference.javac.jar}" excludes="META-INF/**/,javax/annotation/**/,com/sun/tools/javac/processing"/>
+            <zipfileset src="${antlr-runtime.class.path}" excludes="META-INF/**/,org/antlr/runtime/debug/**/,org/antlr/runtime/misc/**/"/>
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </manifest>
+        </jar>
+-->
+        <jar compress="${jar.compress}" destfile="${dist.f3rt.jar}" >
+            <fileset dir="${build.classes.dir}" >
+                <include name="**/*.class" />
+                <include name="org/f3/runtime/resources/version.properties"/>
+                <exclude name="org/f3/tools/**"/>
+                <exclude name="org/f3/api/**"/>
+                <exclude name="org/f3/runtime/main/**"/>
+            </fileset>
+        </jar>
+        <zip compress="${jar.compress}" destfile="${dist.f3rt-main.jar}" >
+            <zipfileset dir="${build.classes.dir}" >
+                <include name="org/f3/runtime/main/Main.class"/>
+            </zipfileset>
+        </zip>
+        <!-- make CLASS.LIST file using "jar tf" command -->
+        <exec executable="jar" failonerror="true"
+              output="${build.classes.dir}/META-INF/CLASS.LIST">
+            <arg value="tf"/>
+            <arg value="${dist.f3rt.jar}"/>
+        </exec>
+<!--
+        <jar compress="${jar.compress}" destfile="${dist.f3rt.jar}" >
+            <fileset dir="${build.classes.dir}"> 
+                <include name="**/*.class" />
+                <include name="org/f3/runtime/resources/version.properties"/>
+                <include name="**/CLASS.LIST" />
+                <exclude name="org/f3/tools/**"/>
+                <exclude name="org/f3/api/**"/>
+            </fileset>
+        </jar>
+-->
+    </target>
+
+    <target depends="-pre-compile" name="generate-lexerv4" unless="lexerv4.uptodate" >
+        <java classname="org.antlr.Tool" classpathref="antlr.class.path" fork="true">
+	    <arg value="-Xconversiontimeout" />
+	    <arg value="10000" />
+            <arg value="-verbose"/>
+            <arg value="-o" />
+            <arg value="${antlr.generated.dir}" />
+            <arg value="${antlr.grammarv4l.file}" />
+            <jvmarg value="-Xmx${f3.antlr.max.memory}"/>
+        </java>
+        <java classname="org.antlr.Tool" classpathref="antlr.class.path" fork="true">
+	    <arg value="-Xconversiontimeout" />
+	    <arg value="10000" />
+            <arg value="-verbose"/>
+            <arg value="-o" />
+            <arg value="${antlr.generated.dir}" />
+            <arg value="${antlr.grammarv4p.file}" />
+            <jvmarg value="-Xmx${f3.antlr.max.memory}"/>
+        </java>
+        <property name="parserv4.uptodate" value="true" />
+    </target>
+
+    <target depends="-pre-compile, generate-lexerv4" name="generate-parserv4" unless="parserv4.uptodate">
+        <java classname="org.antlr.Tool" classpathref="antlr.class.path" fork="true">
+	    <arg value="-Xconversiontimeout" />
+	    <arg value="10000" />
+            <arg value="-verbose"/>
+            <arg value="-o" />
+            <arg value="${antlr.generated.dir}" />
+            <arg value="${antlr.grammarv4l.file}" />
+            <jvmarg value="-Xmx${f3.antlr.max.memory}"/>
+        </java>
+        <java classname="org.antlr.Tool" classpathref="antlr.class.path" fork="true">
+	    <arg value="-Xconversiontimeout" />
+	    <arg value="10000" />
+            <arg value="-verbose"/>
+            <arg value="-o" />
+            <arg value="${antlr.generated.dir}" />
+            <arg value="${antlr.grammarv4p.file}" />
+            <jvmarg value="-Xmx${f3.antlr.max.memory}"/>
+        </java>
+    </target>
+
+    <target name="syntax-diagrams" depends="init, generate-parserv4">
+        <mkdir dir="${syntax.diagrams.dir}"/>
+        <mkdir dir="${antlr.src.dir}/output"/>
+        <copy todir="${antlr.src.dir}/output">
+            <fileset dir="${antlr.generated.dir}" includes="**/*.tokens"/>
+        </copy>
+        <java classname="org.antlr.works.Console" fork="true">
+            <classpath>
+                <path refid="antlrworks.class.path" />
+                <path refid="antlr.class.path" />
+            </classpath>
+            <arg value="-f" />
+            <arg value="${antlr.grammarv4p.file}" />
+            <arg value="-sd" />
+            <arg value="png" />
+            <arg value="-o" />
+            <arg value="${syntax.diagrams.dir}" />            
+            <arg value="-verbose"/>
+            <jvmarg value="-Xmx${f3.antlr.max.memory}"/>
+        </java>
+        <delete dir="${antlr.src.dir}/output"></delete>
+
+    </target>
+
+    <target name="generate-templates" depends="-pre-compile">
+        <java classname="org.f3.tools.stringtemplate.ExpandXxxTemplate">
+            <arg value="${build.generated.dir}" />
+            <arg value="org/f3/runtime/XxxTemplate.stg" />
+            <arg value="org/f3/runtime/sequence" />
+            <arg line="AbstractSequence Sequences XxxArraySequence" />
+           <classpath>
+                <pathelement location="${build.buildtools.dir}"/>
+                <path refid="antlr.class.path" />
+                <pathelement location="${src.classes.dir}" />
+            </classpath>
+        </java>
+    </target>
+
+    <target name="-do-compile" depends="init,generated-java,-pre-compile" if="have.sources">
+        <pcompile srcdir="${src.classes.dir}/org/f3"
+                  destdir="${build.generated.dir}/org/f3"
+                  includes="${includes}"/>
+
+        <!-- f3 platform version -->
+        <touch file="${f3.version.file}" mkdirs="yes"/>
+        <echo file="${f3.version.file}">release=${f3.release}${line.separator}full=${f3.full.version}
+        </echo>
+
+        <!-- f3c tool version file -->
+        <touch file="${f3c.version.file}" mkdirs="yes"/>
+        <echo file="${f3c.version.file}">release=${f3c.release}${line.separator}full=${f3c.full.version}
+        </echo>
+
+        <!-- f3doc tool version file -->
+        <touch file="${f3doc.version.file}" mkdirs="yes"/>
+        <echo file="${f3doc.version.file}">release=${f3doc.release}${line.separator}full=${f3doc.full.version}
+        </echo>
+
+        <pcompile srcdir="${build.generated.dir}"
+                  destdir="${build.generated.dir}"
+                  includes="**/*.properties"/>
+        <javac compiler="modern" fork="true"
+               destdir="${build.classes.dir}" includes="${includes}" excludes="${excludes}"
+               debug="${javac.debug}" deprecation="${javac.deprecation}"
+               source="${javac.source}" target="${javac.target}" includeantruntime="false">
+            <src path="${src.classes.dir}"/>
+            <src path="${build.generated.dir}"/>
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+            <compilerarg line="${javac.compilerargs} -Xmaxerrs 10000"/>
+        </javac>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.classes.dir}" excludes="${build.classes.excludes}"/>
+        </copy>
+    </target>
+
+    <target name="generated-java" depends="generate-lexerv4,generate-parserv4,generate-templates" />
+    
+    <target depends="init,-def-pcompile" name="-pre-compile">
+        <mkdir dir="${build.classes.dir}"/>
+        <uptodate property="lexerv4.uptodate" srcfile="${antlr.grammarv4l.file}" targetfile="${antlr.generated.dir}/${antlr.grammarv4l}.java" />
+        <uptodate property="parserv4.uptodate" srcfile="${antlr.grammarv4p.file}" targetfile="${antlr.generated.dir}/${antlr.grammarv4p}.java" />
+    </target>
+    
+    <target name="-post-compile">
+        <!-- compiles the f3 files in the compiler workspace. These are the runtime
+             files shipped with the compiler (not related to the F3 Runtime
+             project). -->
+
+        <taskdef name="f3c" classname="org.f3.tools.ant.F3AntTask">
+            <classpath>
+                <pathelement location="${ant.jar}"/>
+                <pathelement location="${build.classes.dir}"/>
+                <pathelement path="${javac.classpath}"/>
+            </classpath>
+        </taskdef>
+
+        <f3c debug="${javac.debug}" deprecation="${javac.deprecation}"
+                 destdir="${build.classes.dir}"
+                 excludes="${excludes}" includeantruntime="false"
+                 includes="**/*.f3" source="${javac.source}" sourcepath=""
+                 srcdir="${src.classes.dir}" target="${javac.target}"
+                 classpath="${build.classes.dir}:${javac.test.classpath}"
+                 compilerclasspath="${build.classes.dir}:${javac.classpath}">
+        </f3c>
+
+        <taskdef name="bytecode-verify" classname="org.f3.tools.bytecodeverifier.VerifierTask">
+            <classpath>
+                 <pathelement location="${ant.jar}"/>
+                 <pathelement location="${build.buildtools.dir}/"/>
+                 <path refid="asm.class.path"/>
+            </classpath>
+        </taskdef>
+        <bytecode-verify path="${build.classes.dir}" verbose="false"/>
+    </target>
+
+    <target depends="init,f3doc" name="-javadoc-build">
+        <mkdir dir="${dist.javadoc.dir}"/>
+        <path id="bootpath" path="${javac.classpath}"/>
+        <property name="bootjars" refid="bootpath"/>
+        <path id="clspath" path="build/classes"/>
+        <property name="clsjars" refid="clspath"/>
+        <path id="srcpath" path="src/share/classes"/>
+        <property name="srcpathprop" refid="srcpath"/>
+        <copy todir="${dist.f3doc.dir}">
+            <fileset dir="${basedir}/javadoc-files">
+                <include name="draft.*"/>
+                <include name="*.css"/>
+                <include name="*.js"/>
+                <include name="*.png"/>
+            </fileset>
+        </copy>
+        <javadoc additionalparam="${javadoc.additionalparam}" author="${javadoc.author}" destdir="${dist.javadoc.dir}" failonerror="true" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" notree="${javadoc.notree}" private="${javadoc.private}" source="${javac.source}" splitindex="${javadoc.splitindex}" use="${javadoc.use}" useexternalfile="true" version="${javadoc.version}" windowtitle="${javadoc.windowtitle}"
+                packagenames="${javadoc.pkgs}" sourcepath="${src.classes.dir}">
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+        </javadoc>
+        <!--
+        switch to alternate launching method so we can add gui jars to classpath
+        <java jar="dist/lib/f3doc.jar" fork="true" failonerror="true">
+        -->
+    	<mkdir dir="${build.dir}/doc"/>
+        <javadoc destdir="${dist.javadoc.dir}" failonerror="true" version="${javadoc.version}" private="${javadoc.private}" source="${javac.source}"
+	    packagenames="f3.animation,f3.lang,f3.reflect,f3.util" 
+	    sourcepath="${src.classes.dir}">
+            <doclet name="org.f3.tools.xmldoclet.XMLDoclet"
+                    path="${dist.f3doc.jar}">
+               <param name="-o" value="${build.dir}/docs/javacode.xml"/>
+               <param name="-nohtml"/>
+            </doclet>
+         </javadoc>
+         
+        <!-- generate f3 class docs -->
+        <echo message="generating f3 docs for ${f3doc.packages}"/>
+        <java  fork="true" failonerror="true" classname="org.f3.tools.f3doc.Main">
+            <classpath location="${dist.f3doc.jar}"/>
+            <classpath>
+                <path path="${build.classes.dir}:${javac.test.classpath}"/>
+            </classpath>
+            <jvmarg value="-Xbootclasspath/p:${bootjars}"/>
+            <jvmarg value="-Djava.awt.headless=true"/>
+            <jvmarg value="-Xmx${f3.javadoc.max.memory}"/>
+            <arg value="-o"/> <arg value="build/docs/f3code.xml"/>
+            <arg value="-nohtml"/>
+            <arg value="-sourcepath"/> <arg value="${srcpathprop}"/>
+            <arg value="-classpath"/> <arg value="${clsjars}"/>
+            <arg line="${f3doc.packages}"/>
+        </java>
+        
+        
+        <java  fork="true" failonerror="true" classname="org.f3.tools.f3doc.Main">
+            <classpath location="${dist.f3doc.jar}"/>
+            <classpath refid="clspath"/>
+            <arg value="-d"/>
+            <arg value="${dist.f3doc.dir}"/>
+            <arg value="-sourcepath"/>
+            <arg value="${srcpathprop}"/>
+            <arg value="-classpath"/>
+            <arg value="${clsjars}"/>
+        	<arg line="-i ${build.dir}/docs/javacode.xml"/>
+            <classpath>
+                <path path="${build.classes.dir}:${javac.test.classpath}"/>
+            </classpath>
+            <jvmarg value="-Xbootclasspath/p:${bootjars}"/>
+            <jvmarg value="-Djava.awt.headless=true"/>
+            <jvmarg value="-Xmx${f3.javadoc.max.memory}"/>
+            <arg line="${f3doc.packages}"/>
+        </java>
+        
+    </target>
+    
+    <target name="-def-pcompile">
+        <mkdir dir="${build.buildtools.dir}"/>
+        <javac srcdir="${src.buildtools.dir}" destdir="${build.buildtools.dir}" classpath="${import.ant.jar}">
+            <classpath>
+                <path refid="ant.class.path" />
+                <path refid="asm.class.path" />
+                <path refid="antlr.class.path" />
+            </classpath>
+        </javac>
+        <taskdef name="pcompile"
+                 classname="org.f3.tools.compileproperties.CompilePropertiesTask"
+                 classpath="${build.buildtools.dir}/"/>
+    </target>
+    
+    <target name="-do-docs" depends="javadoc,langref">
+        <copy todir="dist/doc">
+            <fileset dir="doc" includes="**/*.pdf"/>
+        </copy>
+        <copy file="doc/doc-index.html" tofile="dist/doc/index.html"/>
+        <copy todir="dist/doc/images">
+            <fileset dir="doc/images"/>
+        </copy>
+    </target>
+
+    <!-- Stuff dealing with adding coverage to JUnit execution -->
+
+    <target name="-init-coverage">
+        <property name="do.coverage" value="true"/>
+    </target>
+
+    <target name="cobertura-taskdefs">
+        <taskdef classpathref="cobertura.class.path" resource="tasks.properties"/>
+    </target>
+
+    <target name="conditional-instrument" if="do.coverage" depends="cobertura-taskdefs">
+        <mkdir dir="${build.instrumented.dir}"/>
+        <cobertura-instrument todir="${build.instrumented.dir}">
+            <fileset dir="${build.classes.dir}" includes="**/*.class"/>
+            <classpath refid="cobertura.class.path"/>
+        </cobertura-instrument>
+    </target>
+
+    <target name="conditional-clean-instrument" unless="do.coverage">
+        <delete dir="${build.instrumented.dir}"/>
+    </target>
+
+    <target name="conditional-coverage-report" if="do.coverage" depends="cobertura-taskdefs">
+        <mkdir dir="${dist.coverage.dir}"/>
+        <cobertura-report srcdir="${src.classes.dir}" destdir="${dist.coverage.dir}">
+            <classpath>
+                <path location="${build.classes.dir}"/>
+            </classpath>
+        </cobertura-report>
+        <cobertura-report format="xml" srcdir="${src.classes.dir}" destdir="${build.dir}"/>
+    </target>
+
+    <target depends="init,conditional-instrument,conditional-clean-instrument" if="have.tests" name="-pre-test-run">
+        <mkdir dir="${build.test.results.dir}"/>
+        <mkdir dir="${build.test.tmp.dir}"/>
+    </target>
+
+    <target if="have.tests" name="-post-test-run">
+        <fail if="build.tests.failed">Some tests failed; see details above.</fail>
+    </target>
+    
+    <target name="check-test-results">
+        <!-- Ignore junit errors on Hudson, so it reports an UNSTABLE build instead of a FAILURE -->
+        <condition property="build.tests.failed">
+            <and>
+                <isset property="tests.failed" description="JUnit task failed"/>
+                <not>
+                    <isset property="export.dir" description="Hudson build"/>
+                </not>
+            </and>
+        </condition>
+    </target>
+
+    <target depends="conditional-coverage-report" name="coverage-report" />
+
+    <!-- End stuff dealing with adding coverage to JUnit execution -->
+
+    <target name="langref" description="Build F3 Language Reference.">
+        <ant antfile="doc/build.xml" target="ref" inheritAll="true"/>
+
+        <copy todir="dist/doc/reference">
+            <fileset dir="build/doc/html"/>
+        </copy>
+        <copy todir="dist/doc/reference/images/callouts">
+            <fileset dir="doc/callouts"/>
+        </copy>
+        <!-- create an index.html redirector to F3Reference.html-->
+        <echo file="dist/doc/reference/index.html" append="false">
+            &lt;HTML&gt;&lt;HEAD&gt;
+                &lt;META HTTP-EQUIV="REFRESH" content="0; url=F3Reference.html"&gt;
+            &lt;/HEAD&gt;&lt;/HTML&gt;
+        </echo>
+    </target>
+
+    <target name="findbugs" depends="compile">
+        <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"
+                 classpathref="findbugs.class.path" />
+        <mkdir dir="${dist.findbugs.dir}"/>
+        <findbugs output="xml" outputFile="${build.dir}/findbugs.xml" home="${import.findbugs.home}" jvmargs="-Xmx512m"
+                  projectName="F3 compiler ${full.version}" excludeFilter="findbugs-exclude.xml">
+            <class location="${build.classes.dir}"/>
+            <auxclasspath path="${javac.classpath}:${import.junit.jar}"/>
+            <sourcepath path="${src.classes.dir}"/>
+        </findbugs>
+        <exec executable="sh" failonerror="true">
+            <arg value="${import.findbugs.home}/bin/convertXmlToText"/>
+            <arg value="-longBugCodes"/>
+            <arg value="-html:${import.findbugs.home}/src/xsl/fancy.xsl"/>
+            <arg value="${build.dir}/findbugs.xml"/>
+            <redirector output="${dist.findbugs.dir}/findbugs.html"/>
+        </exec>
+    </target>
+
+    <!-- we want to compile the benchmarks up front but run it
+         later during the nightly build.
+    -->
+    <target name="performance-compile">
+         <ant antfile="build.xml" dir="performance" target="compile" inheritall="false"/>
+    </target>
+    <target name="performance-clean">
+        <ant antfile="build.xml" dir="performance" target="clean" inheritall="false"/>
+    </target>
+     <target name="performance-run" depends="binaries">
+        <ant antfile="build.xml" dir="performance" target="run" inheritall="false"/>
+    </target>
+
+    <target name="staticsizes-clean">
+        <delete dir="${build.staticsizes.dir}" />
+    </target>
+
+    <target name="plot-data" depends="staticsizes, ldclassreport, performance-compile"/>
+    
+    <target name="staticsizes" depends="jar, staticsizes-clean">
+        <mkdir dir="${build.staticsizes.dir}"/>
+        <java classname="org.f3.tools.jaranalyzer.JarAnalyzer">
+            <arg value="${dist.f3rt.jar}" />
+            <arg value="${build.staticsizes.dir}" />
+            <arg value="http://f3.org/hudson/job/f3-compiler/${f3.build.number}/artifact/build/staticsizes" />
+            <classpath>
+                <pathelement location="${build.buildtools.dir}"/>
+            </classpath>
+            </java>
+    </target>
+
+    <target name="ldclassreport-clean">
+        <delete dir="${build.ldclassreport.dir}" />
+    </target>
+
+    <target name="ldclassreport" depends="binaries, ldclassreport-clean">
+        <mkdir dir="${build.ldclassreport.dir}" />
+        <java classname="org.f3.tools.classreporter.ClassReporter">
+            <arg value="-dist.dir=${dist.dir}" />
+            <arg value="-build.dir=${build.ldclassreport.dir}" />
+            <arg value="-reference.url=http://f3.org/hudson/job/f3-compiler/${f3.build.number}/changes" />
+            <classpath>
+                <pathelement location="${build.buildtools.dir}" />
+            </classpath>
+            </java>
+    </target>
+
+    <!-- Runs only if export.dir is set, which should only be set from the continuous build.
+         Publishes build results to ${export.dir}.
+         Depends on  environment params JOB_NAME.
+         Publishes result of findbugs analysis, where it can later be combined into
+         a multi-version bug database. -->
+    <target name="hudson-post-build" depends="init, bundle" if="export.dir">
+        <property environment="env"/>
+        <mkdir dir="${export.dir}/ROOT/findbugs"/>
+        <exec executable="sh" failonerror="true">
+            <arg value="${import.findbugs.home}/bin/setBugDatabaseInfo"/>
+            <arg value="-name"/>
+            <arg value="${env.JOB_NAME}"/>
+            <arg value="${build.dir}/findbugs.xml"/>
+            <redirector output="${export.dir}/ROOT/findbugs/${env.JOB_NAME}.xml"/>
+        </exec>
+        <delete dir="${export.dir}/ROOT/current-build" />
+        <copy todir="${export.dir}/ROOT/current-build">
+            <fileset dir="${dist.dir}" excludes="**/doc/api/**"/>
+        </copy>
+        <!-- create an index.html redirector to the real API location -->
+        <mkdir dir="${export.dir}/ROOT/current-build/doc/api"/>
+        <echo file="${export.dir}/ROOT/current-build/doc/api/index.html" append="false">
+            &lt;HTML&gt;&lt;HEAD&gt;
+                &lt;META HTTP-EQUIV="REFRESH" content="0; url=${f3.api.url}"&gt;
+            &lt;/HEAD&gt;&lt;/HTML&gt;
+        </echo>
+        <copy todir="${export.dir}/ROOT/current-build/doc">
+            <fileset dir="doc" includes="**/*.pdf"/>
+        </copy>
+        <copy file="${zip.bundle}" todir="${export.dir}/ROOT/current-build"/>
+    </target>
+
+    <condition property="preJDK6">
+        <or>
+            <equals arg1="${ant.java.version}" arg2="1.0"/>
+            <equals arg1="${ant.java.version}" arg2="1.1"/>
+            <equals arg1="${ant.java.version}" arg2="1.2"/>
+            <equals arg1="${ant.java.version}" arg2="1.3"/>
+            <equals arg1="${ant.java.version}" arg2="1.4"/>
+            <equals arg1="${ant.java.version}" arg2="1.5"/>
+        </or>
+    </condition>
+
+    <condition property="preJDK7">
+        <or>
+            <equals arg1="${ant.java.version}" arg2="1.0"/>
+            <equals arg1="${ant.java.version}" arg2="1.1"/>
+            <equals arg1="${ant.java.version}" arg2="1.2"/>
+            <equals arg1="${ant.java.version}" arg2="1.3"/>
+            <equals arg1="${ant.java.version}" arg2="1.4"/>
+            <equals arg1="${ant.java.version}" arg2="1.5"/>
+            <equals arg1="${ant.java.version}" arg2="1.6"/>
+        </or>
+    </condition>
+
+    <target name="f3doc" depends="jar" if="preJDK7" >
+        <echoproperties/>
+        <!-- javadoc.jar depends on doclets.jar but we don't have it. Create a temporary file here: -->
+        <jar jarfile="lib/doclets.jar"/>
+        <ant dir="${f3doc.dir}" antfile="build.xml" target="jar" inheritall="false">
+           <property name="f3.version" value="${f3.version}"/>
+        </ant>
+        <delete file="lib/doclets.jar"/>
+    </target>
+
+    <target name="f3jdi" description="Build f3jdi.jar" depends="-f3jdi-build, -f3jdi-skip">
+    </target>
+
+    <target name="-f3jdi-skip" description="Skip building f3jdi.jar on JDK LT 6" if="preJDK6">
+        <echo message="Skipping build of f3jdi because JDK 5 or earlier is in use"/>
+    </target>
+
+    <target name="-f3jdi-build" description="Build f3jdi.jar and javadoc on JDK >= 6" unless="preJDK6">
+        <echo message="Building f3jdi"/>
+        <ant dir="f3jdi" antfile="build.xml" target="dist"  inheritAll="false">
+            <property name="build.defs" value="${build.defs}" />
+        </ant>
+        <copy file="f3jdi/dist/f3jdi.jar" tofile="${dist.f3jdi.jar}"/>
+        <copy todir="${basedir}/dist/doc/f3jdi/api">
+              <fileset dir="f3jdi/dist/javadoc/"/>
+        </copy>
+    </target>
+
+    <target name="launcher" description="Copy command wrappers to dist/bin directory.">
+        <ant dir="${launcher.dir}" antfile="build.xml" target="all" inheritall="true">
+            <property name="compiler.dist.dir" location="${basedir}/dist/bin" />
+        </ant>
+        <copy todir="dist/bin">
+            <fileset dir="src/bin"/>
+        </copy>
+        <chmod dir="dist/bin" perm="755" includes="**/f3*"/>
+    </target>
+    
+    <target name="f3doc-clean">
+       <echo message="clean in f3doc/"/>
+       <ant dir="${f3doc.dir}" antfile="build.xml" target="clean" inheritall="false" />
+    </target>
+    
+    <target name="f3jdi-clean">
+       <echo message="clean in f3jdi/"/>
+       <ant dir="f3jdi" antfile="build.xml" target="clean" inheritall="false">
+           <property name="build.defs" value="${build.defs}" />
+       </ant>
+    </target>
+
+
+    <target name="launcher-clean">
+       <echo message="clean in launcher/"/>
+       <ant dir="${launcher.dir}" antfile="build.xml" target="clean" inheritall="false" />
+    </target>
+
+    <target name="langref-clean">
+       <echo message="clean in doc/"/>
+       <ant dir="doc" antfile="build.xml" target="clean" inheritall="false" />
+    </target>
+
+    <!-- Not part of the "clean" target processing.  Used by ?? -->
+    <target name="real-clean">
+        <antcall target="f3jdi-clean" inheritall="false"/>
+        <antcall target="clean"/>
+        <antcall target="f3doc-clean" inheritall="true"/>
+        <antcall target="langref-clean" inheritall="true"/>
+        <antcall target="launcher-clean" inheritall="true"/>
+    </target>
+
+<!-- kelly? -->    <available property="mail.jar" value="${ant.home}/lib/mail.jar" file="${ant.home}/lib/mail.jar"/>
+    
+    <target name="weekly-build-check">
+        <!-- weekly build parameters, normally set by Hudson -->
+        <fail unless="weekly.build.alias"/>
+        <fail unless="weekly.buildmaster"/>
+        <!-- JavaMail jar, needed for build notification -->
+        <fail unless="mail.jar"/>
+    </target>
+    
+    <target name="weekly-build" description="Weekly build target" depends="weekly-build-check">
+        <antcall target="-bundle-build">
+            <param name="release" value="weekly-${date.stamp}"/>
+        </antcall>
+        <mail from="${weekly.buildmaster}" 
+              replyto="${weekly.build.alias}"
+              tolist="${weekly.build.alias}"
+              message="${date.stamp} weekly build completed:\n\nhttp://f3.org/builds/weekly/f3-compiler/weekly-${date.stamp}"
+              subject="Weekly build available"/>
+    </target>
+    
+    <target name="milestone-build" description="Milestone build target">
+        <antcall target="-bundle-build"/>
+    </target>
+    
+    <target name="-bundle-build" depends="init">
+        <fail unless="release" description="release tag not specified"/>
+        <mkdir dir="${bundle.dir}"/>
+        <zip destfile="${src.bundle}" basedir="${basedir}"
+             excludes="${bundle.dir}/**, ${build.dir}/**, ${dist.dir}/** , **/.svn/**" level="9"/>
+        <antcall target="bundle"/>
+        <!-- property set separately by Hudson build -->
+        <property name="bundle.destdir" value="${env.WORKSPACE}"/>
+        <mkdir dir="${bundle.destdir}/${release}"/>
+        <copy todir="${bundle.destdir}/${release}">
+            <fileset dir="${bundle.dir}"/>
+        </copy>
+        <delete dir="${bundle.destdir}/latest" failonerror="true"/>
+        <mkdir dir="${bundle.destdir}/latest"/>
+        <copy todir="${bundle.destdir}/latest">
+            <fileset dir="${bundle.dir}"/>
+        </copy>
+    </target>
+    
+    <target name="pack-jars" depends="jar">
+        <taskdef name="pack200" classpath="${file.reference.pack200task.jar}"
+                     classname="org.jdesktop.deployment.ant.pack200.Pack200Task"/>
+
+        <pack200 src="${dist.jar}" gzipoutput="true" destfile='${dist.jar}.pack.gz'/>
+        <pack200 src="${dist.f3rt.jar}" gzipoutput="true" destfile='${dist.f3rt.jar}.pack.gz'/>
+    </target>
+    
+    <target name="source-zip" depends="init">
+        <zip destfile="${dist.dir}/src.zip">
+            <zipfileset file="${basedir}/LICENSE"/>
+            <zipfileset dir="${src.classes.dir}"/>
+            <zipfileset dir="f3doc/src"/>
+        </zip>
+    </target>
+    
+    <!-- 
+                ======================
+                INITIALIZATION SECTION 
+                ======================
+            -->
+    <target depends="-pre-init" name="-init-private">
+        <property file="nbproject/private/config.properties"/>
+        <property file="nbproject/private/configs/${config}.properties"/>
+        <property file="nbproject/private/private.properties"/>
+    </target>
+    <target depends="-pre-init,-init-private" name="-init-user">
+        <property file="${user.properties.file}"/>
+        <!-- The two properties below are usually overridden -->
+        <!-- by the active platform. Just a fallback. -->
+        <property name="default.javac.source" value="1.4"/>
+        <property name="default.javac.target" value="1.4"/>
+    </target>
+
+    <target depends="-pre-init,-init-private,-init-user" name="-init-project">
+        <property file="nbproject/configs/${config}.properties"/>
+        <property file="project.properties"/>
+    </target>
+    <target depends="-pre-init,-init-private,-init-user,-init-project" name="-do-init">
+        <available file="${manifest.file}" property="manifest.available"/>
+        <condition property="manifest.available+main.class">
+            <and>
+                <isset property="manifest.available"/>
+                <isset property="main.class"/>
+                <not>
+                    <equals arg1="${main.class}" arg2="" trim="true"/>
+                </not>
+            </and>
+        </condition>
+        <condition property="manifest.available+main.class+mkdist.available">
+            <and>
+                <istrue value="${manifest.available+main.class}"/>
+                <isset property="libs.CopyLibs.classpath"/>
+            </and>
+        </condition>
+        <condition property="have.tests">
+            <or>
+                <available file="${test.src.dir}"/>
+            </or>
+        </condition>
+        <condition property="have.sources">
+            <or>
+                <available file="${src.classes.dir}"/>
+            </or>
+        </condition>
+        <condition property="netbeans.home+have.tests">
+            <and>
+                <isset property="netbeans.home"/>
+                <isset property="have.tests"/>
+            </and>
+        </condition>
+        <condition property="no.javadoc.preview">
+            <and>
+                <isset property="javadoc.preview"/>
+                <isfalse value="${javadoc.preview}"/>
+            </and>
+        </condition>
+        <property name="run.jvmargs" value=""/>
+        <property name="javac.compilerargs" value=""/>
+        <property name="work.dir" value="${basedir}"/>
+        <property name="javac.debug" value="true"/>
+        <property name="javadoc.preview" value="true"/>
+        <property name="source.encoding" value="${file.encoding}"/>
+        <condition property="javadoc.encoding.used" value="${javadoc.encoding}">
+            <and>
+                <isset property="javadoc.encoding"/>
+                <not>
+                    <equals arg1="${javadoc.encoding}" arg2=""/>
+                </not>
+            </and>
+        </condition>
+        <property name="javadoc.encoding.used" value="${source.encoding}"/>
+        <property name="includes" value="**"/>
+        <property name="excludes" value=""/>
+        <condition else="" property="javac.compilerargs.jaxws" value="-Djava.endorsed.dirs='${jaxws.endorsed.dir}'">
+            <and>
+                <isset property="jaxws.endorsed.dir"/>
+                <available file="nbproject/jaxws-build.xml"/>
+            </and>
+        </condition>
+    </target>
+    <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
+        <fail unless="src.classes.dir">Must set src.classes.dir</fail>
+        <fail unless="test.src.dir">Must set test.src.dir</fail>
+        <fail unless="build.dir">Must set build.dir</fail>
+        <fail unless="dist.dir">Must set dist.dir</fail>
+        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
+        <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
+        <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
+        <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
+        <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
+        <fail unless="dist.jar">Must set dist.jar</fail>
+    </target>
+    
+    <target name="-init-debug-args">
+        <property name="version-output" value="java version &quot;${ant.java.version}"/>
+        <condition property="have-jdk-older-than-1.4">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.1"/>
+                <contains string="${version-output}" substring="java version &quot;1.2"/>
+                <contains string="${version-output}" substring="java version &quot;1.3"/>
+            </or>
+        </condition>
+        <condition else="-Xdebug" property="debug-args-line" value="-Xdebug -Xnoagent -Djava.compiler=none">
+            <istrue value="${have-jdk-older-than-1.4}"/>
+        </condition>
+    </target>
+    
+    <target name="-init-presetdef-jar">
+        <presetdef name="jar" uri="http://www.netbeans.org/ns/j2se-project/1">
+            <jar compress="${jar.compress}" jarfile="${dist.jar}">
+                <fileset dir="${build.classes.dir}"/>
+            </jar>
+        </presetdef>
+    </target>
+    
+
+    <!--
+                ===================
+                COMPILATION SECTION
+                ===================
+            -->
+    <target depends="init,generated-java,-pre-compile,-do-compile,-post-compile" description="Compile project." name="compile"/>
+    <target depends="init,generated-java,-pre-compile,-force-recompile" name="-do-compile-single">
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes
+        </fail>
+        <javac excludes="" includes="${javac.includes}" sourcepath="${src.classes.dir}"/>
+    </target>
+    <target depends="init,-pre-compile,-do-compile-single" name="compile-single"/>
+    <target depends="init,-pre-compile" name="-force-recompile">
+        <fail unless="javac.includes">Must set javac.includes
+        </fail>
+        <pathconvert pathsep="," property="javac.includes.binary">
+            <path>
+                <filelist dir="${build.classes.dir}" files="${javac.includes}"/>
+            </path>
+            <globmapper from="*.java" to="*.class"/>
+        </pathconvert>
+        <delete>
+            <files includes="${javac.includes.binary}"/>
+        </delete>
+    </target>
+    <!--
+                ====================
+                JAR BUILDING SECTION
+                ====================
+            -->
+    <target depends="init" name="-pre-jar">
+        <dirname file="${dist.jar}" property="dist.jar.dir"/>
+        <mkdir dir="${dist.jar.dir}"/>
+        <dirname file="${dist.f3rt-main.jar}" property="dist.jar.dir2"/>
+        <mkdir dir="${dist.jar.dir2}"/>
+    </target>
+    <target depends="init,compile,-pre-jar" name="-do-jar-without-manifest" unless="manifest.available">
+        <jar/>
+    </target>
+    <target depends="init,compile,-pre-jar" if="manifest.available" name="-do-jar-with-manifest" unless="manifest.available+main.class">
+        <jar manifest="${manifest.file}"/>
+    </target>
+    <target depends="init,compile,-pre-jar" if="manifest.available+main.class" name="-do-jar-with-mainclass" unless="manifest.available+main.class+mkdist.available">
+        <jar manifest="${manifest.file}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </manifest>
+        </jar>
+        <echo>To run this application from the command line without Ant, try:</echo>
+        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+        <property location="${dist.jar}" name="dist.jar.resolved"/>
+        <pathconvert property="run.classpath.with.dist.jar">
+            <path path="${run.classpath}"/>
+            <map from="${build.classes.dir.resolved}" to="${dist.jar.resolved}"/>
+        </pathconvert>
+        <echo>java -cp "${run.classpath.with.dist.jar}" ${main.class}</echo>
+    </target>
+
+    <target name="jar" depends="init,compile,-do-jar-with-manifest,-do-jar-without-manifest,-do-jar-with-mainclass,-do-jar-with-libraries,f3jdi" description="Build JAR.">
+    </target>
+    <!--
+                =================
+                EXECUTION SECTION
+                =================
+            -->
+    <target depends="init,compile" description="Run a main class." name="run">
+        <fail unless="main.class">Must select one file in the IDE or set main.class</fail>
+        <input addproperty="application.args" message="(Set the property application.args to skip this prompt). Your work dir is ${work.dir}. Arguments: "/>
+        <java classname="${main.class}" dir="${work.dir}" fork="true">
+            <jvmarg line="${run.jvmargs}"/>
+            <arg line="${application.args}"/>
+            <classpath>
+                <path path="${run.classpath}"/>
+            </classpath>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+        </java>
+    </target>
+    <target name="-do-not-recompile">
+        <property name="javac.includes.binary" value=""/>
+    </target>
+    <target depends="init,-do-not-recompile,compile-single" name="run-single">
+        <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+        <java classname="@{run.class}" dir="${work.dir}" fork="true">
+            <jvmarg line="${run.jvmargs}"/>
+            <arg line="${application.args}"/>
+            <classpath>
+                <path path="${run.classpath}"/>
+            </classpath>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+        </java>
+    </target>
+    <!--
+                =================
+                DEBUGGING SECTION
+                =================
+            -->
+    <target depends="init" if="netbeans.home" name="-debug-start-debugger">
+        <nbjpdastart addressproperty="jpda.address" name="${debug.class}" transport="dt_socket">
+            <classpath>
+                <path path="${debug.classpath}"/>
+            </classpath>
+        </nbjpdastart>
+    </target>
+    <target depends="init,compile" name="-debug-start-debuggee">
+        <input addproperty="application.args" message="(Set the property application.args to skip this prompt). Your work dir is ${work.dir}. Arguments: "/>
+        <java classname="${main.class}" dir="${work.dir}" fork="true">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <jvmarg line="${run.jvmargs}"/>
+            <arg line="${application.args}"/>
+            <classpath>
+                <path path="${debug.classpath}"/>
+            </classpath>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+        </java>
+    </target>
+    <target depends="init,compile,-debug-start-debugger,-debug-start-debuggee" description="Debug project in IDE." if="netbeans.home" name="debug"/>
+    <target depends="init" if="netbeans.home" name="-debug-start-debugger-stepinto">
+        <nbjpdastart addressproperty="jpda.address" name="${main.class}" stopclassname="${main.class}" transport="dt_socket">
+            <classpath>
+                <path path="${debug.classpath}"/>
+            </classpath>
+        </nbjpdastart>
+    </target>
+    <target depends="init,compile,-debug-start-debugger-stepinto,-debug-start-debuggee" if="netbeans.home" name="debug-stepinto"/>
+    <target depends="init,compile-single" if="netbeans.home" name="-debug-start-debuggee-single">
+        <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
+        <java classname="${debug.class}" dir="${work.dir}" fork="true">
+            <jvmarg line="${debug-args-line}"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <jvmarg line="${run.jvmargs}"/>
+            <arg line="${application.args}"/>
+            <classpath>
+                <path path="${debug.classpath}"/>
+            </classpath>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+        </java>
+    </target>
+    <target depends="init,-do-not-recompile,compile-single,-debug-start-debugger,-debug-start-debuggee-single" if="netbeans.home" name="debug-single"/>
+    <target depends="init" name="-pre-debug-fix">
+        <fail unless="fix.includes">Must set fix.includes</fail>
+        <property name="javac.includes" value="${fix.includes}.java"/>
+    </target>
+    <target depends="init,-pre-debug-fix,compile-single" if="netbeans.home" name="-do-debug-fix">
+        <nbjpdareload/>
+    </target>
+    <target depends="init,-pre-debug-fix,-do-debug-fix" if="netbeans.home" name="debug-fix"/>
+    <!--
+                ===============
+                JAVADOC SECTION
+                ===============
+            -->
+    <target depends="init,-javadoc-build" if="netbeans.home" name="-javadoc-browse" unless="no.javadoc.preview">
+        <nbbrowse file="${dist.javadoc.dir}/index.html"/>
+    </target>
+    <target depends="init,-javadoc-build,-javadoc-browse" description="Build Javadoc." name="javadoc"/>
+    <!--
+                =========================
+                JUNIT COMPILATION SECTION
+                =========================
+            -->
+    <target depends="init,compile" if="have.tests" name="-pre-compile-test">
+        <!-- Not sure why but if we don't rm -rf the build/test dir, it takes more than a minute longer to run the tests.
+           As if the compiler has to do extra work if the .class file already exists.  Note, I don't use ${build.test.dir}
+           here to avoid doing a disaterous rm -rf if something goes wrong.
+        -->
+        <delete dir="${build.dir}/test"/>
+        <mkdir dir="${build.test.classes.dir}"/>
+    </target>
+<!--
+    The .java files in test/src/regress_java_src are used by the corresponding f3 tests under test/regress/
+    These .java files are always compiled. They have no package so javac puts the .class files in
+    build/test/classes.  But when ant (I guess) is checking to see what needs to be compiled, it looks for the
+    .class files in build/test/classes/regress_java_src.  It doesn't find them there so it always recompiles them.
+-->
+
+    <target depends="init,compile,-pre-compile-test" if="have.tests" name="-do-compile-test">
+        <javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}"/>
+        <javac classpath="${javac.test.classpath}" debug="true" destdir="${build.test.classes.dir}" srcdir="${test.perf.src.dir}"/>
+        <copy todir="${build.test.classes.dir}">
+            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes}"/>
+        </copy>
+    </target>
+    <target depends="init,compile,-pre-compile-test,-do-compile-test" name="compile-test"/>
+    <target depends="init,compile,-pre-compile-test,-force-recompile-test" if="have.tests" name="-do-compile-test-single">
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes
+        </fail>
+        <javac classpath="${javac.test.classpath}"
+               debug="true"
+               source="${javac.source}"
+               target="${javac.target}"
+               destdir="${build.test.classes.dir}"
+               excludes="" 
+               sourcepath="${test.src.dir}"
+               srcdir="${test.src.dir}"
+               deprecation="${javac.deprecation}"
+               encoding="${source.encoding}">
+            <compilerarg line="${javac.compilerargs} ${javac.compilerargs.jaxws}"/>
+        </javac>
+        <copy todir="${build.test.classes.dir}">
+            <fileset dir="${test.src.dir}" excludes="${build.classes.excludes}"/>
+        </copy>
+    </target>
+    <target depends="init,compile,-pre-compile-test,-do-compile-test-single" name="compile-test-single"/>
+    <target depends="init,compile,-pre-compile-test" name="-force-recompile-test">
+        <fail unless="javac.includes">Must set javac.includes</fail>
+        <pathconvert pathsep="," property="javac.includes.binary">
+            <path>
+                <filelist dir="${build.test.classes.dir}" files="${javac.includes}"/>
+            </path>
+            <globmapper from="*.java" to="*.class"/>
+        </pathconvert>
+        <delete>
+            <files includes="${javac.includes.binary}"/>
+        </delete>
+    </target>
+
+    <!--
+                =======================
+                JUNIT EXECUTION SECTION
+                =======================
+     -->
+<!--
+   Three settings control what tests are run:
+   - the filename used in the <batchtest.  (Well, the excludes and includes too, but
+     we don't really use them.)  
+     The default for this selector is "**/*Test.java" which means to run all
+     the *Test.java files.  Do 'find test -name \*Test.java to see them.
+
+   - One of these .java files is F3CompilerTest.java.  It runs all the f3 tests
+     in the subdirs of test/ - features/, regress/. etc.  Which tests it runs are 
+     controlled by:
+     - test.f3.list:   A list of tests to run.  
+     - Or,
+       - test.f3.roots:  A list of root dirs containing tests to be run.
+         The default is set in project.properties.
+       - test.f3.includes:  A pattern selecting which tests under test.f3.roots to run.
+         The default is '**' which means all .f3 files.
+-->
+
+    <target name="-init-smoke-test" depends="init">
+      <property name="test-sys-prop.test.f3.list" value="${test.smoke.tests}"/>
+      <property name="testFile" value="**/F3CompilerTest.java"/>
+    </target>
+
+
+    <!-- temp code to test the dev repo, excluding the tests in the exclude list in project.properties -->
+    <target name="dev-test"  depends="-init-dev-test,binaries,-do-test" description="Build binaries and run tests not on the exclude list"/>
+    <target name="dev-no-hang"  depends="-init-dev-no-hang,binaries,-do-test" description="Build binaries and run tests that do not hang"/>
+    <target name="dev-pass"  depends="-init-dev-pass,binaries,-do-test" description="Build binaries and run tests that should pass"/>
+    <target name="dev-fail"  depends="-init-dev-fail,binaries,-do-test" description="Build binaries and run tests that currently fail"/>
+    <target name="dev-xxx"   depends="-init-dev-xxx,binaries,-do-test" description="Build binaries and run tests named in file 'xxx'"/>
+
+    <target name="dev-find-passes" depends="-init-dev-fail" description="Report tests that passed instead of failed in a dev-fail run">
+      <echo message="${test.f3.dev.fail.list}" file="${build.test.dir}/dev-expected-fails" />
+      <exec dir="." executable="sh">
+        <arg line="./dev-find-passes.sh ${build.test.dir}/dev-expected-fails ${log}"/>
+      </exec>
+    </target>
+
+    <target name="dev-check" description="Analyze dev-* test results for unexpected passes and failures">
+      <exec dir="." executable="sh">
+        <arg line="./dev-check.sh"/>
+      </exec>
+    </target>
+
+    <target name="-init-dev-pass" depends="-pre-compile-test">
+      <property name="testFile" value="**/*Test.java"/>
+      <property name="test-sys-prop.test.f3.exclude.list" value="${test.f3.dev.exclude.list} ${test.f3.dev.fail.list}"/>
+      <mkdir dir="${build.test.results.dir}"/>
+      <echo message="dev-pass" file="${build.test.dir}/dev-target" />
+    </target>
+
+    <target name="-init-dev-test" depends="-pre-compile-test">
+      <property name="testFile" value="**/*Test.java"/>
+      <property name="test-sys-prop.test.f3.exclude.list" value="${test.f3.dev.exclude.list}"/>
+      <mkdir dir="${build.test.results.dir}"/>
+      <echo message="dev-test" file="${build.test.dir}/dev-target" />
+    </target>
+
+    <target name="-init-dev-no-hang" depends="-pre-compile-test">
+      <property name="testFile" value="**/*Test.java"/>
+      <property name="test-sys-prop.test.f3.exclude.list" value="${test.f3.dev.hang.list}"/>
+      <mkdir dir="${build.test.results.dir}"/>
+      <echo message="dev-no-hang" file="${build.test.dir}/dev-target" />
+    </target>
+
+    <target name="-init-dev-fail" depends="-pre-compile-test">
+      <property name="testFile" value="**/F3CompilerTest.java"/>
+      <property name="test-sys-prop.test.f3.list" value="${test.f3.dev.fail.list}"/>
+      <mkdir dir="${build.test.results.dir}"/>
+      <echo message="dev-fail" file="${build.test.dir}/dev-target" />
+    </target>
+
+    <target name="-init-dev-xxx" depends="-pre-compile-test">
+      <property name="testFile" value="**/F3CompilerTest.java"/>
+      <copy file="${xxx}" tofile="${build.test.dir}/dev-xxx"/>
+      <replaceregexp file="${build.test.dir}/dev-xxx"
+                         flags="gs"
+                         match="\.f3."
+                         replace=".f3 "/>
+      <loadfile property="test-sys-prop.test.f3.list" srcFile="${build.test.dir}/dev-xxx"/>
+      <mkdir dir="${build.test.results.dir}"/>
+      <echo message="dev-xxx" file="${build.test.dir}/dev-target" />
+    </target>
+
+    <target depends="init,compile-test,-pre-test-run" if="have.tests" name="-do-test-run">
+        <property name="test-sys-prop.test.f3.roots" value="${test.f3.roots}"/>
+        <condition property="testFile" value="**/*Test.java">
+           <not>
+                <isset property="testFile"/>
+           </not>
+        </condition>
+
+
+        <!-- outputtoformatters puts info into the build/test/results/TEST-*.xml files that
+             is needed by hudson jobs to track test failures.  But, it also causes the
+             results to be duplicated on stdout, so we set ${use-formatters} to false
+             on non-hudson jobs to avoid this dup.  But beware, that the output produced
+             by ant as tests are running does not include an indication of a failure 
+             causes by the OUTPUT differing from the EXPECTED.  Those failures notices
+             are produced at the end of the run.
+        -->
+        <junit dir="${work.dir}" errorproperty="tests.failed" failureproperty="tests.failed" 
+             fork="true" showoutput="true" outputtoformatters="${use-formatters}">
+            <batchtest todir="${build.test.results.dir}">
+                <fileset dir="${test.src.dir}" excludes="${excludes}" includes="${includes}">
+                    <filename name="${testFile}"/>
+                </fileset>
+            </batchtest>
+            <classpath>
+                <path path="${run.test.classpath}"/>
+            </classpath>
+            <syspropertyset>
+                <propertyref prefix="test-sys-prop."/>
+                <mapper from="test-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+            <formatter type="brief" usefile="false"/>
+            <formatter type="xml"/>
+            <jvmarg value="-Djava.io.tmpdir=${build.test.tmp.dir}"/>
+            <jvmarg line="${run.jvmargs}"/>
+        </junit>
+    </target>
+
+    <target depends="init" if="have.tests" name="test-report">
+       <junitreport  todir="build/test">
+          <fileset dir="build/test/results"/>
+          <report format="noframes" todir="build/test/reports"/>
+       </junitreport>
+      <echo message="${test.f3.dev.fail.list}" file="${build.test.dir}/dev-expected-fails" />
+    </target>
+
+    <target depends="init" if="netbeans.home+have.tests" name="-test-browse"/>
+    <target depends="init" if="have.tests" name="-pre-test-run-single">
+        <mkdir dir="${build.test.results.dir}"/>
+    </target>
+    <target depends="init,compile-test-single,-pre-test-run-single" if="have.tests" name="-do-test-run-single">
+        <property name="test-sys-prop.test.f3.roots" value="${test.f3.roots}"/>
+        <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
+        <property location="${build.test.results.dir}/TEST-${test.class}.xml" name="test.report.file"/>
+        <delete file="${test.report.file}"/>
+        <mkdir dir="${build.test.results.dir}"/>
+        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" dir="${work.dir}" fork="true">
+            <jvmarg line="${run.jvmargs}"/>
+            <classpath>
+                <path path="${import.ant.jar}:${import.ant-junit.jar}:${run.test.classpath}"/>
+            </classpath>
+            <syspropertyset>
+                <propertyref prefix="test-sys-prop."/>
+                <mapper from="test-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+            <arg value="${test.class}"/>
+            <arg value="showoutput=true"/>
+            <!--  This causes a useless dup of the result on stdout.  But without it, the OUTPUT isn't compared to EXPECTED :-( -->
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
+        </java>
+    </target>
+    <target depends="init,compile-test-single,-pre-test-run-single,-do-test-run-single" if="have.tests" name="-post-test-run-single">
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+    <target depends="init,-do-not-recompile,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single" description="Run single unit test." name="test-single">
+    </target>    
+    <!--
+                =======================
+                JUNIT DEBUGGING SECTION
+                =======================
+            -->
+    <target depends="init,compile-test" if="have.tests" name="-debug-start-debuggee-test">
+        <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
+        <property location="${build.test.results.dir}/TEST-${test.class}.xml" name="test.report.file"/>
+        <delete file="${test.report.file}"/>
+        <mkdir dir="${build.test.results.dir}"/>
+        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner"  dir="${work.dir}" fork="true">
+            <syspropertyset>
+                <propertyref prefix="test-sys-prop."/>
+                <mapper from="test-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+            <arg value="${test.class}"/>
+            <arg value="showoutput=true"/>
+<!--  This causes a useless dup of the result on stdout.
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+            <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${test.report.file}"/>
+-->
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <jvmarg line="${run.jvmargs}"/>
+            <classpath>
+                <path path="${import.ant.jar}:${import.ant-junit.jar}:${debug.test.classpath}"/>
+            </classpath>
+        </java>
+    </target>
+    <target depends="init,compile-test" if="netbeans.home+have.tests" name="-debug-start-debugger-test">
+        <nbjpdastart addressproperty="jpda.address" name="${test.class}" transport="dt_socket">
+            <classpath>
+                <path path="${debug.test.classpath}"/>
+            </classpath>
+        </nbjpdastart>
+    </target>
+    <target depends="init,-do-not-recompile,compile-test-single,-debug-start-debugger-test,-debug-start-debuggee-test" name="debug-test"/>
+    <target depends="init,-pre-debug-fix,compile-test-single" if="netbeans.home" name="-do-debug-fix-test">
+        <nbjpdareload dir="${build.test.classes.dir}"/>
+    </target>
+    <target depends="init,-pre-debug-fix,-do-debug-fix-test" if="netbeans.home" name="debug-fix-test"/>
+
+    <!--
+                =======================
+                CLEANUP SECTION
+                =======================
+            -->
+
+
+    <target name="-do-clean" depends="f3doc-clean,f3jdi-clean,langref-clean,launcher-clean">
+        <delete quiet="true" dir="${build.dir}"/>
+        <delete quiet="true" dir="${dist.dir}"/>
+        <delete quiet="true" file="cobertura.ser" />
+    </target>
+
+    <target name="f3-renamer">
+        <move todir="." overwrite="false" >
+          <fileset dir="." />
+          <mapper type="glob"
+                  from="*.f3"
+                  to="*.f3" />
+        </move>
+    </target>
+</project>

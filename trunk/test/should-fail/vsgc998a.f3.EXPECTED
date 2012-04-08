@@ -1,0 +1,11 @@
+test/should-fail/vsgc998a.f3:11: warning: Function x() overrides another, it should be declared 'override'.
+  function x() : Void { // Warning: Missing override
+  ^
+test/should-fail/vsgc998a.f3:14: function y() declared 'override' but does not override another function.
+  override function y() : Void { // Error: doesn't override.
+  ^
+test/should-fail/vsgc998a.f3:10: Only one non-mixin based class allowed.
+class Foo extends Object, Bar {
+                          ^
+2 errors
+1 warning

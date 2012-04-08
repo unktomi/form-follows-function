@@ -1,0 +1,6 @@
+/**
+ * @subtest vsgc4038test.f3
+ *
+ *
+ */
+public var f=function(){vsgc4038test{}.func()}

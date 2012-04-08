@@ -1,0 +1,30 @@
+/*
+ * Regression test : VSGC-3798 - compiled-bind: missing update with bound obj literals and mixins
+ *
+ * @test
+ * @run
+ */
+
+var button = Button {text:"start"}; 
+var skin = ButtonSkin{}; 
+skin.button1 = button; 
+
+class ButtonSkin { 
+   var button1:Button; 
+   var button2 = Button { text : bind button1.text } 
+   var label = bind button2.text on replace { println("label = {label}"); }; 
+} 
+
+//the following class hierarchy seems to be necessary to reproduce the bug 
+//any attempt to refactor the classes below into a single class will make 
+//the program run correctly 
+
+mixin class Labeled { 
+   var text:String; 
+} 
+
+class Control { 
+   var skin:ButtonSkin; //remove this unused variable and it works ok!! 
+} 
+
+class Button extends Control, Labeled {} 

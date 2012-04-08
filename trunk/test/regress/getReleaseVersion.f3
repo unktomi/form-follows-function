@@ -1,0 +1,13 @@
+/*
+ * @test
+ * @run
+ */
+import java.lang.System;
+import f3.lang.F3;
+
+var version: String = F3.getProperty("f3.version");
+var ok = true;
+if (version == "unknown")
+    ok = false;
+System.out.println(if (ok) "PASS!" else "FAIL!");
+	

@@ -1,0 +1,12 @@
+/**
+ * Regression test for VSGC-1245 : Override keyword for functions
+ * Script level override (no error/arning)
+ *
+ * @compilefirst vsgc1245Bsub.f3
+ * @test
+ */
+
+function scriptLevel() : Integer { 99 }
+
+class vsgc1245B extends vsgc1245Bsub {}
+

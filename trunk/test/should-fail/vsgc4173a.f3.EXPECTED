@@ -1,0 +1,49 @@
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious forward reference: variable f might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                  ^
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious forward reference: variable f might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                         ^
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious forward reference: variable f might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                              ^
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious forward reference: variable f might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                                               ^
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious self reference: variable e might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                                                   ^
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious self reference: variable e might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                                                          ^
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious self reference: variable e might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                                                               ^
+test/should-fail/vsgc4173sub.f3:10: warning: Suspicious self reference: variable e might not have been initialized.
+   var e:Integer = 1 on replace { f; this.f; A.f; vsgc4173sub.A.f; e; this.e; A.e; vsgc4173sub.A.e};
+                                                                                                ^
+test/should-fail/vsgc4173sub.f3:18: warning: Suspicious forward reference: variable c1 might not have been initialized.
+      var b1:Integer = 1 on replace { c1; b1; };
+                                      ^
+test/should-fail/vsgc4173sub.f3:18: warning: Suspicious self reference: variable b1 might not have been initialized.
+      var b1:Integer = 1 on replace { c1; b1; };
+                                          ^
+test/should-fail/vsgc4173sub.f3:28: warning: Suspicious forward reference: variable d might not have been initialized.
+var c:Integer = 1 on replace { d; vsgc4173sub.d; c; vsgc4173sub.c; };
+                               ^
+test/should-fail/vsgc4173sub.f3:28: warning: Suspicious forward reference: variable d might not have been initialized.
+var c:Integer = 1 on replace { d; vsgc4173sub.d; c; vsgc4173sub.c; };
+                                             ^
+test/should-fail/vsgc4173sub.f3:28: warning: Suspicious self reference: variable c might not have been initialized.
+var c:Integer = 1 on replace { d; vsgc4173sub.d; c; vsgc4173sub.c; };
+                                                 ^
+test/should-fail/vsgc4173sub.f3:28: warning: Suspicious self reference: variable c might not have been initialized.
+var c:Integer = 1 on replace { d; vsgc4173sub.d; c; vsgc4173sub.c; };
+                                                               ^
+test/should-fail/vsgc4173sub.f3:36: warning: Suspicious forward reference: variable c1 might not have been initialized.
+   var b1:Integer = 1 on replace { c1; b1; };
+                                   ^
+test/should-fail/vsgc4173sub.f3:36: warning: Suspicious self reference: variable b1 might not have been initialized.
+   var b1:Integer = 1 on replace { c1; b1; };
+                                       ^
+16 warnings

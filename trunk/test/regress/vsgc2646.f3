@@ -1,0 +1,12 @@
+/**
+ * VSGC-2646 : Franca: CutePlayer2 compilation failed (Regression)
+ *
+ * @compilefirst vsgc2646sub.f3
+ * @test
+ * @run
+ */
+
+var a = vsgc2646sub {};
+var k = bind a.x;
+println(k);
+

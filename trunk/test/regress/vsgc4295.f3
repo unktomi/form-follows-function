@@ -1,0 +1,39 @@
+/*
+ * Regression: 	VSGC-4295 - REGRESSION: bind select with inverse does not fire on-replace
+ *
+ * @test
+ * @run
+ *
+ */
+
+class Value { 
+  var str: String;
+} 
+
+def value = Value { 
+  str: "one" 
+} 
+
+var str1 = bind value.str on replace old { 
+  println("str1: {old} => {str1}") 
+} 
+
+var str2 = bind value.str with inverse on replace old { 
+  println("str2: {old} => {str2}") 
+} 
+
+value.str = "two"; 
+str2 = "three";
+
+var str = "four";
+
+var str3 = bind str on replace old { 
+  println("str3: {old} => {str3}") 
+} 
+
+var str4 = bind str with inverse on replace old { 
+  println("str4: {old} => {str4}") 
+} 
+
+str = "five"; 
+str4 = "six";

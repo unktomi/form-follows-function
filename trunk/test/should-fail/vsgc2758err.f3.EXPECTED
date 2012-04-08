@@ -1,0 +1,10 @@
+test\should-fail\vsgc2758err.f3:7: Integer out of range: 55834574847.
+var x : Integer = 0xCFFFFFFFF;
+                  ^
+test\should-fail\vsgc2758err.f3:8: Integer out of range: 730144440320.
+var y : Integer = 0xAA00000000;
+                  ^
+test\should-fail\vsgc2758err.f3:9: Integer out of range: 7516192768.
+var z : Integer = 070000000000;
+                  ^
+3 errors

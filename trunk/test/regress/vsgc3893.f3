@@ -1,0 +1,13 @@
+/*
+ * VSGC-3893 : Compiled binds: VARUSE analysis missing use of var in bind.
+ *
+ * @test
+ *
+ */
+
+class A {
+    var a = 10;
+    var b = 10;
+};
+
+var c = A { override var b = bind a + 1; }

@@ -1,0 +1,13 @@
+test/should-fail/badimport.f3:6: The '.*' part of an import can only be the last part of the sequence, as in aaa.bbbb.*
+import javaf.*.g;
+               ^
+test/should-fail/badimport.f3:7: The '.*' part of an import can only be given once, and it must be the last part of the qualified name, as in aaa.bbb.*
+import javaf.*.*;
+               ^
+test/should-fail/badimport.f3:8: You have missed out a part of the qualified name.
+import javaf.;
+             ^
+test/should-fail/badimport.f3:9: You have missed out a part of the qualified name.
+import javaf..g.*;
+             ^
+4 errors

@@ -1,0 +1,4 @@
+test/should-fail/vsgc3994b.f3:14: variable x declared 'override' but does not override another variable.
+    override var x = "";
+                 ^
+1 error

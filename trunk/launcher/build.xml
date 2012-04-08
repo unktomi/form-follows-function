@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="F3 Compiler Launchers" default="default" basedir=".">
+    <description>Builds the launchers of the f3-compiler project.</description>
+    
+    <property environment="env" />
+    <property name="env.Path" value="${env.PATH}" />
+    <property name="launcher.dist.dir" location="${basedir}/dist/Release" />
+    <property name="launcher.bin.dir" location="${basedir}/bin" />
+    <property name="compiler.dist.dir" location="${basedir}/../dist/bin" />
+
+    <target name="default" depends="all" 
+		        description="Build all launchers and copy to dist-folder." />
+		        
+    <target name="all" depends="init-dist, build, copy-dist"
+            description="Build all launchers and copy to dist-folder." />
+		        
+    <target name="init-dist">
+        <mkdir dir="${compiler.dist.dir}" />
+        <mkdir dir="${compiler.dist.dir}/../profiles" />
+    </target>
+
+    <target name="build" depends="gcc-env.check" if="gcc.windows"
+            description="Build all launchers.">
+        <exec executable="make" failonerror="true" searchpath="true">
+            <arg value="CONF=f3_release" />
+            <arg value="build" />
+        </exec>
+        <exec executable="make" failonerror="true" searchpath="true">
+            <arg value="CONF=f3w_release" />
+            <arg value="build" />
+        </exec>
+        <exec executable="make" failonerror="true" searchpath="true">
+            <arg value="CONF=f3c_release" />
+            <arg value="build" />
+        </exec>
+        <exec executable="make" failonerror="true" searchpath="true">
+            <arg value="CONF=f3doc_release" />
+            <arg value="build" />
+        </exec>
+    </target>
+  	
+    <target name="copy-dist">
+        <condition property="source.path" 
+                value="${launcher.dist.dir}" else="${launcher.bin.dir}">
+            <and>
+                <available file="${launcher.dist.dir}/f3.exe" />
+                <available file="${launcher.dist.dir}/f3w.exe" />
+                <available file="${launcher.dist.dir}/f3c.exe" />
+                <available file="${launcher.dist.dir}/f3doc.exe" />
+            </and>
+	</condition>
+	<copy file="${source.path}/f3.exe" todir="${compiler.dist.dir}" />
+    <copy file="${source.path}/f3w.exe" todir="${compiler.dist.dir}" />
+	<copy file="${source.path}/f3c.exe" todir="${compiler.dist.dir}" />
+	<copy file="${source.path}/f3doc.exe" todir="${compiler.dist.dir}" />
+	<copy file="${basedir}/lib/desktop.properties" todir="${compiler.dist.dir}/../profiles" />
+    </target>
+  	
+    <target name="clean" depends="gcc-env.check" if="gcc.windows"
+            description="Clean the build-folders.">
+        <exec executable="make" failonerror="true" searchpath="true">
+            <arg value="CONF=f3_release" />
+            <arg value="clean" />
+        </exec>
+        <exec executable="make" failonerror="true" searchpath="true">
+            <arg value="CONF=f3c_release" />
+            <arg value="clean" />
+        </exec>
+        <exec executable="make" failonerror="true" searchpath="true">
+            <arg value="CONF=f3doc_release" />
+            <arg value="clean" />
+        </exec>
+    </target>
+            
+    <target name="gcc-env.check"
+            description="Check gcc-environment.">
+        <condition property="gcc.windows">
+            <and>
+		<os family="windows" />
+		<available file="make.exe" filepath="${env.Path}" /> 
+		<available file="g++.exe" filepath="${env.Path}" />
+            </and>
+        </condition>
+    </target>
+    
+</project>

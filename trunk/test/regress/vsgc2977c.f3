@@ -1,0 +1,7 @@
+/**
+ * @subtest
+ */
+
+public class vsgc2977c extends vsgc2977m {
+  override function m() {}
+}

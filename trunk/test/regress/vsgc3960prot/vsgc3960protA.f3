@@ -1,0 +1,16 @@
+/*
+ * Regression: VSGC-3960 - Compiled bind optimization: Enforce access protection and remove qualification of private names
+ *
+ * @subtest
+ *
+ */ 
+
+package vsgc3960prot;
+
+public abstract class vsgc3960protA { 
+
+    protected var parent:vsgc3960protA = null; 
+
+}
+
+

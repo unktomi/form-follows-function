@@ -1,0 +1,37 @@
+/*
+ * Test for the 'super' conflicts resolution.
+ *
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+mixin class Mixin1 { function foo() : Integer { 1 } }
+mixin class Mixin2 extends Mixin1 {}
+class Super { function foo() : Integer { 2 } }
+
+
+class Mixee extends Super, Mixin2 {
+    var log : String = "";
+    override function foo() : Integer {
+        log = "{log}{Mixin2.foo()}{Super.foo()}";
+        0
+    }
+    function foo1() : Integer { Mixin2.foo() }
+    function foo2() : Integer { Super.foo() }
+}
+
+public class MxResSuperConf02 extends F3TestCase {
+    /*
+     * Both Super and Mixin1 declare the function foo().
+     * Mixee overrides foo() and invokes from its body
+     * (and from another functions) Super.foo(); Mixin2.foo()
+     */
+    function testConflictResolution() {
+        var m = Mixee {};
+        m.foo();
+        assertEquals("12", m.log);
+        assertEquals(1, m.foo1());
+        assertEquals(2, m.foo2());
+    }
+}

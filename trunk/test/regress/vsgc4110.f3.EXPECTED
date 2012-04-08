@@ -1,0 +1,4 @@
+flda is public.
+fldb is public-init.
+fldc is public-read.
+fldd is protected.

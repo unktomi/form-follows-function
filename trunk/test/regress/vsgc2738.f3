@@ -1,0 +1,10 @@
+/* @test
+ * @run */
+
+var b = true;
+var d:String[] = bind if (b) ["foo"] else ["boo"];
+
+println(d);
+java.lang.System.gc();  
+b = false;
+println(d);

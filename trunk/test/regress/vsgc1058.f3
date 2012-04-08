@@ -1,0 +1,16 @@
+/*
+ * @test
+ * @run
+ */
+ 
+import java.lang.System;
+
+class vsgc1058 {
+    public var seq: Integer[] on replace oldSeq[a..b] = newSlice {
+        java.lang.System.out.println("replace {oldSeq[a..b].toString()} with {newSlice.toString()}");
+    }
+}
+
+vsgc1058 {
+    seq: bind [1, 2, 3];
+}

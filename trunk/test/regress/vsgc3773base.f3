@@ -1,0 +1,23 @@
+/**
+ * Regression test VSGC-3773 : Compiled bind: scoping of bound object literal initializers
+ *
+ * Sanity
+ *
+ * @test
+ * @run
+ */
+
+class vsgc3773base {
+  var x : Integer
+}
+
+var a = 5;
+var b = 3;
+
+var bo = vsgc3773base {
+  x: bind a+b
+}
+
+println(bo.x);
+b = 100;
+println(bo.x);

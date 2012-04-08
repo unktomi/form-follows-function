@@ -1,0 +1,7 @@
+test\should-fail\vsgc1989.f3:11: You cannot change the value(s) of '__DIR__' because it was declared as a 'def', perhaps it should be a 'var'?
+__DIR__ = "mydir";
+^
+test\should-fail\vsgc1989.f3:14: You cannot change the value(s) of '__FILE__' because it was declared as a 'def', perhaps it should be a 'var'?
+__FILE__ = "myfile";
+^
+2 errors

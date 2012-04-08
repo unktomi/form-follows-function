@@ -1,0 +1,12 @@
+[ Monday, Tuesday, Wednesday ]
+theContent: sizeof(group.content) = 3
+BEFORE INSERT:
+    sizeof(items) = 3
+    sizeof(table.items) = 3
+    sizeof(table.group.content) = 3
+theContent: sizeof(group.content) = 4
+[ Monday, Tuesday, Wednesday, Thursday ]
+AFTER INSERT:
+    sizeof(items) = 4
+    sizeof(table.items) = 4
+    sizeof(table.group.content) = 4

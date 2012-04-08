@@ -1,0 +1,16 @@
+/*
+ * Regression test: for VSGC-51 : instanceof does not accept qualified names
+ * Test is user submitted code.
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.Object;
+var a: Object = "Foo Bar";
+
+if(a instanceof java.lang.Object) then {
+   java.lang.System.out.println("Object");
+}else {
+       java.lang.System.out.println("Not Object");
+};

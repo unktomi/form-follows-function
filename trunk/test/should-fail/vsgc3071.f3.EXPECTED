@@ -1,0 +1,4 @@
+test/should-fail/vsgc3071.f3:15: types vsgc3071.B and vsgc3071.A are incompatible; both define a, but with unrelated types
+class C extends A, B{}
+^
+1 error

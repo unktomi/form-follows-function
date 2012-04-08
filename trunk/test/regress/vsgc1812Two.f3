@@ -1,0 +1,14 @@
+/**
+ * Regression test VSGC-1812 : Problem with inherting protected access from superclass
+ *
+ * @compile vsgc1812Base.f3
+ * @compile vsgc1812One.f3
+ * @test
+ */
+
+public class vsgc1812Two extends vsgc1812Base {
+    override function doIt():Void {
+        vsgc1812One{}.doIt();
+    }
+}
+

@@ -1,0 +1,13 @@
+/**
+ * Regress test for VSGC-3422.
+ *
+ * compiler crash when overriding a function within the function itself (and no explicit return type is provided)
+ *
+ * @test/compile-error
+ */
+
+class A {
+   function m() {
+      A{ function m() {}}
+   }
+}

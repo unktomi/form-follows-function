@@ -1,0 +1,15 @@
+/*
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+public class NumberTest extends F3TestCase {
+    public function testAssertEqualsNumber() {
+        assertEquals(1.0, 1.0);
+    }
+
+    public function testAssertEqualsNumberMessage() {
+        assertEquals("message", 2.0, 2.0);
+    }
+}

@@ -1,0 +1,15 @@
+/* VSGC-2012: compilation fails if sequence contains an embedded array returned from java
+ *
+ * @test
+ * @run
+ */
+
+import java.lang.System;
+
+var seq:Character[] = [1,2,'3456'.toCharArray()];
+insert '789'.toCharArray() into seq;
+System.out.println(for (c in seq) c as Integer);
+seq = '789'.toCharArray();
+System.out.println(for (c in seq) c as Integer);
+seq = java.lang.Character.forDigit(2,10);
+System.out.println(for (c in seq) c as Integer);

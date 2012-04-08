@@ -1,0 +1,20 @@
+/**
+ * VSGC-3317 : Optimize bound F3 var select with mutable selectors
+ *
+ * @compilefirst vsgc3317Mix.f3
+ * @compilefirst vsgc3317Impl.f3
+ * @test
+ * @run
+ */
+
+class vsgc3317MixImpl {
+  public var m : vsgc3317Mix;
+  public def bt = bind m.text;
+}
+
+function run() {
+  var im = vsgc3317Impl{ text: "Yo" }
+  var mi = vsgc3317MixImpl { m : im }
+  var btl = mi.bt;
+  println(btl);
+}

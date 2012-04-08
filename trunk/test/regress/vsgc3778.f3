@@ -1,0 +1,10 @@
+/**
+ * VSGC-3778 : compiled-bind: new accessibility error since last work on bind object literals
+ *
+ * @compile vsgc3778sub/vsgc3778sub.f3
+ * @test
+ */
+
+import vsgc3778sub.*;
+
+var x = bind vsgc3778sub { x:1 }

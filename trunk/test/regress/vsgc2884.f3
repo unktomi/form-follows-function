@@ -1,0 +1,12 @@
+/**
+ * currently-failing test for VSGC-2884 : Compiler crash: type inference on first assign breaks on bind
+ *
+ * @test
+ * @run
+ */
+
+var x;
+var y = bind x ;//with inverse;
+
+x = 5;
+println(y);

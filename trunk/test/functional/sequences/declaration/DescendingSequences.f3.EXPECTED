@@ -1,0 +1,13 @@
+Contents of seq1[1..10]: 12345678910, and size of seq1[1..10]: 10
+Contents of seq2[10..1]: , but size of seq2[10..1]: 0
+[10..1] == [10..1 step 1] ==  true
+sizeof[10..1] == sizeof[10..1 step 1] and sizeof[10..1]==(sizeof emptysequence) ==  true
+sizeof [10..1] = 0
+sizeof [10..1 step 1] = 0
+sizeof emptysequence = 0
+========= results ================
+Tests:      13
+Passed:     6
+Failed:     0
+GoldenFile: 7 output comparisons
+==================================

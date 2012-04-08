@@ -1,0 +1,37 @@
+test case: states is empty
+currentState=null
+PASS: expect=null, value=null
+currentState2=null
+PASS: expect=null, value=null
+
+test case: states contains 1 inactive state value
+currentState=null
+PASS: expect=null, value=null
+currentState2=null
+PASS: expect=null, value=null
+
+test case: added 1 active state value
+currentState=active=true, value=69
+PASS: expect=69, value=69
+currentState2=active=true, value=69
+PASS: expect=69, value=69
+
+test case: added a higher active state value
+comparing 69 with 72
+currentState=active=true, value=69
+PASS: expect=69, value=69
+comparing 69 with 72
+currentState2=active=true, value=69
+PASS: expect=69, value=69
+
+test case: added a lower active state value
+comparing 69 with 72
+comparing 72 with 67
+comparing 69 with 67
+comparing 69 with 72
+comparing 72 with 67
+comparing 69 with 67
+currentState=active=true, value=67
+PASS: expect=67, value=67
+currentState2=active=true, value=67
+PASS: expect=67, value=67

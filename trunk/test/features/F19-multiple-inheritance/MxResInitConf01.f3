@@ -1,0 +1,27 @@
+/*
+ * Test for the initializer conflicts resolution.
+ *
+ * @test/f3unit
+ */
+
+import f3.f3unit.F3TestCase;
+
+mixin class Mixin1 { public var bar : String = "M1" }
+mixin class Mixin2 extends Mixin1 { override public var bar : String }
+
+
+class Mixee1 extends Mixin1 { override public var bar : String }
+class Mixee2 extends Mixin2 {}
+
+public class MxResInitConf01 extends F3TestCase {
+    /*
+     * Both mixee and mixin declare the variable bar,
+     * with a def.val. in mixin and no def.val. in mixee.
+     */
+    function testConflictResolution() {
+        var m1 = Mixee1 {};
+        var m2 = new Mixee2();
+        assertEquals("M1", m1.bar);
+        assertEquals("M1", m2.bar);
+    }
+}

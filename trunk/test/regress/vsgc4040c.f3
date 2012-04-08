@@ -1,0 +1,17 @@
+/*
+ * Regression test VSGC-4040 : bound explicit sequence: invalidation of elments is piecemeal -- and thus yields inconsistent states
+ *
+ * Numeric
+ *
+ * @test
+ * @run
+ */
+
+var x = 1.5;
+def eb = bind [x, x, x, x, x] on replace oldValue[a..b] = newValue { 
+	println("---- on-replace [{a}..{b}] = {newValue.toString()}");
+	println(oldValue);
+	println(eb);
+}
+x = 30.25;
+x = 6.75;

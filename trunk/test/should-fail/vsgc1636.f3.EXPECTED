@@ -1,0 +1,9 @@
+vsgc1636.f3:7: The def a must have an initializing expression
+def a : Integer;
+^vsgc1636.f3:11: The def b must have an initializing expression
+   def b : String;
+   ^
+vsgc1636.f3:14: The def c must have an initializing expression
+      def c : Foo;
+      ^
+3 errors

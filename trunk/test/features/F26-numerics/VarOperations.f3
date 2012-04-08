@@ -1,0 +1,260 @@
+/*
+ * Testing the following operations and expressions
+ * 1. Arithmetical:
+ *   +,-,*,/,+=,-=,*=,/=,++(prefix/postfix),--(prefix/postfix),-(negation)
+ * 2. Relational:
+ *   >,>=,<,<=,==,!=
+ * 3. Logical:
+ *   and, or, not
+ *
+ * with numeric types: Character, Byte, Long, Short, Float, Double
+ *
+ * @test/f3unit
+ * @run
+ */
+
+import f3.f3unit.F3TestCase;
+
+public class VarOperations extends F3TestCase {
+
+    function testCharacter() {
+        /* Arithmetical operations */
+        var c1 : Character = 10;
+        var c2 : Character = 2;
+        assertEquals(12, c1 + c2);
+        assertEquals(8, c1 - c2);
+        assertEquals(20, c1 * c2);
+        assertEquals(5, c1 / c2);
+        assertEquals(0, c1 mod c2);
+        assertEquals(-10, -c1);
+        assertEquals(11 as Character, ++c1);
+        assertEquals(10 as Character, --c1);
+        assertEquals(10 as Character, c1++);
+        assertEquals(11 as Character, c1--);
+        c1 += c2;
+        assertEquals(12 as Character, c1);
+        c1 -= c2;
+        assertEquals(10 as Character, c1);
+        c1 *= c2;
+        assertEquals(20 as Character, c1);
+        c1 /= c2;
+        assertEquals(10 as Character, c1);
+
+        /* Relational operations */
+        assertEquals(true, c1 > c2);
+        assertEquals(true, c1 >= c2);
+        assertEquals(false, c1 < c2);
+        assertEquals(false, c1 <= c2);
+        assertEquals(false, c1 == c2);
+        assertEquals(true, c1 != c2);
+
+        /* Logical operations */
+        var b : Boolean;
+        // Compilation errors
+//        b = c1 and c2;
+//        b = c1 or c2;
+//        b = not c1;
+    }
+
+    function testByte() {
+        /* Arithmetical operations */
+        var b1 : Byte = 10;
+        var b2 : Byte = 2;
+        assertEquals(12, b1 + b2);
+        assertEquals(8, b1 - b2);
+        assertEquals(20, b1 * b2);
+        assertEquals(5, b1 / b2);
+        assertEquals(0, b1 mod b2);
+        assertEquals(-10, -b1);
+        assertEquals(11 as Byte, ++b1);
+        assertEquals(10 as Byte, --b1);
+        assertEquals(10 as Byte, b1++);
+        assertEquals(11 as Byte, b1--);
+        b1 += b2;
+        assertEquals(12 as Byte, b1);
+        b1 -= b2;
+        assertEquals(10 as Byte, b1);
+        b1 *= b2;
+        assertEquals(20 as Byte, b1);
+        b1 /= b2;
+        assertEquals(10 as Byte, b1);
+
+        /* Relational operations */
+        assertEquals(true, b1 > b2);
+        assertEquals(true, b1 >= b2);
+        assertEquals(false, b1 < b2);
+        assertEquals(false, b1 <= b2);
+        assertEquals(false, b1 == b2);
+        assertEquals(true, b1 != b2);
+
+        /* Logical operations */
+        var b : Boolean;
+        // Compilation errors
+//        b = b1 and b2;
+//        b = b1 or b2;
+//        b = not b1;
+    }
+
+    function testLong() {
+        /* Arithmetical operations */
+        var l1 : Long = 10;
+        var l2 : Long = 2;
+        assertEquals(12 as Long, l1 + l2);
+        assertEquals(8 as Long, l1 - l2);
+        assertEquals(20 as Long, l1 * l2);
+        assertEquals(5 as Long, l1 / l2);
+        assertEquals(0 as Long, l1 mod l2);
+        assertEquals(-10 as Long, -l1);
+        assertEquals(11 as Long, ++l1);
+        assertEquals(10 as Long, --l1);
+        assertEquals(10 as Long, l1++);
+        assertEquals(11 as Long, l1--);
+        l1 += l2;
+        assertEquals(12 as Long, l1);
+        l1 -= l2;
+        assertEquals(10 as Long, l1);
+        l1 *= l2;
+        assertEquals(20 as Long, l1);
+        l1 /= l2;
+        assertEquals(10 as Long, l1);
+
+        /* Relational operations */
+        assertEquals(true, l1 > l2);
+        assertEquals(true, l1 >= l2);
+        assertEquals(false, l1 < l2);
+        assertEquals(false, l1 <= l2);
+        assertEquals(false, l1 == l2);
+        assertEquals(true, l1 != l2);
+
+        /* Logical operations */
+        var b : Boolean;
+        // Compilation errors
+//        b = l1 and l2;
+//        b = l1 or l2;
+//        b = not l1;
+    }
+
+    function testShort() {
+        /* Arithmetical operations */
+        var s1 : Short = 10;
+        var s2 : Short = 2;
+        assertEquals(12, s1 + s2);
+        assertEquals(8, s1 - s2);
+        assertEquals(20, s1 * s2);
+        assertEquals(5, s1 / s2);
+        assertEquals(0, s1 mod s2);
+        assertEquals(-10, -s1);
+        assertEquals(11 as Short, ++s1);
+        assertEquals(10 as Short, --s1);
+        assertEquals(10 as Short, s1++);
+        assertEquals(11 as Short, s1--);
+        s1 += s2;
+        assertEquals(12 as Short, s1);
+        s1 -= s2;
+        assertEquals(10 as Short, s1);
+        s1 *= s2;
+        assertEquals(20 as Short, s1);
+        s1 /= s2;
+        assertEquals(10 as Short, s1);
+
+        /* Relational operations */
+        assertEquals(true, s1 > s2);
+        assertEquals(true, s1 >= s2);
+        assertEquals(false, s1 < s2);
+        assertEquals(false, s1 <= s2);
+        assertEquals(false, s1 == s2);
+        assertEquals(true, s1 != s2);
+
+        /* Logical operations */
+        var b : Boolean;
+        // Compilation errors
+//        b = s1 and s2;
+//        b = s1 or s2;
+//        b = not s1;
+    }
+
+    function testFloat() {
+        /* Arithmetical operations */
+        var f1 : Float = 10.001;
+        var f2 : Float = 2.001;
+        // causes failure: expected:<12.002> but was:<12.002001>
+//        assertEquals(12.002, f1 + f2, 0);
+        assertEquals(8.0, f1 - f2, 0);
+        assertEquals(20.012001, f1 * f2, 0);
+        assertEquals(5.0005, f1 / 2, 0);
+        // should this compile?
+        var f3 = f1 mod f2;
+        assertEquals(-10.001, -f1, 0);
+        assertEquals(11.001, ++f1, 0);
+        assertEquals(10.001, --f1, 0);
+        assertEquals(10.001, f1++, 0);
+        assertEquals(11.001, f1--, 0);
+        // causes failure: expected:<12.002> but was:<12.002001>
+//        f1 += f2;
+//        assertEquals(12.002 as Float, f1, 0);
+        // causes failure: expected:<10.001> but was:<10.000999>
+//        f1 = 12.002;
+//        f1 -= f2;
+//        assertEquals(10.001 as Float, f1, 0);
+        f1 *= f2;
+        assertEquals(20.012001, f1, 0);
+        f1 /= f2;
+        assertEquals(10.001, f1, 0);
+
+        /* Relational operations */
+        assertEquals(true, f1 > f2);
+        assertEquals(true, f1 >= f2);
+        assertEquals(false, f1 < f2);
+        assertEquals(false, f1 <= f2);
+        assertEquals(false, f1 == f2);
+        assertEquals(true, f1 != f2);
+
+        /* Logical operations */
+        var b : Boolean;
+        // Compilation errors
+//        b = f1 and f2;
+//        b = f1 or f2;
+//        b = not f1;
+    }
+
+    function testDouble() {
+        /* Arithmetical operations */
+        var temp:Double;
+        var d1 : Double = 10.001;
+        var d2 : Double = 2.001;
+        //assertEquals(temp = 12.002, d1 + d2, 0); //doesn't work because d1 + d2 = 12.001999999999999
+        assertEquals(temp = 8.0, d1 - d2, 0);
+        //assertEquals(temp = 20.012001, d1 * d2, 0); //doesn't work because d1 * d2 = 20.012000999999998
+        assertEquals(temp = 5.0005, d1 / 2, 0);
+        // should this compile?
+        var d = d1 mod d2;
+        //assertEquals(temp = -10.001, -d1, 0); //doesn't work because -(d1) = -10.00100040435791
+        assertEquals(temp = 11.001, ++d1, 0);
+        assertEquals(temp = 10.001, --d1, 0);
+        assertEquals(temp = 10.001, d1++, 0);
+        assertEquals(temp = 11.001, d1--, 0);
+        d1 += d2;
+        //assertEquals(temp = 12.002, d1, 0); //doesn't work because d1 = 12.001999999999999
+        d1 -= d2;
+        assertEquals(temp = 10.001, d1, 0);
+        d1 *= d2;
+        //assertEquals(temp = 20.012001, d1, 0); //doesn't work because d1 * d2 = 20.012000999999998
+        d1 /= d2;
+        assertEquals(temp = 10.001, d1, 0);
+
+        /* Relational operations */
+        assertEquals(true, d1 > d2);
+        assertEquals(true, d1 >= d2);
+        assertEquals(false, d1 < d2);
+        assertEquals(false, d1 <= d2);
+        assertEquals(false, d1 == d2);
+        assertEquals(true, d1 != d2);
+
+        /* Logical operations */
+        var b : Boolean;
+        // Compilation errors
+//        b = d1 and d2;
+//        b = d1 or d2;
+//        b = not d1;
+    }
+}

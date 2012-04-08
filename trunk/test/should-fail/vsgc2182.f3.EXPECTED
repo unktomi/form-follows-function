@@ -1,0 +1,4 @@
+test/should-fail/vsgc2182.f3:10: a is already defined in runnit()
+            var a:Number = 1;
+            ^
+1 error

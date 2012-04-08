@@ -1,0 +1,12 @@
+/**
+ * should fail test: VSGC-2542 : Proper literal conversions
+ *
+ * @test/compile-error
+ */
+
+def a : Float = 4.3e80;
+def b : Float = 2.1e-80;
+
+def k : Byte = 489;
+def l : Short = 123000;
+def m : Integer = 0x200000000;

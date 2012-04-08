@@ -1,0 +1,16 @@
+/**
+ * VSGC-3185 : "Cannot find symbol getRoot$$bound$()" error
+ *
+ * @test
+ * @run
+ */
+
+class vsgc3185 {
+  bound function getRoot() { "zork" }
+  bound function zii() : String[] {
+    if (getRoot() != null) getRoot() else "";
+  }
+}
+
+def it = vsgc3185{}
+println(it.zii())

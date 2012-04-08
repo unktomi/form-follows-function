@@ -1,0 +1,123 @@
+/**
+ * VSGC-2477 : Correct conversion problems that show-up when Number=Float
+ *
+ * @test
+ * @run
+ */
+
+class A {
+	def bv : Byte = 16;
+	def sv : Short = 0x202;
+	def iv : Integer = 0x04040404;
+	def lv : Long = 0x08080808; //TODO: constants, separate issue 08;
+	def fv : Float = 2.5;
+	def dv : Double = 3.14159265358979323;
+}
+
+class B extends A {
+	function bl() : Byte { return bv }
+	function sl() : Short { return bv }
+	function il() : Integer { return bv }
+	function ll() : Long { return bv }
+	function fl() : Float { return bv }
+	function dl() : Double { return bv }
+	function p() {
+		println( bl() );
+		println( sl() );
+		println( il() );
+		println( ll() );
+		println( fl() );
+		println( dl() );
+	}
+}
+(new B).p();
+
+class S extends A {
+	function bl() : Byte { return sv }
+	function sl() : Short { return sv }
+	function il() : Integer { return sv }
+	function ll() : Long { return sv }
+	function fl() : Float { return sv }
+	function dl() : Double { return sv }
+	function p() {
+		println( bl() );
+		println( sl() );
+		println( il() );
+		println( ll() );
+		println( fl() );
+		println( dl() );
+	}
+}
+(new S).p();
+
+class I extends A {
+	function bl() : Byte { return iv }
+	function sl() : Short { return iv }
+	function il() : Integer { return iv }
+	function ll() : Long { return iv }
+	function fl() : Float { return iv }
+	function dl() : Double { return iv }
+	function p() {
+		println( bl() );
+		println( sl() );
+		println( il() );
+		println( ll() );
+		println( fl() );
+		println( dl() );
+	}
+}
+(new I).p();
+
+class L extends A {
+	function bl() : Byte { return lv }
+	function sl() : Short { return lv }
+	function il() : Integer { return lv }
+	function ll() : Long { return lv }
+	function fl() : Float { return lv }
+	function dl() : Double { return lv }
+	function p() {
+		println( bl() );
+		println( sl() );
+		println( il() );
+		println( ll() );
+		println( fl() );
+		println( dl() );
+	}
+}
+(new L).p();
+
+class F extends A {
+	function bl() : Byte { return fv }
+	function sl() : Short { return fv }
+	function il() : Integer { return fv }
+	function ll() : Long { return fv }
+	function fl() : Float { return fv }
+	function dl() : Double { return fv }
+	function p() {
+		println( bl() );
+		println( sl() );
+		println( il() );
+		println( ll() );
+		println( fl() );
+		println( dl() );
+	}
+}
+(new F).p();
+
+class D extends A {
+	function bl() : Byte { return dv }
+	function sl() : Short { return dv }
+	function il() : Integer { return dv }
+	function ll() : Long { return dv }
+	function fl() : Float { return dv }
+	function dl() : Double { return dv }
+	function p() {
+		println( bl() );
+		println( sl() );
+		println( il() );
+		println( ll() );
+		println( fl() );
+		println( dl() );
+	}
+}
+(new D).p();
