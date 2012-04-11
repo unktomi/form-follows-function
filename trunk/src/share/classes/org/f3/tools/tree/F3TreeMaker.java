@@ -31,6 +31,7 @@ import com.sun.tools.mjavac.code.*;
 import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
 import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
 import com.sun.tools.mjavac.code.Type.ClassType;
+import com.sun.tools.mjavac.code.Type.TypeVar;
 import com.sun.tools.mjavac.util.*;
 import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
 import org.f3.tools.code.F3ClassSymbol;
@@ -449,6 +450,9 @@ public class F3TreeMaker implements F3TreeFactory {
                 break;
             case VOID:
                 tp = Ident(syms.voidTypeName);
+		break;
+            case TYPEVAR:
+                tp = Ident(((TypeVar)t).tsym.name);
                 break;
             case ARRAY:
                 F3Expression elem = Type(types.elemtype(t));

@@ -1268,7 +1268,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
                                 $formalParameters.params.toList(), 
                                 $block.value
                             );
-                            
+            ((F3FunctionDefinition)$value).typeArgs = exprbuff.toList();                            
             // Ensure that the function value, manufactured within the FunctionDefinition() method
             // call, receives an endPos() map
             //

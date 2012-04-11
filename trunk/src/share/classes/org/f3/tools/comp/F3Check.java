@@ -428,7 +428,9 @@ public class F3Check {
                 return types.erasure(found);
             else
             return instantiatePoly(pos, (ForAll)found, req, convertWarner(pos, found, req));
-        }
+        } else if (isTypeVar(req)) { // hack
+	    req = types.erasure(req);
+	}
         if (req.tag == NONE || req == syms.f3_UnspecifiedType)
             return found;
         if (types.isSequence(req)) {    

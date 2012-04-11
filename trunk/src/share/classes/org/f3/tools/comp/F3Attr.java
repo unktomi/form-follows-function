@@ -1759,6 +1759,18 @@ public class F3Attr implements F3Visitor {
         result = tree.type = check(tree, syms.makeFunctionType((MethodType) def.type), VAL, pkind, pt, pSequenceness);
     }
 
+    List<Type> makeTypeVars(List<F3Expression> types, MethodSymbol sym) {
+	ListBuffer<Type> argbuf = new ListBuffer<Type>();
+	for (F3Expression exp: types) {
+	    F3Ident ident = (F3Ident)exp;
+	    TypeVar tv = new TypeVar(ident.getName(), sym, syms.botType);
+	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
+	    tv.bound = syms.objectType;
+	    argbuf.append(tv);
+	}
+	return argbuf.toList();
+    }
+
     //@Override
     public void visitFunctionDefinition(F3FunctionDefinition tree) {
         
@@ -1766,9 +1778,9 @@ public class F3Attr implements F3Visitor {
         // against it. Do nothing if the tree isn't properly attributed.
         //
         if  (tree.sym != null) {
-
             MethodSymbol m = tree.sym;
-
+	    List<Type> typeArgTypes = tree.typeArgs == null ? null : makeTypeVars(tree.typeArgs, m);
+	    tree.typeArgTypes = typeArgTypes;
             m.complete();
             warnOnStaticUse(tree.pos(), tree.getModifiers(), m);
         }
@@ -1841,6 +1853,13 @@ public class F3Attr implements F3Visitor {
         MethodSymbol m = tree.sym;
         F3FunctionValue opVal = tree.operation;
         F3Env<F3AttrContext> localEnv = memberEnter.methodEnv(tree, env);
+	if (tree.typeArgTypes != null) {
+	    localEnv.info.tvars = tree.typeArgTypes;
+	    for (Type t: tree.typeArgTypes) {
+		localEnv.info.scope.enter(((TypeVar)t).tsym);
+	    }
+	}
+
         Type returnType;
         // Create a new environment with local scope
         // for attributing the method.
@@ -1914,8 +1933,8 @@ public class F3Attr implements F3Visitor {
             returnType = syms.unknownType;
             if (opVal.getF3ReturnType().getF3Tag() != F3Tag.TYPEUNKNOWN)
                 returnType = attribType(tree.getF3ReturnType(), localEnv);
-            else if (mtype != null) {
-                Type mrtype = mtype.getReturnType();
+            else if (m.type != null) {
+                Type mrtype = m.type.getReturnType();
                 if (mrtype != null && mrtype.tag != TypeTags.NONE)
                     returnType = mrtype;
             } else {
@@ -1931,11 +1950,15 @@ public class F3Attr implements F3Visitor {
             if (returnType == syms.f3_java_lang_VoidType)
                 returnType = syms.voidType;
             mtype = new MethodType(argbuf.toList(),
-                                    returnType, // may be unknownType
-                                    List.<Type>nil(),
-                                    syms.methodClass);
-            m.type = mtype;
-            
+				   returnType, // may be unknownType
+				   List.<Type>nil(),
+				   syms.methodClass);
+
+	    if (tree.typeArgTypes != null) {
+		m.type = new ForAll(tree.typeArgTypes, mtype);
+	    } else {
+		m.type = mtype;
+	    }
             if (m.owner instanceof ClassSymbol) {
                 // Fix primitive/number types so overridden Java methods will have the correct types.
                 fixOverride(tree, m, true);
@@ -3653,6 +3676,7 @@ public class F3Attr implements F3Visitor {
                 chk.warnUnchecked(env.tree.pos(),
                                   MsgSym.MESSAGE_UNCHECKED_METH_INVOCATION_APPLIED,
                                   sym,
+
                                   sym.location(),
                                   typeargs,
                                   Type.toString(argtypes));
@@ -3660,6 +3684,7 @@ public class F3Attr implements F3Visitor {
                                          types.erasure(owntype.getReturnType()),
                                          owntype.getThrownTypes(),
                                          syms.methodClass);
+
             }
             if (useVarargs) {
                 F3Tree tree = env.tree;
