@@ -25,7 +25,7 @@ package org.f3.tools.tree;
 
 import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
-
+import com.sun.tools.mjavac.code.Type;
 import com.sun.tools.mjavac.code.Symbol.MethodSymbol;
 import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.Name;
@@ -41,6 +41,7 @@ public class F3FunctionDefinition extends F3Expression implements FunctionDefini
     public final F3FunctionValue operation;
     public MethodSymbol sym;
     public List<F3Expression> typeArgs;
+    public List<Type> typeArgTypes;
 
     public F3FunctionDefinition(
             F3Modifiers mods,

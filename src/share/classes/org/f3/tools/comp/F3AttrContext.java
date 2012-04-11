@@ -59,7 +59,6 @@ public class F3AttrContext {
     /** A list of type variables that are all-quantifed in current context.
      */
     List<Type> tvars = List.nil();
-
     /** A record of the lint/SuppressWarnings currently in effect
      */
     public Lint lint;

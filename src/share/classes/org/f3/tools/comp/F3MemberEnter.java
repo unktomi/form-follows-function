@@ -714,7 +714,6 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         // case is rare.
         //
         try {
-
             Scope enclScope = F3Enter.enterScope(env);
 
             MethodSymbol m = new MethodSymbol(0, tree.name, null, enclScope.owner);

@@ -34,8 +34,10 @@ import org.f3.tools.tree.F3Expression;
 
 import com.sun.tools.mjavac.code.Flags;
 import com.sun.tools.mjavac.code.Kinds;
+import com.sun.tools.mjavac.code.TypeTags.*;
 import com.sun.tools.mjavac.code.Scope;
 import com.sun.tools.mjavac.code.Symbol;
+import com.sun.tools.mjavac.code.Symbol.*;
 import com.sun.tools.mjavac.code.Symbol.OperatorSymbol;
 import com.sun.tools.mjavac.code.Symbol.MethodSymbol;
 import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
@@ -184,6 +186,9 @@ public class F3Lower implements F3Visitor {
 
     F3Expression convertTree(F3Expression tree, Type type) {
         if (type == Type.noType) return tree;
+	if (type.tag == TypeTags.TYPEVAR) {
+	    return tree;
+	}
         return tree = needSequenceConversion(tree, type) ?
             toSequence(tree, type) :
             preTrans.makeCastIfNeeded(tree, type);
