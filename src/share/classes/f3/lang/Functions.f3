@@ -1,5 +1,34 @@
 package f3.lang;
 
+public class Monad { // Identity Monad
+    public bound function unit(obj:Object):Object {
+	obj;
+    }
+    public bound function 
+	concatMap(input:Object, 
+		  f:function(obj:Object):Object):Object {
+	f(input);
+    }
+}
+
+public class SequenceMonad extends Monad {
+    override public bound function unit(obj:Object):Object {
+	[obj];
+    }
+    override public bound function concatMap(input:Object, f:function(obj:Object):Object):Object {
+	map(input as Object[], f as function(obj:Object):Object[]);
+    }
+}
+
+public class ContMonad extends Monad {
+    override public bound function unit(x:Object):Object {
+	function(k:function(obj:Object):Object):Object { k(x) };
+    }
+    override public bound function concatMap(m:Object, k:function(obj:Object):Object):Object {
+	function(c) {(m as function(obj:Object):Object)(function(a) { (k(a) as function(obj:Object):Object)(c);})}
+    }
+}
+
 public bound function head(xs:Object[]):Object {
     return xs[0];
 }

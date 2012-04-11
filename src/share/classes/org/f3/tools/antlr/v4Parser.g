@@ -1170,13 +1170,13 @@ functionDefinition [ F3Modifiers mods, int pos ]
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
 : FUNCTION  
-/*
-   (LT)=>(LT ga1=genericArgument {
+
+   (LT ga1=genericArgument {
         exprbuff.append($ga1.value);
     } (COMMA ga2=genericArgument {
             exprbuff.append($ga2.value);
-        })* GT)
-*/
+        })* GT)?
+
         (
             (
                   { isOverride }?=> n2=nameAll

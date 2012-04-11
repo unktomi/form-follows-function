@@ -80,6 +80,7 @@ public class F3Attr implements F3Visitor {
     private final F3Defs defs;
     private final Name.Table names;
     private final Log log;
+    F3ClassReader reader;
     private final F3Resolve rs;
     private final F3Symtab syms;
     private final F3Check chk;
@@ -128,7 +129,7 @@ public class F3Attr implements F3Visitor {
         target = Target.instance(context);
         types = F3Types.instance(context);
         annotate = Annotate.instance(context);
-
+        reader = F3ClassReader.instance(context);
         Options options = Options.instance(context);
 
         source = Source.instance(context);
@@ -2361,6 +2362,7 @@ public class F3Attr implements F3Visitor {
             if (typeargtypes.nonEmpty()) mpt = new ForAll(typeargtypes, mpt);
             localEnv.info.varArgs = false;
             Type mtype = attribExpr(tree.meth, localEnv, mpt);
+	    mtype = reader.translateType(mtype);
             if (localEnv.info.varArgs)
                 assert mtype.isErroneous() || tree.varargsElement != null;
 
