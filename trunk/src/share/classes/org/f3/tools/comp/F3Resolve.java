@@ -383,7 +383,6 @@ public class F3Resolve {
             tvars = tvars.appendList(tvars1);
             mt = types.subst(pmt.qtype, pmt.tvars, tvars1);
         }
-
         // find out whether we need to go the slow route via infer
         boolean instNeeded = tvars.tail != null/*inlined: tvars.nonEmpty()*/;
         for (List<Type> l = argtypes;

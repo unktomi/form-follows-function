@@ -283,19 +283,19 @@ public class F3ClassReader extends ClassReader {
             case CLASS:
                 TypeSymbol tsym = type.tsym;
                 if (tsym instanceof ClassSymbol) {
-                    if (tsym.name.endsWith(defs.mixinClassSuffixName)) {
-                        t = enterClass((ClassSymbol) tsym).type;
-                        break;
-                    }
                     final ClassType ctype = (ClassType) type;
-                    if (ctype.isCompound()) {
-                        t = types.makeCompoundType(translateTypes(ctype.interfaces_field), translateType(ctype.supertype_field));
-                        break;
-                    }
                     Name flatname = ((ClassSymbol) tsym).flatname;
                     if (flatname.startsWith(functionClassPrefixName)
                         && flatname != functionClassPrefixName) {
                         t = ((F3Symtab) syms).makeFunctionType(translateTypes(ctype.typarams_field));
+                        break;
+                    }
+                    if (tsym.name.endsWith(defs.mixinClassSuffixName)) {
+                        t = enterClass((ClassSymbol) tsym).type;
+                        break;
+                    }
+                    if (ctype.isCompound()) {
+                        t = types.makeCompoundType(translateTypes(ctype.interfaces_field), translateType(ctype.supertype_field));
                         break;
                     }
                     TypeSymbol sym = translateTypeSymbol(tsym);
