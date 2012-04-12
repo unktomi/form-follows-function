@@ -736,7 +736,13 @@ public abstract class F3TranslationSupport {
         } else {
             assert !type.isPrimitive();
             List<JCExpression> typeArgs = List.of(makeType(diagPos, type, true));
-            return call(diagPos, defs.TypeInfo_getTypeInfo, typeArgs, List.<JCExpression>nil());
+            //return call(diagPos, defs.TypeInfo_getTypeInfo, typeArgs, List.<JCExpression>nil());
+	    JCExpression typeInfoQualName = 
+	       makeQualifiedTree(diagPos, 
+				 defs.TypeInfo_getTypeInfo.classString);
+	    JCExpression typeApply = make.at(diagPos).TypeApply(typeInfoQualName,
+								List.of(makeType(diagPos, type)));
+	    return make.at(diagPos).TypeCast(typeApply, call(diagPos, defs.TypeInfo_getTypeInfo, null, List.<JCExpression>nil()));
         }
     }
 
