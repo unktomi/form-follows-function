@@ -34,7 +34,7 @@ import com.sun.tools.mjavac.util.Name;
 import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
 import com.sun.tools.mjavac.code.Scope;
 import com.sun.tools.mjavac.tree.JCTree;
-
+import com.sun.tools.mjavac.code.Type;
 /**
  * A class declaration
  */
@@ -42,6 +42,7 @@ public class F3ClassDeclaration extends F3Expression implements ClassDeclaration
     public final F3Modifiers mods;
     private final Name name;
     public List<F3Expression> typeArgs;
+    public List<Type> typeArgTypes;
     private List<F3Expression> extending;
     private List<F3Expression> implementing;
     private List<F3Expression> mixing;

@@ -391,8 +391,11 @@ public class F3ToJava extends F3AbstractTranslation {
                     mods = addAccessAnnotationModifiers(diagPos, tree.mods.flags, mods);
 
                     JCClassDecl cInterface = m().ClassDef(mods,
-                            model.interfaceName, List.<JCTypeParameter>nil(), null,
-                            implementing, model.iDefinitions);
+							  model.interfaceName, 
+							  tree.typeArgTypes != null ? m().TypeParams(tree.typeArgTypes) : 
+							     List.<JCTypeParameter>nil(), 
+							  null,
+							  implementing, model.iDefinitions);
         
                     cInterface.sym = makeClassSymbol(mods.flags, cInterface.name, tree.sym.owner);
                     
@@ -423,7 +426,8 @@ public class F3ToJava extends F3AbstractTranslation {
             JCClassDecl res = m().ClassDef(
                     classMods,
                     tree.getName(),
-                    List.<JCTypeParameter>nil(), // type parameters
+		    tree.typeArgTypes != null ? m().TypeParams(tree.typeArgTypes) : 
+							     List.<JCTypeParameter>nil(), 
                     model.superType == null ? null : makeType(model.superType, false),
                     implementing,
                     translatedDefs.toList());

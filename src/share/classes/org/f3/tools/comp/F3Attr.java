@@ -656,6 +656,13 @@ public class F3Attr implements F3Visitor {
             sym = selectSym(tree, site, env, pt, pkind);
         }
         boolean varArgs = env.info.varArgs;
+	if (tree.typeArgs != null) {
+	    if (sym.kind == TYP) {
+		List<Type> tvars = makeTypeVars(tree.typeArgs, sym);
+	    } else {
+		// error
+	    }
+	} 
         tree.sym = sym;
 
         if (wasPrimitive && sym.isStatic() && tree.selected instanceof F3Ident)
@@ -1532,8 +1539,21 @@ public class F3Attr implements F3Visitor {
         // complete class name to be fully qualified
         F3Expression clazz = tree.getIdentifier(); // Class field following new
 
+	List<F3Expression> typeArgs = null;
+	if (clazz instanceof F3Ident) {
+	    typeArgs = ((F3Ident)clazz).typeArgs;
+	} else if (clazz instanceof F3Select) {
+	    typeArgs = ((F3Select)clazz).typeArgs;
+	} else {
+	    System.err.println("unhandled case: "+ clazz);
+	}
         // Attribute clazz expression
         Type clazztype = attribType(clazz, env);
+	List<Type> typeArgTypes = null;
+	if (typeArgs != null) {
+	    typeArgTypes = attribTypes(typeArgs, env);
+	    tree.typeArgTypes = typeArgTypes;
+	}
 
         // MAYBE FUTURE, e.g. if we support the syntax 'new ARRAY_TYPE (COUNT)':
         if (tree.getF3Kind() == F3Kind.INSTANTIATE_NEW &&
@@ -1728,6 +1748,10 @@ public class F3Attr implements F3Visitor {
             part.type = memberType;
             part.sym = memberSym;
         }
+	
+	if (typeArgTypes != null) {
+	    owntype = new ClassType(owntype.getEnclosingType(), typeArgTypes, owntype.tsym);
+	}
 
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
         localEnv.info.scope.leave();
@@ -1759,7 +1783,7 @@ public class F3Attr implements F3Visitor {
         result = tree.type = check(tree, syms.makeFunctionType((MethodType) def.type), VAL, pkind, pt, pSequenceness);
     }
 
-    List<Type> makeTypeVars(List<F3Expression> types, MethodSymbol sym) {
+    List<Type> makeTypeVars(List<F3Expression> types, Symbol sym) {
 	ListBuffer<Type> argbuf = new ListBuffer<Type>();
 	for (F3Expression exp: types) {
 	    F3Ident ident = (F3Ident)exp;
@@ -2951,6 +2975,15 @@ public class F3Attr implements F3Visitor {
 
             // Having found the enclosing lint value, we can initialize the lint value for this class
             localEnv.info.lint = lintEnv.info.lint.augment(c.attributes_field, c.flags());
+	    List<Type> typeArgTypes = tree.typeArgs == null ? null : makeTypeVars(tree.typeArgs, c);
+	    tree.typeArgTypes = typeArgTypes;
+	    if (tree.typeArgTypes != null) {
+		localEnv.info.tvars = tree.typeArgTypes;
+		for (Type t: tree.typeArgTypes) {
+		    System.err.println("entering: "+ t);
+		    localEnv.info.scope.enter(((TypeVar)t).tsym);
+		}
+	    }
 
             Lint prevLint = chk.setLint(localEnv.info.lint);
             JavaFileObject prev = log.useSource(c.sourcefile);
@@ -3034,12 +3067,17 @@ public class F3Attr implements F3Visitor {
             // exit in case something drastic went wrong during enter.
             result = null;
         } else {
+	    System.err.println("enter: "+tree+": "+tree.typeArgs);
             // make sure class has been completed:
             c.complete();
 
             attribSupertypes(tree, c);
 
             attribClass(tree.pos(), tree, c);
+	    
+	    if (tree.typeArgTypes != null) {
+		c.type = new ForAll(tree.typeArgTypes, c.type);
+	    }
 
             result = tree.type = c.type;
 

@@ -28,7 +28,7 @@ import org.f3.api.tree.Tree.F3Kind;
 
 import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.util.Name;
-
+import com.sun.tools.mjavac.util.List;
  /**
  * Selects through packages and classes
  * @param selected selected Tree hierarchy
@@ -41,7 +41,7 @@ public class F3Select extends F3Expression implements MemberSelectTree {
     public Name name;
     public Symbol sym;
     public boolean nullCheck;
-
+    public List<F3Expression> typeArgs;
     public F3Var boundSize;
 
     protected F3Select(F3Expression selected, Name name, Symbol sym, boolean nullCheck) {

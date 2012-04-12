@@ -198,6 +198,7 @@ public class F3PreTranslationSupport {
         return new MethodSymbol(Flags.BLOCK, name, null, owner.enclClass());
     }
 
+
     F3Type makeTypeTree(Type type) {
         Type elemType = types.elementTypeOrType(type);
         F3Expression typeExpr = f3make.Type(elemType).setType(elemType);

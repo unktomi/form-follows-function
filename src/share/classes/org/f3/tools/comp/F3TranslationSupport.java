@@ -329,6 +329,12 @@ public abstract class F3TranslationSupport {
         }
     }
 
+    public List<JCExpression> makeTypes(DiagnosticPosition diagPos, List<Type> ts) {
+	ListBuffer<JCExpression> lb = ListBuffer.lb();
+	for (Type t: ts) lb.append(makeType(diagPos, t));
+	return lb.toList();
+    }
+
     /**
      * Build a Java AST representing the specified type.
      * Convert F3 class references to interface references.

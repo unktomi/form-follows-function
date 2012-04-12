@@ -28,7 +28,7 @@ import org.f3.api.tree.Tree.F3Kind;
 
 import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.util.Name;
-
+import com.sun.tools.mjavac.util.List;
 /**
  * An identifier
  * @param idname the name
@@ -38,10 +38,12 @@ public class F3Ident extends F3Expression implements IdentifierTree {
 
     private Name name;
     public Symbol sym;
+    public List<F3Expression> typeArgs;
 
     protected F3Ident() {
         this(null, null);
     }
+
     protected F3Ident(Name name, Symbol sym) {
         this.name = name;
         this.sym = sym;
