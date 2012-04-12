@@ -971,7 +971,8 @@ public class F3Attr implements F3Visitor {
             else
                 initType = syms.objectType;  // nothing to go on, so we assume Object
             if (declType == syms.f3_UnspecifiedType && v.type == null) {
-                result = tree.type = v.type = types.normalize(initType);
+                result = tree.type = v.type = initType;
+		    //types.normalize(initType);
             }
             //chk.validateAnnotations(tree.mods.annotations, v);
             chk.checkBoundArrayVar(tree);
@@ -1750,7 +1751,8 @@ public class F3Attr implements F3Visitor {
         }
 	
 	if (typeArgTypes != null) {
-	    owntype = new ClassType(owntype.getEnclosingType(), typeArgTypes, owntype.tsym);
+	    owntype = new ClassType(owntype.getEnclosingType(), 
+				    typeArgTypes, owntype.tsym);
 	}
 
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
@@ -3076,11 +3078,10 @@ public class F3Attr implements F3Visitor {
             attribClass(tree.pos(), tree, c);
 	    
 	    if (tree.typeArgTypes != null) {
-		c.type = new ForAll(tree.typeArgTypes, c.type);
+		result = tree.type = new ForAll(tree.typeArgTypes, c.type);
+	    } else {
+		result = tree.type = c.type;
 	    }
-
-            result = tree.type = c.type;
-
             types.addF3Class(c, tree);
         }
         result = syms.voidType;
@@ -3539,12 +3540,15 @@ public class F3Attr implements F3Visitor {
 
                 if (env.info.tvars.nonEmpty()) {
                     Type owntype1 = new ForAll(env.info.tvars, owntype);
-                    for (List<Type> l = env.info.tvars; l.nonEmpty(); l = l.tail)
+                    for (List<Type> l = env.info.tvars; l.nonEmpty(); l = l.tail) {
+			/*
                         if (!owntype.contains(l.head)) {
                             log.error(tree.pos(), MsgSym.MESSAGE_UNDETERMINDED_TYPE, owntype1);
                             owntype1 = syms.errType;
                         }
-                    owntype = owntype1;
+			*/
+		    }
+                    //owntype = owntype1;
                 }
 
                 // If the variable is a constant, record constant value in
@@ -3845,7 +3849,7 @@ public class F3Attr implements F3Visitor {
         Scope enclScope = F3Enter.enterScope(env);
         for (List<F3Tree> l = tree.getMembers(); l.nonEmpty(); l = l.tail) {
             if (l.head instanceof F3FunctionDefinition)
-                chk.checkUnique(l.head.pos(), ((F3FunctionDefinition) l.head).sym, enclScope);
+                ;//chk.checkUnique(l.head.pos(), ((F3FunctionDefinition) l.head).sym, enclScope);
         }
 
         // Check for proper use of serialVersionUID

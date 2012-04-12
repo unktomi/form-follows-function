@@ -1193,7 +1193,7 @@ public class F3Resolve {
         Symbol sym;
         boolean staticOnly = false;
         for (F3Env<F3AttrContext> env1 = env; env1.outer != null; env1 = env1.outer) {
-            if (isStatic(env1)) staticOnly = true;
+            if (isStatic(env1)) staticOnly = true; else staticOnly = false;
             for (Scope.Entry e = env1.info.scope.lookup(name);
                  e.scope != null;
                  e = e.next()) {
