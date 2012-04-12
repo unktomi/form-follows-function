@@ -992,6 +992,19 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
+    public F3Expression Ident(F3Expression name, List<F3Expression> typeVars) {
+	if (typeVars.head != null) {
+	    if (name instanceof F3Ident) {
+		((F3Ident)name).typeArgs = typeVars;
+	    } else if (name instanceof F3Select) {
+		((F3Select)name).typeArgs = typeVars;
+	    } else {
+		System.err.println("unhandled case: "+name);
+	    }
+	}
+	return name;
+    }
+
     public F3Expression Identifier(Name name) {
         String str = name.toString();
         if (str.indexOf('.') < 0 && str.indexOf('<') < 0) {

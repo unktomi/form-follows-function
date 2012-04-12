@@ -905,6 +905,7 @@ classDefinition [ F3Modifiers mods, int pos ]
                     ids.toList(),
                     mems.toList()
                 );
+                ((F3ClassDeclaration)$value).typeArgs = exprbuff.toList();
                 setDocComment($value, docComment);  // Add any detected documentation comment
                 endPos($value, pos($RBRACE)); 
         }
@@ -948,7 +949,9 @@ catch [RecognitionException re] {
                     ids.toList(),
                     mems.toList()
                 );
-        setDocComment($value, docComment);  // Add any detected documentation comment
+    System.err.println("exprbuff "+$n1.value+"="+exprbuff.toList());
+    ((F3ClassDeclaration)$value).typeArgs = exprbuff.toList();
+    setDocComment($value, docComment);  // Add any detected documentation comment
     
     // AST span
     //
@@ -6073,13 +6076,13 @@ typeName
               {
                 // AST for generic
                 //
-                F3Erroneous err = F.at(pos($LT)).Erroneous();
-                endPos(err);
-                log.error(err, MsgSym.MESSAGE_F3_GENERICS_UNSUPPORTED);
+                //F3Erroneous err = F.at(pos($LT)).Erroneous();
+                //endPos(err);
+                //log.error(err, MsgSym.MESSAGE_F3_GENERICS_UNSUPPORTED);
                 
                 // Ensure that the IDE plugin does not fall over
                 //
-                $value = $qualname.value;
+                $value = F.at(rPos).Ident($qualname.value, exprbuff.toList());
               }
               
             |   // Non generic

@@ -3104,7 +3104,9 @@ public abstract class F3AbstractTranslation
          * @param isF3
          * @return
          */
-        protected ExpressionResult buildInstance(Type declaredType, F3ClassDeclaration cdef, boolean isF3) {
+        protected ExpressionResult buildInstance(Type declaredType, 
+						 List<Type> typeArgTypes,
+						 F3ClassDeclaration cdef, boolean isF3) {
             Type type;
 
             if (cdef == null) {
@@ -3189,7 +3191,7 @@ public abstract class F3AbstractTranslation
 
             } else {
                 // this is a Java class or has no instance variable initializers, just instanciate it
-                instExpression = m().NewClass(null, null, classTypeExpr, newClassArgs, null);
+                instExpression = m().NewClass(null, typeArgTypes != null ? makeTypes(null, typeArgTypes): null, classTypeExpr, newClassArgs, null);
             }
 
             return toResult(instExpression, type);
@@ -3273,7 +3275,8 @@ public abstract class F3AbstractTranslation
         }
 
         protected ExpressionResult doit() {
-            return buildInstance(tree.type, tree.getClassBody(), types.isF3Class(idSym));
+            return buildInstance(tree.type, tree.typeArgTypes, 
+				 tree.getClassBody(), types.isF3Class(idSym));
         }
     }
 

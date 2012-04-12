@@ -28,6 +28,7 @@ import org.f3.api.tree.Tree.F3Kind;
 
 import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.code.Symbol.*;
+import com.sun.tools.mjavac.code.Type;
 import com.sun.tools.mjavac.util.List;
 
 /**
@@ -41,6 +42,7 @@ public class F3Instanciate extends F3Expression implements InstantiateTree {
     private final List<F3Expression> args;
     private final List<F3ObjectLiteralPart> parts;
     private final List<F3Var> localVars;
+    public List<Type> typeArgTypes;
     public ClassSymbol sym;
     public Symbol constructor;
     public Symbol varDefinedByThis;
