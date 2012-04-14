@@ -2872,6 +2872,9 @@ public abstract class F3AbstractTranslation
 		setDiagPos(f3Var);
 		Name paramName = f3Var.getName();
 		Type paramType = f3Var.sym.type;
+		if (!types.isSequence(paramType)) { // hack !!!
+		    paramType = types.erasure(paramType);
+		}
                 JCExpression arg;
                 if (argNum < 2)
                     arg = id(argNum == 0 ? defs.arg1_ArgName : defs.arg2_ArgName);

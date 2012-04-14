@@ -943,6 +943,15 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 
     private F3Env<F3AttrContext> baseEnv(F3ClassDeclaration tree, F3Env<F3AttrContext> env) {
         Scope typaramScope = new Scope(tree.sym);
+	if (tree.typeArgs != null) {
+	    if (tree.typeArgTypes == null) {
+		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, tree.sym);
+	    }
+	    env.info.tvars = tree.typeArgTypes;
+	    for (Type t: tree.typeArgTypes) {
+		typaramScope.enter(((TypeVar)t).tsym);
+	    }
+	}
         F3Env<F3AttrContext> outer = env.outer; // the base clause can't see members of this class
         F3Env<F3AttrContext> localEnv = outer.dup(tree, outer.info.dup(typaramScope));
         localEnv.baseClause = true;

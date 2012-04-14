@@ -1559,25 +1559,35 @@ public class F3Attr implements F3Visitor {
 	} else {
 	    System.err.println("unhandled case: "+ clazz);
 	}
-        // Attribute clazz expression
-        Type clazztype = attribType(clazz, env);
+	Type clazztype;
 	List<Type> typeArgTypes = null;
-	if (typeArgs != null) {
-	    typeArgTypes = attribTypes(typeArgs, env);
-	    tree.typeArgTypes = typeArgTypes;
-	}
-
-        // MAYBE FUTURE, e.g. if we support the syntax 'new ARRAY_TYPE (COUNT)':
-        if (tree.getF3Kind() == F3Kind.INSTANTIATE_NEW &&
+	List<F3Expression> args = tree.getArgs();
+	List<Type> argTypes = null;
+	if (tree.genericInstance) { // hack
+	    clazztype = attribExpr(clazz, env);
+	    argTypes = attribTypes(args, env);
+	    args = List.<F3Expression>nil();
+	    System.err.println("expr="+clazz);
+	    System.err.println("type="+clazztype);
+	} else {
+	    if (typeArgs != null) {
+		typeArgTypes = attribTypes(typeArgs, env);
+		tree.typeArgTypes = typeArgTypes;
+	    }
+	    // Attribute clazz expression
+	    clazztype = attribType(clazz, env);
+	    // MAYBE FUTURE, e.g. if we support the syntax 'new ARRAY_TYPE (COUNT)':
+	    if (tree.getF3Kind() == F3Kind.INSTANTIATE_NEW &&
                 clazztype.tag == ARRAY) {
-            if (tree.getArgs().size() != 1)
-                ;//log.error(tree.pos(), MsgSym.MESSAGE_F3_NEW_ARRAY_MUST_HAVE_SINGLE_ARG);
-            else
-                attribExpr(tree.getArgs().head, env, syms.f3_IntegerType);
-            result = check(tree, clazztype, VAL, pkind, pt, pSequenceness);
-            localEnv.info.scope.leave();
-            return;
-        }
+		if (tree.getArgs().size() != 1)
+		    ;//log.error(tree.pos(), MsgSym.MESSAGE_F3_NEW_ARRAY_MUST_HAVE_SINGLE_ARG);
+		else
+		    attribExpr(tree.getArgs().head, env, syms.f3_IntegerType);
+		result = check(tree, clazztype, VAL, pkind, pt, pSequenceness);
+		localEnv.info.scope.leave();
+		return;
+	    }
+	}
         /*
         If so, add to MsgSym.java this definition:
         and in f3compiler.properties map that to:
@@ -1595,7 +1605,7 @@ public class F3Attr implements F3Visitor {
         }
 
         // Attribute constructor arguments.
-        List<Type> argtypes = attribArgs(tree.getArgs(), localEnv);
+        List<Type> argtypes = attribArgs(args, localEnv);
 
         // If we have made no mistakes in the class type...
         if (clazztype.tag == CLASS) {
@@ -1799,6 +1809,12 @@ public class F3Attr implements F3Visitor {
     List<Type> makeTypeVars(List<F3Expression> types, Symbol sym) {
 	ListBuffer<Type> argbuf = new ListBuffer<Type>();
 	for (F3Expression exp: types) {
+	    if (exp instanceof F3TypeClass) {
+		F3TypeClass cls = (F3TypeClass)exp;
+		//System.err.println(cls.getTypeExpression().getClass());
+		//System.err.println(cls.getTypeExpression());
+		exp = cls.getClassName();
+	    }
 	    if (exp instanceof F3Ident) {
 		F3Ident ident = (F3Ident)exp;
 		TypeVar tv = new TypeVar(ident.getName(), sym, syms.botType);
@@ -1806,7 +1822,7 @@ public class F3Attr implements F3Visitor {
 		tv.bound = syms.objectType;
 		argbuf.append(tv);
 	    } else {
-		
+		System.err.println("exp="+exp.getClass());
 	    }
 	}
 	return argbuf.toList();
@@ -3075,16 +3091,6 @@ public class F3Attr implements F3Visitor {
     //@Override
     public void visitClassDeclaration(F3ClassDeclaration tree) {
         // Local classes have not been entered yet, so we need to do it now:
-
-	if (tree.typeArgs != null) {
-	    if (tree.typeArgTypes == null) {
-		tree.typeArgTypes = makeTypeVars(tree.typeArgs, tree.sym);
-	    }
-	    env.info.tvars = tree.typeArgTypes;
-	    for (Type t: tree.typeArgTypes) {
-		env.info.scope.enter(((TypeVar)t).tsym);
-	    }
-	}
         if ((env.info.scope.owner.kind & (VAR | MTH)) != 0)
             enter.classEnter(tree, env);
 
@@ -3093,13 +3099,6 @@ public class F3Attr implements F3Visitor {
             // exit in case something drastic went wrong during enter.
             result = null;
         } else {
-	    if (tree.typeArgTypes != null) {
-		c.type = new ForAll(tree.typeArgTypes, c.type) {
-			public boolean isErroneous() {
-			    return false;
-			}
-		    };
-	    }
 
             // make sure class has been completed:
             c.complete();

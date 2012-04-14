@@ -1171,15 +1171,10 @@ functionDefinition [ F3Modifiers mods, int pos ]
 
     // Accumulate any generic arguments
     //
-    ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
 : FUNCTION  
 
-   (OF ga1=genericArgument {
-        exprbuff.append($ga1.value);
-    } (COMMA ga2=genericArgument {
-            exprbuff.append($ga2.value);
-        })* )?
+   (OF genericArgs = genericArguments)?
 
         (
             (
@@ -1272,7 +1267,9 @@ functionDefinition [ F3Modifiers mods, int pos ]
                                 $formalParameters.params.toList(), 
                                 $block.value
                             );
-            ((F3FunctionDefinition)$value).typeArgs = exprbuff.toList();                            
+	    if (genericArgs != null) {
+		((F3FunctionDefinition)$value).typeArgs = genericArgs;
+	    }
             // Ensure that the function value, manufactured within the FunctionDefinition() method
             // call, receives an endPos() map
             //
@@ -3701,7 +3698,14 @@ typeExpression
                     $value = F.at(pos($INSTANCEOF)).TypeTest($relationalExpression.value, $itn.rtype);
                     endPos($value);
                 }
-                
+
+	    | OF ga=genericArguments
+                {
+		    $value = F.at(pos($OF)).InstanciateNew($relationalExpression.value, ga);
+		    ((F3Instanciate)$value).genericInstance = true;
+		    endPos($value);
+		}
+
             | AS atn=type
             
                 {
@@ -6114,6 +6118,41 @@ catch [RecognitionException re] {
     endPos($value);
     
 }
+
+genericArguments
+   returns [com.sun.tools.mjavac.util.List<F3Expression> value]
+   :
+   (LPAREN)=> (LPAREN (gas=genericArguments0) RPAREN)
+   {
+       $value = $gas.value;
+   }
+   |
+   ga=genericArgument 
+   {
+       ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+       exprbuff.append($ga.value);
+       $value = exprbuff.toList();
+   }
+;
+
+genericArguments0
+   returns [com.sun.tools.mjavac.util.List<F3Expression> value]
+@init {
+   ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+}
+   :
+   ga1=genericArgument 
+   {
+	exprbuff.append($ga1.value);
+   } 
+   (
+	COMMA ga2=genericArgument 
+	{
+            exprbuff.append($ga2.value);
+        }
+   )* 
+   {$value = exprbuff.toList();}
+;
 
 // When a programmer accidentally c=ecloses the type in two or more
 // sets of prens, we do't want to change the type, but just treat extra

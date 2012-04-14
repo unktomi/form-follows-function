@@ -29,9 +29,7 @@ import org.f3.api.tree.Tree.F3Kind;
 import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
 
 /**
- * Type referencing a class
- *
- * @author Robert Field
+ * Type variable
  */
 public class F3TypeVar extends F3Type implements TypeClassTree {
     private final F3Expression className;
@@ -41,8 +39,8 @@ public class F3TypeVar extends F3Type implements TypeClassTree {
      * @param cardinality one of the cardinality constants
      */
     protected F3TypeVar(F3Expression className,
-            Cardinality cardinality,
-            TypeSymbol sym) {
+			Cardinality cardinality,
+			TypeSymbol sym) {
         super(cardinality);
         this.className = className;
         this.sym = sym;
