@@ -839,12 +839,22 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
-    public F3Type  TypeClass(F3Expression className,Cardinality cardinality) {
+    public F3Type TypeClass(F3Expression className,Cardinality cardinality) {
         return TypeClass(className, cardinality, null);
     }
 
     public F3Type  TypeClass(F3Expression className,Cardinality cardinality, ClassSymbol sym) {
         F3Type tree = new F3TypeClass(className, cardinality, sym);
+        tree.pos = pos;
+        return tree;
+    }
+
+    public F3Type TypeVar(F3Expression className,Cardinality cardinality) {
+        return TypeVar(className, cardinality, null);
+    }
+
+    public F3Type TypeVar(F3Expression className,Cardinality cardinality, TypeSymbol sym) {
+        F3Type tree = new F3TypeVar(className, cardinality, sym);
         tree.pos = pos;
         return tree;
     }

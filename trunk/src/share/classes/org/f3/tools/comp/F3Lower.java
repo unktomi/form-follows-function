@@ -43,6 +43,7 @@ import com.sun.tools.mjavac.code.Symbol.MethodSymbol;
 import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
 import com.sun.tools.mjavac.code.Symbol.VarSymbol;
 import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.code.Type.*;
 
 import com.sun.tools.mjavac.code.TypeTags;
 import com.sun.tools.mjavac.util.Context;
@@ -1155,6 +1156,9 @@ public class F3Lower implements F3Visitor {
         F3Block body = (F3Block)m.at(tree.pos).Block(0, List.<F3Expression>nil(), call).setType(returnType);
         F3FunctionValue funcValue = m.at(tree.pos).FunctionValue(m.at(tree.pos).Modifiers(0L), preTrans.makeTypeTree(returnType),
                 params.toList(), body);
+	if (mtype instanceof ForAll) { // hack fix me !!
+	    mtype = ((ForAll)mtype).asMethodType();
+	}
         funcValue.type = syms.makeFunctionType((Type.MethodType)mtype);
         funcValue.definition = new F3FunctionDefinition(
                 m.at(tree.pos).Modifiers(lambdaSym.flags_field),
@@ -1455,6 +1459,10 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitTypeClass(F3TypeClass tree) {
+        result = tree;
+    }
+
+    public void visitTypeVar(F3TypeVar tree) {
         result = tree;
     }
 

@@ -808,6 +808,10 @@ public class F3Decompose implements F3Visitor {
         result = tree;
     }
 
+    public void visitTypeVar(F3TypeVar tree) {
+        result = tree;
+    }
+
     public void visitTypeFunctional(F3TypeFunctional tree) {
         result = tree;
     }

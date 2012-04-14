@@ -144,6 +144,7 @@ NATIVEARRAY     : 'nativearray';
 NEW             : 'new';
 NOT             : 'not';
 NULL            : 'null';
+OF              : 'of';
 ON              : 'on';
 OR              : 'or';
 OVERRIDE        : 'override';

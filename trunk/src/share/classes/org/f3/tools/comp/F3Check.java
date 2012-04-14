@@ -423,11 +423,13 @@ public class F3Check {
             if (found == syms.unreachableType)
                 return found;
         if (found.tag == FORALL) {
-            if (req == syms.f3_UnspecifiedType)
+            if (req == syms.f3_UnspecifiedType || req == Type.noType)
                 // Is this the right thing to do?  FIXME
                 return types.erasure(found);
-            else
-            return instantiatePoly(pos, (ForAll)found, req, convertWarner(pos, found, req));
+            else {
+		req = types.boxedTypeOrType(req);
+		return instantiatePoly(pos, (ForAll)found, req, convertWarner(pos, found, req));
+	    }
         } else if (isTypeVar(req)) { // hack
 	    req = types.erasure(req);
 	}
@@ -557,7 +559,7 @@ public class F3Check {
      *  @param req        The target type of the cast.
      */
     Type checkCastable(DiagnosticPosition pos, Type found, Type req) {
-        if (found.tag == FORALL && found instanceof ForAll) {
+        if (/*found.tag == FORALL && */found instanceof ForAll) {
             instantiatePoly(pos, (ForAll) found, req, castWarner(pos, found, req));
             return req;
         } else if (types.isCastable(found, req, castWarner(pos, found, req))) {
@@ -1368,9 +1370,9 @@ public class F3Check {
      *			    is a member.
      */
     private void checkOverride(F3Tree tree,
-		       MethodSymbol m,
-		       MethodSymbol other,
-		       ClassSymbol origin) {
+			       MethodSymbol m,
+			       MethodSymbol other,
+			       ClassSymbol origin) {
 	// Don't check overriding of synthetic methods or by bridge methods.
 	if ((m.flags() & (SYNTHETIC|BRIDGE)) != 0 || (other.flags() & SYNTHETIC) != 0) {
 	    return;

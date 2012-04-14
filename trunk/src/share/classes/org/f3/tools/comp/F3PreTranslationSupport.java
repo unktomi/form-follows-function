@@ -39,6 +39,7 @@ import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.code.Symbol.*;
 import com.sun.tools.mjavac.code.Type;
 import com.sun.tools.mjavac.code.Type.ClassType;
+import com.sun.tools.mjavac.code.Type.TypeVar;
 import static com.sun.tools.mjavac.code.TypeTags.*;
 import com.sun.tools.mjavac.util.Context;
 import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
@@ -203,7 +204,12 @@ public class F3PreTranslationSupport {
         Type elemType = types.elementTypeOrType(type);
         F3Expression typeExpr = f3make.Type(elemType).setType(elemType);
         F3TreeInfo.setSymbol(typeExpr, elemType.tsym);
-        return (F3Type)f3make.TypeClass(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (ClassSymbol)type.tsym).setType(type);
+	Symbol tsym = type.tsym;
+	if (type instanceof TypeVar) {
+	    return (F3Type)f3make.TypeVar(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (TypeSymbol)tsym).setType(type);
+	} else {
+	    return (F3Type)f3make.TypeClass(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (ClassSymbol)tsym).setType(type);
+	}
     }
 
     F3Var BoundLocalVar(DiagnosticPosition diagPos, Type type, Name name, F3Expression boundExpr, Symbol owner) {

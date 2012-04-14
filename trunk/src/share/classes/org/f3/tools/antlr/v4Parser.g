@@ -867,16 +867,17 @@ classDefinition [ F3Modifiers mods, int pos ]
 
     : CLASS 
 
+
             n1=name 
 
-            (LT ga1=genericArgument { 
+        (OF ga1=genericArgument { 
                 exprbuff.append($ga1.value);
             }
             (COMMA ga2=genericArgument{
                 exprbuff.append($ga2.value);
-                })* GT)?    
+                })* )?    
     
-            supers  {ids = $supers.ids; }
+        supers  {ids = $supers.ids; }
             
         LBRACE 
     
@@ -1174,11 +1175,11 @@ functionDefinition [ F3Modifiers mods, int pos ]
 }
 : FUNCTION  
 
-   (LT ga1=genericArgument {
+   (OF ga1=genericArgument {
         exprbuff.append($ga1.value);
     } (COMMA ga2=genericArgument {
             exprbuff.append($ga2.value);
-        })* GT)?
+        })* )?
 
         (
             (
@@ -4563,12 +4564,12 @@ functionExpression
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
     :   (modifiers) => modifiers FUNCTION 
-            (LT ga1=genericArgument { 
+            (OF ga1=genericArgument { 
                 exprbuff.append($ga1.value);
             }
             (COMMA ga2=genericArgument{
                 exprbuff.append($ga2.value);
-                })* GT)?    
+                })* )?    
 
     
         formalParameters    
@@ -5731,12 +5732,12 @@ typeFunction
 
     : FUNCTION 
 
-        (LT ga1=genericArgument { 
+        (OF ga1=genericArgument { 
                 exprbuff.append($ga1.value);
             }
             (COMMA ga2=genericArgument{
                 exprbuff.append($ga2.value);
-                })* GT)?    
+                })* )?    
 
 
         LPAREN 
@@ -6061,22 +6062,20 @@ typeName
 
     : qualname      { errNodes.append($qualname.value); }
         (
-              (LT)=>LT ga1=genericArgument  { exprbuff.append($ga1.value); }
+              (OF)=>OF ga1=genericArgument  { exprbuff.append($ga1.value); }
                 
-                    (
+                   (COMMA)=>(
                         COMMA
                         ga2=genericArgument
                     
                                 { exprbuff.append($ga2.value); }
 
                     )* 
-                    COMMA?
-              GT
               
               {
                 // AST for generic
                 //
-                //F3Erroneous err = F.at(pos($LT)).Erroneous();
+                //F3Erroneous err = F.at(pos($OF)).Erroneous();
                 //endPos(err);
                 //log.error(err, MsgSym.MESSAGE_F3_GENERICS_UNSUPPORTED);
                 
@@ -6143,8 +6142,8 @@ genericArgument
     F3Expression   texpr   = null; 
 }
 
-    : typeName  { $value = $typeName.value; }
-    
+    : typeName  { $value = $typeName.value; } 
+/*    
     | QUES 
         (  
             ( 
@@ -6157,6 +6156,7 @@ genericArgument
         {
             // TODO: NYI - Remove or implement?
         }
+*/
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.

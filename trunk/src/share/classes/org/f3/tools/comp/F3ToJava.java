@@ -28,6 +28,7 @@ import java.util.Map;
 
 import com.sun.tools.mjavac.code.*;
 import com.sun.tools.mjavac.code.Type.MethodType;
+import com.sun.tools.mjavac.code.Type.ForAll;
 import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.code.Symbol.*;
 import com.sun.tools.mjavac.tree.JCTree;
@@ -1099,7 +1100,8 @@ public class F3ToJava extends F3AbstractTranslation {
     @Override
     public void visitFunctionValue(F3FunctionValue tree) {
         F3FunctionDefinition def = tree.definition;
-        result = new FunctionValueTranslator(make.Ident(defs.lambda_MethodName), def, tree.pos(), (MethodType) def.type, tree.type).doit();
+	Type t = types.erasure(def.type);
+        result = new FunctionValueTranslator(make.Ident(defs.lambda_MethodName), def, tree.pos(), (MethodType) t, tree.type).doit();
     }
 
     public void visitIdent(F3Ident tree) {

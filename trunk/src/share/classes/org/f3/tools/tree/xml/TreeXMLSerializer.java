@@ -87,6 +87,7 @@ import org.f3.tools.tree.F3TypeAny;
 import org.f3.tools.tree.F3TypeArray;
 import org.f3.tools.tree.F3TypeCast;
 import org.f3.tools.tree.F3TypeClass;
+import org.f3.tools.tree.F3TypeVar;
 import org.f3.tools.tree.F3TypeFunctional;
 import org.f3.tools.tree.F3TypeUnknown;
 import org.f3.tools.tree.F3Unary;
@@ -490,6 +491,9 @@ final class TreeXMLSerializer implements F3Visitor {
         endElement(TYPE_ANY);
     }
 
+    public void visitTypeVar(F3TypeVar typevar) {
+	throw new Error("not implemented"); // fix me
+    }
     public void visitTypeClass(F3TypeClass typeClass) {
         startElement(TYPE_CLASS, typeClass, getSymbolField(typeClass));
         F3Expression name = typeClass.getClassName();

@@ -777,6 +777,15 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         ClassType ct = (ClassType) c.type;
         F3Env<F3AttrContext> localEnv = enter.typeEnvs.get(c);
         F3ClassDeclaration tree = (F3ClassDeclaration) localEnv.tree;
+	if (tree.typeArgs != null) {
+	    if (tree.typeArgTypes == null) {
+		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, tree.sym);
+	    }
+	    localEnv.info.tvars = tree.typeArgTypes;
+	    for (Type t: tree.typeArgTypes) {
+		localEnv.info.scope.enter(((TypeVar)t).tsym);
+	    }
+	}
         boolean wasFirst = isFirst;
         isFirst = false;
 

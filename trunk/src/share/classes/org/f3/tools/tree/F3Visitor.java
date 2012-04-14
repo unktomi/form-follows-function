@@ -59,6 +59,7 @@ public interface F3Visitor {
     public void visitObjectLiteralPart(F3ObjectLiteralPart tree);
     public void visitTypeAny(F3TypeAny tree);
     public void visitTypeClass(F3TypeClass tree);
+    public void visitTypeVar(F3TypeVar tree);
     public void visitTypeFunctional(F3TypeFunctional tree);
     public void visitTypeArray(F3TypeArray tree);
     public void visitTypeUnknown(F3TypeUnknown tree);

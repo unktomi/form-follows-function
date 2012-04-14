@@ -258,6 +258,11 @@ public class F3TreeCopier implements F3Visitor {
         result = maker.at(tree.pos).TypeClass(clazz, tree.getCardinality());
     }
 
+    public void visitTypeVar(F3TypeVar tree) {
+        F3Expression clazz = copy(tree.getClassName());
+        result = maker.at(tree.pos).TypeVar(clazz, tree.getCardinality());
+    }
+
     public void visitTypeFunctional(F3TypeFunctional tree) {
         List<F3Type> params = copy(tree.getParams());
         F3Type restype = copy(tree.restype);

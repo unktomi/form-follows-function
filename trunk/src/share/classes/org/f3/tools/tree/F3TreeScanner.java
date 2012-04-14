@@ -265,6 +265,9 @@ public class F3TreeScanner implements F3Visitor {
     
     public void visitTypeClass(F3TypeClass tree) {
     }
+
+    public void visitTypeVar(F3TypeVar tree) {
+    }
     
     public void visitTypeFunctional(F3TypeFunctional tree) {
         for (F3Tree param : (List<F3Type>)tree.getParameters()) {
