@@ -1098,6 +1098,14 @@ public class F3Pretty implements F3Visitor {
             throw new UncheckedIOException(e);
         }
     }
+    public void visitTypeVar(F3TypeVar tree) {
+        try {
+            print(tree.getClassName());
+            print(ary(tree));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
     public void visitTypeFunctional(F3TypeFunctional tree) {
         try {

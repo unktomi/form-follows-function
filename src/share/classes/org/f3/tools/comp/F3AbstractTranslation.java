@@ -4344,6 +4344,10 @@ public abstract class F3AbstractTranslation
         processedInParent();
     }
 
+    public void visitTypeVar(F3TypeVar that) {
+        processedInParent();
+    }
+
     public void visitTypeFunctional(F3TypeFunctional that) {
         processedInParent();
     }

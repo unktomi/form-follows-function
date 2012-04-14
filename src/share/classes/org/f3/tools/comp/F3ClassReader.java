@@ -352,8 +352,11 @@ public class F3ClassReader extends ClassReader {
     TypeSymbol translateTypeSymbol(TypeSymbol tsym) {
         if (tsym == syms.predefClass)
             return tsym;
-        ClassSymbol csym = (ClassSymbol) tsym; // FIXME
-        return enterClass(csym);
+	if (tsym instanceof ClassSymbol) {
+	    ClassSymbol csym = (ClassSymbol) tsym; // FIXME
+	    return enterClass(csym);
+	}
+	return tsym;
     }
     
     Symbol translateSymbol(Symbol sym) {

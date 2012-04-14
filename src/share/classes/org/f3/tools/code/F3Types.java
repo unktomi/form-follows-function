@@ -213,6 +213,9 @@ public class F3Types extends Types {
     
     @Override
     public boolean isSubtype(Type t, Type s, boolean capture) {
+	if (t.tag == METHOD) { // fix me !!!!
+	    t = syms.makeFunctionType((MethodType)t);
+	}
         boolean b = super.isSubtype(t, s, capture);
         if (!b && s.tag == CLASS && s.isCompound()) {
             for (Type s2 : interfaces(s).prepend(supertype(s))) {
@@ -401,7 +404,8 @@ public class F3Types extends Types {
                 if (e.sym.kind == MTH) {
                         MethodSymbol m = (MethodSymbol) e.sym;
                         m.complete();
-                        if (m.overrides(msym, origin, this, checkResult) &&
+                        if (//m.overrides(msym, origin, this, checkResult) &&
+			    overrides(m, msym, origin, checkResult) &&
                             (m.flags() & SYNTHETIC) == 0)
                             return m;
                 }
