@@ -44,6 +44,7 @@ public class F3TreeInfo {
     /** The names of all operators.
      */
     protected Name[] opname = new Name[F3Tag.MOD.ordinal() - F3Tag.NEG.ordinal() + 1];
+    protected Name[] opname2 = new Name[F3Tag.MOD.ordinal() - F3Tag.NEG.ordinal() + 1];
 
     protected static final Context.Key<F3TreeInfo> f3TreeInfoKey =
         new Context.Key<F3TreeInfo>();
@@ -83,12 +84,44 @@ public class F3TreeInfo {
 	opname[F3Tag.SIZEOF .ordinal() - base] = names.fromString("sizeof");
 	opname[F3Tag.INDEXOF .ordinal() - base] = names.fromString("indexof");
 	opname[F3Tag.REVERSE .ordinal() - base] = names.fromString("reverse");
+
+        opname2 = new Name[F3Tag.F3_OP_LAST.ordinal() - base + 1];
+	opname2[F3Tag.NEG    .ordinal() - base] = names.hyphen;
+	opname2[F3Tag.NOT    .ordinal() - base] = names.fromString("$bang");
+	opname2[F3Tag.PREINC .ordinal() - base] = names.fromString("$plus$plus");
+	opname2[F3Tag.PREDEC .ordinal() - base] = names.fromString("$minus$minus");
+	opname2[F3Tag.POSTINC.ordinal() - base] = names.fromString("$plus$plus");
+	opname2[F3Tag.POSTDEC.ordinal() - base] = names.fromString("$minus$minus");
+	opname2[F3Tag.NULLCHK.ordinal() - base] = names.fromString("<*nullchk*>");
+	opname2[F3Tag.OR     .ordinal() - base] = names.fromString("$bar$bar");
+	opname2[F3Tag.AND    .ordinal() - base] = names.fromString("$amp$amp");
+	opname2[F3Tag.EQ     .ordinal() - base] = names.fromString("$eq$eq");
+	opname2[F3Tag.NE     .ordinal() - base] = names.fromString("$not$eq");
+	opname2[F3Tag.LT     .ordinal() - base] = names.fromString("$less");
+	opname2[F3Tag.GT     .ordinal() - base] = names.fromString("$greater");
+	opname2[F3Tag.LE     .ordinal() - base] = names.fromString("$less$eq");
+	opname2[F3Tag.GE     .ordinal() - base] = names.fromString("$greater$eq");
+	opname2[F3Tag.PLUS   .ordinal() - base] = names.fromString("$plus");
+	opname2[F3Tag.MINUS  .ordinal() - base] = names.fromString("$minus");
+	opname2[F3Tag.MUL    .ordinal() - base] = names.fromString("$times");
+	opname2[F3Tag.DIV    .ordinal() - base] = names.fromString("$div");
+	opname2[F3Tag.MOD    .ordinal() - base] = names.fromString("%");
+	opname2[F3Tag.XOR    .ordinal() - base] = names.fromString("xor");
+	opname2[F3Tag.SIZEOF .ordinal() - base] = names.fromString("sizeof");
+	opname2[F3Tag.INDEXOF .ordinal() - base] = names.fromString("indexof");
+	opname2[F3Tag.REVERSE .ordinal() - base] = names.fromString("reverse");
     }    
 
     /** Return name of operator with given tree tag.
      */
     public Name operatorName(F3Tag tag) {
         return opname[tag.ordinal() - F3Tag.NEG.ordinal()];
+    }
+
+    /** Return scala-like encoding of name of operator with given tree tag.
+     */
+    public Name operatorName2(F3Tag tag) {
+        return opname2[tag.ordinal() - F3Tag.NEG.ordinal()];
     }
 
     /** A DiagnosticPosition with the preferred position set to the 

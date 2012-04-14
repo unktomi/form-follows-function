@@ -1589,14 +1589,36 @@ public class F3Resolve {
      */
     Symbol resolveOperator(DiagnosticPosition pos, F3Tag optag,
                            F3Env<F3AttrContext> env, List<Type> argtypes) {
+	Symbol sym = resolveOperator2(pos, optag, env, argtypes);
+	if (sym.kind != MTH) {
+	    sym = resolveOperator1(pos, optag, env, argtypes);
+	}
+        Name name = treeinfo.operatorName(optag);
+
+        return access(sym, pos, env.enclClass.sym.type, name,
+                      false, argtypes, null);
+    }
+
+    Symbol resolveOperator1(DiagnosticPosition pos, F3Tag optag,
+                           F3Env<F3AttrContext> env, List<Type> argtypes) {
         Name name = treeinfo.operatorName(optag);
         Symbol sym = findMethod(env, syms.predefClass.type, name, argtypes,
                                 null, false, false, true);
         if (boxingEnabled && sym.kind >= WRONG_MTHS)
             sym = findMethod(env, syms.predefClass.type, name, argtypes,
                              null, true, false, true);
-        return access(sym, pos, env.enclClass.sym.type, name,
-                      false, argtypes, null);
+	return sym;
+    }
+
+    Symbol resolveOperator2(DiagnosticPosition pos, F3Tag optag,
+                           F3Env<F3AttrContext> env, List<Type> argtypes) {
+        Name name = treeinfo.operatorName2(optag);
+        Symbol sym = findMethod(env, syms.predefClass.type, name, argtypes,
+                                null, false, false, true);
+        if (boxingEnabled && sym.kind >= WRONG_MTHS)
+            sym = findMethod(env, syms.predefClass.type, name, argtypes,
+                             null, true, false, false);
+	return sym;
     }
 
     /** Resolve operator.

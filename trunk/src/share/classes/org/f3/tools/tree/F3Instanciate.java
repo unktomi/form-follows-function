@@ -46,6 +46,7 @@ public class F3Instanciate extends F3Expression implements InstantiateTree {
     public ClassSymbol sym;
     public Symbol constructor;
     public Symbol varDefinedByThis;
+    public boolean genericInstance = false; // hack: flag indicates request to instantiate generic type
 
     protected F3Instanciate(F3Kind f3Kind, F3Expression clazz, F3ClassDeclaration def, List<F3Expression> args,
             List<F3ObjectLiteralPart> parts, List<F3Var> localVars, ClassSymbol sym) {

@@ -574,7 +574,14 @@ public class F3ClassReader extends ClassReader {
             for (List<Symbol> l = symlist; l.nonEmpty(); l=l.tail) {
                 Symbol memsym = l.head;
                 Name name = memsym.name;
-                long flags = flagsFromAnnotationsAndFlags(memsym);
+		
+                long flags = 0;
+		try {
+		    flags = flagsFromAnnotationsAndFlags(memsym);
+		} catch (Exception exc) {
+		    exc.printStackTrace();
+		    continue;
+		}
                 if ((flags & PRIVATE) != 0)
                     continue;
                 boolean sawSourceNameAnnotation = false;
