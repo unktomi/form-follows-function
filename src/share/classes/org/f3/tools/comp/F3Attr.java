@@ -3590,8 +3590,10 @@ public class F3Attr implements F3Visitor {
                             //owntype1 = syms.errType;
                         }
 		    }
+		    //System.err.println("owntype="+owntype);
+		    //System.err.println("owntype1="+owntype1);
                     //owntype = owntype1;
-
+		    
                 }
 
                 // If the variable is a constant, record constant value in

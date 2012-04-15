@@ -379,9 +379,7 @@ public abstract class F3TranslationSupport {
                 }
 
                 // Type outer = t.getEnclosingType();
-		if (!types.isSequence(t)) { // hack !!! seems the outer has already been erased at the point, so...
-		    t = types.erasure(t);
-		}
+		t = types.capture(t); // chris hack...
                 if (!t.getTypeArguments().isEmpty()) {
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {

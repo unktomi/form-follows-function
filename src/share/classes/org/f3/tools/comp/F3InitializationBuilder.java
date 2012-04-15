@@ -601,6 +601,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
         // This method creates a member field field.
         //
         private JCVariableDecl makeField(long flags, Type varType, Name name, JCExpression varInit) {
+
             F3VarSymbol varSym = makeVarSymbol(flags, varType, name);
             return Var(flags, varType, name, varInit, varSym);
         }
@@ -620,6 +621,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
             // Get the var symbol.
             F3VarSymbol varSym = varInfo.getSymbol();
             // Construct the variable itself.
+	    //System.err.println("make field: "+ name+": "+varType+": "+makeType(varType));
             JCVariableDecl var = Var(mods, makeType(varType), name, varInit, varSym);
             // Update the statistics.
             optStat.recordClassVar(varSym);
