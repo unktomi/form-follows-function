@@ -386,8 +386,10 @@ public class F3Attr implements F3Visitor {
      */
     List<Type> attribTypes(List<F3Expression> trees, F3Env<F3AttrContext> env) {
         ListBuffer<Type> argtypes = new ListBuffer<Type>();
-        for (List<F3Expression> l = trees; l.nonEmpty(); l = l.tail)
-            argtypes.append(chk.checkRefType(l.head.pos(), attribType(l.head, env)));
+        for (List<F3Expression> l = trees; l.nonEmpty(); l = l.tail) {
+            //argtypes.append(chk.checkRefType(l.head.pos(), attribType(l.head, env)));
+            argtypes.append(attribType(l.head, env));
+	}
         return argtypes.toList();
     }
 
@@ -1772,8 +1774,10 @@ public class F3Attr implements F3Visitor {
         }
 	
 	if (typeArgTypes != null) {
-	    owntype = new ClassType(owntype.getEnclosingType(), 
+	    owntype = new ClassType(owntype.getEnclosingType(),
 				    typeArgTypes, owntype.tsym);
+	    System.out.println("owntype="+owntype);
+	    tree.type = owntype;
 	}
 
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
@@ -3044,14 +3048,6 @@ public class F3Attr implements F3Visitor {
 
             // Having found the enclosing lint value, we can initialize the lint value for this class
             localEnv.info.lint = lintEnv.info.lint.augment(c.attributes_field, c.flags());
-	    List<Type> typeArgTypes = c.type.getTypeArguments();
-	    tree.typeArgTypes = typeArgTypes;
-	    if (tree.typeArgTypes != null) {
-		localEnv.info.tvars = tree.typeArgTypes;
-		for (Type t: tree.typeArgTypes) {
-		    localEnv.info.scope.enter(((TypeVar)t).tsym);
-		}
-	    }
 
             Lint prevLint = chk.setLint(localEnv.info.lint);
             JavaFileObject prev = log.useSource(c.sourcefile);
