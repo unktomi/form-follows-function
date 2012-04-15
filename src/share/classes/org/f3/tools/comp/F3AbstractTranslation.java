@@ -779,6 +779,7 @@ public abstract class F3AbstractTranslation
         }
 
         JCVariableDecl convertParam(F3Var param) {
+	    System.out.println("convert param: "+ param.name+" "+param.type);
             return Param(param.type, param.name);
         }
     }
@@ -1420,7 +1421,9 @@ public abstract class F3AbstractTranslation
             superCall = selectorIdName == names._super;
             ClassSymbol csym = currentClass().sym;
 
-            useInvoke = meth.type instanceof FunctionType;
+            useInvoke = (msym == null) || (meth.type instanceof FunctionType);
+	    System.err.println("meth.type="+meth.type.getClass());
+	    System.err.println("useInvoke="+useInvoke);
             selectorSym = selector != null? expressionSymbol(selector) : null;
             boolean namedSuperCall = isNamedSuperCall();
             boolean isMixinSuper = namedSuperCall && (selectorSym.flags_field & F3Flags.MIXIN) != 0;
@@ -1548,7 +1551,7 @@ public abstract class F3AbstractTranslation
         }
 
         Name methodName() {
-            return useInvoke? defs.invoke_F3ObjectMethodName : functionName(msym, superToStatic, callBound);
+            return useInvoke? defs.invoke_F3ObjectMethodName : (msym == null ? funcSym.name : functionName(msym, superToStatic, callBound));
         }
 
         @Override
@@ -1754,7 +1757,7 @@ public abstract class F3AbstractTranslation
             super(tree.pos());
             this.tree = tree;
             this.maintainContext = maintainContext;
-            this.mtype = (MethodType) tree.type;
+            this.mtype = (MethodType)tree.type.asMethodType();
             this.sym = (MethodSymbol) tree.sym;
             this.owner = sym.owner;
             this.name = tree.name;
@@ -1960,7 +1963,8 @@ public abstract class F3AbstractTranslation
             int kind = sym.kind;
             if (kind == Kinds.TYP) {
                 // This is a class name, replace it with the full name (no generics)
-                return makeType(types.erasure(sym.type), false);
+                //return makeType(types.erasure(sym.type), false); // hack!!
+                return makeType(sym.type, false);
             }
 
             // if this is an instance reference to an attribute or function, it needs to go the the "receiver$" arg,
@@ -3300,9 +3304,14 @@ public abstract class F3AbstractTranslation
             // takes care of most conversions - except in the case of a plain object cast.
             // It would be cleaner to move the makeTypeCast to translateAsValue,
             // but it's painful to get it right.  FIXME.
-            JCExpression ret = typeCast(clazz.type, expr.type, tExpr);
-            ret = convertNullability(diagPos, ret, expr, clazz.type);
-            return toResult(ret, clazz.type);
+	    Type t = clazz.type;
+	    if (t instanceof MethodType) { // hack !!!!
+		t = syms.makeFunctionType((MethodType)t);
+	    }
+	    System.err.println("type cast: "+ expr+": "+t+": "+expr.type);
+            JCExpression ret = typeCast(t, expr.type, tExpr);
+            ret = convertNullability(diagPos, ret, expr, t);
+            return toResult(ret, t);
         }
     }
 

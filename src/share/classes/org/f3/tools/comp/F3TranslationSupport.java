@@ -362,9 +362,20 @@ public abstract class F3TranslationSupport {
     }
 
     private JCExpression makeTypeTreeInner(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
+	if (t instanceof MethodType) { // hack!!!
+	    t = syms.makeFunctionType((MethodType)t);
+	} 
+	if (t instanceof ForAll) {
+	    ForAll fa = (ForAll)t;
+	    if (fa.qtype instanceof MethodType) {
+		Type ftyp = syms.makeFunctionType(fa.asMethodType());
+		t = new ForAll(ftyp.getTypeArguments(), ftyp);
+	    }
+	}
         while (t instanceof CapturedType)
             t = ((CapturedType) t).wildcard;
         switch (t.tag) {
+	    case TypeTags.FORALL:
             case TypeTags.CLASS: {
                 JCExpression texp = null;
                 boolean isMixin = types.isMixin(t.tsym);
@@ -379,14 +390,18 @@ public abstract class F3TranslationSupport {
                 }
 
                 // Type outer = t.getEnclosingType();
+		System.err.println("t="+t);
 		t = types.capture(t); // chris hack...
+		System.err.println("targs="+t.getTypeArguments());
                 if (!t.getTypeArguments().isEmpty()) {
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {
                         targs = targs.append(makeTypeTreeInner(diagPos, ta, makeIntf));
                     }
+		    System.err.println("texp="+texp+", targs="+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
                 }
+		System.err.println("texp="+texp);
                 return texp;
             }
             case TypeTags.BOT: { // it is the null type, punt and make it the Object type

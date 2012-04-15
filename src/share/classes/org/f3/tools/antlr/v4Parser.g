@@ -870,12 +870,9 @@ classDefinition [ F3Modifiers mods, int pos ]
 
             n1=name 
 
-        (OF ga1=genericArgument { 
-                exprbuff.append($ga1.value);
-            }
-            (COMMA ga2=genericArgument{
-                exprbuff.append($ga2.value);
-                })* )?    
+        (OF gas=genericParams {
+            exprbuff.appendList(gas);
+        })?
     
         supers  {ids = $supers.ids; }
             
@@ -1174,7 +1171,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
 }
 : FUNCTION  
 
-   (OF genericArgs = genericArguments)?
+   (OF genericArgs = genericParams)?
 
         (
             (
@@ -4568,13 +4565,9 @@ functionExpression
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
     :   (modifiers) => modifiers FUNCTION 
-            (OF ga1=genericArgument { 
-                exprbuff.append($ga1.value);
-            }
-            (COMMA ga2=genericArgument{
-                exprbuff.append($ga2.value);
-                })* )?    
-
+            (OF gas=genericParams { 
+                exprbuff.appendList($gas.value);
+            })?
     
         formalParameters    
             { 
@@ -5736,12 +5729,9 @@ typeFunction
 
     : FUNCTION 
 
-        (OF ga1=genericArgument { 
-                exprbuff.append($ga1.value);
-            }
-            (COMMA ga2=genericArgument{
-                exprbuff.append($ga2.value);
-                })* )?    
+        (OF gas1=genericParams { 
+                exprbuff.appendList($gas1.value);
+           })?
 
 
         LPAREN 
@@ -6066,16 +6056,7 @@ typeName
 
     : qualname      { errNodes.append($qualname.value); }
         (
-              (OF)=>OF ga1=genericArgument  { exprbuff.append($ga1.value); }
-                
-                   (COMMA)=>(
-                        COMMA
-                        ga2=genericArgument
-                    
-                                { exprbuff.append($ga2.value); }
-
-                    )* 
-              
+              (OF)=>OF gas=genericArguments  { if ($gas.value != null) exprbuff.appendList($gas.value); }
               {
                 // AST for generic
                 //
@@ -6154,6 +6135,43 @@ genericArguments0
    {$value = exprbuff.toList();}
 ;
 
+
+genericParams
+   returns [com.sun.tools.mjavac.util.List<F3Expression> value]
+   :
+   (LPAREN)=> (LPAREN (gas=genericParams0) RPAREN)
+   {
+       $value = $gas.value;
+   }
+   |
+   ga=genericParam
+   {
+       ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+       exprbuff.append($ga.value);
+       $value = exprbuff.toList();
+   }
+;
+
+genericParams0
+   returns [com.sun.tools.mjavac.util.List<F3Expression> value]
+@init {
+   ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+}
+   :
+   ga1=genericParam
+   {
+	exprbuff.append($ga1.value);
+   } 
+   (
+	COMMA ga2=genericParam
+	{
+            exprbuff.append($ga2.value);
+        }
+   )* 
+   {$value = exprbuff.toList();}
+;
+
+
 // When a programmer accidentally c=ecloses the type in two or more
 // sets of prens, we do't want to change the type, but just treat extra
 // parens as superfluous precedence, hence this rule.
@@ -6171,6 +6189,38 @@ typeparens
         { $value = $type.rtype; }
     ;
 
+genericParam
+
+    returns [F3Expression value]
+
+@init 
+{
+    BoundKind       bk      = BoundKind.UNBOUND;
+    F3Expression   texpr   = null; 
+}
+
+    : (t=typeName  { $value = $t.value; })  
+      | 
+       (CLASS n=identifier OF gas=genericParams { 
+        $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
+      })
+/*    
+    | QUES 
+        (  
+            ( 
+                  EXTENDS       { bk = BoundKind.EXTENDS;   }
+                | SUPER         { bk = BoundKind.SUPER;     }
+            ) 
+            typeName            { texpr = $typeName.value; }
+        )?
+        
+        {
+            // TODO: NYI - Remove or implement?
+        }
+*/
+    ;
+
+
 genericArgument
 
     returns [F3Expression value]
@@ -6181,7 +6231,7 @@ genericArgument
     F3Expression   texpr   = null; 
 }
 
-    : typeName  { $value = $typeName.value; } 
+    : type  { $value = $type.rtype; } 
 /*    
     | QUES 
         (  
