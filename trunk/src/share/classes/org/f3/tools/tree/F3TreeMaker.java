@@ -33,6 +33,7 @@ import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
 import com.sun.tools.mjavac.code.Type.ClassType;
 import com.sun.tools.mjavac.code.Type.TypeVar;
 import com.sun.tools.mjavac.util.*;
+import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
 import org.f3.tools.code.F3ClassSymbol;
 import org.f3.tools.code.F3Flags;
@@ -422,6 +423,10 @@ public class F3TreeMaker implements F3TreeFactory {
         if (t == null) {
             return null;
         }
+	t = types.erasure(t);
+	if (t instanceof Type.MethodType) {
+	    t = syms.makeFunctionType((Type.MethodType)t);
+	}
         F3Expression tp;
         switch (t.tag) {
             case FLOAT: 
@@ -466,7 +471,7 @@ public class F3TreeMaker implements F3TreeFactory {
                         : QualIdent(t.tsym);
                 break;
             default:
-                throw new AssertionError("unexpected type: " + t);
+                throw new AssertionError("unexpected type: " + t.getClass()+": "+t);
         }
         return tp.setType(t);
     }
@@ -858,6 +863,17 @@ public class F3TreeMaker implements F3TreeFactory {
         tree.pos = pos;
         return tree;
     }
+
+    public F3Type TypeCons(F3Expression className,Cardinality cardinality, List<F3Expression> args) {
+        return TypeCons(className, cardinality, args, null);
+    }
+
+    public F3Type TypeCons(F3Expression className,Cardinality cardinality, List<F3Expression> args, TypeSymbol sym) {
+        F3Type tree = new F3TypeCons(className, cardinality, args,sym);
+        tree.pos = pos;
+        return tree;
+    }
+
 
     public F3Type TypeFunctional(List<F3Type> params,
             F3Type restype,

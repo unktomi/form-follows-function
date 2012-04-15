@@ -1803,19 +1803,45 @@ public class F3Attr implements F3Visitor {
         // m.flags_field = chk.checkFlags(def.pos(), def.mods.flags, m, def);
         def.sym = m;
         finishFunctionDefinition(def, env);
-        result = tree.type = check(tree, syms.makeFunctionType((MethodType) def.type), VAL, pkind, pt, pSequenceness);
+	FunctionType ftype;
+	if (def.type instanceof MethodType) {
+	    ftype = syms.makeFunctionType(def.type.asMethodType());
+	} else {
+	    ForAll fa = (ForAll)def.type;
+	    ftype = syms.makeFunctionType(fa.getTypeArguments(), fa.asMethodType());
+	}
+	result = check(tree, ftype, VAL, pkind, pt, pSequenceness);
+	if (def.type instanceof ForAll) {
+	    /*
+	    result = tree.type = new ForAll(def.type.getTypeArguments(), ftype);
+	    System.out.println("result="+result);
+	    */
+	    result = capture(def.type);
+	}
+    }
+
+    public static class TypeCons extends TypeVar {
+	public List<Type> args;
+	public TypeCons(Name name, Symbol sym, Type bound) {
+	    super(name, sym, bound);
+	}
     }
 
     List<Type> makeTypeVars(List<F3Expression> types, Symbol sym) {
 	ListBuffer<Type> argbuf = new ListBuffer<Type>();
 	for (F3Expression exp: types) {
-	    if (exp instanceof F3TypeClass) {
-		F3TypeClass cls = (F3TypeClass)exp;
+	    if (exp instanceof F3TypeCons) {
+		F3TypeCons cons = (F3TypeCons)exp;
 		//System.err.println(cls.getTypeExpression().getClass());
 		//System.err.println(cls.getTypeExpression());
-		exp = cls.getClassName();
-	    }
-	    if (exp instanceof F3Ident) {
+		exp = cons.getClassName();
+		F3Ident ident = (F3Ident)exp;
+		TypeCons tv = new TypeCons(ident.getName(), sym, syms.botType);
+		tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
+		tv.bound = syms.objectType;
+		tv.args = makeTypeVars(cons.getArgs(), tv.tsym);
+		argbuf.append(tv);
+	    } else if (exp instanceof F3Ident) {
 		F3Ident ident = (F3Ident)exp;
 		TypeVar tv = new TypeVar(ident.getName(), sym, syms.botType);
 		tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
@@ -2011,8 +2037,13 @@ public class F3Attr implements F3Visitor {
 				   List.<Type>nil(),
 				   syms.methodClass);
 
-	    if (tree.typeArgTypes != null) {
-		m.type = new ForAll(tree.typeArgTypes, mtype);
+	    if (tree.typeArgTypes != null || env.info.tvars.nonEmpty()) {
+		ListBuffer<Type> lb = ListBuffer.lb();
+		if (tree.typeArgTypes != null) {
+		    lb.appendList(tree.typeArgTypes);
+		}
+		lb.appendList(env.info.tvars);
+		m.type = new ForAll(lb.toList(), mtype);
 	    } else {
 		m.type = mtype;
 	    }
@@ -2084,7 +2115,7 @@ public class F3Attr implements F3Visitor {
             localEnv.info.scope.leave();
 
             mtype.restype = returnType;
-            result = tree.type = mtype;
+            result = tree.type = m.type;
             
             // If we override any other methods, check that we do so properly.
             // JLS ???
@@ -2421,6 +2452,7 @@ public class F3Attr implements F3Visitor {
         searchParameterTypes(tree.meth, paramTypes);
 
         ListBuffer<Type> argtypebuffer = new ListBuffer<Type>();
+        ListBuffer<Type> typeargbuffer = new ListBuffer<Type>();
         int i = 0;
         for (List<F3Expression> l = tree.args; l.nonEmpty(); l = l.tail, i++) {
             Type argtype = paramTypes[i];
@@ -2434,7 +2466,9 @@ public class F3Attr implements F3Visitor {
         List<Type> argtypes = argtypebuffer.toList();
 
         typeargtypes = attribTypes(tree.typeargs, localEnv);
-        
+	typeargbuffer.appendList(typeargtypes);
+	//typeargbuffer.appendList(env.info.tvars);
+	typeargtypes = typeargbuffer.toList();
             // ... and attribute the method using as a prototype a methodtype
             // whose formal argument types is exactly the list of actual
             // arguments (this will also set the method symbol).
@@ -2475,11 +2509,13 @@ public class F3Attr implements F3Visitor {
                               restype.tsym);
             }
 
+
             if (mtype instanceof ErrorType) {
                 tree.type = mtype;
                 result = mtype;
-            }
-            else if (mtype instanceof MethodType || mtype instanceof FunctionType) {
+            } else if (mtype instanceof ForAll) { // hack!!!
+                result = check(tree, capture(restype), VAL, pkind, pt, pSequenceness);
+            } else if (mtype instanceof MethodType || mtype instanceof FunctionType) {
                 // If the "method" has a symbol, we've already checked for
                 // formal/actual consistency.  So doing it again would be
                 // wasteful - plus varargs hasn't been properly implemented.
@@ -3794,6 +3830,10 @@ public class F3Attr implements F3Visitor {
     }
 
     private void assertConvertible(F3Tree tree, Type actual, Type formal, Warner warn) {
+	System.err.println("actual="+actual+" formal="+formal);
+	if (actual == null || formal == null) { // hack!!
+	    return; 
+	}
         if (types.isConvertible(actual, formal, warn))
             return;
 

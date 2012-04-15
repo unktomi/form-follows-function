@@ -1717,6 +1717,7 @@ public class F3Check {
      */
     void checkOverride(F3Tree tree, MethodSymbol m) {
         ClassSymbol origin = (ClassSymbol) m.owner;
+	origin.complete();
         boolean doesOverride = false;
         if ((origin.flags() & ENUM) != 0 && names.finalize.equals(m.name)) {
             if (m.overrides(syms.enumFinalFinalize, origin, types, false)) {
@@ -1730,7 +1731,7 @@ public class F3Check {
                 Scope.Entry e = c.members().lookup(m.name);
                 while (e.scope != null) {
                     e.sym.complete();
-                    if (types.overrides(m, e.sym, origin, false)) {
+                    if (true || types.overrides(m, e.sym, origin, false)) { // hack
                         checkOverride(tree, m, (MethodSymbol)e.sym, origin);
                         doesOverride = !e.sym.type.getReturnType().isErroneous();
                     }

@@ -404,8 +404,7 @@ public class F3Types extends Types {
                 if (e.sym.kind == MTH) {
                         MethodSymbol m = (MethodSymbol) e.sym;
                         m.complete();
-                        if (//m.overrides(msym, origin, this, checkResult) &&
-			    overrides(m, msym, origin, checkResult) &&
+                        if ((true || m.overrides(msym, origin, this, checkResult)) && // hack
                             (m.flags() & SYNTHETIC) == 0)
                             return m;
                 }
@@ -432,6 +431,12 @@ public class F3Types extends Types {
         // assert types.asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
+	System.out.println("sym="+sym);
+	System.out.println("other="+other);
+	System.out.println("mt="+mt);
+	System.out.println("ot="+ot);
+	System.out.println("mt.targs="+mt.getTypeArguments());
+	System.out.println("ot.targs="+ot.getTypeArguments());
         return
             this.isSubSignature(mt, ot) &&
             (!checkResult || this.resultSubtype(mt, ot, Warner.noWarnings));
