@@ -276,7 +276,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
                     // script-level into class X
                     javaCodeMaker.makeScriptLevelAccess(cDecl.sym, false);
                     javaCodeMaker.makeInitStaticAttributesBlock(cDecl.sym, true, isLibrary, scriptVarInfos, initMap);
-                    javaCodeMaker.makeScript(sDefinitions.toList());
+                    javaCodeMaker.makeScript(cDecl.typeArgTypes, sDefinitions.toList());
                 }
             } else {
                 javaCodeMaker.makeInitStaticAttributesBlock(cDecl.sym, false, false, null, initMap);
@@ -334,7 +334,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
                     // script-level into class X
                     javaCodeMaker.makeScriptLevelAccess(cDecl.sym, false);
                     javaCodeMaker.makeInitStaticAttributesBlock(cDecl.sym, true, isLibrary, scriptVarInfos, null);
-                    javaCodeMaker.makeScript(sDefinitions.toList());
+                    javaCodeMaker.makeScript(cDecl.typeArgTypes, sDefinitions.toList());
                 }
             } else {
                 javaCodeMaker.makeInitStaticAttributesBlock(cDecl.sym, false, false, null, null);
@@ -4714,14 +4714,14 @@ however this is what we need */
         //
         // This method constructs a script class.
         //
-        public void makeScript(List<JCTree> definitions) {
+        public void makeScript(List<Type> typarams, List<JCTree> definitions) {
             long flags = Flags.PUBLIC | Flags.STATIC;
             JCModifiers classMods = m().Modifiers(flags);
             classMods = addAccessAnnotationModifiers(diagPos, flags, classMods);
             JCClassDecl script = m().ClassDef(
                     classMods,
                     scriptName,
-                    List.<JCTypeParameter>nil(),
+                    typarams != null ? m().TypeParams(typarams) : List.<JCTypeParameter>nil(),
                     makeType(syms.f3_BaseType),
                     List.of(makeType(syms.f3_ObjectType)),
                     definitions);

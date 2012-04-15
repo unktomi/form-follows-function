@@ -422,19 +422,21 @@ public class F3ToJava extends F3AbstractTranslation {
 
             JCModifiers classMods = make.at(diagPos).Modifiers(flags);
             classMods = addAccessAnnotationModifiers(diagPos, tree.mods.flags, classMods);
-            
+
             // make the Java class corresponding to this F3 class, and return it
+
             JCClassDecl res = m().ClassDef(
                     classMods,
                     tree.getName(),
 		    tree.typeArgTypes != null ? m().TypeParams(tree.typeArgTypes) : 
-							     List.<JCTypeParameter>nil(), 
+		                                       List.<JCTypeParameter>nil(), 
                     model.superType == null ? null : makeType(model.superType, false),
                     implementing,
                     translatedDefs.toList());
+
             res.sym = tree.sym;
             res.type = tree.type;
-        
+
             membersToSymbol(res);
 
             setReceiverContext(prevReceiverContext);

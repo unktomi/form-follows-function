@@ -949,6 +949,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    }
 	    env.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
+		System.err.println("entering type var: "+ t);
 		typaramScope.enter(((TypeVar)t).tsym);
 	    }
 	}

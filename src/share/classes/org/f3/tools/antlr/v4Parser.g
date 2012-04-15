@@ -4356,10 +4356,15 @@ primaryExpression
     // in case of error.
     //
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();   
+    com.sun.tools.mjavac.util.List<F3Expression> genericArgs = null;
 }
-    : qualname
+    : qualname ((OF)=>(OF gas=genericArguments) { genericArgs = $gas.value; })?
         {
-            $value = $qualname.value;
+            if (genericArgs != null) {
+                $value = F.at($qualname.value.pos).Ident($qualname.value, genericArgs);
+            } else {
+                $value = $qualname.value;
+            }
             errNodes.append($value);
         }
         (
