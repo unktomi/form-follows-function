@@ -423,20 +423,21 @@ public class F3Check {
             if (found == syms.unreachableType)
                 return found;
         if (found.tag == FORALL) {
-            if (req == syms.f3_UnspecifiedType || req == Type.noType)
+            if (false && (req == syms.f3_UnspecifiedType || req == Type.noType))
                 // Is this the right thing to do?  FIXME
                 return types.erasure(found);
             else {
 		req = types.boxedTypeOrType(req);
 		return instantiatePoly(pos, (ForAll)found, req, convertWarner(pos, found, req));
 	    }
-        } else if (isTypeVar(req)) { // hack
-	    req = types.erasure(req);
-	}
+        } //else if (isTypeVar(req)) {
+	    //	    System.err.println("req="+req);
+	    //	    System.err.println("found="+found.getClass()+": "+found);
+	//}
         if (req.tag == NONE || req == syms.f3_UnspecifiedType)
             return found;
         if (types.isSequence(req)) {    
-            pSequenceness = Sequenceness.REQUIRED;
+            //pSequenceness = Sequenceness.REQUIRED;
         }
         if (types.isSequence(found)) {
             if (pSequenceness == Sequenceness.DISALLOWED && ! types.isSameType(req, syms.objectType)) {
@@ -488,6 +489,16 @@ public class F3Check {
 
         Type foundElem = types.elementTypeOrType(found);
         Type reqElem = types.elementTypeOrType(req);
+
+	if (pSequenceness == Sequenceness.PERMITTED) {
+	    if (types.isSameType(foundElem, reqElem)) {
+		return realFound;
+	    }
+	} else {
+	    if (types.isSameType(found, req)) {
+		return realFound;
+	    }
+	}
 
         if (foundElem.tag <= DOUBLE && reqElem.tag <= DOUBLE) {
             if (foundElem.tag == VOID && reqElem.tag != VOID) {

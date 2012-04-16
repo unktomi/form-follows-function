@@ -103,6 +103,8 @@ public class F3Attr implements F3Visitor {
             new HashMap<F3VarSymbol, F3Var>();
     Map<MethodSymbol, F3FunctionDefinition> methodSymToTree =
             new HashMap<MethodSymbol, F3FunctionDefinition>();
+    Map<MethodSymbol, F3Env<F3AttrContext>> methodSymToEnv =
+            new HashMap<MethodSymbol, F3Env<F3AttrContext>>();
 
     public static F3Attr instance(Context context) {
         F3Attr instance = context.get(f3AttrKey);
@@ -593,14 +595,24 @@ public class F3Attr implements F3Visitor {
                 chk.checkAssignable(tree.pos(), v, null, env1.enclClass.sym.type, env, WriteKind.ASSIGN);
         }
         result = checkId(tree, env1.enclClass.sym.type, sym, env, pkind, pt, pSequenceness, varArgs);
+
 	if (tree.typeArgs != null) {
 	    if (result instanceof ClassType) {
 		List<Type> actuals = attribTypes(tree.typeArgs, env);
 		// fix me validate !!!
 		result = new ClassType(sym.type.getEnclosingType(), actuals, sym.type.tsym);
 		tree.type = result;
+	    } else if (result instanceof TypeCons) {
+		TypeCons cons = (TypeCons) result;
+		if (cons.args.size() != tree.typeArgs.size()) {
+		    // error
+		}
+	    } else {
+		// error
+		System.err.println("unhandled type args: "+tree.typeArgs+": "+result.getClass());
 	    }
 	}
+	//System.out.println("result of "+sym + " = "+result);
     }
 
     //@Override
@@ -668,13 +680,6 @@ public class F3Attr implements F3Visitor {
             sym = selectSym(tree, site, env, pt, pkind);
         }
         boolean varArgs = env.info.varArgs;
-	if (tree.typeArgs != null) {
-	    if (sym.kind == TYP) {
-		List<Type> tvars = makeTypeVars(tree.typeArgs, sym);
-	    } else {
-		// error
-	    }
-	} 
         tree.sym = sym;
 
         if (wasPrimitive && sym.isStatic() && tree.selected instanceof F3Ident)
@@ -754,6 +759,22 @@ public class F3Attr implements F3Visitor {
 
         env.info.selectSuper = selectSuperPrev;
         result = checkId(tree, site, sym, env, pkind, pt, pSequenceness, varArgs);
+	if (tree.typeArgs != null) {
+	    if (sym.kind == TYP) {
+		List<Type> tvars = makeTypeVars(tree.typeArgs, sym);
+		if (result instanceof ClassType) {
+		    List<Type> actuals = attribTypes(tree.typeArgs, env);
+		    // fix me validate !!!
+		    result = new ClassType(sym.type.getEnclosingType(), actuals, sym.type.tsym);
+		    tree.type = result;
+		} else {
+		    System.err.println("unhandled type args: "+tree.typeArgs+": "+result.getClass());
+		}
+	    } else {
+		// error
+	    }
+	} 
+	
         if (tree.sym.kind == MTH && result instanceof FunctionType)
             tree.sym = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);
         env.info.tvars = List.nil();
@@ -918,6 +939,7 @@ public class F3Attr implements F3Visitor {
         F3VarSymbol v = tree.sym;        
 	//	System.err.println("completing: "+ v.owner+ " of "+ tree);
 	v.owner.complete();
+
         // The info.lint field in the envs stored in enter.typeEnvs is deliberately uninitialized,
         // because the annotations were not available at the time the env was created. Therefore,
         // we look up the environment chain for the first enclosing environment for which the
@@ -993,6 +1015,7 @@ public class F3Attr implements F3Visitor {
         finally {
             chk.setLint(prevLint);
             log.useSource(prev);
+	    varSymToTree.remove(v);
         }
     }
 
@@ -1371,7 +1394,16 @@ public class F3Attr implements F3Visitor {
 
 
         forExprEnv.tree = tree; // before, we were not in loop!
-        attribTree(tree.getBodyExpression(), forExprEnv, VAL, pt.tag != ERROR ? pt : Type.noType, Sequenceness.PERMITTED);
+	Type bt = pt;
+	System.err.println(bt.getClass()+ ": "+bt);
+	bt = types.capture(bt);
+	System.err.println("capture: "+bt);
+	if (types.isSequence(bt)) {
+	    bt = types.elementType(bt);
+	} else {
+	    System.err.println("not a sequence: "+ bt);
+	}
+        attribTree(tree.getBodyExpression(), forExprEnv, VAL, bt.tag != ERROR ? bt : Type.noType, Sequenceness.PERMITTED);
         if (!tree.getBodyExpression().type.isErroneous() &&
                 tree.getBodyExpression().type.tag != VOID &&
                 (pt.tag == NONE ||
@@ -1938,11 +1970,21 @@ public class F3Attr implements F3Visitor {
 
     public void finishFunctionDefinition(F3FunctionDefinition tree, F3Env<F3AttrContext> env) {
         MethodSymbol m = tree.sym;
+
         F3FunctionValue opVal = tree.operation;
-        F3Env<F3AttrContext> localEnv = memberEnter.methodEnv(tree, env);
-	if (tree.typeArgTypes != null) {
+        F3Env<F3AttrContext> localEnv = methodSymToEnv.get(m);
+	if (localEnv == null) {
+	    localEnv = memberEnter.methodEnv(tree, env);	
+	    //System.err.println("finishing: "+ tree);
+	    methodSymToEnv.put(m, localEnv);
+	}
+	if (tree.typeArgs != null) {
+	    if (tree.typeArgTypes == null) {
+		tree.typeArgTypes = makeTypeVars(tree.typeArgs, m);
+	    }
 	    localEnv.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
+		//System.err.println("entering "+t+ " into "+ localEnv);
 		localEnv.info.scope.enter(((TypeVar)t).tsym);
 	    }
 	}
@@ -2026,7 +2068,7 @@ public class F3Attr implements F3Visitor {
                     returnType = mrtype;
             } else {
                 // If we made use of the parameter types to select a matching
-                // method, we could presumably get a non-ambiguoys return type.
+                // method, we could presumably get a non-ambiguous return type.
                 // But this is pretty close, in practice.
                 Type t = searchSupersForParamType (owner, m.name, paramCount, -1);
                 if (t == Type.noType)
@@ -2116,9 +2158,13 @@ public class F3Attr implements F3Visitor {
                     //log.error(tree.pos(), MsgSym.MESSAGE_F3_BOUND_FUNCTION_MUST_NOT_BE_VOID);
                 }                
             }
-            localEnv.info.scope.leave();
+	    if (localEnv.info.scope.next != null) { // hack!!
+		localEnv.info.scope.leave();
+	    }
+
 
             mtype.restype = returnType;
+	    //	    System.err.println("Return type: "+ m+ " = "+ returnType + " -- "+ m.type);
             result = tree.type = m.type;
             
             // If we override any other methods, check that we do so properly.
@@ -2157,6 +2203,8 @@ public class F3Attr implements F3Visitor {
         if (m.type != null && m.type instanceof MethodType) {
            ((MethodType)m.type).argtypes = paramTypes;
         }
+	methodSymToEnv.remove(m);
+	methodSymToTree.remove(m);
     }
 
     //@Override
@@ -3562,7 +3610,7 @@ public class F3Attr implements F3Visitor {
                     // because no type parameters were given.
                     // We recover generic outer type later in visitTypeApply.
                     if (owntype.tsym.type.getTypeArguments().nonEmpty()) {
-                        owntype = types.erasure(owntype);
+                        //owntype = types.erasure(owntype);
                     }
 
                     // (b) If the symbol's type is an inner class, then
@@ -3790,17 +3838,17 @@ public class F3Attr implements F3Visitor {
             if (warned && sym.type.tag == FORALL) {
                 String typeargs = "";
                 if (typeargtypes != null && typeargtypes.nonEmpty()) {
-                    typeargs = "<" + Type.toString(typeargtypes) + ">";
+                    typeargs = " of (" + Type.toString(typeargtypes) + ")";
                 }
                 chk.warnUnchecked(env.tree.pos(),
                                   MsgSym.MESSAGE_UNCHECKED_METH_INVOCATION_APPLIED,
                                   sym,
-
                                   sym.location(),
                                   typeargs,
                                   Type.toString(argtypes));
                 owntype = new MethodType(owntype.getParameterTypes(),
-                                         types.erasure(owntype.getReturnType()),
+                                         //types.erasure(owntype.getReturnType()),
+					 owntype.getReturnType(),
                                          owntype.getThrownTypes(),
                                          syms.methodClass);
 
@@ -3826,7 +3874,7 @@ public class F3Attr implements F3Visitor {
     }
 
     private void assertConvertible(F3Tree tree, Type actual, Type formal, Warner warn) {
-	System.err.println("actual="+actual+" formal="+formal);
+	//System.err.println("actual="+actual+" formal="+formal);
 	if (actual == null || formal == null) { // hack!!
 	    return; 
 	}

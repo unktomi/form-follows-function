@@ -569,13 +569,16 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         if ((tree.mods.flags & STATIC) != 0) {
             localEnv.info.staticLevel++;
         }
-
         return localEnv;
     }
 
     public F3Env<F3AttrContext> getMethodEnv(F3FunctionDefinition tree, F3Env<F3AttrContext> env) {
         F3Env<F3AttrContext> mEnv = methodEnv(tree, env);
-        mEnv.info.lint = mEnv.info.lint.augment(tree.sym.attributes_field, tree.sym.flags());
+        F3Env<F3AttrContext> lintEnv = mEnv;
+        while (lintEnv.info.lint == null) {
+            lintEnv = lintEnv.next;
+        }
+	lintEnv.info.lint = lintEnv.info.lint.augment(tree.sym.attributes_field, tree.sym.flags());
         for (List<F3Var> l = tree.getParams(); l.nonEmpty(); l = l.tail) {
             mEnv.info.scope.enterIfAbsent(l.head.sym);
         }
@@ -664,19 +667,35 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         if (chk.checkUnique(tree.pos(), v, env)) {
             chk.checkTransparentVar(tree.pos(), v, enclScope);
             enclScope.enter(v);
+	    //System.err.println("entering: "+ v + " in "+enclScope.owner);
         }
         v.pos = tree.pos;
     }
 
-    static class SymbolCompleter implements Completer {
 
-        F3Env<F3AttrContext> env;
-        F3Tree tree;
-        F3Attr attr;
+    public static class SymbolCompleter implements Completer {
+
+        public F3Env<F3AttrContext> env;
+        public F3Tree tree;
+        public F3Attr attr;
+	
+	F3Env<F3AttrContext> getEnvFromSymbol(Symbol m) { // hack to get method env; corresponding hack in F3Attr that sets it!!!
+	    if (m.owner instanceof MethodSymbol) {
+		F3Env<F3AttrContext> env = 
+		    attr.methodSymToEnv.get((MethodSymbol)m.owner);
+		//System.err.println("env for "+m+" of "+m.owner+" = "+ env);
+		if (env != null) {
+		    return env;
+		}
+	    } else {
+		//System.err.println("owner of "+m +" = "+ m.owner);
+	    }
+	    return this.env;
+	}
 
         public void complete(Symbol m) throws CompletionFailure {
             if (tree instanceof F3Var) {
-                attr.finishVar((F3Var) tree, env);
+                attr.finishVar((F3Var) tree, getEnvFromSymbol(m));
             } else if (attr.pt != Type.noType) {
                 // finishOperationDefinition makes use of the expected type pt.
                 // This is useful when coming from visitFunctionValue - i.e.
@@ -949,7 +968,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    }
 	    env.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
-		System.err.println("entering type var: "+ t);
+		//		System.err.println("entering type var: "+ t);
 		typaramScope.enter(((TypeVar)t).tsym);
 	    }
 	}
