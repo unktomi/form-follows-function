@@ -390,18 +390,18 @@ public abstract class F3TranslationSupport {
                 }
 
                 // Type outer = t.getEnclosingType();
-		System.err.println("t="+t);
+		//System.err.println("t="+t);
 		t = types.capture(t); // chris hack...
-		System.err.println("targs="+t.getTypeArguments());
+		//System.err.println("targs="+t.getTypeArguments());
                 if (!t.getTypeArguments().isEmpty()) {
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {
                         targs = targs.append(makeTypeTreeInner(diagPos, ta, makeIntf));
                     }
-		    System.err.println("texp="+texp+", targs="+targs);
+		    //		    System.err.println("texp="+texp+", targs="+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
                 }
-		System.err.println("texp="+texp);
+		//		System.err.println("texp="+texp);
                 return texp;
             }
             case TypeTags.BOT: { // it is the null type, punt and make it the Object type

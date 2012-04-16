@@ -854,6 +854,18 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
+    public F3Expression TypeApply(F3Expression expr, List<F3Expression> typeArgs) {
+	// hack fix me!!!
+	if (expr instanceof F3Ident) {
+	    ((F3Ident)expr).typeArgs = typeArgs;
+	} else if (expr instanceof F3Select) {
+	    ((F3Select)expr).typeArgs = typeArgs;
+	} else {
+	    System.err.println("unhandled case: type apply: " +expr);
+	}
+	return expr;
+    }
+
     public F3Type TypeVar(F3Expression className,Cardinality cardinality) {
         return TypeVar(className, cardinality, null);
     }

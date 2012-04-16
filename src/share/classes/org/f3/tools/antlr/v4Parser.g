@@ -3698,8 +3698,7 @@ typeExpression
 
 	    | OF ga=genericArguments
                 {
-		    $value = F.at(pos($OF)).InstanciateNew($relationalExpression.value, ga);
-		    ((F3Instanciate)$value).genericInstance = true;
+		    $value = F.at(pos($OF)).TypeApply($relationalExpression.value, ga);
 		    endPos($value);
 		}
 
@@ -3841,7 +3840,7 @@ additiveExpression
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 
 }
-    : m1=multiplicativeExpression   
+    : m1 = multiplicativeExpression   
         { 
             $value = $m1.value; 
             errNodes.append($m1.value);

@@ -779,7 +779,7 @@ public abstract class F3AbstractTranslation
         }
 
         JCVariableDecl convertParam(F3Var param) {
-	    System.out.println("convert param: "+ param.name+" "+param.type);
+	    //	    System.out.println("convert param: "+ param.name+" "+param.type);
             return Param(param.type, param.name);
         }
     }
@@ -1422,8 +1422,8 @@ public abstract class F3AbstractTranslation
             ClassSymbol csym = currentClass().sym;
 
             useInvoke = (msym == null) || (meth.type instanceof FunctionType);
-	    System.err.println("meth.type="+meth.type.getClass());
-	    System.err.println("useInvoke="+useInvoke);
+	    //System.err.println("meth.type="+meth.type.getClass());
+	    //System.err.println("useInvoke="+useInvoke);
             selectorSym = selector != null? expressionSymbol(selector) : null;
             boolean namedSuperCall = isNamedSuperCall();
             boolean isMixinSuper = namedSuperCall && (selectorSym.flags_field & F3Flags.MIXIN) != 0;
@@ -3308,7 +3308,7 @@ public abstract class F3AbstractTranslation
 	    if (t instanceof MethodType) { // hack !!!!
 		t = syms.makeFunctionType((MethodType)t);
 	    }
-	    System.err.println("type cast: "+ expr+": "+t+": "+expr.type);
+	    //System.err.println("type cast: "+ expr+": "+t+": "+expr.type);
             JCExpression ret = typeCast(t, expr.type, tExpr);
             ret = convertNullability(diagPos, ret, expr, t);
             return toResult(ret, t);

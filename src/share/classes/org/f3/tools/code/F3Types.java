@@ -494,6 +494,14 @@ public class F3Types extends Types {
         f3Classes = null;
     }
 
+    public boolean isSameType(Type a, Type b) {
+	if (a.tag == TYPEVAR && b.tag == TYPEVAR) {
+	    a = new ForAll(List.of(a), a);
+	    b = new ForAll(List.of(b), b);
+	}
+	return super.isSameType(a, b);
+    }
+
     public boolean isNumeric(Type type) {
         return (isSameType(type, syms.f3_ByteType) ||
                 isSameType(type, syms.f3_ShortType) ||
@@ -539,6 +547,15 @@ public class F3Types extends Types {
         }
 
         @Override
+        public Void visitForAll(ForAll t, StringBuilder buffer) {
+	    buffer.append("of (");
+	    buffer.append(t.getTypeArguments());
+	    buffer.append(") ");
+	    visit(t.qtype, buffer);
+	    return null;
+	}
+
+        @Override
         public Void visitMethodType(MethodType t, StringBuilder buffer) {
             if (t.getReturnType() == null) {
                 buffer.append("function(?):?");
@@ -573,7 +590,7 @@ public class F3Types extends Types {
                 buffer.append("Object");
             else if (isSequence(t)) {
                 if (t != syms.f3_EmptySequenceType) {
-                    visit(elementType(t), buffer);
+                   visit(elementType(t), buffer);
                 }
                 buffer.append("[]");
             }
@@ -583,8 +600,25 @@ public class F3Types extends Types {
             else if (t.isCompound()) {
                 visit(supertype(t), buffer);
             }
-            else
-                buffer.append(t.toString());
+            else {
+		List<Type> targs = t.getTypeArguments();
+		if (targs.nonEmpty()) { // hack
+		    String str = t.toString();
+		    int lt = str.indexOf("<");
+		    str = str.substring(0, lt);
+		    buffer.append(str);
+		    buffer.append(" of ");
+		    if (targs.size() > 1) {
+			buffer.append("(");
+		    }
+		    buffer.append(targs);
+		    if (targs.size() > 1) {
+			buffer.append(")");
+		    }
+		} else {
+		    buffer.append(t.toString());
+		}
+	    }
             return null;
         }
     };
