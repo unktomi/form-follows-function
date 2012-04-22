@@ -1143,7 +1143,13 @@ public abstract class F3AbstractTranslation
                 // If void is passed in then the temp will be ignored.
                 return trans;
             } else {
-                JCVariableDecl tmpVar = TmpVar("pse", types.normalize(varType), trans);
+		//System.err.println("trans="+trans);
+		//System.err.println("vartype="+varType);
+
+                JCVariableDecl tmpVar = TmpVar("pse", 
+					       //types.normalize(varType), 
+					       varType,
+					       trans);
                 addPreface(tmpVar);
                 return id(tmpVar);
             }
@@ -2877,7 +2883,7 @@ public abstract class F3AbstractTranslation
 		Name paramName = f3Var.getName();
 		Type paramType = f3Var.sym.type;
 		if (!types.isSequence(paramType)) { // hack !!!
-		    paramType = types.erasure(paramType);
+		    //paramType = types.erasure(paramType);
 		}
                 JCExpression arg;
                 if (argNum < 2)
@@ -2942,8 +2948,11 @@ public abstract class F3AbstractTranslation
             JCExpression receiverExpr = getReceiverOrThis(isScriptContext);
             int number = currentClass().addInvokeCase(translateInvokeCase(), isScriptContext);
             List<JCExpression> funcValueArgs = List.<JCExpression>of(receiverExpr, FuncNum(number));
-            
-            return m().NewClass(null, List.<JCExpression>nil(), funcClassType, funcValueArgs, null);
+	    //System.err.println("mtype="+mtype);
+            ListBuffer<JCExpression> typeParams = ListBuffer.lb();
+            JCExpression res = m().NewClass(null, typeParams.toList(), funcClassType, funcValueArgs, null);
+	    //System.err.println("res="+res);
+	    return res;
         }
     }
 

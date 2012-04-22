@@ -390,8 +390,9 @@ public abstract class F3TranslationSupport {
                 }
 
                 // Type outer = t.getEnclosingType();
+		//System.err.println("t="+t.getClass());
 		//System.err.println("t="+t);
-		t = types.capture(t); // chris hack...
+		//t = types.capture(t); // chris hack...
 		//System.err.println("targs="+t.getTypeArguments());
                 if (!t.getTypeArguments().isEmpty()) {
                     List<JCExpression> targs = List.nil();
@@ -401,7 +402,7 @@ public abstract class F3TranslationSupport {
 		    //		    System.err.println("texp="+texp+", targs="+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
                 }
-		//		System.err.println("texp="+texp);
+		//System.err.println("texp="+texp);
                 return texp;
             }
             case TypeTags.BOT: { // it is the null type, punt and make it the Object type
@@ -1740,7 +1741,7 @@ public abstract class F3TranslationSupport {
             if (isMixinVar(varSym)) {
                 return Call(getReceiver(), attributeGetVOFFName(varSym));
             } else {
-                JCExpression klass = makeType(varSym.owner.type, false);
+                JCExpression klass = makeType(types.erasure(varSym.owner.type), false);
                 
                 if (varSym.isStatic()) {
                     klass = Select(klass, f3make.ScriptSymbol(varSym.owner).name);

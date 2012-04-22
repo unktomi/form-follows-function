@@ -422,14 +422,14 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
               // valid or not is a matter for semantic checks to decide.
               //
               //
-                (modifiers (CLASS|FUNCTION))=> m1=modifiers { errNodes.append($m1.mods); }
+                (modifiers (ENUM|CLASS|FUNCTION))=> m1=modifiers { errNodes.append($m1.mods); }
                 (
                       c=classDefinition         [$m1.mods, $m1.pos]
                       
                             {   errNodes.append($c.value);
                                 $items.append($c.value); 
                             }
-                            
+                    | enumDefinition [$m1.mods, $m1.pos] {}
                     | f=functionDefinition      [$m1.mods, $m1.pos]
                     
 
@@ -824,6 +824,54 @@ catch [RecognitionException re] {
     recover(input, re);
     
  }
+
+enumDefinition [ F3Modifiers mods, int pos ]
+
+    returns [F3Tree value] // The class definition has its own F3Tree type, but we might need Erroneous here
+    
+    // Shift contexts for error accumualtion
+    //
+    scope errorStack;
+    
+@init { 
+
+    // Search for the document comment token. At this point LT(1)
+    // returns the first on channel token, so we can scan back from
+    // there to see if there was a document comment.
+    //
+    CommonToken  docComment         = getDocComment(input.LT(1));
+
+    // List of all members
+    //
+    ListBuffer<F3Tree> mems        = new ListBuffer<F3Tree>();
+    
+    // Super class ids
+    //
+    ListBuffer<F3Expression> ids   = null;
+    
+    // Used to accumulate a list of anything that we manage to build up in the parse
+    // in case of error.
+    //
+    $errorStack::ASTErrors          = mems;
+
+    // Accumulate any generic arguments
+    //
+    ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+}
+
+    : ENUM 
+
+
+    n1=name 
+
+    (OF gas=genericParams {
+            exprbuff.appendList(gas);
+    })?
+    LBRACE
+    name ((COMMA|SEMI)+ name)*
+    RBRACE
+    
+;
  
 // Class definition.
 // Parses a complete class definition and builds up the F3 AST
@@ -1171,7 +1219,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
 }
 : FUNCTION  
 
-   (OF genericArgs = genericParams)?
+   (FORALL genericArgs = genericParams)?
 
         (
             (
@@ -3696,11 +3744,12 @@ typeExpression
                     endPos($value);
                 }
 
-	    | OF ga=genericArguments
+	     | OF ga=genericArguments
                 {
 		    $value = F.at(pos($OF)).TypeApply($relationalExpression.value, ga);
 		    endPos($value);
-		}
+
+		 }
 
             | AS atn=type
             
@@ -4569,7 +4618,7 @@ functionExpression
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
     :   (modifiers) => modifiers FUNCTION 
-            (OF gas=genericParams { 
+            (FORALL gas=genericParams { 
                 exprbuff.appendList($gas.value);
             })?
     
@@ -5733,7 +5782,7 @@ typeFunction
 
     : FUNCTION 
 
-        (OF gas1=genericParams { 
+        (FORALL gas1=genericParams { 
                 exprbuff.appendList($gas1.value);
            })?
 
@@ -6911,7 +6960,7 @@ reservedWord
     : ABSTRACT      | AFTER     | AND           | AS
     | ASSERT        | AT        | ATTRIBUTE     | BEFORE
     | BIND          | BOUND     | BREAK         | CASCADE
-    | CATCH         | CLASS     | CONST         | CONTINUE      | DEF
+    | CATCH         | CLASS     | CONST         | CONTINUE      | DEF | ENUM | OF | FORALL
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR
     | FROM          | FUNCTION  | IF            | IMPORT

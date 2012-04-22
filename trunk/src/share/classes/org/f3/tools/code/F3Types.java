@@ -213,19 +213,35 @@ public class F3Types extends Types {
     
     @Override
     public boolean isSubtype(Type t, Type s, boolean capture) {
+	try {
+	    if (isSameType(t, s)) {
+		return true;
+	    }
+	} catch (AssertionError err) {
+	    // hack;
+	}
+	if (s == syms.f3_AnyType) {
+	    return true;
+	}
 	if (t.tag == METHOD) { // fix me !!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	}
-        boolean b = super.isSubtype(t, s, capture);
-        if (!b && s.tag == CLASS && s.isCompound()) {
-            for (Type s2 : interfaces(s).prepend(supertype(s))) {
-                if (!isSubtype(t, s2, capture))
-                    return false;
-            }
-            return true;
+	try {
+	    boolean b = super.isSubtype(t, s, capture);
+	    if (!b && s.tag == CLASS && s.isCompound()) {
+		for (Type s2 : interfaces(s).prepend(supertype(s))) {
+		    if (!isSubtype(t, s2, capture))
+			return false;
+		}
+		return true;
         }
-        else
-            return b;
+	    else
+		return b;
+	} catch (StackOverflowError exc) {
+	    System.err.println("circular: "+ t + " " + s);
+	    System.err.println("circular: "+ t.getClass() + " " + s.getClass());
+	    return false;
+	}
     }
 
     @Override
@@ -275,6 +291,9 @@ public class F3Types extends Types {
 
     @Override
     public boolean isConvertible (Type t, Type s, Warner warn) {
+	if (isSameType(t, s)) {
+	    return true;
+	}
         if (super.isConvertible(t, s, warn))
             return true;
         if (isSequence(t) && isArray(s))
@@ -678,7 +697,8 @@ public class F3Types extends Types {
 
             @Override
             public Type visitTypeVar(TypeVar t, Boolean preserveWildcards) {
-                return visit(t.getUpperBound(), preserveWildcards);
+                //return visit(t.getUpperBound(), preserveWildcards);
+		return t;
             }
 
             @Override
