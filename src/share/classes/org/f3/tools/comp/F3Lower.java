@@ -1125,7 +1125,14 @@ public class F3Lower implements F3Visitor {
              }
         }
         MethodSymbol msym = (MethodSymbol)F3TreeInfo.symbolFor(tree);
-        Type mtype = msym.type;
+        Type mtype = tree.type; // hack!!
+	if (mtype instanceof ForAll) { // hack fix me !!
+	    mtype = syms.makeFunctionType(mtype.getTypeArguments(),
+						   mtype.asMethodType());
+	} else if (mtype instanceof MethodType) {
+	    mtype = syms.makeFunctionType((Type.MethodType)mtype);
+	}
+	mtype = mtype.asMethodType();
         ListBuffer<F3Var> params = ListBuffer.lb();
         ListBuffer<F3Expression> args = ListBuffer.lb();
         MethodSymbol lambdaSym = new MethodSymbol(Flags.SYNTHETIC, defs.lambda_MethodName, mtype, currentClass);
@@ -1156,10 +1163,9 @@ public class F3Lower implements F3Visitor {
         F3Block body = (F3Block)m.at(tree.pos).Block(0, List.<F3Expression>nil(), call).setType(returnType);
         F3FunctionValue funcValue = m.at(tree.pos).FunctionValue(m.at(tree.pos).Modifiers(0L), preTrans.makeTypeTree(returnType),
                 params.toList(), body);
-	if (mtype instanceof ForAll) { // hack fix me !!
-	    mtype = ((ForAll)mtype).asMethodType();
-	}
-        funcValue.type = syms.makeFunctionType((Type.MethodType)mtype);
+	//System.err.println("lower: "+ tree);
+	//System.err.println("lower mtype="+mtype.getClass()+" "+mtype);
+	funcValue.type = mtype;
         funcValue.definition = new F3FunctionDefinition(
                 m.at(tree.pos).Modifiers(lambdaSym.flags_field),
                 lambdaSym.name,

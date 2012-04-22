@@ -747,6 +747,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 
             m.completer = completer;
             attr.methodSymToTree.put(m, tree);
+	    attr.methodSymToEnv.put(m, methodEnv(tree, env));
 
         } catch (NullPointerException e) {
             // Looks like we could not enter the function into any symbol
@@ -804,6 +805,9 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    for (Type t: tree.typeArgTypes) {
 		localEnv.info.scope.enter(((TypeVar)t).tsym);
 	    }
+	}
+	if (tree.typeArgTypes != null) {
+	    c.type = ct = new ClassType(ct.getEnclosingType(), tree.typeArgTypes, ct.tsym);
 	}
         boolean wasFirst = isFirst;
         isFirst = false;

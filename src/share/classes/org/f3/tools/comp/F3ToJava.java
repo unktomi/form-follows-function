@@ -424,7 +424,8 @@ public class F3ToJava extends F3AbstractTranslation {
             classMods = addAccessAnnotationModifiers(diagPos, tree.mods.flags, classMods);
 
             // make the Java class corresponding to this F3 class, and return it
-
+	    //System.err.println("model.supertype="+model.superType);
+	    //System.err.println("translated="+(model.superType == null ? null : makeType(model.superType, false)));
             JCClassDecl res = m().ClassDef(
                     classMods,
                     tree.getName(),
@@ -1102,8 +1103,8 @@ public class F3ToJava extends F3AbstractTranslation {
     @Override
     public void visitFunctionValue(F3FunctionValue tree) {
         F3FunctionDefinition def = tree.definition;
-	Type t = types.erasure(def.type);
-        result = new FunctionValueTranslator(make.Ident(defs.lambda_MethodName), def, tree.pos(), (MethodType) t, tree.type).doit();
+	Type t = tree.type;
+	result = new FunctionValueTranslator(make.Ident(defs.lambda_MethodName), def, tree.pos(), t.asMethodType(), tree.type).doit();
     }
 
     public void visitIdent(F3Ident tree) {

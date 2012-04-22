@@ -937,6 +937,7 @@ public class F3Compiler implements ClassReader.SourceCompleter {
         ListBuffer<F3Env<F3AttrContext>> results = lb();
         while (envs.nonEmpty())
             results.append(attribute(envs.next()));
+	System.err.println("attr done...");
         return results.toList();
     }
 

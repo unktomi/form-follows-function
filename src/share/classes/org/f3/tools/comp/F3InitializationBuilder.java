@@ -2906,11 +2906,11 @@ however this is what we need */
                     
                     if (!ai.isOverride()) {
                         if (ai instanceof MixinClassVarInfo) {
-                            init = updateVarBits(ai, Select(makeType(ai.getSymbol().owner.type, false), name));
+                            init = updateVarBits(ai, Select(makeType(types.erasure(ai.getSymbol().owner.type), false), name));
                             
                             if (init == null) {
                                 // TODO - fix when overridden twice.
-                                init = Select(makeType(ai.getSymbol().owner.type, false), name);
+                                init = Select(makeType(types.erasure(ai.getSymbol().owner.type), false), name);
                             }
                         } else {
                             init = initialVarBits(ai);
@@ -2918,7 +2918,7 @@ however this is what we need */
                         }
                     } else if (isMixinClass()) {
                         // TODO - fix when overridden twice.
-                        init = updateVarBits(ai, Select(makeType(ai.getSymbol().owner.type, false), name));
+                        init = updateVarBits(ai, Select(makeType(types.erasure(ai.getSymbol().owner.type), false), name));
                     } else {
                         // done in init.
                     }
@@ -2946,7 +2946,7 @@ however this is what we need */
             
                         // VCNT$ = super.VCNT$() + n  or VCNT$ = n;
                         JCExpression setVCNT$Expr = superClassSym == null ?  Int(varCount) :
-                                                                             PLUS(Call(makeType(superClassSym.type), defs.count_F3ObjectFieldName),
+			    PLUS(Call(makeType(types.erasure(superClassSym.type)), defs.count_F3ObjectFieldName),
                                                                                   Int(varCount));
                         Name countName = names.fromString("$count");
                         // final int $count = VCNT$ = super.VCNT$() + n;
@@ -4288,13 +4288,13 @@ however this is what we need */
             // Build up the argument list for the call.
             ListBuffer<JCExpression> args = ListBuffer.lb();
             // X.VCNT$()
-            args.append(Call(makeType(cSym.type), defs.count_F3ObjectFieldName));
+            args.append(Call(makeType(types.erasure(cSym.type)), defs.count_F3ObjectFieldName));
 
             // For each var declared in order (to make the switch tags align to the vars.)
             for (F3VarSymbol vSym : varMap.varList.toList()) {
                 // ..., X.VOFF$x, ...
 
-                args.append(Select(makeType(cSym.type), attributeOffsetName(vSym)));
+                args.append(Select(makeType(types.erasure(cSym.type)), attributeOffsetName(vSym)));
             }
 
             // F3Base.makeInitMap$(X.VCNT$(), X.VOFF$a, ...)
@@ -4408,7 +4408,7 @@ however this is what we need */
             // Determine the selector.
             JCExpression selector;
             if (toMixinClass) {
-                selector = makeType(cSym.type, false);
+                selector = makeType(types.erasure(cSym.type), false);
             } else if (toF3Base) {
                 selector = makeType(syms.f3_BaseType, false);
             } else {

@@ -508,6 +508,21 @@ public class F3TreeInfo {
         }
     }
 
+    public static List<F3Expression> typeArgs(F3Tree tree) {
+	List<F3Expression> result = null;
+        switch (tree.getF3Tag()) {
+        case IDENT:
+            result = ((F3Ident) tree).typeArgs;
+	    break;
+        case SELECT:
+            result = ((F3Select) tree).typeArgs;
+	    break;
+        default:
+        }
+	return result == null ? List.<F3Expression>nil() : result;
+    }
+
+
     public static Symbol symbolFor(F3Tree node) {
         if (node == null)
         {
