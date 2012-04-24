@@ -27,6 +27,7 @@ import java.util.BitSet;
 import java.util.Iterator;
 
 import org.f3.runtime.TypeInfo;
+import org.f3.runtime.Monad;
 
 /**
  * Sequences are immutable, homogeneous, ordered collections.  A sequence has an element type,
@@ -45,7 +46,7 @@ import org.f3.runtime.TypeInfo;
  *
  * @author Brian Goetz
  */
-public interface Sequence<T> extends Iterable<T> {
+public interface Sequence<T> extends Iterable<T>, Monad<T> {
     /** How large is this sequence?  */
     public int size();
 

@@ -388,7 +388,6 @@ public abstract class F3TranslationSupport {
                     }
                     texp = makeAccessExpression(diagPos, t.tsym, false);
                 }
-
                 // Type outer = t.getEnclosingType();
 		//System.err.println("t="+t.getClass());
 		//System.err.println("t="+t);
@@ -399,7 +398,7 @@ public abstract class F3TranslationSupport {
                     for (Type ta : t.getTypeArguments()) {
                         targs = targs.append(makeTypeTreeInner(diagPos, ta, makeIntf));
                     }
-		    //		    System.err.println("texp="+texp+", targs="+targs);
+		    //System.err.println("texp="+texp+", targs="+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
                 }
 		//System.err.println("texp="+texp);

@@ -696,41 +696,77 @@ public class F3Types extends Types {
         class TypeNormalizer extends SimpleVisitor<Type, Boolean> {
 
             @Override
-            public Type visitTypeVar(TypeVar t, Boolean preserveWildcards) {
-                //return visit(t.getUpperBound(), preserveWildcards);
+            public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) {
+		TypeVar t = t0;
+                Type upper = visit(t.getUpperBound(), preserveWildcards);
+		t = new TypeVar(t.tsym.name, t.tsym.owner, t.lower);
+		t.bound = upper;
+		//System.err.println("typevar: "+ t0 + " => "+ t);
 		return t;
             }
 
             @Override
             public Type visitCapturedType(CapturedType t, Boolean preserveWildcards) {
-                return visit(t.wildcard, preserveWildcards);
+                Type t1 = visit(t.wildcard, preserveWildcards);
+		//System.err.println("captured: "+ t + " => "+ t1);
+		return t1;
             }
 
             @Override
-            public Type visitWildcardType(WildcardType t, Boolean preserveWildcards) {
-                Type bound2 = visit(upperBound(t), preserveWildcards);
-                if (!preserveWildcards) {
-                    return bound2;
-                }
-                else if (t.kind != BoundKind.SUPER && !isSameType(bound2, upperBound(t))) {
-                    t = new WildcardType(bound2, BoundKind.EXTENDS, syms.boundClass);
-                }
+            public Type visitWildcardType(WildcardType t0, Boolean preserveWildcards) {
+		WildcardType t = t0;
+		Type vbound = t.bound;
+		Type vtype = t.type;
+		Type bound1 = null;
+		Type type1 = null;
+		if (vbound != null) {
+		    bound1 = visit(vbound, preserveWildcards);
+		} 
+		if (!preserveWildcards) {
+		    //System.err.println("wildcard: ! "+ t0 + " => "+ bound1);
+		    return bound1;
+		}
+		if (vtype != null) {
+		    type1 = visit(vtype, preserveWildcards);
+		} 
+		if (bound1 != vbound || vtype != type1) {
+		    if (type1 instanceof WildcardType) {
+			//t = (WildcardType)type1;
+			bound1 = ((WildcardType)type1).bound;
+			type1 = ((WildcardType)type1).type;
+		    } 
+		    if (bound1 != null) {
+			t = new WildcardType(type1, t.kind, t.tsym, (TypeVar)bound1);
+		    } else {
+			t = new WildcardType(type1, t.kind, t.tsym);
+		    }
+		}
+		//System.err.println("wildcard: "+ t0 + " => "+ t);
                 return t;
             }
 
             @Override
-            public Type visitClassType(ClassType t, Boolean preserveWildcards) {
+            public Type visitClassType(ClassType t0, Boolean preserveWildcards) {
+		ClassType t = t0;
                 List<Type> args2 = visit(t.getTypeArguments(), true);
                 Type encl2 = visit(t.getEnclosingType(), false);
-                if (!isF3Function(t) &&
-                        (!isSameTypes(args2, t.getTypeArguments()) ||
-                        !isSameType(encl2, t.getEnclosingType()))) {
-                    t = new ClassType(encl2, args2, t.tsym);
+		boolean isFunc = isF3Function(t);
+                if (!isFunc &&
+		    (!isSameTypes(args2, t.getTypeArguments()) ||
+		     !isSameType(encl2, t.getEnclosingType()))) {
+		    t = new ClassType(encl2, args2, t.tsym);
                 }
+		//System.err.println("clazz: "+ t0 + " => "+ t);
                 return t;
             }
 
             public Type visitType(Type t, Boolean preserveWildcards) {
+		Type t1 = visitType0(t, preserveWildcards);
+		//System.err.println("type "+t + " => " + t1);
+		return t1;
+	    }
+
+            public Type visitType0(Type t, Boolean preserveWildcards) {
                 if (t == syms.botType) {
                     return syms.objectType;
                 }
@@ -753,7 +789,8 @@ public class F3Types extends Types {
                 return buf.toList();
             }
         }
-        return new TypeNormalizer().visit(t, false);
+	//System.err.println("norm visit: "+ t.getClass() +" "+t);
+        return new TypeNormalizer().visit(t, true);
     }
 
     public String toSignature(Type t) {

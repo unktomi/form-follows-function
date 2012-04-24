@@ -685,11 +685,9 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		    attr.methodSymToEnv.get((MethodSymbol)m.owner);
 		//System.err.println("env for "+m+" of "+m.owner+" = "+ env);
 		if (env != null) {
-		    return env;
+		    //		    return env;
 		}
-	    } else {
-		//System.err.println("owner of "+m +" = "+ m.owner);
-	    }
+	    } 
 	    return this.env;
 	}
 
@@ -747,7 +745,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 
             m.completer = completer;
             attr.methodSymToTree.put(m, tree);
-	    attr.methodSymToEnv.put(m, methodEnv(tree, env));
+	    //attr.methodSymToEnv.put(m, methodEnv(tree, env));
 
         } catch (NullPointerException e) {
             // Looks like we could not enter the function into any symbol

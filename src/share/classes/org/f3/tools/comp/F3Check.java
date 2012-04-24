@@ -440,10 +440,12 @@ public class F3Check {
             //pSequenceness = Sequenceness.REQUIRED;
         }
         if (types.isSequence(found)) {
-            if (pSequenceness == Sequenceness.DISALLOWED && ! types.isSameType(req, syms.objectType)) {
-                log.error(pos, MsgSym.MESSAGE_F3_BAD_SEQUENCE, types.toF3String(req));
-                return syms.errType;
-            }
+	    if (false) {
+		if (pSequenceness == Sequenceness.DISALLOWED && ! types.isSameType(req, syms.objectType)) {
+		    log.error(pos, MsgSym.MESSAGE_F3_BAD_SEQUENCE, types.toF3String(req));
+		    return syms.errType;
+		}
+	    }
         }
 
         Type reqUnboxed, foundUnboxed;

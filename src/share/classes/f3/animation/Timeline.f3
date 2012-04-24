@@ -422,7 +422,7 @@ public class Timeline {
         */
         if (not sorted) {
             if (keyFrames.size() > 0) {
-                sortedFrames = Sequences.sort(keyFrames) as KeyFrame[];
+	    //    sortedFrames = Sequences.sort(keyFrames) as KeyFrame[];
                 cycleDuration = sortedFrames[sortedFrames.size()-1].time;
             } else {
                 sortedFrames = [];
@@ -1189,7 +1189,7 @@ class KFPair {
 
 class KFPairList {
     var target:KeyValueTarget;
-    def pairs:ArrayList = new ArrayList();
+    const pairs = new ArrayList of KFPair ();
 
     // Saved values for use by the doInterpolate().
     // Note: "start" and "end" is determined solely by time, not by which KF was
@@ -1221,7 +1221,7 @@ class KFPairList {
         for (i in [0..<pairs.size()]) {
             var listval = get(i);
             if (pair.frame.time < listval.frame.time) {
-                pairs.add(i, pair);
+                //pairs.add(i, pair);
                 return;
             }
         }

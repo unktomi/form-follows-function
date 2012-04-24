@@ -165,6 +165,7 @@ STATIC          : 'static';
 STEP            : 'step';
 SUPER           : 'super';
 THEN            : 'then';
+TO              : 'to';
 THIS            : 'this';
 THROW           : 'throw';
 TRIGGER         : 'trigger';
@@ -213,6 +214,7 @@ NOTEQ       : '!=';
 COLON       : ':';
 QUES        : '?';
 SUCHTHAT    : '=>';
+ARROW       : '->';
 SUBSUB      : '--';
 
 

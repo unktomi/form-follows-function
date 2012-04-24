@@ -314,7 +314,9 @@ public class F3Decompose implements F3Visitor {
             }
             if (paramTypes != null) {
                 paramTypes = paramTypes.tail;
-                paramType = paramTypes.head;
+		if (paramTypes != null) {
+		    paramType = paramTypes.head;
+		}
             }
         }
         return lb.toList();
@@ -672,6 +674,7 @@ public class F3Decompose implements F3Visitor {
 
     public void visitIdent(F3Ident tree) {
         F3Ident res = f3make.at(tree.pos).Ident(tree.getName());
+	res.type = tree.type;
         res.sym = tree.sym;
         result = res;
     }
