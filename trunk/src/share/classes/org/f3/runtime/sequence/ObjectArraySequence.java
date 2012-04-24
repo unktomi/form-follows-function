@@ -31,6 +31,8 @@ import java.util.NoSuchElementException;
 import org.f3.runtime.TypeInfo;
 import org.f3.runtime.Util;
 
+import org.f3.functions.*;
+
 public class ObjectArraySequence<T> extends ArraySequence<T> implements Sequence<T> {
 
     T[] array;
@@ -282,4 +284,5 @@ public class ObjectArraySequence<T> extends ArraySequence<T> implements Sequence
         for (int i = gapEnd-oldLength;  i < gapEnd;  i++)
             array[i] = null;
     }
+
 }

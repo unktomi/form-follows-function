@@ -26,7 +26,7 @@ import java.lang.Object;
 import java.lang.NullPointerException;
 import junit.framework.TestCase;
 import org.f3.runtime.SystemProperties;
-
+/*
 public class F3TestCase extends TestCase {
 
     init {
@@ -61,3 +61,4 @@ public class F3TestCase extends TestCase {
         assertEquals(message, exp, act);
     }
 }
+*/

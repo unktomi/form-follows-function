@@ -279,6 +279,8 @@ public class F3ClassReader extends ClassReader {
                 WildcardType wt = (WildcardType) type;
                 t = new WildcardType(translateType(wt.type), wt.kind,
                         translateTypeSymbol(wt.tsym));
+		//System.err.println("wt="+t);
+		//System.err.println("t="+t);
                 break;
             case CLASS:
                 TypeSymbol tsym = type.tsym;

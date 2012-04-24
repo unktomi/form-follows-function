@@ -96,9 +96,9 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
     }
     
     public F3Expression getMap(F3TreeMaker F, 
-                                   Name.Table names,
-                                   Type argType,
-                                   Type resultType) {
+                               Name.Table names,
+                               Type argType,
+                               Type resultType) {
 
         if (apply == null) {
             List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
@@ -112,12 +112,30 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
         return apply;
     }
 
+    F3Expression getMonadMap(F3TreeMaker F, 
+			     Name.Table names,
+			     Type argType,
+			     Type resultType,
+			     F3ForExpressionInClause clause,
+			     F3Expression bodyExpr) {
+        // we want to turn 
+        // bind for (x in xs) f(x)
+        // into
+        // xs.map(function(x) {f(x)})
+        // and 
+        // we want to turn 
+        // bind for (x in xs, y in ys where cond) f(x, y)
+        // into
+        // xs.flatmap(function(x) {ys.map(function(y) {if (cond) f(x, y) else null})})
+	return null;
+    }
+
     F3Expression getMap(F3TreeMaker F, 
-			Name.Table names,
-			Type argType,
-			Type resultType,
-			F3ForExpressionInClause clause,
-			F3Expression bodyExpr) {
+                        Name.Table names,
+                        Type argType,
+                        Type resultType,
+                        F3ForExpressionInClause clause,
+                        F3Expression bodyExpr) {
         // we want to turn 
         // bind for (x in xs) f(x)
         // into
@@ -182,9 +200,9 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
                                         toObject);
         // cast clause input seq to Object[]
         F3Expression objInp = F.at(bodyExpr.pos).TypeCast(makeType(F,
-                                                                       names,
-                                                                       "Object",
-                                                                       Cardinality.ANY), clause.getSequenceExpression());
+                                                                   names,
+                                                                   "Object",
+                                                                   Cardinality.ANY), clause.getSequenceExpression());
         ListBuffer<F3Expression> argsBuffer = ListBuffer.lb();
         argsBuffer.append(objInp);
         argsBuffer.append(objFun);
@@ -194,8 +212,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
         sel = F.at(bodyExpr.pos).Select(sel, names.fromString("Functions"), false);
         sel = F.at(bodyExpr.pos).Select(sel, names.fromString("map"), false);
         F3Expression apply = F.at(bodyExpr.pos).Apply(null, 
-                                                          sel,
-                                                          argsBuffer.toList());
+                                                      sel,
+                                                      argsBuffer.toList());
         // now add a cast to the actual result type
         apply = F.at(bodyExpr.pos).TypeCast(F.at(bodyExpr.pos).TypeClass(F.at(bodyExpr.pos).Type(resultType), Cardinality.ANY), apply);
 

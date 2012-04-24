@@ -81,10 +81,11 @@ public abstract class SimpleInterpolator extends Interpolator {
      *
      * @profile common
      */
+/*
     public function interpolate(startValue:Number, endValue:Number, fraction:Number):Number {
         return startValue + (endValue-startValue)*curve(fraction);
     }
-
+*/
     /**
      * This function takes an integer {@code startValue} and an integer {@code endValue} along with {@code faction}
      * between 0.0 and 1.0 and returns another integer value, between {@code startValue} and
@@ -94,7 +95,9 @@ public abstract class SimpleInterpolator extends Interpolator {
      *
      * @profile common
      */
+/*
     public function interpolate(startValue:Integer, endValue:Integer, fraction:Number):Integer {
         return (startValue + (endValue-startValue)*curve(fraction) + 0.5) as Integer;
     }
+*/
 }

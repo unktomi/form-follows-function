@@ -26,6 +26,8 @@ package org.f3.runtime.sequence;
 import java.util.*;
 
 import org.f3.runtime.TypeInfo;
+import org.f3.runtime.Monad;
+import org.f3.functions.*;
 
 $TEMPLATE_FROM$
 
@@ -224,4 +226,21 @@ $PREFIX:{T|
             formatter.format("%s", val);
         }
     }
+
+    public <Y> Monad<Y> map(Function1<Y, T> f) {
+	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
+	for (int i = 0; i < size(); i++) {
+	    result.add(f.invoke(get(i)));
+	}
+	return result;
+    }
+
+    public <Y> ObjectArraySequence<Y> flatmap(Function1<? extends Monad<Y>, T> f) {
+	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
+	for (int i = 0; i < size(); i++) {
+	    result.add((Sequence<Y>)f.invoke(get(i)));
+	}
+	return result;
+    }
+
 }

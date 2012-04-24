@@ -426,15 +426,25 @@ public class F3ToJava extends F3AbstractTranslation {
             // make the Java class corresponding to this F3 class, and return it
 	    //System.err.println("model.supertype="+model.superType);
 	    //System.err.println("translated="+(model.superType == null ? null : makeType(model.superType, false)));
+	    ListBuffer<Type> targs = new ListBuffer<Type>();
+	    if (tree.typeArgTypes != null) {
+		for (Type ta: tree.typeArgTypes) {
+		    if (ta.getTypeArguments().nonEmpty()) {
+			ta = types.erasure(ta);
+		    }
+		    targs.append(ta);
+		}
+	    }
+	    List<Type> targsList = targs.toList();
             JCClassDecl res = m().ClassDef(
                     classMods,
                     tree.getName(),
-		    tree.typeArgTypes != null ? m().TypeParams(tree.typeArgTypes) : 
+		    targsList.nonEmpty() ? m().TypeParams(targsList) : 
 		                                       List.<JCTypeParameter>nil(), 
                     model.superType == null ? null : makeType(model.superType, false),
                     implementing,
                     translatedDefs.toList());
-
+	    //System.err.println("classDecl="+res);
             res.sym = tree.sym;
             res.type = tree.type;
 

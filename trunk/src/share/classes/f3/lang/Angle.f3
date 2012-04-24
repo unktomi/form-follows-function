@@ -73,10 +73,12 @@ public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(ZERO);
 
 // internal static variables
 
-def DF = ThreadLocal {
-    override function initialValue():Object {
+def DF = ThreadLocal of DecimalFormat {
+/*
+    override function initialValue():DecimalFormat {
         return new DecimalFormat("#.######");
     }
+*/
 }
 
 /**
@@ -96,7 +98,7 @@ def DF = ThreadLocal {
  *
  * @profile common
  */
-public class Angle extends Comparable, Formattable {
+public class Angle extends Comparable of Object, Formattable {
 
     var value:Double;
     var unit:AngleUnit;

@@ -1143,13 +1143,14 @@ public abstract class F3AbstractTranslation
                 // If void is passed in then the temp will be ignored.
                 return trans;
             } else {
+		Type normType = types.normalize(varType);
+                JCVariableDecl tmpVar = TmpVar("pse", 
+					       normType,
+					       trans);
 		//System.err.println("trans="+trans);
 		//System.err.println("vartype="+varType);
-
-                JCVariableDecl tmpVar = TmpVar("pse", 
-					       //types.normalize(varType), 
-					       varType,
-					       trans);
+		//System.err.println("normtype="+normType);
+		//System.err.println("tmpVar="+tmpVar);
                 addPreface(tmpVar);
                 return id(tmpVar);
             }
@@ -2937,12 +2938,10 @@ public abstract class F3AbstractTranslation
             ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
             Type resType = types.boxedTypeOrType(mtype.restype);
             typeArgs.append(makeType(resType));
-            
             for (Type argType : mtype.argtypes) {
                 Type paramType = types.boxedTypeOrType(argType);
                 typeArgs.append(makeType(paramType));
             }
-            
             JCExpression funcClassType = m().TypeApply(functionTypeExpr, typeArgs.toList());
             
             JCExpression receiverExpr = getReceiverOrThis(isScriptContext);

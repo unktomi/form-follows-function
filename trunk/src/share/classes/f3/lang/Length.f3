@@ -104,10 +104,12 @@ def DPS_PER_CM:Double = DPS_PER_IN / 2.54;
 def DPS_PER_MM:Double = DPS_PER_CM / 10;
 def DPS_PER_PT:Double = DPS_PER_IN / 72;
 def DPS_PER_PC:Double = DPS_PER_IN / 6;
-def DF = ThreadLocal {
-    override function initialValue():Object {
+def DF = ThreadLocal of DecimalFormat {
+/*
+    override function initialValue():DecimalFormat {
         return new DecimalFormat("#.######");
     }
+*/
 }
 
 /**
@@ -155,7 +157,7 @@ def DF = ThreadLocal {
  * @author Stephen Chin <steveonjava@gmail.com>
  * @profile common
  */
-public class Length extends Comparable, Formattable {
+public class Length extends Comparable of Object, Formattable {
     var pixels:Double;
     var dps:Double;
     var sps:Double;

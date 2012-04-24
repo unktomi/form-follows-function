@@ -118,6 +118,10 @@ public class F3Lower implements F3Visitor {
 
     @SuppressWarnings("unchecked")
     <T extends F3Tree> T lower(T tree, Type pt, LowerMode mode) {
+	if (pt == null) {
+	    System.err.println("pt is null: "+ tree);
+	    Thread.currentThread().dumpStack();
+	}
         Type prevPt = this.pt;
         LowerMode prevMode = this.mode;
         try {
@@ -187,6 +191,8 @@ public class F3Lower implements F3Visitor {
 
     F3Expression convertTree(F3Expression tree, Type type) {
         if (type == Type.noType) return tree;
+	if (type == null) {
+	}
 	if (type.tag == TypeTags.TYPEVAR) {
 	    return tree;
 	}

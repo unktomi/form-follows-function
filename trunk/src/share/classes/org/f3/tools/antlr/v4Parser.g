@@ -5777,33 +5777,44 @@ typeFunction
     // Accumulate any generic arguments
     //
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+    com.sun.tools.mjavac.util.List<F3Type> argsList = null;
+    ListBuffer<F3Type> typeArgBuf = ListBuffer.<F3Type>lb();
 
 }
 
-    : FUNCTION 
+    : 
+
+    FUNCTION 
 
         (FORALL gas1=genericParams { 
                 exprbuff.appendList($gas1.value);
            })?
-
-
+    (
+      (FROM)=>(FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* ) RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) TO ret=type) { argsList = typeArgBuf.toList(); }
+    |
         LPAREN 
             typeArgList 
                 { 
-                    for (F3Tree t : $typeArgList.ptypes) { 
-                        errNodes.append(t); 
+		    argsList = $typeArgList.ptypes.toList();
+                    for (F3Tree tt : $typeArgList.ptypes) { 
+                        errNodes.append(tt); 
                     } 
                 }
         RPAREN 
         
+        (
             ret=typeReference   { errNodes.append($ret.rtype); }
-            
+        |
+            ARROW ret=type { errNodes.append($ret.rtype); }
+        )
+)            
             cardinality //TODO: this introduces an ambiguity: return cardinality vs type cardinality
-            
+
         {
-            $rtype = F.at(rPos).TypeFunctional($typeArgList.ptypes.toList(), $ret.rtype, $cardinality.ary);
+            $rtype = F.at(rPos).TypeFunctional(argsList, $ret.rtype, $cardinality.ary);
             endPos($rtype);
         }
+
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.
