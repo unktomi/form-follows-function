@@ -798,6 +798,7 @@ public class F3TreeMaker implements F3TreeFactory {
            long innerClassFlags = Flags.SYNTHETIC | Flags.FINAL; // to enable, change to Flags.FINAL
            
            klass = this.ClassDeclaration(this.Modifiers(innerClassFlags), cname, List.<F3Expression>of(ident), defsBuffer.toList());
+	   klass.typeArgs = F3TreeInfo.typeArgs(ident);
        }
 
        F3Instanciate tree = new F3Instanciate(kind, ident,
@@ -878,6 +879,12 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3Type TypeCons(F3Expression className,Cardinality cardinality, List<F3Expression> args) {
         return TypeCons(className, cardinality, args, null);
+    }
+
+    public F3Type TypeThis(Cardinality cardinality, List<F3Expression> args) {
+        F3Type tree = new F3TypeThis(Identifier("This"), cardinality, args, null);
+	tree.pos = pos;
+	return tree;
     }
 
     public F3Type TypeCons(F3Expression className,Cardinality cardinality, List<F3Expression> args, TypeSymbol sym) {

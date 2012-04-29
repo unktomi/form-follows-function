@@ -167,6 +167,7 @@ SUPER           : 'super';
 THEN            : 'then';
 TO              : 'to';
 THIS            : 'this';
+UPPER_THIS      : 'This';
 THROW           : 'throw';
 TRIGGER         : 'trigger';
 TRUE            : 'true';

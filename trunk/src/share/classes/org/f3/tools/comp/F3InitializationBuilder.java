@@ -3268,7 +3268,7 @@ however this is what we need */
                         boolean isFirstTier = analysis.isFirstTier() || superClassSym == null;
 
                         // Base for first function number.
-                        JCExpression countExpr = isFirstTier ? Int(0) : Call(makeType(superClassSym.type), defs.funcCount_F3ObjectFieldName);
+                        JCExpression countExpr = isFirstTier ? Int(0) : Call(makeType(types.erasure(superClassSym.type)), defs.funcCount_F3ObjectFieldName);
                             
                         // Create base numbers for mixins
                         if (mixinClasses != null && !mixinClasses.isEmpty()) {
@@ -3276,12 +3276,12 @@ however this is what we need */
                                 Name mixinName = classFCNT$Name(classSym);
                                 addStmt(Stmt(m().Assign(id(mixinName), countExpr)));
                                 countExpr = PLUS(id(mixinName),
-                                                 Call(makeType(classSym.type, false), defs.funcCount_F3ObjectFieldName));
+                                                 Call(makeType(types.erasure(classSym.type), false), defs.funcCount_F3ObjectFieldName));
                             }
                             // last mixin count
                         } else {
                             // super class count
-                            countExpr = isFirstTier ? Int(0) : Call(makeType(superClassSym.type), defs.funcCount_F3ObjectFieldName);
+                            countExpr = isFirstTier ? Int(0) : Call(makeType(types.erasure(superClassSym.type)), defs.funcCount_F3ObjectFieldName);
                         }
                         
                         // Set this classes count.
@@ -3702,7 +3702,7 @@ however this is what we need */
                         boolean isFirstTier = analysis.isFirstTier() || superClassSym == null;
 
                         // Base for first dependency number.
-                        JCExpression countExpr = isFirstTier ? Int(0) : Call(makeType(superClassSym.type), defs.depCount_F3ObjectFieldName);
+                        JCExpression countExpr = isFirstTier ? Int(0) : Call(makeType(types.erasure(superClassSym.type)), defs.depCount_F3ObjectFieldName);
                             
                         // Create base counts for mixins
                         if (mixinClasses != null && !mixinClasses.isEmpty()) {
@@ -3710,7 +3710,7 @@ however this is what we need */
                                 Name mixinName = classDCNT$Name(classSym);
                                 addStmt(Stmt(m().Assign(id(mixinName), countExpr)));
                                 countExpr = PLUS(id(mixinName),
-                                                 Call(makeType(classSym.type, false), defs.depCount_F3ObjectFieldName));
+                                                 Call(makeType(types.erasure(classSym.type), false), defs.depCount_F3ObjectFieldName));
                             }
                             
                             // last mixin + depCount
@@ -3718,7 +3718,7 @@ however this is what we need */
                         } else {
                             // super class + depCount
                             countExpr = isFirstTier ? Int(depCount) :
-                                                      PLUS(Call(makeType(superClassSym.type), defs.depCount_F3ObjectFieldName),
+				PLUS(Call(makeType(types.erasure(superClassSym.type)), defs.depCount_F3ObjectFieldName),
                                                            Int(depCount));
                         }
                         
@@ -4410,7 +4410,7 @@ however this is what we need */
             if (toMixinClass) {
                 selector = makeType(types.erasure(cSym.type), false);
             } else if (toF3Base) {
-                selector = makeType(syms.f3_BaseType, false);
+                selector = makeType(types.erasure(syms.f3_BaseType), false);
             } else {
                 selector = id(names._super);
             }
@@ -4653,7 +4653,7 @@ however this is what we need */
                 stmts = ListBuffer.lb();
                 
                 Name callName = functionName(methSym, !isStatic, isBound);
-                JCExpression receiver = makeType(methSym.owner.type, false);
+                JCExpression receiver = makeType(types.erasure(methSym.owner.type), false);
                 
                 if (methSym.getReturnType() == syms.voidType) {
                     stmts.append(CallStmt(receiver, callName, args));
@@ -4722,7 +4722,7 @@ however this is what we need */
                     classMods,
                     scriptName,
                     typarams != null ? m().TypeParams(typarams) : List.<JCTypeParameter>nil(),
-                    makeType(syms.f3_BaseType),
+                    makeType((syms.f3_BaseType)),
                     List.of(makeType(syms.f3_ObjectType)),
                     definitions);
             script.sym = scriptClassSymbol;

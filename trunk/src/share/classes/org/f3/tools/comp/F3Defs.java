@@ -929,8 +929,17 @@ public class F3Defs {
     public Name scriptLevelAccessField(Name.Table names, Symbol clazz) {
         return names.fromString(scriptLevelAccess_F3ObjectFieldString + mangleClassName(clazz, true) + "$");
     }
-    
+
     public String mangleClassName(Symbol clazz, boolean useFull) {
+	String r = mangleClassName0(clazz, useFull);
+	int angle = r.indexOf("<");
+	if (angle > 0) {
+	    return r.substring(0, angle);
+	}
+	return r;
+    }
+
+    String mangleClassName0(Symbol clazz, boolean useFull) {
         if (useFull) {
             return clazz.getQualifiedName().toString().replace('.', '$');
         } else {

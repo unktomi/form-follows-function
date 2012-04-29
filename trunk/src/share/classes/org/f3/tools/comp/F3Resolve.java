@@ -390,7 +390,6 @@ public class F3Resolve {
              l = l.tail) {
             if (l.head.tag == FORALL) instNeeded = true;
         }
-
         if (instNeeded)
             return
             infer.instantiateMethod(tvars,
