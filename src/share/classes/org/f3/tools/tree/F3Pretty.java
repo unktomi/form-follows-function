@@ -623,6 +623,16 @@ public class F3Pretty implements F3Visitor {
     public void visitIdent(F3Ident tree) {
         try {
             print(tree.getName());
+	    if (tree.typeArgs != null) {
+		print(" of ");
+		String sep = "(";
+		for (F3Expression arg: tree.typeArgs) {
+		    print(sep);
+		    printExpr(arg);
+		    sep = ", ";
+		}
+		print(")");
+	    }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -803,6 +813,16 @@ public class F3Pretty implements F3Visitor {
             pretty.printDocComment(tree);
             pretty.printExpr(tree.mods);
             pretty.print("function ");
+	    if (tree.typeArgs != null) {
+		pretty.print(" forall (");
+		String sep = "";
+		for (F3Expression t: tree.typeArgs) {
+		    pretty.print(sep);
+		    pretty.printExpr(t);
+		    sep = ", ";
+		}
+		pretty.print(") ");
+	    }
             pretty.print(tree.name);
             pretty.print("(");
             f3pretty.variableScope = SCOPE_PARAMS;
@@ -1109,17 +1129,17 @@ public class F3Pretty implements F3Visitor {
 
     public void visitTypeFunctional(F3TypeFunctional tree) {
         try {
-            print("(");
+            print("function from (");
             List<F3Type> params = tree.getParams();
             if (params.nonEmpty()) {
-                printTypeSpecifier(params.head);
+                printExpr(params.head);
                 for (List<F3Type> l = params.tail; l.nonEmpty(); l = l.tail) {
                     print(", ");
-                    printTypeSpecifier(l.head);
+                    printExpr(l.head);
                 }
             }
-            print(")");
-            printTypeSpecifier((F3Type)tree.getReturnType());
+            print(") to ");
+            printExpr((F3Type)tree.getReturnType());
             print(ary(tree));
         } catch (IOException e) {
             throw new UncheckedIOException(e);

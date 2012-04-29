@@ -565,7 +565,7 @@ public class F3ScriptClassBuilder {
     }
 
     private F3Type makeRunFunctionType() {
-         F3Expression rettree = f3make.Type(syms.objectType);
+	F3Expression rettree = f3make.Type(syms.objectType);
         rettree.type = syms.objectType;
         return f3make.TypeClass(rettree, F3Type.Cardinality.SINGLETON);
     }

@@ -580,16 +580,16 @@ public class F3Types extends Types {
                 buffer.append("function(?):?");
                 return null;
             }
-            buffer.append("function(");
+            buffer.append("function from (");
             List<Type> args = t.getParameterTypes();
             for (List<Type> l = args; l.nonEmpty(); l = l.tail) {
                 if (l != args) {
                     buffer.append(",");
                 }
-                buffer.append(":");
+                //buffer.append(":");
                 visit(l.head, buffer);
             }
-            buffer.append("):");
+            buffer.append(") to ");
             visit(t.getReturnType(), buffer);
             return null;
         }
@@ -623,6 +623,11 @@ public class F3Types extends Types {
 		List<Type> targs = t.getTypeArguments();
 		if (targs.nonEmpty()) { // hack
 		    String str = t.toString();
+		    if (str.startsWith("org.f3.functions.Function")) {
+			//Thread.currentThread().dumpStack();
+			visitMethodType(syms.makeFunctionType(targs).asMethodType(), buffer);
+			return null;
+		    } 
 		    int lt = str.indexOf("<");
 		    str = str.substring(0, lt);
 		    buffer.append(str);
@@ -777,7 +782,7 @@ public class F3Types extends Types {
                     return syms.objectType;
                 }
                 else {
-                    return t;
+                    return boxedTypeOrType(t);
                 }
             }
 
@@ -789,6 +794,9 @@ public class F3Types extends Types {
                 return buf.toList();
             }
         }
+	if (t.isPrimitive()) {
+	    return t;
+	}
 	//System.err.println("norm visit: "+ t.getClass() +" "+t);
         return new TypeNormalizer().visit(t, true);
     }

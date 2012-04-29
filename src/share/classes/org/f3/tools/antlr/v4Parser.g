@@ -422,7 +422,7 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
               // valid or not is a matter for semantic checks to decide.
               //
               //
-                (modifiers (ENUM|CLASS|FUNCTION))=> m1=modifiers { errNodes.append($m1.mods); }
+	(modifiers (ENUM|CLASS|FUNCTION))=> (m1=modifiers { errNodes.append($m1.mods); }
                 (
                       c=classDefinition         [$m1.mods, $m1.pos]
                       
@@ -437,7 +437,7 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
                                 errNodes.append($f.value);
                                 $items.append($f.value); 
                             }
-                )
+		 ))
                 
             | i=importDecl
             
@@ -6115,10 +6115,10 @@ typeName
     // Work out current position in the input stream
     //
     int rPos = pos();
-    
+    F3Expression name = null;
 }
 
-    : qualname      { errNodes.append($qualname.value); }
+: (UPPER_THIS | qualname      { errNodes.append($qualname.value); name = $qualname.value;} )
         (
               (OF)=>OF gas=genericArguments  { if ($gas.value != null) exprbuff.appendList($gas.value); }
               {
@@ -6130,13 +6130,20 @@ typeName
                 
                 // Ensure that the IDE plugin does not fall over
                 //
-                $value = F.at(rPos).Ident($qualname.value, exprbuff.toList());
+		  if (name != null) {
+		      $value = F.at(rPos).Ident(name, exprbuff.toList());
+		  } else 
+{		      $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, $gas.value);
+		  }
               }
               
             |   // Non generic
                 {
-                    
-                        $value = $qualname.value;
+		    if (name != null) {
+                        $value = name;
+		    } else {
+			$value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, com.sun.tools.mjavac.util.List.<F3Expression>nil());
+		    }
                 }
         )
     | LPAREN typeparens RPAREN  // Allows cardinality coherence, using nested paren parsing trick
