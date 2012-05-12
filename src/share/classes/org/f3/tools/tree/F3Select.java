@@ -43,6 +43,7 @@ public class F3Select extends F3Expression implements MemberSelectTree {
     public boolean nullCheck;
     public List<F3Expression> typeArgs;
     public F3Var boundSize;
+    public boolean staticRefOfNonStatic = false;
 
     protected F3Select(F3Expression selected, Name name, Symbol sym, boolean nullCheck) {
         this.selected = selected;

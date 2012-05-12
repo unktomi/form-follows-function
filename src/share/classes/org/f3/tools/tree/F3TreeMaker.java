@@ -41,6 +41,7 @@ import org.f3.tools.code.F3Symtab;
 import org.f3.tools.code.F3Types;
 import org.f3.tools.code.F3VarSymbol;
 import org.f3.tools.comp.F3Defs;
+import static org.f3.api.F3BindStatus.*;
 import static com.sun.tools.mjavac.code.Flags.*;
 import static com.sun.tools.mjavac.code.Kinds.*;
 import static com.sun.tools.mjavac.code.TypeTags.*;
@@ -661,7 +662,7 @@ public class F3TreeMaker implements F3TreeFactory {
     public F3FunctionValue FunctionValue(
             F3Modifiers mods,
             F3Type restype,
-             List<F3Var> params,
+	    List<F3Var> params,
             F3Block bodyExpression) {
         F3FunctionValue tree = new F3FunctionValue(
                 mods,
@@ -981,8 +982,13 @@ public class F3TreeMaker implements F3TreeFactory {
             F3BindStatus bindStatus,
             F3OnReplace onReplace,
             F3OnReplace onInvalidate) {
-            F3Var tree = new F3Var(name, type,
-               mods, initializer, bindStatus, onReplace, onInvalidate, null);
+	if (initializer instanceof F3Select) {
+	    if (bindStatus == UNIDIBIND) {
+		bindStatus = BIDIBIND;
+	    }
+	}
+	F3Var tree = new F3Var(name, type,
+			       mods, initializer, bindStatus, onReplace, onInvalidate, null);
         tree.pos = pos;
         return tree;
     }
