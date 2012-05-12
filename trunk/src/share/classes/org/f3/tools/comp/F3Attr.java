@@ -757,35 +757,38 @@ public class F3Attr implements F3Visitor {
                     chk.earlyRefError(tree.pos(), sym);
                 }
             }
-            else if (! sym.isStatic()) {
+            else if (!sym.isStatic()) {
 
 		// @TODO
 		// We can create a lambda for it, e.g
 		// String.toUpperCase
 		// translates to
 		// function(_:String):String {_.toUpperCase()}
-
-                for (F3Env<F3AttrContext> env1 = env; ; env1 = env1.outer) {
-                    if (env1 == null) {
-                        rs.access(rs.new StaticError(sym),
-                                tree.pos(), site, sym.name, true);
-                        break;
-                    }
-
-                    if (env1.tree instanceof F3FunctionDefinition &&
-                       ((F3FunctionDefinition)env1.tree).isStatic()) {
-                        rs.access(rs.new StaticError(sym),
-                                tree.pos(), site, sym.name, true);
-                        break;
-                    }
-                    
-                    if (env1.tree instanceof F3ClassDeclaration &&
+		
+		
+		if (false) {
+		    
+		    for (F3Env<F3AttrContext> env1 = env; ; env1 = env1.outer) {
+			if (env1 == null) {
+			    rs.access(rs.new StaticError(sym),
+				      tree.pos(), site, sym.name, true);
+			    break;
+			}
+			
+			if (env1.tree instanceof F3FunctionDefinition &&
+			    ((F3FunctionDefinition)env1.tree).isStatic()) {
+			    rs.access(rs.new StaticError(sym),
+				      tree.pos(), site, sym.name, true);
+			    break;
+			}
+			
+			if (env1.tree instanceof F3ClassDeclaration &&
                             types.isSubtype(((F3ClassDeclaration) env1.tree).sym.type, site)) {
-                        break;
-                    }
-                }
-            }
-
+			    break;
+			}
+		    }
+		}
+	    }
         }
 
         // If we are selecting an instance member via a `super', ...
@@ -812,6 +815,28 @@ public class F3Attr implements F3Visitor {
 	    actuals = attribTypeArgs(tree.typeArgs, env);
 	}
         result = checkId(tree, site, sym, env, actuals, pkind, pt, pSequenceness, varArgs);
+	if (isType(sitesym)) {
+	    if (!sym.isStatic()) {
+		tree.staticRefOfNonStatic = true;
+		MethodType mt = null;
+		if (result instanceof MethodType) {
+		    mt = (MethodType)result;
+		} else if (result instanceof FunctionType) {
+		    mt = ((FunctionType)result).asMethodType();
+		}
+		if (mt != null) {
+		    ListBuffer<Type> typarams = new ListBuffer<Type>();
+		    Type rtype = mt.restype;
+		    typarams.append(types.boxedTypeOrType(rtype));
+		    typarams.append(types.boxedTypeOrType(sitesym.type));
+		    for (List<Type> l = mt.argtypes; l.nonEmpty(); l = l.tail) {
+			typarams.append(types.boxedTypeOrType(l.head));
+		    }
+		    result = syms.makeFunctionType(typarams.toList());
+		}
+	    }
+	    System.err.println("type "+ tree+ " => "+ result);
+	}
 	tree.type = result;
         if (tree.sym.kind == MTH && result instanceof FunctionType)
             tree.sym = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);

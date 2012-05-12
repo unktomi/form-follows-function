@@ -42,9 +42,9 @@ public class F3FunctionValue extends F3Expression implements FunctionValueTree {
     public List<F3Expression> typeArgs;
 
     public F3FunctionValue(F3Modifiers mods,
-                               F3Type rettype,
-            List<F3Var> params,
-            F3Block bodyExpression) {
+			   F3Type rettype,
+			   List<F3Var> params,
+			   F3Block bodyExpression) {
         this.mods = mods;
         this.rettype = rettype;
         this.funParams = params;

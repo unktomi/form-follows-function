@@ -186,6 +186,7 @@ LBRACKET    : '[';
 LPAREN      : '(';
 POUND       : '#';
 PIPE        : '|';
+AMP         : '&';
 PLUSPLUS    : '++';
 DOTDOT      : '..';
 RPAREN      : ')';

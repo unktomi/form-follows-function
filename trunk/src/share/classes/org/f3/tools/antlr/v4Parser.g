@@ -5702,7 +5702,7 @@ type
     //
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 }
-    : typeName  { errNodes.append($typeName.value); }
+    : (typeName  { errNodes.append($typeName.value); }
     
         cardinality
     
@@ -5722,9 +5722,10 @@ type
             endPos($rtype);
         }
         
-    | typeFunction  { $rtype = $typeFunction.rtype; }
-    | typePrefixed  { $rtype = $typePrefixed.rtype; }
-    | typeStar      { $rtype = $typeStar.rtype;     }
+    | typeFunction  { $rtype = $typeFunction.rtype; } 
+    | typePrefixed  { $rtype = $typePrefixed.rtype; }) 
+    
+//    | typeStar      { $rtype = $typeStar.rtype;     }
     ;
 
 // Catch an error when looking for a type. The only error we can
@@ -5792,7 +5793,7 @@ typeFunction
     (
       (FROM)=>(FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* ) RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) TO ret=type) { argsList = typeArgBuf.toList(); }
     |
-        LPAREN 
+        (LPAREN 
             typeArgList 
                 { 
 		    argsList = $typeArgList.ptypes.toList();
@@ -5802,11 +5803,12 @@ typeFunction
                 }
         RPAREN 
         
-        (
+        
             ret=typeReference   { errNodes.append($ret.rtype); }
-        |
-            ARROW ret=type { errNodes.append($ret.rtype); }
-        )
+    //|
+        //ARROW ret=type { errNodes.append($ret.rtype); }
+    //( (a=type ARROW ret=type) { })+
+    )
 )            
             cardinality //TODO: this introduces an ambiguity: return cardinality vs type cardinality
 
@@ -6073,10 +6075,26 @@ cardinality
         {
             $ary = TypeTree.Cardinality.ANY;
         }
-        
-    |   {
+    |
+    (STAR STAR STAR)=>(STAR STAR STAR) // hack
+        {
             $ary = TypeTree.Cardinality.SINGLETON;
         }
+    |
+    (STAR STAR)=>(STAR STAR) // hack
+        {
+            $ary = TypeTree.Cardinality.SINGLETON;
+        }
+    |
+    (STAR)=>(STAR) // hack
+        {
+            $ary = TypeTree.Cardinality.SINGLETON;
+        }
+    |
+        {
+            $ary = TypeTree.Cardinality.SINGLETON;
+        }
+
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.

@@ -1160,6 +1160,14 @@ public class F3ToJava extends F3AbstractTranslation {
     }
 
     public void visitSelect(F3Select tree) {
+	Symbol sitesym = F3TreeInfo.symbol(tree.selected);
+	if (F3Attr.isType(sitesym)) {
+	    if (!tree.sym.isStatic()) {
+		// need to generate a lambda here...
+		//
+		System.err.println("not implemented: "+tree);
+	    }
+	}
 	result = new SelectTranslator(tree).doit();
     }
 

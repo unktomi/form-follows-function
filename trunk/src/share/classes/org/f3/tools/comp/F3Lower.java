@@ -1123,9 +1123,11 @@ public class F3Lower implements F3Visitor {
 
     F3Expression toFunctionValue(F3Expression tree, boolean isSelect) {
         boolean needsReceiverVar = isSelect;
+	boolean staticOfNonStatic = false;
         if (isSelect) {
              F3Select qualId = (F3Select)tree;
              Symbol selectedSym = F3TreeInfo.symbolFor(qualId.selected);
+	     staticOfNonStatic = qualId.staticRefOfNonStatic;
              if (selectedSym != null && selectedSym.kind == Kinds.TYP) {
                  needsReceiverVar = false;
              }
@@ -1159,6 +1161,14 @@ public class F3Lower implements F3Visitor {
         Type returnType = mtype.getReturnType();
         F3Var receiverVar = null;
         F3Expression meth = tree.setType(mtype);
+	if (staticOfNonStatic) {
+	    // we want to change 
+	    // String.toUpperCase($x$0) 
+	    // to
+	    // $x$0.toUpperCase();
+	    F3Ident p = (F3Ident)args.next();
+	    meth = m.at(tree.pos).Select(p, msym, false);
+	}
         if (needsReceiverVar) {
             F3Select qualId= (F3Select)tree;
             receiverVar = makeVar(tree.pos(), "rec", qualId.selected, qualId.selected.type);
@@ -1169,12 +1179,13 @@ public class F3Lower implements F3Visitor {
         F3Block body = (F3Block)m.at(tree.pos).Block(0, List.<F3Expression>nil(), call).setType(returnType);
         F3FunctionValue funcValue = m.at(tree.pos).FunctionValue(m.at(tree.pos).Modifiers(0L), preTrans.makeTypeTree(returnType),
                 params.toList(), body);
-	//System.err.println("lower: "+ tree);
-	//System.err.println("lower mtype="+mtype.getClass()+" "+mtype);
+	System.err.println("funcvalue="+funcValue);
+	System.err.println("lower: "+ tree);
+	System.err.println("lower mtype="+mtype.getClass()+" "+mtype);
 	funcValue.type = mtype;
         funcValue.definition = new F3FunctionDefinition(
                 m.at(tree.pos).Modifiers(lambdaSym.flags_field),
-                lambdaSym.name,
+		lambdaSym.name,
                 funcValue);
         funcValue.definition.pos = tree.pos;
         funcValue.definition.sym = lambdaSym;
