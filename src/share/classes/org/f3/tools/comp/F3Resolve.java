@@ -581,7 +581,7 @@ public class F3Resolve {
         Type mtype = expected;
         if (mtype instanceof FunctionType)
             mtype = mtype.asMethodType();
-        boolean checkArgs = mtype instanceof MethodType || mtype instanceof ForAll;
+        boolean checkArgs = mtype instanceof MethodType;// || mtype instanceof ForAll;
 
         while (env1 != null) {
             Scope sc = env1.info.scope;

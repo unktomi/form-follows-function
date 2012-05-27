@@ -795,7 +795,7 @@ public class F3Decompose implements F3Visitor {
         currentVarSymbol = (F3VarSymbol)tree.sym;
         if (tree.isExplicitlyBound())
             throw new AssertionError("bound parts should have been converted to overrides");
-        F3Expression expr = shred(tree.getExpression(), tree.sym.type);
+        F3Expression expr = shred(tree.getExpression(), tree.type);//		  tree.sym.type);
         F3ObjectLiteralPart res = f3make.at(tree.pos).ObjectLiteralPart(tree.name, expr, tree.getExplicitBindStatus());
         res.markBound(bindStatus);
         res.sym = tree.sym;
