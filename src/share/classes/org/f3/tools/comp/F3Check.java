@@ -57,6 +57,7 @@ import org.f3.tools.code.F3VarSymbol;
 import org.f3.tools.code.F3Flags;
 import org.f3.tools.code.F3Symtab;
 import org.f3.tools.code.F3Types;
+import org.f3.tools.code.FunctionType;
 import org.f3.tools.comp.F3Attr.Sequenceness;
 import org.f3.tools.tree.*;
 import org.f3.tools.tree.F3TreeScanner;
@@ -431,7 +432,7 @@ public class F3Check {
 		return instantiatePoly(pos, (ForAll)found, req, convertWarner(pos, found, req));
 	    }
         } //else if (isTypeVar(req)) {
-	    //	    System.err.println("req="+req);
+	//	    System.err.println("req="+req);
 	    //	    System.err.println("found="+found.getClass()+": "+found);
 	//}
         if (req.tag == NONE || req == syms.f3_UnspecifiedType)
@@ -463,6 +464,11 @@ public class F3Check {
         }
         else
             foundUnboxed = found;
+
+	//	if ((req instanceof FunctionType) && (found instanceof FunctionType)) {
+	    //System.err.println("req="+req);
+	    //	    System.err.println("found="+found);
+	//	}
 
         if (types.isAssignable(foundUnboxed, reqUnboxed, convertWarner(pos, found, req))) {
             Type foundElem = types.elementTypeOrType(found);

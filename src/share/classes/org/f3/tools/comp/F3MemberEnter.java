@@ -731,20 +731,23 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         // case is rare.
         //
         try {
-            Scope enclScope = F3Enter.enterScope(env);
-
-            MethodSymbol m = new MethodSymbol(0, tree.name, null, enclScope.owner);
-            m.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, m, tree);
-            tree.sym = m;
-            enclScope.enter(m);
-
-            SymbolCompleter completer = new SymbolCompleter();
-            completer.env = env;
-            completer.tree = tree;
-            completer.attr = attr;
-
-            m.completer = completer;
-            attr.methodSymToTree.put(m, tree);
+	    if (tree.sym == null) {
+		//System.err.println("memberEnter.visitFunc: "+ tree);
+		Scope enclScope = F3Enter.enterScope(env);
+		
+		MethodSymbol m = new MethodSymbol(0, tree.name, null, enclScope.owner);
+		m.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, m, tree);
+		tree.sym = m;
+		enclScope.enter(m);
+		
+		SymbolCompleter completer = new SymbolCompleter();
+		completer.env = env;
+		completer.tree = tree;
+		completer.attr = attr;
+		
+		m.completer = completer;
+		attr.methodSymToTree.put(m, tree);
+	    }
 	    //attr.methodSymToEnv.put(m, methodEnv(tree, env));
 
         } catch (NullPointerException e) {
@@ -843,7 +846,6 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                 ListBuffer<F3Expression> mixing = ListBuffer.<F3Expression>lb();
                 for (F3Expression stype : tree.getSupertypes()) {
                     Type st = attr.attribType(stype, localEnv);
-
                     if (st.isInterface()) {
                         implementing.append(stype);
                     } else {
@@ -857,7 +859,6 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                             supertype = extending.isEmpty() ? st : null;
                             extending.append(stype);
                         }
-
                         interfaces.append(st);
                     }
                 }

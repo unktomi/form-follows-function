@@ -57,6 +57,7 @@ public class F3Enter extends F3TreeScanner {
     private final Lint lint;
     private final JavaFileManager fileManager;
     private final F3Types types;
+    private final F3Attr attr;
     private F3ScriptClassBuilder f3ModuleBuilder;
     
     public static F3Enter instance(Context context) {
@@ -74,6 +75,7 @@ public class F3Enter extends F3TreeScanner {
         reader = ClassReader.instance(context);
         f3make = (F3TreeMaker) F3TreeMaker.instance(context);
         syms = (F3Symtab) F3Symtab.instance(context);
+	attr = F3Attr.instance(context);
         chk = F3Check.instance(context);
         memberEnter = F3MemberEnter.instance(context);
         annotate = F3Annotate.instance(context);
@@ -305,6 +307,18 @@ public class F3Enter extends F3TreeScanner {
 
     public ListBuffer<Scope> scriptScopes = new ListBuffer<Scope>();
 
+    //@Override
+    public void visitFunctionDefinition(F3FunctionDefinition tree) {
+	if (tree.typeArgs != null) {
+	    for (Type t: attr.makeTypeVars(tree.typeArgs, 
+					   env.info.scope.owner)) {
+		//System.err.println("entering "+t+ " into "+ env);
+		env.info.scope.enter(((TypeVar)t).tsym);
+	    }
+	}
+	super.visitFunctionDefinition(tree);
+    }
+
     @Override
     public void visitClassDeclaration(F3ClassDeclaration tree) {
         Symbol owner = env.info.scope.owner;
@@ -338,6 +352,17 @@ public class F3Enter extends F3TreeScanner {
             }
         }
         tree.sym = c;
+	if (tree.typeArgs != null) {
+	    if (tree.typeArgTypes == null) {
+		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, 
+						      env.info.scope.owner);
+	    }
+	    for (Type t: tree.typeArgTypes) {
+		//System.err.println("entering "+t+ " into "+ localEnv);
+
+		env.info.scope.enterIfAbsent(((TypeVar)t).tsym);
+	    }
+	}
 
         // Enter class into `compiled' table and enclosing scope.
         if (chk.compiled.get(c.flatname) != null) {
@@ -395,7 +420,7 @@ public class F3Enter extends F3TreeScanner {
      *	@param trees	  The list of trees to be processed.
      */
     public void main(List<F3Script> trees) {
-        complete(trees, null);
+	complete(trees, null);
     }
 
     /** Main method: enter one class from a list of toplevel trees and

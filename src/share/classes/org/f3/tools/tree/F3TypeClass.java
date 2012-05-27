@@ -72,7 +72,7 @@ public class F3TypeClass extends F3Type implements TypeClassTree {
         return v.visitTypeClass(this, d);
     }
     
-    ClassSymbol getSymbol() {
+    public ClassSymbol getSymbol() {
         return sym;
     }
 }

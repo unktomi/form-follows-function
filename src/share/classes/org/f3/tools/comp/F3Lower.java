@@ -1179,9 +1179,9 @@ public class F3Lower implements F3Visitor {
         F3Block body = (F3Block)m.at(tree.pos).Block(0, List.<F3Expression>nil(), call).setType(returnType);
         F3FunctionValue funcValue = m.at(tree.pos).FunctionValue(m.at(tree.pos).Modifiers(0L), preTrans.makeTypeTree(returnType),
                 params.toList(), body);
-	System.err.println("funcvalue="+funcValue);
-	System.err.println("lower: "+ tree);
-	System.err.println("lower mtype="+mtype.getClass()+" "+mtype);
+	//	System.err.println("funcvalue="+funcValue);
+	//	System.err.println("lower: "+ tree);
+	//	System.err.println("lower mtype="+mtype.getClass()+" "+mtype);
 	funcValue.type = mtype;
         funcValue.definition = new F3FunctionDefinition(
                 m.at(tree.pos).Modifiers(lambdaSym.flags_field),

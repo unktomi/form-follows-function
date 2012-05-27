@@ -517,7 +517,13 @@ public class F3Types extends Types {
 	if (a.tag == TYPEVAR && b.tag == TYPEVAR) {
 	    a = new ForAll(List.of(a), a);
 	    b = new ForAll(List.of(b), b);
-	}
+	}/* else if ((a instanceof FunctionType) &&
+	    (b instanceof FunctionType))  {
+	    a = new ForAll(a.getTypeArguments(), a);
+	    b = new ForAll(b.getTypeArguments(), b);
+	    System.err.println("a="+a);
+	    System.err.println("b="+b);
+        }*/
 	return super.isSameType(a, b);
     }
 
@@ -567,11 +573,19 @@ public class F3Types extends Types {
 
         @Override
         public Void visitForAll(ForAll t, StringBuilder buffer) {
-	    buffer.append("of (");
+	    buffer.append("of ");
+	    buffer.append("(");
 	    buffer.append(t.getTypeArguments());
-	    buffer.append(") ");
+	    buffer.append(")");
+	    buffer.append(" ");
 	    visit(t.qtype, buffer);
 	    return null;
+	}
+
+	boolean needsParen(List<Type> args) {
+	    return args.size() > 1 ||
+	    args.size() == 1 && ((args.head instanceof FunctionType) ||
+				 (args.head.getTypeArguments().size() > 0));
 	}
 
         @Override
@@ -580,8 +594,11 @@ public class F3Types extends Types {
                 buffer.append("function(?):?");
                 return null;
             }
-            buffer.append("function from (");
+            buffer.append("function from ");
             List<Type> args = t.getParameterTypes();
+	    if (needsParen(args)) {
+		buffer.append("(");
+	    }
             for (List<Type> l = args; l.nonEmpty(); l = l.tail) {
                 if (l != args) {
                     buffer.append(",");
@@ -589,7 +606,10 @@ public class F3Types extends Types {
                 //buffer.append(":");
                 visit(l.head, buffer);
             }
-            buffer.append(") to ");
+	    if (needsParen(args)) {
+		buffer.append(")");
+	    }
+            buffer.append(" to ");
             visit(t.getReturnType(), buffer);
             return null;
         }

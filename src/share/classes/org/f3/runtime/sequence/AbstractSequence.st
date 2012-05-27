@@ -227,15 +227,15 @@ $PREFIX:{T|
         }
     }
 
-    public <Y> Functor<Y> map(Function1<? extends Y, ? super T> f) {
+    public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
 	for (int i = 0; i < size(); i++) {
 	    result.add(f.invoke(get(i)));
 	}
 	return result;
     }
-
-    public <Y> Monad<Y> flatmap(Function1<? extends Monad<Y>, ? super T> f) {
+    @Override
+    public <Y> Monad<Sequence,Y> flatmap(Function1<? extends Monad<Sequence, Y>, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
 	for (int i = 0; i < size(); i++) {
 	    final Sequence<Y> ys = (Sequence<Y>)f.invoke(get(i));

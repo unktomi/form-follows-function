@@ -787,14 +787,14 @@ modifierFlag
 
     returns [long flag]
     
-    : ABSTRACT          { $flag = Flags.ABSTRACT;               }
+    : ABSTRACT          { $flag = Flags.ABSTRACT;           }
     | BOUND             { $flag = F3Flags.BOUND;            }
     | DEFAULT           { $flag = F3Flags.DEFAULT;          }
     | MIXIN             { $flag = F3Flags.MIXIN;            }
     | OVERRIDE          { $flag = F3Flags.OVERRIDE;         }
     | PACKAGE           { $flag = F3Flags.PACKAGE_ACCESS;   }
-    | PROTECTED         { $flag = Flags.PROTECTED;              }
-    | PUBLIC            { $flag = Flags.PUBLIC;                 }
+    | PROTECTED         { $flag = Flags.PROTECTED;          }
+    | PUBLIC            { $flag = Flags.PUBLIC;             }
     | PUBLIC_READ       { $flag = F3Flags.PUBLIC_READ;      }
     | PUBLIC_INIT       { $flag = F3Flags.PUBLIC_INIT;      }
         
@@ -868,7 +868,7 @@ enumDefinition [ F3Modifiers mods, int pos ]
             exprbuff.appendList(gas);
     })?
     LBRACE
-    name ((COMMA|SEMI)+ name)*
+    name (OF type)? ((COMMA|SEMI)+ name (OF TYPE)?)*
     RBRACE
     
 ;
@@ -1219,11 +1219,11 @@ functionDefinition [ F3Modifiers mods, int pos ]
 }
 : FUNCTION  
 
-   (FORALL genericArgs = genericParams)?
+   ((OF | FORALL) genericArgs = genericParams)?
 
         (
             (
-                  { isOverride }?=> n2=nameAll
+                  { false }?=> n2=nameAll
                     {
                         if ($n2.inError || $n2.value == null) {
                         
@@ -1582,6 +1582,19 @@ variableDeclaration [ F3Modifiers mods, int pos ]
             // Note that syntactically, we allow all label types at all levels and must throw
             // out any invalid ones at the semantic checking phase
             //
+            if ($variableLabel.modifiers == F3Flags.PUBLIC_INIT) { 
+                if (($mods.flags & Flags.PUBLIC) != 0) {
+                    $mods.flags &= ~Flags.PUBLIC;
+                } else {
+                    //const
+                }
+            } else if ($variableLabel.modifiers == F3Flags.PUBLIC_READ) { 
+                if (($mods.flags & Flags.PUBLIC) != 0) {
+                    $mods.flags &= ~Flags.PUBLIC;
+                } else {
+                    //const var
+                }
+            }
             $mods.flags |= $variableLabel.modifiers;
             
             // Construct the variable F3Tree, unless it was in error
@@ -2305,7 +2318,7 @@ variableLabel
     
     : VAR           { $modifiers = 0L; $pos = pos($VAR); }
     | DEF           { $modifiers = F3Flags.IS_DEF; $pos = pos($DEF); }
-    | CONST         { $modifiers = F3Flags.IS_DEF; $pos = pos($CONST); }
+    | CONST         { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } (VAR {$modifiers = F3Flags.PUBLIC_READ;})?
     | ATTRIBUTE     {   $modifiers = 0L; 
                         $pos = pos($ATTRIBUTE); 
                         F3Erroneous err = F.at($pos).Erroneous();
@@ -4618,7 +4631,7 @@ functionExpression
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
     :   (modifiers) => modifiers FUNCTION 
-            (FORALL gas=genericParams { 
+            ((OF | FORALL) gas=genericParams { 
                 exprbuff.appendList($gas.value);
             })?
     
@@ -5787,7 +5800,7 @@ typeFunction
 
     FUNCTION 
 
-        (FORALL gas1=genericParams { 
+        ((OF | FORALL) gas1=genericParams { 
                 exprbuff.appendList($gas1.value);
            })?
     (
