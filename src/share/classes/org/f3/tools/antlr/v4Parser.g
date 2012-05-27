@@ -795,7 +795,7 @@ modifierFlag
     | PACKAGE           { $flag = F3Flags.PACKAGE_ACCESS;   }
     | PROTECTED         { $flag = Flags.PROTECTED;          }
     | PUBLIC            { $flag = Flags.PUBLIC;             }
-    | PUBLIC_READ       { $flag = F3Flags.PUBLIC_READ;      }
+    | (PUBLIC CONST|PUBLIC_READ)       { $flag = F3Flags.PUBLIC_READ;      }
     | PUBLIC_INIT       { $flag = F3Flags.PUBLIC_INIT;      }
         
     
@@ -1582,20 +1582,22 @@ variableDeclaration [ F3Modifiers mods, int pos ]
             // Note that syntactically, we allow all label types at all levels and must throw
             // out any invalid ones at the semantic checking phase
             //
-            if ($variableLabel.modifiers == F3Flags.PUBLIC_INIT) { 
+            long vmod = $variableLabel.modifiers;
+            if (vmod == F3Flags.PUBLIC_INIT) { 
                 if (($mods.flags & Flags.PUBLIC) != 0) {
                     $mods.flags &= ~Flags.PUBLIC;
                 } else {
                     //const
+                    vmod = F3Flags.IS_DEF;
                 }
-            } else if ($variableLabel.modifiers == F3Flags.PUBLIC_READ) { 
+            } else if (vmod == F3Flags.PUBLIC_READ) { 
                 if (($mods.flags & Flags.PUBLIC) != 0) {
                     $mods.flags &= ~Flags.PUBLIC;
                 } else {
                     //const var
                 }
             }
-            $mods.flags |= $variableLabel.modifiers;
+            $mods.flags |= vmod;
             
             // Construct the variable F3Tree, unless it was in error
             //
