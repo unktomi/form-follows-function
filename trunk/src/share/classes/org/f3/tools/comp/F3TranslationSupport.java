@@ -1165,7 +1165,7 @@ public abstract class F3TranslationSupport {
         protected JCExpression getReceiverOrThis(boolean isStatic) {
             Symbol cSym = enclosingClassDecl.sym;
             if (isStatic) {
-                return Select(makeType(cSym.type, false), f3make.ScriptAccessSymbol(cSym).name);
+                return Select(makeType(types.erasure(cSym.type), false), f3make.ScriptAccessSymbol(cSym).name);
             } else if(isMixinClass()) {
                 return id(defs.receiverName);
             }
@@ -1174,14 +1174,14 @@ public abstract class F3TranslationSupport {
 
         protected JCExpression getReceiver(Symbol sym) {
             if (sym.isStatic()) {
-                return Select(makeType(sym.owner.type, false), f3make.ScriptAccessSymbol(sym.owner).name);
+                return Select(makeType(types.erasure(sym.owner.type), false), f3make.ScriptAccessSymbol(sym.owner).name);
             }
             return resolveThis(sym.owner, true);
         }
 
         protected JCExpression getReceiverOrThis(Symbol sym) {
             if (sym.isStatic()) {
-                return Select(makeType(sym.owner.type, false), f3make.ScriptAccessSymbol(sym.owner).name);
+                return Select(makeType(types.erasure(sym.owner.type), false), f3make.ScriptAccessSymbol(sym.owner).name);
             }
             return resolveThis(sym.owner, false);
         }
@@ -1828,8 +1828,8 @@ public abstract class F3TranslationSupport {
         
         public JCExpression Getter(Symbol sym) {
             return Getter(sym.isStatic() ?
-                    makeType(sym.owner.type, false) :
-                    getReceiver(sym), sym);
+			  makeType(types.erasure(sym.owner.type), false) :
+			  getReceiver(sym), sym);
         }
 
         public JCExpression Getter(JCExpression selector, Symbol sym) {
@@ -1850,8 +1850,8 @@ public abstract class F3TranslationSupport {
         
         public JCExpression Setter(Symbol sym, JCExpression value) {
             return Setter(sym.isStatic() ?
-                    makeType(sym.owner.type, false) :
-                    getReceiver(sym), sym, value);
+			  makeType(types.erasure(sym.owner.type), false) :
+			  getReceiver(sym), sym, value);
         }
 
         public JCExpression Setter(JCExpression selector, Symbol sym, JCExpression value) {
