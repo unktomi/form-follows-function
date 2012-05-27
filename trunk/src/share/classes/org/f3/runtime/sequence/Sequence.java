@@ -46,7 +46,7 @@ import org.f3.runtime.Monad;
  *
  * @author Brian Goetz
  */
-public interface Sequence<T> extends Iterable<T>, Monad<T> {
+public interface Sequence<T> extends Iterable<T>, Monad<Sequence, T> {
     /** How large is this sequence?  */
     public int size();
 

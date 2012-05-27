@@ -1887,6 +1887,7 @@ public abstract class F3AbstractTranslation
         }
 
         private JCMethodDecl makeMethod(long flags, JCBlock body, List<JCVariableDecl> params) {
+	    System.err.println("mtype="+mtype.getClass());
             JCMethodDecl meth = m().MethodDef(
                     addAccessAnnotationModifiers(diagPos, tree.mods.flags, m().Modifiers(flags)),
                     functionName(sym, isInstanceFunctionAsStaticMethod, isBound),
