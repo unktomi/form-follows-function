@@ -624,7 +624,7 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitObjectLiteralPart(F3ObjectLiteralPart tree) {
-        F3Expression expr = lowerExpr(tree.getExpression(), tree.sym.type);
+        F3Expression expr = lowerExpr(tree.getExpression(), tree.type); //tree.sym.type);
         F3ObjectLiteralPart res = m.at(tree.pos).ObjectLiteralPart(tree.name, expr, tree.getExplicitBindStatus());
         res.markBound(tree.getBindStatus());
         res.sym = tree.sym;
@@ -1303,7 +1303,13 @@ public class F3Lower implements F3Visitor {
                 // id for the override
                 F3Ident id = m.Ident(part.name);
                 id.sym = part.sym;
-                id.type = part.sym.type;
+		Type partType = part.type;
+                id.type = partType; //part.sym.type;
+
+		System.err.println("part="+part);
+		System.err.println("part.type="+part.type);
+		System.err.println("part.sym="+part.sym);
+		System.err.println("part.sym.type="+part.sym.type);
 
                 F3Expression partExpr = part.getExpression();
 
@@ -1320,11 +1326,12 @@ public class F3Lower implements F3Visitor {
                             Flags.SYNTHETIC | F3Flags.SCRIPT_PRIVATE,
                             part.name + "$ol",
                             part.getBindStatus(),
-                            lowerExpr(partExpr, part.sym.type),
-                            part.sym.type);
+                            lowerExpr(partExpr, partType), //part.sym.type),
+                            partType //part.sym.type
+					  );
                     F3Ident sid = m.Ident(shred.name);
                     sid.sym = shred.sym;
-                    sid.type = part.sym.type;
+                    sid.type = partType;//part.sym.type;
                     locals.append(shred);
                     initExpr = sid;
                 } else {
@@ -1335,7 +1342,7 @@ public class F3Lower implements F3Visitor {
                 F3OverrideClassVar ocv =
                         m.OverrideClassVar(
                         part.name,
-                        preTrans.makeTypeTree(part.type),
+                        preTrans.makeTypeTree(partType),
                         m.Modifiers(part.sym.flags_field),
                         id,
                         initExpr,
@@ -1343,7 +1350,7 @@ public class F3Lower implements F3Visitor {
                         null,
                         null);
                 ocv.sym = (F3VarSymbol) part.sym;
-                ocv.type = part.sym.type;
+                ocv.type = partType;//part.sym.type;
                 newOverrides.append(ocv);
             } else {
                 unboundParts.append(lowerExpr(part));

@@ -206,6 +206,12 @@ public class F3PreTranslationSupport {
         F3TreeInfo.setSymbol(typeExpr, elemType.tsym);
 	Symbol tsym = type.tsym;
 	if (type instanceof TypeVar) {
+	    if (!(type instanceof TypeVar)) {
+		System.err.println("elemType="+elemType);
+		System.err.println("typeExpr="+typeExpr);
+		System.err.println("type="+type.getClass()+ ": "+type);
+		System.err.println("tsym="+tsym);
+	    }
 	    return (F3Type)f3make.TypeVar(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (TypeSymbol)tsym).setType(type);
 	} else {
 	    return (F3Type)f3make.TypeClass(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (ClassSymbol)tsym).setType(type);
