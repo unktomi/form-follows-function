@@ -613,8 +613,21 @@ public class F3Pretty implements F3Visitor {
 
     public void visitSelect(F3Select tree) {
         try {
-            printExpr(tree.selected, F3TreeInfo.postfixPrec);
-            print("." + tree.name);
+	    if (tree.selected != null) {
+		printExpr(tree.selected, F3TreeInfo.postfixPrec);
+		print(".");
+	    }
+            print(tree.name);
+	    if (tree.typeArgs != null) {
+		print(" of ");
+		String sep = "(";
+		for (F3Expression arg: tree.typeArgs) {
+		    print(sep);
+		    printExpr(arg);
+		    sep = ", ";
+		}
+		print(")");
+	    }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

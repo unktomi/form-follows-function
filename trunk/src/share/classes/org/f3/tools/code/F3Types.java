@@ -81,6 +81,23 @@ public class F3Types extends Types {
                     type != syms.f3_ColorType;
     }
 
+    public boolean isMonad(Type type) {
+	return getMonad(type) != null;
+    }
+
+    public Type getMonad(Type type) {
+	if (isMonadType(type)) {
+	    return type;
+	}
+	for (Type st: supertypes(type)) {
+	    Type t = getMonad(st);
+	    if (t != null) {
+		return t;
+	    }
+	}
+	return null;
+    }
+
     public boolean isSequence(Type type) {
         return type != Type.noType && type != null
             && type.tag != TypeTags.ERROR
@@ -108,10 +125,39 @@ public class F3Types extends Types {
             elementType(type);
     }
 
+    public Type monadElementType(Type type) {
+	Type monad = getMonad(type);
+	if (monad != null) {
+	    List<Type> list = monad.getTypeArguments();
+	    if (list.tail != null) {
+		return list.tail.head;
+	    } else {
+		return null;
+	    }
+	}
+	return null;
+    }
+
+    public boolean isMonadType(Type type) {
+        if (type != Type.noType && type != null
+            && type.tag != TypeTags.ERROR
+            && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
+            && erasure(type) == syms.f3_MonadTypeErasure) {
+	    return true;
+	}
+	return false;
+    }
+
+    public Type monadType(Type t) {
+	Type monad = getMonad(t);
+	return monad;
+    }
+
     public Type sequenceType(Type elemType) {
         return sequenceType(elemType, true);
     }
-     public Type sequenceType(Type elemType, boolean withExtends) {
+
+    public Type sequenceType(Type elemType, boolean withExtends) {
         elemType = boxedTypeOrType(elemType);
         if (withExtends)
             elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
@@ -450,12 +496,6 @@ public class F3Types extends Types {
         // assert types.asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
-	System.out.println("sym="+sym);
-	System.out.println("other="+other);
-	System.out.println("mt="+mt);
-	System.out.println("ot="+ot);
-	System.out.println("mt.targs="+mt.getTypeArguments());
-	System.out.println("ot.targs="+ot.getTypeArguments());
         return
             this.isSubSignature(mt, ot) &&
             (!checkResult || this.resultSubtype(mt, ot, Warner.noWarnings));

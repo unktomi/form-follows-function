@@ -82,11 +82,13 @@ public class F3Symtab extends Symtab {
     public final Type f3_VoidType;
     public final Type f3_java_lang_VoidType;
     public final Type f3_SequenceType;
+    public final Type f3_MonadType;
     public final Type f3_SequenceRefType;
     public final Type f3_SequenceProxyType;
     public final Type f3_ArraySequenceType;
     public final Type f3_EmptySequenceType;
     public final Type f3_SequenceTypeErasure;
+    public final Type f3_MonadTypeErasure;
     public final Type f3_ShortArray;
     public final Type f3_ObjectArray;
     static public final int MAX_FIXED_PARAM_LENGTH = 8;
@@ -225,12 +227,14 @@ public class F3Symtab extends Symtab {
         unreachableType.tsym = new TypeSymbol(0, names.fromString("<unreachable>"), Type.noType, rootPackage);
         f3_java_lang_VoidType = types.boxedClass(voidType).type;
         f3_SequenceType = enterClass(F3Defs.cSequence);
+        f3_MonadType = enterClass(F3Defs.cMonad);
         f3_SequenceRefType = enterClass(F3Defs.cSequenceRef);
         f3_SequenceProxyType = enterClass(F3Defs.cSequenceProxy);
         f3_ArraySequenceType = enterClass(F3Defs.cArraySequence);
         f3_SequencesType = enterClass(F3Defs.cSequences);
         f3_EmptySequenceType = types.sequenceType(botType);
         f3_SequenceTypeErasure = types.erasure(f3_SequenceType);
+        f3_MonadTypeErasure = types.erasure(f3_MonadType);
         f3_ShortArray = new ArrayType(shortType, arrayClass);
         f3_ObjectArray = new ArrayType(objectType, arrayClass);
         f3_KeyValueType = enterClass("f3.animation.KeyValue");

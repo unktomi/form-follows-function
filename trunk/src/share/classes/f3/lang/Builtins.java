@@ -126,14 +126,19 @@ public class Builtins {
         }
         public Object invoke$(Object arg1, Object arg2, Object[] rargs) {
             final A1 a1 = (A1)arg1;
-            return new Function1<R,A1>() {
+            return new Function1<R,A2>() {
                 public String toString() {
                     return "curry "+fun+ " "+a1;
                 }
+		/*
                 public Object invoke$(Object arg1, Object arg2, Object[] rargs) {
                     final A2 a2 = (A2)arg1;
                     return fun.invoke(a1, a2);
                 }
+		*/
+		public R invoke(A2 a2) {
+                    return fun.invoke(a1, a2);
+		}
             };
         }
     }

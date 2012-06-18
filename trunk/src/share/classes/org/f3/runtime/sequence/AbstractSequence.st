@@ -234,11 +234,27 @@ $PREFIX:{T|
 	}
 	return result;
     }
+
     @Override
-    public <Y> Monad<Sequence,Y> flatmap(Function1<? extends Monad<Sequence, Y>, ? super T> f) {
+   public <Y> Sequence<Y> unit(Y y) {
+	if (y == null) {
+	    return TypeInfo.<Y>getTypeInfo().emptySequence;
+	} else {
+	    return Sequences.singleton(TypeInfo.<Y>getTypeInfo(), y);
+	}
+    }
+
+    @Override
+    public <Y> Sequence<Y> flatmap(Function1<? extends Monad<Sequence, Y>, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
 	for (int i = 0; i < size(); i++) {
-	    final Sequence<Y> ys = (Sequence<Y>)f.invoke(get(i));
+	    Object obj = f.invoke(get(i));
+	    if (false) {
+		if (!(obj instanceof Sequence)) {
+		    obj = Sequences.singleton(TypeInfo.<Y>getTypeInfo(), (Y)obj);
+		}
+	    }
+	    final Sequence<Y> ys = (Sequence<Y>)obj;
 	    result.add(ys);
 	}
 	return result;

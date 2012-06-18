@@ -141,6 +141,7 @@ public class F3Defs {
     public static final String cNonLocalReturnException = runtime_PackageString + ".NonLocalReturnException";
     public static final String cNonLocalBreakException = runtime_PackageString + ".NonLocalBreakException";
     public static final String cNonLocalContinueException = runtime_PackageString + ".NonLocalContinueException";
+    static public final String cMonad = runtime_PackageString + ".Monad";
     // in runtime package
     private static final String cUtil = runtime_PackageString + ".Util";
     private static final String cChecks = runtime_PackageString + ".Checks";
@@ -934,7 +935,9 @@ public class F3Defs {
 	String r = mangleClassName0(clazz, useFull);
 	int angle = r.indexOf("<");
 	if (angle > 0) {
-	    return r.substring(0, angle);
+	    String s = r.substring(0, angle);
+	    System.err.println("mangle: "+ r + " => "+ s);
+	    return s;
 	}
 	return r;
     }

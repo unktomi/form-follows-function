@@ -1741,11 +1741,9 @@ public abstract class F3TranslationSupport {
                 return Call(getReceiver(), attributeGetVOFFName(varSym));
             } else {
                 JCExpression klass = makeType(types.erasure(varSym.owner.type), false);
-                
                 if (varSym.isStatic()) {
                     klass = Select(klass, f3make.ScriptSymbol(varSym.owner).name);
                 }
-                
                 return Select(klass, attributeOffsetName(varSym));
             }
         }

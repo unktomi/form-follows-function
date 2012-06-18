@@ -58,20 +58,25 @@ public class FunctionType extends Type.ClassType {
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
-        s.append("function(");
+        s.append("function from ");
         if (mtype == null)
-            s.append("???");
+            s.append("?");
         else {
             List<Type> args = mtype.argtypes;
+	    if (args.size() > 1) {
+		s.append("(");
+	    }
             for (List<Type> l = args; l.nonEmpty(); l = l.tail) {
                 if (l != args)
                     s.append(',');
-                s.append(':');
                 s.append(l.head);
             }
+	    if (args.size() > 1) {
+		s.append("(");
+	    }
         }
-        s.append("):");
-        s.append(mtype == null ? "???" : mtype.restype);
+        s.append(" to ");
+        s.append(mtype == null ? "?" : mtype.restype);
         return s.toString();
     }
     @Override

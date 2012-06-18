@@ -657,7 +657,16 @@ public class F3Decompose implements F3Visitor {
                         }
                     }
                 } else {
-                    selected = shred(tree.selected);
+		    boolean doit = true;
+		    selected = tree.selected;
+		    if (selected instanceof F3Ident) {
+			if (((F3Ident)selected).getName().toString().length() == 0) {
+			    doit = false;
+			}
+		    }
+		    if (doit) {
+			selected = shred(selected);
+		    }
                 }
                 bindStatus = oldBindStatus;
             }
@@ -673,10 +682,10 @@ public class F3Decompose implements F3Visitor {
     }
 
     public void visitIdent(F3Ident tree) {
-        F3Ident res = f3make.at(tree.pos).Ident(tree.getName());
+	F3Ident res = f3make.at(tree.pos).Ident(tree.getName());
 	res.type = tree.type;
-        res.sym = tree.sym;
-        result = res;
+	res.sym = tree.sym;
+	result = res;
     }
 
     public void visitLiteral(F3Literal tree) {

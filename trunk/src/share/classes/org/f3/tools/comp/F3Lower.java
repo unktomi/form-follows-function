@@ -119,8 +119,7 @@ public class F3Lower implements F3Visitor {
     @SuppressWarnings("unchecked")
     <T extends F3Tree> T lower(T tree, Type pt, LowerMode mode) {
 	if (pt == null) {
-	    System.err.println("pt is null: "+ tree);
-	    Thread.currentThread().dumpStack();
+	    throw new NullPointerException("pt is null: "+ tree);
 	}
         Type prevPt = this.pt;
         LowerMode prevMode = this.mode;
@@ -191,8 +190,6 @@ public class F3Lower implements F3Visitor {
 
     F3Expression convertTree(F3Expression tree, Type type) {
         if (type == Type.noType) return tree;
-	if (type == null) {
-	}
 	if (type.tag == TypeTags.TYPEVAR) {
 	    return tree;
 	}
@@ -450,6 +447,7 @@ public class F3Lower implements F3Visitor {
     public void visitFunctionInvocation(F3FunctionInvocation tree) {
         F3Expression meth = lowerFunctionName(tree.meth);
         List<Type> paramTypes = tree.meth.type.getParameterTypes();
+
         Symbol sym = F3TreeInfo.symbolFor(tree.meth);
         
         List<F3Expression> args = List.nil();
@@ -495,7 +493,14 @@ public class F3Lower implements F3Visitor {
             }
         }
         else {
-            args = lowerExprs(tree.args, paramTypes);
+	    try {
+		//System.err.println("tree.args="+tree.args);
+		//System.err.println("meth.paramTypes="+tree.meth.type.getParameterTypes());
+		//System.err.println("type.paramTypes="+tree.type.getParameterTypes());
+		args = lowerExprs(tree.args, paramTypes);
+	    } catch (NullPointerException exc) {
+		throw new RuntimeException(tree + " => type: "+tree.meth.type, exc);
+	    }
         }
          
         result = m.Apply(tree.typeargs, meth, args);
@@ -1306,10 +1311,10 @@ public class F3Lower implements F3Visitor {
 		Type partType = part.type;
                 id.type = partType; //part.sym.type;
 
-		System.err.println("part="+part);
-		System.err.println("part.type="+part.type);
-		System.err.println("part.sym="+part.sym);
-		System.err.println("part.sym.type="+part.sym.type);
+		//System.err.println("part="+part);
+		//System.err.println("part.type="+part.type);
+		//System.err.println("part.sym="+part.sym);
+		//System.err.println("part.sym.type="+part.sym.type);
 
                 F3Expression partExpr = part.getExpression();
 

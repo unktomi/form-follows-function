@@ -29,12 +29,14 @@ import org.f3.api.tree.Tree.F3Kind;
 import org.f3.tools.code.F3VarSymbol;
 
 import com.sun.tools.mjavac.util.Name;
+import com.sun.tools.mjavac.code.Type;
 
 /**
  * for (name in seqExpr where whereExpr) bodyExpr
  */
 public class F3ForExpressionInClause extends F3Tree implements ForExpressionInClauseTree, F3BoundMarkable {
 
+    public Type monadType;
     public final F3Var var;
     public F3Expression seqExpr;
     private F3Expression whereExpr;
