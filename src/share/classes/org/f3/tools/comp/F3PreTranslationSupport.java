@@ -40,6 +40,8 @@ import com.sun.tools.mjavac.code.Symbol.*;
 import com.sun.tools.mjavac.code.Type;
 import com.sun.tools.mjavac.code.Type.ClassType;
 import com.sun.tools.mjavac.code.Type.TypeVar;
+import com.sun.tools.mjavac.code.Type.WildcardType;
+import com.sun.tools.mjavac.code.Type.CapturedType;
 import static com.sun.tools.mjavac.code.TypeTags.*;
 import com.sun.tools.mjavac.util.Context;
 import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
@@ -202,16 +204,17 @@ public class F3PreTranslationSupport {
 
     F3Type makeTypeTree(Type type) {
         Type elemType = types.elementTypeOrType(type);
-        F3Expression typeExpr = f3make.Type(elemType).setType(elemType);
+        F3Expression typeExpr;
+	typeExpr = f3make.Type(elemType).setType(elemType);
         F3TreeInfo.setSymbol(typeExpr, elemType.tsym);
 	Symbol tsym = type.tsym;
-	if (type instanceof TypeVar) {
-	    if (!(type instanceof TypeVar)) {
-		System.err.println("elemType="+elemType);
-		System.err.println("typeExpr="+typeExpr);
-		System.err.println("type="+type.getClass()+ ": "+type);
-		System.err.println("tsym="+tsym);
-	    }
+	if (false) {
+	    System.err.println("elemType="+elemType);
+	    System.err.println("typeExpr="+typeExpr);
+	    System.err.println("type="+type.getClass()+ ": "+type);
+	    System.err.println("tsym="+tsym);
+	}
+	if (!(tsym instanceof ClassSymbol) || (type instanceof TypeVar)) {
 	    return (F3Type)f3make.TypeVar(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (TypeSymbol)tsym).setType(type);
 	} else {
 	    return (F3Type)f3make.TypeClass(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (ClassSymbol)tsym).setType(type);

@@ -1459,7 +1459,16 @@ public class F3Check {
 
 	overrideWarner.warned = false;
 	boolean resultTypesOK =
-	    types.returnTypeSubstitutable(mt, ot, otres, overrideWarner);
+	    types.returnTypeSubstitutable(mt,
+					  ot,
+					  otres, 
+					  overrideWarner);
+	if (!resultTypesOK) { 
+	    // we accept boxed types
+	    if (types.isSameType(types.boxedTypeOrType(otres), types.boxedTypeOrType(mt.getReturnType()))) {
+		resultTypesOK = true;
+	    }
+	}
 	if (!resultTypesOK) {
 	    if (!source.allowCovariantReturns() &&
 		m.owner != origin &&
@@ -1750,7 +1759,7 @@ public class F3Check {
                 Scope.Entry e = c.members().lookup(m.name);
                 while (e.scope != null) {
                     e.sym.complete();
-                    if (true || types.overrides(m, e.sym, origin, false)) { // hack
+                    if (types.overrides(m, e.sym, origin, false)) { // hack
                         checkOverride(tree, m, (MethodSymbol)e.sym, origin);
                         doesOverride = !e.sym.type.getReturnType().isErroneous();
                     }

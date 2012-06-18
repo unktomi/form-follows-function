@@ -422,7 +422,7 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
               // valid or not is a matter for semantic checks to decide.
               //
               //
-	(modifiers (ENUM|CLASS|FUNCTION))=> (m1=modifiers { errNodes.append($m1.mods); }
+	(modifiers (ENUM|CLASS|INTERFACE|FUNCTION))=> (m1=modifiers { errNodes.append($m1.mods); }
                 (
                       c=classDefinition         [$m1.mods, $m1.pos]
                       
@@ -913,7 +913,7 @@ classDefinition [ F3Modifiers mods, int pos ]
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
 
-    : CLASS 
+    : (INTERFACE {$mods.flags |= F3Flags.MIXIN;} | CLASS  )
 
 
             n1=name 
@@ -1025,17 +1025,17 @@ supers
     //
     int rPos = pos();
 }
-    : EXTENDS t1=typeName
+    : EXTENDS t1=type
             {
-                $ids.append($t1.value);         // First type name in list
-                errNodes.append($t1.value);     // Accumulate in case of error
+                $ids.append($t1.rtype);
+                errNodes.append($t1.rtype);
             }
            ( 
-            COMMA t2=typeName 
+            COMMA t2=type
             
                 { 
-                    $ids.append($t2.value); 
-                    errNodes.append($t2.value);
+                    $ids.append($t2.rtype);
+                    errNodes.append($t2.rtype);
                 }
            )*
            
@@ -2320,7 +2320,7 @@ variableLabel
     
     : VAR           { $modifiers = 0L; $pos = pos($VAR); }
     | DEF           { $modifiers = F3Flags.IS_DEF; $pos = pos($DEF); }
-    | CONST         { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } (VAR {$modifiers = F3Flags.PUBLIC_READ;})?
+    | (LET|CONST)         { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } (VAR {$modifiers = F3Flags.PUBLIC_READ;})?
     | ATTRIBUTE     {   $modifiers = 0L; 
                         $pos = pos($ATTRIBUTE); 
                         F3Erroneous err = F.at($pos).Erroneous();
@@ -7011,12 +7011,12 @@ reservedWord
     : ABSTRACT      | AFTER     | AND           | AS
     | ASSERT        | AT        | ATTRIBUTE     | BEFORE
     | BIND          | BOUND     | BREAK         | CASCADE
-    | CATCH         | CLASS     | CONST         | CONTINUE      | DEF | ENUM | OF | FORALL
+    | CATCH         | CLASS     | CONST | LET   | CONTINUE      | DEF | ENUM | OF | FORALL
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR
     | FROM          | FUNCTION  | IF            | IMPORT
     | INDEXOF       | INSERT    | INSTANCEOF    | LAZY
-    | MIXIN         | MOD       | NATIVEARRAY   | NEW
+    | MIXIN         | MOD       | NATIVEARRAY   | NEW | INTERFACE
     | NOT           | NULL      | OR            | OVERRIDE
     | PACKAGE       | PRIVATE   | PROTECTED     | PUBLIC
     | PUBLIC_INIT   | PUBLIC_READ | RETURN      | REVERSE

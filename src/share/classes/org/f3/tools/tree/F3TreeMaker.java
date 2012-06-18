@@ -421,6 +421,7 @@ public class F3TreeMaker implements F3TreeFactory {
     /** Create a tree representing given type.
      */
     public F3Expression Type(Type t) {
+	Type ityp = t;
         if (t == null) {
             return null;
         }
@@ -466,10 +467,22 @@ public class F3TreeMaker implements F3TreeFactory {
                 tp = TypeArray((F3Type)elem);
                 break;
             case CLASS:
+		List<Type> targs = ityp.getTypeArguments();
                 Type outer = t.getEnclosingType();
                 tp = outer.tag == CLASS && t.tsym.owner.kind == TYP
                         ? Select(Type(outer), t.tsym, false)
                         : QualIdent(t.tsym);
+		if (targs.size() > 0) {
+		    ListBuffer<F3Expression> typeArgs = ListBuffer.<F3Expression>lb();
+		    for (Type targ: targs) {
+			typeArgs.append(Type(targ));
+		    }
+		    if (tp instanceof F3Ident) {
+			((F3Ident) tp).typeArgs = typeArgs.toList();
+		    } else if (tp instanceof F3Select) {
+			((F3Select) tp).typeArgs = typeArgs.toList();
+		    }
+		}
                 break;
             default:
                 throw new AssertionError("unexpected type: " + t.getClass()+": "+t);
@@ -1404,8 +1417,8 @@ public class F3TreeMaker implements F3TreeFactory {
     }
 
     public F3Expression QualIdent(Symbol sym) {
-        if (sym.kind ==Kinds.PCK && sym.owner == syms.rootPackage)
-            return Ident(sym);
+	if (sym.kind ==Kinds.PCK && sym.owner == syms.rootPackage)
+	    return Ident(sym);
         return isUnqualifiable(sym)
             ? Ident(sym)
             : Select(QualIdent(sym.owner), sym, false);

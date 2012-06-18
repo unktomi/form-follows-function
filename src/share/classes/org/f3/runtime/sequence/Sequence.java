@@ -28,7 +28,7 @@ import java.util.Iterator;
 
 import org.f3.runtime.TypeInfo;
 import org.f3.runtime.Monad;
-
+import org.f3.functions.Function1;
 /**
  * Sequences are immutable, homogeneous, ordered collections.  A sequence has an element type,
  * a length, and a list of elements.  New sequences can be derived by calling the factory methods
@@ -47,6 +47,11 @@ import org.f3.runtime.Monad;
  * @author Brian Goetz
  */
 public interface Sequence<T> extends Iterable<T>, Monad<Sequence, T> {
+
+    public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f);
+    public <Y> Sequence<Y> flatmap(Function1<? extends Monad<Sequence, Y>, ? super T> f);
+    public <Y> Sequence<Y> unit(Y y);
+
     /** How large is this sequence?  */
     public int size();
 

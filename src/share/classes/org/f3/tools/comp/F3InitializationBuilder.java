@@ -1087,7 +1087,7 @@ however this is what we need */
             // This method generates a call statement to the mixin symbol.
             public JCStatement callMixinStmt(ClassSymbol mixin) {
                 List<JCExpression> mixinArgs =  List.<JCExpression>of(getReceiverOrThis()).appendList(argList());
-                JCExpression selector = makeType(mixin.type, false);
+                JCExpression selector = makeType(types.erasure(mixin.type), false);
  
                 if (isVoidReturnType) {
                     return CallStmt(selector, methodName, mixinArgs);

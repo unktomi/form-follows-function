@@ -24,13 +24,27 @@
 package org.f3.functions;
 
 import org.f3.runtime.F3Object;
+import org.f3.runtime.Functor;
 
-public class Function2<R, A1, A2> extends Function<R> {
+public class Function2<R, A1, A2> extends Function<R> implements Functor<Function2, R> {
+
+    // ?
+    public <Y> Functor<Function2, Y> map(final Function1<? extends Y, ? super R> f) {
+	final Function2<R, A1, A2> self = this;
+	return new Function2<Y, A1, A2>() {
+	    public Y invoke(A1 x1, A2 x2) {
+		final R r = self.invoke(x1, x2);
+		return f.invoke(r);
+	    }
+	};
+    }
+
     public Function2() {}
     
     public Function2(final F3Object implementor, final int number) {
         super(implementor, number);
     }
+
     
     // Get the implementor to invoke the function.
     // Don't override this.
