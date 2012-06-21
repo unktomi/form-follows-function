@@ -201,13 +201,15 @@ public class F3PreTranslationSupport {
         return new MethodSymbol(Flags.BLOCK, name, null, owner.enclClass());
     }
 
-
     F3Type makeTypeTree(Type type) {
         Type elemType = types.elementTypeOrType(type);
         F3Expression typeExpr;
 	typeExpr = f3make.Type(elemType).setType(elemType);
         F3TreeInfo.setSymbol(typeExpr, elemType.tsym);
 	Symbol tsym = type.tsym;
+	if (type instanceof CapturedType) {
+	    throw new RuntimeException("can't handle captured type: "+ type);
+	}
 	if (false) {
 	    System.err.println("elemType="+elemType);
 	    System.err.println("typeExpr="+typeExpr);

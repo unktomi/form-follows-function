@@ -348,6 +348,7 @@ public abstract class F3TranslationSupport {
      * If "makeIntf" is set, convert F3 class references to interface references.
      * */
     public JCExpression makeType(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
+
         while (t instanceof CapturedType) {
             WildcardType wtype = ((CapturedType) t).wildcard;
             // A kludge for Class.newInstance (and maybe other cases):
@@ -362,6 +363,12 @@ public abstract class F3TranslationSupport {
     }
 
     private JCExpression makeTypeTreeInner(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
+	JCExpression exp = makeTypeTreeInner0(diagPos, t, makeIntf);
+	//System.err.println("makeTypeTreeInner: "+ t+": "+exp);
+	return exp;
+    }
+
+    private JCExpression makeTypeTreeInner0(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	} 
@@ -388,20 +395,13 @@ public abstract class F3TranslationSupport {
                     }
                     texp = makeAccessExpression(diagPos, t.tsym, false);
                 }
-                // Type outer = t.getEnclosingType();
-		//System.err.println("t="+t.getClass());
-		//System.err.println("t="+t);
-		//t = types.capture(t); // chris hack...
-		//System.err.println("targs="+t.getTypeArguments());
                 if (!t.getTypeArguments().isEmpty()) {
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {
                         targs = targs.append(makeTypeTreeInner(diagPos, ta, makeIntf));
                     }
-		    //System.err.println("texp="+texp+", targs="+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
                 }
-		//System.err.println("texp="+texp);
                 return texp;
             }
             case TypeTags.BOT: { // it is the null type, punt and make it the Object type
@@ -417,6 +417,11 @@ public abstract class F3TranslationSupport {
                 return make.at(diagPos).TypeArray(makeTypeTreeInner(diagPos,types.elemtype(t), makeIntf));
             }
             default: {
+		if (t instanceof TypeVar) {
+		    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
+			return makeTypeTreeInner(diagPos, ((TypeVar)t).getUpperBound(), makeIntf);
+		    }
+		}
                 return make.at(diagPos).Type(t);
             }
         }
