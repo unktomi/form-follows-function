@@ -800,7 +800,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         F3ClassDeclaration tree = (F3ClassDeclaration) localEnv.tree;
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
-		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, tree.sym);
+		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, tree.sym, localEnv);
 	    }
 	    localEnv.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
@@ -980,6 +980,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         localEnv.baseClause = true;
         localEnv.outer = outer;
         localEnv.info.isSelfCall = false;
+	localEnv.enclClass = tree;
         return localEnv;
     }
 

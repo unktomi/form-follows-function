@@ -98,6 +98,30 @@ public class F3Types extends Types {
 	return null;
     }
 
+    public Type getTypeCons(Type type) {
+	if (isTypeConsType(type)) {
+	    return type;
+	}
+	for (Type st: supertypes(type)) {
+	    Type t = getTypeCons(st);
+	    if (t != null) {
+		return t;
+	    }
+	}
+	return null;
+    }
+
+    public boolean isTypeCons(Type t) {
+	return getTypeCons(t) != null;
+    }
+
+    public boolean isTypeConsType(Type type) {
+        return type != Type.noType && type != null
+            && type.tag != TypeTags.ERROR
+            && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
+            && erasure(type) == syms.f3_TypeConsTypeErasure;
+    }
+
     public boolean isSequence(Type type) {
         return type != Type.noType && type != null
             && type.tag != TypeTags.ERROR
@@ -199,9 +223,9 @@ public class F3Types extends Types {
 
     public Type boxedElementType(Type seqType) {
         Type elemType = seqType.getTypeArguments().head;
-        if (elemType instanceof CapturedType)
+        while (elemType instanceof CapturedType)
             elemType = ((CapturedType) elemType).wildcard;
-        if (elemType instanceof WildcardType)
+        while (elemType instanceof WildcardType)
             elemType = ((WildcardType) elemType).type;
         if (elemType == null)
             return syms.f3_AnyType;
@@ -764,9 +788,12 @@ public class F3Types extends Types {
             public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) {
 		TypeVar t = t0;
                 Type upper = visit(t.getUpperBound(), preserveWildcards);
+		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
+		    return upper;
+		}
 		t = new TypeVar(t.tsym.name, t.tsym.owner, t.lower);
 		t.bound = upper;
-		//System.err.println("typevar: "+ t0 + " => "+ t);
+		//System.err.println("typevar: "+ t0.getClass()+": "+t0 + " => "+ t + " upper: "+ upper+" lower:"+t.lower+" owner: "+ t.tsym.owner);
 		return t;
             }
 

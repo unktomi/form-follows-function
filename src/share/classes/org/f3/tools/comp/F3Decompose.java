@@ -1181,9 +1181,14 @@ public class F3Decompose implements F3Visitor {
                 result = f3make.at(tree.pos).ForExpression(List.of(clause), body);
             }
         } else {
-            List<F3ForExpressionInClause> inClauses = decompose(tree.inClauses);
-            F3Expression bodyExpr = decompose(tree.bodyExpr);
-            result = f3make.at(tree.pos).ForExpression(inClauses, bodyExpr);
+            F3Expression map = tree.getMap();
+            if (map != null) {
+                result = decompose(map);
+	    } else {
+		List<F3ForExpressionInClause> inClauses = decompose(tree.inClauses);
+		F3Expression bodyExpr = decompose(tree.bodyExpr);
+		result = f3make.at(tree.pos).ForExpression(inClauses, bodyExpr);
+	    }
         }
     }
 

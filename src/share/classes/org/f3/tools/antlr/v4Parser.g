@@ -795,7 +795,7 @@ modifierFlag
     | PACKAGE           { $flag = F3Flags.PACKAGE_ACCESS;   }
     | PROTECTED         { $flag = Flags.PROTECTED;          }
     | PUBLIC            { $flag = Flags.PUBLIC;             }
-    | (PUBLIC CONST|PUBLIC_READ)       { $flag = F3Flags.PUBLIC_READ;      }
+    | (PUBLIC (VAL|CONST)|PUBLIC_READ)       { $flag = F3Flags.PUBLIC_READ;      }
     | PUBLIC_INIT       { $flag = F3Flags.PUBLIC_INIT;      }
         
     
@@ -2320,7 +2320,7 @@ variableLabel
     
     : VAR           { $modifiers = 0L; $pos = pos($VAR); }
     | DEF           { $modifiers = F3Flags.IS_DEF; $pos = pos($DEF); }
-    | (LET|CONST)         { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } (VAR {$modifiers = F3Flags.PUBLIC_READ;})?
+    | (LET|CONST|VAL)         { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } (VAR {$modifiers = F3Flags.PUBLIC_READ;})?
     | ATTRIBUTE     {   $modifiers = 0L; 
                         $pos = pos($ATTRIBUTE); 
                         F3Erroneous err = F.at($pos).Erroneous();
@@ -5806,7 +5806,7 @@ typeFunction
                 exprbuff.appendList($gas1.value);
            })?
     (
-      (FROM)=>(FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* ) RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) TO ret=type) { argsList = typeArgBuf.toList(); }
+      (FROM)=>(FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* )? RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) TO ret=type) { argsList = typeArgBuf.toList(); }
     |
         (LPAREN 
             typeArgList 
@@ -5866,7 +5866,7 @@ typePrefixed
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 
 }
-    : NATIVEARRAY IDENTIFIER { "of".equals($IDENTIFIER.text) }?=>type
+    : NATIVEARRAY OF type
     
         {
             $rtype = F.at(rPos).TypeArray($type.rtype);
@@ -6299,7 +6299,7 @@ genericParam
 
 @init 
 {
-    BoundKind       bk      = BoundKind.UNBOUND;
+    //BoundKind       bk      = BoundKind.UNBOUND;
     F3Expression   texpr   = null; 
 }
 
@@ -6336,6 +6336,9 @@ genericArgument
 }
 
     : type  { $value = $type.rtype; } 
+      |
+      q=QUES {$value = F.at($q.pos).TypeExists();}
+     
 /*    
     | QUES 
         (  
@@ -7011,7 +7014,7 @@ reservedWord
     : ABSTRACT      | AFTER     | AND           | AS
     | ASSERT        | AT        | ATTRIBUTE     | BEFORE
     | BIND          | BOUND     | BREAK         | CASCADE
-    | CATCH         | CLASS     | CONST | LET   | CONTINUE      | DEF | ENUM | OF | FORALL
+    | CATCH         | CLASS     | CONST | VAL | LET   | CONTINUE      | DEF | ENUM | OF | FORALL
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR
     | FROM          | FUNCTION  | IF            | IMPORT

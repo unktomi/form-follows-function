@@ -113,6 +113,7 @@ CASCADE         : 'cascade';
 CATCH           : 'catch';
 CLASS           : 'class';
 CONST           : 'const';
+VAL             : 'val';
 CONTINUE        : 'continue';
 DEF             : 'def';
 DEFAULT         : 'default';

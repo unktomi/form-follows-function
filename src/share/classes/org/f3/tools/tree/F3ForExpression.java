@@ -116,7 +116,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 				    Name.Table names,
 				    Type argType,
 				    Type monadType,
-				    Type resultType) {
+				    Type resultType,
+				    boolean isBound) {
 
         if (apply == null) {
 	    //System.err.println("argType="+argType);
@@ -135,7 +136,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		    //System.err.println("monad type: " + type);
 		}
 		first = false;
-                apply = getMonadMap(F, names, select, argType, type, resultType, clause, apply);
+                apply = getMonadMap(F, names, select, argType, type, resultType, clause, apply, isBound);
             }
 	    //System.err.println("apply="+apply);
         }
@@ -149,7 +150,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 			     Type monadType,
 			     Type resultType,
 			     F3ForExpressionInClause clause,
-			     F3Expression bodyExpr) {
+			     F3Expression bodyExpr,
+			     boolean isBound) {
         // we want to turn 
         // bind for (x in xs, y in ys) f(x, y)
         // into
@@ -162,7 +164,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 					 F.at(var.pos).TypeClass(F.at(var.pos).Type(argType), Cardinality.SINGLETON),
 					 var.mods,
 					 F.at(var.pos).Ident(tmpName),
-					 F3BindStatus.UNIDIBIND,
+					 isBound ? F3BindStatus.UNIDIBIND: F3BindStatus.UNBOUND,
 					 null, null);
 	
         ListBuffer<F3Expression> blockBuffer = ListBuffer.lb();

@@ -107,7 +107,11 @@ public class F3BoundFiller extends F3TreeScanner {
                 scan(tree.getMap());
             }
         } else {
-            super.visitForExpression(tree);
+	    if (tree.getMap() != null) {
+		scan(tree.getMap());
+	    } else {
+		super.visitForExpression(tree);
+	    }
         }
     }
 

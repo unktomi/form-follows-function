@@ -32,6 +32,7 @@ import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
 import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
 import com.sun.tools.mjavac.code.Type.ClassType;
 import com.sun.tools.mjavac.code.Type.TypeVar;
+import com.sun.tools.mjavac.code.Type.*;
 import com.sun.tools.mjavac.util.*;
 import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
@@ -425,7 +426,10 @@ public class F3TreeMaker implements F3TreeFactory {
         if (t == null) {
             return null;
         }
-	t = types.erasure(t);
+	t = types.erasure(types.normalize(t));
+	if (t instanceof CapturedType) {
+	    throw new RuntimeException("can't handle captured type:"+t);
+	}
 	if (t instanceof Type.MethodType) {
 	    t = syms.makeFunctionType((Type.MethodType)t);
 	}
@@ -893,6 +897,10 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3Type TypeCons(F3Expression className,Cardinality cardinality, List<F3Expression> args) {
         return TypeCons(className, cardinality, args, null);
+    }
+
+    public F3Type TypeExists() {
+	return new F3TypeExists();
     }
 
     public F3Type TypeThis(Cardinality cardinality, List<F3Expression> args) {

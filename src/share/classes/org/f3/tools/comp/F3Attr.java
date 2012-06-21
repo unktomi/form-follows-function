@@ -305,6 +305,26 @@ public class F3Attr implements F3Visitor {
 	    if (typeArgs != null) {
 
 		List<Type> typeArgTypes = attribTypeArgs(typeArgs, env);
+		if (types.isTypeCons(localResult)) {
+		    List<Type> targs = localResult.getTypeArguments();
+		    if (targs.head != null && 
+			(targs.head instanceof TypeVar) &&
+			"This".equals((((TypeVar)targs.head).tsym.name.toString()))) {
+			//System.err.println("typeCons="+localResult);
+			//System.err.println("typeArgs="+typeArgTypes);
+			F3Env<F3AttrContext> e = env;
+			while (e != null && e.enclClass.getName().toString().length() == 0) {
+			    e = e.outer;
+			}
+			if (e != null) {
+			    Type thisType = attribType(f3make.Ident(e.enclClass.getName()), env);
+			    //System.err.println("env.enclClass="+thisType.getClass()+": "+ thisType);
+			    if (targs.size() == typeArgTypes.size()+1) {
+				typeArgTypes = typeArgTypes.prepend(thisType);
+			    }
+			}
+		    }
+		}
 		if (localResult instanceof MethodType) {
 		    localResult = syms.makeFunctionType(typeArgTypes, 
 							(MethodType)localResult);
@@ -437,9 +457,15 @@ public class F3Attr implements F3Visitor {
     List<Type> attribTypeArgs(List<F3Expression> trees, F3Env<F3AttrContext> env) {
         ListBuffer<Type> argtypes = new ListBuffer<Type>();
         for (List<F3Expression> l = trees; l.nonEmpty(); l = l.tail) {
-            argtypes.append(types.boxedTypeOrType(attribType(l.head, env)));
+	    if (l.head instanceof F3TypeExists) { // hack
+		argtypes.append(new WildcardType(null, BoundKind.UNBOUND, syms.boundClass));
+	    } else {
+		argtypes.append(types.boxedTypeOrType(attribType(l.head, env)));
+	    }
             //argtypes.append(attribType(l.head, env));
 	}
+	//System.err.println("trees="+trees);
+	//System.err.println("typeargs="+argtypes.toList());
         return argtypes.toList();
     }
 
@@ -1066,6 +1092,7 @@ public class F3Attr implements F3Visitor {
                 // marking the variable as undefined.
                 initEnv.info.enclVar = v;
                 initType = attribExpr(tree.getInitializer(), initEnv, declType);
+		     
                 /*
                  * We introduce a synthetic variable for bound function result.
                  * See F3BoundContextAnalysis. If the type of that var is
@@ -1533,7 +1560,7 @@ public class F3Attr implements F3Visitor {
             types.isSequence(bodyType) ?
             bodyType :
             types.sequenceType(bodyType);
-        if (tree.isBound()) {
+        if (true || tree.isBound()) {
             F3Expression map = null;
 	    if (types.isSequence(clause1Type)) {
 		map = tree.getMap(f3make, names, clause1Type ,
@@ -1544,7 +1571,7 @@ public class F3Attr implements F3Visitor {
 		if (monadElementType != null) {
 		    map = tree.getMonadMap(f3make, names, monadElementType,
 					   types.monadType(clause1Type),
-					   clause1Type);
+					   clause1Type, tree.isBound());
 		    
 		    owntype = clause1Type;
 		}
@@ -2009,8 +2036,10 @@ public class F3Attr implements F3Visitor {
 	}
     }
 
-    TypeVar makeTypeVar(F3Expression exp, Symbol sym) {
+    Type makeTypeVar(F3Expression exp, Symbol sym) {
 	if (exp instanceof F3TypeCons) {
+	    // class Foo of (class F of X, X) =>
+	    // class Foo of (F extends TypeCons1(F, X), X)
 	    F3TypeCons cons = (F3TypeCons)exp;
 	    //System.err.println(cls.getTypeExpression().getClass());
 	    //System.err.println(cls.getTypeExpression());
@@ -2027,6 +2056,8 @@ public class F3Attr implements F3Visitor {
 	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
 	    tv.bound = syms.objectType;
 	    return tv;
+	} else if (exp instanceof F3TypeExists) {
+	    return new WildcardType(null, BoundKind.UNBOUND, syms.boundClass);
 	} else if (exp instanceof F3TypeClass) {
 	    F3TypeClass clazz = (F3TypeClass)exp;
 	    //System.err.println("clazz="+clazz.getSymbol());
@@ -2038,10 +2069,25 @@ public class F3Attr implements F3Visitor {
 	return null;
     }
 
+    List<Type> makeTypeVars(List<F3Expression> types, Symbol sym, F3Env<F3AttrContext> env) {
+	F3Env<F3AttrContext> prevEnv = this.env;
+        int prevPkind = this.pkind;
+        Type prevPt = this.pt;
+        Sequenceness prevSequenceness = this.pSequenceness;
+	try {
+	    return makeTypeVars(types, sym);
+	} finally {
+	    this.env = prevEnv;
+            this.pkind = prevPkind;
+            this.pt = prevPt;
+            this.pSequenceness = prevSequenceness;
+	}
+    }
+
     List<Type> makeTypeVars(List<F3Expression> types, Symbol sym) {
 	ListBuffer<Type> argbuf = new ListBuffer<Type>();
 	for (F3Expression exp: types) {
-	    TypeVar tv = makeTypeVar(exp, sym);
+	    Type tv = makeTypeVar(exp, sym);
 	    if (tv != null) {
 		argbuf.append(tv);
 	    }
@@ -2775,6 +2821,7 @@ public class F3Attr implements F3Visitor {
 	    // Check that value of resulting type is admissible in the
 	    // current context.  Also, capture the return type
 	    result = check(tree, capture(restype), VAL, pkind, pt, pSequenceness);
+	    
 	    //System.err.println("result of "+ tree + "="+result+ " typeargs="+env.info.tvars+" restype="+restype);
 	    tree.type = result;
 	}
@@ -3273,6 +3320,7 @@ public class F3Attr implements F3Visitor {
         chk.checkNonCyclic(null, c.type);
 
         if (tree != null) {
+
             attribSupertypes(tree, c);
         }
 
@@ -3405,8 +3453,7 @@ public class F3Attr implements F3Visitor {
         for (F3Expression superClass : tree.getSupertypes()) {
             Type supType = superClass.type == null ? attribType(superClass, env)
                                                    : superClass.type;
-	    //System.err.println("tree="+superClass.getClass()+" type="+supType.getClass());
-	    //System.err.println("tree="+superClass+" type="+supType);
+
             // java.lang.Enum may not be subclassed by a non-enum
             if (supType.tsym == syms.enumSym &&
                 ((c.flags_field & (Flags.ENUM|Flags.COMPOUND)) == 0))
