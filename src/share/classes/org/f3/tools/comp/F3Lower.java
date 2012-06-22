@@ -1045,6 +1045,9 @@ public class F3Lower implements F3Visitor {
         }
         else {
             //single clause for expression - standard lowering
+	    if (tree.getBodyExpression().type == null) {
+		System.err.println("null body: "+ tree);
+	    }
             Type typeToCheck = types.isSameType(tree.getBodyExpression().type, syms.objectType) ||
                     types.isSequence(tree.getBodyExpression().type) ?
                 tree.type :

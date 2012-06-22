@@ -438,6 +438,8 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
                                 $items.append($f.value); 
                             }
 		 ))
+    |
+        typeAlias
                 
             | i=importDecl
             
@@ -5775,6 +5777,16 @@ catch [RecognitionException re] {
     recover(input, re);
     
  }
+
+typeAlias
+    returns [F3Type rtype]
+
+@init
+{
+}
+: 
+TYPE IDENTIFIER (OF genericParams)? EQ type
+;
 
 typeFunction
 

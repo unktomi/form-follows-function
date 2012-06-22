@@ -4293,10 +4293,11 @@ however this is what we need */
             // For each var declared in order (to make the switch tags align to the vars.)
             for (F3VarSymbol vSym : varMap.varList.toList()) {
                 // ..., X.VOFF$x, ...
-
-                args.append(Select(makeType(types.erasure(cSym.type)), attributeOffsetName(vSym)));
+		if (vSym.useAccessors()) {
+		    args.append(Select(makeType(types.erasure(cSym.type)), attributeOffsetName(vSym)));
+		}
             }
-
+	    System.err.println("init var map: "+ args.toList());
             // F3Base.makeInitMap$(X.VCNT$(), X.VOFF$a, ...)
             return Call(defs.F3Base_makeInitMap, args);
         }

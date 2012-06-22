@@ -303,7 +303,6 @@ public class F3Attr implements F3Visitor {
 		//System.err.println("unhandled case: "+ tree.getClass() + " "+tree);
 	    }
 	    if (typeArgs != null) {
-
 		List<Type> typeArgTypes = attribTypeArgs(typeArgs, env);
 		if (types.isTypeCons(localResult)) {
 		    List<Type> targs = localResult.getTypeArguments();
@@ -1247,7 +1246,10 @@ public class F3Attr implements F3Visitor {
         chk.checkBoundArrayVar(tree);
 
         if (types.isSameType(env.enclClass.type, v.owner.type)) {
-            log.error(tree.getId().pos(), MsgSym.MESSAGE_F3_CANNOT_OVERRIDE_OWN,tree.getId().getName());
+	    System.err.println("env="+env.enclClass.type);
+	    System.err.println("v="+v.owner);
+	    System.err.println("v.type="+v.owner.type);
+            //log.error(tree.getId().pos(), MsgSym.MESSAGE_F3_CANNOT_OVERRIDE_OWN,tree.getId().getName());
         }
 
         // The info.lint field in the envs stored in enter.typeEnvs is deliberately uninitialized,
@@ -1321,7 +1323,7 @@ public class F3Attr implements F3Visitor {
 	    Type clazztype = localEnv.enclClass.type;
 	    Type memberType = idSym.type;
 	    Symbol memberSym = idSym;
-	    System.err.println("clazztype="+clazztype);
+	    System.err.println("clazztype="+localEnv.enclClass.type+": "+ localEnv.enclClass.type.getTypeArguments());
 	    /*
 	    if ((memberType instanceof TypeVar) || memberType.getTypeArguments().size() > 0) {
 		    memberType = new ForAll(memberSym.owner.type.getTypeArguments(), memberType);
@@ -1330,11 +1332,9 @@ public class F3Attr implements F3Visitor {
 		    memberType = ((ForAll)memberType).qtype;
 		}
 	    */
-	    if (memberType instanceof FunctionType) {
+	    if (true || memberType instanceof FunctionType) {
 		memberType = types.subst(memberType, memberType.getTypeArguments(),
 					 clazztype.getTypeArguments());
-		System.err.println("clazztype="+clazztype);
-		System.err.println("clazztype="+clazztype.getTypeArguments());
 		System.err.println("SUBST "+idSym.type + "=>"+memberType);
 	    } else if (memberType instanceof TypeVar) {
 		memberType = substTypeVar(clazztype, (TypeVar)memberType);
@@ -1449,8 +1449,7 @@ public class F3Attr implements F3Visitor {
             forClauses = new ArrayList<F3ForExpressionInClause>();
         int forClausesOldSize = forClauses.size();
         Type clause1Type = null;
-
-
+	boolean isIter = false;
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
 
             // Don't try to examine erroneous in clauses. We don't wish to
@@ -1480,6 +1479,7 @@ public class F3Attr implements F3Visitor {
             chk.checkNonVoid(((F3Tree)clause).pos(), exprType);
 
             Type elemtype;
+
             // if exprtype is T[], T is the element type of the for-each
             if (types.isSequence(exprType)) {
                 elemtype = types.elementType(exprType);
@@ -1496,10 +1496,12 @@ public class F3Attr implements F3Visitor {
                 } else {
                     elemtype = types.upperBound(iterableParams.last());
                 }
+		isIter = true;
             }
             //FIXME: if exprtype is nativearray of T, T is the element type of the for-each (see VSGC-2784)
             else if (types.isArray(exprType)) {
                 elemtype = types.elemtype(exprType);
+		isIter = true;
             }
             else {
 		if (!types.isMonad(exprType)) {
@@ -1539,8 +1541,9 @@ public class F3Attr implements F3Visitor {
 	} else {
 	    //System.err.println("not a sequence: "+ bt);
 	}
-	boolean rawForLoop = !tree.isBound() && types.isSequence(pt);
+	boolean rawForLoop = true;
 	if (rawForLoop) {
+	    //System.err.println("raw for loop: "+ tree);
 	    attribTree(tree.getBodyExpression(), forExprEnv, VAL, bt.tag != ERROR ? bt : Type.noType, Sequenceness.PERMITTED);
 
 	    if (!tree.getBodyExpression().type.isErroneous() &&
@@ -1548,8 +1551,8 @@ public class F3Attr implements F3Visitor {
                 (pt.tag == NONE ||
 		 pt == syms.f3_UnspecifiedType)) {
 		Type blockElemType = types.elementTypeOrType(tree.getBodyExpression().type);
-            Type typeToCheck = types.sequenceType(types.normalize(blockElemType));
-            attribTree(tree.getBodyExpression(), forExprEnv, VAL, typeToCheck, Sequenceness.PERMITTED);
+		Type typeToCheck = types.sequenceType(types.normalize(blockElemType));
+		attribTree(tree.getBodyExpression(), forExprEnv, VAL, typeToCheck, Sequenceness.PERMITTED);
 	    }
 	}
         Type bodyType = tree.getBodyExpression().type;
@@ -1892,9 +1895,22 @@ public class F3Attr implements F3Visitor {
                 //       ...
                 //     }
 
-                if (cdef.sym == null)
+                if (cdef.sym == null) {
                     enter.classEnter(cdef, env);
-
+		    if (cdef.typeArgs != null) {
+			if (cdef.typeArgTypes == null) {
+			    cdef.typeArgTypes = makeTypeVars(cdef.typeArgs, cdef.sym);
+							     
+			}
+			for (Type t: cdef.typeArgTypes) {
+			    //System.err.println("entering "+t+ " into "+ localEnv);
+			    env.info.scope.enterIfAbsent(((TypeVar)t).tsym);
+			}
+			ClassSymbol c = cdef.sym;
+			ClassType ct = (ClassType)c.type;
+			c.type = ct = new ClassType(ct.getEnclosingType(), cdef.typeArgTypes, ct.tsym);
+		    }
+		}
                 attribDecl(cdef, localEnv);
 
                 // Reassign clazztype and recompute constructor.

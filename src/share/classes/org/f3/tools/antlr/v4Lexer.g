@@ -177,6 +177,7 @@ TRUE            : 'true';
 TRY             : 'try';
 TWEEN           : 'tween';
 TYPEOF          : 'typeof';
+TYPE            : 'type';
 VAR             : 'var';
 WHERE           : 'where';
 WHILE           : 'while';
