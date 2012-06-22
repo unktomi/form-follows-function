@@ -134,10 +134,4 @@ public abstract class Interpolator {
     public abstract function interpolate(startValue:Object, endValue:Object, fraction:Number):Object;
 }
 
-class CoreInterpolator extends SimpleInterpolator {
-    var i:org.f3.animation.Interpolator;
 
-    override function curve(t: Number) : Number {
-        i.interpolate(t)
-    }
-}

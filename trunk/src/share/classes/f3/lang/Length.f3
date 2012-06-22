@@ -158,11 +158,11 @@ def DF = ThreadLocal of DecimalFormat {
  * @profile common
  */
 public class Length extends Comparable of Object, Formattable {
-    var pixels:Double;
-    var dps:Double;
-    var sps:Double;
-    var ems:Double;
-    var percentage:Double;
+    public const pixels:Double;
+    public const dps:Double;
+    public const sps:Double;
+    public const ems:Double;
+    public const percentage:Double;
 
     /**
      * Returns the number of inches for this length, converting between like

@@ -94,7 +94,7 @@ public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(ZERO);
  */
 public class Duration extends Comparable of Duration {
 
-    var millis : Double;
+    public val millis : Double;
 
     /** Returns the number of milliseconds in this period or Double.POSITIVE_INFINITY if the period is INDEFINITE.
      *

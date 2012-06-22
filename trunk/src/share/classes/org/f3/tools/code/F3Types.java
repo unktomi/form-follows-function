@@ -869,7 +869,11 @@ public class F3Types extends Types {
                     return syms.objectType;
                 }
                 else {
-                    return boxedTypeOrType(t);
+		    if (!isSameType(t, syms.voidType)) {
+			return boxedTypeOrType(t);
+		    } else {
+			return t;
+		    }
                 }
             }
 
