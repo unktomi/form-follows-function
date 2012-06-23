@@ -293,72 +293,72 @@ public class F3Attr implements F3Visitor {
                 result = chk.typeTagError(tree, types.sequenceType(syms.unknownType), result);
             }
 	    Type localResult = result;
-	if (localResult.tag != ERROR) { // hack!!
-	    List<F3Expression> typeArgs = null;
-	    if (tree instanceof F3Ident) {
-		typeArgs = ((F3Ident)tree).typeArgs;
-	    } else if (tree instanceof F3Select) {
-		typeArgs = ((F3Select)tree).typeArgs;
-	    } else {
-		//System.err.println("unhandled case: "+ tree.getClass() + " "+tree);
-	    }
-	    if (typeArgs != null) {
-		List<Type> typeArgTypes = attribTypeArgs(typeArgs, env);
-		if (types.isTypeCons(localResult)) {
-		    List<Type> targs = localResult.getTypeArguments();
-		    if (targs.head != null && 
-			(targs.head instanceof TypeVar) &&
-			"This".equals((((TypeVar)targs.head).tsym.name.toString()))) {
-			//System.err.println("typeCons="+localResult);
-			//System.err.println("typeArgs="+typeArgTypes);
-			F3Env<F3AttrContext> e = env;
-			while (e != null && e.enclClass.getName().toString().length() == 0) {
-			    e = e.outer;
-			}
-			if (e != null) {
-			    Type thisType = attribType(f3make.Ident(e.enclClass.getName()), env);
-			    //System.err.println("env.enclClass="+thisType.getClass()+": "+ thisType);
-			    if (targs.size() == typeArgTypes.size()+1) {
-				typeArgTypes = typeArgTypes.prepend(thisType);
-			    }
-			}
-		    }
-		}
-		if (localResult instanceof MethodType) {
-		    localResult = syms.makeFunctionType(typeArgTypes, 
-							(MethodType)localResult);
-		}
-		if (localResult instanceof FunctionType) {
-		    localResult = syms.makeFunctionType(typeArgTypes, 
-							(MethodType)localResult.asMethodType());
-		} else if (localResult instanceof ClassType) {
-		    localResult = newClassType(localResult.getEnclosingType(),
-					       typeArgTypes,
-					       localResult.tsym);
+	    if (localResult.tag != ERROR) { // hack!!
+		List<F3Expression> typeArgs = null;
+		if (tree instanceof F3Ident) {
+		    typeArgs = ((F3Ident)tree).typeArgs;
+		} else if (tree instanceof F3Select) {
+		    typeArgs = ((F3Select)tree).typeArgs;
 		} else {
-		    System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+		    //System.err.println("unhandled case: "+ tree.getClass() + " "+tree);
 		}
-		//System.err.println("typeArgs="+typeArgs);
-		//System.err.println("result="+localResult);
-		tree.type = localResult;
-	    } else {
-		// we need to erase unspecified type arguments?
-		if ((tree instanceof F3Ident) || 
-		    (tree instanceof F3Select)) {
-		    if (F3TreeInfo.symbol(tree).kind == TYP) {
-			if (localResult instanceof ClassType) {
-			    if (!types.isF3Function(localResult) && !types.isSequence(localResult) &&
-				!types.isMonadType(localResult)) {
-				//System.err.println("erasing: "+ tree+ " => "+ localResult);
-				localResult = types.erasure(localResult);
+		if (typeArgs != null) {
+		    List<Type> typeArgTypes = attribTypeArgs(typeArgs, env);
+		    if (types.isTypeCons(localResult)) {
+			List<Type> targs = localResult.getTypeArguments();
+			if (targs.head != null && 
+			    (targs.head instanceof TypeVar) &&
+			    "This".equals((((TypeVar)targs.head).tsym.name.toString()))) {
+			    //System.err.println("typeCons="+localResult);
+			    //System.err.println("typeArgs="+typeArgTypes);
+			    F3Env<F3AttrContext> e = env;
+			    while (e != null && e.enclClass.getName().toString().length() == 0) {
+				e = e.outer;
+			    }
+			    if (e != null) {
+				Type thisType = attribType(f3make.Ident(e.enclClass.getName()), env);
+				//System.err.println("env.enclClass="+thisType.getClass()+": "+ thisType);
+				if (targs.size() == typeArgTypes.size()+1) {
+				    typeArgTypes = typeArgTypes.prepend(thisType);
+				}
+			    }
+			}
+		    }
+		    if (localResult instanceof MethodType) {
+			localResult = syms.makeFunctionType(typeArgTypes, 
+							    (MethodType)localResult);
+		    }
+		    if (localResult instanceof FunctionType) {
+			localResult = syms.makeFunctionType(typeArgTypes, 
+							    (MethodType)localResult.asMethodType());
+		    } else if (localResult instanceof ClassType) {
+			localResult = newClassType(localResult.getEnclosingType(),
+						   typeArgTypes,
+						   localResult.tsym);
+		    } else {
+			System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+		    }
+		    //System.err.println("typeArgs="+typeArgs);
+		    //System.err.println("result="+localResult);
+		    tree.type = localResult;
+		} else {
+		    // we need to erase unspecified type arguments?
+		    if ((tree instanceof F3Ident) || 
+			(tree instanceof F3Select)) {
+			if (F3TreeInfo.symbol(tree).kind == TYP) {
+			    if (localResult instanceof ClassType) {
+				if (!types.isF3Function(localResult) && !types.isSequence(localResult) &&
+				    !types.isMonadType(localResult)) {
+				    //System.err.println("erasing: "+ tree+ " => "+ localResult);
+				    localResult = types.erasure(localResult);
+				}
 			    }
 			}
 		    }
 		}
+		
 	    }
-
-	}
-	return localResult;
+	    return localResult;
         } catch (CompletionFailure ex) {
             tree.type = syms.errType;
             return chk.completionError(tree.pos(), ex);
@@ -459,7 +459,11 @@ public class F3Attr implements F3Visitor {
 	    if (l.head instanceof F3TypeExists) { // hack
 		argtypes.append(new WildcardType(null, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
-		argtypes.append(types.boxedTypeOrType(attribType(l.head, env)));
+		Type t = types.boxedTypeOrType(attribType(l.head, env));
+		if (pkind == TYP && (t instanceof ClassType)) {
+		    t = new WildcardType(t, BoundKind.EXTENDS, syms.boundClass);
+		} 
+		argtypes.append(t);
 	    }
             //argtypes.append(attribType(l.head, env));
 	}
@@ -467,6 +471,23 @@ public class F3Attr implements F3Visitor {
 	//System.err.println("typeargs="+argtypes.toList());
         return argtypes.toList();
     }
+
+    List<Type> attribTypeParams(List<F3Expression> trees, F3Env<F3AttrContext> env) {
+        ListBuffer<Type> argtypes = new ListBuffer<Type>();
+        for (List<F3Expression> l = trees; l.nonEmpty(); l = l.tail) {
+	    if (l.head instanceof F3TypeExists) { // hack
+		argtypes.append(new WildcardType(null, BoundKind.UNBOUND, syms.boundClass));
+	    } else {
+		Type t = types.boxedTypeOrType(attribType(l.head, env));
+		argtypes.append(t);
+	    }
+            //argtypes.append(attribType(l.head, env));
+	}
+	//System.err.println("trees="+trees);
+	//System.err.println("typeargs="+argtypes.toList());
+        return argtypes.toList();
+    }
+
 
     /** Attribute a type argument list, returning a list of types.
      */
@@ -1761,12 +1782,12 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("expr="+clazz);
 	    //System.err.println("type="+clazztype);
 	} else {
-	    if (typeArgs != null) {
-		typeArgTypes = attribTypeArgs(typeArgs, env);
-		tree.typeArgTypes = typeArgTypes;
-	    }
 	    // Attribute clazz expression
 	    clazztype = attribType(clazz, env);
+	    if (typeArgs != null) {
+		typeArgTypes = attribTypeParams(typeArgs, env);
+		tree.typeArgTypes = typeArgTypes;
+	    }
 	    // MAYBE FUTURE, e.g. if we support the syntax 'new ARRAY_TYPE (COUNT)':
 	    if (tree.getF3Kind() == F3Kind.INSTANTIATE_NEW &&
                 clazztype.tag == ARRAY) {
