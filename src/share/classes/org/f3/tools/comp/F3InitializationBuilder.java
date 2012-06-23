@@ -4297,7 +4297,7 @@ however this is what we need */
 		    args.append(Select(makeType(types.erasure(cSym.type)), attributeOffsetName(vSym)));
 		}
             }
-	    System.err.println("init var map: "+ args.toList());
+	    //	    System.err.println("init var map: "+ args.toList());
             // F3Base.makeInitMap$(X.VCNT$(), X.VOFF$a, ...)
             return Call(defs.F3Base_makeInitMap, args);
         }

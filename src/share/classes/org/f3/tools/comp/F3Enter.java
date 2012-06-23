@@ -311,7 +311,8 @@ public class F3Enter extends F3TreeScanner {
     public void visitFunctionDefinition(F3FunctionDefinition tree) {
 	if (tree.typeArgs != null) {
 	    for (Type t: attr.makeTypeVars(tree.typeArgs, 
-					   env.info.scope.owner)) {
+					   env.info.scope.owner,
+					   env)) {
 		//System.err.println("entering "+t+ " into "+ env);
 		env.info.scope.enter(((TypeVar)t).tsym);
 	    }
@@ -351,7 +352,6 @@ public class F3Enter extends F3TreeScanner {
                     chk.checkTransparentClass(tree.pos(), c, env.info.scope);
             }
         }
-        tree.sym = c;
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
 		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, 
@@ -362,7 +362,12 @@ public class F3Enter extends F3TreeScanner {
 
 		env.info.scope.enterIfAbsent(((TypeVar)t).tsym);
 	    }
+	    c.type = new ClassType(c.type.getEnclosingType(), tree.typeArgTypes, c.type.tsym);
 	}
+	//System.err.println("tree="+tree);
+	//System.err.println("typeargs="+tree.typeArgTypes);
+	//System.err.println("c.type="+c.type);
+        tree.sym = c;
 
         // Enter class into `compiled' table and enclosing scope.
         if (chk.compiled.get(c.flatname) != null) {

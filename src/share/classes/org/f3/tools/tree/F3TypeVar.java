@@ -27,6 +27,7 @@ import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
 
 import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
+import com.sun.tools.mjavac.code.*;
 
 /**
  * Type variable
@@ -34,6 +35,8 @@ import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
 public class F3TypeVar extends F3Type implements TypeClassTree {
     private final F3Expression className;
     private final TypeSymbol sym;
+    private final F3Expression bound;
+    private BoundKind boundKind = BoundKind.UNBOUND;
     
     /*
      * @param cardinality one of the cardinality constants
@@ -44,6 +47,26 @@ public class F3TypeVar extends F3Type implements TypeClassTree {
         super(cardinality);
         this.className = className;
         this.sym = sym;
+	this.bound = null;
+    }
+
+    protected F3TypeVar(F3Expression className,
+			Cardinality cardinality,
+			BoundKind boundKind,
+			F3Expression bound) {
+        super(cardinality);
+        this.className = className;
+	this.boundKind = boundKind;
+	this.sym = null;
+	this.bound = bound;
+    }
+
+    public F3Expression getBound() {
+	return bound;
+    }
+
+    public BoundKind getBoundKind() {
+	return boundKind;
     }
 
     public F3Tree getTypeExpression() {
