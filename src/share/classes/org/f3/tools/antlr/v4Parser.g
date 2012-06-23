@@ -866,7 +866,7 @@ enumDefinition [ F3Modifiers mods, int pos ]
 
     n1=name 
 
-    (OF gas=genericParams {
+    (OF gas=genericParams[false, false] {
             exprbuff.appendList(gas);
     })?
     LBRACE
@@ -920,11 +920,19 @@ classDefinition [ F3Modifiers mods, int pos ]
 
             n1=name 
 
-        (OF gas=genericParams {
+        (OF|FROM|TO)=>((OF gas=genericParams[false, false] {
             exprbuff.appendList(gas);
         })?
+        |
+        (FROM contraGas=genericParams[true, false] {
+            if (contraGas != null) exprbuff.appendList(contraGas);
+        })?
+        (TO coGas=genericParams[false, true] {
+            if (coGas != null) exprbuff.appendList(coGas);
+        })?    
+        )
     
-        supers  {ids = $supers.ids; }
+        (EXTENDS)=>(supers  {ids = $supers.ids; })
             
         LBRACE 
     
@@ -1221,7 +1229,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
 }
 : FUNCTION  
 
-   ((OF | FORALL) genericArgs = genericParams)?
+   ((OF | FORALL) genericArgs = genericParams[false, false])?
 
         (
             (
@@ -4635,7 +4643,7 @@ functionExpression
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
     :   (modifiers) => modifiers FUNCTION 
-            ((OF | FORALL) gas=genericParams { 
+            ((OF | FORALL) gas=genericParams[false, false] { 
                 exprbuff.appendList($gas.value);
             })?
     
@@ -5785,7 +5793,7 @@ typeAlias
 {
 }
 : 
-TYPE IDENTIFIER (OF genericParams)? EQ type
+TYPE IDENTIFIER (OF genericParams[false, false])? EQ type
 ;
 
 typeFunction
@@ -5814,7 +5822,7 @@ typeFunction
 
     FUNCTION 
 
-        ((OF | FORALL) gas1=genericParams { 
+        ((OF | FORALL) gas1=genericParams[false, false] { 
                 exprbuff.appendList($gas1.value);
            })?
     (
@@ -6252,15 +6260,15 @@ genericArguments0
 ;
 
 
-genericParams
+genericParams[boolean contravar, boolean covar]
    returns [com.sun.tools.mjavac.util.List<F3Expression> value]
    :
-   (LPAREN)=> (LPAREN (gas=genericParams0) RPAREN)
+   (LPAREN)=> (LPAREN (gas=genericParams0[contravar, covar]) RPAREN)
    {
        $value = $gas.value;
    }
    |
-   ga=genericParam
+   ga=genericParam[contravar, covar]
    {
        ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
        exprbuff.append($ga.value);
@@ -6268,18 +6276,18 @@ genericParams
    }
 ;
 
-genericParams0
+genericParams0[boolean contravar, boolean covar]
    returns [com.sun.tools.mjavac.util.List<F3Expression> value]
 @init {
    ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
    :
-   ga1=genericParam
+   ga1=genericParam[contravar, covar]
    {
 	exprbuff.append($ga1.value);
    } 
    (
-	COMMA ga2=genericParam
+	COMMA ga2=genericParam[contravar, covar]
 	{
             exprbuff.append($ga2.value);
         }
@@ -6305,22 +6313,23 @@ typeparens
         { $value = $type.rtype; }
     ;
 
-genericParam
+genericParam[boolean contravar, boolean covar]
 
     returns [F3Expression value]
 
 @init 
 {
-    BoundKind       bk      = BoundKind.EXTENDS;
+    BoundKind       bk      = (!contravar && !covar) ? BoundKind.UNBOUND : (contravar)? BoundKind.SUPER : BoundKind.EXTENDS;
     F3Expression   texpr   = null; 
 }
 
-    : (t=identifier  { $value = $t.value; })  (COLON | LTEQ | GTEQ)=>((COLON | LTEQ { bk = BoundKind.EXTENDS; } | GTEQ { bk = BoundKind.SUPER; }) bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
+    : (t=identifier  { $value = $t.value; })  (COLON)=>(COLON bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
+/*    
       | 
-       (CLASS n=identifier OF gas=genericParams { 
+       (CLASS n=identifier OF gas=genericParams[false, false] { 
         $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
       })
-/*    
+
     | QUES 
         (  
             ( 
