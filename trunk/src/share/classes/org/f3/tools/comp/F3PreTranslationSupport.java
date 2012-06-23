@@ -210,13 +210,13 @@ public class F3PreTranslationSupport {
 	if (type instanceof CapturedType) {
 	    throw new RuntimeException("can't handle captured type: "+ type);
 	}
-	if (false) {
-	    System.err.println("elemType="+elemType);
-	    System.err.println("typeExpr="+typeExpr);
-	    System.err.println("type="+type.getClass()+ ": "+type);
-	    System.err.println("tsym="+tsym);
-	}
 	if (!(tsym instanceof ClassSymbol) || (type instanceof TypeVar)) {
+	    if (true) {
+		System.err.println("elemType="+elemType);
+		System.err.println("typeExpr="+typeExpr);
+		System.err.println("type="+type.getClass()+ ": "+type);
+		System.err.println("tsym="+tsym);
+	    }
 	    return (F3Type)f3make.TypeVar(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (TypeSymbol)tsym).setType(type);
 	} else {
 	    return (F3Type)f3make.TypeClass(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (ClassSymbol)tsym).setType(type);

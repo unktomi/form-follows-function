@@ -426,12 +426,29 @@ public class F3TreeMaker implements F3TreeFactory {
         if (t == null) {
             return null;
         }
+	if (t instanceof TypeVar) {
+	    TypeVar tv = (TypeVar)t;
+	    if (tv.bound != null) {
+		Type bound = tv.bound;
+		BoundKind bk = BoundKind.EXTENDS;
+		if (bound instanceof WildcardType) {
+		    WildcardType wc = (WildcardType)bound;
+		    bk = wc.kind;
+		    bound = wc.type;
+		}
+		F3Expression exp = 
+		    TypeVar(Ident(t.tsym.name), Cardinality.SINGLETON, bk, Type(bound));
+		exp.setType(t);
+		return exp;
+	    }
+	} 
 	t = types.erasure(types.normalize(t));
 	if (t instanceof CapturedType) {
 	    throw new RuntimeException("can't handle captured type:"+t);
 	}
 	if (t instanceof Type.MethodType) {
 	    t = syms.makeFunctionType((Type.MethodType)t);
+	    System.err.println(ityp+ "=>"+t);
 	}
         F3Expression tp;
         switch (t.tag) {
@@ -817,6 +834,7 @@ public class F3TreeMaker implements F3TreeFactory {
            
            klass = this.ClassDeclaration(this.Modifiers(innerClassFlags), cname, List.<F3Expression>of(ident), defsBuffer.toList());
 	   klass.typeArgs = F3TreeInfo.typeArgs(ident);
+	   //System.err.println("set type args "+F3TreeInfo.typeArgs(ident)+" on "+cname);
        }
 
        F3Instanciate tree = new F3Instanciate(kind, ident,
@@ -887,6 +905,12 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3Type TypeVar(F3Expression className,Cardinality cardinality) {
         return TypeVar(className, cardinality, null);
+    }
+
+    public F3Type TypeVar(F3Expression className, Cardinality card, BoundKind boundKind, F3Expression bound) {
+        F3Type tree = new F3TypeVar(className, card, boundKind, bound);
+        tree.pos = pos;
+        return tree;
     }
 
     public F3Type TypeVar(F3Expression className,Cardinality cardinality, TypeSymbol sym) {

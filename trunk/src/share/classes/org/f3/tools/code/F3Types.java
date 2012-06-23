@@ -636,6 +636,31 @@ public class F3Types extends Types {
         }
 
         @Override
+        public Void visitTypeVar(TypeVar t, StringBuilder buffer) {
+	    buffer.append(t.tsym.name);
+	    if (t.bound != null) {
+		buffer.append(": ");
+		visit(t.bound, buffer);
+	    }
+	    return null;
+	}
+
+        @Override
+        public Void visitWildcardType(WildcardType t, StringBuilder buffer) {
+	    if (t.type != null) {
+		visit(t.type, buffer);
+		if (t.bound != null) {
+		    buffer.append(": ");
+		    visit(t.bound, buffer);
+		}
+	    } else {
+		buffer.append("?: ");
+		visit(t.bound, buffer);
+	    }
+	    return null;
+	}
+
+        @Override
         public Void visitForAll(ForAll t, StringBuilder buffer) {
 	    buffer.append("of ");
 	    buffer.append("(");
@@ -793,7 +818,7 @@ public class F3Types extends Types {
 		}
 		t = new TypeVar(t.tsym.name, t.tsym.owner, t.lower);
 		t.bound = upper;
-		//System.err.println("typevar: "+ t0.getClass()+": "+t0 + " => "+ t + " upper: "+ upper+" lower:"+t.lower+" owner: "+ t.tsym.owner);
+		System.err.println("typevar: "+ t0.getClass()+": "+t0 + " => "+ t + " upper: "+ upper+" lower:"+t.lower+" owner: "+ t.tsym.owner);
 		return t;
             }
 
@@ -815,7 +840,7 @@ public class F3Types extends Types {
 		    bound1 = visit(vbound, preserveWildcards);
 		} 
 		if (!preserveWildcards) {
-		    //System.err.println("wildcard: ! "+ t0 + " => "+ bound1);
+		    System.err.println("wildcard: ! "+ t0 + " => "+ bound1);
 		    return bound1;
 		}
 		if (vtype != null) {
@@ -833,7 +858,7 @@ public class F3Types extends Types {
 			t = new WildcardType(type1, t.kind, t.tsym);
 		    }
 		}
-		//System.err.println("wildcard: "+ t0 + " => "+ t);
+		System.err.println("wildcard: "+ t0 + " => "+ t);
                 return t;
             }
 

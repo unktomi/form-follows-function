@@ -6311,11 +6311,11 @@ genericParam
 
 @init 
 {
-    //BoundKind       bk      = BoundKind.UNBOUND;
+    BoundKind       bk      = BoundKind.EXTENDS;
     F3Expression   texpr   = null; 
 }
 
-    : (t=typeName  { $value = $t.value; })  
+    : (t=identifier  { $value = $t.value; })  (COLON | LTEQ | GTEQ)=>((COLON | LTEQ { bk = BoundKind.EXTENDS; } | GTEQ { bk = BoundKind.SUPER; }) bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
       | 
        (CLASS n=identifier OF gas=genericParams { 
         $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
@@ -6343,11 +6343,11 @@ genericArgument
 
 @init 
 {
-    BoundKind       bk      = BoundKind.UNBOUND;
+    BoundKind       bk      = BoundKind.EXTENDS;
     F3Expression   texpr   = null; 
 }
 
-    : type  { $value = $type.rtype; } 
+      : (t=identifier  { $value = $t.value; })  (COLON)=>(COLON bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
       |
       q=QUES {$value = F.at($q.pos).TypeExists();}
      
