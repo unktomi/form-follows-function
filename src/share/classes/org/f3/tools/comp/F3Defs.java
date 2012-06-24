@@ -937,7 +937,7 @@ public class F3Defs {
 	int angle = r.indexOf("<");
 	if (angle > 0) {
 	    String s = r.substring(0, angle);
-	    System.err.println("mangle: "+ r + " => "+ s);
+	    //System.err.println("mangle: "+ r + " => "+ s);
 	    return s;
 	}
 	return r;
