@@ -414,7 +414,7 @@ public class F3Attr implements F3Visitor {
 	try {
 	    inSuperType = true;
 	    Type localResult = attribTree(tree, env, TYP, Type.noType, Sequenceness.PERMITTED);
-	    System.err.println(tree+"=>"+localResult);
+	    //System.err.println(tree+"=>"+localResult);
 	    return localResult;
 	} finally {
 	    inSuperType = prevInSuperType;
@@ -486,13 +486,13 @@ public class F3Attr implements F3Visitor {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
 		if (extend && pkind == TYP && (t instanceof ClassType)) {
 		    t = new WildcardType(t, BoundKind.EXTENDS, syms.boundClass);
-		    System.err.println("targ="+l.head);
-		    System.err.println("targ.t="+t);
+		    //System.err.println("targ="+l.head);
+		    //System.err.println("targ.t="+t);
 		    //Thread.currentThread().dumpStack();
 		} else {
-		    if (!extend) {
-			System.err.println("not extending: "+ l.head);
-		    }
+		    //if (!extend) {
+			//System.err.println("not extending: "+ l.head);
+		    //}
 		}
 		argtypes.append(t);
 	    }
@@ -3538,7 +3538,7 @@ public class F3Attr implements F3Visitor {
 	    
             Type supType = superClass.type == null ? attribSuperType(superClass, env)
                                                    : superClass.type;
-	    System.err.println(superClass+"=>"+supType);
+	    //System.err.println(superClass+"=>"+supType);
             // java.lang.Enum may not be subclassed by a non-enum
             if (supType.tsym == syms.enumSym &&
                 ((c.flags_field & (Flags.ENUM|Flags.COMPOUND)) == 0))
@@ -4700,7 +4700,7 @@ public class F3Attr implements F3Visitor {
 		
 		memberType = types.subst(memberType, memberType.getTypeArguments(), 
 					 clazztype.getTypeArguments());
-		System.err.println("subst "+tmp+ " => "+memberType);
+		//System.err.println("subst "+tmp+ " => "+memberType);
 		if (memberType.getEnclosingType() == null) {
 		    if (tmp instanceof ForAll) {
 			return ((ForAll)tmp).qtype;
@@ -4709,7 +4709,7 @@ public class F3Attr implements F3Visitor {
 		}
 		memberType = newClassType(clazztype,
 					  List.<Type>nil(), memberType.tsym);
-		System.err.println("membertype=>"+memberType);
+		//		System.err.println("membertype=>"+memberType);
 		break;
 	    }
 	    clazztype = types.supertype(clazztype);
