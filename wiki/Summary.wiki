@@ -1,3 +1,1 @@
-#F3 Programming Language
-
-= Resurrecting the original F3 language =
+This project is a work in progress - resurrecting the F3 programming language.
