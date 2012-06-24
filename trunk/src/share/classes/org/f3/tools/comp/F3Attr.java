@@ -216,6 +216,7 @@ public class F3Attr implements F3Visitor {
             if ((ownkind & ~pkind) == 0) {
                 owntype = chk.checkType(tree.pos(), owntype, pt, pSequenceness, giveWarnings);
             } else {
+		Thread.currentThread().dumpStack();
                 log.error(tree.pos(), MsgSym.MESSAGE_UNEXPECTED_TYPE,
                           Resolve.kindNames(pkind),
                           Resolve.kindName(ownkind));
@@ -280,6 +281,7 @@ public class F3Attr implements F3Visitor {
         int prevPkind = this.pkind;
         Type prevPt = this.pt;
         Sequenceness prevSequenceness = this.pSequenceness;
+	boolean prevInSuperType = inSuperType;
         try {
             this.env = env;
             this.pkind = pkind;
@@ -303,8 +305,9 @@ public class F3Attr implements F3Visitor {
 		    //System.err.println("unhandled case: "+ tree.getClass() + " "+tree);
 		}
 		if (typeArgs != null) {
-		    List<Type> typeArgTypes = attribTypeArgs(typeArgs, env);
-		    if (types.isTypeCons(localResult)) {
+		    boolean typeCons = types.isTypeCons(localResult);
+		    List<Type> typeArgTypes = attribTypeArgs(typeArgs, env, !typeCons && !inSuperType);
+		    if (typeCons) {
 			List<Type> targs = localResult.getTypeArguments();
 			if (targs.head != null && 
 			    (targs.head instanceof TypeVar) &&
@@ -318,6 +321,9 @@ public class F3Attr implements F3Visitor {
 			    if (e != null) {
 				Type thisType = attribType(f3make.Ident(e.enclClass.getName()), env);
 				//System.err.println("env.enclClass="+thisType.getClass()+": "+ thisType);
+				if (!inSuperType) { // hack
+				    //return thisType;
+				}
 				if (targs.size() == typeArgTypes.size()+1) {
 				    typeArgTypes = typeArgTypes.prepend(thisType);
 				}
@@ -363,6 +369,7 @@ public class F3Attr implements F3Visitor {
             tree.type = syms.errType;
             return chk.completionError(tree.pos(), ex);
         } finally {
+	    this.inSuperType = prevInSuperType;
             this.env = prevEnv;
             this.pkind = prevPkind;
             this.pt = prevPt;
@@ -399,6 +406,19 @@ public class F3Attr implements F3Visitor {
     Type attribType(F3Tree tree, F3Env<F3AttrContext> env) {
         Type localResult = attribTree(tree, env, TYP, Type.noType, Sequenceness.PERMITTED);
         return localResult;
+    }
+
+    boolean inSuperType;
+    Type attribSuperType(F3Tree tree, F3Env<F3AttrContext> env) {
+	boolean prevInSuperType = inSuperType;
+	try {
+	    inSuperType = true;
+	    Type localResult = attribTree(tree, env, TYP, Type.noType, Sequenceness.PERMITTED);
+	    System.err.println(tree+"=>"+localResult);
+	    return localResult;
+	} finally {
+	    inSuperType = prevInSuperType;
+	}
     }
 
     /** Derived visitor method: attribute a statement or definition tree.
@@ -454,15 +474,26 @@ public class F3Attr implements F3Visitor {
     }
 
     List<Type> attribTypeArgs(List<F3Expression> trees, F3Env<F3AttrContext> env) {
+	return attribTypeArgs(trees, env, !inSuperType);
+    }
+
+    List<Type> attribTypeArgs(List<F3Expression> trees, F3Env<F3AttrContext> env, boolean extend) {
         ListBuffer<Type> argtypes = new ListBuffer<Type>();
         for (List<F3Expression> l = trees; l.nonEmpty(); l = l.tail) {
 	    if (l.head instanceof F3TypeExists) { // hack
 		argtypes.append(new WildcardType(null, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
-		if (pkind == TYP && (t instanceof ClassType)) {
+		if (extend && pkind == TYP && (t instanceof ClassType)) {
 		    t = new WildcardType(t, BoundKind.EXTENDS, syms.boundClass);
-		} 
+		    System.err.println("targ="+l.head);
+		    System.err.println("targ.t="+t);
+		    //Thread.currentThread().dumpStack();
+		} else {
+		    if (!extend) {
+			System.err.println("not extending: "+ l.head);
+		    }
+		}
 		argtypes.append(t);
 	    }
             //argtypes.append(attribType(l.head, env));
@@ -512,7 +543,7 @@ public class F3Attr implements F3Visitor {
                     boolean classExpected,
                     boolean interfaceExpected,
                     boolean checkExtensible) {
-        Type t = attribType(tree, env);
+        Type t = attribSuperType(tree, env);
 	//System.err.println("base ="+t);
         return checkBase(t, tree, env, classExpected, interfaceExpected, checkExtensible);
     }
@@ -1358,10 +1389,10 @@ public class F3Attr implements F3Visitor {
 	    if (memberType instanceof FunctionType) {
 		memberType = types.subst(memberType, memberType.getTypeArguments(),
 					 clazztype.getTypeArguments());
-		System.err.println("SUBST "+idSym.type + "=>"+memberType);
+		//System.err.println("SUBST "+idSym.type + "=>"+memberType);
 	    } else if (memberType instanceof TypeVar) {
 		memberType = substTypeVar(clazztype, (TypeVar)memberType);
-		System.err.println(idSym.type+ " => "+ memberType);
+		//System.err.println(idSym.type+ " => "+ memberType);
 	    }
 
             id.type = type = tree.type = memberType;
@@ -1506,6 +1537,7 @@ public class F3Attr implements F3Visitor {
             // if exprtype is T[], T is the element type of the for-each
             if (types.isSequence(exprType)) {
                 elemtype = types.elementType(exprType);
+		isIter = true;
             }
             // if exprtype implements Iterable<T>, T is the element type of the for-each
             else if (types.asSuper(exprType, syms.iterableType.tsym) != null) {
@@ -1577,7 +1609,7 @@ public class F3Attr implements F3Visitor {
 		Type typeToCheck = types.sequenceType(types.normalize(blockElemType));
 		attribTree(tree.getBodyExpression(), forExprEnv, VAL, typeToCheck, Sequenceness.PERMITTED);
 	    }
-	}
+	} 	
         Type bodyType = tree.getBodyExpression().type;
         if (bodyType == syms.unreachableType)
             log.error(tree.getBodyExpression(), MsgSym.MESSAGE_UNREACHABLE_STMT);
@@ -1922,7 +1954,7 @@ public class F3Attr implements F3Visitor {
                 if (cdef.sym == null) {
                     enter.classEnter(cdef, env);
 		}
-		if (typeArgTypes.size() > 0) {
+		if (typeArgTypes != null && typeArgTypes.size() > 0) {
 		    ClassSymbol c = cdef.sym;
 		    ClassType ct = (ClassType)c.type;
 		    cdef.sym.type = c.type = ct = new ClassType(ct.getEnclosingType(), typeArgTypes, ct.tsym);
@@ -2121,11 +2153,13 @@ public class F3Attr implements F3Visitor {
 	F3Env<F3AttrContext> prevEnv = this.env;
         int prevPkind = this.pkind;
         Type prevPt = this.pt;
+	boolean prevInSuperType = inSuperType;
         Sequenceness prevSequenceness = this.pSequenceness;
 	try {
 	    this.env = env;
 	    return makeTypeVars(types, sym);
 	} finally {
+	    this.inSuperType = prevInSuperType;
 	    this.env = prevEnv;
             this.pkind = prevPkind;
             this.pt = prevPt;
@@ -3371,7 +3405,6 @@ public class F3Attr implements F3Visitor {
         chk.checkNonCyclic(null, c.type);
 
         if (tree != null) {
-
             attribSupertypes(tree, c);
         }
 
@@ -3502,9 +3535,10 @@ public class F3Attr implements F3Visitor {
         Symbol javaSupertypeSymbol = null;
 
         for (F3Expression superClass : tree.getSupertypes()) {
-            Type supType = superClass.type == null ? attribType(superClass, env)
+	    
+            Type supType = superClass.type == null ? attribSuperType(superClass, env)
                                                    : superClass.type;
-
+	    System.err.println(superClass+"=>"+supType);
             // java.lang.Enum may not be subclassed by a non-enum
             if (supType.tsym == syms.enumSym &&
                 ((c.flags_field & (Flags.ENUM|Flags.COMPOUND)) == 0))
@@ -3518,10 +3552,10 @@ public class F3Attr implements F3Visitor {
                 log.error(superClass.pos(), MsgSym.MESSAGE_ENUM_TYPES_NOT_EXTENSIBLE);
             }
             if (!supType.isInterface() &&
-                    !types.isF3Class(supType.tsym) &&
-                    !types.isMixin(supType.tsym) &&
-                    !supType.isPrimitive() &&
-                    f3ClassSymbol.type instanceof ClassType) {
+		!types.isF3Class(supType.tsym) &&
+		!types.isMixin(supType.tsym) &&
+		!supType.isPrimitive() &&
+		f3ClassSymbol.type instanceof ClassType) {
                 if (javaSupertypeSymbol == null) {
                     javaSupertypeSymbol = supType.tsym;
                     // Verify there is a non-parametric constructor.
