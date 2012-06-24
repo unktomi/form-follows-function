@@ -1,7 +1,7 @@
 This project is a work in progress - resurrecting the F3 programming language.
 
-- Support for generics including type constructors
-- Syntax improvements - eschew punctuation in favor of natural language (english) function words where possible
+* Support for generics including type constructors
+* Syntax - eschew punctuation in favor of natural language (english) function words where possible
 
 {{{
 function of (A, B, C) curry(f: function from (A, B) to C): function from A to (function from B to C)
