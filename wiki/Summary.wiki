@@ -1,5 +1,7 @@
 This project is a work in progress - resurrecting the F3 programming language.
 
+Lazy and reactive evaluation with mutation
+
 Support for generics including type constructors
 
 Syntax - eschew punctuation in favor of natural language (english) function words where possible
@@ -26,3 +28,84 @@ function of (A, B, C) uncurry(f: function from A to (function from B to C)): fun
 }}}
 
 Monad Comprehensions
+{{{
+
+// Lazy infinite streams
+
+public class Stream of A extends Comonad of A, Monad of A {
+
+    public val protected var first: A;
+    public val protected var secondThruLast: Stream of A;
+
+    // zip lifts a binary operator to one over Streams
+    public function of (B, C) 
+	zip(binOp: function from (A, B) to C, 
+	    bs: Stream of B): Stream of C
+    {
+	Stream of C
+	{
+	    first: bind binOp(first, bs.first);
+	    secondThruLast: bind secondThruLast.zip(binOp, bs.secondThruLast);
+	}
+    }
+
+    // map lifts a unary operator to one over Streams
+    override public function of B 
+	map(unaryOp: function from A to B): Stream of B
+    {
+	Stream of B
+	{
+	    first: bind unaryOp(this.first);
+	    secondThruLast: bind this.secondThruLast.map(unaryOp);
+	}
+    }
+
+    // flatmap = join . map
+    override public function of X 
+	flatmap(unaryOp: function from A to Monad of X): Stream of X
+    {
+	var h = bind unaryOp(first) as Stream of X;
+	var t = bind secondThruLast.map(bound function(a: A): X {
+		(unaryOp(a) as Stream of X).first
+	    });
+	Stream of X { 
+	    first: bind h.first;
+	    secondThruLast: bind t;
+	}
+    }
+
+    // map lifts a unary operator to one over Streams
+    override function of B 
+	coflatmap(unaryOp: function from Comonad of A to B): Comonad of B
+    {
+	Stream of B
+	{
+	    first: bind unaryOp(this);
+	    secondThruLast: bind secondThruLast.coflatmap(unaryOp) as Stream of B;
+	}
+    }
+
+    override public function extract(): A { first }
+
+    public bound function fby(s:Stream of A): Stream of A 
+    {
+	Stream of A {
+	    first: bind first;
+	    secondThruLast: bind s; 
+	}
+    }
+}
+
+// lifts a constant to a Stream i.e,  t, t, t, ...
+public function of T constant(t: T): Stream of T
+{
+    Stream of T {
+        first: t;
+        override var secondThruLast = this;
+    }
+}
+
+
+var zs = for (xs in constant(1.0), ys in constant(2.0)) { x + y }
+
+}}}
