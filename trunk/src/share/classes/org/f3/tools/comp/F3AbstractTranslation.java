@@ -3018,7 +3018,6 @@ public abstract class F3AbstractTranslation
             } else {
                 def = SetStmt(tc, vsym, transInit);
             }
-
             varInits.append(def);
             varSyms.append(vsym);
         }
@@ -3066,6 +3065,7 @@ public abstract class F3AbstractTranslation
                 int index = 0;
                 for (F3VarSymbol varSym : varSyms) {
                     tags[index++] = varMap.addVar(varSym);
+		    System.err.println("tag "+tags[index-1]+ " = " + varSym);
                 }
 
                 ListBuffer<JCCase> cases = ListBuffer.lb();
@@ -3078,6 +3078,7 @@ public abstract class F3AbstractTranslation
 
                 JCExpression mapExpr = m().Indexed(id(mapVar), id(loopName));
                 loopBody = m().Switch(mapExpr, cases.toList());
+		System.err.println("loopBody: "+ loopBody);
             } else {
                 F3VarSymbol varSym = varSyms.first();
                 JCExpression varOffsetExpr = Offset(id(receiverName), varSym);
