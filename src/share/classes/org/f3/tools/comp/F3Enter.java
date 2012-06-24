@@ -355,7 +355,9 @@ public class F3Enter extends F3TreeScanner {
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
 		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, 
-						      env.info.scope.owner, env);
+						      env.info.scope.owner,
+						      env);
+
 	    }
 	    for (Type t: tree.typeArgTypes) {
 		//System.err.println("entering "+t+ " into "+ localEnv);

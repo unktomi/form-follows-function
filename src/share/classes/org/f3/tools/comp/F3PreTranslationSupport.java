@@ -211,7 +211,7 @@ public class F3PreTranslationSupport {
 	    throw new RuntimeException("can't handle captured type: "+ type);
 	}
 	if (!(tsym instanceof ClassSymbol) || (type instanceof TypeVar)) {
-	    if (true) {
+	    if (false) {
 		System.err.println("elemType="+elemType);
 		System.err.println("typeExpr="+typeExpr);
 		System.err.println("type="+type.getClass()+ ": "+type);

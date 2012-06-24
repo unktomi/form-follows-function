@@ -845,7 +845,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                 ListBuffer<F3Expression> implementing = ListBuffer.<F3Expression>lb();
                 ListBuffer<F3Expression> mixing = ListBuffer.<F3Expression>lb();
                 for (F3Expression stype : tree.getSupertypes()) {
-                    Type st = attr.attribType(stype, localEnv);
+                    Type st = attr.attribSuperType(stype, localEnv);
                     if (st.isInterface()) {
                         implementing.append(stype);
                     } else {

@@ -448,7 +448,7 @@ public class F3TreeMaker implements F3TreeFactory {
 	}
 	if (t instanceof Type.MethodType) {
 	    t = syms.makeFunctionType((Type.MethodType)t);
-	    System.err.println(ityp+ "=>"+t);
+	    //System.err.println(ityp+ "=>"+t);
 	}
         F3Expression tp;
         switch (t.tag) {

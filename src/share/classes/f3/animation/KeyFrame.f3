@@ -42,7 +42,7 @@ import f3.lang.Duration;
  * @see Timeline
  * @see Interpolator
  */
-public class KeyFrame extends Comparable of Object {
+public class KeyFrame extends Comparable of Object  {
     /**
      * Defines the reference elapsed time offset within a single cycle
      * of a {@link Timeline} at which the associated values will be set and at
