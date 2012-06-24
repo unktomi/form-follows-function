@@ -82,7 +82,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
             Integer value = varMap.get(sym.name);
 
             if (value == null) {
-		System.err.println("not found: "+ sym + " of "+ sym.owner+" in "+ varMap);
+		//System.err.println("not found: "+ sym + " of "+ sym.owner+" in "+ varMap);
                 //value = new Integer(count++);
 		value = new Integer(size());
                 varMap.put(sym.name, value);
@@ -1330,7 +1330,7 @@ however this is what we need */
                                 // case tag number
                                 JCExpression tag = Int(analysis.isFirstTier() ? ai.getEnumeration() :
                                                                                (ai.getEnumeration() - varCount));
-				System.err.println("isFirstTier: "+ analysis.isFirstTier()+": "+methodName+": "+varSym+" => "+ tag);
+				//System.err.println("isFirstTier: "+ analysis.isFirstTier()+": "+methodName+": "+varSym+" => "+ tag);
                                 // Add the case, something like:
                                 // case i: statement;
                                 cases.append(m().Case(tag, caseStmts));
@@ -1351,7 +1351,7 @@ however this is what we need */
                 
                     // varNum - VCNT$
                     JCExpression tagExpr = analysis.isFirstTier() ? varNumArg() : MINUS(varNumArg(), id(defs.count_F3ObjectFieldName));
-		    System.err.println("tagExpr="+tagExpr);
+		    //System.err.println("tagExpr="+tagExpr);
                     // Construct and add: switch(varNum - VCNT$) { ... }
                     addStmt(m().Switch(tagExpr, cases.toList()));
                 } else {
@@ -2885,7 +2885,7 @@ however this is what we need */
                     // Construct offset var.
                     Name name = attributeOffsetName(ai.getSymbol());
                     JCExpression init = analysis.isFirstTier() ? Int(ai.getEnumeration()) : null;
-		    System.err.println("init "+ name+": "+init);
+		    //System.err.println("init "+ name+": "+init);
                     long flags = analysis.isFirstTier() && isLeaf(ai) ? (Flags.FINAL | Flags.STATIC | Flags.PUBLIC) :
                                                                         (Flags.STATIC | Flags.PUBLIC);
                     // Construct and add: public static int VOFF$name = n;
@@ -4303,7 +4303,7 @@ however this is what we need */
 		    args.append(Select(makeType(types.erasure(cSym.type)), attributeOffsetName(vSym)));
 		}
             }
-	    System.err.println("init var map: "+ args.toList());
+	    //System.err.println("init var map: "+ args.toList());
             // F3Base.makeInitMap$(X.VCNT$(), X.VOFF$a, ...)
             return Call(defs.F3Base_makeInitMap, args);
         }

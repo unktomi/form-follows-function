@@ -989,7 +989,7 @@ class F3AnalyzeClass {
         for (VarInfo ai : classVarInfos) {
             if (ai.needsEnumeration()) {
                 ai.setEnumeration(classVarCount++);
-		ai.printInfo(true);
+		//ai.printInfo(true);
             }
            
             addBinders(ai);
