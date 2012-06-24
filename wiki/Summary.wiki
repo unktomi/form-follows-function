@@ -24,3 +24,5 @@ function of (A, B, C) uncurry(f: function from A to (function from B to C)): fun
     }
 }
 }}}
+
+Monad Comprehensions
