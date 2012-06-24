@@ -253,10 +253,12 @@ import org.f3.runtime.sequence.Sequences;
         throw new IllegalArgumentException("no such variable: " + varNum);
     }
     public void seq$(int varNum, Object value) {
-        throw new IllegalArgumentException("no such variable: " + varNum);
+	set$(varNum, value);
+        //throw new IllegalArgumentException("no such variable: " + varNum);
     }
     public static void seq$(F3Object obj, int varNum, Object value) {
-        throw new IllegalArgumentException("no such variable: " + varNum);
+	obj.set$(varNum, value);
+        //throw new IllegalArgumentException("no such variable: " + varNum);
     }
     public void invalidate$(int varNum, int startPos, int endPos, int newLength, int phase) {
         // VSGC-3964 - Var invalidate may be optimized away.
