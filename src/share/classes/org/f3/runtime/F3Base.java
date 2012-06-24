@@ -338,14 +338,19 @@ import org.f3.runtime.sequence.Sequences;
     //
     public static short [] makeInitMap$(int count, int... offsets) {
         final short [] map = new short[count];
+	System.err.println("init map: "+ count+": ");
         for (int i = 0; i < offsets.length; i++) {
-            map[offsets[i]] = (short)(i + 1);
+	    System.err.println("offset: "+ i+": "+offsets[i]);
+            //map[offsets[i]] = (short)(i + 1);
+            map[offsets[i]] = (short)i;
         }
         return map;
     }
 
     public int size$(int varNum) {
-        return ((Sequence<?>) get$(varNum)).size();
+	Sequence<?> seq = (Sequence<?>)get$(varNum);
+	return seq == null ? 0 : seq.size();
+        //return ((Sequence<?>) get$(varNum)).size();
     }
     public static int size$(F3Object obj, int varNum) {
         return ((Sequence<?>) obj.get$(varNum)).size();

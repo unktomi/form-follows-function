@@ -1025,7 +1025,7 @@ public class SequencesBase {
     }
 
     public static <T> Sequence<? extends T> replaceSlice(Sequence<? extends T> oldValue, Sequence<? extends T> newValues, int startPos, int endPos/*exclusive*/) {
-        int oldSize = oldValue.size();
+        int oldSize = size(oldValue);
         if (startPos < 0)
             startPos = 0;
         else if (startPos > oldSize)
@@ -1058,7 +1058,7 @@ public class SequencesBase {
     }
     //where
     private static <T> boolean preReplaceSlice(Sequence<? extends T> oldValue, Sequence<? extends T> newValues, int startPos, int endPos/*exclusive*/) {
-        int oldSize = oldValue.size();
+        int oldSize = size(oldValue);
         if (startPos < 0)
             startPos = 0;
         else if (startPos > oldSize)
@@ -1078,7 +1078,7 @@ public class SequencesBase {
     }
     //where
     private static <T> Sequence<? extends T> replaceSliceInternal(Sequence<? extends T> oldValue, Sequence<? extends T> newValues, int startPos, int endPos/*exclusive*/, boolean hasTrigger) {
-        int oldSize = oldValue.size();
+        int oldSize = size(oldValue);
         if (startPos < 0)
             startPos = 0;
         else if (startPos > oldSize)
