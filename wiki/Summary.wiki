@@ -106,6 +106,7 @@ public function of T constant(t: T): Stream of T
 }
 
 
-var zs = for (xs in constant(1.0), ys in constant(2.0)) { x + y }
+// creates an infinite stream of 3s
+let zs = for (xs in constant(1.0), ys in constant(2.0)) { x + y }
 
 }}}
