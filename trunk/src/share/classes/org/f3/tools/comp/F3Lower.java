@@ -445,6 +445,10 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitFunctionInvocation(F3FunctionInvocation tree) {
+	if (tree.partial) {
+	    result = toFunctionValue(tree, false);
+	    return;
+	} 
         F3Expression meth = lowerFunctionName(tree.meth);
         List<Type> paramTypes = tree.meth.type.getParameterTypes();
 
@@ -1140,11 +1144,17 @@ public class F3Lower implements F3Visitor {
                  needsReceiverVar = false;
              }
         }
-        MethodSymbol msym = (MethodSymbol)F3TreeInfo.symbolFor(tree);
+	Symbol sym = F3TreeInfo.symbolFor(tree);
+        MethodSymbol msym = sym instanceof MethodSymbol ? (MethodSymbol)sym : null;
         Type mtype = tree.type; // hack!!
+	Type callType = mtype;
+	if (tree instanceof F3FunctionInvocation) {
+	    F3FunctionInvocation ftree = (F3FunctionInvocation)tree;
+	    callType = ftree.meth.type;
+	}
 	if (mtype instanceof ForAll) { // hack fix me !!
 	    mtype = syms.makeFunctionType(mtype.getTypeArguments(),
-						   mtype.asMethodType());
+					  mtype.asMethodType());
 	} else if (mtype instanceof MethodType) {
 	    mtype = syms.makeFunctionType((Type.MethodType)mtype);
 	}
@@ -1168,7 +1178,19 @@ public class F3Lower implements F3Visitor {
         }
         Type returnType = mtype.getReturnType();
         F3Var receiverVar = null;
-        F3Expression meth = tree.setType(mtype);
+        F3Expression meth;
+	if (tree instanceof F3FunctionInvocation) {
+	    F3FunctionInvocation ftree = (F3FunctionInvocation)tree;
+	    List extraArgs = args.toList();
+	    args.clear();
+	    for (F3Expression expr : ftree.args) {
+		args.append(lowerExpr(expr));
+	    }
+	    args.appendList(extraArgs);
+	    meth = ftree.meth;
+	} else {
+	    meth = tree.setType(mtype);
+	}
 	if (staticOfNonStatic) {
 	    // we want to change 
 	    // String.toUpperCase($x$0) 

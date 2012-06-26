@@ -1503,6 +1503,7 @@ public class F3Attr implements F3Visitor {
             forClauses = new ArrayList<F3ForExpressionInClause>();
         int forClausesOldSize = forClauses.size();
         Type clause1Type = null;
+	Type monadType = null;
 	boolean isIter = false;
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
 
@@ -1527,6 +1528,8 @@ public class F3Attr implements F3Visitor {
 
             Type declType = attribType(var.getF3Type(), forExprEnv);
             attribVar(var, forExprEnv);
+	    //System.err.println("var.type: " + var+ "="+var.type);
+
             F3Expression expr = (F3Expression)clause.getSequenceExpression();
             Type exprType = types.upperBound(attribExpr(expr, forExprEnv));
 
@@ -1561,8 +1564,12 @@ public class F3Attr implements F3Visitor {
             else {
 		if (!types.isMonad(exprType)) {
 		    log.warning(expr, MsgSym.MESSAGE_F3_ITERATING_NON_SEQUENCE);
+		    elemtype = exprType;
+		    isIter = true;
+		} else {
+		    monadType = exprType;
+		    elemtype = types.monadElementType(exprType);
 		}
-                elemtype = exprType;
             }
 
             if (elemtype == syms.errType) {
@@ -1586,7 +1593,6 @@ public class F3Attr implements F3Visitor {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
         }
-
         forExprEnv.tree = tree; // before, we were not in loop!
 	Type bt = pt;
 	//System.err.println(bt.getClass()+ ": "+bt);
@@ -1595,22 +1601,30 @@ public class F3Attr implements F3Visitor {
 	    bt = types.elementType(bt);
 	} else {
 	    //System.err.println("not a sequence: "+ bt);
+	    //System.err.println("bt="+bt);
+	    bt = syms.unknownType;
 	}
 	boolean rawForLoop = types.isSequence(clause1Type) || isIter;
 	if (rawForLoop) {
 	    //System.err.println("raw for loop: "+ tree);
-	    attribTree(tree.getBodyExpression(), forExprEnv, VAL, bt.tag != ERROR ? bt : Type.noType, Sequenceness.PERMITTED);
+	    attribTree(tree.getBodyExpression(), forExprEnv, VAL, bt.tag != ERROR ? bt : Type.noType, rawForLoop ? Sequenceness.PERMITTED : Sequenceness.DISALLOWED);
 
-	    if (!tree.getBodyExpression().type.isErroneous() &&
-                tree.getBodyExpression().type.tag != VOID &&
-                (pt.tag == NONE ||
-		 pt == syms.f3_UnspecifiedType)) {
-		Type blockElemType = types.elementTypeOrType(tree.getBodyExpression().type);
-		Type typeToCheck = types.sequenceType(types.normalize(blockElemType));
-		attribTree(tree.getBodyExpression(), forExprEnv, VAL, typeToCheck, Sequenceness.PERMITTED);
+	    if (rawForLoop) {
+		if (!tree.getBodyExpression().type.isErroneous() &&
+		    tree.getBodyExpression().type.tag != VOID &&
+		    (pt.tag == NONE ||
+		     pt == syms.f3_UnspecifiedType)) {
+		    Type blockElemType = types.elementTypeOrType(tree.getBodyExpression().type);
+		    Type typeToCheck = types.sequenceType(types.normalize(blockElemType));
+		    attribTree(tree.getBodyExpression(), forExprEnv, VAL, typeToCheck, 
+			       (rawForLoop) ? Sequenceness.PERMITTED : Sequenceness.DISALLOWED);
+		}
 	    }
-	} 	
+	}  else {
+	    attribTree(tree.getBodyExpression(), forExprEnv, VAL, Type.noType);
+	}
         Type bodyType = tree.getBodyExpression().type;
+	//System.err.println("bodyType="+bodyType);
         if (bodyType == syms.unreachableType)
             log.error(tree.getBodyExpression(), MsgSym.MESSAGE_UNREACHABLE_STMT);
         Type owntype = (bodyType == null || bodyType == syms.voidType)?
@@ -1624,18 +1638,18 @@ public class F3Attr implements F3Visitor {
 		map = tree.getMap(f3make, names, clause1Type ,
 				  types.isSequence(bodyType) ? types.elementType(bodyType) : bodyType);
 	    } else {
-		Type monadElementType = types.monadElementType(clause1Type);
-
-		if (monadElementType != null) {
+		//System.err.println("clause1Type="+clause1Type);
+		Type monadElementType = clause1Type;
+		//System.err.println("monadElementType clause1Type="+monadElementType);
+		if (!isIter) {
 		    map = tree.getMonadMap(f3make, names, monadElementType,
-					   types.monadType(clause1Type),
-					   clause1Type, tree.isBound());
-		    
-		    owntype = clause1Type;
+					   bodyType,
+					   monadType, tree.isBound());
 		}
 	    }
             if (map != null) {
-                attribExpr(map, env);
+                owntype = attribExpr(map, env);
+		//System.err.println("owntype="+owntype);
             }
         }
         while (forClauses.size() > forClausesOldSize)
@@ -2837,16 +2851,24 @@ public class F3Attr implements F3Visitor {
 	typeargtypes = typeargbuffer.toList();
 	// ... and attribute the method using as a prototype a methodtype
 	// whose formal argument types is exactly the list of actual
-	// arguments (this will also set the method symbol).
-	Type mpt = new MethodType(argtypes, pt, List.<Type>nil(), syms.methodClass);
-	//System.err.println("typeargtypes="+typeargtypes);
-	//System.err.println("mpt="+mpt);
-	if (typeargtypes.nonEmpty()) {
-	    mpt = new ForAll(typeargtypes, mpt);
+	// arguments (this will also set the method symbol).	
+	Type mtype = null;
+	if (tree.partial) {
+	    Type mpt = attribExpr(tree.meth, localEnv); 
+	    System.err.println("mpt="+mpt);
+	    mtype = mpt;
 	}
-	//System.err.println("typeargtypes="+typeargtypes);
-	localEnv.info.varArgs = false;
-	Type mtype = attribExpr(tree.meth, localEnv, mpt);
+	if (mtype == null) {
+	    Type mpt = new MethodType(argtypes, pt, List.<Type>nil(), syms.methodClass);
+	    //System.err.println("typeargtypes="+typeargtypes);
+	    //System.err.println("mpt="+mpt);
+	    if (typeargtypes.nonEmpty()) {
+		mpt = new ForAll(typeargtypes, mpt);
+	    }
+	    //System.err.println("typeargtypes="+typeargtypes);
+	    localEnv.info.varArgs = false;
+	    mtype = attribExpr(tree.meth, localEnv, mpt);
+	}
 	mtype = reader.translateType(mtype);
 	//System.err.println("mtype="+mtype);
 	if (localEnv.info.varArgs)
@@ -2896,18 +2918,43 @@ public class F3Attr implements F3Visitor {
 	    // If the "method" has a symbol, we've already checked for
 	    // formal/actual consistency.  So doing it again would be
 	    // wasteful - plus varargs hasn't been properly implemented.
+	    boolean partial = tree.partial;
+	    //System.err.println("partial="+partial);
 	    if (tree.meth.getF3Tag() != F3Tag.SELECT &&
 		tree.meth.getF3Tag() != F3Tag.IDENT &&
 		! rs.argumentsAcceptable(argtypes, mtype.getParameterTypes(),
-					 true, false, Warner.noWarnings))
-		log.error(tree,
-			  MsgSym.MESSAGE_F3_CANNOT_APPLY_FUNCTION,
-			  mtype.getParameterTypes(), argtypes);
+					 true, false, Warner.noWarnings)) {
+		if (!partial || argtypes.size() >= mtype.getParameterTypes().size()) {
+		    log.error(tree,
+			      MsgSym.MESSAGE_F3_CANNOT_APPLY_FUNCTION,
+			      mtype.getParameterTypes(), argtypes);
+		} else {
+		    //System.err.println("args acceptable");
+		}
+	    } else {
+		//partial = false;
+	    }
 	    // Check that value of resulting type is admissible in the
 	    // current context.  Also, capture the return type
-	    result = check(tree, capture(restype), VAL, pkind, pt, pSequenceness);
-	    
-	    //System.err.println("result of "+ tree + "="+result+ " typeargs="+env.info.tvars+" restype="+restype);
+	    if (!partial) {
+		result = check(tree, capture(restype), VAL, pkind, pt, pSequenceness);
+	    } else {
+		System.err.println("skipped check");
+		ListBuffer<Type> typarams = new ListBuffer<Type>();
+		Type rtype = restype;
+		List<Type> pt = mtype.getParameterTypes();
+		for (int j = 0; j < argtypes.size(); j++) {
+		    pt = pt.tail;
+		}
+		typarams.append(types.boxedTypeOrType(rtype));
+		for (Type t: pt) {
+		    typarams.append(types.boxedTypeOrType(t));
+		}
+		result = syms.makeFunctionType(typarams.toList());
+		System.err.println("result = "+result);
+		tree.type = result;
+		return;
+	    }
 	    tree.type = result;
 	}
 	else {

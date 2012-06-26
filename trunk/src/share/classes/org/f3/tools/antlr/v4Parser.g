@@ -4425,6 +4425,8 @@ primaryExpression
     //
     F3Expression sVal = null;
 
+    ListBuffer<F3Expression> eList = new ListBuffer<F3Expression>();
+
     // Used to accumulate a list of anything that we manage to build up in the parse
     // in case of error.
     //
@@ -4503,13 +4505,17 @@ primaryExpression
             $value = $fe.value;
         }
     
-    | LPAREN e=expression RPAREN
+    | LPAREN e=expression (e1=expression {eList.append(e1);})* RPAREN
     
         {
-            $value = preserveTrees ?
-                            F.at(pos($LPAREN)).Parens($e.value) :
-                            $e.value;
-            endPos($value);
+            if (eList.size() == 0) {
+                $value = preserveTrees ?
+                F.at(pos($LPAREN)).Parens($e.value) :
+                $e.value;
+                endPos($value);
+            } else {
+                $value = F.at(pos($LPAREN)).PartialApply($e.value, eList.toList());
+            }
         }
         
     | AT 

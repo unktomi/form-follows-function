@@ -38,6 +38,7 @@ public class F3FunctionInvocation extends F3Expression implements FunctionInvoca
     public F3Expression meth;
     public List<F3Expression> args;
     public Type varargsElement;
+    public boolean partial;
 
     protected F3FunctionInvocation(List<F3Expression> typeargs,
             F3Expression meth,

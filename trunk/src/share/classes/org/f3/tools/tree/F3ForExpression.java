@@ -152,6 +152,11 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 			     F3ForExpressionInClause clause,
 			     F3Expression bodyExpr,
 			     boolean isBound) {
+	//System.err.println(this);
+	//System.err.println("argType="+argType);
+	//System.err.println("monadType="+monadType);
+	//System.err.println("resultType="+resultType);
+
         // we want to turn 
         // bind for (x in xs, y in ys) f(x, y)
         // into
@@ -176,8 +181,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 	Cardinality card = Cardinality.SINGLETON;
         F3FunctionValue fun = 
             F.FunctionValue(mods,
-                            F.at(bodyExpr.pos).TypeClass(F.at(bodyExpr.pos).Type(monadType), Cardinality.SINGLETON),
-			    //			    F.at(bodyExpr.pos).TypeUnknown(),
+                            //F.at(bodyExpr.pos).TypeClass(F.at(bodyExpr.pos).Type(monadType), Cardinality.SINGLETON),
+			    F.at(bodyExpr.pos).TypeUnknown(),
                             params,
                             body);
         F3Ident id = F.at(bodyExpr.pos).Ident(var.name);
@@ -189,7 +194,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
         F3Expression apply = F.at(bodyExpr.pos).Apply(null, 
                                                       sel,
                                                       argsBuffer.toList());
-	apply = F.at(apply.pos).TypeCast(F.Type(resultType), apply);	
+	//apply = F.at(apply.pos).TypeCast(F.Type(resultType), apply);	
+	//System.err.println(apply);
 	return apply;
     }
 
