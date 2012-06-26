@@ -85,6 +85,10 @@ public class F3Types extends Types {
 	return getMonad(type) != null;
     }
 
+    public Type makeMonadType(Type monadType, Type bodyType) {
+        return applySimpleGenericType(syms.f3_MonadType, erasure(monadType), bodyType);
+    }
+
     public Type getMonad(Type type) {
 	if (isMonadType(type)) {
 	    return type;
@@ -153,11 +157,16 @@ public class F3Types extends Types {
 	Type monad = getMonad(type);
 	if (monad != null) {
 	    List<Type> list = monad.getTypeArguments();
-	    if (list.tail != null) {
-		return list.tail.head;
-	    } else {
-		return null;
-	    }
+	    return list.get(1);
+	}
+	return null;
+    }
+
+    public Type getMonadType(Type type) {
+	Type monad = getMonad(type);
+	if (monad != null) {
+	    List<Type> list = monad.getTypeArguments();
+	    return list.head;
 	}
 	return null;
     }
@@ -167,8 +176,10 @@ public class F3Types extends Types {
             && type.tag != TypeTags.ERROR
             && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
             && erasure(type) == syms.f3_MonadTypeErasure) {
+	    //System.err.println("is a monad: "+ type);
 	    return true;
 	}
+	//System.err.println("not a monad: "+ type);
 	return false;
     }
 

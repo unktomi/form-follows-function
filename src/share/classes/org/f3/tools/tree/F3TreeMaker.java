@@ -201,8 +201,8 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
     public F3FunctionInvocation Apply(List<F3Expression> typeargs,
-                       F3Expression fn,
-                       List<F3Expression> args)
+				      F3Expression fn,
+				      List<F3Expression> args)
     {
         F3FunctionInvocation tree = new F3FunctionInvocation(
                 typeargs != null? typeargs : List.<F3Expression>nil(),
@@ -902,6 +902,17 @@ public class F3TreeMaker implements F3TreeFactory {
 	}
 	return expr;
     }
+
+    public F3Expression PartialApply(F3Expression expr, List<F3Expression> args) {
+        F3FunctionInvocation tree = new F3FunctionInvocation(
+                List.<F3Expression>nil(),
+                expr,
+                args != null? args : List.<F3Expression>nil());
+	tree.partial = true;
+        tree.pos = pos;
+        return tree;
+    }
+
 
     public F3Type TypeVar(F3Expression className,Cardinality cardinality) {
         return TypeVar(className, cardinality, null);
