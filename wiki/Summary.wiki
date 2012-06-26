@@ -32,7 +32,7 @@ Monad Comprehensions
 
 // Lazy infinite streams
 
-public class Stream of A extends Comonad of A, Monad of A {
+public class Stream of A extends Comonad of (Stream, A), Monad of (Stream, A) {
 
     public val protected var first: A;
     public val protected var secondThruLast: Stream of A;
@@ -62,7 +62,7 @@ public class Stream of A extends Comonad of A, Monad of A {
 
     // flatmap = join . map
     override public function of X 
-	flatmap(unaryOp: function from A to Monad of X): Stream of X
+	flatmap(unaryOp: function from A to Monad of (Stream, X)): Stream of X
     {
 	var h = bind unaryOp(first) as Stream of X;
 	var t = bind secondThruLast.map(bound function(a: A): X {
@@ -76,7 +76,7 @@ public class Stream of A extends Comonad of A, Monad of A {
 
     // map lifts a unary operator to one over Streams
     override function of B 
-	coflatmap(unaryOp: function from Comonad of A to B): Comonad of B
+	coflatmap(unaryOp: function from Comonad of (Stream, A) to B): Stream of B
     {
 	Stream of B
 	{
