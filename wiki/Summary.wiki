@@ -64,14 +64,13 @@ public class Stream of A extends Comonad of (Stream, A), Monad of (Stream, A) {
     override public function of X 
 	flatmap(unaryOp: function from A to Monad of (Stream, X)): Stream of X
     {
-	var h = bind unaryOp(first) as Stream of X;
-	var t = bind secondThruLast.map(bound function(a: A): X {
-		(unaryOp(a) as Stream of X).first
-	    });
-	Stream of X { 
-	    first: bind h.first;
-	    secondThruLast: bind t;
-	}
+        let d = bound function(a: A): X { (unaryOp(a) as Stream of X).first }
+        var h = bind d(first);
+        var t = bind for (a in secondThruLast) d(a);
+        Stream of X {
+            first: bind h;
+            secondThruLast: bind t;
+        }
     }
 
     // map lifts a unary operator to one over Streams
