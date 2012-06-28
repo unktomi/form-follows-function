@@ -106,10 +106,9 @@ public class F3Types extends Types {
 	if (isTypeConsType(type)) {
 	    return type;
 	}
-	for (Type st: supertypes(type)) {
-	    Type t = getTypeCons(st);
-	    if (t != null) {
-		return t;
+	for (Type st: supertypesClosure(type)) {
+	    if (isTypeConsType(st)) {
+		return st;
 	    }
 	}
 	return null;
@@ -649,7 +648,7 @@ public class F3Types extends Types {
         @Override
         public Void visitTypeVar(TypeVar t, StringBuilder buffer) {
 	    buffer.append(t.tsym.name);
-	    if (t.bound != null) {
+	    if (t.bound != null && t.bound != syms.objectType) {
 		buffer.append(": ");
 		visit(t.bound, buffer);
 	    }
@@ -660,7 +659,7 @@ public class F3Types extends Types {
         public Void visitWildcardType(WildcardType t, StringBuilder buffer) {
 	    if (t.type != null) {
 		visit(t.type, buffer);
-		if (t.bound != null) {
+		if (t.bound != null && t.bound != syms.objectType) {
 		    buffer.append(": ");
 		    visit(t.bound, buffer);
 		}
@@ -674,9 +673,21 @@ public class F3Types extends Types {
         @Override
         public Void visitForAll(ForAll t, StringBuilder buffer) {
 	    buffer.append("of ");
-	    buffer.append("(");
-	    buffer.append(t.getTypeArguments());
-	    buffer.append(")");
+	    List<Type> targs = t.getTypeArguments();
+	    if (targs.nonEmpty()) { // hack
+		String str = "";
+		if (targs.size() > 1) {
+		    buffer.append("(");
+		}
+		for (Type targ: targs) {
+		    buffer.append(str);
+		    visit(targ, buffer);
+		    str = ", ";
+		}
+		if (targs.size() > 1) {
+		    buffer.append(")");
+		}
+	    }
 	    buffer.append(" ");
 	    visit(t.qtype, buffer);
 	    return null;
@@ -699,12 +710,11 @@ public class F3Types extends Types {
 	    if (needsParen(args)) {
 		buffer.append("(");
 	    }
+	    String str = "";
             for (List<Type> l = args; l.nonEmpty(); l = l.tail) {
-                if (l != args) {
-                    buffer.append(",");
-                }
-                //buffer.append(":");
+                buffer.append(str);
                 visit(l.head, buffer);
+		str = ", ";
             }
 	    if (needsParen(args)) {
 		buffer.append(")");
@@ -752,10 +762,15 @@ public class F3Types extends Types {
 		    str = str.substring(0, lt);
 		    buffer.append(str);
 		    buffer.append(" of ");
+		    str = "";
 		    if (targs.size() > 1) {
 			buffer.append("(");
 		    }
-		    buffer.append(targs);
+		    for (Type targ: targs) {
+			buffer.append(str);
+			visit(targ, buffer);
+			str = ", ";
+		    }
 		    if (targs.size() > 1) {
 			buffer.append(")");
 		    }

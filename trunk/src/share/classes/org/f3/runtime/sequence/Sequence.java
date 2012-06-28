@@ -27,7 +27,7 @@ import java.util.BitSet;
 import java.util.Iterator;
 
 import org.f3.runtime.TypeInfo;
-import org.f3.runtime.Monad;
+import org.f3.runtime.*;
 import org.f3.functions.Function1;
 /**
  * Sequences are immutable, homogeneous, ordered collections.  A sequence has an element type,
@@ -46,11 +46,12 @@ import org.f3.functions.Function1;
  *
  * @author Brian Goetz
  */
-public interface Sequence<T> extends Iterable<T>, Monad<Sequence, T> {
+public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadPlus<Sequence, T> {
 
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f);
     public <Y> Sequence<Y> flatmap(Function1<? extends Monad<Sequence, Y>, ? super T> f);
     public <Y> Sequence<Y> unit(Y y);
+    public Sequence<T> mzero();
 
     /** How large is this sequence?  */
     public int size();

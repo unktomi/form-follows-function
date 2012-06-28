@@ -1604,7 +1604,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                 if (($mods.flags & Flags.PUBLIC) != 0) {
                     $mods.flags &= ~Flags.PUBLIC;
                 } else {
-                    //const var
+                    //const 
                 }
             }
             $mods.flags |= vmod;
@@ -2330,7 +2330,9 @@ variableLabel
     
     : VAR           { $modifiers = 0L; $pos = pos($VAR); }
     | DEF           { $modifiers = F3Flags.IS_DEF; $pos = pos($DEF); }
-    | (LET|CONST|VAL)         { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } (VAR {$modifiers = F3Flags.PUBLIC_READ;})?
+    | LET { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($LET); } 
+    | CONST { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } 
+    | VAL  { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($VAL); } 
     | ATTRIBUTE     {   $modifiers = 0L; 
                         $pos = pos($ATTRIBUTE); 
                         F3Erroneous err = F.at($pos).Erroneous();
@@ -7042,7 +7044,7 @@ reservedWord
     : ABSTRACT      | AFTER     | AND           | AS
     | ASSERT        | AT        | ATTRIBUTE     | BEFORE
     | BIND          | BOUND     | BREAK         | CASCADE
-    | CATCH         | CLASS     | CONST | VAL | LET   | CONTINUE      | DEF | ENUM | OF | FORALL
+    | CATCH         | CLASS     | CONTINUE      | DEF | ENUM | OF | FORALL
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR
     | FROM          | FUNCTION  | IF            | IMPORT

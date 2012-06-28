@@ -756,12 +756,12 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         }
     }
 
-//    @Override
-//    public void visitClassDeclaration(F3ClassDeclaration that) {
-//        for (F3Expression superClass : that.getSupertypes()) {
-//            attr.attribType(superClass, env);
-//        }
-//    }
+    //@Override
+    //public void visitClassDeclaration(F3ClassDeclaration that) {
+    //for (F3Expression superClass : that.getSupertypes()) {
+    //attr.attribType(superClass, env);
+    //}
+    //}
 
     /* ********************************************************************
      * Type completion
@@ -833,7 +833,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
             }
 
             boundAnalysis.analyzeBindContexts(localEnv);
-
+	    //System.err.println("completing: "+ sym.name);
             // create an environment for evaluating the base clauses
             F3Env<F3AttrContext> baseEnv = baseEnv(tree, localEnv);
             Type supertype = null;
@@ -878,6 +878,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                 }
             }
             ct.supertype_field = supertype;
+	    //System.err.println("supertype="+supertype);
 
             // Determine interfaces.
             List<F3Expression> interfaceTrees = tree.getImplementing();
@@ -931,7 +932,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                     localEnv.info.scope.enter(superSym);
                 }
             }
-
+	    //System.err.println("ct="+ct);
             // check that no package exists with same fully qualified name,
             // but admit classes in the unnamed package which have the same
             // name as a top-level package.
