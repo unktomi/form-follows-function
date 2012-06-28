@@ -235,6 +235,15 @@ $PREFIX:{T|
 	return result;
     }
 
+   @Override
+   public Sequence<T> mplus(Monad<Sequence,T> m) {
+       return add((Sequence<T> m);
+   }
+   @Override
+   public Sequence<T> mzero() {
+       return TypeInfo.<T>getTypeInfo().emptySequence;
+   }
+
     @Override
    public <Y> Sequence<Y> unit(Y y) {
 	if (y == null) {

@@ -831,9 +831,9 @@ public class F3TreeMaker implements F3TreeFactory {
            while (id instanceof F3Select) id = ((F3Select)id).getExpression();
            Name cname = objectLiteralClassName(((F3Ident)id).getName());
            long innerClassFlags = Flags.SYNTHETIC | Flags.FINAL; // to enable, change to Flags.FINAL
-           
+	   
            klass = this.ClassDeclaration(this.Modifiers(innerClassFlags), cname, List.<F3Expression>of(ident), defsBuffer.toList());
-	   klass.typeArgs = F3TreeInfo.typeArgs(ident);
+	   //klass.typeArgs = F3TreeInfo.typeArgs(ident);
 	   //System.err.println("set type args "+F3TreeInfo.typeArgs(ident)+" on "+cname);
        }
 
