@@ -236,6 +236,7 @@ public class F3Enter extends F3TreeScanner {
         F3Env<F3AttrContext> prevEnv = this.env;
         try {
             this.env = env;
+	    //System.err.println("entering: "+tree);
             if (tree != null) {
                 tree.accept(this);
             }
@@ -352,6 +353,7 @@ public class F3Enter extends F3TreeScanner {
                     chk.checkTransparentClass(tree.pos(), c, env.info.scope);
             }
         }
+	/*
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
 		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, 
@@ -366,6 +368,7 @@ public class F3Enter extends F3TreeScanner {
 	    }
 	    c.type = new ClassType(c.type.getEnclosingType(), tree.typeArgTypes, c.type.tsym);
 	}
+	*/
 	//System.err.println("tree="+tree);
 	//System.err.println("typeargs="+tree.typeArgTypes);
 	//System.err.println("c.type="+c.type);
@@ -384,6 +387,7 @@ public class F3Enter extends F3TreeScanner {
         // Set up an environment for class block and store in `typeEnvs'
         // table, to be retrieved later in memberEnter and attribution.
         F3Env<F3AttrContext> localEnv = classEnv(tree, env);
+	//System.err.println("localEnv="+localEnv);
         typeEnvs.put(c, localEnv);
 
         // Fill out class fields.
@@ -412,8 +416,13 @@ public class F3Enter extends F3TreeScanner {
         // completed later.
         if (!c.isLocal() && uncompleted != null) uncompleted.append(c);
         // Recursively enter all member classes.
-        classEnter(tree.getMembers(), localEnv);
+	for (F3Tree t: tree.getMembers()) {
+	    if (t instanceof F3ClassDeclaration) {
+		classEnter(t, localEnv);
+	    }
 
+	}
+	//classEnter(tree.getMembers(), localEnv);
         types.addF3Class(c, tree);
         result = c.type;
     }

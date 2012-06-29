@@ -706,6 +706,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                 m.completer = this;
                 attr.attribExpr(tree, env);
             } else {
+		//System.err.println("finishing function defintion: "+ tree+": "+env);
                 attr.finishFunctionDefinition((F3FunctionDefinition) tree, env);
             }
         }
@@ -734,34 +735,32 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    if (tree.sym == null) {
 		//System.err.println("memberEnter.visitFunc: "+ tree);
 		Scope enclScope = F3Enter.enterScope(env);
-		
 		MethodSymbol m = new MethodSymbol(0, tree.name, null, enclScope.owner);
 		m.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, m, tree);
 		tree.sym = m;
 		enclScope.enter(m);
-		
+		//System.err.println("visit function def: " + tree+": "+ env);
+		//Thread.currentThread().dumpStack();
 		SymbolCompleter completer = new SymbolCompleter();
 		completer.env = env;
 		completer.tree = tree;
 		completer.attr = attr;
-		
 		m.completer = completer;
 		attr.methodSymToTree.put(m, tree);
 	    }
 	    //attr.methodSymToEnv.put(m, methodEnv(tree, env));
 
         } catch (NullPointerException e) {
+	    e.printStackTrace();
             // Looks like we could not enter the function into any symbol
             // table. Just ignore it.
         }
     }
 
-    //@Override
-    //public void visitClassDeclaration(F3ClassDeclaration that) {
-    //for (F3Expression superClass : that.getSupertypes()) {
-    //attr.attribType(superClass, env);
-    //}
-    //}
+    @Override
+    public void visitClassDeclaration(F3ClassDeclaration that) {
+	//System.err.println("member enter: " +that);
+    }
 
     /* ********************************************************************
      * Type completion
@@ -797,6 +796,8 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         ClassSymbol c = (ClassSymbol) sym;
         ClassType ct = (ClassType) c.type;
         F3Env<F3AttrContext> localEnv = enter.typeEnvs.get(c);
+	//System.err.println("localEnv: "+ c);
+	//System.err.println(localEnv);
         F3ClassDeclaration tree = (F3ClassDeclaration) localEnv.tree;
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {

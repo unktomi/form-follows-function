@@ -921,7 +921,7 @@ public class F3Attr implements F3Visitor {
 		    ListBuffer<Type> typarams = new ListBuffer<Type>();
 		    Type rtype = mt.restype;
 		    typarams.append(types.boxedTypeOrType(rtype));
-		    typarams.append(types.boxedTypeOrType(sitesym.type));
+		    typarams.append(types.boxedTypeOrType(tree.selected.type));
 		    for (List<Type> l = mt.argtypes; l.nonEmpty(); l = l.tail) {
 			typarams.append(types.boxedTypeOrType(l.head));
 		    }
@@ -930,7 +930,7 @@ public class F3Attr implements F3Visitor {
 	    }
 	    //System.err.println("type "+ tree+ " => "+ result);
 	}
-	Type memberType = types.memberType(tree.selected.type, sym);
+	    //Type memberType = types.memberType(tree.selected.type, sym);
 	tree.type = result;
         if (tree.sym.kind == MTH && result instanceof FunctionType)
             tree.sym = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);
@@ -1638,7 +1638,7 @@ public class F3Attr implements F3Visitor {
             types.sequenceType(bodyType);
         if (true || tree.isBound()) {
             F3Expression map = null;
-	    if (types.isSequence(owntype) && tree.isBound()) {
+	    if (false && (types.isSequence(owntype) && tree.isBound())) {
 		map = tree.getMap(f3make, names, clause1Type ,
 				  types.isSequence(bodyType) ? types.elementType(bodyType) : bodyType);
 	    } else {
@@ -1861,6 +1861,8 @@ public class F3Attr implements F3Visitor {
         and in f3compiler.properties map that to:
         Allocating a native array requires a single length parameter.
         */
+        List<F3Var> vars = tree.getLocalvars();
+        memberEnter.memberEnter(vars, localEnv);
 
         // Store symbol + type back into the attributed tree.
         clazztype = chk.checkClassType(
@@ -1995,8 +1997,6 @@ public class F3Attr implements F3Visitor {
 	    //         if (tree.constructor != null && tree.constructor.kind == MTH)
 	    owntype = clazz.type;  // this give declared type, where clazztype would give anon type
         }
-        List<F3Var> vars = tree.getLocalvars();
-        memberEnter.memberEnter(vars, localEnv);
         for (List<F3Var> l = vars; l.nonEmpty(); l = l.tail)
             attribExpr(l.head, localEnv);
 	tree.type = owntype;
@@ -2293,13 +2293,13 @@ public class F3Attr implements F3Visitor {
 
     public void finishFunctionDefinition(F3FunctionDefinition tree, F3Env<F3AttrContext> env) {
         MethodSymbol m = tree.sym;
-
+	m.owner.complete();
         F3FunctionValue opVal = tree.operation;
         F3Env<F3AttrContext> localEnv = methodSymToEnv.get(m);
 	if (localEnv == null) {
 	    localEnv = memberEnter.methodEnv(tree, env);	
 	    //	    System.err.println("finishing: "+ tree);
-	    methodSymToEnv.put(m, localEnv);
+	    //methodSymToEnv.put(m, localEnv);
 	}
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
@@ -2888,7 +2888,9 @@ public class F3Attr implements F3Visitor {
 	    localEnv.info.varArgs = false;
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
 	}
-	mtype = reader.translateType(mtype);
+	//System.err.println("meth="+tree.meth);
+	//System.err.println("mtype="+mtype);
+	//mtype = reader.translateType(mtype);
 	//System.err.println("mtype="+mtype);
 	if (localEnv.info.varArgs)
 	    assert mtype.isErroneous() || tree.varargsElement != null;
@@ -3499,6 +3501,8 @@ public class F3Attr implements F3Visitor {
             JavaFileObject prev = log.useSource(c.sourcefile);
 
             try {
+		//System.err.println("attribClass: "+ c);
+		//System.err.println(localEnv);
                 attribClassBody(localEnv, c);
             } finally {
                 log.useSource(prev);
@@ -4521,7 +4525,7 @@ public class F3Attr implements F3Visitor {
 	//System.err.println("unspec="+syms.f3_UnspecifiedType);
 	//System.err.println("unknown="+syms.f3_UnspecifiedType);
 	if (m.type.getReturnType() == syms.f3_UnspecifiedType) {
-	    System.err.println("set return type " + m + ": " + ot.getReturnType());
+	    //System.err.println("set return type " + m + ": " + ot.getReturnType());
 	    m.type.asMethodType().restype = ot.getReturnType();
 	}
 	// Error if overriding result type is different

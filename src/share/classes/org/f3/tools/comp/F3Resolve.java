@@ -1453,9 +1453,9 @@ public class F3Resolve {
     Symbol resolveIdent(DiagnosticPosition pos, F3Env<F3AttrContext> env,
                         Name name, int kind, Type pt) {
         Symbol sym = findIdent(env, name, kind, pt);
-        if (sym.kind >= AMBIGUOUS)
+        if (sym.kind >= AMBIGUOUS) {
             return access(sym, pos, env.enclClass.sym.type, name, false, pt);
-        else
+        } else
             return sym;
     }
 

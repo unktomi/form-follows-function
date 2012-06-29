@@ -1313,6 +1313,10 @@ public class F3Pretty implements F3Visitor {
     //@Override
     public void visitForExpression(F3ForExpression tree) {
         try {
+	    if (tree.getMap() != null) {
+		printExpr(tree.getMap());
+		return;
+	    }
             boolean first = true;
             print("for (");
             for (ForExpressionInClauseTree cl : tree.getInClauses()) {
