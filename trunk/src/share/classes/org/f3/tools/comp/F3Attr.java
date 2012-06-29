@@ -1508,6 +1508,7 @@ public class F3Attr implements F3Visitor {
         int forClausesOldSize = forClauses.size();
         Type clause1Type = null;
 	Type monadType = null;
+	Type comonadType = null;
 	boolean isIter = false;
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
 
@@ -1540,9 +1541,17 @@ public class F3Attr implements F3Visitor {
             chk.checkNonVoid(((F3Tree)clause).pos(), exprType);
 
             Type elemtype;
-
-            // if exprtype is T[], T is the element type of the for-each
-            if (types.isSequence(exprType)) {
+	    if (clause.intoVar != null) {
+		if (!types.isComonad(exprType)) {
+		    chk.typeError(clause, MsgSym.MESSAGE_INCOMPATIBLE_TYPES, exprType, syms.f3_ComonadType);
+		    elemtype = exprType;
+		} else {
+		    comonadType = exprType;
+		    elemtype = types.comonadElementType(exprType);
+		    System.err.println("comonad element type: "+ exprType+"="+elemtype);
+		}
+	    } else      // if exprtype is T[], T is the element type of the for-each
+            if (types.isSequence(exprType) && comonadType == null) {
                 elemtype = types.elementType(exprType);
 		isIter = true;
             }
@@ -1638,17 +1647,28 @@ public class F3Attr implements F3Visitor {
             types.sequenceType(bodyType);
         if (true || tree.isBound()) {
             F3Expression map = null;
-	    if (false && (types.isSequence(owntype) && tree.isBound())) {
+	    if (false && ((types.isSequence(owntype) && tree.isBound()))) {
 		map = tree.getMap(f3make, names, clause1Type ,
 				  types.isSequence(bodyType) ? types.elementType(bodyType) : bodyType);
 	    } else {
 		//System.err.println("clause1Type="+clause1Type);
-		Type monadElementType = clause1Type;
-		//System.err.println("monadElementType clause1Type="+monadElementType);
-		if (tree.isBound() || !isIter) {
-		    map = tree.getMonadMap(f3make, names, monadElementType,
-					   bodyType,
-					   monadType, tree.isBound());
+		System.err.println("comonad type="+comonadType);
+		if (comonadType != null) {
+		    Type comonadElementType = clause1Type;
+		    //System.err.println("monadElementType clause1Type="+monadElementType);
+		    map = tree.getComonadMap(f3make, names, types, syms,
+					     comonadType,
+					     types.makeComonadType(comonadType, comonadElementType),
+					     bodyType,
+					     tree.isBound());
+		} else {
+		    Type monadElementType = clause1Type;
+		    //System.err.println("monadElementType clause1Type="+monadElementType);
+		    if (tree.isBound() || !isIter) {
+			map = tree.getMonadMap(f3make, names, monadElementType,
+					       bodyType,
+					       monadType, tree.isBound());
+		    }
 		}
 	    }
             if (map != null) {

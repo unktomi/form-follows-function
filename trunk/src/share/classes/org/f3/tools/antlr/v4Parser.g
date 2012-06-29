@@ -3291,19 +3291,34 @@ inClause
     // in case of error.
     //
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
+    F3Expression comonadVal = null;
+    F3Var var2 = null;
 }
 
-    : formalParameter   { errNodes.append($formalParameter.var);    }
+    : (formalParameter IN)=>(f1=formalParameter   { errNodes.append($f1.var);    }
         IN 
         se=expression   { errNodes.append($se.value);               }
-    
+
         (
               WHERE we=expression   { weVal = $we.value; errNodes.append($we.value); }
             |
         )
         
         {
-            $value = F.at(sPos).InClause($formalParameter.var, $se.value, weVal);
+            $value = F.at(sPos).InClause($f1.var, $se.value, weVal);
+            endPos($value); 
+        })
+|
+    (f2=formalParameter FROM {var2=$f2.var;})? e2=expression INTO f3=formalParameter
+        (
+              WHERE we2=expression   { weVal = $we2.value; errNodes.append($we2.value); }
+            |
+        )
+        {
+            if (var2 == null) {
+                var2 = F.at(sPos).Param(names.fromString("$_"), F.at(sPos).TypeUnknown());
+            }
+            $value = F.at(sPos).InClause($f3.var, e2, weVal, var2);
             endPos($value); 
         }
     ;

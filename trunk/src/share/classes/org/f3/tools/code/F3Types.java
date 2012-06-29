@@ -85,8 +85,19 @@ public class F3Types extends Types {
 	return getMonad(type) != null;
     }
 
+    public boolean isComonad(Type type) {
+	return getComonad(type) != null;
+    }
+
     public Type makeMonadType(Type monadType, Type bodyType) {
         return applySimpleGenericType(syms.f3_MonadType, erasure(monadType), bodyType);
+    }
+
+    public Type makeComonadType(Type comonadType, Type bodyType) {
+        Type result =
+	    applySimpleGenericType(syms.f3_ComonadType, erasure(comonadType), bodyType);
+	System.err.println("make comonad type: "+ comonadType+ ", "+bodyType +"="+result);
+	return result;
     }
 
     public Type getMonad(Type type) {
@@ -95,6 +106,19 @@ public class F3Types extends Types {
 	}
 	for (Type st: supertypes(type)) {
 	    Type t = getMonad(st);
+	    if (t != null) {
+		return t;
+	    }
+	}
+	return null;
+    }
+
+    public Type getComonad(Type type) {
+	if (isComonadType(type)) {
+	    return type;
+	}
+	for (Type st: supertypes(type)) {
+	    Type t = getComonad(st);
 	    if (t != null) {
 		return t;
 	    }
@@ -156,7 +180,30 @@ public class F3Types extends Types {
 	Type monad = getMonad(type);
 	if (monad != null) {
 	    List<Type> list = monad.getTypeArguments();
-	    return list.get(1);
+	    Type elemType = list.get(1);
+	    while (elemType instanceof CapturedType)
+		elemType = ((CapturedType) elemType).wildcard;
+	    while (elemType instanceof WildcardType)
+		elemType = ((WildcardType) elemType).type;
+	    if (elemType == null)
+		return syms.f3_AnyType;
+	    return elemType;
+	}
+	return null;
+    }
+
+    public Type comonadElementType(Type type) {
+	Type comonad = getComonad(type);
+	if (comonad != null) {
+	    List<Type> list = comonad.getTypeArguments();
+	    Type elemType = list.get(1);
+	    while (elemType instanceof CapturedType)
+		elemType = ((CapturedType) elemType).wildcard;
+	    while (elemType instanceof WildcardType)
+		elemType = ((WildcardType) elemType).type;
+	    if (elemType == null)
+		return syms.f3_AnyType;
+	    return elemType;
 	}
 	return null;
     }
@@ -179,6 +226,18 @@ public class F3Types extends Types {
 	    return true;
 	}
 	//System.err.println("not a monad: "+ type);
+	return false;
+    }
+
+    public boolean isComonadType(Type type) {
+        if (type != Type.noType && type != null
+            && type.tag != TypeTags.ERROR
+            && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
+            && erasure(type) == syms.f3_ComonadTypeErasure) {
+	    System.err.println("is a comonad: "+ type);
+	    return true;
+	}
+	System.err.println("not a comonad: "+ type);
 	return false;
     }
 

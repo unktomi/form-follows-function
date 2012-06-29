@@ -32,6 +32,7 @@ import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.ListBuffer;
 import com.sun.tools.mjavac.util.Name;
 import org.f3.api.tree.TypeTree.Cardinality;
+import org.f3.tools.code.*;
 
 /**
  * for (name in seqExpr where whereExpr) bodyExpr
@@ -198,6 +199,109 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 	//System.err.println(apply);
 	return apply;
     }
+
+    public F3Expression getComonadMap(F3TreeMaker F, 
+				      Name.Table names,
+				      F3Types types,
+				      F3Symtab syms,
+				      Type argType,
+				      Type comonadType,
+				      Type resultType,
+				      boolean isBound) {
+        if (apply == null) {
+            List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
+            apply = this.bodyExpr;
+	    boolean first = true;
+            for (List<F3ForExpressionInClause> x = clauses; 
+                 x.nonEmpty(); x = x.tail) {
+                F3ForExpressionInClause clause = x.head;
+		boolean last = x.isEmpty() && clause.var == null;
+		Name select =
+		    last ? names.fromString("map") : names.fromString("coflatmap");
+		Type type = comonadType;
+		if (last) {
+		    type = argType;
+		}
+		first = false;
+                apply = getComonadMap(F, names, types, syms, select, 
+				      argType, type, resultType, clause, apply, isBound);
+            }
+	    System.err.println("apply="+apply);
+        }
+        return apply;
+    }
+
+    F3Expression getComonadMap(F3TreeMaker F, 
+			       Name.Table names,
+			       F3Types types,
+			       F3Symtab syms,
+			       Name map,
+			       Type argType,
+			       Type comonadType,
+			       Type resultType,
+			       F3ForExpressionInClause clause,
+			       F3Expression bodyExpr,
+			       boolean isBound) {
+	//System.err.println(this);
+	//System.err.println("argType="+argType);
+	//System.err.println("monadType="+monadType);
+	//System.err.println("resultType="+resultType);
+	
+        // we want to turn 
+        // bind for (x in xs, y in ys) f(x, y)
+        // into
+        // xs.flatmap(function(x) {ys.map(function(y) { f(x, y)})})
+        F3Modifiers mods = F.Modifiers(F3Flags.BOUND);
+        F3Var var = clause.intoVar;
+        // this tmp var is a hack to work around existing bind gen bugs
+        Name tmpName = names.fromString(var.name+"0$");
+        F3Var tmpVar = F.at(var.pos).Var(var.name,
+					 F.at(var.pos).TypeClass(F.at(var.pos).Type(argType), Cardinality.SINGLETON),
+					 var.mods,
+					 F.at(var.pos).TypeCast(argType, 
+								F.at(var.pos).TypeCast(syms.objectType,
+										       F.at(var.pos).Ident(tmpName))),
+					 isBound ? F3BindStatus.UNIDIBIND: F3BindStatus.UNBOUND,
+					 null, null);
+	var = clause.getVar();
+        F3Select sel = 
+            F.at(var.pos).Select(F.at(var.pos).Ident(tmpVar.name), names.fromString("extract"), false);
+        F3Var tmpVar2 = F.at(var.pos).Var(var.name,
+					  //F.at(var.pos).TypeClass(F.at(var.pos).Type(argType), Cardinality.SINGLETON),
+					  F.at(bodyExpr.pos).TypeUnknown(),
+					  var.mods,
+					  F.at(var.pos).Apply(null, sel, List.<F3Expression>nil()),
+					  isBound ? F3BindStatus.UNIDIBIND: F3BindStatus.UNBOUND,
+					  null, null);	
+
+        ListBuffer<F3Expression> blockBuffer = ListBuffer.lb();
+        blockBuffer.append(tmpVar);
+	blockBuffer.append(tmpVar2);
+        F3Block body = F.at(bodyExpr.pos).Block(0L, blockBuffer.toList(), bodyExpr);
+        ListBuffer<F3Var> parmsBuffer = ListBuffer.lb();
+        parmsBuffer.append(F.at(var.pos).Param(tmpName, F.at(var.pos).TypeClass(F.at(var.pos).Type(types.erasure(comonadType)), Cardinality.SINGLETON)));
+        List<F3Var> params = parmsBuffer.toList();
+	Cardinality card = Cardinality.SINGLETON;
+        F3FunctionValue fun = 
+            F.FunctionValue(mods,
+                            //F.at(bodyExpr.pos).TypeClass(F.at(bodyExpr.pos).Type(types.boxedTypeOrType(resultType)), Cardinality.SINGLETON),
+			    F.at(bodyExpr.pos).TypeUnknown(),
+                            params,
+                            body);
+        F3Ident id = F.at(bodyExpr.pos).Ident(var.name);
+	sel = 
+            F.at(bodyExpr.pos).Select(clause.getSequenceExpression(), map, false);
+
+        ListBuffer<F3Expression> argsBuffer = ListBuffer.lb();
+	argsBuffer.append(fun);
+        F3Expression apply = F.at(bodyExpr.pos).Apply(null, 
+                                                      sel,
+                                                      argsBuffer.toList());
+	//apply = F.at(apply.pos).TypeCast(F.Type(resultType), apply);	
+	//System.err.println(apply);
+	return apply;
+    }
+
 
     F3Expression getMap(F3TreeMaker F, 
                         Name.Table names,

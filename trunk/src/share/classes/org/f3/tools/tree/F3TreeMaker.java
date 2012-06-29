@@ -1087,7 +1087,15 @@ public class F3TreeMaker implements F3TreeFactory {
             F3Var var,
             F3Expression seqExpr,
             F3Expression whereExpr) {
-        F3ForExpressionInClause tree = new F3ForExpressionInClause(var, seqExpr, whereExpr);
+	return InClause(var, seqExpr, whereExpr, null);
+    }
+
+    public F3ForExpressionInClause InClause(
+            F3Var var,
+            F3Expression seqExpr,
+            F3Expression whereExpr,
+	    F3Var fromVar) {
+        F3ForExpressionInClause tree = new F3ForExpressionInClause(var, seqExpr, whereExpr, fromVar);
         tree.pos = pos;
         return tree;
     }

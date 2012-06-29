@@ -1,0 +1,12 @@
+package f3.animation;
+
+import java.lang.Object;
+import  org.f3.animation.InterpolatorFactory;
+
+package class CoreInterpolator extends SimpleInterpolator {
+    package    var i:org.f3.animation.Interpolator;
+
+    override function curve(t: Number) : Number {
+        i.interpolate(t)
+    }
+}

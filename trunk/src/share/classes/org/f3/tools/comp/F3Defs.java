@@ -142,6 +142,7 @@ public class F3Defs {
     public static final String cNonLocalBreakException = runtime_PackageString + ".NonLocalBreakException";
     public static final String cNonLocalContinueException = runtime_PackageString + ".NonLocalContinueException";
     static public final String cMonad = runtime_PackageString + ".Monad";
+    static public final String cComonad = runtime_PackageString + ".Comonad";
     static public final String cTypeCons = runtime_PackageString + ".TypeCons";
     // in runtime package
     private static final String cUtil = runtime_PackageString + ".Util";

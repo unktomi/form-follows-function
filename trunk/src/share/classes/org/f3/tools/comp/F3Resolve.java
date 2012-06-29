@@ -962,6 +962,11 @@ public class F3Resolve {
         boolean checkArgs = mtype instanceof MethodType || mtype instanceof ForAll;
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
+	    if (c.members() == null) {
+		System.err.println("site="+site);
+		System.err.println("members null: "+ c);
+		continue;
+	    }
             for (Scope.Entry e = c.members().lookup(name);
                  e.scope != null;
                  e = e.next()) {
