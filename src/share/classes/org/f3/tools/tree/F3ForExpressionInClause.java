@@ -39,6 +39,7 @@ public class F3ForExpressionInClause extends F3Tree implements ForExpressionInCl
     public Type monadType;
     public final F3Var var;
     public F3Expression seqExpr;
+    public F3Var intoVar;
     private F3Expression whereExpr;
     private boolean hasWhere = false;
     public Name label;
@@ -61,10 +62,19 @@ public class F3ForExpressionInClause extends F3Tree implements ForExpressionInCl
             F3Var var,
             F3Expression seqExpr,
             F3Expression whereExpr) {
+	this(var, seqExpr, whereExpr, null);
+    }
+
+    protected F3ForExpressionInClause(
+            F3Var var,
+            F3Expression seqExpr,
+            F3Expression whereExpr,
+	    F3Var intoVar) {
         this.var = var;
         this.seqExpr = seqExpr;
         this.whereExpr = whereExpr;
         this.hasWhere = whereExpr != null;
+	this.intoVar = intoVar;
     }
 
     public void accept(F3Visitor v) {

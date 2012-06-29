@@ -83,6 +83,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_java_lang_VoidType;
     public final Type f3_SequenceType;
     public final Type f3_MonadType;
+    public final Type f3_ComonadType;
     public final Type f3_TypeConsType;
     public final Type[] f3_TypeCons;
 
@@ -93,6 +94,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_SequenceTypeErasure;
     public final Type f3_TypeConsTypeErasure;
     public final Type f3_MonadTypeErasure;
+    public final Type f3_ComonadTypeErasure;
     public final Type f3_ShortArray;
     public final Type f3_ObjectArray;
     static public final int MAX_FIXED_PARAM_LENGTH = 8;
@@ -232,6 +234,7 @@ public class F3Symtab extends Symtab {
         f3_java_lang_VoidType = types.boxedClass(voidType).type;
         f3_SequenceType = enterClass(F3Defs.cSequence);
         f3_MonadType = enterClass(F3Defs.cMonad);
+        f3_ComonadType = enterClass(F3Defs.cComonad);
         f3_TypeConsType = enterClass(F3Defs.cTypeCons);
 	f3_TypeCons = new Type[5];
 	for (int i = 1; i <= 5; i++) {
@@ -245,6 +248,7 @@ public class F3Symtab extends Symtab {
         f3_SequenceTypeErasure = types.erasure(f3_SequenceType);
         f3_TypeConsTypeErasure = types.erasure(f3_TypeConsType);
         f3_MonadTypeErasure = types.erasure(f3_MonadType);
+        f3_ComonadTypeErasure = types.erasure(f3_ComonadType);
         f3_ShortArray = new ArrayType(shortType, arrayClass);
         f3_ObjectArray = new ArrayType(objectType, arrayClass);
         f3_KeyValueType = enterClass("f3.animation.KeyValue");

@@ -237,7 +237,13 @@ $PREFIX:{T|
 
    @Override
    public Sequence<T> mplus(Monad<Sequence,T> m) {
-       return add((Sequence<T> m);
+       Sequence<T> s = (Sequence<T>) m;
+       if (s.size() == 0) return this;
+       if (this.size() == 0) return s;
+       ObjectArraySequence<T> result = new ObjectArraySequence<T>(size()+s.size(), TypeInfo.<T>getTypeInfo());
+       result.add(this);
+       result.add(s);
+       return result;
    }
    @Override
    public Sequence<T> mzero() {
@@ -254,15 +260,26 @@ $PREFIX:{T|
     }
 
     @Override
+    public <Y> Sequence<Y> coflatmap(Function1<? extends Y, ? super Comonad<Sequence,T>> f) {
+	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
+	int len = size();
+	for (int i = 0; i < len; i++) {
+	    Y y = f.invoke(getSlice(i, len));
+	    result.add(y);
+	}
+	return result;
+    }
+
+    @Override
+    public T extract() {
+	return get(0);
+    }
+
+    @Override
     public <Y> Sequence<Y> flatmap(Function1<? extends Monad<Sequence, Y>, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
 	for (int i = 0; i < size(); i++) {
 	    Object obj = f.invoke(get(i));
-	    if (false) {
-		if (!(obj instanceof Sequence)) {
-		    obj = Sequences.singleton(TypeInfo.<Y>getTypeInfo(), (Y)obj);
-		}
-	    }
 	    final Sequence<Y> ys = (Sequence<Y>)obj;
 	    result.add(ys);
 	}
