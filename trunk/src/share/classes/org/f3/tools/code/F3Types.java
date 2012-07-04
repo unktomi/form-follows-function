@@ -105,6 +105,10 @@ public class F3Types extends Types {
         return applySimpleGenericType(syms.f3_MonadType, erasure(monadType), bodyType);
     }
 
+    public Type makeFunctorType(Type functorType, Type bodyType) {
+        return applySimpleGenericType(syms.f3_FunctorType, erasure(functorType), bodyType);
+    }
+
     public Type makeComonadType(Type comonadType, Type bodyType) {
         Type result =
 	    applySimpleGenericType(syms.f3_ComonadType, erasure(comonadType), bodyType);
@@ -1129,6 +1133,127 @@ public class F3Types extends Types {
 	//System.err.println("norm visit: "+ t.getClass() +" "+t);
         return new TypeNormalizer().visit(t, true);
     }
+
+    public Type normalize(Type t, boolean preserveWildcards) {
+	if (t.isPrimitive()) {
+	    return t;
+	}
+        return new TypeNormalizer2().visit(t, preserveWildcards);
+    }
+
+    class TypeNormalizer2 extends SimpleVisitor<Type, Boolean> {
+	@Override
+            public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) {
+	    TypeVar t = t0;
+	    Type upper = visit(t.getUpperBound(), preserveWildcards);
+	    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
+		return upper;
+	    }
+	    t = new TypeVar(t.tsym, upper, visit(t.lower, preserveWildcards));
+	    return t;
+	}
+	
+            @Override
+            public Type visitCapturedType(CapturedType t, Boolean preserveWildcards) {
+                Type t1 = visit(t.wildcard, preserveWildcards);
+		//System.err.println("captured: "+ t + " => "+ t1);
+		return t1;
+            }
+
+            @Override
+            public Type visitWildcardType(WildcardType t0, Boolean preserveWildcards) {
+		WildcardType t = t0;
+		Type vbound = t.bound;
+		Type vtype = t.type;
+		Type bound1 = null;
+		Type type1 = null;
+		System.err.println("t0="+t0);
+		System.err.println("bound1="+bound1);
+		System.err.println("vtype="+vtype);
+		if (vbound != null) {
+		    bound1 = visit(vbound, preserveWildcards);
+		} 
+		if (bound1 != null && !preserveWildcards) {
+		    //System.err.println("wildcard: ! "+ t0 + " => "+ bound1);
+		    return bound1;
+		}
+		if (vtype != null) {
+		    type1 = visit(vtype, preserveWildcards);
+		    if (!preserveWildcards) {
+			System.err.println("type1="+type1);
+			return type1;
+		    }
+		} 
+		if (bound1 != vbound || vtype != type1) {
+		    if (type1 instanceof WildcardType) {
+			//t = (WildcardType)type1;
+			bound1 = ((WildcardType)type1).bound;
+			type1 = ((WildcardType)type1).type;
+		    } 
+		    if (bound1 != null) {
+			t = new WildcardType(type1, t.kind, t.tsym, (TypeVar)bound1);
+		    } else {
+			t = new WildcardType(type1, t.kind, t.tsym);
+		    }
+		}
+		//System.err.println("wildcard: "+ t0 + " => "+ t);
+                return t;
+            }
+
+            @Override
+            public Type visitClassType(ClassType t0, Boolean preserveWildcards) {
+		ClassType t = t0;
+                List<Type> args2 = visit(t.getTypeArguments(), preserveWildcards);
+                Type encl2 = visit(t.getEnclosingType(), preserveWildcards);
+		System.err.println("arg2="+args2);
+		boolean isFunc = isF3Function(t);
+                if (//!isFunc &&
+		    (!isSameTypes(args2, t.getTypeArguments()) ||
+		     !isSameType(encl2, t.getEnclosingType()))) {
+		    t = new ClassType(encl2, args2, t.tsym);
+                }
+                return t;
+            }
+
+            public Type visitType(Type t, Boolean preserveWildcards) {
+		Type t1 = visitType0(t, preserveWildcards);
+		//System.err.println("type "+t + " => " + t1);
+		return t1;
+	    }
+
+            public Type visitType0(Type t, Boolean preserveWildcards) {
+                if (t == syms.botType) {
+                    return syms.objectType;
+                }
+                else if (isSameType(t, syms.f3_EmptySequenceType)) {
+                    return sequenceType(syms.objectType);
+                }
+                else if (t == syms.unreachableType) {
+                    return syms.objectType;
+                }
+                else {
+		    if (!isSameType(t, syms.voidType)) {
+			return boxedTypeOrType(t);
+		    } else {
+			return t;
+		    }
+                }
+            }
+
+            public List<Type> visit(List<Type> ts, Boolean preserveWildcards) {
+                ListBuffer<Type> buf = ListBuffer.lb();
+                for (Type t : ts) {
+		    Type xt = visit(t, preserveWildcards);
+		    if (xt != null) {
+			buf.append(xt);
+		    } else {
+			System.err.println("normalized to null: "+ t);
+		    }
+                }
+                return buf.toList();
+            }
+    }
+
 
     public String toSignature(Type t) {
         return writer.typeSig(t).toString();
