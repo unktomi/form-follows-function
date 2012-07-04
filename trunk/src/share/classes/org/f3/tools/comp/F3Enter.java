@@ -315,7 +315,7 @@ public class F3Enter extends F3TreeScanner {
 					   env.info.scope.owner,
 					   env)) {
 		//System.err.println("entering "+t+ " into "+ env);
-		env.info.scope.enter(((TypeVar)t).tsym);
+		env.info.scope.enterIfAbsent(((TypeVar)t).tsym);
 	    }
 	}
 	super.visitFunctionDefinition(tree);

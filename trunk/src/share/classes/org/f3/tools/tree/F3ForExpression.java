@@ -209,22 +209,21 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 				      Type resultType,
 				      boolean isBound) {
         if (apply == null) {
-            List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
+            List<F3ForExpressionInClause> clauses = inClauses;
             apply = this.bodyExpr;
 	    boolean first = true;
             for (List<F3ForExpressionInClause> x = clauses; 
                  x.nonEmpty(); x = x.tail) {
                 F3ForExpressionInClause clause = x.head;
-		boolean last = x.isEmpty() && clause.var == null;
 		Name select =
-		    last ? names.fromString("map") : names.fromString("coflatmap");
+		    first ? names.fromString("map") : names.fromString("coflatmap");
 		Type type = comonadType;
-		if (last) {
-		    type = argType;
+		if (first) {
+		    type = types.comonadElementType(comonadType);
 		}
 		first = false;
                 apply = getComonadMap(F, names, types, syms, select, 
-				      argType, type, resultType, clause, apply, isBound);
+				      argType, type, resultType, clause, apply, isBound, first);
             }
 	    System.err.println("apply="+apply);
         }
@@ -241,26 +240,45 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 			       Type resultType,
 			       F3ForExpressionInClause clause,
 			       F3Expression bodyExpr,
-			       boolean isBound) {
+			       boolean isBound,
+			       boolean first) {
 	//System.err.println(this);
 	//System.err.println("argType="+argType);
 	//System.err.println("monadType="+monadType);
 	//System.err.println("resultType="+resultType);
 	
         // we want to turn 
-        // bind for (x in xs, y in ys) f(x, y)
-        // into
-        // xs.flatmap(function(x) {ys.map(function(y) { f(x, y)})})
+        // for (x in c, sum(x) into y, length(y) into z) z
+	// 
+	// into:
+	//
+        // c.coflatmap(function(xs) {
+	//    let ys = xs.coflatmap(function(xs) {
+	//       sum(xs);
+	//    }
+        //    let zs = ys.coflatmap(function(ys) {
+        //        length(ys);
+        //    } 
+        //    zs.coflatmap(function(zs) {
+        //    }
+        //}
+	//
+	/*
         F3Modifiers mods = F.Modifiers(F3Flags.BOUND);
         F3Var var = clause.intoVar;
         // this tmp var is a hack to work around existing bind gen bugs
         Name tmpName = names.fromString(var.name+"0$");
+	F3Expression sel = first ? clause.getSequenceExpression() : 
+	    F.at(var.pos).TypeCast(argType, 
+				   F.at(var.pos).TypeCast(syms.objectType,
+							  F.at(var.pos).Ident(tmpName)));
+	sel = 
+            F.at(bodyExpr.pos).Select(sel, map, false);
+
         F3Var tmpVar = F.at(var.pos).Var(var.name,
 					 F.at(var.pos).TypeClass(F.at(var.pos).Type(argType), Cardinality.SINGLETON),
 					 var.mods,
-					 F.at(var.pos).TypeCast(argType, 
-								F.at(var.pos).TypeCast(syms.objectType,
-										       F.at(var.pos).Ident(tmpName))),
+					 apply,
 					 isBound ? F3BindStatus.UNIDIBIND: F3BindStatus.UNBOUND,
 					 null, null);
 	var = clause.getVar();
@@ -276,7 +294,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 
         ListBuffer<F3Expression> blockBuffer = ListBuffer.lb();
         blockBuffer.append(tmpVar);
-	blockBuffer.append(tmpVar2);
+	//blockBuffer.append(tmpVar2);
         F3Block body = F.at(bodyExpr.pos).Block(0L, blockBuffer.toList(), bodyExpr);
         ListBuffer<F3Var> parmsBuffer = ListBuffer.lb();
         parmsBuffer.append(F.at(var.pos).Param(tmpName, F.at(var.pos).TypeClass(F.at(var.pos).Type(types.erasure(comonadType)), Cardinality.SINGLETON)));
@@ -300,6 +318,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 	//apply = F.at(apply.pos).TypeCast(F.Type(resultType), apply);	
 	//System.err.println(apply);
 	return apply;
+	*/
+	return null;
     }
 
 

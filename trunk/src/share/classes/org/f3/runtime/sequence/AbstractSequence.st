@@ -230,7 +230,8 @@ $PREFIX:{T|
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
 	for (int i = 0; i < size(); i++) {
-	    result.add(f.invoke(get(i)));
+	    Y y = f.invoke(get(i));
+	    result.add(y);
 	}
 	return result;
     }
@@ -263,8 +264,11 @@ $PREFIX:{T|
     public <Y> Sequence<Y> coflatmap(Function1<? extends Y, ? super Comonad<Sequence,T>> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
 	int len = size();
+	System.err.println("coflatmap: "+ this);
 	for (int i = 0; i < len; i++) {
+	    System.err.println("f="+f);
 	    Y y = f.invoke(getSlice(i, len));
+	    System.err.println("y "+ i+": "+ y.getClass() + ": "+ y);
 	    result.add(y);
 	}
 	return result;

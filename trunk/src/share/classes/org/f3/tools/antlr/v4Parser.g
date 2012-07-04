@@ -921,7 +921,7 @@ classDefinition [ F3Modifiers mods, int pos ]
             n1=name 
 
         (OF|FROM|TO)=>((OF gas=genericParams[false, false] {
-            exprbuff.appendList(gas);
+           if (gas != null) exprbuff.appendList(gas);
         })?
         |
         (FROM contraGas=genericParams[true, false] {
@@ -3309,16 +3309,13 @@ inClause
             endPos($value); 
         })
 |
-    (f2=formalParameter FROM {var2=$f2.var;})? e2=expression INTO f3=formalParameter
+     e2=expression INTO f3=formalParameter (IN f4=formalParameter { var2 = $f4.var ;} )?
         (
               WHERE we2=expression   { weVal = $we2.value; errNodes.append($we2.value); }
             |
         )
         {
-            if (var2 == null) {
-                var2 = F.at(sPos).Param(names.fromString("$_"), F.at(sPos).TypeUnknown());
-            }
-            $value = F.at(sPos).InClause($f3.var, e2, weVal, var2);
+            $value = F.at(sPos).InClause(var2, e2, weVal, $f3.var);
             endPos($value); 
         }
     ;
@@ -6269,7 +6266,7 @@ genericArguments0
    ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
    :
-   ga1=genericArgument 
+   (ga1=genericArgument 
    {
 	exprbuff.append($ga1.value);
    } 
@@ -6278,7 +6275,7 @@ genericArguments0
 	{
             exprbuff.append($ga2.value);
         }
-   )* 
+   )*)?
    {$value = exprbuff.toList();}
 ;
 
@@ -6347,12 +6344,12 @@ genericParam[boolean contravar, boolean covar]
 }
 
     : (t=identifier  { $value = $t.value; })  (COLON)=>(COLON bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
-/*    
+
       | 
        (CLASS n=identifier OF gas=genericParams[false, false] { 
         $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
       })
-
+/*    
     | QUES 
         (  
             ( 
