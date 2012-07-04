@@ -1534,10 +1534,19 @@ public abstract class F3TranslationSupport {
         * Its type is that of the corresponding interface and it is a final parameter.
         * */
         JCVariableDecl ReceiverParam(F3ClassDeclaration cDecl) {
+	    JCExpression type = id(interfaceName(cDecl));
+	    Type t = cDecl.type;
+	    if (!t.getTypeArguments().isEmpty()) {
+		List<JCExpression> targs = List.nil();
+		for (Type ta : t.getTypeArguments()) {
+		    targs = targs.append(makeType(ta));
+		}
+		type = m().TypeApply(type, targs);
+	    }
             return m().VarDef(
                     m().Modifiers(Flags.PARAMETER | Flags.FINAL),
                     defs.receiverName,
-                    id(interfaceName(cDecl)),
+                    type,
                     null);
         }
 
@@ -1691,11 +1700,22 @@ public abstract class F3TranslationSupport {
         }
 
         protected JCMethodDecl Method(JCModifiers modifiers, Type returnType, Name methodName, List<JCVariableDecl> params, List<JCStatement> stmts, MethodSymbol methSym) {
+	    //System.err.println("sym2="+methSym);
+	    ListBuffer<Type> targsBuf = ListBuffer.lb();
+	    if ((modifiers.flags & Flags.STATIC) != 0) {
+		targsBuf.appendList(methSym.owner.type.getTypeArguments());
+	    }
+	    targsBuf.appendList(methSym.type.getTypeArguments());
+	    List<Type> targs = targsBuf.toList();
+	    //System.err.println("sym="+methSym);
+	    //System.err.println("sym.owner="+methSym.owner);
+	    //System.err.println("targs="+targs);
+
             JCMethodDecl methDecl = m().MethodDef(
                                         modifiers,
                                         methodName,
                                         makeType(returnType),
-                                        List.<JCTypeParameter>nil(),
+					m().TypeParams(targs),
                                         params != null ? params : List.<JCVariableDecl>nil(),
                                         List.<JCExpression>nil(),
                                         stmts == null ? null : Block(stmts),

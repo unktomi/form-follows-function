@@ -1887,12 +1887,20 @@ public abstract class F3AbstractTranslation
         }
 
         private JCMethodDecl makeMethod(long flags, JCBlock body, List<JCVariableDecl> params) {
-	    //System.err.println("mtype="+mtype.getClass());
+	    ListBuffer<Type> targsBuf = ListBuffer.lb();
+	    if (isInstanceFunctionAsStaticMethod) {
+		targsBuf.appendList(sym.owner.type.getTypeArguments());
+	    } 
+	    targsBuf.appendList(sym.type.getTypeArguments());
+	    List<Type> targs = targsBuf.toList();
+	    //System.err.println("sym="+sym);
+	    //System.err.println("sym.owner="+sym.owner);
+	    //System.err.println("targs="+targs);
             JCMethodDecl meth = m().MethodDef(
                     addAccessAnnotationModifiers(diagPos, tree.mods.flags, m().Modifiers(flags)),
                     functionName(sym, isInstanceFunctionAsStaticMethod, isBound),
                     makeReturnTypeTree(diagPos, sym, isBound),
-                    m().TypeParams(sym.type.getTypeArguments()),
+                    m().TypeParams(targs),
                     params,
                     m().Types(mtype.getThrownTypes()), // makeThrows(diagPos), //
                     body,

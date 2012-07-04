@@ -855,7 +855,10 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 
                         if (isMixin) {
                             mixing.append(stype);
-                            chk.checkNotRepeated(stype.pos(), types.erasure(st), mixinSet);
+                            chk.checkNotRepeated(stype.pos(), 
+						 //types.erasure(st), 
+						 st,
+						 mixinSet);
                         } else {
                             supertype = extending.isEmpty() ? st : null;
                             extending.append(stype);
@@ -897,7 +900,10 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                 Type i = attr.attribBase(iface, baseEnv, false, true, true);
                 if (i.tag == CLASS) {
                     interfaces.append(i);
-                    chk.checkNotRepeated(iface.pos(), types.erasure(i), interfaceSet);
+                    chk.checkNotRepeated(iface.pos(), 
+					 //types.erasure(i), 
+					 i,
+					 interfaceSet);
                 }
             }
             if ((c.flags_field & ANNOTATION) != 0) {

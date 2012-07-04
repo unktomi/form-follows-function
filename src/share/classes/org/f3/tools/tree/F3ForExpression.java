@@ -121,26 +121,35 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 				    boolean isBound) {
 
         if (apply == null) {
-	    //System.err.println("argType="+argType);
-	    //System.err.println("resultType="+resultType);
+	    System.err.println("argType="+argType);
+	    System.err.println("resultType="+resultType);
             List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
             apply = this.bodyExpr;
-	    boolean first = true;
+	    int i = 0;
             for (List<F3ForExpressionInClause> x = clauses; 
                  x.nonEmpty(); x = x.tail) {
                 F3ForExpressionInClause clause = x.head;
+		boolean first = i == 0;
 		Name select =
 		    first ? names.fromString("map") : names.fromString("flatmap");
 		Type type = argType;
 		if (!first) {
 		    type = monadType;
-		    //System.err.println("monad type: " + type);
+		    System.err.println("monad type: " + type);
 		}
-		first = false;
-                apply = getMonadMap(F, names, select, argType, type, resultType, clause, apply, isBound);
+		boolean second = i == 1;
+		if (!first) {
+		    apply = F.TypeCast(F.Type(monadType), apply);
+		}
+                apply = getMonadMap(F, names, select, argType, type, resultType, clause, apply, isBound);		
+		if (!first) {
+		    apply = F.TypeCast(F.Type(monadType), apply);
+		}
+		i++;
             }
 	    //System.err.println("apply="+apply);
         }
+	System.err.println("apply="+apply);
         return apply;
     }
 
