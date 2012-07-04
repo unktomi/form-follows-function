@@ -419,6 +419,8 @@ public class F3ClassReader extends ClassReader {
                     mtype = sigToType(names.fromString(sig));
                 }
                 catch (Exception e) {
+		    System.err.println("sig="+sig);
+		    e.printStackTrace();
                     throw new AssertionError("Bad F3 signature");
                 }
             }

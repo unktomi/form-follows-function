@@ -41,6 +41,7 @@ import org.f3.tools.code.F3Flags;
 import org.f3.tools.code.F3Symtab;
 import org.f3.tools.code.F3Types;
 import org.f3.tools.code.F3VarSymbol;
+import org.f3.tools.code.FunctionType;
 import org.f3.tools.comp.F3Defs;
 import static org.f3.api.F3BindStatus.*;
 import static com.sun.tools.mjavac.code.Flags.*;
@@ -442,13 +443,55 @@ public class F3TreeMaker implements F3TreeFactory {
 		return exp;
 	    }
 	} 
-	t = types.erasure(types.normalize(t));
+	//t = types.erasure(types.normalize(t));
+	t = types.normalize(t);
 	if (t instanceof CapturedType) {
 	    throw new RuntimeException("can't handle captured type:"+t);
 	}
 	if (t instanceof Type.MethodType) {
 	    t = syms.makeFunctionType((Type.MethodType)t);
 	    //System.err.println(ityp+ "=>"+t);
+	}
+	Cardinality tcard = Cardinality.SINGLETON;
+	if (types.isSequence(t)) {
+	    tcard = Cardinality.ANY;
+	    t = types.elementType(t);
+	}
+	if (t instanceof FunctionType) {
+	    FunctionType funType = (FunctionType)t;
+	    ListBuffer<F3Type> ts = ListBuffer.<F3Type>lb();
+	    for (Type paramType: funType.getParameterTypes()) {
+		Cardinality card = Cardinality.SINGLETON;
+		if (types.isSequence(paramType)) {
+		    paramType = types.elementType(paramType);
+		    card = Cardinality.ANY;
+		}
+		F3Expression expr = Type(paramType);
+		F3Type typ = null;
+		if (expr instanceof F3Type) {
+		    typ = (F3Type)expr;
+		} else {
+		    typ = TypeClass(expr, card);
+		}
+		ts.append(typ);
+	    }
+	    F3Type resTyp = null;
+	    Cardinality card = Cardinality.SINGLETON;
+	    Type res = funType.getReturnType();
+	    if (types.isSequence(res)) {
+		res = types.elementType(res);
+		card = Cardinality.ANY;
+	    }
+	    F3Expression resExpr = Type(res);
+	    if (resExpr instanceof F3Type) {
+		resTyp = (F3Type)resExpr;
+	    } else {
+		resTyp = TypeClass(resExpr, card);
+	    }
+	    F3Type rt = TypeFunctional(ts.toList(),
+				       resTyp, tcard);
+	    rt.setType(ityp);
+	    return rt;
 	}
         F3Expression tp;
         switch (t.tag) {
@@ -508,7 +551,7 @@ public class F3TreeMaker implements F3TreeFactory {
             default:
                 throw new AssertionError("unexpected type: " + t.getClass()+": "+t);
         }
-        return tp.setType(t);
+        return tp.setType(ityp);
     }
 
     /** Create a list of trees representing given list of types.

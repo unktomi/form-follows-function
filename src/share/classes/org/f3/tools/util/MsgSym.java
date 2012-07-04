@@ -150,6 +150,7 @@ public class MsgSym {
     public static final String MESSAGE_INCOMPATIBLE_TYPES = "incompatible.types";
     public static final String MESSAGE_INCOMPATIBLE_TYPES_1 = "incompatible.types.1";
     public static final String MESSAGE_NOT_WITHIN_BOUNDS = "not.within.bounds";
+    public static final String MESSAGE_NOT_WITHIN_BOUNDS_EXPLAIN = "not.within.bounds.explain";
     public static final String MESSAGE_VOID_NOT_ALLOWED_HERE = "void.not.allowed.here";
     public static final String MESSAGE_ILLEGAL_GENERIC_TYPE_FOR_INSTOF = "illegal.generic.type.for.instof";
     public static final String MESSAGE_ILLEGAL_COMBINATION_OF_MODIFIERS = "illegal.combination.of.modifiers";

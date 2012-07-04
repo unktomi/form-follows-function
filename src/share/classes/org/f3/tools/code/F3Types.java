@@ -35,7 +35,9 @@ import com.sun.tools.mjavac.jvm.ClassWriter;
 import static com.sun.tools.mjavac.code.Kinds.*;
 import static com.sun.tools.mjavac.code.Flags.*;
 import static com.sun.tools.mjavac.code.TypeTags.*;
-
+import java.util.Set;
+import java.util.HashSet;
+import org.f3.tools.comp.F3Attr.TypeCons; // hack
 /**
  *
  * @author bothner
@@ -81,12 +83,22 @@ public class F3Types extends Types {
                     type != syms.f3_ColorType;
     }
 
+    public boolean isFunctor(Type type) {
+	return getFunctor(type) != null;
+    }
+
     public boolean isMonad(Type type) {
 	return getMonad(type) != null;
     }
 
     public boolean isComonad(Type type) {
 	return getComonad(type) != null;
+    }
+
+    public Type makeTypeCons(Type thisType, List<Type> args) {
+	List<Type> list = List.of(thisType);
+	list.appendList(args);
+        return applySimpleGenericType(syms.f3_TypeCons[args.size()], list);
     }
 
     public Type makeMonadType(Type monadType, Type bodyType) {
@@ -96,8 +108,21 @@ public class F3Types extends Types {
     public Type makeComonadType(Type comonadType, Type bodyType) {
         Type result =
 	    applySimpleGenericType(syms.f3_ComonadType, erasure(comonadType), bodyType);
-	System.err.println("make comonad type: "+ comonadType+ ", "+bodyType +"="+result);
+	//System.err.println("make comonad type: "+ comonadType+ ", "+bodyType +"="+result);
 	return result;
+    }
+
+    public Type getFunctor(Type type) {
+	if (isFunctorType(type)) {
+	    return type;
+	}
+	for (Type st: supertypes(type)) {
+	    Type t = getFunctor(st);
+	    if (t != null) {
+		return t;
+	    }
+	}
+	return null;
     }
 
     public Type getMonad(Type type) {
@@ -117,20 +142,44 @@ public class F3Types extends Types {
 	if (isComonadType(type)) {
 	    return type;
 	}
-	for (Type st: supertypes(type)) {
-	    Type t = getComonad(st);
-	    if (t != null) {
-		return t;
+	for (Type st: supertypesClosure(type)) {
+	    if (isComonadType(st)) {
+		return st;
 	    }
 	}
 	return null;
     }
 
+    public Type getTypeConsThis(Type type)  {
+	if (type == null) return null;
+	if (isSequence(type)) {
+	    return type;
+	}
+	Type t = getTypeCons(type);
+	if (t == null) return null;
+	//System.err.println("type="+type);
+	//System.err.println("typecons="+t);
+	List<Type> targs = t.getTypeArguments();
+	if (targs.size() > 0) {
+	    Type result = targs.get(0);
+	    targs = targs.tail;
+	    if (targs.size() > 0) {
+		result = applySimpleGenericType(result, targs.toArray(new Type[targs.size()]));
+	    }
+	    //System.err.println("result="+result);
+	}
+	return null;
+    }
+
     public Type getTypeCons(Type type) {
+	if (type == null) {
+	    return null;
+	}
 	if (isTypeConsType(type)) {
 	    return type;
 	}
-	for (Type st: supertypesClosure(type)) {
+	List<Type> supers = supertypesClosure(type);
+	if (supers != null) for (Type st: supers) {
 	    if (isTypeConsType(st)) {
 		return st;
 	    }
@@ -143,6 +192,9 @@ public class F3Types extends Types {
     }
 
     public boolean isTypeConsType(Type type) {
+	if (isMonadType(type) || isComonadType(type)) {
+	    return true;
+	}
         return type != Type.noType && type != null
             && type.tag != TypeTags.ERROR
             && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
@@ -174,6 +226,22 @@ public class F3Types extends Types {
         return isArray(type) ?
             elemtype(type) :
             elementType(type);
+    }
+
+    public Type functorElementType(Type type) {
+	Type functor = getFunctor(type);
+	if (functor != null) {
+	    List<Type> list = functor.getTypeArguments();
+	    Type elemType = list.get(1);
+	    while (elemType instanceof CapturedType)
+		elemType = ((CapturedType) elemType).wildcard;
+	    while (elemType instanceof WildcardType)
+		elemType = ((WildcardType) elemType).type;
+	    if (elemType == null)
+		return syms.f3_AnyType;
+	    return elemType;
+	}
+	return null;
     }
 
     public Type monadElementType(Type type) {
@@ -217,6 +285,18 @@ public class F3Types extends Types {
 	return null;
     }
 
+    public boolean isFunctorType(Type type) {
+        if (type != Type.noType && type != null
+            && type.tag != TypeTags.ERROR
+            && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
+            && erasure(type) == syms.f3_FunctorTypeErasure) {
+	    //System.err.println("is a monad: "+ type);
+	    return true;
+	}
+	//System.err.println("not a monad: "+ type);
+	return false;
+    }
+
     public boolean isMonadType(Type type) {
         if (type != Type.noType && type != null
             && type.tag != TypeTags.ERROR
@@ -234,10 +314,10 @@ public class F3Types extends Types {
             && type.tag != TypeTags.ERROR
             && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
             && erasure(type) == syms.f3_ComonadTypeErasure) {
-	    System.err.println("is a comonad: "+ type);
+	    //System.err.println("is a comonad: "+ type);
 	    return true;
 	}
-	System.err.println("not a comonad: "+ type);
+	//System.err.println("not a comonad: "+ type);
 	return false;
     }
 
@@ -259,6 +339,10 @@ public class F3Types extends Types {
 
     public Type applySimpleGenericType(Type base, Type... parameter) {
         List<Type> actuals = List.from(parameter);
+	return applySimpleGenericType(base, actuals);
+    }
+
+    public Type applySimpleGenericType(Type base, List<Type> actuals) {
         Type clazzOuter = base.getEnclosingType();
         return new ClassType(clazzOuter, actuals, base.tsym);
     }
@@ -379,6 +463,7 @@ public class F3Types extends Types {
 	} catch (StackOverflowError exc) {
 	    System.err.println("circular: "+ t + " " + s);
 	    System.err.println("circular: "+ t.getClass() + " " + s.getClass());
+	    Thread.currentThread().dumpStack();
 	    return false;
 	}
     }
@@ -451,6 +536,29 @@ public class F3Types extends Types {
         }
         if (t == syms.intType && s == syms.charType)
             return true;
+	/*
+	if (isSameTypeCons(t, s)) {
+	    return true;
+	}
+	*/
+	return false;
+    }
+
+    boolean isSameTypeCons(Type a, Type b) {
+	if (true) {
+	    Type t = getTypeConsThis(a);
+	    if (t != null && t != a) {
+		if (isSameType(t, b)) {
+		    return true;
+		}
+	    }
+	    t = getTypeConsThis(b);
+	    if (t != null && t != b) {
+		if (isSameType(a, t)) {
+		    return true;
+		}
+	    }
+	}
         return false;
     }
 
@@ -657,7 +765,8 @@ public class F3Types extends Types {
 	    System.err.println("a="+a);
 	    System.err.println("b="+b);
         }*/
-	return super.isSameType(a, b);
+	boolean result = super.isSameType(a, b);
+	return result;
     }
 
     public boolean isNumeric(Type type) {
@@ -710,6 +819,23 @@ public class F3Types extends Types {
 	    if (t.bound != null && t.bound != syms.objectType) {
 		buffer.append(": ");
 		visit(t.bound, buffer);
+	    }
+	    if (t instanceof TypeCons) {
+		buffer.append(" of ");
+		TypeCons tc = (TypeCons)t;
+		List<Type> targs = tc.args;
+		String str = "";
+		if (targs.size() > 1) {
+		    buffer.append("(");
+		}
+		for (Type targ: targs) {
+		    buffer.append(str);
+		    visit(targ, buffer);
+		    str = ", ";
+		}
+		if (targs.size() > 1) {
+		    buffer.append(")");
+		}
 	    }
 	    return null;
 	}
@@ -893,7 +1019,7 @@ public class F3Types extends Types {
      */
     public Type normalize(Type t) {
         class TypeNormalizer extends SimpleVisitor<Type, Boolean> {
-
+	    Set visited = new HashSet();
             @Override
             public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) {
 		TypeVar t = t0;
@@ -901,9 +1027,7 @@ public class F3Types extends Types {
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
 		    return upper;
 		}
-		t = new TypeVar(t.tsym.name, t.tsym.owner, t.lower);
-		t.bound = upper;
-		//System.err.println("typevar: "+ t0.getClass()+": "+t0 + " => "+ t + " upper: "+ upper+" lower:"+t.lower+" owner: "+ t.tsym.owner);
+		t = new TypeVar(t.tsym, upper, t.lower);
 		return t;
             }
 
@@ -963,6 +1087,10 @@ public class F3Types extends Types {
             }
 
             public Type visitType(Type t, Boolean preserveWildcards) {
+		if (visited.contains(t.tsym)) {
+		    return t;
+		}
+		visited.add(t);
 		Type t1 = visitType0(t, preserveWildcards);
 		//System.err.println("type "+t + " => " + t1);
 		return t1;

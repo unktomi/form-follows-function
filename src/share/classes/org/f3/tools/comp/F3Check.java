@@ -612,13 +612,13 @@ public class F3Check {
 	    a = types.upperBound(a);
 	    for (List<Type> l = types.getBounds(bs); l.nonEmpty(); l = l.tail) {
 		if (!types.isSubtype(a, l.head)) {
-		    log.error(pos, MsgSym.MESSAGE_NOT_WITHIN_BOUNDS, a);
+		    log.error(pos, MsgSym.MESSAGE_NOT_WITHIN_BOUNDS_EXPLAIN, a, l.head);
 		    return;
 		}
 	    }
 	} else if (a.isExtendsBound()) {
 	    if (!types.isCastable(bs.getUpperBound(), types.upperBound(a), Warner.noWarnings))
-		log.error(pos, MsgSym.MESSAGE_NOT_WITHIN_BOUNDS, a);
+		log.error(pos, MsgSym.MESSAGE_NOT_WITHIN_BOUNDS_EXPLAIN, a, bs.getUpperBound());
 	} else if (a.isSuperBound()) {
 	    if (types.notSoftSubtype(types.lowerBound(a), bs.getUpperBound()))
 		log.error(pos, MsgSym.MESSAGE_NOT_WITHIN_BOUNDS, a);
@@ -2082,10 +2082,12 @@ public class F3Check {
             supertypes = supertypes.prepend(supertype);
         }
         for (List<Type> l = supertypes; l.nonEmpty(); l = l.tail) {
+	    /*
             if (allowGenerics && !l.head.getTypeArguments().isEmpty() &&
                     !checkCompatibleAbstracts(pos, l.head, l.head, c)) {
                 return;
             }
+	    */
             for (List<Type> m = supertypes; m != l; m = m.tail) {
                 if (!checkCompatibleAbstracts(pos, l.head, m.head, c)) {
                     return;

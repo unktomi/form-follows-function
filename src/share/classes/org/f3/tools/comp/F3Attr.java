@@ -346,7 +346,25 @@ public class F3Attr implements F3Visitor {
 						   typeArgTypes,
 						   localResult.tsym);
 		    } else {
-			System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+			if (localResult instanceof TypeVar) {
+			    TypeVar tv = (TypeVar) localResult;
+			    Type bound = tv.bound;
+			    if (types.isTypeCons(bound)) {
+				typeArgTypes = List.<Type>of(tv).appendList(typeArgTypes);
+				localResult = types.applySimpleGenericType(bound,
+									   typeArgTypes);
+			    } else {
+				TypeCons tc = new TypeCons(tv.tsym.name, 
+							   tv.tsym, 
+							   tv.bound);
+				tc.args = typeArgTypes;
+				tc.bound = tv.bound;
+				System.err.println("tc="+types.toF3String(tc));
+				localResult = tc;
+			    }
+			} else {
+			    System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+			}
 		    }
 		    //System.err.println("typeArgs="+typeArgs);
 		    //System.err.println("result="+localResult);
@@ -361,7 +379,19 @@ public class F3Attr implements F3Visitor {
 				    !types.isMonadType(localResult)) {
 				    //System.err.println("erasing: "+ tree+ " => "+ localResult);
 				    localResult = types.erasure(localResult);
+				} else {
+				    if (types.isSequence(localResult)) {
+					String ident = tree.toString();
+					if (ident.equals("Sequence") ||
+					    ident.equals("org.f3.runtime.sequence.Sequence")) {
+					    //System.err.println("erasing: "+ localResult);
+					    localResult = types.erasure(localResult);
+					}
+				    }
+
 				}
+			    } else {
+				//System.err.println("not erasing: "+ localResult);
 			    }
 			}
 		    }
@@ -985,6 +1015,7 @@ public class F3Attr implements F3Visitor {
                     return sym;
                 }
             case WILDCARD:
+		System.err.println(site);
                 throw new AssertionError(tree);
             case TYPEVAR:
                 // Normally, site.getUpperBound() shouldn't be null.
@@ -1507,10 +1538,14 @@ public class F3Attr implements F3Visitor {
             forClauses = new ArrayList<F3ForExpressionInClause>();
         int forClausesOldSize = forClauses.size();
         Type clause1Type = null;
+	Type functorType = null;
 	Type monadType = null;
 	Type comonadType = null;
 	boolean isIter = false;
+	int size = tree.getInClauses().size();
+	int idx = 0;
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
+	    boolean last = idx + 1 == size;
 
             // Don't try to examine erroneous in clauses. We don't wish to
             // place the entire for expression into error nodes, just because
@@ -1575,13 +1610,22 @@ public class F3Attr implements F3Visitor {
 		isIter = true;
             }
             else {
-		if (!types.isMonad(exprType)) {
+		//System.err.println("last="+last);
+		if ((last && !types.isFunctor(exprType)) || (!last && !types.isMonad(exprType))) {
+		    //System.err.println(exprType+ " is Functor: "+ types.isFunctor(exprType));
+		    System.err.println("exprtype="+exprType);
 		    log.warning(expr, MsgSym.MESSAGE_F3_ITERATING_NON_SEQUENCE);
 		    elemtype = exprType;
 		    isIter = true;
 		} else {
-		    monadType = exprType;
-		    elemtype = types.monadElementType(exprType);
+		    if (!last) {
+			monadType = exprType;
+			elemtype = types.monadElementType(exprType);
+		    } else {
+			functorType = exprType;
+			elemtype = types.functorElementType(exprType);
+			//System.err.println("elemType="+elemtype);
+		    }
 		}
             }
 
@@ -1605,6 +1649,7 @@ public class F3Attr implements F3Visitor {
             if (clause.getWhereExpression() != null) {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
+	    idx++;
         }
         forExprEnv.tree = tree; // before, we were not in loop!
 	Type bt = pt;
@@ -1652,7 +1697,7 @@ public class F3Attr implements F3Visitor {
 				  types.isSequence(bodyType) ? types.elementType(bodyType) : bodyType);
 	    } else {
 		//System.err.println("clause1Type="+clause1Type);
-		System.err.println("comonad type="+comonadType);
+		//System.err.println("comonad type="+comonadType);
 		if (comonadType != null) {
 		    Type comonadElementType = clause1Type;
 		    //System.err.println("monadElementType clause1Type="+monadElementType);
@@ -1664,10 +1709,12 @@ public class F3Attr implements F3Visitor {
 		} else {
 		    Type monadElementType = clause1Type;
 		    //System.err.println("monadElementType clause1Type="+monadElementType);
+		    //System.err.println("bodyType="+bodyType);
 		    if (tree.isBound() || !isIter) {
 			map = tree.getMonadMap(f3make, names, monadElementType,
 					       bodyType,
-					       monadType, tree.isBound());
+					       monadType == null ? functorType: monadType, tree.isBound());
+			//System.err.println("map="+map);
 		    }
 		}
 	    }
@@ -2150,6 +2197,7 @@ public class F3Attr implements F3Visitor {
     }
 
     Type makeTypeVar(F3Expression exp, Symbol sym) {
+	System.err.println(exp.getClass()+": "+ exp);
 	if (exp instanceof F3TypeCons) {
 	    // class Foo of (class F of X, X) =>
 	    // class Foo of (F extends TypeCons1(F, X), X)
@@ -2160,14 +2208,16 @@ public class F3Attr implements F3Visitor {
 	    F3Ident ident = (F3Ident)exp;
 	    TypeCons tv = new TypeCons(ident.getName(), sym, syms.botType);
 	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
-	    tv.bound = syms.objectType;
 	    tv.args = makeTypeVars(cons.getArgs(), tv.tsym);
+	    tv.bound = types.makeTypeCons(tv.args);
+	    env.info.scope.enter(((TypeVar)tv).tsym);
 	    return tv;
 	} else if (exp instanceof F3Ident) {
 	    F3Ident ident = (F3Ident)exp;
 	    TypeVar tv = new TypeVar(ident.getName(), sym, syms.botType);
 	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
 	    tv.bound = syms.objectType;
+	    env.info.scope.enter(((TypeVar)tv).tsym);
 	    return tv;
 	} else if (exp instanceof F3TypeExists) {
 	    return new WildcardType(null, BoundKind.UNBOUND, syms.boundClass);
@@ -2180,13 +2230,16 @@ public class F3Attr implements F3Visitor {
 	    F3TypeVar t = (F3TypeVar)exp;
 	    F3Ident ident = (F3Ident)t.getClassName();
 	    TypeVar tv = (TypeVar)makeTypeVar(ident, sym);
+	    env.info.scope.enterIfAbsent(tv.tsym);
 	    BoundKind bk = t.getBoundKind();
 	    Type bound = attribType(t.getBound(), env);
-	    if (bk == BoundKind.UNBOUND) {
-		tv.bound = bound;
-	    } else {
-		tv.bound = new WildcardType(bound, bk, syms.boundClass);
+	    if (bk != BoundKind.UNBOUND) {
+		bound = new WildcardType(bound, bk, syms.boundClass);
 	    }
+	    tv = new TypeVar(tv.tsym, bound, tv.lower);
+	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
+	    env.info.scope.enter(((TypeVar)tv).tsym);
+	    System.err.println(types.toF3String(tv));
 	    return tv;
 	} else {
 	    System.err.println("exp="+exp.getClass());
@@ -2327,8 +2380,8 @@ public class F3Attr implements F3Visitor {
 	    }
 	    localEnv.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
-		//System.err.println("entering "+t+ " into "+ localEnv);
-		localEnv.info.scope.enter(((TypeVar)t).tsym);
+		System.err.println("entering "+types.toF3String(t)+ " into "+ localEnv);
+		localEnv.info.scope.enterIfAbsent(((TypeVar)t).tsym);
 	    }
 	}
 

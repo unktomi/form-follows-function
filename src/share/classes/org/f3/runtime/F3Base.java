@@ -340,9 +340,9 @@ import org.f3.runtime.sequence.Sequences;
     //
     public static short [] makeInitMap$(int count, int... offsets) {
         final short [] map = new short[count];
-	System.err.println("init map: "+ count+": ");
+	//System.err.println("init map: "+ count+": ");
         for (int i = 0; i < offsets.length; i++) {
-	    System.err.println("offset: "+ i+": "+offsets[i]);
+	    //System.err.println("offset: "+ i+": "+offsets[i]);
             //map[offsets[i]] = (short)(i + 1);
             map[offsets[i]] = (short)i;
         }
