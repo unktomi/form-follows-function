@@ -4685,6 +4685,7 @@ functionExpression
             $value = F.at(pos($FUNCTION)).FunctionValue
                                 (
                                     $modifiers.mods,
+                                    exprbuff.toList(),
                                     $typeReference.rtype, 
                                     $formalParameters.params.toList(),
                                     $block.value
@@ -5868,7 +5869,7 @@ typeFunction
             cardinality //TODO: this introduces an ambiguity: return cardinality vs type cardinality
 
         {
-            $rtype = F.at(rPos).TypeFunctional(argsList, $ret.rtype, $cardinality.ary);
+            $rtype = F.at(rPos).TypeFunctional(argsList, exprbuff.toList(), $ret.rtype, $cardinality.ary);
             endPos($rtype);
         }
 

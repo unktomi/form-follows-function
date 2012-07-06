@@ -1890,7 +1890,7 @@ public abstract class F3AbstractTranslation
 	    ListBuffer<Type> targsBuf = ListBuffer.lb();
 	    if (isInstanceFunctionAsStaticMethod) {
 		targsBuf.appendList(sym.owner.type.getTypeArguments());
-	    } 
+	    }
 	    targsBuf.appendList(sym.type.getTypeArguments());
 	    List<Type> targs = targsBuf.toList();
 	    //System.err.println("sym="+sym);

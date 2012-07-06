@@ -369,7 +369,10 @@ public class F3Symtab extends Symtab {
 	if (nargs < 0) nargs = 0;
         assert (nargs <= MAX_FIXED_PARAM_LENGTH);
         Type funtype = f3_FunctionTypes[nargs];
-        return new FunctionType(funtype.getEnclosingType(), typarams, funtype.tsym, mtype);
+        FunctionType ftype = 
+	    new FunctionType(funtype.getEnclosingType(), typarams, funtype.tsym, mtype);
+	ftype.typeArgs = mtype.getTypeArguments();
+	return ftype;
     }
 
     /** Given a MethodType, create the corresponding FunctionType.

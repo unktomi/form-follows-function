@@ -618,15 +618,17 @@ public class F3Pretty implements F3Visitor {
 		print(".");
 	    }
             print(tree.name);
-	    if (tree.typeArgs != null) {
+	    if (tree.typeArgs != null && tree.typeArgs.size() > 0) {
 		print(" of ");
-		String sep = "(";
+		String sep = tree.typeArgs.size() > 1 ? "(" : "";
 		for (F3Expression arg: tree.typeArgs) {
 		    print(sep);
 		    printExpr(arg);
 		    sep = ", ";
 		}
-		print(")");
+		if (tree.typeArgs.size() > 1) {
+		    print(")");
+		}
 	    }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -638,13 +640,15 @@ public class F3Pretty implements F3Visitor {
             print(tree.getName());
 	    if (tree.typeArgs != null) {
 		print(" of ");
-		String sep = "(";
+		String sep = tree.typeArgs.size() > 1 ? "(" : "";
 		for (F3Expression arg: tree.typeArgs) {
 		    print(sep);
 		    printExpr(arg);
 		    sep = ", ";
 		}
-		print(")");
+		if (tree.typeArgs.size() > 1) {
+		    print(")");
+		}
 	    }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -1142,16 +1146,39 @@ public class F3Pretty implements F3Visitor {
 
     public void visitTypeFunctional(F3TypeFunctional tree) {
         try {
-            print("function from (");
+            print("function ");
+	    if (tree.typeArgs != null && tree.typeArgs.size() > 0) {
+		print("of ");
+		if (tree.typeArgs.size() > 1) {
+		    print("(");
+		}
+		String sep = "";
+		for (F3Expression targ: tree.typeArgs) {
+		    print(sep);
+		    printExpr(targ);
+		    sep = ", ";
+		}
+		if (tree.typeArgs.size() > 1) {
+		    print(")");
+		}
+		print(" ");
+	    }
+	    print("from ");
             List<F3Type> params = tree.getParams();
             if (params.nonEmpty()) {
+		if (params.size() > 1) {
+		    print("(");
+		}
                 printExpr(params.head);
                 for (List<F3Type> l = params.tail; l.nonEmpty(); l = l.tail) {
                     print(", ");
                     printExpr(l.head);
                 }
+		if (params.size() > 1) {
+		    print(")");
+		}
             }
-            print(") to ");
+            print(" to ");
             printExpr((F3Type)tree.getReturnType());
             print(ary(tree));
         } catch (IOException e) {
