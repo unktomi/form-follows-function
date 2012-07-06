@@ -210,13 +210,26 @@ public class F3PreTranslationSupport {
 	if (type instanceof CapturedType) {
 	    throw new RuntimeException("can't handle captured type: "+ type);
 	}
+	if (true) {
+	    System.err.println("elemType="+elemType);
+	    System.err.println("typeExpr="+typeExpr);
+	    System.err.println("type="+type.getClass()+ ": "+type);
+	    System.err.println("tsym="+tsym);
+	}
+	if (type instanceof FunctionType) {
+	    F3Type f3type = (F3Type)f3make.Type(type);
+	    System.err.println("returning "+f3type);
+	    Thread.currentThread().dumpStack();
+	    return f3type;
+	}
 	if (!(tsym instanceof ClassSymbol) || (type instanceof TypeVar)) {
-	    if (false) {
-		System.err.println("elemType="+elemType);
-		System.err.println("typeExpr="+typeExpr);
-		System.err.println("type="+type.getClass()+ ": "+type);
-		System.err.println("tsym="+tsym);
-	    }
+	    if (type instanceof TypeVar) {
+		TypeVar tv = (TypeVar)type;
+		System.err.println("tv.lower="+tv.lower);
+		if (tv.lower instanceof WildcardType) { // hack
+		    return f3make.TypeExists();
+		}
+	    } 
 	    return (F3Type)f3make.TypeVar(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (TypeSymbol)tsym).setType(type);
 	} else {
 	    return (F3Type)f3make.TypeClass(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (ClassSymbol)tsym).setType(type);
@@ -332,6 +345,8 @@ public class F3PreTranslationSupport {
     }
 
     private F3Expression makeCast(F3Expression tree, Type type) {
+	System.err.println("casting: " +tree);
+	System.err.println("to type: "+ type);
         F3Expression typeTree = makeTypeTree(type);
         F3Expression expr = f3make.at(tree.pos).TypeCast(typeTree, tree);
         expr.type = type;

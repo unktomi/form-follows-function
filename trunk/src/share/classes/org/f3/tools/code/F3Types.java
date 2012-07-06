@@ -446,6 +446,7 @@ public class F3Types extends Types {
 	    }
 	} catch (AssertionError err) {
 	    // hack;
+	    err.printStackTrace();
 	}
 	if (s == syms.f3_AnyType) {
 	    return true;
@@ -861,6 +862,10 @@ public class F3Types extends Types {
 
         @Override
         public Void visitForAll(ForAll t, StringBuilder buffer) {
+	    if (t.qtype instanceof MethodType) {
+		visitMethodType2((MethodType)t.qtype, buffer, t.getTypeArguments());
+		return null;
+	    }
 	    buffer.append("of ");
 	    List<Type> targs = t.getTypeArguments();
 	    if (targs.nonEmpty()) { // hack
@@ -890,11 +895,39 @@ public class F3Types extends Types {
 
         @Override
         public Void visitMethodType(MethodType t, StringBuilder buffer) {
+	    return visitMethodType2(t, buffer, null);
+	}
+
+        public Void visitMethodType2(MethodType t, StringBuilder buffer,
+				     List<Type> targs) {
             if (t.getReturnType() == null) {
                 buffer.append("function(?):?");
                 return null;
             }
-            buffer.append("function from ");
+	    buffer.append("function ");
+	    if (targs != null && targs.size() > 0) {
+		switch (targs.size()) {
+		case 0:
+		    break;
+		case 1:
+		    buffer.append("of ");
+		    visit(targs.get(0), buffer);
+		    buffer.append(" ");
+		    break;
+		default:
+		    {
+			buffer.append("of (");
+			String str = "";
+			for (List<Type> l = targs; l.nonEmpty(); l = l.tail) {
+			    buffer.append(str);
+			    visit(l.head, buffer);
+			    str = ", ";
+			}
+			buffer.append(") ");
+		    }
+		}
+	    }
+	    buffer.append("from ");
             List<Type> args = t.getParameterTypes();
 	    if (needsParen(args)) {
 		buffer.append("(");
@@ -933,7 +966,7 @@ public class F3Types extends Types {
                 buffer.append("[]");
             }
             else if (t instanceof FunctionType) {
-                visitMethodType(t.asMethodType(), buffer);
+                visit(((FunctionType)t).asMethodOrForAll(), buffer);
             }
             else if (t.isCompound()) {
                 visit(supertype(t), buffer);

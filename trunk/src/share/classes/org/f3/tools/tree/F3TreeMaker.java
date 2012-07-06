@@ -488,7 +488,15 @@ public class F3TreeMaker implements F3TreeFactory {
 	    } else {
 		resTyp = TypeClass(resExpr, card);
 	    }
+	    ListBuffer<F3Expression> typeArgs = ListBuffer.lb();
+	    List<Type> targs = funType.typeArgs;
+	    if (targs != null) {
+		for (Type targ: targs) {
+		    typeArgs.append(Type(targ));
+		}
+	    }
 	    F3Type rt = TypeFunctional(ts.toList(),
+				       typeArgs.toList(),
 				       resTyp, tcard);
 	    rt.setType(ityp);
 	    return rt;
@@ -738,6 +746,7 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3FunctionValue FunctionValue(
             F3Modifiers mods,
+	    List<F3Expression> typeArgs,
             F3Type restype,
 	    List<F3Var> params,
             F3Block bodyExpression) {
@@ -746,8 +755,17 @@ public class F3TreeMaker implements F3TreeFactory {
                 restype,
                 params,
                 bodyExpression);
+	tree.typeArgs = typeArgs;
         tree.pos = pos;
         return tree;
+    }
+
+    public F3FunctionValue FunctionValue(
+            F3Modifiers mods,
+            F3Type restype,
+	    List<F3Var> params,
+            F3Block bodyExpression) {
+	return FunctionValue(mods, null, restype, params, bodyExpression);
     }
 
     public F3InitDefinition InitDefinition(
@@ -993,13 +1011,21 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
+    public F3Type TypeFunctional(List<F3Type> params,
+				 F3Type restype,
+				 Cardinality cardinality) {
+	return TypeFunctional(params, List.<F3Expression>nil(), restype, cardinality);
+    }
 
     public F3Type TypeFunctional(List<F3Type> params,
-            F3Type restype,
+				 List<F3Expression> typeargs,
+				 F3Type restype,
+
             Cardinality cardinality) {
-        F3Type tree = new F3TypeFunctional(params,
-                restype,
-                cardinality);
+        F3TypeFunctional tree = new F3TypeFunctional(params,
+						     restype,
+						     cardinality);
+	tree.typeArgs = typeargs;
         tree.pos = pos;
         return tree;
     }

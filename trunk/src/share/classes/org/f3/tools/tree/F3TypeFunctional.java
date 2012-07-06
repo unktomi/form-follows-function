@@ -34,6 +34,7 @@ import com.sun.tools.mjavac.util.List;
  * @author Robert Field
  */
 public class F3TypeFunctional extends F3Type implements TypeFunctionalTree {
+    public List<F3Expression> typeArgs;
     public List<? extends TypeTree> params;
     public F3Type restype;
     

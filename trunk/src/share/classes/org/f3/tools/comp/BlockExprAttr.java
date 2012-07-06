@@ -147,7 +147,7 @@ public class BlockExprAttr extends Attr  {
 
         for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
             // Attribute declaration
-            attribStat(l.head, env);
+	    attribStat(l.head, env);
             // Check that declarations in inner classes are not static (JLS 8.1.2)
             // Make an exception for static constants.
             // F3 doesn't have this restriction

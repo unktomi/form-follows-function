@@ -34,9 +34,19 @@ import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
 public class FunctionType extends Type.ClassType {
 
     public MethodType mtype;
+    public List<Type> typeArgs = List.<Type>nil();
+
+    public Type asMethodOrForAll() {
+	if (typeArgs != null && typeArgs.size() > 0) {
+	    return new ForAll(typeArgs, mtype);
+	}
+	return mtype;
+    }
     
-    public FunctionType(Type outer, List<Type> typarams, TypeSymbol tsym,
-            MethodType mtype) {
+    public FunctionType(Type outer, 
+			List<Type> typarams, 
+			TypeSymbol tsym,
+			MethodType mtype) {
         super(outer, typarams, tsym);
         this.mtype = mtype;
     }

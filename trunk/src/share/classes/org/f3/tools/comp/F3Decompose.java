@@ -966,6 +966,8 @@ public class F3Decompose implements F3Visitor {
             F3Block bodyExpression = decompose(tree.getBodyExpression());
             F3FunctionValue res = f3make.at(tree.pos).FunctionValue(mods, restype, params, bodyExpression);
             res.definition = tree.definition;
+	    res.typeArgs = tree.typeArgs;
+	    res.type = tree.type;
             result = res;
         }
         bindStatus = prevBindStatus;

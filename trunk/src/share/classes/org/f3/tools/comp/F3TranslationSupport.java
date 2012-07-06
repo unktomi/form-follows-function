@@ -421,6 +421,10 @@ public abstract class F3TranslationSupport {
 		    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
 			return makeTypeTreeInner(diagPos, ((TypeVar)t).getUpperBound(), makeIntf);
 		    }
+		    TypeVar tv = (TypeVar)t;
+		    if (tv.lower instanceof WildcardType) { // hack
+			return make.at(diagPos).Type(new WildcardType(null, BoundKind.UNBOUND, syms.boundClass));
+		    }
 		}
                 return make.at(diagPos).Type(t);
             }
@@ -1702,8 +1706,10 @@ public abstract class F3TranslationSupport {
         protected JCMethodDecl Method(JCModifiers modifiers, Type returnType, Name methodName, List<JCVariableDecl> params, List<JCStatement> stmts, MethodSymbol methSym) {
 	    //System.err.println("sym2="+methSym);
 	    ListBuffer<Type> targsBuf = ListBuffer.lb();
-	    if ((modifiers.flags & Flags.STATIC) != 0) {
-		targsBuf.appendList(methSym.owner.type.getTypeArguments());
+	    if (params.size() > 0) {
+		if ((modifiers.flags & Flags.STATIC) != 0) {
+		    targsBuf.appendList(methSym.owner.type.getTypeArguments());
+		}
 	    }
 	    targsBuf.appendList(methSym.type.getTypeArguments());
 	    List<Type> targs = targsBuf.toList();
