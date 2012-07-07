@@ -1562,6 +1562,10 @@ public class F3Attr implements F3Visitor {
             
             F3Var var = clause.getVar();
 
+	    if (var == null) {
+		var = clause.intoVar;
+	    }
+
             // Don't try to examine erroneous loop controls, such as
             // when a variable was missing. Again, this is because the IDE may
             // try to attribute a node that is mostly correct, but contains
@@ -4022,6 +4026,11 @@ public class F3Attr implements F3Visitor {
 	if (t instanceof TypeVar) {
 	    TypeVar tv = (TypeVar)t;
 	    if (isWildcard(tv.lower)) {
+		return true;
+	    }
+	}
+	if (false) {
+	    if (types.isTypeCons(t)) {
 		return true;
 	    }
 	}

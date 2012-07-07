@@ -326,9 +326,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
                                                       argsBuffer.toList());
 	//apply = F.at(apply.pos).TypeCast(F.Type(resultType), apply);	
 	//System.err.println(apply);
-	return apply;
 	*/
-	return null;
+	return apply;
     }
 
 

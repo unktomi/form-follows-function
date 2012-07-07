@@ -6482,13 +6482,13 @@ literal
                     $value = F.at(rPos).Literal(TypeTags.DOUBLE, Double.valueOf($FLOATING_POINT_LITERAL.text));
                 }
                 
-            | TRUE
+            | (TRUE | YES)
             
                 {
                     $value = F.at(rPos).Literal(TypeTags.BOOLEAN, 1);
                 }
                 
-            | FALSE
+            | (FALSE | NO)
             
                 {
                     $value = F.at(rPos).Literal(TypeTags.BOOLEAN, 0);

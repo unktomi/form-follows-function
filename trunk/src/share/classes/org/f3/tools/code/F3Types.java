@@ -465,6 +465,11 @@ public class F3Types extends Types {
         }
 	    else
 		return b;
+	} catch (AssertionError exc) {
+	    System.err.println("bad subtype: "+ t + " " + s);
+	    System.err.println("bad subtype: "+ t.getClass() + " " + s.getClass());
+	    Thread.currentThread().dumpStack();
+	    return false;
 	} catch (StackOverflowError exc) {
 	    System.err.println("circular: "+ t + " " + s);
 	    System.err.println("circular: "+ t.getClass() + " " + s.getClass());
