@@ -521,10 +521,9 @@ public abstract class F3AbstractTranslation
                 return (StatementsResult) ret; // already converted
             } else if (ret instanceof ExpressionResult) {
                 return new StatementsResult(expr.pos(), asStatements((ExpressionResult) ret, targettedType));
-            } else {
-                throw new RuntimeException(ret.toString());
-            }
+            } 
         }
+	return null;
     }
 
     class JCConverter extends JavaTreeBuilder {
@@ -4362,7 +4361,9 @@ public abstract class F3AbstractTranslation
     }
 
     public void visitTypeAny(F3TypeAny that) {
-        processedInParent();
+	// hack: Since type aliases are funneled through type any (another hack)
+	// they end up here - just return an empty statement list 
+	result = new StatementsResult(that, List.<JCStatement>nil());
     }
 
     public void visitTypeCast(final F3TypeCast tree) {

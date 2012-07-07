@@ -1011,6 +1011,15 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
+    public F3Type TypeAlias(Name name,
+			    List<F3Expression> typeArgs,
+			    F3Type type) 
+    {
+	F3Type tree = new F3TypeAlias(name, typeArgs, type);
+	tree.pos = pos;
+	return tree;
+    }
+
     public F3Type TypeFunctional(List<F3Type> params,
 				 F3Type restype,
 				 Cardinality cardinality) {

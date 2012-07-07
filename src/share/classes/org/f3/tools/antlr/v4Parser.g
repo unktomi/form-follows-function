@@ -438,8 +438,8 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
                                 $items.append($f.value); 
                             }
 		 ))
-    |
-        typeAlias
+            
+            |  typeAlias { $items.append($typeAlias.rtype); }
                 
             | i=importDecl
             
@@ -5812,9 +5812,14 @@ typeAlias
 
 @init
 {
+    ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
 : 
-TYPE IDENTIFIER (OF genericParams[false, false])? EQ type
+TYPE id=IDENTIFIER (OF gas=genericParams[false, false] {exprbuff.appendList(gas);})? EQ t=type
+        {
+            Name name = Name.fromString(names, $id.text);
+            $rtype = F.at($id.pos).TypeAlias(name, exprbuff.toList(), $t.rtype);
+        }
 ;
 
 typeFunction

@@ -906,6 +906,7 @@ public class F3Compiler implements ClassReader.SourceCompleter {
                      defs = defs.tail) {
                     if (defs.head instanceof F3ClassDeclaration)
                         cdefs.append((F3ClassDeclaration)defs.head);
+		    else System.err.println(defs.head);
                 }
             }
         }

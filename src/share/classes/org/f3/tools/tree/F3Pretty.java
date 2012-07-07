@@ -1110,8 +1110,16 @@ public class F3Pretty implements F3Visitor {
 
     public void visitTypeAny(F3TypeAny tree) {
         try {
-            print("* ");
-            print(ary(tree));
+	    if (tree instanceof F3TypeAlias) {
+		F3TypeAlias ta = (F3TypeAlias)tree;
+		print("type ");
+		print(ta.getIdentifier());
+		print(" = ");
+		printExpr(ta.type);
+	    } else {
+		print("* ");
+		print(ary(tree));
+	    }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
