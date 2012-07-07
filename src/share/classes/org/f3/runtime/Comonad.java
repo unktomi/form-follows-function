@@ -1,6 +1,6 @@
 package org.f3.runtime;
 import org.f3.functions.*;
 
-public interface Comonad<This, A> extends Functor<This, A>, Copointed<A> {
-    public <B> Comonad<This, B> coflatmap(Function1<? extends B, ? super Comonad<This, A>> f);
+public interface Comonad<This, X> extends Functor<This, X, Object>, Copointed<X> {
+    public <Y> Comonad<This, Y> coflatmap(Function1<? extends Y, ? super Comonad<This, X>> f);
 }

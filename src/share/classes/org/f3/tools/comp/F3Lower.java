@@ -1514,7 +1514,10 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitTypeCast(F3TypeCast tree) {
-        F3Expression expr = lowerExpr(tree.getExpression(), tree.clazz.type);
+	Type clazztype = types.erasure(tree.clazz.type);
+	System.err.println("tree="+tree);
+	System.err.println("clazztype="+clazztype);
+        F3Expression expr = lowerExpr(tree.getExpression(), clazztype);
         result = m.at(tree.pos).TypeCast(tree.clazz, expr).setType(tree.type);
     }
 
