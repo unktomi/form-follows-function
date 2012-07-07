@@ -489,6 +489,22 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         memberEnter(tree.defs, env);
     }
 
+    public void visitTypeAny(F3TypeAny tree) {
+        //assert false : "MUST IMPLEMENT";
+	//System.err.println(tree);
+	if (tree instanceof F3TypeAlias) {
+	    F3TypeAlias ta = (F3TypeAlias)tree;
+	    F3Env<F3AttrContext> env1 = env;
+	    while (env1.info.scope.owner.kind != TYP) {
+		env1 = env1.outer;
+		System.err.println("Scope: "+ env1.info.scope.owner);
+	    }
+	    ta.tsym = new TypeSymbol(0, ta.getIdentifier(), null, env1.info.scope.owner);
+	    env1.info.scope.enter(ta.tsym);
+	    System.err.println(env1.info.scope);
+	}
+    }    
+
     @Override
     public void visitImport(F3Import tree) {
         F3Expression imp = tree.qualid;

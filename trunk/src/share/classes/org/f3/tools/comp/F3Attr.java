@@ -3965,7 +3965,18 @@ public class F3Attr implements F3Visitor {
 
     //@Override
     public void visitTypeAny(F3TypeAny tree) {
-        assert false : "MUST IMPLEMENT";
+        //assert false : "MUST IMPLEMENT";
+	//System.err.println(tree);
+	if (tree instanceof F3TypeAlias) {
+	    F3TypeAlias ta = (F3TypeAlias)tree;
+            Type t = attribTree(ta.type,
+				env,
+				TYP,
+				Type.noType);
+	    System.err.println("setting type: "+ta.id +": "+ t);
+	    ta.tsym.type = t;
+	    result = t;
+	}
     }
 
     //@Override

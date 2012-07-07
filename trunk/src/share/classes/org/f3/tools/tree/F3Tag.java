@@ -309,6 +309,8 @@ public enum F3Tag {
      */
     KEYFRAME_LITERAL,
 
+    TYPE_ALIAS,
+
     F3_OP_LAST;
     
     public boolean isIncDec() {
