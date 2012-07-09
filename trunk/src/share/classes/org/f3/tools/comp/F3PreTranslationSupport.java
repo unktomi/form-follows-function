@@ -218,16 +218,17 @@ public class F3PreTranslationSupport {
 	}
 	if (type instanceof FunctionType) {
 	    F3Type f3type = (F3Type)f3make.Type(type);
-	    System.err.println("returning "+f3type);
-	    Thread.currentThread().dumpStack();
+	    //System.err.println("returning "+f3type);
+	    //Thread.currentThread().dumpStack();
+	    f3type.setType(type);
 	    return f3type;
 	}
 	if (!(tsym instanceof ClassSymbol) || (type instanceof TypeVar)) {
 	    if (type instanceof TypeVar) {
 		TypeVar tv = (TypeVar)type;
-		System.err.println("tv.lower="+tv.lower);
+		//		System.err.println("tv.lower="+tv.lower);
 		if (tv.lower instanceof WildcardType) { // hack
-		    return f3make.TypeExists();
+		    F3Type ft = f3make.TypeExists();
 		}
 	    } 
 	    return (F3Type)f3make.TypeVar(typeExpr, types.isSequence(type) ? Cardinality.ANY : Cardinality.SINGLETON, (TypeSymbol)tsym).setType(type);

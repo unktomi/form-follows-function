@@ -448,7 +448,6 @@ public class F3Check {
 		}
 	    }
         }
-
         Type reqUnboxed, foundUnboxed;
         if (req.tag == CLASS) {
             reqUnboxed = types.unboxedType(req);

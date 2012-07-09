@@ -121,8 +121,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 				    boolean isBound) {
 
         if (apply == null) {
-	    System.err.println("argType="+argType);
-	    System.err.println("resultType="+resultType);
+	    //System.err.println("argType="+argType);
+	    //System.err.println("resultType="+resultType);
             List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
             apply = this.bodyExpr;
 	    int i = 0;

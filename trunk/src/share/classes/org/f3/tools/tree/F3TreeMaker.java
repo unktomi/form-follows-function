@@ -530,8 +530,22 @@ public class F3TreeMaker implements F3TreeFactory {
             case VOID:
                 tp = Ident(syms.voidTypeName);
 		break;
+		/*
+	    case WILDCARD:
+		{
+		    WildcardType w = (WildcardType)t;
+		    if (w.kind != BoundKind.UNBOUND) {
+			tp = Type(w.type);
+		    } else {
+			tp = TypeExists();
+		    }
+		}
+		break;
+		*/
             case TYPEVAR:
-                tp = Ident(((TypeVar)t).tsym.name);
+		{
+		    tp = Ident(((TypeVar)t).tsym.name);
+		}
                 break;
             case ARRAY:
                 F3Expression elem = Type(types.elemtype(t));
