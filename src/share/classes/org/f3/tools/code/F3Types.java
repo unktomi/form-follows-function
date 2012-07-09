@@ -161,8 +161,8 @@ public class F3Types extends Types {
 	}
 	Type t = getTypeCons(type);
 	if (t == null) return null;
-	//System.err.println("type="+type);
-	//System.err.println("typecons="+t);
+	System.err.println("type="+type);
+	System.err.println("typecons="+t);
 	List<Type> targs = t.getTypeArguments();
 	if (targs.size() > 0) {
 	    Type result = targs.get(0);
@@ -236,14 +236,16 @@ public class F3Types extends Types {
 	Type functor = getFunctor(type);
 	if (functor != null) {
 	    List<Type> list = functor.getTypeArguments();
-	    Type elemType = list.get(1);
-	    while (elemType instanceof CapturedType)
-		elemType = ((CapturedType) elemType).wildcard;
-	    while (elemType instanceof WildcardType)
-		elemType = ((WildcardType) elemType).type;
-	    if (elemType == null)
-		return syms.f3_AnyType;
-	    return elemType;
+	    if (list.size() > 1) {
+		Type elemType = list.get(1);
+		while (elemType instanceof CapturedType)
+		    elemType = ((CapturedType) elemType).wildcard;
+		while (elemType instanceof WildcardType)
+		    elemType = ((WildcardType) elemType).type;
+		if (elemType == null)
+		    return syms.f3_AnyType;
+		return elemType;
+	    }
 	}
 	return null;
     }
@@ -852,15 +854,20 @@ public class F3Types extends Types {
 
         @Override
         public Void visitWildcardType(WildcardType t, StringBuilder buffer) {
-	    if (t.type != null) {
+	    if (t.kind != BoundKind.UNBOUND) {
 		visit(t.type, buffer);
 		if (t.bound != null && t.bound != syms.objectType) {
 		    buffer.append(": ");
 		    visit(t.bound, buffer);
 		}
 	    } else {
-		buffer.append("?: ");
-		visit(t.bound, buffer);
+		buffer.append("?");
+		/*
+		if (t.bound != null && t.bound != syms.objectType) {
+		    buffer.append(": ");
+		    visit(t.bound, buffer);
+		}
+		*/
 	    }
 	    return null;
 	}
@@ -1082,6 +1089,9 @@ public class F3Types extends Types {
 
             @Override
             public Type visitWildcardType(WildcardType t0, Boolean preserveWildcards) {
+		if (t0.kind == BoundKind.UNBOUND) {
+		    return t0;
+		}
 		WildcardType t = t0;
 		Type vbound = t.bound;
 		Type vtype = t.type;
@@ -1097,6 +1107,10 @@ public class F3Types extends Types {
 		if (vtype != null) {
 		    type1 = visit(vtype, preserveWildcards);
 		} 
+		//System.err.println("t0="+t0);
+		//System.err.println("bound1="+bound1);
+		//System.err.println("vtype="+vtype);
+		//System.err.println("type="+type1);
 		if (bound1 != vbound || vtype != type1) {
 		    if (type1 instanceof WildcardType) {
 			//t = (WildcardType)type1;
@@ -1200,14 +1214,17 @@ public class F3Types extends Types {
 
             @Override
             public Type visitWildcardType(WildcardType t0, Boolean preserveWildcards) {
+		if (t0.kind == BoundKind.UNBOUND) {
+		    return t0;
+		}
 		WildcardType t = t0;
 		Type vbound = t.bound;
 		Type vtype = t.type;
 		Type bound1 = null;
 		Type type1 = null;
-		System.err.println("t0="+t0);
-		System.err.println("bound1="+bound1);
-		System.err.println("vtype="+vtype);
+		//System.err.println("t0="+t0);
+		//System.err.println("bound1="+bound1);
+		//System.err.println("vtype="+vtype);
 		if (vbound != null) {
 		    bound1 = visit(vbound, preserveWildcards);
 		} 

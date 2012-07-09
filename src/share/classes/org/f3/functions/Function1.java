@@ -25,34 +25,39 @@ package org.f3.functions;
 
 import org.f3.runtime.F3Object;
 import org.f3.runtime.Functor;
+import org.f3.runtime.Monad;
 
-public class Function1<R, A1> extends Function<R> implements Functor<Function1, R> {
+public class Function1<R, A1> extends Function<R> 
+				      /*
+    implements Functor<Function1, 
+	       R,
+	       Object> 
+				      */
+    implements Monad<Function1, R>
+{
 
     public <Y> Function1<Y, A1> map(final Function1<? extends Y, ? super R> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<Y, A1>() {
-	    public Y invoke(A1 x1) {
-		final R r = self.invoke(x1);
-		return f.invoke(r);
+	    public Y invoke(final A1 a1) {
+		return f.invoke(self.invoke(a1));
 	    }
 	};
     }
 
-    /*
-      @TODO this should be the reader monad?
 
-    public <Y> Function1<Y, A1> flatmap(final Function1<? extends Monad<Function1,Y>, ? super R> k) {
+    public <Y> Function1<Y, A1> flatmap(final Function1<? extends Monad<Function1, Y>, ? super R> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<Y, A1>() {
 	    public Y invoke(A1 x1) {
 		final R r = self.invoke(x1);
-	        Function1<Y, Object> g = (Function1<Y,Object>)k.invoke(r);
-		g(null);
+	        Function1<Y, A1> g = (Function1<Y, A1>)f.invoke(r);
+		return g.invoke(x1);
 	    }
 	};
     }
 
-    */
+
 
     public Function1() {}
     

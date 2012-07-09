@@ -1224,6 +1224,8 @@ functionDefinition [ F3Modifiers mods, int pos ]
     //
     Name name = null;
 
+    F3Block blk = null;
+
     // Accumulate any generic arguments
     //
 }
@@ -1303,12 +1305,17 @@ functionDefinition [ F3Modifiers mods, int pos ]
                     // Accumulate in case of error
                     //
                     errNodes.append($block.value);
+                    blk = $block.value;
                 }
             
             |   // This alt is selected only if the function declaration is not abstract
                 // and there was no function body. If there is a SEMI at this point, it does not
                 // matter as it will be eaten by the enclosing rule as if it were an empty statement.
                 //
+             RETURN? bodyExpr=expression { blk = F.at(pos($FUNCTION)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>of(bodyExpr), null); }
+            |
+            SEMI
+
         )
     
         {
@@ -1320,7 +1327,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
                                 name, 
                                 $typeReference.rtype,
                                 $formalParameters.params.toList(), 
-                                $block.value
+                                blk
                             );
 	    if (genericArgs != null) {
 		((F3FunctionDefinition)$value).typeArgs = genericArgs;
@@ -4661,6 +4668,8 @@ functionExpression
     // Accumulate any generic arguments
     //
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+
+    F3Expression bodyExpr = null;
 }
     :   (modifiers) => modifiers FUNCTION 
             ((OF | FORALL) gas=genericParams[false, false] { 
@@ -4677,7 +4686,7 @@ functionExpression
             }
             
         typeReference   { errNodes.append($typeReference.rtype); }
-        block   [-1]    { errNodes.append($block.value); }
+        ((LBRACE) => (block   [-1]    { errNodes.append($block.value); }
     
         {
             // F3 AST
@@ -4695,6 +4704,25 @@ functionExpression
             //
             endPos($value);
         }
+    |
+        primaryExpression 
+            {
+            bodyExpr = $primaryExpression.value; 
+            $value = F.at(pos($FUNCTION)).FunctionValue
+                                (
+                                    $modifiers.mods,
+                                    exprbuff.toList(),
+                                    $typeReference.rtype, 
+                                    $formalParameters.params.toList(),
+                                    F.at(pos($FUNCTION)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>of(bodyExpr), null)
+                                );
+                                
+            // Tree span
+            //
+            endPos($value);
+            }
+    
+    ))
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.

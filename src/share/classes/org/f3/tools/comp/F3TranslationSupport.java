@@ -35,6 +35,7 @@ import com.sun.tools.mjavac.code.Type;
 import com.sun.tools.mjavac.code.Type.*;
 import com.sun.tools.mjavac.code.TypeTags;
 import com.sun.tools.mjavac.tree.JCTree;
+import com.sun.tools.mjavac.tree.JCTree.JCWildcard;
 import com.sun.tools.mjavac.tree.JCTree.JCAnnotation;
 import com.sun.tools.mjavac.tree.JCTree.JCClassDecl;
 import com.sun.tools.mjavac.tree.JCTree.JCExpression;
@@ -364,7 +365,9 @@ public abstract class F3TranslationSupport {
 
     private JCExpression makeTypeTreeInner(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
 	JCExpression exp = makeTypeTreeInner0(diagPos, t, makeIntf);
-	//System.err.println("makeTypeTreeInner: "+ t+": "+exp);
+	if (t == null) {
+	    throw new NullPointerException("makeTypeTreeInner: "+ diagPos);
+	}
 	return exp;
     }
 
@@ -409,9 +412,18 @@ public abstract class F3TranslationSupport {
             }
             case TypeTags.WILDCARD: {
                 WildcardType wtype = (WildcardType) t;
+		System.err.println("wtype="+t);
+		JCTree bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner(diagPos, wtype.type, false);
+		System.err.println("bound="+bound);
+		if (bound != null && wtype.type instanceof TypeVar) {
+		    TypeVar tv = (TypeVar)wtype.type;
+		    if (tv.lower instanceof WildcardType) {
+			return (JCExpression)bound;
+		    }
+		}
                 return make.at(diagPos).Wildcard(make.TypeBoundKind(wtype.kind),
-                        wtype.kind == BoundKind.UNBOUND ? null
-                        : makeTypeTreeInner(diagPos,wtype.type, makeIntf));
+						 bound);
+
             }
             case TypeTags.ARRAY: {
                 return make.at(diagPos).TypeArray(makeTypeTreeInner(diagPos,types.elemtype(t), makeIntf));
@@ -423,9 +435,16 @@ public abstract class F3TranslationSupport {
 		    }
 		    TypeVar tv = (TypeVar)t;
 		    if (tv.lower instanceof WildcardType) { // hack
-			return make.at(diagPos).Type(new WildcardType(null, BoundKind.UNBOUND, syms.boundClass));
+			System.err.println("existentializing: "+ diagPos+": "+ t);
+			if (true) {
+			    return make.at(diagPos).Wildcard(make.TypeBoundKind(BoundKind.UNBOUND),
+							     null);
+			}
+		    } else {
+			System.err.println("not existentializing: "+ t);
 		    }
 		}
+		System.err.println("default: "+ t.getClass()+": "+t);
                 return make.at(diagPos).Type(t);
             }
         }

@@ -165,6 +165,10 @@ public class F3LocalToClass {
 
         @Override
         public void visitForExpression(F3ForExpression tree) {
+	    if (tree.getMap() != null) {
+		scan(tree.getMap());
+		return;
+	    }
             for (ForExpressionInClauseTree cl : tree.getInClauses()) {
                 F3ForExpressionInClause clause = (F3ForExpressionInClause) cl;
                 // Don't process induction var
