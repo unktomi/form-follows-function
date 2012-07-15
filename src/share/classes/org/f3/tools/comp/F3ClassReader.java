@@ -411,6 +411,7 @@ public class F3ClassReader extends ClassReader {
             flags |= F3Flags.BOUND;
         }
         F3Symtab f3Syms = (F3Symtab) this.syms;
+
         for (Attribute.Compound ann : sym.getAnnotationMirrors()) {
             if (ann.type.tsym.flatName() == f3Syms.f3_signatureAnnotationType.tsym.flatName()) {
                 String sig = (String)ann.values.head.snd.getValue();
@@ -488,6 +489,7 @@ public class F3ClassReader extends ClassReader {
         } else {
             sym.owner.complete();
             F3ClassSymbol csym = (F3ClassSymbol) sym;
+
             ClassSymbol jsymbol = csym.jsymbol;
             if (jsymbol != null && jsymbol.classfile != null && 
                 jsymbol.classfile.getKind() == JavaFileObject.Kind.SOURCE &&
@@ -520,6 +522,7 @@ public class F3ClassReader extends ClassReader {
                 ct.supertype_field.tsym.kind == TYP) {
                 
             }
+
             
             ListBuffer<Type> interfaces = new ListBuffer<Type>();
             Type iface = null;
@@ -580,6 +583,8 @@ public class F3ClassReader extends ClassReader {
             F3VarSymbol scriptAccessSymbol = isF3Class ? f3make.ScriptAccessSymbol(csym) : null;
 
             Set<Name> priorNames = new HashSet<Name>();
+	    System.err.println("ct="+ct);
+	    enterTypevars(ct);
             handleSyms:
             for (List<Symbol> l = symlist; l.nonEmpty(); l=l.tail) {
                 Symbol memsym = l.head;
@@ -596,6 +601,7 @@ public class F3ClassReader extends ClassReader {
                     continue;
                 boolean sawSourceNameAnnotation = false;
                 F3Symtab f3Syms = (F3Symtab) this.syms;
+
                 for (Attribute.Compound a : memsym.getAnnotationMirrors()) {
                     if (a.type.tsym.flatName() == f3Syms.f3_staticAnnotationType.tsym.flatName()) {
                         flags |=  Flags.STATIC;
@@ -621,6 +627,7 @@ public class F3ClassReader extends ClassReader {
                 if (memsym instanceof MethodSymbol) {
                     MethodSymbol m = translateMethodSymbol(flags, memsym, csym);     
                     csym.members_field.enter(m);
+		    System.err.println("adding method: "+ m);
                 }
                 else if (memsym instanceof VarSymbol) {
                     // Eliminate any duplicate value/location.
