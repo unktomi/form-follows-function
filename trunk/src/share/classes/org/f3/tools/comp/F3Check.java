@@ -1752,20 +1752,17 @@ public class F3Check {
                 return;
             }
         }
-	System.err.println("checking override: "+ m);
+
         for (Type t : types.supertypesClosure(origin.type)) {
             if (t.tag == CLASS) {
                 TypeSymbol c = t.tsym;
                 Scope.Entry e = c.members().lookup(m.name);
                 while (e.scope != null) {
                     e.sym.complete();
-		    System.err.println("checking: "+ e.sym);
                     if (types.overrides(m, e.sym, origin, false)) { // hack
                         checkOverride(tree, m, (MethodSymbol)e.sym, origin);
                         doesOverride = !e.sym.type.getReturnType().isErroneous();
-                    } else {
-			System.err.println("no");
-		    }
+                    } 
                     e = e.next();
                 }
             }

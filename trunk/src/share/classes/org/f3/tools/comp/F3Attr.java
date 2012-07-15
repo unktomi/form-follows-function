@@ -1585,7 +1585,10 @@ public class F3Attr implements F3Visitor {
 		    }
 		}
             }
-
+	    if (elemtype == null) {
+		System.err.println("elem type is null");
+		elemtype = syms.objectType;
+	    }
             if (elemtype == syms.errType) {
                 log.error(clause.getSequenceExpression().pos(), MsgSym.MESSAGE_FOREACH_NOT_APPLICABLE_TO_TYPE);
             } else if (elemtype == syms.botType || elemtype == syms.unreachableType) {

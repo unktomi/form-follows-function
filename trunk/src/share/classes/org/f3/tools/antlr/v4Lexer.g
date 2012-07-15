@@ -140,6 +140,7 @@ INSTANCEOF      : 'instanceof';
 INTO            : 'into';
 INVALIDATE      : 'invalidate';
 INVERSE         : 'inverse';
+IS              : 'is';
 LET             : 'let';
 LAST            : 'last';
 LAZY            : 'lazy';
@@ -163,6 +164,7 @@ PUBLIC          : 'public';
 PUBLIC_READ     : 'public-read';
 REPLACE         : 'replace';
 RETURN          : 'return';
+RETURNS         : 'returns';
 REVERSE         : 'reverse';
 SIZEOF          : 'sizeof';
 STATIC          : 'static';
@@ -305,45 +307,6 @@ STRING_LITERAL
                     )
                 
     
-            
-    | '\'' SingleQuoteBody
-    
-                (
-                      '\'' // Well formed string
-                      
-                        {
-                            processString();
-                        }
-                      
-                    | '{' // Expression     
-    
-                        {
-                            $type = QUOTE_LBRACE_STRING_LITERAL;
-                            processString(); 
-                        }
-    
-                        NextIsPercent[SNG_QUOTE_CTX] 
-                        
-                    | { input.mark(); }
-                    
-                        ('\n'|'\r'|EOF) // Badly formed string
-                        {
-                            // Don't consume the new line
-                            //
-                            input.rewind();
-                            
-                            // Report the error
-                            //
-                            log.error(sPos, MsgSym.MESSAGE_F3_UNTERMINATED_STRING);
-                            
-                            // Always use a defined string as the value
-                            //
-                            setText(getText() +"'");
-                            
-                            processString();
-                        }
-                )
-    
     ;
     
 // String Expression token implementation.
@@ -415,30 +378,6 @@ RBRACE_QUOTE_STRING_LITERAL
                     processString(); 
                 }
     
-    | { rightBraceLikeQuote(SNG_QUOTE_CTX) }?=>
-        
-          (
-              '}' SingleQuoteBody
-          
-                (
-                      '\'' // Well formed string
-                      
-                    | { input.mark(); }
-                        ('\n'|'\r'|EOF) // Badly formed string
-                        {
-                            log.error(eStringStart, MsgSym.MESSAGE_F3_UNTERMINATED_STRING);
-                            input.rewind();
-                            setText(getText() + "'");
-                        }
-                )
-                                
-          )  
-                  
-                { 
-                    leaveBrace(); 
-                    leaveQuote(); 
-                    processString(); 
-                }
     ;
     
 // As in the rule RBRACE_QUOTE_STRING_LITERAL, this rule
@@ -460,16 +399,6 @@ RBRACE_LBRACE_STRING_LITERAL
                    
            NextIsPercent[CUR_QUOTE_CTX] 
                    
-    | { rightBraceLikeQuote(SNG_QUOTE_CTX) }?=>
-    
-                  '}' SingleQuoteBody '{'   
-                  
-                        { 
-                            leaveBrace(); 
-                            processString(); 
-                        }
-                        
-                   NextIsPercent[CUR_QUOTE_CTX] 
     ;
     
 // Here, a right brace is returned as a simple token 
@@ -501,19 +430,6 @@ DoubleQuoteBody
          )*  
     ;
 
-// Scans through the body of a single quoted string
-//
-fragment
-SingleQuoteBody  
-    :    (
-              ~('}'|'{' |'\''|'\\'|'\n'|'\r')
-            | '\\' .
-            | '}'
-                {
-                    log.error(getCharIndex()-1, MsgSym.MESSAGE_F3_UNESCAPED_RBRACE);
-                }
-        )*  
-    ;
 
 // This rules is used as a syntactic predicate by quoted
 // string rules to determine if the next character
@@ -1098,7 +1014,7 @@ COLOR_LITERAL
 // not regard F3 keywords as invalid identifiers.
 //
 IDENTIFIER 
-    : Letter (Letter|JavaIDDigit)*
+    : Letter (Letter|JavaIDDigit|'\'')*
     | '<<' (~'>'| '>' ~'>')* '>'* '>>'          
     
             { 

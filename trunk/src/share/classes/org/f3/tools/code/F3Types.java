@@ -765,8 +765,8 @@ public class F3Types extends Types {
         // assert types.asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
-	System.err.println("mt="+mt);
-	System.err.println("ot="+ot);
+	//System.err.println("mt="+mt);
+	//System.err.println("ot="+ot);
         return
             this.isSubSignature(mt, ot) &&
             (!checkResult || this.resultSubtype(mt, ot, Warner.noWarnings));

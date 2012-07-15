@@ -412,9 +412,9 @@ public abstract class F3TranslationSupport {
             }
             case TypeTags.WILDCARD: {
                 WildcardType wtype = (WildcardType) t;
-		System.err.println("wtype="+t);
+		//System.err.println("wtype="+t);
 		JCTree bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner(diagPos, wtype.type, false);
-		System.err.println("bound="+bound);
+		//System.err.println("bound="+bound);
 		if (bound != null && wtype.type instanceof TypeVar) {
 		    TypeVar tv = (TypeVar)wtype.type;
 		    if (tv.lower instanceof WildcardType) {
@@ -435,16 +435,16 @@ public abstract class F3TranslationSupport {
 		    }
 		    TypeVar tv = (TypeVar)t;
 		    if (tv.lower instanceof WildcardType) { // hack
-			System.err.println("existentializing: "+ diagPos+": "+ t);
+			//System.err.println("existentializing: "+ diagPos+": "+ t);
 			if (true) {
 			    return make.at(diagPos).Wildcard(make.TypeBoundKind(BoundKind.UNBOUND),
 							     null);
 			}
 		    } else {
-			System.err.println("not existentializing: "+ t);
+			//System.err.println("not existentializing: "+ t);
 		    }
 		}
-		System.err.println("default: "+ t.getClass()+": "+t);
+		//System.err.println("default: "+ t.getClass()+": "+t);
                 return make.at(diagPos).Type(t);
             }
         }
