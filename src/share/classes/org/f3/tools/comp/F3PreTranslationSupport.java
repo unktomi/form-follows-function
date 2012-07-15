@@ -210,7 +210,7 @@ public class F3PreTranslationSupport {
 	if (type instanceof CapturedType) {
 	    throw new RuntimeException("can't handle captured type: "+ type);
 	}
-	if (true) {
+	if (false) {
 	    System.err.println("elemType="+elemType);
 	    System.err.println("typeExpr="+typeExpr);
 	    System.err.println("type="+type.getClass()+ ": "+type);
@@ -349,8 +349,8 @@ public class F3PreTranslationSupport {
     }
 
     private F3Expression makeCast(F3Expression tree, Type type) {
-	System.err.println("casting: " +tree);
-	System.err.println("to type: "+ type);
+	//System.err.println("casting: " +tree);
+	//System.err.println("to type: "+ type);
 	type = types.erasure(type);
         F3Expression typeTree = makeTypeTree(type);
         F3Expression expr = f3make.at(tree.pos).TypeCast(typeTree, tree);

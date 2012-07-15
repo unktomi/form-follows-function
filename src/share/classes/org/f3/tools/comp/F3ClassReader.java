@@ -583,7 +583,6 @@ public class F3ClassReader extends ClassReader {
             F3VarSymbol scriptAccessSymbol = isF3Class ? f3make.ScriptAccessSymbol(csym) : null;
 
             Set<Name> priorNames = new HashSet<Name>();
-	    System.err.println("ct="+ct);
 	    enterTypevars(ct);
             handleSyms:
             for (List<Symbol> l = symlist; l.nonEmpty(); l=l.tail) {
@@ -627,7 +626,7 @@ public class F3ClassReader extends ClassReader {
                 if (memsym instanceof MethodSymbol) {
                     MethodSymbol m = translateMethodSymbol(flags, memsym, csym);     
                     csym.members_field.enter(m);
-		    System.err.println("adding method: "+ m);
+
                 }
                 else if (memsym instanceof VarSymbol) {
                     // Eliminate any duplicate value/location.

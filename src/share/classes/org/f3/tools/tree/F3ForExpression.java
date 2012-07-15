@@ -135,7 +135,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		Type type = argType;
 		if (!first) {
 		    type = monadType;
-		    System.err.println("monad type: " + type);
+		    //System.err.println("monad type: " + type);
 		}
 		boolean second = i == 1;
 		if (!first) {
@@ -149,7 +149,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
             }
 	    //System.err.println("apply="+apply);
         }
-	System.err.println("apply="+apply);
+	//System.err.println("apply="+apply);
         return apply;
     }
 

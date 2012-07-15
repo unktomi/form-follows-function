@@ -1287,11 +1287,11 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 }
             }
             
-        typeReference 
+        returnTypeReference 
             {
                 // Accumulate in case of error
                 //
-                errNodes.append($typeReference.rtype);
+                errNodes.append($returnTypeReference.rtype);
             }
     
         // The function block is optional if this is an abstract funtino definition
@@ -1325,7 +1325,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
                             (
                                 $mods,
                                 name, 
-                                $typeReference.rtype,
+                                $returnTypeReference.rtype,
                                 $formalParameters.params.toList(), 
                                 blk
                             );
@@ -4685,7 +4685,7 @@ functionExpression
                 }
             }
             
-        typeReference   { errNodes.append($typeReference.rtype); }
+        returnTypeReference   { errNodes.append($returnTypeReference.rtype); }
         ((LBRACE) => (block   [-1]    { errNodes.append($block.value); }
     
         {
@@ -4695,7 +4695,7 @@ functionExpression
                                 (
                                     $modifiers.mods,
                                     exprbuff.toList(),
-                                    $typeReference.rtype, 
+                                    $returnTypeReference.rtype, 
                                     $formalParameters.params.toList(),
                                     $block.value
                                 );
@@ -4712,7 +4712,7 @@ functionExpression
                                 (
                                     $modifiers.mods,
                                     exprbuff.toList(),
-                                    $typeReference.rtype, 
+                                    $returnTypeReference.rtype, 
                                     $formalParameters.params.toList(),
                                     F.at(pos($FUNCTION)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>of(bodyExpr), null)
                                 );
@@ -6108,7 +6108,7 @@ typeReference
     //
     int rPos = pos();
 }
-    : COLON type
+    : (COLON | IS) type
               
         {
             $rtype = $type.rtype;
@@ -6144,6 +6144,62 @@ catch [RecognitionException re] {
     //
     recover(input, re);
 }
+
+ // --------------
+ // Type reference
+ // Used to build parameter lists for functions etc
+returnTypeReference
+
+    returns [F3Type rtype]
+    
+@init
+{
+    // Used to accumulate a list of anything that we manage to build up in the parse
+    // in case of error.
+    //
+    ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
+    
+    // Work out current position in the input stream
+    //
+    int rPos = pos();
+}
+    : (COLON | RETURNS) type
+              
+        {
+            $rtype = $type.rtype;
+        }
+        
+    | // Untyped element, the AST needs to reflect that
+    
+        { 
+            $rtype = F.at(rPos).TypeUnknown(); 
+            endPos($rtype);
+        }
+
+    ;
+ // Catch an error. We create an erroneous node for anything that was at the start 
+// up to wherever we made sense of the input.
+//
+catch [RecognitionException re] {
+  
+    // To avoid the complications of what to create class wise if
+    // we get an error here, we create a dummy unknown type. Because
+    // we log the error, we won't perform codegen, but the IDE will
+    // have something to work with.
+    //
+    $rtype = F.at(rPos).TypeUnknown();
+    endPos($rtype);
+    
+    // Now, let's report the error as the user needs to know about it, but with
+    // reference to our new node.
+    //
+    reportError(re, $rtype);
+
+    // Now we perform standard ANTLR recovery here
+    //
+    recover(input, re);
+}
+
 
 // -------------------------
 // Array indicator for types
