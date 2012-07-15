@@ -3072,7 +3072,7 @@ boundExpression
         }
     
             (
-                (WITH)=>WITH 
+                (WITH INVERSE)=>WITH 
                 
                     // Future syntax: (expression AS)?
                 
@@ -3796,6 +3796,11 @@ typeExpression
 		    endPos($value);
 
 		 }
+        
+    | (WITH LBRACE)=>(WITH LBRACE ol = objectLiteral {
+        
+             $value = $relationalExpression.value;
+        } RBRACE)
 
             | AS atn=type
             
