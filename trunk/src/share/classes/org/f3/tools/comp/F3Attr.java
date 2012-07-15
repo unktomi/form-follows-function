@@ -309,6 +309,7 @@ public class F3Attr implements F3Visitor {
 		} else {
 		    //System.err.println("unhandled case: "+ tree.getClass() + " "+tree);
 		}
+		//System.err.println("typeArgs="+typeArgs);
 		if (typeArgs != null) {
 		    boolean typeCons = types.isTypeCons(localResult);
 		    List<Type> typeArgTypes = attribTypeArgs(typeArgs, env, !inSuperType);
@@ -364,7 +365,7 @@ public class F3Attr implements F3Visitor {
 				localResult = tc;
 			    }
 			} else {
-			    System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+			    //System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
 			}
 		    }
 		    System.err.println("typeArgs="+typeArgs);
@@ -395,9 +396,10 @@ public class F3Attr implements F3Visitor {
 				//System.err.println("not erasing: "+ localResult);
 			    }
 			}
+		    } else {
+			//System.err.println("unhandled case: "+ tree.getClass()+": "+tree);
 		    }
 		}
-		
 	    }
 	    return localResult;
         } catch (CompletionFailure ex) {
@@ -2186,11 +2188,10 @@ public class F3Attr implements F3Visitor {
 		if (l.head instanceof TypeVar) {
 		    TypeVar tv = (TypeVar)l.head;
 		    tv.lower = 
-			new WildcardType(syms.objectType,
+			new WildcardType(Type.noType,
 					 BoundKind.UNBOUND,
 					 syms.boundClass,
 					 tv);
-
 		}
 	    }
 
@@ -4008,6 +4009,9 @@ public class F3Attr implements F3Visitor {
 	    System.err.println("setting type: "+ta.id +": "+ t);
 	    ta.tsym.type = t;
 	    result = t;
+	    tree.type = result;
+	} else {
+	    System.err.println("unhandled case: "+ tree);
 	}
     }
 
@@ -4030,7 +4034,13 @@ public class F3Attr implements F3Visitor {
     //@Override
     public void visitTypeVar(F3TypeVar tree) {
 	if (tree instanceof F3TypeThis) {
-	    result = tree.type = env.enclClass.type;
+	    F3TypeThis t = (F3TypeThis)tree;
+	    Type ct = env.enclClass.type;
+	    if (t.getArgs() != null) {
+		List<Type> targs = attribTypeArgs(t.getArgs(), env, !inSuperType);
+		ct = types.applySimpleGenericType(types.erasure(ct), targs);
+	    }
+	    result = tree.type = ct;
 	    return;
 	}
         F3Expression classNameExpr = ((F3TypeVar) tree).getClassName();
@@ -4057,11 +4067,11 @@ public class F3Attr implements F3Visitor {
 		return true;
 	    }
 	}
-	if (false) {
-	    if (types.isTypeCons(t)) {
-		return true;
-	    }
+	/*
+	if (types.isTypeCons(t)) {
+	    return true;
 	}
+	*/
 	return false;
     }
     //@Override
@@ -4074,7 +4084,7 @@ public class F3Attr implements F3Visitor {
 		if (l.head instanceof TypeVar) {
 		    TypeVar tv = (TypeVar)l.head;
 		    tv.lower = 
-			new WildcardType(syms.objectType,
+			new WildcardType(Type.noType,
 					 BoundKind.UNBOUND,
 					 syms.boundClass,
 					 tv);

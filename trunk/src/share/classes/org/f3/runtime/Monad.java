@@ -1,6 +1,7 @@
 package org.f3.runtime;
 import org.f3.functions.*;
 
-public interface Monad<This, X> extends Functor<This, X, Object> {
-    public <Y> Monad<This,Y> flatmap(Function1<? extends Monad<This,Y>, ? super X> f);
+public interface Monad<This, Source, Target> extends Functor<This, Source, Target> {
+    public <NewSource extends Target> Monad<This,? super NewSource, Target> 
+	flatmap(Function1<? extends Monad<This,NewSource,Target>, ? super Source> f);
 }

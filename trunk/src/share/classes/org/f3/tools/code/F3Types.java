@@ -699,16 +699,74 @@ public class F3Types extends Types {
             return msym.implementation(origin, this, checkResult);
     }
 
+    boolean hasSameBounds0(ForAll t, ForAll s) {
+        List<Type> l1 = t.tvars;
+        List<Type> l2 = s.tvars;
+        while (l1.nonEmpty() && l2.nonEmpty() &&
+               isSameType(l1.head.getUpperBound(),
+                          subst(l2.head.getUpperBound(),
+                                s.tvars,
+                                t.tvars))) {
+            l1 = l1.tail;
+            l2 = l2.tail;
+        }
+        return l1.isEmpty() && l2.isEmpty();
+    }
+
+    public boolean hasSameBounds(ForAll t, ForAll s) {
+	boolean result = hasSameBounds0(t, s);
+	System.err.println("has same bounds: "+ t.getClass()+ " and " +s.getClass()+": "+result);
+	System.err.println("has same bounds: "+ t+ " and " +s+": "+result);
+	if (result) {
+	    Type q = t.qtype;
+	    Type r = subst(s.qtype, s.tvars, t.tvars);
+	    System.err.println("q="+q);
+	    System.err.println("r="+r);
+	    return hasSameArgs(q, r);
+	}
+	return result;
+    }
+    /*
+    public boolean hasSameArgs(Type t, Type s) {
+	if ((t instanceof ForAll) && (s instanceof ForAll)) {
+	    if (hasSameBounds((ForAll)s, (ForAll)t)) {
+	    }
+	}
+	boolean result = super.hasSameArgs(t, s);
+	System.err.println("has same args: "+ t.getClass()+ " and " +s.getClass()+": "+result);
+	System.err.println("has same args: "+ t+ " and " +s+": "+result);
+	return result;
+    }
+
+    public boolean containsTypeEquivalent(List<Type> ts, List<Type> ss) {
+	for (int i = 0; i < ts.size(); i++) {
+	    Type x = ts.get(i);
+	    Type y = ss.get(i);
+	    System.err.println("x="+x+", y="+y);
+	    System.err.println("isSameType: "+ isSameType(x, y));
+	    System.err.println("x contains y: "+ containsType(x, y));
+	    System.err.println("y contains x: "+ containsType(y, x));
+	    if (!isSameType(x, y) && !containsType(x, y)) {
+		return false;
+	    }
+	}
+	return true;
+	//boolean result = super.containsTypeEquivalent(ts, ss);
+	//return result;
+    }
+    */
+
     /** A replacement for MethodSymbol.overrides. */
     public boolean overrides(Symbol sym, Symbol _other, TypeSymbol origin, boolean checkResult) {
         if (sym.isConstructor() || _other.kind != MTH) return false;
-
         if (sym == _other) return true;
         MethodSymbol other = (MethodSymbol)_other;
 
         // assert types.asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
+	System.err.println("mt="+mt);
+	System.err.println("ot="+ot);
         return
             this.isSubSignature(mt, ot) &&
             (!checkResult || this.resultSubtype(mt, ot, Warner.noWarnings));

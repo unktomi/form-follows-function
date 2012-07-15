@@ -318,6 +318,9 @@ public class F3PreTranslationSupport {
      * java.Lang.Long to int and vice-versa
      */
     private boolean needNumericBoxConversion(F3Expression tree, Type type) {
+	if (tree.type == null) {
+	    System.err.println("tree="+tree.getClass());
+	}
         boolean sourceIsPrimitive = tree.type.isPrimitive();
         boolean targetIsPrimitive = type.isPrimitive();
         Type unboxedSource = types.unboxedType(tree.type);

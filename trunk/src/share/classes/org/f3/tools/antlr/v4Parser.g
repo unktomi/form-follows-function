@@ -1312,7 +1312,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 // and there was no function body. If there is a SEMI at this point, it does not
                 // matter as it will be eaten by the enclosing rule as if it were an empty statement.
                 //
-             RETURN? bodyExpr=expression { blk = F.at(pos($FUNCTION)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>of(bodyExpr), null); }
+             RETURN? bodyExpr=expression { blk = F.at(pos($FUNCTION)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>nil(), bodyExpr); }
             |
             SEMI
 

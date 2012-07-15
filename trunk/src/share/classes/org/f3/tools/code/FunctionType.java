@@ -55,6 +55,7 @@ public class FunctionType extends Type.ClassType {
     public FunctionType(FunctionType orig) {
         this(orig.getEnclosingType(), orig.typarams_field, orig.tsym,
                 orig.mtype);
+	this.typeArgs = orig.typeArgs;
     }
 
     @Override
@@ -67,6 +68,9 @@ public class FunctionType extends Type.ClassType {
     
     @Override
     public String toString() {
+	if (true) {
+	    return super.toString();
+	}
         StringBuilder s = new StringBuilder();
         s.append("function from ");
         if (mtype == null)
@@ -89,6 +93,7 @@ public class FunctionType extends Type.ClassType {
         s.append(mtype == null ? "?" : mtype.restype);
         return s.toString();
     }
+
     @Override
     public boolean equals(Object t) {
         return super.equals(t);

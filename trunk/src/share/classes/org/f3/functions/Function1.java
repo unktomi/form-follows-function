@@ -33,7 +33,7 @@ public class Function1<R, A1> extends Function<R>
 	       R,
 	       Object> 
 				      */
-    implements Monad<Function1, R>
+    implements Monad<Function1, R, Object>
 {
 
     public <Y> Function1<Y, A1> map(final Function1<? extends Y, ? super R> f) {
@@ -46,7 +46,7 @@ public class Function1<R, A1> extends Function<R>
     }
 
 
-    public <Y> Function1<Y, A1> flatmap(final Function1<? extends Monad<Function1, Y>, ? super R> f) {
+    public <Y> Function1<Y, A1> flatmap(final Function1<? extends Monad<Function1, Y, Object>, ? super R> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<Y, A1>() {
 	    public Y invoke(A1 x1) {

@@ -2130,6 +2130,9 @@ public abstract class F3TranslationSupport {
         }
 
         JCExpression TypeCast(Type clazztype, Type exprtype, JCExpression translatedExpr) {
+	    if (clazztype instanceof WildcardType) {
+		return translatedExpr;
+	    }
             if (types.isSameType(clazztype, exprtype)) {
                 return translatedExpr;
             } else {
