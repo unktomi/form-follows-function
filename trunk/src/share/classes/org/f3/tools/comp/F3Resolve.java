@@ -436,7 +436,7 @@ public class F3Resolve {
                 ? types.isConvertible(argtypes.head, formals.head, warn)
                 : types.isSubtypeUnchecked(argtypes.head, formals.head, warn);
             if (!works) {
-		System.err.println("unacceptable: "+argtypes.head +": "+ formals.head);
+		//System.err.println("unacceptable: "+argtypes.head +": "+ formals.head);
 		return false;
 	    }
             argtypes = argtypes.tail;

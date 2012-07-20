@@ -2130,19 +2130,18 @@ public abstract class F3TranslationSupport {
         }
 
         JCExpression TypeCast(Type clazztype, Type exprtype, JCExpression translatedExpr) {
+	    /*
 	    if (clazztype instanceof WildcardType) {
 		return translatedExpr;
 	    }
-            if (types.isSameType(clazztype, exprtype)) {
-                return translatedExpr;
-            } else {
-                Type castType = clazztype;
-                if (exprtype != Type.noType && !exprtype.isPrimitive()) {
-                    castType = types.boxedTypeOrType(castType);
-                }
-                JCTree clazz = makeType(castType, true);
-                return m().TypeCast(clazz, translatedExpr);
-            }
+	    */
+	    Type castType = clazztype;
+	    if (exprtype != Type.noType && !exprtype.isPrimitive()) {
+		castType = types.boxedTypeOrType(castType);
+	    }
+	    JCTree clazz = makeType(castType, true);
+	    return m().TypeCast(clazz, translatedExpr);
+
         }
 
         /* Default value per type */

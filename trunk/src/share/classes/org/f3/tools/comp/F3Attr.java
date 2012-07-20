@@ -1616,7 +1616,7 @@ public class F3Attr implements F3Visitor {
 	    } else {
 		clause1Type = types.lub(clause1Type, elemtype);
 	    }
-	    System.err.println("clause1Type="+clause1Type);
+	    //System.err.println("clause1Type="+clause1Type);
             if (clause.getWhereExpression() != null) {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
