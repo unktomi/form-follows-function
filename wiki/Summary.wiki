@@ -64,7 +64,7 @@ public class Stream of A extends Comonad of A, Monad of A {
     override public function of X 
 	flatmap(unaryOp is function from A to Stream of X) returns Stream of X
     {
-        val d = bound function(a is A) returns X { (unaryOp(a) as Stream of X).first }
+        val d = bound function(a is A) returns X { unaryOp(a).first }
         var h = bind d(first);
         var t = bind for (a in secondThruLast) d(a);
         Stream of X {
