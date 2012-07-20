@@ -106,6 +106,6 @@ public function of T toStream(t is T) returns Stream of T
 
 
 // creates an infinite stream of 3s
-let zs = bind for (xs in toStream(1.0), ys in toStream(2.0)) { x + y }
+val zs = bind for (xs in toStream(1.0), ys in toStream(2.0)) { x + y }
 
 }}}
