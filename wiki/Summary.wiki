@@ -1,6 +1,6 @@
 This project is a work in progress - resurrecting the F3 programming language.
 
-Lazy and reactive evaluation with mutation
+Lazy and reactive self-adjusting computation with mutation
 
 Support for generics including type constructors
 
