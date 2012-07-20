@@ -94,6 +94,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_EmptySequenceType;
     public final Type f3_SequenceTypeErasure;
     public final Type f3_TypeConsTypeErasure;
+    public final Type[] f3_TypeConsErasure;
     public final Type f3_FunctorTypeErasure;
     public final Type f3_MonadTypeErasure;
     public final Type f3_ComonadTypeErasure;
@@ -240,8 +241,10 @@ public class F3Symtab extends Symtab {
         f3_ComonadType = enterClass(F3Defs.cComonad);
         f3_TypeConsType = enterClass(F3Defs.cTypeCons);
 	f3_TypeCons = new Type[5];
+	f3_TypeConsErasure = new Type[5];
 	for (int i = 1; i <= 5; i++) {
 	    f3_TypeCons[i-1] = enterClass(F3Defs.cTypeCons+""+i);
+	    f3_TypeConsErasure[i-1] = types.erasure(f3_TypeCons[i-1]);
 	}
         f3_SequenceRefType = enterClass(F3Defs.cSequenceRef);
         f3_SequenceProxyType = enterClass(F3Defs.cSequenceProxy);

@@ -628,6 +628,7 @@ public class F3Attr implements F3Visitor {
     public void visitInstanceOf(F3InstanceOf tree) {
         Type exprtype = attribExpr(tree.expr, env);
         Type type = attribType(tree.clazz, env);
+	type = types.erasure(type);
         //FIXME - check that the target type is not a generic type - this hack
         //disables instanceof where target type is a sequence, currently
         //not supported by translation
@@ -922,6 +923,7 @@ public class F3Attr implements F3Visitor {
 	    actuals = attribTypeArgs(tree.typeArgs, env);
 	}
         result = checkId(tree, site, sym, env, actuals, pkind, pt, pSequenceness, varArgs);
+
 	if (isType(sitesym)) {
 	    if (!sym.isStatic()) {
 		tree.staticRefOfNonStatic = true;
@@ -945,10 +947,10 @@ public class F3Attr implements F3Visitor {
 	}
 	Type memberType = types.memberType(tree.selected.type, sym);
 	tree.type = result;
-        if (tree.sym.kind == MTH && result instanceof FunctionType) {
-            tree.sym = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);
+	if (tree.sym.kind == MTH && result instanceof FunctionType) {
+	    tree.sym = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);
 	}
-        env.info.tvars = List.nil();
+	env.info.tvars = List.nil();
     }
     //where
         /** Determine symbol referenced by a Select expression,
@@ -1576,8 +1578,12 @@ public class F3Attr implements F3Visitor {
 		    elemtype = exprType;
 		    isIter = true;
 		} else {
-		    if (!last) {
-			monadType = exprType;
+		    if (!last || monadType != null) {
+			if (monadType == null) {
+			    monadType = exprType;
+			} else {
+			    monadType = types.lub(monadType, exprType);
+			}
 			elemtype = types.monadElementType(exprType);
 		    } else {
 			functorType = exprType;
@@ -1605,7 +1611,12 @@ public class F3Attr implements F3Visitor {
                 var.type = elemtype;
                 var.sym.type = elemtype;
             }
-            clause1Type = elemtype;
+	    if (clause1Type == null) {
+		clause1Type = elemtype;
+	    } else {
+		clause1Type = types.lub(clause1Type, elemtype);
+	    }
+	    System.err.println("clause1Type="+clause1Type);
             if (clause.getWhereExpression() != null) {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
@@ -2592,12 +2603,12 @@ public class F3Attr implements F3Visitor {
             syms.voidType;
 	if (tree.cond.type == null || 
 	    tree.truepart.type == null) {
-
+	} else {
+	    result = check(tree,
+			   condType(tree.pos(), tree.cond.type,
+				    tree.truepart.type, falsepartType),
+			   VAL, pkind, pt, pSequenceness);
 	}
-        result = check(tree,
-                       condType(tree.pos(), tree.cond.type,
-                                        tree.truepart.type, falsepartType),
-                       VAL, pkind, pt, pSequenceness);
     }
     //where
         /** Compute the type of a conditional expression, after
@@ -2940,6 +2951,8 @@ public class F3Attr implements F3Visitor {
 		! rs.argumentsAcceptable(argtypes, mtype.getParameterTypes(),
 					 true, false, Warner.noWarnings)) {
 		if (!partial || argtypes.size() >= mtype.getParameterTypes().size()) {
+		    System.err.println("argtypes: "+argtypes);
+		    System.err.println("paramtypes: "+ mtype.getParameterTypes());
 		    log.error(tree,
 			      MsgSym.MESSAGE_F3_CANNOT_APPLY_FUNCTION,
 			      mtype.getParameterTypes(), argtypes);

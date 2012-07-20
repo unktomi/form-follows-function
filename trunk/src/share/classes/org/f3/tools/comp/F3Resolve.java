@@ -435,7 +435,10 @@ public class F3Resolve {
             boolean works = allowBoxing
                 ? types.isConvertible(argtypes.head, formals.head, warn)
                 : types.isSubtypeUnchecked(argtypes.head, formals.head, warn);
-            if (!works) return false;
+            if (!works) {
+		System.err.println("unacceptable: "+argtypes.head +": "+ formals.head);
+		return false;
+	    }
             argtypes = argtypes.tail;
             formals = formals.tail;
         }

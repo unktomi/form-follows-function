@@ -161,8 +161,6 @@ public class F3Types extends Types {
 	}
 	Type t = getTypeCons(type);
 	if (t == null) return null;
-	System.err.println("type="+type);
-	System.err.println("typecons="+t);
 	List<Type> targs = t.getTypeArguments();
 	if (targs.size() > 0) {
 	    Type result = targs.get(0);
@@ -171,6 +169,7 @@ public class F3Types extends Types {
 		result = applySimpleGenericType(result, targs.toArray(new Type[targs.size()]));
 	    }
 	    //System.err.println("result="+result);
+	    return result;
 	}
 	return null;
     }
@@ -179,15 +178,16 @@ public class F3Types extends Types {
 	if (type == null) {
 	    return null;
 	}
-	if (isTypeConsType(type)) {
+	if (isTypeConsType(type) != 0) {
 	    return type;
 	}
+	//System.err.println("getTypeCons: "+ type);
 	List<Type> supers = supertypesClosure(type);
 	if (supers != null) for (Type st: supers) {
-	    if (isTypeConsType(st)) {
-		return st;
+		if (isTypeConsType(st) != 0) {
+		    return st;
+		}
 	    }
-	}
 	return null;
     }
 
@@ -195,14 +195,22 @@ public class F3Types extends Types {
 	return getTypeCons(t) != null;
     }
 
-    public boolean isTypeConsType(Type type) {
-	if (isMonadType(type) || isComonadType(type)) {
-	    return true;
+    public int isTypeConsType(Type type) {
+        if (!(type != Type.noType && type != null
+	      && type.tag != TypeTags.ERROR
+	      && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL)) {
+	    return 0;
 	}
-        return type != Type.noType && type != null
-            && type.tag != TypeTags.ERROR
-            && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
-            && erasure(type) == syms.f3_TypeConsTypeErasure;
+	Type t = erasure(type);
+	for (int i = 0; i < syms.f3_TypeCons.length; i++) {
+	    if (t == syms.f3_TypeConsErasure[i]) {
+		return 1 + i;
+	    }
+	}
+	if (t == syms.f3_TypeConsTypeErasure) {
+	    return 1;
+	}
+	return 0;
     }
 
     public boolean isSequence(Type type) {
@@ -548,11 +556,7 @@ public class F3Types extends Types {
         }
         if (t == syms.intType && s == syms.charType)
             return true;
-	/*
-	if (isSameTypeCons(t, s)) {
-	    return true;
-	}
-	*/
+
 	return false;
     }
 
@@ -560,14 +564,30 @@ public class F3Types extends Types {
 	if (true) {
 	    Type t = getTypeConsThis(a);
 	    if (t != null && t != a) {
-		if (isSameType(t, b)) {
-		    return true;
+		//System.err.println("testing: "+ t+", "+ b);
+		if (isSameType(erasure(t), erasure(b))) {
+		    if (t.getTypeArguments().size() == b.getTypeArguments().size()) {
+			if (isSameType(t, b, false)) {
+			    System.err.println("matched "+a + ", "+b);
+			    return true;
+			}
+		    } else {
+			return true;
+		    }
 		}
 	    }
 	    t = getTypeConsThis(b);
 	    if (t != null && t != b) {
-		if (isSameType(a, t)) {
-		    return true;
+		//System.err.println("testing: "+ a+", "+ t);
+		if (isSameType(erasure(a), erasure(t))) {
+		    if (a.getTypeArguments().size() == t.getTypeArguments().size()) {
+			if (isSameType(a, t, false)) {
+			    System.err.println("matched "+a + ", "+b);
+			    return true;
+			}
+		    } else {
+			return true;
+		    }
 		}
 	    }
 	}
@@ -698,6 +718,7 @@ public class F3Types extends Types {
         else
             return msym.implementation(origin, this, checkResult);
     }
+    /*
 
     boolean hasSameBounds0(ForAll t, ForAll s) {
         List<Type> l1 = t.tvars;
@@ -726,7 +747,7 @@ public class F3Types extends Types {
 	}
 	return result;
     }
-    /*
+
     public boolean hasSameArgs(Type t, Type s) {
 	if ((t instanceof ForAll) && (s instanceof ForAll)) {
 	    if (hasSameBounds((ForAll)s, (ForAll)t)) {
@@ -825,19 +846,24 @@ public class F3Types extends Types {
     }
 
     public boolean isSameType(Type a, Type b) {
+	return isSameType(a, b, true);
+    }
+
+    public boolean isSameType(Type a, Type b, boolean checkTypeCons) {
+	if (a == b) {
+	    return true;
+	}
+	if (checkTypeCons && isSameTypeCons(a, b)) {
+	    return true;
+	}
 	if (a.tag == TYPEVAR && b.tag == TYPEVAR) {
 	    a = new ForAll(List.of(a), a);
 	    b = new ForAll(List.of(b), b);
-	}/* else if ((a instanceof FunctionType) &&
-	    (b instanceof FunctionType))  {
-	    a = new ForAll(a.getTypeArguments(), a);
-	    b = new ForAll(b.getTypeArguments(), b);
-	    System.err.println("a="+a);
-	    System.err.println("b="+b);
-        }*/
+	}
 	boolean result = super.isSameType(a, b);
 	return result;
     }
+
 
     public boolean isNumeric(Type type) {
         return (isSameType(type, syms.f3_ByteType) ||
