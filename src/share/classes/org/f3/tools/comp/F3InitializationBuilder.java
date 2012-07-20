@@ -4187,6 +4187,9 @@ however this is what we need */
                     if (varInfo.useAccessors() && !varInfo.isDef() && !varInfo.isOverride() && !varInfo.isBareSynth()) {
                          // (type)object$
                         JCExpression objCast = typeCast(varInfo.getRealType(), syms.objectType, objArg());
+			//System.err.println("typecast: "+ varSym+": "+objCast);
+			//System.err.println("type="+varSym.type);
+			//System.err.println("type*="+varInfo.getRealType());
                         if (varInfo.generateSequenceAccessors()) {
                             addStmt(CallStmt(defs.Sequences_set, id(names._this), Offset(varSym), objCast));
                         } else {

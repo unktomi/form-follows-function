@@ -422,6 +422,18 @@ public class F3Types extends Types {
         return isSequence(t) ? elementType(t) : t;
     }
 
+    public Type lub(Type t, Type s) {
+	if (t.isPrimitive() && s.isPrimitive()) {
+	    if (isConvertible(t, s)) {
+		return s;
+	    }
+	    if (isConvertible(s, t)) {
+		return t;
+	    }
+	}
+	return super.lub(t, s);
+    }
+
     public Type makeUnionType(Type s, Type t) {
         Type lub = lub(s.baseType(), t.baseType());
         if (lub.isCompound()) {
@@ -568,7 +580,7 @@ public class F3Types extends Types {
 		if (isSameType(erasure(t), erasure(b))) {
 		    if (t.getTypeArguments().size() == b.getTypeArguments().size()) {
 			if (isSameType(t, b, false)) {
-			    System.err.println("matched "+a + ", "+b);
+			    //System.err.println("matched "+a + ", "+b);
 			    return true;
 			}
 		    } else {
@@ -582,7 +594,7 @@ public class F3Types extends Types {
 		if (isSameType(erasure(a), erasure(t))) {
 		    if (a.getTypeArguments().size() == t.getTypeArguments().size()) {
 			if (isSameType(a, t, false)) {
-			    System.err.println("matched "+a + ", "+b);
+			    //System.err.println("matched "+a + ", "+b);
 			    return true;
 			}
 		    } else {

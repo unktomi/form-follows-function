@@ -574,6 +574,8 @@ public class F3Decompose implements F3Visitor {
                 shredUnlessIdent(tree.expr) :
             decomposeComponent(tree.expr);
         F3TypeCast res = f3make.at(tree.pos).TypeCast(clazz, expr);
+	//System.err.println("tree="+tree);
+	//System.err.println("res="+res);
         if (isBoundSequence && isCastingArray) {
             // Add a size field to hold the previous size of nativearray
             F3Var v = makeSizeVar(tree.pos(), 0);
