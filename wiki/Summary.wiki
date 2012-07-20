@@ -60,7 +60,7 @@ public class Stream of A extends Comonad of A, Monad of A {
 	}
     }
 
-    // flatmap = join . map
+    // lifts a unary operator to one over Streams
     override public function of X 
 	flatmap(unaryOp is function from A to Stream of X) returns Stream of X
     {
@@ -73,7 +73,7 @@ public class Stream of A extends Comonad of A, Monad of A {
         }
     }
 
-    // map lifts a unary operator to one over Streams
+    // lifts a unary operator to one over Streams
     override function of B 
 	coflatmap(unaryOp is function from Stream of A to B) returns Stream of B
     {
