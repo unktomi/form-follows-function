@@ -903,7 +903,7 @@ classDefinition [ F3Modifiers mods, int pos ]
     
     // Super class ids
     //
-    ListBuffer<F3Expression> ids   = null;
+    ListBuffer<F3Expression> ids   = new ListBuffer<F3Expression>();
     
     // Used to accumulate a list of anything that we manage to build up in the parse
     // in case of error.
@@ -1005,7 +1005,6 @@ catch [RecognitionException re] {
                     ids.toList(),
                     mems.toList()
                 );
-    System.err.println("exprbuff "+$n1.value+"="+exprbuff.toList());
     ((F3ClassDeclaration)$value).typeArgs = exprbuff.toList();
     setDocComment($value, docComment);  // Add any detected documentation comment
     
@@ -3372,14 +3371,14 @@ ifExpression
     int rPos = pos();
 
 }
-    : IF LPAREN 
+    : IF  (  (LPAREN)=>(LPAREN 
     
             econd=expression    { errNodes.append($econd.value);    }
             
-        RPAREN 
-    
-
-        THEN?  statement            { sVal = $statement.value;  errNodes.append(sVal);  }
+            RPAREN) THEN?
+          | econd = expression THEN{ errNodes.append($econd.value);    }
+          )
+          statement            { sVal = $statement.value;  errNodes.append(sVal);  }
             
             (
                 (ELSE)=>e1=elseClause   { eVal = $e1.value; errNodes.append(eVal);  }

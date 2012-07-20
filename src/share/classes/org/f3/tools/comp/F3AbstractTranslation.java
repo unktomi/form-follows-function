@@ -4371,10 +4371,12 @@ public abstract class F3AbstractTranslation
     }
 
     public void visitTypeClass(F3TypeClass that) {
+	System.err.println(that);
         processedInParent();
     }
 
     public void visitTypeVar(F3TypeVar that) {
+	System.err.println(that);
         processedInParent();
     }
 
