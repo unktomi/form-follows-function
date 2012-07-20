@@ -7,20 +7,20 @@ Support for generics including type constructors
 Syntax - eschew punctuation in favor of natural language (english) function words where possible
 
 {{{
-function of (A, B, C) curry(f: function from (A, B) to C): function from A to (function from B to C)
+function of (A, B, C) curry(f is function from (A, B) to C) returns function from A to (function from B to C)
 {
-    function(a: A): function from B to C
+    function(a is A) returns function from B to C
     {
-        function(b: B): C
+        function(b is B) returns C
         {
             f(a, b)
         }
     }
 }
 
-function of (A, B, C) uncurry(f: function from A to (function from B to C)): function from (A, B) to C
+function of (A, B, C) uncurry(f is function from A to (function from B to C)) returns function from (A, B) to C
 {
-    function(a: A, b: B): C
+    function(a is A, b is B): C
     {
         f(a)(b)
     }
@@ -32,15 +32,15 @@ Monad Comprehensions
 
 // Lazy infinite streams
 
-public class Stream of A extends Comonad of (Stream, A), Monad of (Stream, A) {
+public class Stream of A extends Comonad of A, Monad of A {
 
-    public val protected var first: A;
-    public val protected var secondThruLast: Stream of A;
+    public val protected var first is A;
+    public val protected var secondThruLast is Stream of A;
 
     // zip lifts a binary operator to one over Streams
     public function of (B, C) 
-	zip(binOp: function from (A, B) to C, 
-	    bs: Stream of B): Stream of C
+	zip(binOp is function from (A, B) to C, 
+	    bs is Stream of B) returns Stream of C
     {
 	Stream of C
 	{
@@ -51,7 +51,7 @@ public class Stream of A extends Comonad of (Stream, A), Monad of (Stream, A) {
 
     // map lifts a unary operator to one over Streams
     override public function of B 
-	map(unaryOp: function from A to B): Stream of B
+	map(unaryOp is function from A to B) returns Stream of B
     {
 	Stream of B
 	{
@@ -62,9 +62,9 @@ public class Stream of A extends Comonad of (Stream, A), Monad of (Stream, A) {
 
     // flatmap = join . map
     override public function of X 
-	flatmap(unaryOp: function from A to Monad of (Stream, X)): Stream of X
+	flatmap(unaryOp is function from A to Stream of X) returns Stream of X
     {
-        let d = bound function(a: A): X { (unaryOp(a) as Stream of X).first }
+        val d = bound function(a is A) returns X { (unaryOp(a) as Stream of X).first }
         var h = bind d(first);
         var t = bind for (a in secondThruLast) d(a);
         Stream of X {
@@ -75,18 +75,18 @@ public class Stream of A extends Comonad of (Stream, A), Monad of (Stream, A) {
 
     // map lifts a unary operator to one over Streams
     override function of B 
-	coflatmap(unaryOp: function from Comonad of (Stream, A) to B): Stream of B
+	coflatmap(unaryOp is function from Stream of A to B) returns Stream of B
     {
 	Stream of B
 	{
 	    first: bind unaryOp(this);
-	    secondThruLast: bind secondThruLast.coflatmap(unaryOp) as Stream of B;
+	    secondThruLast: bind secondThruLast.coflatmap(unaryOp);
 	}
     }
 
-    override public function extract(): A { first }
+    override public function extract() returns A { first }
 
-    public bound function fby(s:Stream of A): Stream of A 
+    public bound function fby(s is Stream of A) returns Stream of A 
     {
 	Stream of A {
 	    first: bind first;
@@ -96,7 +96,7 @@ public class Stream of A extends Comonad of (Stream, A), Monad of (Stream, A) {
 }
 
 // lifts a constant to a Stream i.e,  t, t, t, ...
-public function of T constant(t: T): Stream of T
+public function of T toStream(t is T) returns Stream of T
 {
     Stream of T {
         first: t;
@@ -106,6 +106,6 @@ public function of T constant(t: T): Stream of T
 
 
 // creates an infinite stream of 3s
-let zs = bind for (xs in constant(1.0), ys in constant(2.0)) { x + y }
+let zs = bind for (xs in toStream(1.0), ys in toStream(2.0)) { x + y }
 
 }}}
