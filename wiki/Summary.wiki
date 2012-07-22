@@ -34,8 +34,8 @@ Monad Comprehensions
 
 public class Stream of a extends Comonad of a, Monad of a {
 
-    public val protected var first is a;
-    public val protected var secondThruLast is Stream of a;
+    public val first is a;
+    public val secondThruLast is Stream of a;
 
     // zip lifts a binary operator to one over Streams
     public function of (b, c) 
