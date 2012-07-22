@@ -106,6 +106,6 @@ public function of a toStream(x is a) returns Stream of a
 
 
 // creates an infinite stream of 3s
-val zs = bind for (xs in toStream(1.0), ys in toStream(2.0)) { x + y }
+val zs = bind for (xs in toStream(1), ys in toStream(2)) { x + y }
 
 }}}
