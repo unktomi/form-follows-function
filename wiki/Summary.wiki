@@ -6,6 +6,8 @@ Support for generics including type constructors
 
 Syntax - "plain english" where possible
 
+Higher order functions
+
 {{{
 function of (a, b, c) curry(f is function from (a, b) to c) returns function from a to (function from b to c)
 {
