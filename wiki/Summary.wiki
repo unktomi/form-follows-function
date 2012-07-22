@@ -100,7 +100,7 @@ public function of a toStream(x is a) returns Stream of a
 {
     Stream of a {
         first: x;
-        override var secondThruLast = this;
+        override val secondThruLast = this;
     }
 }
 
