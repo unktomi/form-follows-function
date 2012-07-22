@@ -42,7 +42,7 @@ public class Stream of a extends Comonad of a, Monad of a {
 	zip(binOp is function from (a, b) to c, 
 	    xs is Stream of b) returns Stream of c
     {
-	Stream of C
+	Stream of c
 	{
 	    first: bind binOp(first, xs.first);
 	    secondThruLast: bind secondThruLast.zip(binOp, xs.secondThruLast);
