@@ -408,8 +408,8 @@ public class F3Types extends Types {
     }
 
     public Type unboxedTypeOrType(Type t) {
-        Type ubt = unboxedType(t);
-        return ubt==Type.noType? t : ubt;
+	Type ubt = unboxedType(t);
+	return ubt==Type.noType? t : ubt;
     }
 
     public Type boxedTypeOrType(Type t) {
@@ -470,11 +470,16 @@ public class F3Types extends Types {
 	    // hack;
 	    err.printStackTrace();
 	}
+
 	if (s == syms.f3_AnyType) {
 	    return true;
 	}
 	if (t.tag == METHOD) { // fix me !!!!
 	    t = syms.makeFunctionType((MethodType)t);
+	} else {
+	    if (t instanceof WildcardType) {
+		t = upperBound(t);
+	    }
 	}
 	try {
 	    boolean b = super.isSubtype(t, s, capture);
@@ -865,18 +870,23 @@ public class F3Types extends Types {
 	if (a == b) {
 	    return true;
 	}
-	if (checkTypeCons && isSameTypeCons(a, b)) {
+	if (false && checkTypeCons && isSameTypeCons(a, b)) {
 	    return true;
 	}
-	if (a.tag == TYPEVAR && b.tag == TYPEVAR) {
+	if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
 	    a = new ForAll(List.of(a), a);
 	    b = new ForAll(List.of(b), b);
 	}
 	boolean result = super.isSameType(a, b);
 	return result;
     }
-
-
+    /*
+    public Type subst(Type t, List<Type> from, List<Type> to) {
+	Type result = super.subst(t, from, to);
+	System.err.println("subst " +t+", "+from +", "+to+" => "+ result);
+	return result;
+    }
+    */
     public boolean isNumeric(Type type) {
         return (isSameType(type, syms.f3_ByteType) ||
                 isSameType(type, syms.f3_ShortType) ||

@@ -311,11 +311,14 @@ public class F3Enter extends F3TreeScanner {
     //@Override
     public void visitFunctionDefinition(F3FunctionDefinition tree) {
 	if (tree.typeArgs != null) {
-	    for (Type t: attr.makeTypeVars(tree.typeArgs, 
-					   env.info.scope.owner,
-					   env)) {
-		//System.err.println("entering "+t+ " into "+ env);
-		env.info.scope.enterIfAbsent(((TypeVar)t).tsym);
+	    if (tree.typeArgTypes == null) {
+		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, 
+						      env.info.scope.owner,
+						      env);
+		for (Type t: tree.typeArgTypes) {
+		    //System.err.println("entering "+t+ " into "+ env);
+		    env.info.scope.enterIfAbsent(((TypeVar)t).tsym);
+		}
 	    }
 	}
 	super.visitFunctionDefinition(tree);
