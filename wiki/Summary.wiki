@@ -7,22 +7,22 @@ Support for generics including type constructors
 Syntax - eschew punctuation in favor of natural language (english) function words where possible
 
 {{{
-function of (A, B, C) curry(f is function from (A, B) to C) returns function from A to (function from B to C)
+function of (a, b, c) curry(f is function from (a, b) to c) returns function from a to (function from b to c)
 {
-    function(a is A) returns function from B to C
+    function(x is a) returns function from b to c
     {
-        function(b is B) returns C
+        function(y is b) returns c
         {
-            f(a, b)
+            f(x, y)
         }
     }
 }
 
-function of (A, B, C) uncurry(f is function from A to (function from B to C)) returns function from (A, B) to C
+function of (a, b, c) uncurry(f is function from a to (function from b to c)) returns function from (a, b) to c
 {
-    function(a is A, b is B): C
+    function(x is a, y is b): c
     {
-        f(a)(b)
+        f(x)(y)
     }
 }
 }}}
@@ -32,74 +32,74 @@ Monad Comprehensions
 
 // Lazy infinite streams
 
-public class Stream of A extends Comonad of A, Monad of A {
+public class Stream of a extends Comonad of a, Monad of a {
 
-    public val protected var first is A;
-    public val protected var secondThruLast is Stream of A;
+    public val protected var first is a;
+    public val protected var secondThruLast is Stream of a;
 
     // zip lifts a binary operator to one over Streams
-    public function of (B, C) 
-	zip(binOp is function from (A, B) to C, 
-	    bs is Stream of B) returns Stream of C
+    public function of (b, c) 
+	zip(binOp is function from (a, b) to c, 
+	    xs is Stream of b) returns Stream of c
     {
 	Stream of C
 	{
-	    first: bind binOp(first, bs.first);
-	    secondThruLast: bind secondThruLast.zip(binOp, bs.secondThruLast);
+	    first: bind binOp(first, xs.first);
+	    secondThruLast: bind secondThruLast.zip(binOp, xs.secondThruLast);
 	}
     }
 
     // map lifts a unary operator to one over Streams
-    override public function of B 
-	map(unaryOp is function from A to B) returns Stream of B
+    override public function of b 
+	map(unaryOp is function from a to b) returns Stream of b
     {
-	Stream of B
+	Stream of b
 	{
 	    first: bind unaryOp(this.first);
 	    secondThruLast: bind this.secondThruLast.map(unaryOp);
 	}
     }
 
-    // lifts a unary operator to one over Streams
-    override public function of X 
-	flatmap(unaryOp is function from A to Stream of X) returns Stream of X
+    // flatmap lifts a Stream constructor to a unary operator over Streams
+    override public function of b 
+	flatmap(ctor is function from a to Stream of b) returns Stream of b
     {
-        val d = bound function(a is A) returns X { unaryOp(a).first }
+        val d = bound function(x is a) returns b { ctor(x).first }
         var h = bind d(first);
-        var t = bind for (a in secondThruLast) d(a);
-        Stream of X {
+        var t = bind for (x in secondThruLast) d(x);
+        Stream of b {
             first: bind h;
             secondThruLast: bind t;
         }
     }
 
-    // lifts a unary operator to one over Streams
-    override function of B 
-	coflatmap(unaryOp is function from Stream of A to B) returns Stream of B
+    // coflatmap lifts a Stream destructor to a unary operator over Streams
+    override function of b 
+	coflatmap(door is function from Stream of a to b) returns Stream of b
     {
-	Stream of B
+	Stream of b
 	{
-	    first: bind unaryOp(this);
-	    secondThruLast: bind secondThruLast.coflatmap(unaryOp);
+	    first: bind dtor(this);
+	    secondThruLast: bind secondThruLast.coflatmap(dtor);
 	}
     }
 
-    override public function extract() returns A { first }
+    override public function extract() returns a { first }
 
-    public bound function fby(s is Stream of A) returns Stream of A 
+    public bound function fby(s is Stream of a) returns Stream of a 
     {
-	Stream of A {
+	Stream of a {
 	    first: bind first;
 	    secondThruLast: bind s; 
 	}
     }
 }
 
-// lifts a constant to a Stream i.e,  t, t, t, ...
-public function of T toStream(t is T) returns Stream of T
+// lifts a constant to a Stream i.e,  x, x, x, ...
+public function of a toStream(x is a) returns Stream of a
 {
-    Stream of T {
-        first: t;
+    Stream of a {
+        first: x;
         override var secondThruLast = this;
     }
 }
