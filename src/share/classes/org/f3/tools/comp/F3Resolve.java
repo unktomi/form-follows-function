@@ -587,7 +587,7 @@ public class F3Resolve {
         boolean innerAccess = false;
         Type mtype = expected;
         if (mtype instanceof FunctionType)
-            mtype = mtype.asMethodType();
+            mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = mtype instanceof MethodType;// || mtype instanceof ForAll;
 
         while (env1 != null) {
@@ -703,11 +703,11 @@ public class F3Resolve {
     private Symbol checkArgs(Symbol sym, Type mtype) {
         Type mt = sym.type;
         if (mt instanceof FunctionType) {
-            mt = mt.asMethodType();
+            mt = ((FunctionType)mt).asMethodOrForAll();
         }
         // Better to use selectBest, but that requires some
         // changes.  FIXME
-        if (!(mt instanceof MethodType) ||
+        if (!((mt instanceof MethodType) || (mt instanceof ForAll)) ||
                 !argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
                 true, false, Warner.noWarnings)) {
             return wrongMethod.setWrongSym(sym);
@@ -965,7 +965,7 @@ public class F3Resolve {
                               boolean operator) {
         Type mtype = expected;
         if (mtype instanceof FunctionType)
-            mtype = mtype.asMethodType();
+            mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = mtype instanceof MethodType || mtype instanceof ForAll;
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
@@ -999,8 +999,8 @@ public class F3Resolve {
                     // FIXME duplicates logic in findVar.
                     Type mt = e.sym.type;
                     if (mt instanceof FunctionType)
-                        mt = mt.asMethodType();
-                    if (! (mt instanceof MethodType) ||
+                        mt = ((FunctionType)mt).asMethodOrForAll();
+                    if (!( (mt instanceof MethodType) || (mt instanceof ForAll)) ||
                             ! argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
                             true, false, Warner.noWarnings))
                         return wrongMethod.setWrongSym(e.sym);
