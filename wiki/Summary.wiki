@@ -20,7 +20,7 @@ function of (a, b, c) curry(f is function from (a, b) to c) returns function fro
 
 function of (a, b, c) uncurry(f is function from a to (function from b to c)) returns function from (a, b) to c
 {
-    function(x is a, y is b): c
+    function(x is a, y is b) returns c
     {
         f(x)(y)
     }
