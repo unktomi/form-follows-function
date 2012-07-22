@@ -75,7 +75,7 @@ public class Stream of a extends Comonad of a, Monad of a {
 
     // coflatmap lifts a Stream destructor to a unary operator over Streams
     override function of b 
-	coflatmap(door is function from Stream of a to b) returns Stream of b
+	coflatmap(dtor is function from Stream of a to b) returns Stream of b
     {
 	Stream of b
 	{
