@@ -4,7 +4,7 @@ Lazy and reactive self-adjusting computation with mutation
 
 Support for generics including type constructors
 
-Syntax - eschew punctuation in favor of natural language (english) function words where possible
+Syntax - "plain english" where possible
 
 {{{
 function of (a, b, c) curry(f is function from (a, b) to c) returns function from a to (function from b to c)
