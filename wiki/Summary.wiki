@@ -88,11 +88,11 @@ public class Stream of a extends Comonad of a, Monad of a {
 
     override public function extract() returns a { first }
 
-    public bound function fby(s is Stream of a) returns Stream of a 
+    public bound function followedBy(xs is Stream of a) returns Stream of a 
     {
 	Stream of a {
 	    first: bind first;
-	    secondThruLast: bind s; 
+	    secondThruLast: bind xs; 
 	}
     }
 }
