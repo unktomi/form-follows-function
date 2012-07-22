@@ -390,15 +390,17 @@ public class F3Resolve {
              l = l.tail) {
             if (l.head.tag == FORALL) instNeeded = true;
         }
-        if (instNeeded)
-            return
-            infer.instantiateMethod(tvars,
-                                    (MethodType)mt,
-                                    argtypes,
-                                    allowBoxing,
-                                    useVarargs,
-                                    warn);
-        return
+        if (instNeeded) {
+	    Type r = 
+		infer.instantiateMethod(tvars,
+					(MethodType)mt,
+					argtypes,
+					allowBoxing,
+					useVarargs,
+					warn);
+	    //System.err.println("infer " + mt + " = "+ r);
+	    return r;
+        } return
             argumentsAcceptable(argtypes, mt.getParameterTypes(),
                                 allowBoxing, useVarargs, warn)
             ? mt
@@ -416,8 +418,10 @@ public class F3Resolve {
                      boolean useVarargs,
                      Warner warn) {
         try {
-            return rawInstantiate(env, m, types.memberType(site, m), argtypes, typeargtypes,
-                                  allowBoxing, useVarargs, warn);
+            Type r = rawInstantiate(env, m, types.memberType(site, m), argtypes, typeargtypes,
+				    allowBoxing, useVarargs, warn);
+	    //System.err.println("instantiated "+m+" to "+ r);
+	    return r;
         } catch (Infer.NoInstanceException ex) {
             return null;
         }

@@ -1164,7 +1164,7 @@ public class F3Attr implements F3Visitor {
 
                 initType = attribExpr(tree.getInitializer(), initEnv, declType);
 
-		     
+		//System.err.println("initType "+ v + " = "+initType);
                 /*
                  * We introduce a synthetic variable for bound function result.
                  * See F3BoundContextAnalysis. If the type of that var is
@@ -1185,6 +1185,12 @@ public class F3Attr implements F3Visitor {
             if (declType == syms.f3_UnspecifiedType && v.type == null) {
                 result = tree.type = v.type = types.normalize(initType);
             }
+	    if ((tree.getModifiers().flags & F3Flags.IS_DEF) != 0) {
+		if (false && result instanceof TypeVar) {
+		    result = tree.type = v.type = new WildcardType(result, BoundKind.EXTENDS, syms.boundClass);
+		    //System.err.println("result="+result);
+		}
+	    }
             //chk.validateAnnotations(tree.mods.annotations, v);
             chk.checkBoundArrayVar(tree);
         }
@@ -1858,9 +1864,15 @@ public class F3Attr implements F3Visitor {
 	} else {
 	    // Attribute clazz expression
 	    clazztype = attribSuperType(clazz, env);
+
+
 	    if (typeArgs != null) {
-		typeArgTypes = attribTypeParams(typeArgs, env);
-		tree.typeArgTypes = typeArgTypes;
+		if (tree.typeArgTypes == null) {
+		    typeArgTypes = attribTypeParams(typeArgs, env);
+		    tree.typeArgTypes = typeArgTypes;
+		} else {
+		    typeArgTypes = tree.typeArgTypes;
+		}
 	    }
 	    // MAYBE FUTURE, e.g. if we support the syntax 'new ARRAY_TYPE (COUNT)':
 	    if (tree.getF3Kind() == F3Kind.INSTANTIATE_NEW &&
@@ -2037,6 +2049,9 @@ public class F3Attr implements F3Visitor {
             partsScope.enter(memberSym);
 
             Type memberType = types.memberType(clazz.type, memberSym);
+	    //System.err.println("clazz.type="+clazz.type);
+	    //System.err.println("memberSym="+memberSym);
+	    //System.err.println("memberType="+memberType);
 
             Scope initScope = new Scope(new MethodSymbol(BLOCK, memberSym.name, null, env.enclClass.sym));
             initScope.next = env.info.scope;
@@ -2161,6 +2176,8 @@ public class F3Attr implements F3Visitor {
 	    TypeVar tv = new TypeVar(ident.getName(), sym, syms.botType);
 	    tv.tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
 	    tv.bound = syms.objectType;
+	    //System.err.println("created type var: "+ System.identityHashCode(tv) + ": " +tv);
+	    //Thread.currentThread().dumpStack();
 	    env.info.scope.enter(((TypeVar)tv).tsym);
 	    return tv;
 	} else if (exp instanceof F3TypeExists) {
@@ -2224,8 +2241,12 @@ public class F3Attr implements F3Visitor {
         //
         if  (tree.sym != null) {
             MethodSymbol m = tree.sym;
-	    List<Type> typeArgTypes = tree.typeArgs == null ? null : makeTypeVars(tree.typeArgs, m);
-	    tree.typeArgTypes = typeArgTypes;
+	    /*
+	    if (tree.typeArgTypes == null) {
+		List<Type> typeArgTypes = tree.typeArgs == null ? null : makeTypeVars(tree.typeArgs, m);
+		tree.typeArgTypes = typeArgTypes;
+	    }
+	    */
             m.complete();
             warnOnStaticUse(tree.pos(), tree.getModifiers(), m);
         }
@@ -2315,7 +2336,7 @@ public class F3Attr implements F3Visitor {
 	}
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
-		tree.typeArgTypes = makeTypeVars(tree.typeArgs, m);
+		tree.typeArgTypes = makeTypeVars(tree.typeArgs, m, localEnv);
 	    }
 	    localEnv.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
@@ -2871,7 +2892,6 @@ public class F3Attr implements F3Visitor {
         List<Type> argtypes = argtypebuffer.toList();
 
 	tree.typeargs = F3TreeInfo.typeArgs(tree.meth);
-
         typeargtypes = attribTypeArgs(tree.typeargs, localEnv);
 	typeargbuffer.appendList(typeargtypes);
 	typeargtypes = typeargbuffer.toList();
@@ -2892,6 +2912,7 @@ public class F3Attr implements F3Visitor {
 
 	    localEnv.info.varArgs = false;
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
+	    //System.err.println("mtype "+tree.meth+" = "+mtype);
 	}
 
 
@@ -2982,6 +3003,7 @@ public class F3Attr implements F3Visitor {
 	    } else {
 		result = check(tree, capture(restype), VAL, pkind, pt, pSequenceness);
 	    }
+	    //System.err.println("result "+ tree + " = " + result);
 	    tree.type = result;
 	}
 	else {
@@ -3968,19 +3990,22 @@ public class F3Attr implements F3Visitor {
 
         List<Type> typeArgTypes = null;
 	if (tree.typeArgs != null) {
-	    typeArgTypes = makeTypeVars(tree.typeArgs, env.info.scope.owner);
-	    for (List l = typeArgTypes; l != null; l = l.tail) {
-		if (l.head instanceof TypeVar) {
-		    TypeVar tv = (TypeVar)l.head;
-		    tv.lower = 
-			new WildcardType(Type.noType,
-					 BoundKind.UNBOUND,
-					 syms.boundClass,
-					 tv);
-
+	    if (tree.typeArgTypes == null) {
+		tree.typeArgTypes = typeArgTypes = makeTypeVars(tree.typeArgs, env.info.scope.owner);
+		for (List l = typeArgTypes; l != null; l = l.tail) {
+		    if (l.head instanceof TypeVar) {
+			TypeVar tv = (TypeVar)l.head;
+			tv.lower = 
+			    new WildcardType(Type.noType,
+					     BoundKind.UNBOUND,
+					     syms.boundClass,
+					     tv);
+			
+		    }
 		}
+	    } else {
+		typeArgTypes = tree.typeArgTypes;
 	    }
-
 	}
         Type restype = attribType(tree.restype, env);
         if (restype == syms.unknownType)

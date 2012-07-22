@@ -27,6 +27,7 @@ import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
 
 import com.sun.tools.mjavac.util.List;
+import com.sun.tools.mjavac.code.Type;
 
 /**
  * Type referencing a class
@@ -35,6 +36,7 @@ import com.sun.tools.mjavac.util.List;
  */
 public class F3TypeFunctional extends F3Type implements TypeFunctionalTree {
     public List<F3Expression> typeArgs;
+    public List<Type> typeArgTypes;
     public List<? extends TypeTree> params;
     public F3Type restype;
     
