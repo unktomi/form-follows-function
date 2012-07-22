@@ -331,13 +331,18 @@ public class F3Attr implements F3Visitor {
 			    }
 			}
 		    }
+		    //System.err.println("localResult="+localResult.getClass()+": "+localResult);
 		    if (localResult instanceof MethodType) {
-			localResult = syms.makeFunctionType(typeArgTypes, 
-							    (MethodType)localResult);
+			localResult = types.subst(localResult.asMethodType(),
+						  localResult.getTypeArguments(), typeArgTypes); 
 		    }
 		    if (localResult instanceof FunctionType) {
+			/*
 			localResult = syms.makeFunctionType(typeArgTypes, 
 							    (MethodType)localResult.asMethodType());
+			*/
+			localResult = ((FunctionType)localResult).asMethodOrForAll();
+			localResult = types.subst(localResult, localResult.getTypeArguments(), typeArgTypes);
 		    } else if (localResult instanceof ClassType) {
 			localResult = newClassType(localResult.getEnclosingType(),
 						   typeArgTypes,
@@ -691,6 +696,7 @@ public class F3Attr implements F3Visitor {
             sym = tree.sym;
         } else {
 	    Type req = pt;
+	    //System.err.println("resolve ident: "+ req.getClass()+": "+ req);
             sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
         }
         tree.sym = sym;
@@ -757,8 +763,9 @@ public class F3Attr implements F3Visitor {
 	if (tree.typeArgs != null) {
 	    actuals = attribTypeArgs(tree.typeArgs, env);
 	} 
+	//System.err.println("checkId: "+ sym);
         result = checkId(tree, env1.enclClass.sym.type, sym, env, actuals, pkind, pt, pSequenceness, varArgs);
-	//System.out.println("result of "+tree.pos+" "+sym + " = "+result);
+	//System.out.println("result of "+tree.pos+" "+sym + " = "+result.getClass()+": "+result);
 	tree.type = result;
     }
 
@@ -2886,7 +2893,7 @@ public class F3Attr implements F3Visitor {
 					   //types.upperBound(attribTree(l.head, env, VAL, Infer.anyPoly, Sequenceness.PERMITTED)));
 					   (attribTree(l.head, env, VAL, Infer.anyPoly, Sequenceness.PERMITTED)
 					   ));
-
+	    //System.err.println("argType "+ l.head+": "+argtype);
             argtypebuffer.append(argtype);
         }
         List<Type> argtypes = argtypebuffer.toList();
@@ -2901,6 +2908,9 @@ public class F3Attr implements F3Visitor {
 	Type mtype = null;
 	if (tree.partial) {
 	    Type mpt = attribExpr(tree.meth, localEnv); 
+	    if (mpt instanceof FunctionType) {
+		mpt = ((FunctionType)mpt).asMethodOrForAll();
+	    }
 	    mtype = mpt;
 	}
 	if (mtype == null) {
@@ -2911,7 +2921,13 @@ public class F3Attr implements F3Visitor {
 	    }
 
 	    localEnv.info.varArgs = false;
+	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth);
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
+	    //System.err.println("mtype "+tree.meth+"="+mtype.getClass()+" "+mtype);
+	    if (mtype instanceof FunctionType) {
+		mtype = ((FunctionType)mtype).asMethodOrForAll();
+	    }
+
 	    //System.err.println("mtype "+tree.meth+" = "+mtype);
 	}
 
@@ -4100,6 +4116,7 @@ public class F3Attr implements F3Visitor {
                      Type pt,
                      Sequenceness pSequenceness,
                      boolean useVarargs) {
+	    //System.err.println("checkId: "+ sym);
             if (pt.isErroneous()) return syms.errType;
             Type owntype; // The computed type of this identifier occurrence.
             switch (sym.kind) {
@@ -4107,6 +4124,7 @@ public class F3Attr implements F3Visitor {
                 // For types, the computed type equals the symbol's type,
                 // except for two situations:
                 owntype = sym.type;
+		//System.err.println("typ: "+ sym+": "+owntype);
                 if (owntype.tag == CLASS) {
                     Type ownOuter = owntype.getEnclosingType();
 
@@ -4144,6 +4162,7 @@ public class F3Attr implements F3Visitor {
                 // Test (4): if symbol is an instance field of a raw type,
                 // which is being assigned to, issue an unchecked warning if
                 // its type changes under erasure.
+
                 if (allowGenerics &&
                     pkind == VAR &&
                     v.isMember() &&
@@ -4164,9 +4183,12 @@ public class F3Attr implements F3Visitor {
                            sym.name != names._this && sym.name != names._super)
                     ? types.memberType(site, sym)
                     : sym.type;
-
+		//System.err.println("var: "+ sym+": "+owntype);
+		if (owntype instanceof FunctionType) { // hack
+		    owntype = ((FunctionType)owntype).asMethodOrForAll();
+		    //System.err.println("owntype is now: "+ owntype);
+		}
                 if (env.info.tvars.nonEmpty()) {
-
                     Type owntype1 = new ForAll(env.info.tvars, owntype);
                     for (List<Type> l = env.info.tvars; l.nonEmpty(); l = l.tail) {
                         if (!owntype.contains(l.head)) {
@@ -4189,6 +4211,7 @@ public class F3Attr implements F3Visitor {
                 owntype = types.memberType(//types.erasure(site), 
 					   site,
 					   sym);
+		//System.err.println("meth: "+ sym+": "+owntype);
                 // This is probably wrong now that we have function expressions.
                 // Instead, we should checkMethod in visitFunctionInvocation.
                 // In that case we should also handle FunctionType. FIXME.
