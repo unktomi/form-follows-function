@@ -69,7 +69,8 @@ public class Stream of a extends Comonad of a, Monad of a {
         val d = bound function(x is a) returns b { ctor(x).first }
         var h = bind d(first);
         var t = bind for (x in secondThruLast) d(x);
-        Stream of b {
+        Stream of b 
+        {
             first: bind h;
             secondThruLast: bind t;
         }
@@ -90,7 +91,8 @@ public class Stream of a extends Comonad of a, Monad of a {
 
     public bound function followedBy(xs is Stream of a) returns Stream of a 
     {
-	Stream of a {
+	Stream of a 
+        {
 	    first: bind first;
 	    secondThruLast: bind xs; 
 	}
@@ -100,7 +102,8 @@ public class Stream of a extends Comonad of a, Monad of a {
 // lifts a constant to a Stream i.e,  x, x, x, ...
 public function of a toStream(x is a) returns Stream of a
 {
-    Stream of a {
+    Stream of a 
+    {
         first: x;
         override val secondThruLast = this;
     }
