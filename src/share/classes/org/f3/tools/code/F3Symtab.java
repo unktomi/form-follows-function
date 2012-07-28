@@ -25,6 +25,7 @@ package org.f3.tools.code;
 
 import com.sun.tools.mjavac.code.Symtab;
 import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.code.Type.ForAll;
 import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.code.Type.*;
 import static com.sun.tools.mjavac.jvm.ByteCodes.*;
@@ -376,6 +377,22 @@ public class F3Symtab extends Symtab {
 	    new FunctionType(funtype.getEnclosingType(), typarams, funtype.tsym, mtype);
 	ftype.typeArgs = mtype.getTypeArguments();
 	return ftype;
+    }
+
+    public FunctionType asFunctionType(Type t) {
+	if (t instanceof ForAll) {
+	    return makeFunctionType((ForAll)t);
+	}
+	if (t instanceof FunctionType) {
+	    return (FunctionType)t;
+	}
+	return makeFunctionType(t.asMethodType());
+    }
+
+    public FunctionType makeFunctionType(ForAll fa) {
+	FunctionType ft = makeFunctionType(fa.asMethodType());
+	ft.typeArgs = fa.getTypeArguments();
+	return ft;
     }
 
     /** Given a MethodType, create the corresponding FunctionType.

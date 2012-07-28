@@ -28,12 +28,7 @@ import org.f3.runtime.Functor;
 import org.f3.runtime.Monad;
 
 public class Function1<R, A1> extends Function<R> 
-				      /*
-    implements Functor<Function1, 
-	       R,
-	       Object> 
-				      */
-    implements Monad<Function1, R, Object>
+    implements Monad<Function1, R>
 {
 
     public <Y> Function1<Y, A1> map(final Function1<? extends Y, ? super R> f) {
@@ -46,12 +41,12 @@ public class Function1<R, A1> extends Function<R>
     }
 
 
-    public <Y> Function1<Y, A1> flatmap(final Function1<? extends Monad<Function1, Y, Object>, ? super R> f) {
+    public <Y> Function1<Y, A1> flatmap(final Function1<? extends Function1<Y, A1>, ? super R> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<Y, A1>() {
 	    public Y invoke(A1 x1) {
 		final R r = self.invoke(x1);
-	        Function1<Y, A1> g = (Function1<Y, A1>)f.invoke(r);
+	        Function1<Y, A1> g = f.invoke(r);
 		return g.invoke(x1);
 	    }
 	};

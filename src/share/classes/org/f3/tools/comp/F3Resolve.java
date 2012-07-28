@@ -2321,6 +2321,7 @@ public class F3Resolve {
                                     ((MethodSymbol) wrongSym).params);
                     else
                         wrongSymStr = wrongSym.toString();
+		    Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,

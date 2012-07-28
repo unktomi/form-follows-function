@@ -508,7 +508,7 @@ importDecl
 
 }
     
-    : IMPORT importId
+    : (WITH | IMPORT) importId
     
         {
             // AST construction
@@ -6437,7 +6437,7 @@ genericParam[boolean contravar, boolean covar]
     F3Expression   texpr   = null; 
 }
 
-    : (t=identifier  { $value = $t.value; })  (COLON)=>(COLON bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
+    : (t=identifier  { $value = $t.value; })  (COLON|IS)=>((COLON|IS) bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
 
       | 
        (CLASS n=identifier OF gas=genericParams[false, false] { 
