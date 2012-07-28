@@ -629,7 +629,7 @@ public class F3Check {
      *  @param t             The type to be checked.
      */
     Type checkNonVoid(DiagnosticPosition pos, Type t) {
-	if (t.tag == VOID) {
+	if (t.tag == VOID && t != syms.unreachableType) {
 	    log.error(pos, MsgSym.MESSAGE_VOID_NOT_ALLOWED_HERE);
 	    return syms.errType;
 	} else {
@@ -1445,29 +1445,41 @@ public class F3Check {
 
 	}
 ----------------- */
+	System.err.println("m="+m);
+	System.err.println("other="+other);
+	System.err.println("origin.type="+origin.type);
+
 	Type mt = types.memberType(origin.type, m);
 	Type ot = types.memberType(origin.type, other);
+	System.err.println("mt="+mt);
+	System.err.println("ot="+ot);
 	// Error if overriding result type is different
 	// (or, in the case of generics mode, not a subtype) of
 	// overridden result type. We have to rename any type parameters
 	// before comparing types.
 	List<Type> mtvars = mt.getTypeArguments();
 	List<Type> otvars = ot.getTypeArguments();
+	System.err.println("mtvars="+mtvars);
+	System.err.println("otvars="+otvars);
 	Type mtres = mt.getReturnType();
 	Type otres = types.subst(ot.getReturnType(), otvars, mtvars);
+	System.err.println("mtres="+mtres);
+	System.err.println("otres="+otres);
 
 	overrideWarner.warned = false;
-	boolean resultTypesOK =
+	boolean resultTypesOK = 
 	    types.returnTypeSubstitutable(mt,
 					  ot,
 					  otres, 
 					  overrideWarner);
+
 	if (!resultTypesOK) { 
 	    // we accept boxed types
 	    if (types.isSameType(types.boxedTypeOrType(otres), types.boxedTypeOrType(mt.getReturnType()))) {
 		resultTypesOK = true;
 	    }
 	}
+	System.err.println("returnTypesOK="+resultTypesOK);
 	if (!resultTypesOK) {
 	    if (!source.allowCovariantReturns() &&
 		m.owner != origin &&
@@ -1559,7 +1571,6 @@ public class F3Check {
     private void checkCompatibleConcretes(DiagnosticPosition pos, Type site) {
 	Type sup = types.supertype(site);
 	if (sup.tag != CLASS) return;
-
 	for (Type t1 = sup;
 	     t1.tsym.type.isParameterized();
 	     t1 = types.supertype(t1)) {

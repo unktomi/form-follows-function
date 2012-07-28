@@ -46,13 +46,13 @@ import org.f3.functions.Function1;
  *
  * @author Brian Goetz
  */
-public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadPlus<Sequence, T>, Comonad<Sequence, T, Object> {
+public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadPlus<Sequence, T>, Comonad<Sequence, T> {
 
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f);
-    public <Y> Sequence<Y> flatmap(Function1<? extends Monad<Sequence, Y, Object>, ? super T> f);
-    public <Y> Sequence<Y> coflatmap(Function1<? extends Y, ? super Comonad<Sequence,T, Object>> f);
-    public <Y> Sequence<Y> unit(Y y);
+    public <Y> Sequence<Y> flatmap(Function1<? extends Sequence<Y>, ? super T> f);
+    public <Y> Sequence<Y> coflatmap(Function1<? extends Y, ? super Sequence<T>> f);
     public Sequence<T> mzero();
+    public Sequence<T> mplus(Sequence<T> s);
 
     /** How large is this sequence?  */
     public int size();

@@ -502,7 +502,20 @@ public abstract class F3AbstractTranslation
             return null;
         } else {
             translateCore(expr, targettedType, ToExpression);
-            ExpressionResult ret = (ExpressionResult)this.result;
+	    ExpressionResult ret; 
+	    if (this.result instanceof StatementsResult) {
+		System.err.println("result="+result);
+		return new ExpressionResult(this.result.diagPos, 
+					    ((StatementsResult)this.result).statements(), 
+					    null, 
+					    List.<F3VarSymbol>nil(), 
+					    List.<BindeeInvalidator>nil(), 
+					    List.<DependentPair>nil(), 
+					    List.<JCStatement>nil(), 
+					    targettedType);
+	    } else {
+		ret = (ExpressionResult)this.result;
+	    }
             this.result = null;
             return ret.hasExpr()?
                   convertTranslated(ret, expr.pos(), targettedType)

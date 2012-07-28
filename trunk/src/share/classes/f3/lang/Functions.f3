@@ -13,7 +13,7 @@ public bound function map(input:Object[], f:function(obj:Object):Object[]):Objec
     else {
         var x = head(input);
         var xs = tail(input);
-        [f(x), map(xs, f)];
+        [f(x), map(xs, f as function from Object to Object[])];
     }
 }
 

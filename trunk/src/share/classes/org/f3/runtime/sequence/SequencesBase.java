@@ -53,20 +53,6 @@ public class SequencesBase {
         return new ObjectArraySequence<T>(ti, values);
     }
 
-    public static <T> Sequence<T> toSequence(Comonad<Sequence, ? extends T> comonad) {
-	if (comonad instanceof Sequence) {
-	    return (Sequence<T>)comonad;
-	}
-	return null;
-    }
-
-    public static <T> Sequence<T> toSequence(Monad<Sequence, ? extends T> monad) {
-	if (monad instanceof Sequence) {
-	    return (Sequence<T>)monad;
-	}
-	return null;
-    }
-
     /** Convert a long[] to a Sequence<Long> */ 
     public static Sequence<Long> fromArray(long[] values) {
         if (values == null)

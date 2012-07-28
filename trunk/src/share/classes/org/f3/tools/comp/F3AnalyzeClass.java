@@ -1494,6 +1494,9 @@ class F3AnalyzeClass {
             }
 
             // Record the superclass in top down order.
+	    System.err.println("csym="+cSym);
+	    System.err.println("csym.type="+cSym.type);
+	    //Thread.currentThread().dumpStack();
             recordClass(cSym, isImmediateSuper);
         }
     }

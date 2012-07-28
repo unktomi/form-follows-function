@@ -337,12 +337,15 @@ public class F3Attr implements F3Visitor {
 						  localResult.getTypeArguments(), typeArgTypes); 
 		    }
 		    if (localResult instanceof FunctionType) {
-			/*
-			localResult = syms.makeFunctionType(typeArgTypes, 
-							    (MethodType)localResult.asMethodType());
-			*/
-			localResult = ((FunctionType)localResult).asMethodOrForAll();
-			localResult = types.subst(localResult, localResult.getTypeArguments(), typeArgTypes);
+			FunctionType ft = (FunctionType)localResult;
+			if (ft.typeArgs != null && ft.typeArgs.size() > 0) {
+			    localResult = ft.asMethodOrForAll();
+			    localResult = types.subst(localResult, localResult.getTypeArguments(), typeArgTypes);
+			    localResult = syms.asFunctionType(localResult);
+			} else { 
+			    localResult = syms.makeFunctionType(typeArgTypes, 
+								(MethodType)localResult.asMethodType());
+			}
 		    } else if (localResult instanceof ClassType) {
 			localResult = newClassType(localResult.getEnclosingType(),
 						   typeArgTypes,
@@ -2522,7 +2525,8 @@ public class F3Attr implements F3Visitor {
                         returnType = syms.f3_VoidType; //TODO: this is wrong if there is a return statement
                 } else {
                     if (returnType == syms.unknownType)
-                        returnType = bodyType == syms.unreachableType ? syms.f3_VoidType : types.normalize(bodyType);
+                        //returnType = bodyType == syms.unreachableType ? syms.f3_VoidType : types.normalize(bodyType);
+			returnType = bodyType == syms.unreachableType ? syms.unreachableType : types.normalize(bodyType);
                     else if (returnType != syms.f3_VoidType && tree.getName() != defs.internalRunFunctionName)
                         chk.checkType(tree.pos(), bodyType, returnType, Sequenceness.PERMITTED, false);
                 }
@@ -2965,19 +2969,19 @@ public class F3Attr implements F3Visitor {
 							 syms.boundClass)),
 			  restype.tsym);
 	}
-	
+
 	tree.type = tree.meth.type = mtype;
 	if (mtype instanceof ErrorType) {
 	    tree.type = mtype;
 	    result = mtype;
-	} else if (mtype instanceof ForAll) { // hack!!!
+	} else if (false && mtype instanceof ForAll) { // hack!!!
 	    System.err.println("check hack...");
 	    result = check(tree, 
 			   restype,
 			   //capture(restype), 
 			   VAL, pkind, pt, pSequenceness);
 	    tree.type = result;
-	} else if (mtype instanceof MethodType || mtype instanceof FunctionType) {
+	} else if (mtype instanceof MethodType || mtype instanceof FunctionType || mtype instanceof ForAll) {
 	    // If the "method" has a symbol, we've already checked for
 	    // formal/actual consistency.  So doing it again would be
 	    // wasteful - plus varargs hasn't been properly implemented.
@@ -3648,6 +3652,9 @@ public class F3Attr implements F3Visitor {
 	    
             Type supType = superClass.type == null ? attribSuperType(superClass, env)
                                                    : superClass.type;
+	    System.err.println("tree="+superClass);
+	    System.err.println("supType="+supType);
+	    System.err.println("supType.sym="+supType.tsym.type);
 
 	    if (supType instanceof FunctionType) {
 		supType = types.normalize(supType, false);

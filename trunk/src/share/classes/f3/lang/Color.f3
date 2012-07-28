@@ -630,9 +630,9 @@ public class Color extends Comparable of Object, Formattable, Interpolatable {
         def len = sb.length();
         if (len < width) {
             if (leftJustify) {
-                for (i in [1..width-len]) sb.append(' ');
+                for (i in [1..width-len]) sb.append(" ");
             } else {
-                for (i in [1..width-len]) sb.<<insert>>(0, ' ');
+                for (i in [1..width-len]) sb.<<insert>>(0, " ");
             }
         }
         formatter.out().append(sb);

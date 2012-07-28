@@ -1028,26 +1028,26 @@ public class Length extends Comparable of Object, Formattable {
             if (not firstTerm) sb.append(" + ") else firstTerm = false;
             var shortest = "{df.format(dps)}{if (upper) "DP" else "dp"}";
             if (shortestForm) {
-                def shortDot = shortest.indexOf('.');
+                def shortDot = shortest.indexOf(".");
                 var shortDec = shortest.length() - (if (shortDot == -1) 1000 else shortDot);
                 def inStr = "{df.format(dps / DPS_PER_IN)}{if (upper) "IN" else "in"}";
-                def inDot = inStr.indexOf('.');
+                def inDot = inStr.indexOf(".");
                 def inDec = inStr.length() - (if (inDot == -1) 1000 else inDot);
                 if (inDec < shortDec) {shortest = inStr; shortDec = inDec}
                 def cmStr = "{df.format(dps / DPS_PER_CM)}{if (upper) "CM" else "cm"}";
-                def cmDot = cmStr.indexOf('.');
+                def cmDot = cmStr.indexOf(".");
                 def cmDec = cmStr.length() - (if (cmDot == -1) 1000 else cmDot);
                 if (cmDec < shortDec) {shortest = cmStr; shortDec = cmDec}
                 def mmStr = "{df.format(dps / DPS_PER_MM)}{if (upper) "MM" else "mm"}";
-                def mmDot = mmStr.indexOf('.');
+                def mmDot = mmStr.indexOf(".");
                 def mmDec = mmStr.length() - (if (mmDot == -1) 1000 else mmDot);
                 if (mmDec < shortDec) {shortest = mmStr; shortDec = mmDec}
                 def pcStr = "{df.format(dps / DPS_PER_PC)}{if (upper) "PC" else "pc"}";
-                def pcDot = pcStr.indexOf('.');
+                def pcDot = pcStr.indexOf(".");
                 def pcDec = pcStr.length() - (if (pcDot == -1) 1000 else pcDot);
                 if (pcDec < shortDec) {shortest = pcStr; shortDec = pcDec}
                 def ptStr = "{df.format(dps / DPS_PER_PT)}{if (upper) "PT" else "pt"}";
-                def ptDot = ptStr.indexOf('.');
+                def ptDot = ptStr.indexOf(".");
                 def ptDec = ptStr.length() - (if (ptDot == -1) 1000 else ptDot);
                 if (ptDec < shortDec) {shortest = ptStr}
             }
@@ -1074,9 +1074,9 @@ public class Length extends Comparable of Object, Formattable {
         def len = sb.length();
         if (len < width) {
             if (leftJustify) {
-                for (i in [1..width-len]) sb.append(' ');
+                for (i in [1..width-len]) sb.append(" ");
             } else {
-                for (i in [1..width-len]) sb.<<insert>>(0, ' ');
+                for (i in [1..width-len]) sb.<<insert>>(0, " ");
             }
         }
         a.append(sb);
