@@ -99,8 +99,8 @@ public class Stream of a extends Comonad of a, Monad of a {
     }
 }
 
-// lifts a constant to a Stream i.e,  x, x, x, ...
-public function of a toStream(x is a) returns Stream of a
+// lifts a value to a Stream by repeating it indefinitely, i.e  x, x, x, ...
+public function of a repeat(x is a) returns Stream of a
 {
     Stream of a 
     {
@@ -111,6 +111,6 @@ public function of a toStream(x is a) returns Stream of a
 
 
 // creates an infinite stream of 3s
-val zs = bind for (x in toStream(1), y in toStream(2)) { x + y }
+val zs = bind for (x in repeat(1), y in repeat(2)) { x + y }
 
 }}}
