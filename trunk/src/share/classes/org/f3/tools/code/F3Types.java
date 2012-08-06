@@ -771,8 +771,8 @@ public class F3Types extends Types {
 	    }
 	}
 	boolean result = super.hasSameArgs(t, s);
-	System.err.println("has same args: "+ t.getClass()+ " and " +s.getClass()+": "+result);
-	System.err.println("has same args: "+ t+ " and " +s+": "+result);
+	//System.err.println("has same args: "+ t.getClass()+ " and " +s.getClass()+": "+result);
+	//System.err.println("has same args: "+ t+ " and " +s+": "+result);
 	return result;
     }
 
@@ -791,6 +791,23 @@ public class F3Types extends Types {
 	return true;
 	//boolean result = super.containsTypeEquivalent(ts, ss);
 	//return result;
+    }
+    */
+
+    /*
+    public boolean hasSameArgs(Type t, Type s) {
+	boolean result = super.hasSameArgs(t, s);
+	System.err.println("has same args: "+ t.getClass()+ " and " +s.getClass()+": "+result);
+	System.err.println("has same args: "+ t+ " and " +s+": "+result);
+	System.err.println("t.args="+t.getParameterTypes());
+	System.err.println("s.args="+s.getParameterTypes());
+	for (Type x : t.getParameterTypes()) {
+	    System.err.println("t.arg="+x.getClass()+": "+ System.identityHashCode(x) + ": "+ x);
+	}
+	for (Type x : s.getParameterTypes()) {
+	    System.err.println("s.arg="+x.getClass()+": "+ System.identityHashCode(x) + ": "+ x);
+	}
+	return result;
     }
     */
 
@@ -863,6 +880,20 @@ public class F3Types extends Types {
     }
 
     public boolean isSameType(Type a, Type b) {
+	if (a instanceof MethodType) { // hack not sure why unknownType is found here, but it crashes javac
+	    if (b instanceof MethodType) {
+		MethodType m1 = (MethodType)a;
+		MethodType m2 = (MethodType)b;
+		if (hasSameArgs(m1, m2)) {
+		    if (m1.getReturnType() == syms.unknownType ||
+			m2.getReturnType() == syms.unknownType) {
+			return true;
+		    }
+		} else {
+		    return false;
+		}
+	    }
+	}
 	return isSameType(a, b, true);
     }
 
@@ -877,8 +908,14 @@ public class F3Types extends Types {
 	    a = new ForAll(List.of(a), a);
 	    b = new ForAll(List.of(b), b);
 	}
-	boolean result = super.isSameType(a, b);
-	return result;
+	try {
+	    boolean result = super.isSameType(a, b);
+	    return result;
+	} catch (AssertionError err) {
+	    System.err.println("a: "+ a);
+	    System.err.println("b: "+ b);
+	    throw err;
+	}
     }
     /*
     public Type subst(Type t, List<Type> from, List<Type> to) {
@@ -931,11 +968,16 @@ public class F3Types extends Types {
             return null;
         }
 
+	Set visited = new HashSet();
         @Override
         public Void visitTypeVar(TypeVar t, StringBuilder buffer) {
 	    buffer.append(t.tsym.name);
+	    if (visited.contains(t)) {
+		return null;
+	    }
+	    visited.add(t);
 	    if (t.bound != null && t.bound != syms.objectType) {
-		buffer.append(": ");
+		buffer.append(" is ");
 		visit(t.bound, buffer);
 	    }
 	    if (t instanceof TypeCons) {
@@ -963,7 +1005,7 @@ public class F3Types extends Types {
 	    if (t.kind != BoundKind.UNBOUND) {
 		visit(t.type, buffer);
 		if (t.bound != null && t.bound != syms.objectType) {
-		    buffer.append(": ");
+		    buffer.append("is ");
 		    visit(t.bound, buffer);
 		}
 	    } else {
@@ -1141,7 +1183,7 @@ public class F3Types extends Types {
                             buffer.append(param.name);
                         params = params.tail;
                     }
-                    buffer.append(":");
+                    buffer.append(" is ");
                     buffer.append(toF3String(l.head));
                 }
                 buffer.append(')');
@@ -1161,7 +1203,10 @@ public class F3Types extends Types {
         while ((sym.owner.flags() & BLOCK) != 0 ||
                 syms.isRunMethod(sym.owner))
             sym = sym.owner;
-        return sym.location();
+        String loc = sym.location();
+	//System.err.println("sym="+sym);
+	//System.err.println("loc="+loc);
+	return loc;
     }
 
     /**
@@ -1177,6 +1222,10 @@ public class F3Types extends Types {
 	    Set visited = new HashSet();
             @Override
             public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) {
+		if (visited.contains(t0)) {
+		    return t0;
+		}
+		visited.add(t0);
 		TypeVar t = t0;
                 Type upper = visit(t.getUpperBound(), preserveWildcards);
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
@@ -1341,7 +1390,7 @@ public class F3Types extends Types {
 		if (vtype != null) {
 		    type1 = visit(vtype, preserveWildcards);
 		    if (!preserveWildcards) {
-			System.err.println("type1="+type1);
+			//System.err.println("type1="+type1);
 			return type1;
 		    }
 		} 
@@ -1366,7 +1415,7 @@ public class F3Types extends Types {
 		ClassType t = t0;
                 List<Type> args2 = visit(t.getTypeArguments(), preserveWildcards);
                 Type encl2 = visit(t.getEnclosingType(), preserveWildcards);
-		System.err.println("arg2="+args2);
+		//System.err.println("arg2="+args2);
 		boolean isFunc = isF3Function(t);
                 if (//!isFunc &&
 		    (!isSameTypes(args2, t.getTypeArguments()) ||

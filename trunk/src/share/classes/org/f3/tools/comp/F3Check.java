@@ -417,12 +417,22 @@ public class F3Check {
         return checkType(pos, foundRaw, reqRaw, pSequenceness, true);
     }
 
+    Type asMethod(Type t) {
+	if (t instanceof FunctionType) {
+	    return ((FunctionType)t).asMethodOrForAll();
+	}
+	return t;
+    }
+
     Type checkType(DiagnosticPosition pos, Type found, Type req, Sequenceness pSequenceness, boolean giveWarnings) {
         Type realFound = found;
+	if (req instanceof FunctionType) {
+	    return found;
+	}
         if (req.tag == ERROR)
             return req;
-            if (found == syms.unreachableType)
-                return found;
+	if (found == syms.unreachableType)
+	    return found;
         if (found.tag == FORALL) {
             if (false && (req == syms.f3_UnspecifiedType || req == Type.noType))
                 // Is this the right thing to do?  FIXME
@@ -431,10 +441,7 @@ public class F3Check {
 		req = types.boxedTypeOrType(req);
 		return instantiatePoly(pos, (ForAll)found, req, convertWarner(pos, found, req));
 	    }
-        } //else if (isTypeVar(req)) {
-	//	    System.err.println("req="+req);
-	    //	    System.err.println("found="+found.getClass()+": "+found);
-	//}
+        }
         if (req.tag == NONE || req == syms.f3_UnspecifiedType)
             return found;
         if (types.isSequence(req)) {    
@@ -463,11 +470,6 @@ public class F3Check {
         }
         else
             foundUnboxed = found;
-
-	//	if ((req instanceof FunctionType) && (found instanceof FunctionType)) {
-	    //System.err.println("req="+req);
-	    //	    System.err.println("found="+found);
-	//	}
 
         if (types.isAssignable(foundUnboxed, reqUnboxed, convertWarner(pos, found, req))) {
             Type foundElem = types.elementTypeOrType(found);
@@ -1459,12 +1461,12 @@ public class F3Check {
 	// before comparing types.
 	List<Type> mtvars = mt.getTypeArguments();
 	List<Type> otvars = ot.getTypeArguments();
-	System.err.println("mtvars="+mtvars);
-	System.err.println("otvars="+otvars);
+	//System.err.println("mtvars="+mtvars);
+	//System.err.println("otvars="+otvars);
 	Type mtres = mt.getReturnType();
 	Type otres = types.subst(ot.getReturnType(), otvars, mtvars);
-	System.err.println("mtres="+mtres);
-	System.err.println("otres="+otres);
+	//System.err.println("mtres="+mtres);
+	//System.err.println("otres="+otres);
 
 	overrideWarner.warned = false;
 	boolean resultTypesOK = 
@@ -1479,7 +1481,7 @@ public class F3Check {
 		resultTypesOK = true;
 	    }
 	}
-	System.err.println("returnTypesOK="+resultTypesOK);
+	//System.err.println("returnTypesOK="+resultTypesOK);
 	if (!resultTypesOK) {
 	    if (!source.allowCovariantReturns() &&
 		m.owner != origin &&

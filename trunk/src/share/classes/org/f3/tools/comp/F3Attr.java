@@ -204,8 +204,8 @@ public class F3Attr implements F3Visitor {
         return check(tree, owntype, ownkind, pkind, pt, pSequenceness, true);
     }
     Type check(F3Tree tree, Type owntype, int ownkind, int pkind, Type pt, Sequenceness pSequenceness, boolean giveWarnings) {
-        if (owntype != null && owntype != syms.f3_UnspecifiedType && owntype.tag != ERROR && pt.tag != METHOD && pt.tag != FORALL) {
-//        if (owntype.tag != ERROR && pt.tag != METHOD && pt.tag != FORALL) {
+
+        if (owntype != null && owntype != syms.f3_UnspecifiedType && owntype.tag != ERROR && pt.tag != METHOD && pt.tag != FORALL && !(pt instanceof FunctionType)) {
             if ((pkind & VAL) != 0 && ownkind == MTH) {
                 ownkind = VAL;
                 if (owntype instanceof MethodType) {
@@ -699,7 +699,10 @@ public class F3Attr implements F3Visitor {
             sym = tree.sym;
         } else {
 	    Type req = pt;
-	    //System.err.println("resolve ident: "+ req.getClass()+": "+ req);
+	    //System.err.println("resolve ident: "+tree+": "+ req.getClass()+": "+ req);
+	    //if ((req instanceof MethodType) && ((MethodType)req).getReturnType() == syms.unknownType) {
+	    //Thread.currentThread().dumpStack();
+	    //}
             sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
         }
         tree.sym = sym;
@@ -2197,16 +2200,21 @@ public class F3Attr implements F3Visitor {
 	} else if (exp instanceof F3TypeVar) {
 	    F3TypeVar t = (F3TypeVar)exp;
 	    F3Ident ident = (F3Ident)t.getClassName();
-	    TypeVar tv = (TypeVar)makeTypeVar(ident, sym);
-	    env.info.scope.enterIfAbsent(tv.tsym);
+	    TypeVar tv = new TypeVar(ident.getName(), sym, syms.botType);
+	    tv.tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
+	    env.info.scope.enter(((TypeVar)tv).tsym);
 	    BoundKind bk = t.getBoundKind();
 	    Type bound = attribType(t.getBound(), env);
 	    if (bk != BoundKind.UNBOUND) {
 		bound = new WildcardType(bound, bk, syms.boundClass);
 	    }
+	    /*
 	    tv = new TypeVar(tv.tsym, bound, tv.lower);
 	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
-	    env.info.scope.enter(((TypeVar)tv).tsym);
+	    */
+	    tv.bound = bound;
+	    //System.err.println("created type var: "+ System.identityHashCode(tv) + ": " +tv);
+	    //Thread.currentThread().dumpStack();
 	    return tv;
 	} else {
 	    System.err.println("exp="+exp.getClass());
@@ -2452,6 +2460,10 @@ public class F3Attr implements F3Visitor {
 	    }
             if (returnType == syms.f3_java_lang_VoidType)
                 returnType = syms.voidType;
+	    if (returnType == null) {
+		System.err.println("return type was null: "+ tree);
+		returnType = syms.unknownType;
+	    }
             mtype = new MethodType(argbuf.toList(),
 				   returnType, // may be unknownType
 				   List.<Type>nil(),
@@ -2918,6 +2930,14 @@ public class F3Attr implements F3Visitor {
 	    mtype = mpt;
 	}
 	if (mtype == null) {
+	    if (pt == null) {
+		System.err.println("pt is null: "+tree);
+		pt = syms.unknownType;
+	    }
+	    Type restype = pt;
+	    if (restype == syms.unknownType) {
+		restype = syms.voidType;
+	    }
 	    Type mpt = new MethodType(argtypes, pt, List.<Type>nil(), syms.methodClass);
 
 	    if (typeargtypes.nonEmpty()) {
@@ -2992,8 +3012,8 @@ public class F3Attr implements F3Visitor {
 		! rs.argumentsAcceptable(argtypes, mtype.getParameterTypes(),
 					 true, false, Warner.noWarnings)) {
 		if (!partial || argtypes.size() >= mtype.getParameterTypes().size()) {
-		    System.err.println("argtypes: "+argtypes);
-		    System.err.println("paramtypes: "+ mtype.getParameterTypes());
+		    //System.err.println("argtypes: "+argtypes);
+		    //System.err.println("paramtypes: "+ mtype.getParameterTypes());
 		    log.error(tree,
 			      MsgSym.MESSAGE_F3_CANNOT_APPLY_FUNCTION,
 			      mtype.getParameterTypes(), argtypes);
@@ -3652,9 +3672,9 @@ public class F3Attr implements F3Visitor {
 	    
             Type supType = superClass.type == null ? attribSuperType(superClass, env)
                                                    : superClass.type;
-	    System.err.println("tree="+superClass);
-	    System.err.println("supType="+supType);
-	    System.err.println("supType.sym="+supType.tsym.type);
+	    //System.err.println("tree="+superClass);
+	    //System.err.println("supType="+supType);
+	    //System.err.println("supType.sym="+supType.tsym.type);
 
 	    if (supType instanceof FunctionType) {
 		supType = types.normalize(supType, false);
@@ -4031,6 +4051,10 @@ public class F3Attr implements F3Visitor {
 	    }
 	}
         Type restype = attribType(tree.restype, env);
+	if (restype == null) {
+	    System.err.println("restype is null: "+ tree);
+	    restype = syms.unknownType;
+	}
         if (restype == syms.unknownType)
             restype = syms.voidType;
         Type rtype = isWildcard(restype) ? restype : restype == syms.voidType ? syms.f3_java_lang_VoidType
@@ -4240,6 +4264,7 @@ public class F3Attr implements F3Visitor {
 			*/
 		    }
 		}
+		//System.err.println("owntype="+owntype);
                 break;
             }
             case PCK: case ERR:
@@ -4391,6 +4416,9 @@ public class F3Attr implements F3Visitor {
                                   sym.location(),
                                   typeargs,
                                   Type.toString(argtypes));
+		if (owntype.getReturnType() == null) {
+		    System.err.println("null ret : "+ owntype);
+		}
                 owntype = new MethodType(owntype.getParameterTypes(),
                                          //types.erasure(owntype.getReturnType()),
 					 owntype.getReturnType(),

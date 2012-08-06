@@ -446,7 +446,10 @@ public class F3Resolve {
             argtypes = argtypes.tail;
             formals = formals.tail;
         }
-        if (formals.head != varargsFormal) return false; // not enough args
+        if (formals.head != varargsFormal) {
+	    //System.err.println("not enough args: "+ formals + " " + argtypes);
+	    return false; // not enough args
+	}
         if (!useVarargs)
             return argtypes.isEmpty();
         Type elt = types.elemtype(varargsFormal);
@@ -742,10 +745,22 @@ public class F3Resolve {
         assert sym.kind < AMBIGUOUS;
         List<Type> argtypes = expected.getParameterTypes();
         List<Type> typeargtypes = expected.getTypeArguments();
+	//System.err.println("expected="+expected);
+	//System.err.println("clazz="+expected.getClass());
         try {
+	    Type memberType = types.memberType(site, sym);
+	    //System.err.println("memberType: "+types.memberType(site, sym));
+	    //System.err.println("clazz="+memberType.getClass());
+	    if (types.isSameType(memberType, expected)) {
+		return sym;
+	    }
             if (rawInstantiate(env, sym, types.memberType(site, sym), argtypes, typeargtypes,
                                allowBoxing, useVarargs, Warner.noWarnings) == null) {
                 // inapplicable
+		//System.err.println("raw instantiate failed: "+ sym);
+		//System.err.println("argtypes: "+argtypes);
+		//System.err.println("typeargtypes: "+typeargtypes);
+		//Thread.currentThread().dumpStack();
                 switch (bestSoFar.kind) {
                 case ABSENT_MTH: return wrongMethod.setWrongSym(sym);
                 case WRONG_MTH: return wrongMethods;
@@ -753,6 +768,9 @@ public class F3Resolve {
                 }
             }
         } catch (Infer.NoInstanceException ex) {
+	    //System.err.println("raw instantiate exception: "+ sym);
+	    //System.err.println("argtypes: "+argtypes);
+	    //System.err.println("typeargtypes: "+typeargtypes);
             switch (bestSoFar.kind) {
             case ABSENT_MTH:
                 return wrongMethod.setWrongSym(sym, ex.getDiagnostic());
@@ -974,7 +992,7 @@ public class F3Resolve {
 		System.err.println("members null: "+ c);
 		continue;
 	    }
-            for (Scope.Entry e = c.members().lookup(name);
+	    for (Scope.Entry e = c.members().lookup(name);
                  e.scope != null;
                  e = e.next()) {
                 if ((e.sym.kind & (VAR|MTH)) == 0 ||
@@ -989,6 +1007,8 @@ public class F3Resolve {
                         bestSoFar = new AmbiguityError(bestSoFar, e.sym);
                 }
                 else if (e.sym.kind == MTH) {                    
+		    //System.err.println("type="+e.sym.type);
+		    //System.err.println("mtype="+mtype);
                     bestSoFar = selectBest(env, site, mtype,
                                            e.sym, bestSoFar,
                                            allowBoxing,
@@ -1002,8 +1022,10 @@ public class F3Resolve {
                         mt = ((FunctionType)mt).asMethodOrForAll();
                     if (!( (mt instanceof MethodType) || (mt instanceof ForAll)) ||
                             ! argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
-                            true, false, Warner.noWarnings))
+						  true, false, Warner.noWarnings)) {
+			//System.err.println("arguments unacceptable : "+mtype + ": "+ mt);
                         return wrongMethod.setWrongSym(e.sym);
+		    }
                     return e.sym;
                 }
             }
@@ -1069,7 +1091,7 @@ public class F3Resolve {
     }
 
     Type newMethTemplate(List<Type> argtypes, List<Type> typeargtypes) {
-        MethodType mt = new MethodType(argtypes, null, null, syms.methodClass);
+        MethodType mt = new MethodType(argtypes, syms.voidType, null, syms.methodClass);
         return (typeargtypes == null) ? mt : (Type)new ForAll(typeargtypes, mt);
     }
          
@@ -2302,7 +2324,7 @@ public class F3Resolve {
                 if (kind >= WRONG_MTHS && kind <= ABSENT_MTH) {
                     if (isOperator(name)) {
                         log.error(pos, MsgSym.MESSAGE_OPERATOR_CANNOT_BE_APPLIED,
-                                  name, Type.toString(argtypes));
+                                  name, types.toF3String(argtypes));
                         return;
                     }
                     if (name == name.table.init) {
@@ -2311,7 +2333,7 @@ public class F3Resolve {
                     }
                     args = "(" + types.toF3String(argtypes) + ")";
                     if (typeargtypes != null && typeargtypes.nonEmpty())
-                        typeargs = "<" + Type.toString(typeargtypes) + ">";
+                        typeargs = "of (" + types.toF3String(typeargtypes) + ")";
                 }
                 if (kind == WRONG_MTH) {
                     String wrongSymStr;
@@ -2321,7 +2343,8 @@ public class F3Resolve {
                                     ((MethodSymbol) wrongSym).params);
                     else
                         wrongSymStr = wrongSym.toString();
-		    Thread.currentThread().dumpStack();
+		    //System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
+		    //Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,

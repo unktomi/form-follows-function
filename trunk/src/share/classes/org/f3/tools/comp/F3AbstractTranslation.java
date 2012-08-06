@@ -504,7 +504,7 @@ public abstract class F3AbstractTranslation
             translateCore(expr, targettedType, ToExpression);
 	    ExpressionResult ret; 
 	    if (this.result instanceof StatementsResult) {
-		System.err.println("result="+result);
+		//System.err.println("result="+result);
 		return new ExpressionResult(this.result.diagPos, 
 					    ((StatementsResult)this.result).statements(), 
 					    null, 
@@ -4384,12 +4384,12 @@ public abstract class F3AbstractTranslation
     }
 
     public void visitTypeClass(F3TypeClass that) {
-	System.err.println(that);
+	//System.err.println(that);
         processedInParent();
     }
 
     public void visitTypeVar(F3TypeVar that) {
-	System.err.println(that);
+	//System.err.println(that);
         processedInParent();
     }
 
