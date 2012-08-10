@@ -32,83 +32,84 @@ function of (a, b, c) uncurry(f is function from a to (function from b to c)) re
 Monad Comprehensions
 {{{
 
-// Lazy infinite streams
+
+// Lazy infinite streams                                                              
 
 public class Stream of a extends Comonad of a, Monad of a {
 
-    public val first is a;
-    public val secondThruLast is Stream of a;
+    public val now is a;
+    public val later is Stream of a;
 
-    // zip lifts a binary operator to one over Streams
-    public function of (b, c) 
-	zip(binOp is function from (a, b) to c, 
-	    xs is Stream of b) returns Stream of c
+    // zip lifts a binary operator to one over Streams                                
+    public function of (b, c)
+        zip(binOp is function from (a, b) to c,
+            xs is Stream of b) returns Stream of c
     {
-	Stream of c
-	{
-	    first: bind binOp(first, xs.first);
-	    secondThruLast: bind secondThruLast.zip(binOp, xs.secondThruLast);
-	}
-    }
-
-    // map lifts a unary operator to one over Streams
-    override public function of b 
-	map(unaryOp is function from a to b) returns Stream of b
-    {
-	Stream of b
-	{
-	    first: bind unaryOp(this.first);
-	    secondThruLast: bind this.secondThruLast.map(unaryOp);
-	}
-    }
-
-    // flatmap lifts a Stream constructor to a unary operator over Streams
-    override public function of b 
-	flatmap(ctor is function from a to Stream of b) returns Stream of b
-    {
-        val d = bound function(x is a) returns b { ctor(x).first }
-        var h = bind d(first);
-        var t = bind for (x in secondThruLast) d(x);
-        Stream of b 
+        Stream of c
         {
-            first: bind h;
-            secondThruLast: bind t;
+            now: bind binOp(now, xs.now);
+            later: bind later.zip(binOp, xs.later);
         }
     }
 
-    // coflatmap lifts a Stream destructor to a unary operator over Streams
-    override function of b 
-	coflatmap(dtor is function from Stream of a to b) returns Stream of b
+    // map lifts a unary operator to one over Streams                                 
+    override public function of b
+        map(unaryOp is function from a to b) returns Stream of b
     {
-	Stream of b
-	{
-	    first: bind dtor(this);
-	    secondThruLast: bind secondThruLast.coflatmap(dtor);
-	}
+        Stream of b
+        {
+            now: bind unaryOp(this.now);
+            later: bind this.later.map(unaryOp);
+        }
     }
 
-    override public function extract() returns a { first }
-
-    public bound function followedBy(xs is Stream of a) returns Stream of a 
+    // flatmap lifts a Stream constructor to a unary operator over Streams            
+    override public function of b
+        flatmap(ctor is function from a to Stream of b) returns Stream of b
     {
-	Stream of a 
+        val d = bound function(x is a) returns b { ctor(x).now }
+        var h = bind d(now);
+        var t = bind for (x in later) d(x);
+        Stream of b
         {
-	    first: bind first;
-	    secondThruLast: bind xs; 
-	}
+            now: bind h;
+            later: bind t;
+        }
+    }
+
+    // coflatmap lifts a Stream destructor to a unary operator over Streams           
+    override function of b
+        coflatmap(dtor is function from Stream of a to b) returns Stream of b
+    {
+        Stream of b
+        {
+            now: bind dtor(this);
+            later: bind later.coflatmap(dtor);
+        }
+    }
+
+    override public function extract() returns a { now }
+
+    public bound function followedBy(xs is Stream of a) returns Stream of a
+    {
+        Stream of a
+        {
+            now: bind now;
+            later: bind xs;
+        }
     }
 }
 
-// lifts a value to a Stream by repeating it indefinitely, i.e  x, x, x, ...
+
+// lifts a value to a Stream by repeating it indefinitely, i.e  x, x, x, ...          
 public function of a repeat(x is a) returns Stream of a
 {
-    Stream of a 
+    Stream of a
     {
-        first: x;
-        override val secondThruLast = this;
+        now: x;
+        override val later = this;
     }
 }
-
 
 // creates an infinite stream of 3s
 val zs = bind for (x in repeat(1), y in repeat(2)) { x + y }
