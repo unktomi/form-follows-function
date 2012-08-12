@@ -47,8 +47,8 @@ public class Stream of a extends Comonad of a, Monad of a {
     {
         Stream of c
         {
-            now: bind binOp(now, xs.now);
-            later: bind later.zip(binOp, xs.later);
+            now: bind binOp(now, xs.now)
+            later: bind later.zip(binOp, xs.later)
         }
     }
 
