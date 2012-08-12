@@ -58,8 +58,8 @@ public class Stream of a extends Comonad of a, Monad of a {
     {
         Stream of b
         {
-            now: bind unaryOp(this.now);
-            later: bind this.later.map(unaryOp);
+            now: bind unaryOp(this.now)
+            later: bind this.later.map(unaryOp)
         }
     }
 
@@ -72,8 +72,8 @@ public class Stream of a extends Comonad of a, Monad of a {
         var t = bind for (x in later) d(x);
         Stream of b
         {
-            now: bind h;
-            later: bind t;
+            now: bind h
+            later: bind t
         }
     }
 
@@ -83,8 +83,8 @@ public class Stream of a extends Comonad of a, Monad of a {
     {
         Stream of b
         {
-            now: bind dtor(this);
-            later: bind later.coflatmap(dtor);
+            now: bind dtor(this)
+            later: bind later.coflatmap(dtor)
         }
     }
 
@@ -94,8 +94,8 @@ public class Stream of a extends Comonad of a, Monad of a {
     {
         Stream of a
         {
-            now: bind now;
-            later: bind xs;
+            now: bind now
+            later: bind xs
         }
     }
 }
@@ -106,8 +106,8 @@ public function of a repeat(x is a) returns Stream of a
 {
     Stream of a
     {
-        now: x;
-        override val later = this;
+        now: x
+        override val later = this
     }
 }
 
