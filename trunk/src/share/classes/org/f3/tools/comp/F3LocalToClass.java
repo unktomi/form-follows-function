@@ -609,6 +609,14 @@ public class F3LocalToClass {
         List<F3Expression> stats = List.<F3Expression>of(cdecl);
         F3Expression value = apply;
 
+	if (apply.type != syms.voidType) {
+	    value = f3make.TypeCast(preTrans.makeTypeTree(apply.type),
+				    value);
+	    
+	    System.err.println("apply.type="+apply.type);
+	    value.setType(apply.type);
+	}
+
         if (vc.nonLocalCatchers.size() > 0) {
 
             F3Block tryBody = (F3Block)f3make.Block(0L, stats, value).setType(block.type);

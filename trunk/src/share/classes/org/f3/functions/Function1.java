@@ -28,8 +28,26 @@ import org.f3.runtime.Functor;
 import org.f3.runtime.Monad;
 
 public class Function1<R, A1> extends Function<R> 
-    implements Monad<Function1, R>
+    implements Monad<Function1, R> // , Comonad<Function1, R>
 {
+
+    public <B> Function1<R, B> composeWith(final Function1<? extends A1, B> f) {
+	final Function1<R, A1> self = this;
+	return new Function1<R, B>() {
+	    public R invoke(final B b) {
+		return self.invoke(f.invoke(b));
+	    }
+	};
+    }
+
+    public <B> Function1<B, A1> andThen(final Function1<? extends B, ? super R> f) {
+	final Function1<R, A1> self = this;
+	return new Function1<B, A1>() {
+	    public B invoke(final A1 a1) {
+		return f.invoke(self.invoke(a1));
+	    }
+	};
+    }
 
     public <Y> Function1<Y, A1> map(final Function1<? extends Y, ? super R> f) {
 	final Function1<R, A1> self = this;
@@ -39,7 +57,6 @@ public class Function1<R, A1> extends Function<R>
 	    }
 	};
     }
-
 
     public <Y> Function1<Y, A1> flatmap(final Function1<? extends Function1<Y, A1>, ? super R> f) {
 	final Function1<R, A1> self = this;
@@ -52,7 +69,24 @@ public class Function1<R, A1> extends Function<R>
 	};
     }
 
+    /*
+    public R extract() {
+	this.invoke(zero)
+    }
 
+    public <Y> Function1<Y, A1> coflatmap(final Function1<? extends Y ? super Function1<R, A1>> f) {
+	final Function1<R, A1> self = this;	
+	return new Function1<Y, A1>() {
+	    public Y invoke(A1 x1) {
+		return f.invoke(new Function<R, A1>() {
+			public R invoke(A1 x2) {
+			    return self.invoke(add(x1, x2));
+			}
+		    });
+	    }
+	};
+    }
+    */
 
     public Function1() {}
     
@@ -65,7 +99,7 @@ public class Function1<R, A1> extends Function<R>
     public Object invoke$(Object arg1, Object arg2, Object[] rargs) {
         return invoke((A1)arg1);
     }
-    
+
     // Override this
     public R invoke(A1 x1) {
         if (implementor != null) {

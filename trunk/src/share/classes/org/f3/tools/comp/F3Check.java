@@ -1447,14 +1447,14 @@ public class F3Check {
 
 	}
 ----------------- */
-	System.err.println("m="+m);
-	System.err.println("other="+other);
-	System.err.println("origin.type="+origin.type);
+	//System.err.println("m="+m);
+	//System.err.println("other="+other);
+	//System.err.println("origin.type="+origin.type);
 
 	Type mt = types.memberType(origin.type, m);
 	Type ot = types.memberType(origin.type, other);
-	System.err.println("mt="+mt);
-	System.err.println("ot="+ot);
+	//System.err.println("mt="+mt);
+	//System.err.println("ot="+ot);
 	// Error if overriding result type is different
 	// (or, in the case of generics mode, not a subtype) of
 	// overridden result type. We have to rename any type parameters

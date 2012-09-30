@@ -262,14 +262,16 @@ public class F3Types extends Types {
 	Type monad = getMonad(type);
 	if (monad != null) {
 	    List<Type> list = monad.getTypeArguments();
-	    Type elemType = list.get(1);
-	    while (elemType instanceof CapturedType)
-		elemType = ((CapturedType) elemType).wildcard;
-	    while (elemType instanceof WildcardType)
-		elemType = ((WildcardType) elemType).type;
-	    if (elemType == null)
-		return syms.f3_AnyType;
-	    return elemType;
+	    if (list.size() > 1) {
+		Type elemType = list.get(1);
+		while (elemType instanceof CapturedType)
+		    elemType = ((CapturedType) elemType).wildcard;
+		while (elemType instanceof WildcardType)
+		    elemType = ((WildcardType) elemType).type;
+		if (elemType == null)
+		    return syms.f3_AnyType;
+		return elemType;
+	    }
 	}
 	return null;
     }
@@ -914,7 +916,8 @@ public class F3Types extends Types {
 	} catch (AssertionError err) {
 	    System.err.println("a: "+ a);
 	    System.err.println("b: "+ b);
-	    throw err;
+	    //throw err;
+	    return false;
 	}
     }
     /*
@@ -977,8 +980,11 @@ public class F3Types extends Types {
 	    }
 	    visited.add(t);
 	    if (t.bound != null && t.bound != syms.objectType) {
-		buffer.append(" is ");
-		visit(t.bound, buffer);
+		String str = toF3String(t.bound);
+		if (!"Object".equals(str)) {
+		    buffer.append(" is ");
+		    buffer.append(str);
+		}
 	    }
 	    if (t instanceof TypeCons) {
 		buffer.append(" of ");
@@ -1002,20 +1008,22 @@ public class F3Types extends Types {
 
         @Override
         public Void visitWildcardType(WildcardType t, StringBuilder buffer) {
-	    if (t.kind != BoundKind.UNBOUND) {
+	    System.err.println("wildcard="+t);
+	    System.err.println("wildcard.type="+t.type);
+	    if (t.bound != null) {
+		System.err.println("wildcard.bound="+t.bound.getClass()+": "+t.bound);
+	    }
+	    if (t.kind == BoundKind.EXTENDS) {
+		visit(t.bound, buffer);
+		buffer.append(" is ");
 		visit(t.type, buffer);
-		if (t.bound != null && t.bound != syms.objectType) {
-		    buffer.append("is ");
-		    visit(t.bound, buffer);
-		}
+	    } else if (t.kind == BoundKind.SUPER) {
+		visit(t.bound, buffer);
+		buffer.append(" is ");
+		visit(t.bound, buffer);
 	    } else {
+		//BoundKind.UNBOUND
 		buffer.append("?");
-		/*
-		if (t.bound != null && t.bound != syms.objectType) {
-		    buffer.append(": ");
-		    visit(t.bound, buffer);
-		}
-		*/
 	    }
 	    return null;
 	}

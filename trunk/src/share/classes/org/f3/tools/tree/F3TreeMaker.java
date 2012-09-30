@@ -530,7 +530,7 @@ public class F3TreeMaker implements F3TreeFactory {
             case VOID:
                 tp = Ident(syms.voidTypeName);
 		break;
-		/*
+
 	    case WILDCARD:
 		{
 		    WildcardType w = (WildcardType)t;
@@ -541,7 +541,7 @@ public class F3TreeMaker implements F3TreeFactory {
 		    }
 		}
 		break;
-		*/
+
             case TYPEVAR:
 		{
 		    tp = Ident(((TypeVar)t).tsym.name);

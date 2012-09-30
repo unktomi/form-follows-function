@@ -51,6 +51,7 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f);
     public <Y> Sequence<Y> flatmap(Function1<? extends Sequence<Y>, ? super T> f);
     public <Y> Sequence<Y> coflatmap(Function1<? extends Y, ? super Sequence<T>> f);
+    public T extract();
     public Sequence<T> mzero();
     public Sequence<T> mplus(Sequence<T> s);
 
