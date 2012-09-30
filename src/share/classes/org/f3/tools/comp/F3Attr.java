@@ -367,7 +367,7 @@ public class F3Attr implements F3Visitor {
 				localResult = tc;
 			    }
 			} else {
-			    //System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+			    System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
 			}
 		    }
 		    tree.type = localResult;
@@ -710,7 +710,7 @@ public class F3Attr implements F3Visitor {
         checkTypeCycle(tree, sym);
 
         // (1) Also find the environment current for the class where
-        //     sym is defined (`symEnv').
+       //     sym is defined (`symEnv').
         // Only for pre-tiger versions (1.4 and earlier):
         // (2) Also determine whether we access symbol out of an anonymous
         //     class in a this or super call.  This is illegal for instance
@@ -767,11 +767,15 @@ public class F3Attr implements F3Visitor {
         }
 	List<Type> actuals = List.nil();
 	if (tree.typeArgs != null) {
+	    System.err.println("attrib type args: "+tree);
 	    actuals = attribTypeArgs(tree.typeArgs, env);
+	    System.err.println("actuals="+actuals);
 	} 
 	//System.err.println("checkId: "+ sym);
+	//System.err.println("pt="+pt);
         result = checkId(tree, env1.enclClass.sym.type, sym, env, actuals, pkind, pt, pSequenceness, varArgs);
 	//System.out.println("result of "+tree.pos+" "+sym + " = "+result.getClass()+": "+result);
+	//System.err.println("result="+result);
 	tree.type = result;
     }
 
@@ -983,6 +987,10 @@ public class F3Attr implements F3Visitor {
             DiagnosticPosition pos = tree.pos();
             Name name = tree.name;
             Symbol sym;
+
+	    if (site instanceof MethodType) {
+		site = syms.makeFunctionType(site.asMethodType());
+	    }
 
             switch (site.tag) {
             case PACKAGE:
@@ -2956,7 +2964,9 @@ public class F3Attr implements F3Visitor {
 	}
 
 
-	//mtype = reader.translateType(mtype);
+	if (!(mtype instanceof FunctionType) && !(mtype instanceof MethodType))  {
+	    mtype = reader.translateType(mtype);
+	}
 
 	if (localEnv.info.varArgs)
 	    assert mtype.isErroneous() || tree.varargsElement != null;
@@ -3675,6 +3685,7 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("tree="+superClass);
 	    //System.err.println("supType="+supType);
 	    //System.err.println("supType.sym="+supType.tsym.type);
+	    
 
 	    if (supType instanceof FunctionType) {
 		supType = types.normalize(supType, false);
@@ -3956,11 +3967,18 @@ public class F3Attr implements F3Visitor {
 
 	if (tree instanceof F3TypeAlias) {
 	    F3TypeAlias ta = (F3TypeAlias)tree;
+            F3Env<F3AttrContext> localEnv = env;
+	    List<Type> targs = null;
+	    if (ta.typeArgs != null) {
+		localEnv = newLocalEnv(tree);
+		targs = makeTypeVars(ta.typeArgs, env.info.scope.owner);
+	    }
             Type t = attribTree(ta.type,
-				env,
+				localEnv,
 				TYP,
 				Type.noType);
-
+	    System.err.println("t="+t);
+	    System.err.println("targs="+targs);
 	    ta.tsym.type = t;
 	    result = t;
 	    tree.type = result;
@@ -3990,12 +4008,17 @@ public class F3Attr implements F3Visitor {
 	if (tree instanceof F3TypeThis) {
 	    F3TypeThis t = (F3TypeThis)tree;
 	    Type ct = env.enclClass.type;
-	    if (t.getArgs() != null) {
-		List<Type> targs = attribTypeArgs(t.getArgs(), env, !inSuperType);
-		ct = types.applySimpleGenericType(types.erasure(ct), targs);
+	    if (ct == null) {
+		System.err.println("ct is null"+tree.pos);
+		System.err.println(tree);
+	    } else {
+		if (t.getArgs() != null) {
+		    List<Type> targs = attribTypeArgs(t.getArgs(), env, !inSuperType);
+		    ct = types.applySimpleGenericType(types.erasure(ct), targs);
+		}
+		result = tree.type = ct;
+		return;
 	    }
-	    result = tree.type = ct;
-	    return;
 	}
         F3Expression classNameExpr = ((F3TypeVar) tree).getClassName();
         Type type = attribType(classNameExpr, env);

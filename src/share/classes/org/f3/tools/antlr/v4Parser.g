@@ -1277,6 +1277,8 @@ functionDefinition [ F3Modifiers mods, int pos ]
             )
                 
         )
+        ((OF | FORALL) (genericArgs = genericParams[false, false])? 
+         FROM)?
         formalParameters
             {
                 // Accumulate the parameter nodes in case of error
@@ -4679,7 +4681,7 @@ functionExpression
             ((OF | FORALL) gas=genericParams[false, false] { 
                 exprbuff.appendList($gas.value);
             })?
-    
+        FROM?
         formalParameters    
             { 
                 // Accumulate in case of error
@@ -5886,6 +5888,8 @@ typeFunction
     (
       (FROM)=>(FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* )? RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) TO ret=type) { argsList = typeArgBuf.toList(); }
     |
+        (TO)=> (TO ret=type FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* )? RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) { argsList = typeArgBuf.toList(); })
+    |
         (LPAREN 
             typeArgList 
                 { 
@@ -6167,7 +6171,7 @@ returnTypeReference
     //
     int rPos = pos();
 }
-    : (COLON | RETURNS) type
+    : (COLON | RETURNS | TO) type
               
         {
             $rtype = $type.rtype;

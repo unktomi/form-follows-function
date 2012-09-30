@@ -1247,6 +1247,9 @@ public abstract class F3TranslationSupport {
         //where
         private JCExpression resolveThisInternal(Symbol ownerThis, Symbol currentThis, JCExpression receiver) {
             if (currentThis == null) {
+		System.err.println("owner="+ownerThis);
+		System.err.println("receiver="+receiver);
+		System.err.println("enclosing="+enclosingClassDecl);
                 throw new AssertionError("Cannot find owner");
             }
             else if (!currentThis.isSubClass(ownerThis, types)) {

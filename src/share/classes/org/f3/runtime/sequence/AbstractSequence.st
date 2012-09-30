@@ -260,6 +260,10 @@ $PREFIX:{T|
 	return result;
     }
 
+    public <B> Sequence<B> coextract(B b) {
+	return Sequences.singleton(TypeInfo.<B>.getTypeInfo(), b);
+    }
+
     public T extract() {
 	return get(0);
     }

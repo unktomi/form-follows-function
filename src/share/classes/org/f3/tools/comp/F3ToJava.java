@@ -656,6 +656,9 @@ public class F3ToJava extends F3AbstractTranslation {
                             translateStmt(value, syms.voidType);
                             addPreface(Stmt(Get(((F3VarInit) value).getSymbol()), targetType));
                         } else {
+			    if (targetType == null) {
+				System.err.println("statements="+statements);
+			    }
                             translateStmt(value, targetType);
                         }
                     }
