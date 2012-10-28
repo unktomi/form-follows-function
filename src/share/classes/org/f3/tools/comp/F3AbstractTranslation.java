@@ -547,7 +547,7 @@ public abstract class F3AbstractTranslation
         JCConverter(AbstractStatementsResult res, Type type) {
             super(res.diagPos, currentClass(), receiverContext() == ReceiverContext.ScriptAsStatic);
 	    if (type == null) {
-		throw new Error("type is null: "+res);
+		//throw new Error("type is null: "+res);
 	    }
             this.res = res;
             this.type = type;

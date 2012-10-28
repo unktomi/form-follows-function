@@ -115,6 +115,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 
     public F3Expression getMonadMap(F3TreeMaker F, 
 				    Name.Table names,
+				    F3Types types,
 				    Type argType,
 				    Type monadType,
 				    Type resultType,
@@ -130,8 +131,15 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
                  x.nonEmpty(); x = x.tail) {
                 F3ForExpressionInClause clause = x.head;
 		boolean first = i == 0;
+		boolean isMap = first;
+		if (types.isMonad(resultType)) {
+		    //System.err.println("argType="+argType);
+		    //System.err.println("resultType="+resultType);
+		    //System.err.println("monadType="+monadType);
+		    isMap = false;
+		}
 		Name select =
-		    first ? names.fromString("map") : names.fromString("flatmap");
+		    isMap ? names.fromString("map") : names.fromString("flatmap");
 		Type type = argType;
 		if (!first) {
 		    type = monadType;

@@ -671,7 +671,12 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         completer.tree = tree;
         completer.attr = attr;
         v.completer = completer;
-
+	if ((tree.mods.flags & STATIC) != 0) {
+	    if ((tree.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
+		tree.mods.flags &= ~F3Flags.PUBLIC_INIT;
+		tree.mods.flags |= F3Flags.IS_DEF;
+	    }
+	}
         v.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, v, tree);
         if (tree.getInitializer() != null) {
             v.flags_field |= HASINIT;
