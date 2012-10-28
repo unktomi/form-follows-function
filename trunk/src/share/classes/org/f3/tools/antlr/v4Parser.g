@@ -422,7 +422,7 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
               // valid or not is a matter for semantic checks to decide.
               //
               //
-	(modifiers (ENUM|CLASS|INTERFACE|FUNCTION))=> (m1=modifiers { errNodes.append($m1.mods); }
+	(modifiers (ENUM|CLASS|INTERFACE|FUNCTION|IDENTIFIER IS FUNCTION))=> (m1=modifiers { errNodes.append($m1.mods); }
                 (
                       c=classDefinition         [$m1.mods, $m1.pos]
                       
@@ -788,8 +788,8 @@ modifiers
 modifierFlag
 
     returns [long flag]
-    
-    : ABSTRACT          { $flag = Flags.ABSTRACT;           }
+    : (PUBLIC (VAL|CONST)|PUBLIC_READ)=>(PUBLIC (VAL|CONST)|PUBLIC_READ) { $flag = F3Flags.PUBLIC_READ;      }    
+    | ABSTRACT          { $flag = Flags.ABSTRACT;           }
     | BOUND             { $flag = F3Flags.BOUND;            }
     | DEFAULT           { $flag = F3Flags.DEFAULT;          }
     | MIXIN             { $flag = F3Flags.MIXIN;            }
@@ -797,7 +797,7 @@ modifierFlag
     | PACKAGE           { $flag = F3Flags.PACKAGE_ACCESS;   }
     | PROTECTED         { $flag = Flags.PROTECTED;          }
     | PUBLIC            { $flag = Flags.PUBLIC;             }
-    | (PUBLIC (VAL|CONST)|PUBLIC_READ)       { $flag = F3Flags.PUBLIC_READ;      }
+
     | PUBLIC_INIT       { $flag = F3Flags.PUBLIC_INIT;      }
         
     
@@ -920,9 +920,10 @@ classDefinition [ F3Modifiers mods, int pos ]
 
             n1=name 
 
-        (OF|FROM|TO)=>((OF gas=genericParams[false, false] {
+        (OF)=>((OF gas=genericParams[false, false] {
            if (gas != null) exprbuff.appendList(gas);
         })?
+            /*
         |
         (FROM contraGas=genericParams[true, false] {
             if (contraGas != null) exprbuff.appendList(contraGas);
@@ -930,6 +931,7 @@ classDefinition [ F3Modifiers mods, int pos ]
         (TO coGas=genericParams[false, true] {
             if (coGas != null) exprbuff.appendList(coGas);
         })?    
+        */
         )
     
         (EXTENDS)=>(supers  {ids = $supers.ids; })
@@ -1228,7 +1230,11 @@ functionDefinition [ F3Modifiers mods, int pos ]
     // Accumulate any generic arguments
     //
 }
-: FUNCTION  
+: (
+//(IDENTIFIER IS FUNCTION)=>(n3=name IS FUNCTION { name = $n3.value; })
+//        |
+
+            fun=FUNCTION  
 
    ((OF | FORALL) genericArgs = genericParams[false, false])?
 
@@ -1277,8 +1283,9 @@ functionDefinition [ F3Modifiers mods, int pos ]
             )
                 
         )
-        ((OF | FORALL) (genericArgs = genericParams[false, false])? 
-         FROM)?
+        )
+        ((OF | FORALL) (genericArgs = genericParams[false, false]))?
+        FROM?
         formalParameters
             {
                 // Accumulate the parameter nodes in case of error
@@ -1313,7 +1320,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 // and there was no function body. If there is a SEMI at this point, it does not
                 // matter as it will be eaten by the enclosing rule as if it were an empty statement.
                 //
-             RETURN? bodyExpr=expression { blk = F.at(pos($FUNCTION)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>nil(), bodyExpr); }
+             RETURN? bodyExpr=expression { blk = F.at(pos($fun)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>nil(), bodyExpr); }
             |
             SEMI
 
@@ -4878,8 +4885,25 @@ objectLiteralPart
     int rPos = pos();
     
 }
-    : (modifiers) => modifiers
+    : 
+        (modifiers IDENTIFIER IS FUNCTION) => modifiers 
+              functionDefinition     [$modifiers.mods, $modifiers.pos]
+            
+                {
+                    $value = $functionDefinition.value;
+                    errNodes.append($value);
+                }
+    |
+
+        (modifiers) => modifiers
         (
+              functionDefinition     [$modifiers.mods, $modifiers.pos]
+            
+                {
+                    $value = $functionDefinition.value;
+                    errNodes.append($value);
+                }
+              |
               variableDeclaration    [$modifiers.mods, $modifiers.pos]
               
                 {
@@ -4887,12 +4911,6 @@ objectLiteralPart
                     errNodes.append($value);
                 }
                 
-            | functionDefinition     [$modifiers.mods, $modifiers.pos]
-            
-                {
-                    $value = $functionDefinition.value;
-                    errNodes.append($value);
-                }
         )
         
     | oli=objectLiteralInit
@@ -6381,10 +6399,9 @@ genericArguments0
 genericParams[boolean contravar, boolean covar]
    returns [com.sun.tools.mjavac.util.List<F3Expression> value]
    :
-   (LPAREN)=> (LPAREN (gas=genericParams0[contravar, covar]) RPAREN)
-   {
+   (LPAREN)=> (LPAREN ((gas=genericParams0[contravar, covar] {
        $value = $gas.value;
-   }
+    })| { $value = com.sun.tools.mjavac.util.List.<F3Expression>nil();}) RPAREN)   
    |
    ga=genericParam[contravar, covar]
    {

@@ -395,6 +395,12 @@ public class F3Enter extends F3TreeScanner {
 
         // Fill out class fields.
         c.completer = memberEnter;
+	if ((tree.mods.flags & STATIC) != 0) {
+	    if ((tree.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
+		tree.mods.flags &= ~F3Flags.PUBLIC_INIT;
+		tree.mods.flags |= F3Flags.IS_DEF;
+	    }
+	}
         c.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, c, tree);
         c.sourcefile = env.toplevel.sourcefile;
         c.members_field = new Scope(c);

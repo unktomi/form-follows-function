@@ -613,7 +613,7 @@ public class F3LocalToClass {
 	    value = f3make.TypeCast(preTrans.makeTypeTree(apply.type),
 				    value);
 	    
-	    System.err.println("apply.type="+apply.type);
+	    //System.err.println("apply.type="+apply.type);
 	    value.setType(apply.type);
 	}
 

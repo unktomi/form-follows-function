@@ -1057,6 +1057,7 @@ public class F3Check {
         System.err.printf("%022o illegal -- %s\n", illegal, F3TreeInfo.flagNames(illegal));
         ***/
         if (illegal != 0) {
+	    Thread.currentThread().dumpStack();
             log.error(pos, msg, F3TreeInfo.flagNames(illegal), thing);
         }
         else if ((sym.kind == TYP ||

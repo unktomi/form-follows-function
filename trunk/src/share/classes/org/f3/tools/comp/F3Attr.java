@@ -767,9 +767,9 @@ public class F3Attr implements F3Visitor {
         }
 	List<Type> actuals = List.nil();
 	if (tree.typeArgs != null) {
-	    System.err.println("attrib type args: "+tree);
+	    //System.err.println("attrib type args: "+tree);
 	    actuals = attribTypeArgs(tree.typeArgs, env);
-	    System.err.println("actuals="+actuals);
+	    //System.err.println("actuals="+actuals);
 	} 
 	//System.err.println("checkId: "+ sym);
 	//System.err.println("pt="+pt);
@@ -1700,7 +1700,7 @@ public class F3Attr implements F3Visitor {
 		    Type monadElementType = clause1Type;
 		    Type typeCons = monadType == null ? functorType: monadType;
 		    if (tree.isBound() || !isIter) {
-			map = tree.getMonadMap(f3make, names, monadElementType,
+			map = tree.getMonadMap(f3make, names, types, monadElementType,
 					       typeCons,
 					       bodyType,
 					       tree.isBound());
