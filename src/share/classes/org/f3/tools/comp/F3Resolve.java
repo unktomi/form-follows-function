@@ -751,11 +751,12 @@ public class F3Resolve {
 	    Type memberType = types.memberType(site, sym);
 	    //System.err.println("memberType: "+types.memberType(site, sym));
 	    //System.err.println("clazz="+memberType.getClass());
-	    if (types.isSameType(memberType, expected)) {
-		return sym;
-	    }
-            if (rawInstantiate(env, sym, types.memberType(site, sym), argtypes, typeargtypes,
-                               allowBoxing, useVarargs, Warner.noWarnings) == null) {
+	    //if (types.isSameType(memberType, expected)) {
+	    //return sym;
+	    //}
+	    Type tx;
+            if ((tx =rawInstantiate(env, sym, memberType, argtypes, typeargtypes,
+				    allowBoxing, useVarargs, Warner.noWarnings)) == null) {
                 // inapplicable
 		//System.err.println("raw instantiate failed: "+ sym);
 		//System.err.println("argtypes: "+argtypes);
@@ -767,6 +768,10 @@ public class F3Resolve {
                 default: return bestSoFar;
                 }
             }
+	    if (allowBoxing) { // hack
+		sym = sym.clone(sym.owner);
+		sym.type = reader.translateType(tx);
+	    }
         } catch (Infer.NoInstanceException ex) {
 	    //System.err.println("raw instantiate exception: "+ sym);
 	    //System.err.println("argtypes: "+argtypes);
@@ -1737,6 +1742,12 @@ public class F3Resolve {
                                  F3Env<F3AttrContext> env,
                                  Type left,
                                  Type right) {
+	if (left instanceof MethodType) {
+	    left = syms.makeFunctionType(left.asMethodType());
+	}
+	if (right instanceof MethodType) {
+	    right = syms.makeFunctionType(right.asMethodType());
+	}
         // Duration operator overloading
         if (true ||(types.isSameType(left, syms.f3_DurationType) ||
                     types.isSameType(right, syms.f3_DurationType))) {
@@ -1773,6 +1784,8 @@ public class F3Resolve {
                     dur = left;
                 }
                 */
+		System.err.println("resolving * in "+dur);
+		
                 res =  resolveMethod(pos,  env,
                                      defs.mul_DurationMethodName,
                                      dur,

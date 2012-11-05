@@ -42,6 +42,11 @@ public class FunctionType extends Type.ClassType {
 	}
 	return mtype;
     }
+
+    public Object clone() {
+	Thread.currentThread().dumpStack();
+	return super.clone();
+    }
     
     public FunctionType(Type outer, 
 			List<Type> typarams, 

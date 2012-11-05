@@ -228,6 +228,22 @@ public class F3ClassReader extends ClassReader {
         return ts;
     }
 
+    Type asMethodType(Type type) {
+	if (type instanceof ClassType) {
+	    TypeSymbol tsym = type.tsym;
+	    final ClassType ctype = (ClassType) type;
+	    Name flatname = ((ClassSymbol) tsym).flatname;
+	    if (flatname.startsWith(functionClassPrefixName)
+		&& flatname != functionClassPrefixName) {
+		return translateType(type);
+	    }
+	}
+	if (type instanceof MethodType) {
+	    return type.asMethodType();
+	}
+	return null;
+    }
+
     /** Translate raw JVM type to F3 type. */
     Type translateType (Type type) {
         if (type == null)
@@ -287,9 +303,11 @@ public class F3ClassReader extends ClassReader {
                 if (tsym instanceof ClassSymbol) {
                     final ClassType ctype = (ClassType) type;
                     Name flatname = ((ClassSymbol) tsym).flatname;
+		    //System.err.println("flatname="+flatname);
                     if (flatname.startsWith(functionClassPrefixName)
                         && flatname != functionClassPrefixName) {
                         t = ((F3Symtab) syms).makeFunctionType(translateTypes(ctype.typarams_field));
+			//System.err.println("t="+t);
                         break;
                     }
                     if (tsym.name.endsWith(defs.mixinClassSuffixName)) {
