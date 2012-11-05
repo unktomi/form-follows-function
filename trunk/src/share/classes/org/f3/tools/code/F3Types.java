@@ -1056,7 +1056,7 @@ public class F3Types extends Types {
 	}
 
 	boolean needsParen(List<Type> args) {
-	    return args.size() > 1 ||
+	    return args.size() == 0 || args.size() > 1 ||
 	    args.size() == 1 && ((args.head instanceof FunctionType) ||
 				 (args.head.getTypeArguments().size() > 0));
 	}
@@ -1097,6 +1097,13 @@ public class F3Types extends Types {
 	    }
 	    buffer.append("from ");
             List<Type> args = t.getParameterTypes();
+	    /*
+	    if ((t.tsym.flags() & Flags.STATIC) == 0) {
+		ListBuffer<Type> buf = ListBuffer.lb();
+		buf.appendList(args);
+		args = buf.toList();
+	    }
+	    */
 	    if (needsParen(args)) {
 		buffer.append("(");
 	    }

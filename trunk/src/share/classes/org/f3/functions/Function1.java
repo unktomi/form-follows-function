@@ -31,7 +31,42 @@ public class Function1<R, A1> extends Function<R>
     implements Monad<Function1, R> // , Comonad<Function1, R>
 {
 
-    public <B> Function1<R, B> composeWith(final Function1<? extends A1, B> f) {
+    public Function1<? extends Function1<?,?>, Function1<? extends Function1<?, ?>, 
+					                 ? super Function1<? extends R, ? super A1>>>
+	add(final Function1<R, A1> n0) 
+    {
+	final Function1<R, A1> n = (Function1<R, A1>)n0;
+	final Function1<R, A1> m = this;
+	return new Function1<Function1<?,?>, 
+	                     Function1<? extends Function1<?, ?>, 
+	                               ? super Function1<? extends R, ? super A1>>>() 
+	{
+	    public Function1<?, ?> invoke(final Function1<? extends Function1<?, ?>, 
+					                  ? super Function1<? extends R, ? super A1>> f) 
+	    {
+		final Function1 a = f.invoke(m);
+		final Function1 b = f.invoke(n);
+		return a.mul(b);
+	    }
+	    public String toString() {
+		return "("+m +") + ("+ n + ")";
+	    }
+	};
+    }
+
+    public <B> Function1<? extends R, ? super B> mul(final Function1<? extends A1, ? super B> f) {
+	final Function1<R, A1> self = this;
+	return new Function1<R, B>() {
+	    public R invoke(final B b) {
+		return self.invoke(f.invoke(b));
+	    }
+	    public String toString() {
+		return "("+self +") * ("+ f + ")";
+	    }
+	};
+    }
+    
+    public <B> Function1<? extends R, ? super B> composeWith(final Function1<? extends A1, ? super B> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<R, B>() {
 	    public R invoke(final B b) {
@@ -40,7 +75,7 @@ public class Function1<R, A1> extends Function<R>
 	};
     }
 
-    public <B> Function1<B, A1> andThen(final Function1<? extends B, ? super R> f) {
+    public <B> Function1<? extends B, ? super A1> andThen(final Function1<? extends B, ? super R> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<B, A1>() {
 	    public B invoke(final A1 a1) {
@@ -97,6 +132,7 @@ public class Function1<R, A1> extends Function<R>
     // Get the implementor to invoke the function.
     // Don't override this.
     public Object invoke$(Object arg1, Object arg2, Object[] rargs) {
+	System.err.println("this="+this+", arg1="+arg1);
         return invoke((A1)arg1);
     }
 
