@@ -261,7 +261,7 @@ $PREFIX:{T|
     }
 
     public <B> Sequence<B> coextract(B b) {
-	return Sequences.singleton(TypeInfo.<B>.getTypeInfo(), b);
+	return Sequences.singleton(TypeInfo.<B>getTypeInfo(), b);
     }
 
     public T extract() {
