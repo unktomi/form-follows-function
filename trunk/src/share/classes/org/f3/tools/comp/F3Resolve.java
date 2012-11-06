@@ -1784,7 +1784,7 @@ public class F3Resolve {
                     dur = left;
                 }
                 */
-		System.err.println("resolving * in "+dur);
+		//System.err.println("resolving * in "+dur);
 		
                 res =  resolveMethod(pos,  env,
                                      defs.mul_DurationMethodName,
