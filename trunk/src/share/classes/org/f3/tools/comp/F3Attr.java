@@ -337,14 +337,16 @@ public class F3Attr implements F3Visitor {
 						  localResult.getTypeArguments(), typeArgTypes); 
 		    }
 		    if (localResult instanceof FunctionType) {
-			FunctionType ft = (FunctionType)localResult;
-			if (ft.typeArgs != null && ft.typeArgs.size() > 0) {
-			    localResult = ft.asMethodOrForAll();
-			    localResult = types.subst(localResult, localResult.getTypeArguments(), typeArgTypes);
-			    localResult = syms.asFunctionType(localResult);
-			} else { 
-			    localResult = syms.makeFunctionType(typeArgTypes, 
-								(MethodType)localResult.asMethodType());
+			if (false) {
+			    FunctionType ft = (FunctionType)localResult;
+			    if (ft.typeArgs != null && ft.typeArgs.size() > 0) {
+				localResult = ft.asMethodOrForAll();
+				localResult = types.subst(localResult, localResult.getTypeArguments(), typeArgTypes);
+				localResult = syms.asFunctionType(localResult);
+			    } else { 
+				localResult = syms.makeFunctionType(typeArgTypes, 
+								    (MethodType)localResult.asMethodType());
+			    }
 			}
 		    } else if (localResult instanceof ClassType) {
 			localResult = newClassType(localResult.getEnclosingType(),
@@ -3979,6 +3981,10 @@ public class F3Attr implements F3Visitor {
 				Type.noType);
 	    System.err.println("t="+t);
 	    System.err.println("targs="+targs);
+	    if (ta.typeArgs != null) {
+		t = new ForAll(targs, t);
+	    }
+	    System.err.println("t'="+t);
 	    ta.tsym.type = t;
 	    result = t;
 	    tree.type = result;
