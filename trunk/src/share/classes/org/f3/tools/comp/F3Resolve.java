@@ -769,8 +769,13 @@ public class F3Resolve {
                 }
             }
 	    if (allowBoxing) { // hack
-		sym = sym.clone(sym.owner);
-		sym.type = reader.translateType(tx);
+		if (memberType instanceof ForAll) {
+		    sym = sym.clone(sym.owner);
+		    sym.type = reader.translateType(tx);
+		    //System.err.println("instantiated: "+ sym.type);
+		    //System.err.println("memberType: "+ memberType);
+		    //System.err.println("tx: "+ tx);
+		}
 	    }
         } catch (Infer.NoInstanceException ex) {
 	    //System.err.println("raw instantiate exception: "+ sym);
@@ -1626,36 +1631,60 @@ public class F3Resolve {
      *  @param argtypes  The types of the operands.
      */
     Symbol resolveOperator(DiagnosticPosition pos, F3Tag optag,
-                           F3Env<F3AttrContext> env, List<Type> argtypes) {
-	Symbol sym = resolveOperator2(pos, optag, env, argtypes);
-	if (sym.kind != MTH) {
-	    sym = resolveOperator1(pos, optag, env, argtypes);
+                          F3Env<F3AttrContext> env, List<Type> argtypes) {
+	Symbol sym;
+	Name name = treeinfo.operatorName(optag);
+	if (false) {
+	    sym = resolveOperator2(pos, optag, env, argtypes);
+	    if (sym.kind != MTH) {
+		sym = resolveOperator1(pos, optag, env, argtypes);
+	    }
+	} else {
+            sym = findMethod(env, syms.predefClass.type, name, argtypes,
+                             null, false, false, true);
+	    if (boxingEnabled && sym.kind != MTH) {
+		sym = findMethod(env, syms.predefClass.type, name, argtypes,
+				 null, true, false, true);
+	    }
+	    Symbol defSym = sym;
+	    sym = resolveOperator2(pos, optag, env, argtypes);
+	    if (sym.kind != MTH) {
+		sym = resolveOperator1(pos, optag, env, argtypes);
+	    }
+	    if (sym.kind != MTH) {
+		sym = defSym;
+	    }
 	}
-        Name name = treeinfo.operatorName(optag);
-
         return access(sym, pos, env.enclClass.sym.type, name,
                       false, argtypes, null);
     }
 
     Symbol resolveOperator1(DiagnosticPosition pos, F3Tag optag,
-                           F3Env<F3AttrContext> env, List<Type> argtypes) {
+			    F3Env<F3AttrContext> env, List<Type> argtypes) {
         Name name = treeinfo.operatorName(optag);
-        Symbol sym = findMethod(env, syms.predefClass.type, name, argtypes,
-                                null, false, false, true);
-        if (boxingEnabled && sym.kind >= WRONG_MTHS)
+        Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
+                                null, false, false, false);
+	//System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
+        if (boxingEnabled && sym.kind >= WRONG_MTHS) {
             sym = findMethod(env, syms.predefClass.type, name, argtypes,
                              null, true, false, true);
+	    //System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
+	}
+	
 	return sym;
     }
 
     Symbol resolveOperator2(DiagnosticPosition pos, F3Tag optag,
                            F3Env<F3AttrContext> env, List<Type> argtypes) {
         Name name = treeinfo.operatorName2(optag);
-        Symbol sym = findMethod(env, syms.predefClass.type, name, argtypes,
-                                null, false, false, true);
-        if (boxingEnabled && sym.kind >= WRONG_MTHS)
+        Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
+                                null, false, false, false);
+	//System.err.println("resolveOperator2: "+name+": "+argtypes+": "+sym);
+        if (boxingEnabled && sym.kind != MTH) {
             sym = findMethod(env, syms.predefClass.type, name, argtypes,
-                             null, true, false, false);
+                             null, true, false, true);
+	    //System.err.println("resolveOperator2.default: "+name+": "+argtypes+": "+sym);
+	}
 	return sym;
     }
 
@@ -1756,8 +1785,8 @@ public class F3Resolve {
             switch (optag) {
             case PLUS:
                 res = resolveMethod(pos,  env,
-                                     defs.add_DurationMethodName,
-                                     dur, List.of(right));
+				    defs.add_DurationMethodName,
+				    dur, List.of(right));
                 if (res == null || res.kind != MTH) {
                     res =  resolveMethod(pos,  env,
                                          names.fromString("+"),

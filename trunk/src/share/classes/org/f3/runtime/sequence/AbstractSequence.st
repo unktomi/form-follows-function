@@ -179,6 +179,10 @@ $PREFIX:{T|
         return obj instanceof Sequence && Sequences.isEqual(this, (Sequence<T>) obj);
     }
 
+    public Sequence<T> reverse() {
+        return Sequences.reverse(this);
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;

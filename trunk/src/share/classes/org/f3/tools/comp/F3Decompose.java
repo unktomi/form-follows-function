@@ -560,6 +560,7 @@ public class F3Decompose implements F3Visitor {
             shredUnlessIdent(tree.rhs) :  // If cut-off operation, preface code must be evaluated separately
             decomposeComponent(tree.rhs);
         F3Binary res = f3make.at(tree.pos).Binary(tag, lhs, rhs);
+	res.methodName = tree.methodName;
         res.operator = tree.operator;
         result = res;
     }

@@ -303,6 +303,8 @@ public class F3Defs {
     /**
      * Duration method Names
      */
+    final Name and_DurationMethodName;
+    final Name or_DurationMethodName;
     final Name add_DurationMethodName;
     final Name sub_DurationMethodName;
     final Name mul_DurationMethodName;
@@ -604,6 +606,8 @@ public class F3Defs {
         final Name.Table names = Name.Table.instance(context);
 
         // Initialize Duration method names
+        and_DurationMethodName = names.fromString("and");
+        or_DurationMethodName = names.fromString("or");
         add_DurationMethodName = names.fromString("add");
         sub_DurationMethodName = names.fromString("sub");
         mul_DurationMethodName = names.fromString("mul");

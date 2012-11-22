@@ -27,6 +27,7 @@ import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
 
 import com.sun.tools.mjavac.code.Symbol;
+import com.sun.tools.mjavac.util.Name;
 
 /**
  * A binary operation.
@@ -37,11 +38,12 @@ public class F3Binary extends F3Expression implements BinaryTree {
     public F3Expression lhs;
     public F3Expression rhs;
     public Symbol operator;
+    public Name methodName;
 
     protected F3Binary(F3Tag opcode,
-            F3Expression lhs,
-            F3Expression rhs,
-            Symbol operator) {
+		       F3Expression lhs,
+		       F3Expression rhs,
+		       Symbol operator) {
         this.opcode = opcode;
         this.lhs = lhs;
         this.rhs = rhs;

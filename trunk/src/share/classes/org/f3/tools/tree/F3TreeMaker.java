@@ -441,6 +441,11 @@ public class F3TreeMaker implements F3TreeFactory {
 		    TypeVar(Ident(t.tsym.name), Cardinality.SINGLETON, bk, Type(bound));
 		exp.setType(t);
 		return exp;
+	    } else {
+		F3Expression exp = 
+		    TypeVar(Ident(t.tsym.name), Cardinality.SINGLETON, BoundKind.EXTENDS, null);
+		exp.setType(t);
+		return exp;
 	    }
 	} 
 	//t = types.erasure(types.normalize(t));
@@ -541,7 +546,6 @@ public class F3TreeMaker implements F3TreeFactory {
 		    }
 		}
 		break;
-
             case TYPEVAR:
 		{
 		    tp = Ident(((TypeVar)t).tsym.name);
@@ -1206,7 +1210,7 @@ public class F3TreeMaker implements F3TreeFactory {
 	    } else if (name instanceof F3Select) {
 		((F3Select)name).typeArgs = typeVars;
 	    } else {
-		System.err.println("unhandled case: "+name);
+		System.err.println("unhandled Ident case: "+name);
 	    }
 	}
 	return name;

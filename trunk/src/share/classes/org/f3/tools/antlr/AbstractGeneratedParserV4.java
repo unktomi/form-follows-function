@@ -212,7 +212,7 @@ public abstract class AbstractGeneratedParserV4 extends Parser {
         tokenMap.put("ON", "on");
         tokenMap.put("OR", "or");
         tokenMap.put("REPLACE", "replace");
-        tokenMap.put("REVERSE", "reverse");
+	//        tokenMap.put("REVERSE", "reverse");
         tokenMap.put("STEP", "step");
         tokenMap.put("THEN", "then");
         tokenMap.put("TYPEOF", "typeof");
@@ -564,7 +564,7 @@ public abstract class AbstractGeneratedParserV4 extends Parser {
         tokenClassMap[v4Parser.ON]                  = TokenClassification.KEYWORD;
         tokenClassMap[v4Parser.OR]                  = TokenClassification.KEYWORD;
         tokenClassMap[v4Parser.REPLACE]             = TokenClassification.KEYWORD;
-        tokenClassMap[v4Parser.REVERSE]             = TokenClassification.KEYWORD;
+	//        tokenClassMap[v4Parser.REVERSE]             = TokenClassification.KEYWORD;
         tokenClassMap[v4Parser.STEP]                = TokenClassification.KEYWORD;
         tokenClassMap[v4Parser.THEN]                = TokenClassification.KEYWORD;
         tokenClassMap[v4Parser.TYPEOF]              = TokenClassification.KEYWORD;
