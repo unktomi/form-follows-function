@@ -401,6 +401,7 @@ public class F3Lower implements F3Visitor {
             lowerExpr(tree.rhs, rhsType);
         F3Binary res = m.at(tree.pos).Binary(tree.getF3Tag(), lhs, rhs);
         res.operator = tree.operator;
+	res.methodName = tree.methodName;
         result = res.setType(tree.type);
     }
 
@@ -833,6 +834,7 @@ public class F3Lower implements F3Visitor {
 
         F3Binary binary = (F3Binary)m.at(tree.pos).Binary(opTag, oldVal, m.at(tree.pos).Literal(opType.tag, 1).setType(opType));
         binary.operator = rs.resolveBinaryOperator(tree.pos(), opTag, env, opType, opType);
+	binary.methodName = binary.operator.name;
         binary.setType(binary.operator.type.asMethodType().getReturnType());
         F3Expression incDecStat = (F3Expression)m.at(tree.pos).Assign(varRef, binary).setType(opType);
 

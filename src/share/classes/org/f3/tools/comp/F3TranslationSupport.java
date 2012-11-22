@@ -429,7 +429,7 @@ public abstract class F3TranslationSupport {
                 return make.at(diagPos).TypeArray(makeTypeTreeInner(diagPos,types.elemtype(t), makeIntf));
             }
             default: {
-		if (t instanceof TypeVar) {
+		if (false && (t instanceof TypeVar)) {
 		    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
 			return makeTypeTreeInner(diagPos, ((TypeVar)t).getUpperBound(), makeIntf);
 		    }

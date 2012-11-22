@@ -1530,7 +1530,17 @@ public abstract class F3AbstractTranslation
 
         JCExpression fullExpression(JCExpression mungedToCheckTranslated) {
             JCExpression tMeth = Select(mungedToCheckTranslated, methodName());
-            JCMethodInvocation app = m().Apply(translateExprs(typeargs), tMeth, determineArgs());
+            ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+            for (F3Expression exp : typeargs) {
+		Type argType = exp.type;
+                Type paramType = types.boxedTypeOrType(argType);
+		JCExpression t = makeType(paramType);
+		System.err.println("t="+t.getClass()+": "+t + " from "+exp.type);
+                typeArgs.append(t);
+            }
+            JCMethodInvocation app = m().Apply(typeArgs.toList(),
+					       //translateExprs(typeargs), 
+					       tMeth, determineArgs());
 
             JCExpression full = null;
             if (callBound) {
@@ -2524,13 +2534,19 @@ public abstract class F3AbstractTranslation
         final Type durationNumericType = syms.f3_NumberType;
 
         JCExpression durationOp() {
+	    //System.err.println("tree="+tree);
+	    //System.err.println("methodName="+tree.methodName);
             switch (tree.getF3Tag()) {
+                case AND:
+                    return op(lhs(), tree.methodName, rhs());
+                case OR:
+                    return op(lhs(), tree.methodName, rhs());
                 case PLUS:
-                    return op(lhs(), defs.add_DurationMethodName, rhs());
+                    return op(lhs(), tree.methodName, rhs());
                 case MINUS:
-                    return op(lhs(), defs.sub_DurationMethodName, rhs());
+                    return op(lhs(), tree.methodName, rhs());
                 case DIV:
-                    return op(lhs(), defs.div_DurationMethodName, rhs());
+                    return op(lhs(), tree.methodName, rhs());
                               //rhs(isDuration(rhsType)? null : durationNumericType));
                 case MUL: {
                     // lhs.mul(rhs);
@@ -2550,16 +2566,16 @@ public abstract class F3AbstractTranslation
                     */
                     rcvr = lhs();
                     arg = rhs();
-                    return op(rcvr, defs.mul_DurationMethodName, arg);
+                    return op(rcvr, tree.methodName, arg);
                 }
                 case LT:
-                    return op(lhs(), defs.lt_DurationMethodName, rhs());
+                    return op(lhs(), tree.methodName, rhs());
                 case LE:
-                    return op(lhs(), defs.le_DurationMethodName, rhs());
+                    return op(lhs(), tree.methodName, rhs());
                 case GT:
-                    return op(lhs(), defs.gt_DurationMethodName, rhs());
+                    return op(lhs(), tree.methodName, rhs());
                 case GE:
-                    return op(lhs(), defs.ge_DurationMethodName, rhs());
+                    return op(lhs(), tree.methodName, rhs());
             }
             throw new RuntimeException("Internal Error: bad Duration operation");
         }
@@ -4388,7 +4404,11 @@ public abstract class F3AbstractTranslation
 
     public void visitTypeClass(F3TypeClass that) {
 	//System.err.println(that);
-        processedInParent();
+        //processedInParent();
+	Thread.currentThread().dumpStack();
+	//result = new StatementsResult(that, makeType(that));
+	System.err.println(that);
+	result = new StatementsResult(that, List.<JCStatement>nil());
     }
 
     public void visitTypeVar(F3TypeVar that) {

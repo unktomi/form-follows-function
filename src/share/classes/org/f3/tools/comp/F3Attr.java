@@ -369,7 +369,7 @@ public class F3Attr implements F3Visitor {
 				localResult = tc;
 			    }
 			} else {
-			    System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+			    //System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
 			}
 		    }
 		    tree.type = localResult;
@@ -3364,6 +3364,8 @@ public class F3Attr implements F3Visitor {
         
         Symbol sym = attribBinop(tree.pos(), tree.getF3Tag(), left, right, env);
         Type owntype = syms.errType;
+	tree.methodName = sym.name;
+	System.err.println("attr tree.methodName="+tree.methodName);
         if (sym instanceof OperatorSymbol) {
             // Find operator.
             Symbol operator = tree.operator = sym;
@@ -3407,7 +3409,6 @@ public class F3Attr implements F3Visitor {
                             types.toF3String(right));
                     }
                 }
-
                 chk.checkDivZero(tree.rhs.pos(), operator, right);
             }
         } else {
@@ -3876,15 +3877,14 @@ public class F3Attr implements F3Visitor {
         // when pkind is VAR
         //
         Type seqType = attribTree(seq, env, pkind, Type.noType, Sequenceness.PERMITTED);
-        
-        attribExpr(tree.getIndex(), env, syms.f3_IntegerType);
-        chk.checkSequenceOrArrayType(seq.pos(), seqType);
-        Type owntype = seqType.tag == ARRAY ?
-            types.elemtype(seqType) :
-            types.elementType(seqType);
-        
-        result = check(tree, owntype, VAR, pkind, pt, pSequenceness);
 
+	attribExpr(tree.getIndex(), env, syms.f3_IntegerType);
+	chk.checkSequenceOrArrayType(seq.pos(), seqType);
+	Type owntype = seqType.tag == ARRAY ?
+	    types.elemtype(seqType) :
+	    types.elementType(seqType);
+	
+	result = check(tree, owntype, VAR, pkind, pt, pSequenceness);
     }
 
     //@Override
@@ -3989,7 +3989,7 @@ public class F3Attr implements F3Visitor {
 	    result = t;
 	    tree.type = result;
 	} else {
-	    System.err.println("unhandled case: "+ tree);
+	    System.err.println("unhandled case any: "+ tree);
 	}
     }
 

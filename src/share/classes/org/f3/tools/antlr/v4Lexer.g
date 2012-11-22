@@ -165,7 +165,7 @@ PUBLIC_READ     : 'public-read';
 REPLACE         : 'replace';
 RETURN          : 'return';
 RETURNS         : 'returns';
-REVERSE         : 'reverse';
+//REVERSE         : 'reverse';
 SIZEOF          : 'sizeof';
 STATIC          : 'static';
 STEP            : 'step';

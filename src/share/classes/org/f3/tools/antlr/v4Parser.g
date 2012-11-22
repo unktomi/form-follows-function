@@ -4174,7 +4174,7 @@ unaryOps
     | SIZEOF        { $unOp = F3Tag.SIZEOF; }
     | PLUSPLUS      { $unOp = F3Tag.PREINC; }
     | SUBSUB        { $unOp = F3Tag.PREDEC; }
-    | REVERSE       { $unOp = F3Tag.REVERSE; }
+    //| REVERSE       { $unOp = F3Tag.REVERSE; }
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.
@@ -7179,7 +7179,7 @@ reservedWord
     | MIXIN         | MOD       | NATIVEARRAY   | NEW | INTERFACE
     | NOT           | NULL      | OR            | OVERRIDE
     | PACKAGE       | PRIVATE   | PROTECTED     | PUBLIC
-    | PUBLIC_INIT   | PUBLIC_READ | RETURN      | REVERSE
+    | PUBLIC_INIT   | PUBLIC_READ | RETURN      //| REVERSE
     | SIZEOF        | STATIC    | SUPER         | THEN
     | THIS          | THROW     | TRUE          | TRY
     | TYPEOF        | VAR       | WHILE
