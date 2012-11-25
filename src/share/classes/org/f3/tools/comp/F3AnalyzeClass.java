@@ -1470,6 +1470,7 @@ class F3AnalyzeClass {
             }
             // Class loaded from .class file.
             if (cSym.members() != null) {
+		System.err.println("LOADED FROM CLASS FILE: "+cSym);
                 // Scope information is held in reverse order of declaration.
                 ListBuffer<Symbol> reversed = ListBuffer.lb();
                 for (Entry e = cSym.members().elems; e != null && e.sym != null; e = e.sibling) {
@@ -1515,7 +1516,8 @@ class F3AnalyzeClass {
             // Now analyze interfaces.
             for (Type supertype : cSym.getInterfaces()) {
                 ClassSymbol iSym = (ClassSymbol) supertype.tsym;
-                analyzeClass(iSym, isImmediateSuper && isMixinClass, needsCloning);
+		System.err.println("analyzing: " +iSym);
+                analyzeClass(iSym, false, true);
             }
 
             // Record the superclass in top down order.
@@ -1593,8 +1595,8 @@ class F3AnalyzeClass {
         // Make a distinction between superclasses and mixins.
         if (isMixinClass(cSym)) {
             // Record immediate mixin classes in left to right order.
-	    //System.err.println("mixin class in: "+ currentClassSym.type);
-	    //System.err.println("mixin class: "+ cSym.type);
+	    System.err.println("mixin class in: "+ currentClassSym.type);
+	    System.err.println("mixin class: "+ cSym.type);
             if (isImmediateSuper) {
                 immediateMixins.append(cSym);
             }
@@ -1605,7 +1607,6 @@ class F3AnalyzeClass {
             if (isImmediateSuper) {
                 superClassSym = cSym;
             }
-
             // Record all superclasses in top down order.
             superClasses.append(cSym);
         }
@@ -1632,6 +1633,7 @@ class F3AnalyzeClass {
         long flags = sym.flags();
         // Only look at real instance methods.
 	Type memberType = types.memberType(currentClassSym.type, sym);
+	MethodSymbol origSym = sym;
 	if (memberType != sym.type) {
 	    MethodSymbol memberSym = 
 		new MethodSymbol(sym.flags_field, sym.name, memberType, currentClassSym);
@@ -1651,16 +1653,21 @@ class F3AnalyzeClass {
             // Create new info.
             FuncInfo newMethod = newIsMixin ? new MixinFuncInfo(sym) :  new SuperClassFuncInfo(sym);
 
-	    System.err.println("csym="+cSym);
-	    System.err.println("current="+currentClassSym);
-	    System.err.println("nameSig="+nameSig);
-	    System.err.println("old="+oldMethod);
-	    System.err.println("new="+newMethod);
+	    if (!nameSig.contains("$")) {
+		System.err.println("csym="+cSym);
+		System.err.println("sym.owner="+sym.owner);
+		System.err.println("current="+currentClassSym);
+		System.err.println("nameSig="+nameSig);
+		System.err.println("old="+oldMethod);
+		System.err.println("new="+newMethod);
+		System.err.println("needsCloning: "+ needsCloning);
+		System.err.println("private: "+ (sym.flags() & Flags.PRIVATE));
+	    }
 
             // Are we are still cloning this far up the hierarchy?
             if (needsCloning && (sym.flags() & Flags.PRIVATE) == 0) {
                 // If the method didn't occur before or is a real method overshadowing a prior mixin.
-                if (((oldMethod == null || sym.owner != cSym) || (oldIsMixin && !newIsMixin)) && (sym.owner == cSym)) {
+                if (((oldMethod == null || sym.owner != cSym) || (oldIsMixin && !newIsMixin)) && (oldMethod == null || sym.owner == cSym)) {
                       
                       Name varName = getAccessorVarName(sym.name);
                       if (varName != null) {
@@ -1671,6 +1678,8 @@ class F3AnalyzeClass {
                           }
                       } else {
                           // Add to the methods needing $impl dispatch.
+			  System.err.println("needs dispatch: "+newMethod);
+			  sym.owner = origSym.owner;
                           needDispatchMethods.put(nameSig, newMethod);
                       }
                   }

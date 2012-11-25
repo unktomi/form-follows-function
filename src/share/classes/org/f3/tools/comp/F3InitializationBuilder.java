@@ -2858,7 +2858,7 @@ however this is what we need */
             
             boolean hasFuncs = !invokeCases.isEmpty();
             boolean hasJavaSuperClass = analysis.getF3SuperClassSym() == null;
-            boolean hasMixins = !isScript() && !isMixinClass() && !analysis.getImmediateMixins().isEmpty();
+            boolean hasMixins = !isScript() && !isMixinClass() && !analysis.getAllMixins().isEmpty();
             
             return hasFuncs || hasJavaSuperClass || hasMixins || isMixinClass();
         }
@@ -3142,7 +3142,7 @@ however this is what we need */
             final List<JCTree> invokeCases = getCurrentClassDecl().invokeCases(isScript());
             HashMap<Name, Integer> depMap = getDepMap(varInfos, updateMap);
             final boolean useMixins = !isScript() && !isMixinClass();
-            List<ClassSymbol> mixinClasses = useMixins ? analysis.getImmediateMixins() : null;
+            List<ClassSymbol> mixinClasses = useMixins ? analysis.getAllMixins() : null;
             boolean useConstants = analysis.isFirstTierNoMixins() || isMixinClass();
             
             makeApplyDefaultsMethod(varInfos, varCount);
