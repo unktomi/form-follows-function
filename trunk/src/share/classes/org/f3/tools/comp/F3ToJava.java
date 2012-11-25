@@ -395,7 +395,8 @@ public class F3ToJava extends F3AbstractTranslation {
 							  model.interfaceName, 
 							  translateTypeParams(tree, tree.typeArgTypes),
 							  null,
-							  implementing, model.iDefinitions);
+							  implementing, 
+							  model.iDefinitions);
         
                     cInterface.sym = makeClassSymbol(mods.flags, cInterface.name, tree.sym.owner);
                     
