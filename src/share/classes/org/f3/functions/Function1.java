@@ -132,7 +132,7 @@ public class Function1<R, A1> extends Function<R>
     // Get the implementor to invoke the function.
     // Don't override this.
     public Object invoke$(Object arg1, Object arg2, Object[] rargs) {
-	System.err.println("this="+this+", arg1="+arg1);
+	//System.err.println("this="+this+", arg1="+arg1);
         return invoke((A1)arg1);
     }
 

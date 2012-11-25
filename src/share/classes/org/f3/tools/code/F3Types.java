@@ -133,10 +133,12 @@ public class F3Types extends Types {
 	if (isMonadType(type)) {
 	    return type;
 	}
-	for (Type st: supertypes(type)) {
-	    Type t = getMonad(st);
-	    if (t != null) {
-		return t;
+	for (Type st: supertypesClosure(type)) {
+	    if (st != type) {
+		Type t = getMonad(st);
+		if (t != null) {
+		    return t;
+		}
 	    }
 	}
 	return null;
@@ -965,6 +967,7 @@ public class F3Types extends Types {
                 case DOUBLE: s = "Double"; break;
                 case CHAR: s = "Character"; break;
                 case BOOLEAN: s = "Boolean"; break;
+                case VOID: s = "()"; break;
                 default: s = t.toString(); break;
             }
             buffer.append(s);
@@ -1349,7 +1352,7 @@ public class F3Types extends Types {
                 return buf.toList();
             }
         }
-	if (t.isPrimitive()) {
+	if (t == null || t.isPrimitive()) {
 	    return t;
 	}
 	//System.err.println("norm visit: "+ t.getClass() +" "+t);
@@ -1478,7 +1481,6 @@ public class F3Types extends Types {
                 return buf.toList();
             }
     }
-
 
     public String toSignature(Type t) {
         return writer.typeSig(t).toString();

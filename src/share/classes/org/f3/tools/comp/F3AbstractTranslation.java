@@ -1925,7 +1925,7 @@ public abstract class F3AbstractTranslation
                     addAccessAnnotationModifiers(diagPos, tree.mods.flags, m().Modifiers(flags)),
                     functionName(sym, isInstanceFunctionAsStaticMethod, isBound),
                     makeReturnTypeTree(diagPos, sym, isBound),
-                    m().TypeParams(targs),
+                    translateTypeParams(tree, targs),
                     params,
                     m().Types(mtype.getThrownTypes()), // makeThrows(diagPos), //
                     body,

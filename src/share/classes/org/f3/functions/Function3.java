@@ -31,7 +31,7 @@ public class Function3<R, A1, A2, A3> extends Function<R> {
     public Function3(final F3Object implementor, final int number) {
         super(implementor, number);
     }
-    
+
     // Get the implementor to invoke the function.
     // Don't override this.
     public Object invoke$(Object arg1, Object arg2, Object[] rargs) {

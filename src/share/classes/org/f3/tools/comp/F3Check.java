@@ -1784,11 +1784,11 @@ public class F3Check {
         boolean declaredOverride = (m.flags() & OVERRIDE) != 0;
         if (doesOverride) {
             if (!declaredOverride && (m.flags() & (Flags.SYNTHETIC|Flags.STATIC)) == 0) {
-                log.warning(tree.pos(), MsgSym.MESSAGE_F3_SHOULD_BE_DECLARED_OVERRIDE, m);
+                log.warning(tree.pos(), MsgSym.MESSAGE_F3_SHOULD_BE_DECLARED_OVERRIDE, types.toF3String(m.type));
             }
         } else {
             if (declaredOverride) {
-                log.error(tree.pos(), MsgSym.MESSAGE_F3_DECLARED_OVERRIDE_DOES_NOT, rs.kindName(m), m);
+                log.error(tree.pos(), MsgSym.MESSAGE_F3_DECLARED_OVERRIDE_DOES_NOT, m.name/*rs.kindName(m)*/, types.toF3String(m.type));
             }
         }
     }

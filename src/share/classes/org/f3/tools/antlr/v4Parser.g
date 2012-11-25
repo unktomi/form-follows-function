@@ -1240,7 +1240,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
 
         (
             (
-                  { false }?=> n2=nameAll
+                    (nameAll)=> n2=nameAll
                     {
                         if ($n2.inError || $n2.value == null) {
                         
@@ -6335,9 +6335,13 @@ typeName
 		    }
                 }
         )
-    | LPAREN typeparens RPAREN  // Allows cardinality coherence, using nested paren parsing trick
-    
-        { $value = $typeparens.value; }
+    | LPAREN 
+           ((typeparens  // Allows cardinality coherence, using nested paren parsing trick
+            { $value = $typeparens.value; }) 
+            | { 
+                  $value = F.at(rPos).Ident(names.fromString("Void"));
+             })  
+    RPAREN
     ;
     
 
@@ -7140,7 +7144,7 @@ nameAll
 //
 allWords
     : keyword
-    | reservedWord
+    | reservedWord | STAR | PLUS | SLASH | SUB | GT | LT | LE | GE | EQ | NE
     ;
     
 // ---------------------
