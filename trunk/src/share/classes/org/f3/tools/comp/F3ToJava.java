@@ -45,7 +45,7 @@ import static org.f3.tools.comp.F3Defs.*;
 import org.f3.tools.comp.F3InitializationBuilder.*;
 import org.f3.tools.tree.*;
 import static org.f3.tools.comp.F3AbstractTranslation.Yield.*;
-
+import com.sun.tools.mjavac.code.Type.*;
 /**
  * Translate F3 ASTs into Java ASTs
  *
@@ -121,6 +121,7 @@ public class F3ToJava extends F3AbstractTranslation {
         attrEnv.translatedToplevel = (JCCompilationUnit)((SpecialResult)translateToSpecialResult(attrEnv.toplevel)).tree();
         attrEnv.translatedToplevel.endPositions = attrEnv.toplevel.endPositions;
     }
+
 
     /**
      * For special cases where the expression may not be fully attributed.
@@ -384,24 +385,22 @@ public class F3ToJava extends F3AbstractTranslation {
 
             // build the list of implemented interfaces
             List<JCExpression> implementing = model.interfaces;
-
             // include the interface only once
             if (!tree.hasBeenTranslated) {
                 if (isMixinClass) {
                     JCModifiers mods = m().Modifiers(Flags.PUBLIC | Flags.INTERFACE);
                     mods = addAccessAnnotationModifiers(diagPos, tree.mods.flags, mods);
-
+		    //System.err.println("generating: "+ model.interfaceName);
                     JCClassDecl cInterface = m().ClassDef(mods,
 							  model.interfaceName, 
-							  tree.typeArgTypes != null ? m().TypeParams(tree.typeArgTypes) : 
-							     List.<JCTypeParameter>nil(), 
+							  translateTypeParams(tree, tree.typeArgTypes),
 							  null,
 							  implementing, model.iDefinitions);
         
                     cInterface.sym = makeClassSymbol(mods.flags, cInterface.name, tree.sym.owner);
                     
                     membersToSymbol(cInterface);
-                    
+                    System.err.println("generated: "+ cInterface);
                     prependToDefinitions.append(cInterface); // prepend to the enclosing class or top-level
                 }
                 tree.hasBeenTranslated = true;
@@ -422,29 +421,14 @@ public class F3ToJava extends F3AbstractTranslation {
 
             JCModifiers classMods = make.at(diagPos).Modifiers(flags);
             classMods = addAccessAnnotationModifiers(diagPos, tree.mods.flags, classMods);
-
-            // make the Java class corresponding to this F3 class, and return it
-	    //System.err.println("model.supertype="+model.superType);
-	    //System.err.println("translated="+(model.superType == null ? null : makeType(model.superType, false)));
-	    ListBuffer<Type> targs = new ListBuffer<Type>();
-	    if (tree.typeArgTypes != null) {
-		for (Type ta: tree.typeArgTypes) {
-		    if (ta.getTypeArguments().nonEmpty()) {
-			ta = types.erasure(ta);
-		    }
-		    targs.append(ta);
-		}
-	    }
-	    List<Type> targsList = targs.toList();
             JCClassDecl res = m().ClassDef(
-                    classMods,
-                    tree.getName(),
-		    targsList.nonEmpty() ? m().TypeParams(targsList) : 
-		                                       List.<JCTypeParameter>nil(), 
-                    model.superType == null ? null : makeType(model.superType, false),
-                    implementing,
-                    translatedDefs.toList());
-	    //System.err.println("classDecl="+res);
+					   classMods,
+					   tree.getName(),
+					   translateTypeParams(tree, tree.typeArgTypes),
+					   model.superType == null ? null : makeType(model.superType, false),
+					   implementing,
+					   translatedDefs.toList());
+	    System.err.println("classDecl="+res);
             res.sym = tree.sym;
             res.type = tree.type;
 
@@ -492,6 +476,8 @@ public class F3ToJava extends F3AbstractTranslation {
                 translatedBlocks.append(stmt);
             }
         }
+
+
     }
 
     private JCExpression translateNonBoundInit(DiagnosticPosition diagPos,

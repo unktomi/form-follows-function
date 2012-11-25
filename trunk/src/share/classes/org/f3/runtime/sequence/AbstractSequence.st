@@ -231,6 +231,7 @@ $PREFIX:{T|
         }
     }
 
+    @Override
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
 	for (int i = 0; i < size(); i++) {

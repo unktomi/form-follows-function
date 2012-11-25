@@ -38,6 +38,24 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 	};
     }
 
+    public Function2<R, A2, A1> flip() {
+	final Function2<R, A1, A2> self = this;
+	return new Function2<R, A2, A1>() {
+	    public R invoke(A2 x1, A1 x2) {
+		return self.invoke(x2, x1);
+	    }
+	};
+    }
+    /*
+    public Function1<R, Function1<? extends A2, ? super A1>> curry() {
+	final Function2<R, A1, A2> self = this;
+	return new Function1<R, Function1<? extends A2, ? super A1>>() {
+	    public R invoke(Function1<? extends A2 x1, ? super A1> f) {
+		return self.invoke(x2, x1);
+	    }
+	};
+    }
+    */
     public Function2() {}
     
     public Function2(final F3Object implementor, final int number) {

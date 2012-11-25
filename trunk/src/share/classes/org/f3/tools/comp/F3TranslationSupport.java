@@ -336,6 +336,33 @@ public abstract class F3TranslationSupport {
 	return lb.toList();
     }
 
+    List<JCTypeParameter> translateTypeParams(DiagnosticPosition diagPos, List<Type> typeArgTypes) {
+	List<JCTypeParameter> tparams = List.nil();
+	if (typeArgTypes != null) { // note bounds on type parameters might contain references to mixin classes 
+	    ListBuffer<JCTypeParameter> buf = new ListBuffer<JCTypeParameter>();
+	    for (List<Type> x = typeArgTypes; x != null; x = x.tail) {
+		TypeVar t = (TypeVar)x.head;
+		//System.err.println("t="+t);
+		if (t != null) {
+		    ListBuffer<JCExpression> bb = new ListBuffer<JCExpression>();
+		    List<Type> bounds = types.getBounds(t);
+		    for (List<Type> y = bounds; y != null; y = y.tail) {
+			Type bt = y.head;
+			//System.err.println("bt="+bt);
+			if (bt != null) {
+			    bb.append(makeType(diagPos, bt, true));
+			}
+		    }
+		    buf.append(make.at(diagPos).TypeParameter(t.tsym.name, bb.toList()));
+		}
+	    }
+	    tparams = buf.toList();
+	}
+	return tparams;
+    }
+
+
+
     /**
      * Build a Java AST representing the specified type.
      * Convert F3 class references to interface references.
@@ -590,7 +617,7 @@ public abstract class F3TranslationSupport {
     Name attributeOnReplaceName(Symbol sym) {
         return prefixedAttributeName(sym, onReplace_AttributeMethodPrefix);
     }
-    
+
     Name attributeGetMixinName(Symbol sym) {
         return prefixedAttributeName(sym, getMixin_AttributeMethodPrefix);
     }
@@ -1727,7 +1754,7 @@ public abstract class F3TranslationSupport {
 
         protected JCMethodDecl Method(JCModifiers modifiers, Type returnType, Name methodName, List<JCVariableDecl> params, List<JCStatement> stmts, MethodSymbol methSym) {
 	    //System.err.println("sym2="+methSym);
-	    ListBuffer<Type> targsBuf = ListBuffer.lb();
+	    ListBuffer<Type> targsBuf = new ListBuffer<Type>();
 	    if (params.size() > 0) {
 		if ((modifiers.flags & Flags.STATIC) != 0) {
 		    targsBuf.appendList(methSym.owner.type.getTypeArguments());
@@ -1735,15 +1762,15 @@ public abstract class F3TranslationSupport {
 	    }
 	    targsBuf.appendList(methSym.type.getTypeArguments());
 	    List<Type> targs = targsBuf.toList();
-	    //System.err.println("sym="+methSym);
-	    //System.err.println("sym.owner="+methSym.owner);
-	    //System.err.println("targs="+targs);
+	    //System.err.println("*sym="+methSym);
+	    //System.err.println("*sym.owner="+methSym.owner);
+	    //System.err.println("*targs="+targs);
 
             JCMethodDecl methDecl = m().MethodDef(
                                         modifiers,
                                         methodName,
                                         makeType(returnType),
-					m().TypeParams(targs),
+					translateTypeParams(null, targs),
                                         params != null ? params : List.<JCVariableDecl>nil(),
                                         List.<JCExpression>nil(),
                                         stmts == null ? null : Block(stmts),

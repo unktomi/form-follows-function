@@ -360,7 +360,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
 
         return new F3ClassModel(
                 interfaceName,
-                makeImplementingInterfaces(diagPos, cDecl, immediateMixinClasses),
+                makeImplementingInterfaces(diagPos, cDecl, immediateMixinClasses, javaCodeMaker),
                 iDefinitions.toList(),
                 cDefinitions.toList(),
                 makeAdditionalImports(diagPos, cDecl, immediateMixinClasses),
@@ -393,8 +393,9 @@ public class F3InitializationBuilder extends F3TranslationSupport {
     }
 
     private List<JCExpression> makeImplementingInterfaces(DiagnosticPosition diagPos,
-            F3ClassDeclaration cDecl,
-            List<ClassSymbol> baseInterfaces) {
+							  F3ClassDeclaration cDecl,
+							  List<ClassSymbol> baseInterfaces,
+							  JavaCodeMaker javaCodeMaker) {
         ListBuffer<JCExpression> implementing = ListBuffer.lb();
             
         if (cDecl.isMixinClass()) {
@@ -409,7 +410,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
         }
 
         for (ClassSymbol baseClass : baseInterfaces) {
-            implementing.append(makeType(diagPos, baseClass.type, true));
+            implementing.append(makeType(diagPos, javaCodeMaker.analysis.getType(baseClass), true));
         }
 
         return implementing.toList();
@@ -470,7 +471,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
     //
     class JavaCodeMaker extends JavaTreeBuilder {
         // The current class analysis/
-        private final F3AnalyzeClass analysis;
+        final F3AnalyzeClass analysis;
         private ListBuffer<JCTree> definitions;
         private Name scriptName;
         private ClassSymbol scriptClassSymbol;
@@ -4476,8 +4477,14 @@ however this is what we need */
                     }
     
                     for (ClassSymbol mixinClassSym : immediateMixinClasses) {
-                        JCExpression selector = makeType(mixinClassSym.type, false);
-                        stmts.append(CallStmt(selector, methName,  m().TypeCast(makeType(mixinClassSym), id(names._this))));
+			Type memberType = analysis.getType(mixinClassSym);
+			//memberType = types.erasure(memberType);
+                        JCExpression selector = makeType(types.erasure(memberType), false);
+                        stmts.append(CallStmt(selector, methName,  id(names._this)));
+					      //m().TypeCast(makeType(memberType), id(names._this))));
+			//System.err.println("stmts="+stmts.toList());
+                        //JCExpression selector = makeType(types.erasure(mixinClassSym.type), false);
+                        //stmts.append(CallStmt(selector, methName,  m().TypeCast(makeType(mixinClassSym), id(names._this))));
                     }
                     
                     methSym = makeMethodSymbol(rawFlags(), syms.voidType, methName, List.<Type>nil());
@@ -4731,7 +4738,7 @@ however this is what we need */
             JCClassDecl script = m().ClassDef(
                     classMods,
                     scriptName,
-                    typarams != null ? m().TypeParams(typarams) : List.<JCTypeParameter>nil(),
+                    translateTypeParams(null, typarams),
                     makeType((syms.f3_BaseType)),
                     List.of(makeType(syms.f3_ObjectType)),
                     definitions);

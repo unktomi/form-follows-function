@@ -1578,10 +1578,10 @@ public class F3Attr implements F3Visitor {
 		    elemtype = types.comonadElementType(exprType);
 		}
 	    } else      // if exprtype is T[], T is the element type of the for-each
-            if (types.isSequence(exprType) && comonadType == null) {
-                elemtype = types.elementType(exprType);
-		isIter = true;
-            }
+		if (types.isSequence(exprType)) {
+		    elemtype = types.elementType(exprType);
+		    isIter = true;
+		}
             // if exprtype implements Iterable<T>, T is the element type of the for-each
             else if (types.asSuper(exprType, syms.iterableType.tsym) != null) {
                 if (clause.isBound()) {
@@ -2572,7 +2572,7 @@ public class F3Attr implements F3Visitor {
                 chk.checkOverride(tree, m);
             } else {
                 if ((m.flags() & F3Flags.OVERRIDE) != 0) {
-                    log.error(tree.pos(), MsgSym.MESSAGE_F3_DECLARED_OVERRIDE_DOES_NOT, rs.kindName(m), m);
+                    log.error(tree.pos(), MsgSym.MESSAGE_F3_DECLARED_OVERRIDE_DOES_NOT, rs.kindName(m), types.toF3String(m.type));
                 }
             }
         } catch (Exception exc) {
@@ -3365,7 +3365,7 @@ public class F3Attr implements F3Visitor {
         Symbol sym = attribBinop(tree.pos(), tree.getF3Tag(), left, right, env);
         Type owntype = syms.errType;
 	tree.methodName = sym.name;
-	System.err.println("attr tree.methodName="+tree.methodName);
+	//System.err.println("attr tree.methodName="+tree.methodName);
         if (sym instanceof OperatorSymbol) {
             // Find operator.
             Symbol operator = tree.operator = sym;
@@ -3688,7 +3688,6 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("tree="+superClass);
 	    //System.err.println("supType="+supType);
 	    //System.err.println("supType.sym="+supType.tsym.type);
-	    
 
 	    if (supType instanceof FunctionType) {
 		supType = types.normalize(supType, false);
@@ -4933,7 +4932,6 @@ public class F3Attr implements F3Visitor {
 	    throw new NullPointerException("enclosing");
 	}
 	ClassType ct = new ClassType(enclosing, targs, tsym);
-
 	return ct;
     }
 }
