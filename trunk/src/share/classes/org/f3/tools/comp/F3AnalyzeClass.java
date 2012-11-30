@@ -1451,7 +1451,7 @@ class F3AnalyzeClass {
     private void analyzeClass(Symbol sym, boolean isImmediateSuper, boolean needsCloning) {
         // Ignore pure java interfaces, classes we've visited before and non-f3 classes.
 	sym = reader.translateSymbol(sym);
-	System.err.println("analyzing: "+ sym);
+	//System.err.println("analyzing: "+ sym);
         if (!isInterface(sym) && !addedBaseClasses.contains(sym) && types.isF3Class(sym)) {
             // Get the current class symbol and add it to the visited map.
             ClassSymbol cSym = (ClassSymbol)sym;
@@ -1470,7 +1470,7 @@ class F3AnalyzeClass {
             }
             // Class loaded from .class file.
             if (cSym.members() != null) {
-		System.err.println("LOADED FROM CLASS FILE: "+cSym);
+		//System.err.println("LOADED FROM CLASS FILE: "+cSym);
                 // Scope information is held in reverse order of declaration.
                 ListBuffer<Symbol> reversed = ListBuffer.lb();
                 for (Entry e = cSym.members().elems; e != null && e.sym != null; e = e.sibling) {
@@ -1507,7 +1507,7 @@ class F3AnalyzeClass {
                         if (isRootClass(cSym) || !filterMethods(meth)) {
                             processMethod(meth, needsCloning, cSym, mixinVarMap);
                         } else {
-			    System.err.println("not processing: " +meth);
+			    //System.err.println("not processing: " +meth);
 			}
                     }
                 }
@@ -1516,7 +1516,7 @@ class F3AnalyzeClass {
             // Now analyze interfaces.
             for (Type supertype : cSym.getInterfaces()) {
                 ClassSymbol iSym = (ClassSymbol) supertype.tsym;
-		System.err.println("analyzing: " +iSym);
+		//		System.err.println("analyzing: " +iSym);
                 analyzeClass(iSym, false, true);
             }
 
@@ -1639,7 +1639,7 @@ class F3AnalyzeClass {
 		new MethodSymbol(sym.flags_field, sym.name, memberType, currentClassSym);
 	    sym = memberSym;
 	}
-	System.err.println("processMethod: "+ sym);
+	//System.err.println("processMethod: "+ sym);
         if ((flags & (Flags.ABSTRACT | Flags.SYNTHETIC)) == 0) {
             // Generate a name/signature string for uniqueness.
 	    String nameSig0 = methodSignature(cSym, sym);
@@ -1653,7 +1653,7 @@ class F3AnalyzeClass {
             // Create new info.
             FuncInfo newMethod = newIsMixin ? new MixinFuncInfo(sym) :  new SuperClassFuncInfo(sym);
 
-	    if (!nameSig.contains("$")) {
+	    if (false && !nameSig.contains("$")) {
 		System.err.println("csym="+cSym);
 		System.err.println("sym.owner="+sym.owner);
 		System.err.println("current="+currentClassSym);
@@ -1678,7 +1678,7 @@ class F3AnalyzeClass {
                           }
                       } else {
                           // Add to the methods needing $impl dispatch.
-			  System.err.println("needs dispatch: "+newMethod);
+			  //System.err.println("needs dispatch: "+newMethod);
 			  sym.owner = origSym.owner;
                           needDispatchMethods.put(nameSig, newMethod);
                       }

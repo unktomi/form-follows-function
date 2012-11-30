@@ -268,7 +268,7 @@ public class F3PreTranslationSupport {
         }
         Name name = names.fromString(ns);
         long flags = F3Flags.SCRIPT_PRIVATE | Flags.SYNTHETIC | (inScriptLevel ? Flags.STATIC | F3Flags.SCRIPT_LEVEL_SYNTH_STATIC : 0L);
-        F3Var var = Var(diagPos, flags, types.normalize(type), name, bindStatus, initExpr, owner);
+        F3Var var = Var(diagPos, flags, type/*types.normalize(type)*/, name, bindStatus, initExpr, owner);
         owner.members().enter(var.sym);
         return var;
     }
@@ -319,7 +319,7 @@ public class F3PreTranslationSupport {
      */
     private boolean needNumericBoxConversion(F3Expression tree, Type type) {
 	if (tree.type == null) {
-	    System.err.println("tree="+tree.getClass());
+	    System.err.println("tree.type is null="+tree.getClass()+": "+ tree);
 	}
         boolean sourceIsPrimitive = tree.type.isPrimitive();
         boolean targetIsPrimitive = type.isPrimitive();

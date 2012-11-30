@@ -3065,6 +3065,18 @@ public class F3Attr implements F3Visitor {
 	    tree.type = pt;
 	    result = pt;
 	}
+
+	// hack...
+	{
+	    List<F3Expression> arg = tree.args;
+	    List<Type> argType = tree.meth.type.getParameterTypes();
+	    for (; arg != null && argType != null; arg = arg.tail, argType = argType.tail) {
+		if (arg.head != null && argType.head != null) {
+		    //System.err.println("setting "+ arg.head.type + " to "+ argType.head);
+		    arg.head.type = reader.translateType(argType.head);
+		}
+	    }
+	}
 	
         Symbol msym = F3TreeInfo.symbol(tree.meth);
 	

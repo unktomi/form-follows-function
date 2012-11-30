@@ -119,7 +119,8 @@ public class F3Lower implements F3Visitor {
     @SuppressWarnings("unchecked")
     <T extends F3Tree> T lower(T tree, Type pt, LowerMode mode) {
 	if (pt == null) {
-	    throw new NullPointerException("pt is null: "+ tree);
+	    pt = Type.noType;
+	    //throw new NullPointerException("pt is null: "+ tree);
 	}
         Type prevPt = this.pt;
         LowerMode prevMode = this.mode;
@@ -243,7 +244,7 @@ public class F3Lower implements F3Visitor {
     }
     
     private F3Var makeVar(DiagnosticPosition diagPos, long flags, String name, F3BindStatus bindStatus, F3Expression init, Type type) {
-        F3VarSymbol vsym = new F3VarSymbol(types, names, flags, tempName(name), types.normalize(type), preTrans.makeDummyMethodSymbol(currentClass));
+        F3VarSymbol vsym = new F3VarSymbol(types, names, flags, tempName(name), type/*types.normalize(type)*/, preTrans.makeDummyMethodSymbol(currentClass));
         return makeVar(diagPos, vsym, bindStatus, init);
     }
 
@@ -1160,6 +1161,8 @@ public class F3Lower implements F3Visitor {
 					  mtype.asMethodType());
 	} else if (mtype instanceof MethodType) {
 	    mtype = syms.makeFunctionType((Type.MethodType)mtype);
+	} else {
+	    System.err.println("fail: "+ tree+": "+mtype.getClass()+": "+mtype);
 	}
 	mtype = mtype.asMethodType();
         ListBuffer<F3Var> params = ListBuffer.lb();
