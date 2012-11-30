@@ -116,6 +116,10 @@ public class Builtins {
                  F3Object.VFLGS$IS_READONLY);
     }
 
+    public static <T> T id(T x) {
+	return x;
+    }
+
     static class Curry<R,A1,A2> extends Function1<Function1<R,A2>,A1> {
         Function2<R,A1,A2> fun;
         public Curry(Function2<R,A1,A2> fun) {

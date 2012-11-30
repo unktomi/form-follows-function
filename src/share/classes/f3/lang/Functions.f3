@@ -1,19 +1,17 @@
 package f3.lang;
 
-public bound function head(xs:Object[]):Object {
-    return xs[0];
-}
+public function of a id(x is a) returns a { x }
 
-public bound function tail(xs:Object[]):Object[] {
-    return xs[1..];
-}
+public function of (a, b) constant(x is a, y is b) returns a { x }
 
-public bound function map(input:Object[], f:function(obj:Object):Object[]):Object[] {
-    if (input == []) []
-    else {
-        var x = head(input);
-        var xs = tail(input);
-        [f(x), map(xs, f as function from Object to Object[])];
+public function of (a, b, c) compose(g is function from b to c,
+				     f is function from a to b) returns function from a to c 
+{
+    function(x is a) returns c {
+	g(f(x))
     }
 }
+				     
+
+
 

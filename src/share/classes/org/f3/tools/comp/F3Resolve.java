@@ -592,8 +592,8 @@ public class F3Resolve {
         if (mtype instanceof FunctionType)
             mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = mtype instanceof MethodType;// || mtype instanceof ForAll;
-
         while (env1 != null) {
+
             Scope sc = env1.info.scope;
             Type envClass;
             if (env1.tree instanceof F3ClassDeclaration) {
@@ -610,6 +610,7 @@ public class F3Resolve {
                 envClass = null;
             if (envClass != null) {
                 //first try resolution without boxing
+
                 sym = findMember(env1, envClass, name,
                         expected,
                         boxingEnabled, varargsEnabled, false);
@@ -627,7 +628,6 @@ public class F3Resolve {
                 }
             }
             if (sc != null) {
-                
                 for (Scope.Entry e = sc.lookup(name); e.scope != null; e = e.next()) {
                     if ((e.sym.flags_field & SYNTHETIC) != 0)
                         continue;
@@ -658,15 +658,17 @@ public class F3Resolve {
                 if (sym.kind == VAR)
                     return isAccessible(env, origin, sym)
                     ? sym : new AccessError(env, origin, sym);
-                else //method
-                    return selectBest(env, origin, mtype,
-                                           e.sym, bestSoFar,
-                                           boxingEnabled,
-                                           varargsEnabled,
-                                           false);
+                else //method 
+		    {
+			sym = selectBest(env, origin, mtype,
+					 e.sym, bestSoFar,
+					 boxingEnabled,
+					 varargsEnabled,
+					 false);
+			System.err.println(sym +" for "+e.sym+" for "+name);
+		    }
             }
         }
-
         Symbol origin = null;
         e = env.toplevel.starImportScope.lookup(name);
         for (; e.scope != null; e = e.next()) {
@@ -678,7 +680,7 @@ public class F3Resolve {
                 return new AmbiguityError(bestSoFar, sym);
             else if (bestSoFar.kind >= VAR) {
                 origin = e.getOrigin().owner;
-                if (sym.kind == VAR)
+                if (sym.kind == VAR || !checkArgs)
                     bestSoFar = isAccessible(env, origin.type, sym)
                     ? sym : new AccessError(env, origin.type, sym);
                 else //method
@@ -688,14 +690,13 @@ public class F3Resolve {
                                            varargsEnabled,
                                            false);
             }
+	    System.err.println("findVar: "+name+": "+sym+": "+bestSoFar);
         }
-        
         if (name == names.fromString("__DIR__") || name == names.fromString("__FILE__") 
 			|| name == names.fromString("__PROFILE__")) {
             Type type = syms.stringType;
             return new F3VarSymbol(types, names,Flags.PUBLIC, name, type, env.enclClass.sym);
         }
-        
         if (bestSoFar.kind == VAR && bestSoFar.owner.type != origin.type)
             return bestSoFar.clone(origin);
         else
@@ -1664,11 +1665,11 @@ public class F3Resolve {
         Name name = treeinfo.operatorName(optag);
         Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
                                 null, false, false, false);
-	//System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
+	System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind >= WRONG_MTHS) {
-            sym = findMethod(env, syms.predefClass.type, name, argtypes,
+            sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
                              null, true, false, true);
-	    //System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
+	    System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
 	}
 	
 	return sym;

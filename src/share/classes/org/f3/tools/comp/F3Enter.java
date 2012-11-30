@@ -429,7 +429,6 @@ public class F3Enter extends F3TreeScanner {
 	    if (t instanceof F3ClassDeclaration) {
 		classEnter(t, localEnv);
 	    }
-
 	}
 	//classEnter(tree.getMembers(), localEnv);
         types.addF3Class(c, tree);

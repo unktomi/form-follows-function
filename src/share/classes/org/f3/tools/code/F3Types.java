@@ -466,6 +466,15 @@ public class F3Types extends Types {
     
     @Override
     public boolean isSubtype(Type t, Type s, boolean capture) {
+	if (t == s) {
+	    return true;
+	}
+	if (s == syms.f3_AnyType) {
+	    return true;
+	}
+	if (s.toString().equals("<any?>")) { // major hack
+	    return true;
+	}
 	try {
 	    if (isSameType(t, s)) {
 		return true;
@@ -474,16 +483,12 @@ public class F3Types extends Types {
 	    // hack;
 	    err.printStackTrace();
 	}
-
-	if (s == syms.f3_AnyType) {
-	    return true;
-	}
 	if (t.tag == METHOD) { // fix me !!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	} else {
-	    if (t instanceof WildcardType) {
+	    //if (t instanceof WildcardType) {
 		t = upperBound(t);
-	    }
+		//}
 	}
 	try {
 	    boolean b = super.isSubtype(t, s, capture);
@@ -1483,6 +1488,8 @@ public class F3Types extends Types {
     }
 
     public String toSignature(Type t) {
-        return writer.typeSig(t).toString();
+        String r = writer.typeSig(t).toString();
+	System.err.println("sig for : "+ toF3String(t)+": "+r);
+	return r;
     }
 }

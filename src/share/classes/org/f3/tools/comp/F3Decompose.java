@@ -561,6 +561,7 @@ public class F3Decompose implements F3Visitor {
             decomposeComponent(tree.rhs);
         F3Binary res = f3make.at(tree.pos).Binary(tag, lhs, rhs);
 	res.methodName = tree.methodName;
+	res.infix = tree.infix;
         res.operator = tree.operator;
         result = res;
     }

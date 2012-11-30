@@ -46,16 +46,16 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 	    }
 	};
     }
-    /*
-    public Function1<R, Function1<? extends A2, ? super A1>> curry() {
+
+    public Function1<? extends R, ? super A2> apply(final A1 x1) {
 	final Function2<R, A1, A2> self = this;
-	return new Function1<R, Function1<? extends A2, ? super A1>>() {
-	    public R invoke(Function1<? extends A2 x1, ? super A1> f) {
-		return self.invoke(x2, x1);
+	return new Function1<R, A2>() {
+	    public R invoke(final A2 x2) {
+		return self.invoke(x1, x2);
 	    }
 	};
     }
-    */
+
     public Function2() {}
     
     public Function2(final F3Object implementor, final int number) {
