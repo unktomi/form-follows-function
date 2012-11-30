@@ -3361,11 +3361,11 @@ public class F3Attr implements F3Visitor {
             F3Var rhsVarTree = varSymToTree.get(rhsSym);
             right = setBinaryTypes(tree.getF3Tag(), tree.rhs, rhsVarTree, rhsSym.type, rhsSym);
         }
-        
         Symbol sym = attribBinop(tree.pos(), tree.getF3Tag(), left, right, env);
         Type owntype = syms.errType;
 	tree.methodName = sym.name;
-	//System.err.println("attr tree.methodName="+tree.methodName);
+	System.err.println("parms="+sym.type.getParameterTypes().size());
+	tree.infix = sym.type.getParameterTypes().size() == 1;
         if (sym instanceof OperatorSymbol) {
             // Find operator.
             Symbol operator = tree.operator = sym;
@@ -3418,6 +3418,10 @@ public class F3Attr implements F3Visitor {
         if (tree.getF3Tag() == F3Tag.PLUS && owntype == syms.stringType) {
             log.error(tree.pos(), MsgSym.MESSAGE_F3_STRING_CONCATENATION, expressionToString(tree));
         }
+	System.err.println("attr tree.methodName="+tree.methodName);
+	System.err.println("attr tree.sym="+sym.getClass()+": "+sym);
+	System.err.println("attr tree.op="+tree.operator);
+	System.err.println("attr tree.infix="+tree.infix);
     }
     //where
     private String expressionToString(F3Expression expr) {

@@ -402,6 +402,7 @@ public class F3Lower implements F3Visitor {
         F3Binary res = m.at(tree.pos).Binary(tree.getF3Tag(), lhs, rhs);
         res.operator = tree.operator;
 	res.methodName = tree.methodName;
+	res.infix = tree.infix;
         result = res.setType(tree.type);
     }
 

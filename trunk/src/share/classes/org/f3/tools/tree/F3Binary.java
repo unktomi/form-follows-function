@@ -39,6 +39,7 @@ public class F3Binary extends F3Expression implements BinaryTree {
     public F3Expression rhs;
     public Symbol operator;
     public Name methodName;
+    public boolean infix = true;
 
     protected F3Binary(F3Tag opcode,
 		       F3Expression lhs,

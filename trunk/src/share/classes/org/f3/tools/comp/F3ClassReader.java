@@ -139,19 +139,13 @@ public class F3ClassReader extends ClassReader {
     public F3ClassSymbol enterClass(ClassSymbol jsymbol) {
         Name className = jsymbol.flatname;
         boolean mixin = className.endsWith(defs.mixinClassSuffixName);
-        if (mixin) {
-	    // className = className.subName(0, className.len - defs.mixinClassSuffixName.len);
-	}
+        if (mixin)
+            className = className.subName(0, className.len - defs.mixinClassSuffixName.len);
         F3ClassSymbol cSym = (F3ClassSymbol) enterClass(className);
         //cSym.flags_field |= jsymbol.flags_field;
-        if (mixin) {
-	    System.err.println("enterClass mixin: "+className + ": "+ cSym);
+        if (mixin)
             cSym.flags_field |= F3Flags.MIXIN;
-	    className = className.subName(0, className.len - defs.mixinClassSuffixName.len);
-	    cSym.name = className;
-	    cSym.fullname = ClassSymbol.formFullName(className, cSym.owner);
-	    classes.put(className, cSym);
-	} else {
+        else {
             fixupFullname(cSym, jsymbol);
             cSym.jsymbol = jsymbol;
         }

@@ -920,21 +920,11 @@ classDefinition [ F3Modifiers mods, int pos ]
 
             n1=name 
 
-        (OF)=>((OF gas=genericParams[false, false] {
+         (OF gas=genericParams[false, false] {
            if (gas != null) exprbuff.appendList(gas);
-        })?
-            /*
-        |
-        (FROM contraGas=genericParams[true, false] {
-            if (contraGas != null) exprbuff.appendList(contraGas);
-        })?
-        (TO coGas=genericParams[false, true] {
-            if (coGas != null) exprbuff.appendList(coGas);
-        })?    
-        */
-        )
-    
-        (EXTENDS)=>(supers  {ids = $supers.ids; })
+         })?
+
+         (supers  {ids = $supers.ids; })?
             
         LBRACE 
     
@@ -1036,7 +1026,7 @@ supers
     //
     int rPos = pos();
 }
-    : EXTENDS t1=type
+    : (EXTENDS|IS) t1=type
             {
                 $ids.append($t1.rtype);
                 errNodes.append($t1.rtype);
@@ -1050,7 +1040,7 @@ supers
                 }
            )*
            
-    | // Upsilon - this class inherits no other types so the list will be empty
+//    | // Upsilon - this class inherits no other types so the list will be empty
     ;
 
 // Catch an error. We create an erroneous node for anything that was at the start 
@@ -3791,10 +3781,10 @@ typeExpression
     : relationalExpression      { errNodes.append($relationalExpression.value); }
 
         (
-              INSTANCEOF itn=type
+            (/*IS|*/INSTANCEOF) itn=type
             
                 {
-                    $value = F.at(pos($INSTANCEOF)).TypeTest($relationalExpression.value, $itn.rtype);
+                    $value = F.at($itn.rtype.pos).TypeTest($relationalExpression.value, $itn.rtype);
                     endPos($value);
                 }
 
@@ -6139,7 +6129,7 @@ typeReference
         {
             $rtype = $type.rtype;
         }
-        
+
     | // Untyped element, the AST needs to reflect that
     
         { 
@@ -6407,7 +6397,7 @@ genericParams[boolean contravar, boolean covar]
        $value = $gas.value;
     })| { $value = com.sun.tools.mjavac.util.List.<F3Expression>nil();}) RPAREN)   
    |
-   ga=genericParam[contravar, covar]
+   ga=identifier
    {
        ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
        exprbuff.append($ga.value);
