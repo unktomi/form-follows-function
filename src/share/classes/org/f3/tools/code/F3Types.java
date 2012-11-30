@@ -393,6 +393,9 @@ public class F3Types extends Types {
     }
 
     public Type boxedElementType(Type seqType) {
+	if (!isSequence(seqType)) {
+	    return seqType;
+	}
         Type elemType = seqType.getTypeArguments().head;
         while (elemType instanceof CapturedType)
             elemType = ((CapturedType) elemType).wildcard;
@@ -1489,7 +1492,7 @@ public class F3Types extends Types {
 
     public String toSignature(Type t) {
         String r = writer.typeSig(t).toString();
-	System.err.println("sig for : "+ toF3String(t)+": "+r);
+	//System.err.println("sig for : "+ toF3String(t)+": "+r);
 	return r;
     }
 }

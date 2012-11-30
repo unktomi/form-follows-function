@@ -1285,7 +1285,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 }
             }
             
-        returnTypeReference 
+        returnTypeReference
             {
                 // Accumulate in case of error
                 //

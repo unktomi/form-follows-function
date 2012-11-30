@@ -429,7 +429,7 @@ public class F3ToJava extends F3AbstractTranslation {
 					   model.superType == null ? null : makeType(model.superType, false),
 					   implementing,
 					   translatedDefs.toList());
-	    System.err.println("classDecl="+res);
+	    //	    System.err.println("classDecl="+res);
             res.sym = tree.sym;
             res.type = tree.type;
 

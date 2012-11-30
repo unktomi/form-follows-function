@@ -59,6 +59,7 @@ import org.f3.tools.code.F3Flags;
 import org.f3.tools.code.F3Symtab;
 import org.f3.tools.code.F3TypeRepresentation;
 import org.f3.tools.code.F3Types;
+import org.f3.tools.code.FunctionType;
 import org.f3.tools.code.F3VarSymbol;
 import static org.f3.tools.comp.F3Defs.*;
 import org.f3.tools.tree.*;
@@ -439,17 +440,17 @@ public abstract class F3TranslationSupport {
             }
             case TypeTags.WILDCARD: {
                 WildcardType wtype = (WildcardType) t;
-		//System.err.println("wtype="+t);
 		JCTree bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner(diagPos, wtype.type, false);
 		//System.err.println("bound="+bound);
-		if (bound != null && wtype.type instanceof TypeVar) {
+		if (false) if (bound != null && wtype.type instanceof TypeVar) {
 		    TypeVar tv = (TypeVar)wtype.type;
 		    if (tv.lower instanceof WildcardType) {
 			return (JCExpression)bound;
 		    }
 		}
-                return make.at(diagPos).Wildcard(make.TypeBoundKind(wtype.kind),
-						 bound);
+                JCExpression r = make.at(diagPos).Wildcard(make.TypeBoundKind(wtype.kind),
+							   bound);
+		return r;
 
             }
             case TypeTags.ARRAY: {

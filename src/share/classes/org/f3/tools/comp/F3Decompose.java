@@ -27,6 +27,7 @@ import org.f3.api.F3BindStatus;
 import org.f3.tools.code.F3Flags;
 import org.f3.tools.code.F3Symtab;
 import org.f3.tools.code.F3Types;
+import org.f3.tools.code.FunctionType;
 import org.f3.tools.code.F3VarSymbol;
 import org.f3.tools.comp.F3TranslationSupport.NotYetImplementedException;
 import org.f3.tools.tree.*;
@@ -223,7 +224,7 @@ public class F3Decompose implements F3Visitor {
     private F3Var makeVar(DiagnosticPosition diagPos, Name vName, F3Expression pose, F3BindStatus bindStatus, Type type) {
         optStat.recordSynthVar("synth");
         long flags = F3Flags.SCRIPT_PRIVATE | Flags.SYNTHETIC | (inScriptLevel ? Flags.STATIC | F3Flags.SCRIPT_LEVEL_SYNTH_STATIC : 0L);
-        F3Var var = preTrans.Var(diagPos, flags, types.normalize(type), vName, bindStatus, pose, varOwner);
+        F3Var var = preTrans.Var(diagPos, flags, /*types.normalize(type)*/type, vName, bindStatus, pose, varOwner);
         varOwner.members().enter(var.sym);
         lbVar.append(var);
         return var;
@@ -237,6 +238,7 @@ public class F3Decompose implements F3Visitor {
         optStat.recordShreds();
         Name tmpName = tempName(label);
         // If this shred var initialized with a call to a bound function?
+	//System.err.println("shred var: "+ tmpName+": "+type);
         F3Var ptrVar = makeTempBoundResultName(tmpName, pose);
         if (ptrVar != null) {
             return makeVar(pose.pos(), tmpName, id(ptrVar), bindStatus, type);
@@ -500,6 +502,7 @@ public class F3Decompose implements F3Visitor {
             args = tree.args;
         } else {
             List<Type> paramTypes = tree.meth.type.getParameterTypes();
+	    //System.err.println("paramTypes="+paramTypes);
             Symbol sym = F3TreeInfo.symbolFor(tree.meth);
             if (sym instanceof MethodSymbol &&
                 ((MethodSymbol)sym).isVarArgs()) {
