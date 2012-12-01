@@ -2150,6 +2150,8 @@ public class F3Attr implements F3Visitor {
 	FunctionType ftype;
 	if (def.type instanceof MethodType) {
 	    ftype = syms.makeFunctionType(def.type.asMethodType());
+	} else if (def.type instanceof FunctionType) {
+	    ftype = (FunctionType)def.type;
 	} else {
 	    ForAll fa = (ForAll)def.type;
 	    ftype = syms.makeFunctionType(fa.asMethodType());
@@ -3066,17 +3068,6 @@ public class F3Attr implements F3Visitor {
 	    result = pt;
 	}
 
-	// hack...
-	{
-	    List<F3Expression> arg = tree.args;
-	    List<Type> argType = tree.meth.type.getParameterTypes();
-	    for (; arg != null && argType != null; arg = arg.tail, argType = argType.tail) {
-		if (arg.head != null && argType.head != null) {
-		    //System.err.println("setting "+ arg.head.type + " to "+ argType.head);
-		    arg.head.type = reader.translateType(argType.head);
-		}
-	    }
-	}
 	
         Symbol msym = F3TreeInfo.symbol(tree.meth);
 	
@@ -3152,6 +3143,7 @@ public class F3Attr implements F3Visitor {
             }
         }
         chk.validate(tree.typeargs);
+	// hack...
     }
 
     //@Override
@@ -3376,7 +3368,6 @@ public class F3Attr implements F3Visitor {
         Symbol sym = attribBinop(tree.pos(), tree.getF3Tag(), left, right, env);
         Type owntype = syms.errType;
 	tree.methodName = sym.name;
-	System.err.println("parms="+sym.type.getParameterTypes().size());
 	tree.infix = sym.type.getParameterTypes().size() == 1;
         if (sym instanceof OperatorSymbol) {
             // Find operator.
@@ -3430,10 +3421,12 @@ public class F3Attr implements F3Visitor {
         if (tree.getF3Tag() == F3Tag.PLUS && owntype == syms.stringType) {
             log.error(tree.pos(), MsgSym.MESSAGE_F3_STRING_CONCATENATION, expressionToString(tree));
         }
+	/*
 	System.err.println("attr tree.methodName="+tree.methodName);
 	System.err.println("attr tree.sym="+sym.getClass()+": "+sym);
 	System.err.println("attr tree.op="+tree.operator);
 	System.err.println("attr tree.infix="+tree.infix);
+	*/
     }
     //where
     private String expressionToString(F3Expression expr) {

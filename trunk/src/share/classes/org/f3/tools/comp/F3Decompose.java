@@ -85,6 +85,7 @@ public class F3Decompose implements F3Visitor {
     protected final F3Symtab syms;
     protected final F3Types types;
     protected final ClassReader reader;
+    protected final F3ClassReader f3reader;
     protected final F3OptimizationStatistics optStat;
 
     public static F3Decompose instance(Context context) {
@@ -104,6 +105,7 @@ public class F3Decompose implements F3Visitor {
         rs = F3Resolve.instance(context);
         defs = F3Defs.instance(context);
         reader = ClassReader.instance(context);
+        f3reader = F3ClassReader.instance(context);
         optStat = F3OptimizationStatistics.instance(context);
     }
 
@@ -484,6 +486,23 @@ public class F3Decompose implements F3Visitor {
     }
 
     public void visitFunctionInvocation(F3FunctionInvocation tree) {
+	if (true) { // hack!!!!
+	    List<F3Expression> arg = tree.args;
+	    List<Type> argType = tree.meth.type.getParameterTypes();
+	    for (; arg != null && argType != null; arg = arg.tail, argType = argType.tail) {
+		if (arg.head != null && argType.head != null) {
+		    if (arg.head.type instanceof MethodType) { // at this point the arguments have been stripped of wildcards, need to put them back...
+			MethodType mt = (MethodType)arg.head.type;
+			List<Type> typarams = argType.head.getTypeArguments();
+			Type t = syms.makeFunctionType(typarams, (MethodType)arg.head.type);
+			//System.err.println("setting "+ arg.head.type + " to "+ t);
+			arg.head.type = t;
+		    } else {
+			//System.err.println("not setting "+ arg.head.type);
+		    }
+		}
+	    }
+	}
         F3Expression fn = decompose(tree.meth);
         Symbol msym = F3TreeInfo.symbol(tree.meth);
         /*

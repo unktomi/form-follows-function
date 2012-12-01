@@ -690,7 +690,7 @@ public class F3Resolve {
                                            varargsEnabled,
                                            false);
             }
-	    System.err.println("findVar: "+name+": "+sym+": "+bestSoFar);
+	    //System.err.println("findVar: "+name+": "+sym+": "+bestSoFar);
         }
         if (name == names.fromString("__DIR__") || name == names.fromString("__FILE__") 
 			|| name == names.fromString("__PROFILE__")) {
@@ -1665,11 +1665,11 @@ public class F3Resolve {
         Name name = treeinfo.operatorName(optag);
         Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
                                 null, false, false, false);
-	System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
+	//System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind >= WRONG_MTHS) {
             sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
                              null, true, false, true);
-	    System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
+	    //System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
 	}
 	
 	return sym;
