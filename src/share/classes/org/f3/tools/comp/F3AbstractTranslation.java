@@ -2525,9 +2525,9 @@ public abstract class F3AbstractTranslation
 
         JCExpression op(JCExpression leftSide, Name methodName, JCExpression rightSide) {
 	    JCExpression r = op0(leftSide, methodName, rightSide);
-	    System.err.println("tree="+tree);
-	    System.err.println("tree.infix="+tree.infix);
-	    System.err.println("call="+r);
+	    //System.err.println("tree="+tree);
+	    //System.err.println("tree.infix="+tree.infix);
+	    //System.err.println("call="+r);
 	    return r;
 	}
 
@@ -2547,8 +2547,8 @@ public abstract class F3AbstractTranslation
 
         JCExpression durationOp() {
 	    //System.err.println("tree="+tree);
-	    System.err.println("methodName="+tree.methodName);
-	    System.err.println("tree.type="+tree.type);
+	    //System.err.println("methodName="+tree.methodName);
+	    //System.err.println("tree.type="+tree.type);
             switch (tree.getF3Tag()) {
                 case AND:
                     return op(lhs(), tree.methodName, rhs());
@@ -2737,7 +2737,7 @@ public abstract class F3AbstractTranslation
                 // Duration type operator overloading
                 if (// ((isDuration(lhsType) || isDuration(rhsType))) &&
                         tree.operator == null) { // operator check is to try to get a decent error message by falling through if the Duration method isn't matched
-		    System.err.println("calling duration op: "+tree);
+		    //System.err.println("calling duration op: "+tree);
                     return durationOp();
                 }
                 // Length type operator overloading

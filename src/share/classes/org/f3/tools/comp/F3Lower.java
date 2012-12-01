@@ -28,6 +28,7 @@ import org.f3.api.F3BindStatus;
 import org.f3.tools.code.F3Flags;
 import org.f3.tools.tree.*;
 import org.f3.tools.code.F3Types;
+import org.f3.tools.code.FunctionType;
 import org.f3.tools.code.F3Symtab;
 import org.f3.tools.code.F3VarSymbol;
 import org.f3.tools.tree.F3Expression;
@@ -119,8 +120,7 @@ public class F3Lower implements F3Visitor {
     @SuppressWarnings("unchecked")
     <T extends F3Tree> T lower(T tree, Type pt, LowerMode mode) {
 	if (pt == null) {
-	    pt = Type.noType;
-	    //throw new NullPointerException("pt is null: "+ tree);
+	    throw new NullPointerException("pt is null: "+ tree);
 	}
         Type prevPt = this.pt;
         LowerMode prevMode = this.mode;
@@ -1161,6 +1161,7 @@ public class F3Lower implements F3Visitor {
 					  mtype.asMethodType());
 	} else if (mtype instanceof MethodType) {
 	    mtype = syms.makeFunctionType((Type.MethodType)mtype);
+	} else if (mtype instanceof FunctionType) {
 	} else {
 	    System.err.println("fail: "+ tree+": "+mtype.getClass()+": "+mtype);
 	}
