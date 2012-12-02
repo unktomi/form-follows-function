@@ -137,8 +137,8 @@ public class F3TreeCopier implements F3Visitor {
     }
 
     public void visitParens(F3Parens tree) {
-        F3Expression expr = copy(tree.expr);
-        result = maker.at(tree.pos).Parens(expr);
+        F3Expression expr = copy(tree.getExpression());
+        result = maker.at(tree.pos).Parens(List.of(expr));
     }
 
     public void visitAssign(F3Assign tree) {

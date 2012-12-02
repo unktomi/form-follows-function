@@ -85,15 +85,15 @@ public class F3Types extends Types {
     }
 
     public boolean isFunctor(Type type) {
-	return getFunctor(type) != null;
+	return getFunctor(upperBound(type)) != null;
     }
 
     public boolean isMonad(Type type) {
-	return getMonad(type) != null;
+	return getMonad(upperBound(type)) != null;
     }
 
     public boolean isComonad(Type type) {
-	return getComonad(type) != null;
+	return getComonad(upperBound(type)) != null;
     }
 
     public Type makeTypeCons(Type thisType, List<Type> args) {
@@ -246,7 +246,8 @@ public class F3Types extends Types {
     public Type functorElementType(Type type) {
 	Type functor = getFunctor(type);
 	if (functor != null) {
-	    List<Type> list = functor.getTypeArguments();
+	    //System.err.println("*functor="+toF3String(functor));
+	    List<Type> list = getTypeArgs(functor);
 	    if (list.size() > 1) {
 		Type elemType = list.get(1);
 		while (elemType instanceof CapturedType)
@@ -259,6 +260,13 @@ public class F3Types extends Types {
 	    }
 	}
 	return null;
+    }
+
+    List<Type> getTypeArgs(Type t) {
+	if (t instanceof TypeCons) {
+	    return ((TypeCons)t).args;
+	}
+	return t.getTypeArguments();
     }
 
     public Type monadElementType(Type type) {

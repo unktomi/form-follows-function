@@ -3077,7 +3077,7 @@ public class F3TranslateBind extends F3AbstractTranslation implements F3Visitor 
 
     @Override
     public void visitParens(F3Parens tree) {
-        result = translateBoundExpression(tree.expr, targetSymbol);
+        result = translateBoundExpression(tree.getExpression(), targetSymbol);
     }
 
     public void visitSelect(F3Select tree) {
