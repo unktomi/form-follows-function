@@ -37,6 +37,7 @@ import com.sun.tools.mjavac.util.Convert;
 import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.Name;
 import com.sun.tools.mjavac.util.Position;
+import com.sun.tools.mjavac.code.BoundKind;
 import org.f3.tools.code.F3Flags;
 
 import static com.sun.tools.mjavac.code.Flags.*;
@@ -486,7 +487,7 @@ public class F3Pretty implements F3Visitor {
     public void visitParens(F3Parens tree) {
         try {
             print("(");
-            printExpr(tree.expr);
+            printExpr(tree.getExpression());
             print(")");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -1129,7 +1130,12 @@ public class F3Pretty implements F3Visitor {
         try {
             if (type instanceof F3TypeUnknown)
                 return;
-            print(": ");
+            print("is ");
+	    if (type.boundKind == BoundKind.EXTENDS) {
+		print(" at least ");
+	    } else if (type.boundKind == BoundKind.SUPER) {
+		print(" at most ");
+	    }
             printExpr(type);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

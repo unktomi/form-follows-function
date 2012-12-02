@@ -348,6 +348,26 @@ public class F3Symtab extends Symtab {
             return elemType;
     }
 
+    public FunctionType makeFunctionType(int nargs, List<Type> typarams) {
+        ListBuffer<Type> argtypes = new ListBuffer<Type>();
+        Type restype = null;
+        for (List<Type> l = typarams; l.nonEmpty();  l = l.tail) {
+            Type a = l.head;
+            if (a instanceof WildcardType)
+                a = ((WildcardType) a).type;
+            if (restype == null) {
+                if (a.tsym != null && a.tsym.name == f3_java_lang_VoidType.tsym.name) {
+                    a = voidType;
+                }
+                restype = a;
+            }
+            else
+                argtypes.append(a);
+        }
+        MethodType mtype = new MethodType(argtypes.toList(), restype, null, methodClass);
+        return makeFunctionType(nargs, typarams, mtype);
+    }
+
     public FunctionType makeFunctionType(List<Type> typarams) {
         ListBuffer<Type> argtypes = new ListBuffer<Type>();
         Type restype = null;
@@ -371,6 +391,10 @@ public class F3Symtab extends Symtab {
     public FunctionType makeFunctionType(List<Type> typarams, MethodType mtype) {
         int nargs = typarams.size()-1;
 	if (nargs < 0) nargs = 0;
+        return makeFunctionType(nargs, typarams, mtype);
+    }
+
+    public FunctionType makeFunctionType(int nargs, List<Type> typarams, MethodType mtype) {
         assert (nargs <= MAX_FIXED_PARAM_LENGTH);
         Type funtype = f3_FunctionTypes[nargs];
         FunctionType ftype = 
@@ -404,7 +428,9 @@ public class F3Symtab extends Symtab {
         for (List<Type> l = mtype.argtypes; l.nonEmpty(); l = l.tail) {
             typarams.append(boxedTypeOrType(l.head));
         }
-        return makeFunctionType(typarams.toList(), mtype);
+        int nargs = typarams.size()-1;
+	if (nargs < 0) nargs = 0;
+        return makeFunctionType(nargs, typarams.toList(), mtype);
     }
 
     /** Make public. */

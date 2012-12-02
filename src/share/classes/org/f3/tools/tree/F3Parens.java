@@ -25,16 +25,16 @@ package org.f3.tools.tree;
 
 import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
-
+import com.sun.tools.mjavac.util.List;
 /**
  * A parenthesized subexpression ( ... )
  */
 public class F3Parens extends F3Expression implements ParenthesizedTree {
 
-    public F3Expression expr;
+    public List<F3Expression> exprList;
 
-    protected F3Parens(F3Expression expr) {
-        this.expr = expr;
+    protected F3Parens(List<F3Expression> exprList) {
+        this.exprList = exprList;
     }
 
     @Override
@@ -47,7 +47,11 @@ public class F3Parens extends F3Expression implements ParenthesizedTree {
     }
 
     public F3Expression getExpression() {
-        return expr;
+	return exprList.head;
+    }
+
+    public List<F3Expression> getExpressionList() {
+        return exprList;
     }
 
     //@Override

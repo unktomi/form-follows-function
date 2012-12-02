@@ -1443,7 +1443,7 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitParens(F3Parens tree) {
-        F3Expression expr = lowerExpr(tree.expr);
+        List<F3Expression> expr = lowerExprs(tree.exprList);
         result = m.at(tree.pos).Parens(expr).setType(tree.type);
     }
 

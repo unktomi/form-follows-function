@@ -23,7 +23,8 @@
 
 package f3.lang;
 import org.f3.functions.*;
-import org.f3.runtime.F3Object;
+import org.f3.runtime.*;
+
 
 /**
  * These functions are automatically imported for
@@ -166,5 +167,13 @@ public class Builtins {
                 return fun.invoke(a1).invoke(a2);
             }
         };
+    }
+
+    public static <a,b> Either<a, b> former(a x) {
+	return Either.<a,b>former(x);
+    }
+
+    public static <a,b> Either<a, b> latter(b y) {
+	return Either.<a,b>latter(y);
     }
 }

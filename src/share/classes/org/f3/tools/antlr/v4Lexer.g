@@ -141,6 +141,7 @@ INTO            : 'into';
 INVALIDATE      : 'invalidate';
 INVERSE         : 'inverse';
 IS              : 'is';
+ONLY            : 'only';
 LET             : 'let';
 LAST            : 'last';
 LAZY            : 'lazy';

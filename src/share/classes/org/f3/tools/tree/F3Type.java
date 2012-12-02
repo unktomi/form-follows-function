@@ -24,7 +24,7 @@
 package org.f3.tools.tree;
 
 import org.f3.api.tree.*;
-
+import com.sun.tools.mjavac.code.BoundKind;
 /**
  * Abstract base for types
  *
@@ -32,8 +32,7 @@ import org.f3.api.tree.*;
  */
 public abstract class F3Type extends F3Expression implements TypeTree {    
     private final Cardinality cardinality;
-    
-
+    public BoundKind boundKind = BoundKind.UNBOUND;
     /**
      * @param cardinality one of the cardinality constants
      */

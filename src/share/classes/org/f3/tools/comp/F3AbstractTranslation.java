@@ -1300,7 +1300,8 @@ public abstract class F3AbstractTranslation
                case LITERAL:
                    return expr.getF3Kind() == F3Kind.NULL_LITERAL;
                case PARENS:
-                   return possiblyNull(((F3Parens)expr).getExpression());
+                   //return possiblyNull(((F3Parens)expr).getExpressionList());
+		   return false;
                case SELECT:
                    return ((F3Select)expr).sym instanceof VarSymbol;
                case SEQUENCE_INDEXED:
@@ -1554,9 +1555,11 @@ public abstract class F3AbstractTranslation
                 full = castFromObject(Call(app, defs.get_PointerMethodName), resultType);
             } else {
                 full = app;
-                if (useInvoke) {
+                if (true || useInvoke) {
                     if (resultType != syms.voidType) {
                         full = typeCast(resultType, syms.objectType, full);
+			System.err.println("full="+full);
+                        full = typeCast(resultType instanceof Type.TypeVar ? resultType : types.erasure(resultType), syms.objectType, full);
                     }
                 }
             }
@@ -3370,7 +3373,6 @@ public abstract class F3AbstractTranslation
 	    if (t instanceof MethodType) { // hack !!!!
 		t = syms.makeFunctionType((MethodType)t);
 	    }
-	    //System.err.println("type cast: "+ expr+": "+t+": "+expr.type);
             JCExpression ret = typeCast(t, expr.type, tExpr);
             ret = convertNullability(diagPos, ret, expr, t);
             return toResult(ret, t);
@@ -4322,7 +4324,7 @@ public abstract class F3AbstractTranslation
     }
 
     public void visitParens(F3Parens tree) {
-        result = translateToExpressionResult(tree.expr, targetType);
+        result = translateToExpressionResult(tree.exprList.head, targetType);
     }
 
     public void visitPostInitDefinition(F3PostInitDefinition tree) {
