@@ -1536,7 +1536,7 @@ public abstract class F3AbstractTranslation
 		Type argType = exp.type;
                 Type paramType = types.boxedTypeOrType(argType);
 		JCExpression t = makeType(paramType);
-		System.err.println("t="+t.getClass()+": "+t + " from "+exp.type);
+		//System.err.println("t="+t.getClass()+": "+t + " from "+exp.type);
                 typeArgs.append(t);
             }
             JCMethodInvocation app = m().Apply(typeArgs.toList(),
@@ -1558,7 +1558,7 @@ public abstract class F3AbstractTranslation
                 if (true || useInvoke) {
                     if (resultType != syms.voidType) {
                         full = typeCast(resultType, syms.objectType, full);
-			System.err.println("full="+full);
+			//System.err.println("full="+full);
                         full = typeCast(resultType instanceof Type.TypeVar ? resultType : types.erasure(resultType), syms.objectType, full);
                     }
                 }

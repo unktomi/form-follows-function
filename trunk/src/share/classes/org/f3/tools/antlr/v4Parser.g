@@ -6449,6 +6449,7 @@ genericParam[boolean contravar, boolean covar]
 
     : (t=identifier  { $value = $t.value; })  
         (COLON|IS)=>((COLON|IS)
+
                       (AT ident=IDENTIFIER  { 
                            String str = ident.toString(); 
                            if (str.equals("least")) {

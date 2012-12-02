@@ -353,23 +353,19 @@ public class F3Attr implements F3Visitor {
 						   typeArgTypes,
 						   localResult.tsym);
 		    } else {
-			if (localResult instanceof TypeVar) {
-			    TypeVar tv = (TypeVar) localResult;
-			    Type bound = tv.bound;
-			    if (types.isTypeCons(bound)) {
-				typeArgTypes = List.<Type>of(tv).appendList(typeArgTypes);
-				localResult = types.applySimpleGenericType(bound,
-									   typeArgTypes);
-			    } else {
-				TypeCons tc = new TypeCons(tv.tsym.name, 
-							   tv.tsym, 
-							   tv.bound);
-				tc.args = typeArgTypes;
-				tc.bound = tv.bound;
-				localResult = tc;
-			    }
-			} else {
-			    //System.err.println("unhandled case: "+ localResult.getClass()+" "+localResult+" "+typeArgTypes);
+			Type bound = types.upperBound(localResult);
+			//System.err.println("localResult="+localResult);
+			//System.err.println("bound="+bound.getClass());
+			//System.err.println("bound="+types.toF3String(bound));
+			if (bound instanceof TypeVar) {
+			    TypeVar tv = (TypeVar)bound;
+			    TypeCons tc = new TypeCons(tv.tsym.name, 
+						       tv.tsym, 
+						       tv.bound);
+			    tc.args = typeArgTypes;
+			    tc.bound = tv.bound;
+			    localResult = tc;
+			    //System.err.println("tc="+tc);
 			}
 		    }
 		    tree.type = localResult;
@@ -520,10 +516,13 @@ public class F3Attr implements F3Visitor {
 		argtypes.append(new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
+		/*
 		BoundKind bk = F3TreeInfo.boundKind(l.head);
 		if (bk != null && bk != BoundKind.UNBOUND) {
+		    System.err.println("making wildcard from: "+ l.head);
 		    t = new WildcardType(t, bk, syms.boundClass);
 		} 
+		*/
 		argtypes.append(t);
 	    }
 	}
@@ -539,6 +538,7 @@ public class F3Attr implements F3Visitor {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
 		BoundKind bk = F3TreeInfo.boundKind(l.head);
 		if (bk != null && bk != BoundKind.UNBOUND) {
+		    //System.err.println("making wildcard from: "+ l.head);
 		    t = new WildcardType(t, bk, syms.boundClass);
 		} 
 		argtypes.append(t);
@@ -1022,8 +1022,10 @@ public class F3Attr implements F3Visitor {
                     return sym;
                 }
             case WILDCARD:
-		System.err.println(site);
-                throw new AssertionError(tree);
+		System.err.println(tree);
+		System.err.println(site.getClass());
+		System.err.println(types.toF3String(site));
+                //throw new AssertionError(tree);
             case TYPEVAR:
                 // Normally, site.getUpperBound() shouldn't be null.
                 // It should only happen during memberEnter/attribBase
@@ -1034,6 +1036,7 @@ public class F3Attr implements F3Visitor {
                 sym = (site.getUpperBound() != null)
                     ? selectSym(tree, capture(site.getUpperBound()), env, pt, pkind)
                     : null;
+		System.err.println("sym="+sym);
                 if (sym == null || isType(sym)) {
                     log.error(pos, MsgSym.MESSAGE_TYPE_VAR_CANNOT_BE_DEREF);
                     return syms.errSymbol;
@@ -1619,7 +1622,10 @@ public class F3Attr implements F3Visitor {
 		}
             }
 	    if (elemtype == null) {
-		System.err.println("elem type is null");
+		System.err.println("elem type is null "+exprType.getClass());
+		System.err.println("isFunctor: "+ types.isFunctor(exprType));
+		System.err.println("Functor element: "+ types.functorElementType(exprType));
+		System.err.println("functor="+types.getFunctor(exprType));
 		elemtype = syms.objectType;
 	    }
             if (elemtype == syms.errType) {
@@ -1708,6 +1714,7 @@ public class F3Attr implements F3Visitor {
 		}
 	    }
             if (map != null) {
+		//System.err.println("map="+map);
                 owntype = attribExpr(map, env);
             }
         }
@@ -2167,6 +2174,12 @@ public class F3Attr implements F3Visitor {
 
     public static class TypeCons extends TypeVar {
 	public List<Type> args;
+	public List<Type> getTypeArguments() {
+	    return args;
+	}
+	public Type upperBound() {
+	    return this;
+	}
 	public TypeCons(Name name, Symbol sym, Type bound) {
 	    super(name, sym, bound);
 	}

@@ -1119,9 +1119,9 @@ public class F3ToJava extends F3AbstractTranslation {
     @Override
     public void visitParens(F3Parens tree) {
         if (yield() == ToExpression) {
-            result = translateToExpressionResult(tree.expr, targetType);
+            result = translateToExpressionResult(tree.getExpression(), targetType);
         } else {
-            result = translateToStatementsResult(tree.expr, targetType);
+            result = translateToStatementsResult(tree.getExpression(), targetType);
         }
     }
 

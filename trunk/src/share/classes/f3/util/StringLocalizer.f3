@@ -123,21 +123,20 @@ public class StringLocalizer {
     }
 
     function getDefaultPropertiesName() : String {
-        var elements : StackTraceElement[] = Thread.currentThread().getStackTrace();
+        var elements = Thread.currentThread().getStackTrace();
         var elem: StackTraceElement;
         var className: String;
         var foundMe: Boolean = false;
 
-        for (i in [0..<sizeof elements]) {
-            elem = elements[i];
-            className = elem.getClassName();
-
+        for (e in elements) {
+            className = e.getClassName();
             if (className.startsWith("f3.util.StringLocalizer")) {
                 foundMe = true;
             } else if (className.startsWith("org.f3.runtime")) {
                 continue;  // ignore runtime frames
             } else if (foundMe) {
                 // this should be the caller's stack
+		elem = e;
                 break;
             }
         }

@@ -123,7 +123,7 @@ public class F3TreeScanner implements F3Visitor {
     }
 
     public void visitParens(F3Parens tree) {
-        scan(tree.expr);
+        scan(tree.getExpression());
     }
 
     public void visitAssign(F3Assign tree) {
