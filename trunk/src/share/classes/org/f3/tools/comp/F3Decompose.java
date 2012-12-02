@@ -544,7 +544,7 @@ public class F3Decompose implements F3Visitor {
     }
 
     public void visitParens(F3Parens tree) {
-        F3Expression expr = decomposeComponent(tree.expr);
+        List<F3Expression> expr = decomposeComponents(tree.exprList);
         result = f3make.at(tree.pos).Parens(expr);
     }
 

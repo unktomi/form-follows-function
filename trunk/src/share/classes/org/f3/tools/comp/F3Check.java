@@ -1598,6 +1598,10 @@ public class F3Check {
 			 e2.scope != null;
 			 e2 = e2.next()) {
 			Symbol s2 = e2.sym;
+			if (s2.type == null) {
+			    System.err.println("s2.type is null: "+s2+", s1="+s1);
+			    continue;
+			}
 			if (s2 == s1 ||
 			    s2.kind != MTH ||
 			    (s2.flags() & (STATIC|SYNTHETIC|BRIDGE)) != 0 ||

@@ -339,6 +339,9 @@ public abstract class F3TranslationSupport {
 
     List<JCTypeParameter> translateTypeParams(DiagnosticPosition diagPos, List<Type> typeArgTypes) {
 	List<JCTypeParameter> tparams = List.nil();
+	if (ERASE_BACK_END) {
+	    return tparams;
+	}
 	if (typeArgTypes != null) { // note bounds on type parameters might contain references to mixin classes 
 	    ListBuffer<JCTypeParameter> buf = new ListBuffer<JCTypeParameter>();
 	    for (List<Type> x = typeArgTypes; x != null; x = x.tail) {
@@ -391,7 +394,10 @@ public abstract class F3TranslationSupport {
         return texp;
     }
 
+    public final static boolean ERASE_BACK_END = false;
+
     private JCExpression makeTypeTreeInner(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
+	if (ERASE_BACK_END) t = types.erasure(t);
 	JCExpression exp = makeTypeTreeInner0(diagPos, t, makeIntf);
 	if (t == null) {
 	    throw new NullPointerException("makeTypeTreeInner: "+ diagPos);
@@ -457,16 +463,17 @@ public abstract class F3TranslationSupport {
                 return make.at(diagPos).TypeArray(makeTypeTreeInner(diagPos,types.elemtype(t), makeIntf));
             }
             default: {
-		if (false && (t instanceof TypeVar)) {
+		if (t instanceof TypeVar) {
 		    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
 			return makeTypeTreeInner(diagPos, ((TypeVar)t).getUpperBound(), makeIntf);
 		    }
 		    TypeVar tv = (TypeVar)t;
 		    if (tv.lower instanceof WildcardType) { // hack
-			//System.err.println("existentializing: "+ diagPos+": "+ t);
 			if (true) {
-			    return make.at(diagPos).Wildcard(make.TypeBoundKind(BoundKind.UNBOUND),
-							     null);
+			    JCExpression exp = make.at(diagPos).Wildcard(make.TypeBoundKind(BoundKind.UNBOUND),
+									 null);
+			    System.err.println("existentializing: "+ t +": "+exp);
+			    return exp;
 			}
 		    } else {
 			//System.err.println("not existentializing: "+ t);

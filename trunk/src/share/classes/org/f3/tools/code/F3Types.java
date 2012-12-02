@@ -24,6 +24,7 @@
 package org.f3.tools.code;
 
 import org.f3.tools.comp.F3Defs;
+import org.f3.tools.comp.F3TranslationSupport;
 import static org.f3.tools.code.F3TypeRepresentation.*;
 import com.sun.tools.mjavac.code.*;
 import com.sun.tools.mjavac.util.*;
@@ -809,15 +810,17 @@ public class F3Types extends Types {
     /*
     public boolean hasSameArgs(Type t, Type s) {
 	boolean result = super.hasSameArgs(t, s);
-	System.err.println("has same args: "+ t.getClass()+ " and " +s.getClass()+": "+result);
-	System.err.println("has same args: "+ t+ " and " +s+": "+result);
-	System.err.println("t.args="+t.getParameterTypes());
-	System.err.println("s.args="+s.getParameterTypes());
-	for (Type x : t.getParameterTypes()) {
-	    System.err.println("t.arg="+x.getClass()+": "+ System.identityHashCode(x) + ": "+ x);
-	}
-	for (Type x : s.getParameterTypes()) {
-	    System.err.println("s.arg="+x.getClass()+": "+ System.identityHashCode(x) + ": "+ x);
+	if (isMonad(t) && isMonad(s)) {
+	    System.err.println("has same args: "+ t.getClass()+ " and " +s.getClass()+": "+result);
+	    System.err.println("has same args: "+ t+ " and " +s+": "+result);
+	    System.err.println("t.args="+t.getParameterTypes());
+	    System.err.println("s.args="+s.getParameterTypes());
+	    for (Type x : t.getParameterTypes()) {
+		System.err.println("t.arg="+x.getClass()+": "+ System.identityHashCode(x) + ": "+ x);
+	    }
+	    for (Type x : s.getParameterTypes()) {
+		System.err.println("s.arg="+x.getClass()+": "+ System.identityHashCode(x) + ": "+ x);
+	    }
 	}
 	return result;
     }
@@ -828,12 +831,13 @@ public class F3Types extends Types {
         if (sym.isConstructor() || _other.kind != MTH) return false;
         if (sym == _other) return true;
         MethodSymbol other = (MethodSymbol)_other;
-
         // assert types.asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
-	//System.err.println("mt="+mt);
-	//System.err.println("ot="+ot);
+	if (F3TranslationSupport.ERASE_BACK_END) {
+	    mt = erasure(mt);
+	    ot = erasure(ot);
+	}
         return
             this.isSubSignature(mt, ot) &&
             (!checkResult || this.resultSubtype(mt, ot, Warner.noWarnings));
@@ -1019,19 +1023,27 @@ public class F3Types extends Types {
 
         @Override
         public Void visitWildcardType(WildcardType t, StringBuilder buffer) {
-	    System.err.println("wildcard="+t);
-	    System.err.println("wildcard.type="+t.type);
-	    if (t.bound != null) {
-		System.err.println("wildcard.bound="+t.bound.getClass()+": "+t.bound);
-	    }
+	    //System.err.println("wildcard="+t);
+	    //System.err.println("wildcard.type="+t.type);
+	    //if (t.bound != null) {
+	    //		System.err.println("wildcard.bound="+t.bound.getClass()+": "+t.bound);
+	    //}
 	    if (t.kind == BoundKind.EXTENDS) {
-		visit(t.bound, buffer);
-		buffer.append(" is ");
+		if (t.bound == null) {
+		    buffer.append("at least ");
+		} else {
+		    visit(t.bound, buffer);
+		    buffer.append(" is ");
+		}
 		visit(t.type, buffer);
 	    } else if (t.kind == BoundKind.SUPER) {
-		visit(t.bound, buffer);
-		buffer.append(" is ");
-		visit(t.bound, buffer);
+		if (t.bound == null) {
+		    buffer.append("at most ");
+		} else {
+		    visit(t.bound, buffer);
+		    buffer.append(" is ");
+		}
+		visit(t.type, buffer);
 	    } else {
 		//BoundKind.UNBOUND
 		buffer.append("?");

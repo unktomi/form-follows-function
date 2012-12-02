@@ -306,7 +306,9 @@ public class F3ClassReader extends ClassReader {
 		    //System.err.println("flatname="+flatname);
                     if (flatname.startsWith(functionClassPrefixName)
                         && flatname != functionClassPrefixName) {
-                        t = ((F3Symtab) syms).makeFunctionType(translateTypes(ctype.typarams_field));
+			String str = flatname.toString();
+			int argCount = Integer.parseInt(str.substring(flatname.length()-1));
+                        t = ((F3Symtab) syms).makeFunctionType(argCount, translateTypes(ctype.typarams_field));
 			//System.err.println("t="+t);
                         break;
                     }

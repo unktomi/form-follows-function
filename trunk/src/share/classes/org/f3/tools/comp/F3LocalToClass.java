@@ -610,10 +610,10 @@ public class F3LocalToClass {
         F3Expression value = apply;
 
 	if (apply.type != syms.voidType) {
-	    value = f3make.TypeCast(preTrans.makeTypeTree(apply.type),
+	    value = f3make.TypeCast(preTrans.makeTypeTree(types.erasure(apply.type)),
 				    value);
 	    
-	    //System.err.println("apply.type="+apply.type);
+	    System.err.println("apply.type="+apply.type);
 	    value.setType(apply.type);
 	}
 

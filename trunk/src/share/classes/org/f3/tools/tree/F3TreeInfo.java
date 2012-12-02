@@ -441,6 +441,13 @@ public class F3TreeInfo {
 	}
     }
 
+    public static BoundKind boundKind(F3Tree tree) {
+	if (tree instanceof F3Type) {
+	    return ((F3Type)tree).boundKind;
+	}
+	return null;
+    }
+
     /** If this tree is an identifier or a field, return its symbol,
      *  otherwise return null.
      */
@@ -468,7 +475,7 @@ public class F3TreeInfo {
 
         if (tree == null) return tree;
         if (tree.getF3Tag() == F3Tag.PARENS)
-            return skipParens(((F3Parens)tree).expr);
+            return skipParens(((F3Parens)tree).getExpression());
         else
             return tree;
     }

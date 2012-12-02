@@ -520,17 +520,12 @@ public class F3Attr implements F3Visitor {
 		argtypes.append(new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
-		extend = false;
-		if (extend && pkind == TYP && !isWildcard(t)) {
-		    t = new WildcardType(t, BoundKind.EXTENDS, syms.boundClass);
-		} else {
-		    if (!extend) {
-			//System.err.println("not extending: "+ l.head);
-		    }
-		}
+		BoundKind bk = F3TreeInfo.boundKind(l.head);
+		if (bk != null && bk != BoundKind.UNBOUND) {
+		    t = new WildcardType(t, bk, syms.boundClass);
+		} 
 		argtypes.append(t);
 	    }
-            //argtypes.append(attribType(l.head, env));
 	}
         return argtypes.toList();
     }
@@ -542,9 +537,12 @@ public class F3Attr implements F3Visitor {
 		argtypes.append(new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
+		BoundKind bk = F3TreeInfo.boundKind(l.head);
+		if (bk != null && bk != BoundKind.UNBOUND) {
+		    t = new WildcardType(t, bk, syms.boundClass);
+		} 
 		argtypes.append(t);
 	    }
-            //argtypes.append(attribType(l.head, env));
 	}
         return argtypes.toList();
     }
@@ -1066,7 +1064,7 @@ public class F3Attr implements F3Visitor {
 
     //@Override
     public void visitParens(F3Parens tree) {
-        Type owntype = attribTree(tree.expr, env, pkind, pt);
+        Type owntype = attribTree(tree.getExpression(), env, pkind, pt);
         result = check(tree, owntype, pkind, pkind, pt, pSequenceness);
         Symbol sym = F3TreeInfo.symbol(tree);
         if (sym != null && (sym.kind&(TYP|PCK)) != 0)
@@ -2925,7 +2923,6 @@ public class F3Attr implements F3Visitor {
             argtypebuffer.append(argtype);
         }
         List<Type> argtypes = argtypebuffer.toList();
-
 	tree.typeargs = F3TreeInfo.typeArgs(tree.meth);
         typeargtypes = attribTypeArgs(tree.typeargs, localEnv);
 	typeargbuffer.appendList(typeargtypes);
@@ -3026,8 +3023,8 @@ public class F3Attr implements F3Visitor {
 		! rs.argumentsAcceptable(argtypes, mtype.getParameterTypes(),
 					 true, false, Warner.noWarnings)) {
 		if (!partial || argtypes.size() >= mtype.getParameterTypes().size()) {
-		    //System.err.println("argtypes: "+argtypes);
-		    //System.err.println("paramtypes: "+ mtype.getParameterTypes());
+		    System.err.println("argtypes: "+argtypes);
+		    System.err.println("paramtypes: "+ mtype.getParameterTypes());
 		    log.error(tree,
 			      MsgSym.MESSAGE_F3_CANNOT_APPLY_FUNCTION,
 			      mtype.getParameterTypes(), argtypes);

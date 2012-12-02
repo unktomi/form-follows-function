@@ -4529,17 +4529,10 @@ primaryExpression
             $value = $fe.value;
         }
     
-    | LPAREN e=expression (e1=expression {eList.append(e1);})* RPAREN
+    | LPAREN e=expression {eList.append(e);} (COMMA e1=expression {eList.append(e1);})* RPAREN
     
         {
-            if (eList.size() == 0) {
-                $value = preserveTrees ?
-                F.at(pos($LPAREN)).Parens($e.value) :
-                $e.value;
-                endPos($value);
-            } else {
-                $value = F.at(pos($LPAREN)).PartialApply($e.value, eList.toList());
-            }
+            $value = F.at(pos($LPAREN)).Tuple(eList.toList());
         }
         
     | AT 
@@ -5809,7 +5802,6 @@ type
             }
             endPos($rtype);
         }
-        
     | typeFunction  { $rtype = $typeFunction.rtype; } 
     | typePrefixed  { $rtype = $typePrefixed.rtype; }) 
     
@@ -6328,6 +6320,9 @@ typeName
     | LPAREN 
            ((typeparens  // Allows cardinality coherence, using nested paren parsing trick
             { $value = $typeparens.value; }) 
+              (COMMA x=type {
+                    $value = F.at(rPos).TupleType($value, x); 
+               })*
             | { 
                   $value = F.at(rPos).Ident(names.fromString("Void"));
              })  
@@ -6419,7 +6414,7 @@ genericParams0[boolean contravar, boolean covar]
 	COMMA ga2=genericParam[contravar, covar]
 	{
             exprbuff.append($ga2.value);
-        }
+    }
    )* 
    {$value = exprbuff.toList();}
 ;
@@ -6440,7 +6435,7 @@ typeparens
     | type
     
         { $value = $type.rtype; }
-    ;
+       ;
 
 genericParam[boolean contravar, boolean covar]
 
@@ -6452,7 +6447,20 @@ genericParam[boolean contravar, boolean covar]
     F3Expression   texpr   = null; 
 }
 
-    : (t=identifier  { $value = $t.value; })  (COLON|IS)=>((COLON|IS) bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
+    : (t=identifier  { $value = $t.value; })  
+        (COLON|IS)=>((COLON|IS)
+                      (AT ident=IDENTIFIER  { 
+                           String str = ident.toString(); 
+                           if (str.equals("least")) {
+                              bk = BoundKind.EXTENDS;
+                           } else if (str.equals("most")) {
+                              bk = BoundKind.SUPER;
+                           } else {
+                               // error
+                           }
+                        }
+                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.EXTENDS;})
+                      bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
 
       | 
        (CLASS n=identifier OF gas=genericParams[false, false] { 
@@ -6481,11 +6489,27 @@ genericArgument
 
 @init 
 {
-    BoundKind       bk      = BoundKind.EXTENDS;
+    BoundKind       bk      = BoundKind.UNBOUND;
     F3Expression   texpr   = null; 
 }
 
-      : t=type  { $value = $t.rtype; }
+      : 
+                      (AT ident=IDENTIFIER  { 
+                           String str = ident.getText();
+                           if (str.equals("least")) {
+                              bk = BoundKind.EXTENDS;
+                           } else if (str.equals("most")) {
+                              bk = BoundKind.SUPER;
+                           } else {
+                               // error
+                           }
+                        }
+                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.EXTENDS;})
+
+       t=type  { 
+            $value = $t.rtype; 
+            $t.rtype.boundKind = bk;
+        }
         //  (COLON)=>(COLON bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
       |
       q=QUES {$value = F.at($q.pos).TypeExists();}

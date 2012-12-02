@@ -213,10 +213,38 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
-    public F3Parens Parens(F3Expression expr) {
+    public F3Parens Parens(List<F3Expression> expr) {
         F3Parens tree = new F3Parens(expr);
         tree.pos = pos;
         return tree;
+    }
+
+    public F3Expression Tuple(List<F3Expression> expr) {
+	System.err.println("tuple: "+ expr);
+	if (expr.size() == 1) {
+	    return expr.head;
+	}
+        F3Ident id = Ident(names.fromString("org"));
+        F3Select sel = 
+            Select(id, names.fromString("f3"), false);
+        sel = Select(sel, names.fromString("runtime"), false);
+        sel = Select(sel, names.fromString("Pair"), false);
+        sel = Select(sel, names.fromString("both"), false);
+	F3Expression arg1 = expr.head;
+	expr = expr.tail;
+	F3Expression arg2 = expr.head;
+	expr = expr.tail;
+	F3FunctionInvocation result = Apply(null, sel, List.of(arg1, arg2));
+	result.immutable = true;
+	Name mul = names.fromString("and");
+	while (expr.nonEmpty()) {
+	    F3Expression arg = expr.head;	    
+	    result = Apply(null, Select(result, mul, false), List.of(arg));
+	    result.immutable = true;
+	    expr = expr.tail;
+	}
+	System.err.println("tuple: "+ expr + " => "+ result);
+        return result;
     }
 
     public F3Assign Assign(F3Expression lhs, F3Expression rhs) {
@@ -535,7 +563,6 @@ public class F3TreeMaker implements F3TreeFactory {
             case VOID:
                 tp = Ident(syms.voidTypeName);
 		break;
-
 	    case WILDCARD:
 		{
 		    WildcardType w = (WildcardType)t;
@@ -871,7 +898,7 @@ public class F3TreeMaker implements F3TreeFactory {
     }
 
     public F3Instanciate InstanciateNew(F3Expression ident,
-            List<F3Expression> args) {
+					List<F3Expression> args) {
         return Instanciate(F3Kind.INSTANTIATE_NEW,
                 ident,
                 args != null? args : List.<F3Expression>nil(),
@@ -991,7 +1018,6 @@ public class F3TreeMaker implements F3TreeFactory {
         tree.pos = pos;
         return tree;
     }
-
 
     public F3Type TypeVar(F3Expression className,Cardinality cardinality) {
         return TypeVar(className, cardinality, null);
@@ -1201,6 +1227,15 @@ public class F3TreeMaker implements F3TreeFactory {
         F3ErroneousForExpressionInClause tree = new F3ErroneousForExpressionInClause(errs);
         tree.pos = pos;
         return tree;
+    }
+
+    public F3Expression TupleType(F3Expression first, F3Expression second) {
+        F3Ident id = Ident(names.fromString("org"));
+        F3Select sel = 
+            Select(id, names.fromString("f3"), false);
+        sel = Select(sel, names.fromString("runtime"), false);
+        sel = Select(sel, names.fromString("Pair"), false);
+	return Ident(sel, List.of(first, second));
     }
 
     public F3Expression Ident(F3Expression name, List<F3Expression> typeVars) {

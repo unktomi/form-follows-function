@@ -419,7 +419,7 @@ public class F3PreTranslationSupport {
                 case OBJECT_LITERAL:
                     return false;
                 case PARENS:
-                    expr = ((F3Parens)expr).getExpression();
+                    //expr = ((F3Parens)expr).getExpressionList();
                     break;
                 case BLOCK_EXPRESSION:
                     expr = ((F3Block)expr).getValue();
@@ -496,7 +496,7 @@ public class F3PreTranslationSupport {
             case SEQUENCE_EMPTY:
                 return true;
             case PARENS:
-                return isImmutable(((F3Parens)tree).getExpression());
+                return true;//isImmutable(((F3Parens)tree).getExpression());
             case BLOCK_EXPRESSION: {
                 F3Block be = (F3Block) tree;
                 for (F3Expression stmt : be.getStmts()) {
@@ -526,6 +526,7 @@ public class F3PreTranslationSupport {
             }
             case APPLY: {
                 F3FunctionInvocation finv = (F3FunctionInvocation) tree;
+		if (finv.immutable) return true;
                 F3Expression meth = finv.meth;
                 Symbol refSym = F3TreeInfo.symbol(meth);
                 return
