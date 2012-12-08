@@ -490,7 +490,7 @@ public abstract class F3TranslationSupport {
      * Generate the return type as a Location if "isBound" is set.
      * */
     public JCExpression makeReturnTypeTree(DiagnosticPosition diagPos, MethodSymbol mth, boolean isBound) {
-        Type returnType = isBound? syms.f3_PointerType : mth.getReturnType();
+        Type returnType = isBound? syms.f3_PointerTypeErasure : mth.getReturnType();
         return makeType(diagPos, returnType);
     }
 
@@ -692,7 +692,7 @@ public abstract class F3TranslationSupport {
         // Check if the variable is synthetic, type is Pointer and naming convention
         // is followed for bound function result value.
         return ((sym.flags() & Flags.SYNTHETIC) != 0L) &&
-            types.isSameType(syms.f3_PointerType, sym.type) &&
+            types.isSameType(syms.f3_PointerTypeErasure, sym.type) &&
             sym.name.startsWith(defs.boundFunctionResultName);
     }
 

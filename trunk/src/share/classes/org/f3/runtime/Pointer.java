@@ -22,7 +22,7 @@
  */
 
 package org.f3.runtime;
-
+import org.f3.runtime.sequence.Sequences;
 import f3.animation.KeyValueTarget;
 
 
@@ -32,7 +32,7 @@ import f3.animation.KeyValueTarget;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class Pointer implements KeyValueTarget {
+public class Pointer<a> implements KeyValueTarget<a> {
     private final Type type;
     private final F3Object obj;
     private final int varnum;
@@ -84,25 +84,25 @@ public class Pointer implements KeyValueTarget {
         return this;
     }
     
-    public Object get() {
-        return obj != null? obj.get$(varnum) : getDefaultValue();
+    public a get() {
+        return (a)(obj != null? obj.get$(varnum) : getDefaultValue());
     }
 
-    public Object get(int pos) {
+    public a get(int pos) {
         assert type == Type.SEQUENCE : "expecting a sequence type";
-        return obj != null? obj.elem$(varnum, pos) : null;
+        return (a)(obj != null? obj.elem$(varnum, pos) : null);
     }
 
-    public void set(Object value) {
+    public void set(a value) {
         if (obj != null) {
-            obj.set$(varnum, value);
+            obj.set$(varnum, (Object)value);
         }
     }
 
-    public void set(int pos, Object value) {
+    public void set(int pos, a value) {
         assert type == Type.SEQUENCE : "expecting a sequence type";
         if (obj != null) {
-            obj.set$(varnum, value);
+	    Sequences.set1(obj, varnum, value, pos);
         }
     }
 
@@ -116,7 +116,7 @@ public class Pointer implements KeyValueTarget {
     }
 
     public void setValue(Object o) {
-        set(o);
+        set((a)o);
     }
 
     @Override
@@ -162,11 +162,11 @@ public class Pointer implements KeyValueTarget {
      * effective. You can explicitly unbind the pointer using the "unbind"
      * method is this class.
      */
-    public static class BoundPointer extends Pointer {
+    public static class BoundPointer<a> extends Pointer<a> {
         private Pointer srcPtr;
         private F3Object listener;
 
-        private BoundPointer(Pointer destPtr, Pointer srcPtr, F3Object listener) {
+        private BoundPointer(Pointer<a> destPtr, Pointer<a> srcPtr, F3Object listener) {
             super(destPtr.getType(), destPtr.getF3Object(), destPtr.getVarNum());
             this.srcPtr = srcPtr;
             this.listener = listener;
@@ -195,7 +195,7 @@ public class Pointer implements KeyValueTarget {
      *
      * @param srcPtr The source Pointer object to which the current Pointer is bound to
      */
-    public BoundPointer bind(Pointer srcPtr) {
+    public BoundPointer<a> bind(Pointer<a> srcPtr) {
         final F3Object thisObj = getF3Object();
         final int thisVarNum = getVarNum();
         final int srcVarNum = srcPtr.getVarNum();
@@ -213,11 +213,11 @@ public class Pointer implements KeyValueTarget {
             }
         };
         // initial update from "srcPtr"
-        this.set(thisVarNum, srcPtr.get());
+        this.set(thisVarNum, (a)srcPtr.get());
 
         // add dependency so that we will get notified with update$ calls
         srcPtr.addDependency(listener);
         // return a BoundPointer so that use can call call "unbind()" later, if needed
-        return new BoundPointer(this, srcPtr, listener);
+        return new BoundPointer<a>(this, srcPtr, listener);
     }
 }

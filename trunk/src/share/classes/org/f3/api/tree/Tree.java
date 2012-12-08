@@ -395,6 +395,8 @@ public interface Tree {
          */
         INSTANTIATE_OBJECT_LITERAL(InstantiateTree.class),
 
+        WITH_OBJECT_LITERAL(InstantiateTree.class),
+
         /**
          * Used for instances of {@link InstantiateTree}.
          * In a new class

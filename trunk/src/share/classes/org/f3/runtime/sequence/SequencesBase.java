@@ -948,6 +948,17 @@ public class SequencesBase {
         return (T) instance.elem$(varNum, k);
     }
 
+    public static <T> Sequence<T> repeat(final T x, final int n) {
+	return new AbstractSequence<T>(TypeInfo.<T>getTypeInfo()) {
+	    public int size() {
+		return n;
+	    }
+	    public T get(int i) {
+		return i >= 0 && i < n ? x : getDefaultValue();
+	    }
+	};
+    }
+
     public static <T> Sequence<? extends T> getNewElements(Sequence<? extends T> current, int startPos, int inserted) {
          return Sequences.subsequence(current, startPos, startPos+inserted);
     }
@@ -1152,6 +1163,10 @@ public class SequencesBase {
     public static <T> T set(F3Object instance, int varNum, T newValue, int index) {
         replaceSlice(instance, varNum, newValue, index, index + 1);
         return newValue;
+    }
+
+    public static <T> T set1(F3Object instance, int varNum, T newValue, int index) {
+	return set(instance, varNum, newValue, index);
     }
 
     public static <T> ArraySequence<? extends T> copy(Sequence<? extends T> oldValue) {

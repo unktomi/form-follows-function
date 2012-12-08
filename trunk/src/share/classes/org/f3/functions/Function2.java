@@ -47,7 +47,11 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 	};
     }
 
-    public Function1<? extends R, ? super A2> apply(final A1 x1) {
+    public Function1<R, A2> mul(final A1 x1) {
+	return apply(x1);
+    }
+
+    public Function1<R, A2> apply(final A1 x1) {
 	final Function2<R, A1, A2> self = this;
 	return new Function1<R, A2>() {
 	    public R invoke(final A2 x2) {

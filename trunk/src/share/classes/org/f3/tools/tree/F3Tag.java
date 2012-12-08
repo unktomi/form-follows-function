@@ -115,6 +115,7 @@ public enum F3Tag {
     /** Unary operators, of type Unary.
      */
     NEG,
+    DEREF,
     NOT,
     PREINC,
     PREDEC,
@@ -140,6 +141,10 @@ public enum F3Tag {
     MUL,
     DIV,
     MOD,
+    /** Tuples
+     */
+    TUPLE,
+
 
     /** Assignment operators, of type Assignop.
      */
@@ -284,6 +289,8 @@ public enum F3Tag {
     /** reverse unary operator
      */
     REVERSE,
+
+    AMP,
 
     /** time literal
      */

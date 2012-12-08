@@ -54,7 +54,20 @@ public class Function1<R, A1> extends Function<R>
 	};
     }
 
+    public <B> Function0<? extends R> mul(final A1 x) {
+	final Function1<R, A1> self = this;	
+	return new Function0<R>() {
+	    public R invoke() {
+		return self.invoke(x);
+	    }
+	};
+    }
+
     public <B> Function1<? extends R, ? super B> mul(final Function1<? extends A1, ? super B> f) {
+	return composeWith(f);
+    }
+    
+    public <B> Function1<? extends R, ? super B> composeWith(final Function1<? extends A1, ? super B> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<R, B>() {
 	    public R invoke(final B b) {
@@ -65,21 +78,16 @@ public class Function1<R, A1> extends Function<R>
 	    }
 	};
     }
-    
-    public <B> Function1<? extends R, ? super B> composeWith(final Function1<? extends A1, ? super B> f) {
-	final Function1<R, A1> self = this;
-	return new Function1<R, B>() {
-	    public R invoke(final B b) {
-		return self.invoke(f.invoke(b));
-	    }
-	};
+
+    public <B> Function1<? extends B, ? super A1> and(final Function1<? extends B, ? super R> f) {
+	return f.composeWith(this);
     }
 
-    public <B> Function1<? extends B, ? super A1> andThen(final Function1<? extends B, ? super R> f) {
-	final Function1<R, A1> self = this;
-	return new Function1<B, A1>() {
-	    public B invoke(final A1 a1) {
-		return f.invoke(self.invoke(a1));
+    public Function2<R, A1, Void> uncurry() {
+	final Function1<R, A1> self = this;	
+	return new Function2<R, A1, Void>() {
+	    public R invoke(A1 x1,Void x2) {
+		return self.invoke(x1);
 	    }
 	};
     }

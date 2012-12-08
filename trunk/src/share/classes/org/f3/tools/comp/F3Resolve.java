@@ -582,7 +582,9 @@ public class F3Resolve {
      *  @param env     The current environment.
      *  @param name    The name of the variable or field.
      */
-    Symbol findVar(F3Env<F3AttrContext> env, Name name, int kind, Type expected, boolean boxingEnabled, boolean varargsEnabled) {
+    Symbol findVar(F3Env<F3AttrContext> env, Name name, int kind, Type expected, 
+		   boolean boxingEnabled, boolean varargsEnabled) 
+    {
         Symbol bestSoFar = expected.tag == METHOD ? methodNotFound : varNotFound;
         Symbol sym;
         F3Env<F3AttrContext> env1 = env;
@@ -591,9 +593,9 @@ public class F3Resolve {
         Type mtype = expected;
         if (mtype instanceof FunctionType)
             mtype = ((FunctionType)mtype).asMethodOrForAll();
-        boolean checkArgs = mtype instanceof MethodType;// || mtype instanceof ForAll;
+        boolean checkArgs = (mtype instanceof MethodType) || (mtype instanceof ForAll);
+	//System.err.println("checkArgs: "+ checkArgs+": "+mtype.getClass()+": "+mtype);
         while (env1 != null) {
-
             Scope sc = env1.info.scope;
             Type envClass;
             if (env1.tree instanceof F3ClassDeclaration) {
@@ -641,13 +643,12 @@ public class F3Resolve {
                     }
                 }
             }
-
             if (env1.tree instanceof F3FunctionDefinition)
                 innerAccess = true;
             if (env1.outer != null && isStatic(env1)) staticOnly = true;
             env1 = env1.outer;
         }
-
+	/*
         Scope.Entry e = env.toplevel.namedImportScope.lookup(name);
         for (; e.scope != null; e = e.next()) {
             sym = e.sym;
@@ -669,8 +670,9 @@ public class F3Resolve {
 		    }
             }
         }
+	*/
         Symbol origin = null;
-        e = env.toplevel.starImportScope.lookup(name);
+        Scope.Entry e = env.toplevel.starImportScope.lookup(name);
         for (; e.scope != null; e = e.next()) {
             sym = e.sym;
             if ((sym.kind & (MTH|VAR)) == 0)
@@ -680,15 +682,20 @@ public class F3Resolve {
                 return new AmbiguityError(bestSoFar, sym);
             else if (bestSoFar.kind >= VAR) {
                 origin = e.getOrigin().owner;
+		//System.err.println("sym: "+ (sym.kind == VAR) + " "+ (sym.kind == MTH));
+		//System.err.println("sym: "+ sym.getClass());
+		//System.err.println("sym: "+ sym);
                 if (sym.kind == VAR || !checkArgs)
                     bestSoFar = isAccessible(env, origin.type, sym)
                     ? sym : new AccessError(env, origin.type, sym);
-                else //method
+                else { //method
                     bestSoFar = selectBest(env, origin.type, mtype,
                                            e.sym, bestSoFar,
                                            boxingEnabled,
                                            varargsEnabled,
                                            false);
+		    //System.err.println("select best: "+ e.sym + ": "+bestSoFar);
+		}
             }
 	    //System.err.println("findVar: "+name+": "+sym+": "+bestSoFar);
         }
@@ -714,6 +721,7 @@ public class F3Resolve {
         if (!((mt instanceof MethodType) || (mt instanceof ForAll)) ||
                 !argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
                 true, false, Warner.noWarnings)) {
+	    //System.err.println("check args failed: "+ sym + ": "+mtype);
             return wrongMethod.setWrongSym(sym);
         }
         return sym;
@@ -769,6 +777,9 @@ public class F3Resolve {
                 default: return bestSoFar;
                 }
             }
+	    //System.err.println("instantiated: "+ sym.type);
+	    //System.err.println("memberType: "+ memberType);
+	    //System.err.println("tx: "+ tx);
 	    if (allowBoxing) { // hack
 		if (memberType instanceof ForAll) {
 		    sym = sym.clone(sym.owner);
@@ -1034,7 +1045,7 @@ public class F3Resolve {
                     if (!( (mt instanceof MethodType) || (mt instanceof ForAll)) ||
                             ! argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
 						  true, false, Warner.noWarnings)) {
-			//System.err.println("arguments unacceptable : "+mtype + ": "+ mt);
+			System.err.println("arguments unacceptable : "+mtype + ": "+ mt);
                         return wrongMethod.setWrongSym(e.sym);
 		    }
                     return e.sym;
@@ -1664,11 +1675,16 @@ public class F3Resolve {
 			    F3Env<F3AttrContext> env, List<Type> argtypes) {
         Name name = treeinfo.operatorName(optag);
         Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
-                                null, false, false, false);
+                                null, true, false, true);
 	//System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind >= WRONG_MTHS) {
+	    /*
             sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
                              null, true, false, true);
+	    */
+	    sym = findVar(env, name, MTH, 
+			  newMethTemplate(argtypes, List.<Type>nil()),
+			  true, false);
 	    //System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
 	}
 	
@@ -1679,11 +1695,14 @@ public class F3Resolve {
                            F3Env<F3AttrContext> env, List<Type> argtypes) {
         Name name = treeinfo.operatorName2(optag);
         Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
-                                null, false, false, false);
+                                null, true, false, true);
 	//System.err.println("resolveOperator2: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind != MTH) {
-            sym = findMethod(env, syms.predefClass.type, name, argtypes,
-                             null, true, false, true);
+            //sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
+	    //null, true, false, true);
+	    sym = findVar(env, name, MTH, 
+			  newMethTemplate(argtypes, List.<Type>nil()),
+			  true, false);
 	    //System.err.println("resolveOperator2.default: "+name+": "+argtypes+": "+sym);
 	}
 	return sym;
@@ -2386,8 +2405,8 @@ public class F3Resolve {
                                     ((MethodSymbol) wrongSym).params);
                     else
                         wrongSymStr = wrongSym.toString();
-		    //System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
-		    //Thread.currentThread().dumpStack();
+		    System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
+		    Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,

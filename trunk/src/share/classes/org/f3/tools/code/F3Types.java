@@ -353,6 +353,10 @@ public class F3Types extends Types {
 	return monad;
     }
 
+    public Type pointerType(Type elemType) {
+        return applySimpleGenericType(syms.f3_PointerType, boxedTypeOrType(elemType));
+    }
+
     public Type sequenceType(Type elemType) {
         return sequenceType(elemType, true);
     }
@@ -399,6 +403,17 @@ public class F3Types extends Types {
         }
         Type seqtype = syms.enterClass("org.f3.runtime.sequence.ObjectArraySequence");
         return applySimpleGenericType(seqtype, elemType);
+    }
+
+    public Type pointerElementType(Type seqType) {
+        Type elemType = seqType.getTypeArguments().head;
+        while (elemType instanceof CapturedType)
+            elemType = ((CapturedType) elemType).wildcard;
+        while (elemType instanceof WildcardType)
+            elemType = ((WildcardType) elemType).type;
+        if (elemType == null)
+            return syms.f3_AnyType;
+        return elemType;
     }
 
     public Type boxedElementType(Type seqType) {

@@ -84,6 +84,7 @@ public class F3TreeInfo {
 	opname[F3Tag.SIZEOF .ordinal() - base] = names.fromString("sizeof");
 	opname[F3Tag.INDEXOF .ordinal() - base] = names.fromString("indexof");
 	opname[F3Tag.REVERSE .ordinal() - base] = names.fromString("reverse");
+	opname[F3Tag.TUPLE .ordinal() - base] = names.fromString(",");
 
         opname2 = new Name[F3Tag.F3_OP_LAST.ordinal() - base + 1];
 	opname2[F3Tag.NEG    .ordinal() - base] = names.hyphen;
@@ -110,6 +111,7 @@ public class F3TreeInfo {
 	opname2[F3Tag.SIZEOF .ordinal() - base] = names.fromString("sizeof");
 	opname2[F3Tag.INDEXOF .ordinal() - base] = names.fromString("indexof");
 	opname2[F3Tag.REVERSE .ordinal() - base] = names.fromString("reverse");
+	opname2[F3Tag.TUPLE .ordinal() - base] = names.fromString("$comma");
     }    
 
     /** Return name of operator with given tree tag.
@@ -319,6 +321,7 @@ public class F3TreeInfo {
             return andPrec;
         case EQ:
         case NE: 
+        case TUPLE: 
             return eqPrec;
         case LT:
         case GT:
@@ -336,6 +339,7 @@ public class F3TreeInfo {
             return ordPrec;
 	case NEG:
 	case NOT:
+	case AMP:
 	case PREINC:
 	case PREDEC:
 	case REVERSE:
@@ -420,6 +424,8 @@ public class F3TreeInfo {
         case NULLCHK:
             return Tree.F3Kind.OTHER;
 
+        // F3 tags which are used in javac trees
+        case TUPLE:
         // F3 tags which are used in javac trees
         case SIZEOF:
             return Tree.F3Kind.OTHER;
@@ -610,11 +616,9 @@ public class F3TreeInfo {
             case GE:
             case PLUS:
             case MINUS:
-            case MUL:
             case DIV:
             case MOD:
                 return getStartPos(((F3Binary) tree).lhs);
-
             case SELECT:
                 return getStartPos(((F3Select) tree).selected);
 

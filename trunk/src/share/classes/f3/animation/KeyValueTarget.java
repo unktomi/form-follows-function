@@ -32,7 +32,7 @@ package f3.animation;
 /**
  * @profile common
  */
-public interface KeyValueTarget {
+public interface KeyValueTarget<a> {
 
     /**
      * The types of KeyValue targets.
@@ -49,7 +49,7 @@ public interface KeyValueTarget {
      * 
      * @profile common
      */
-    Object get();
+    a get();
 
     /**
      * Returns the type of KeyValue target.
@@ -75,7 +75,7 @@ public interface KeyValueTarget {
      * 
      * @profile common
      */
-    void set(Object value);
+    void set(a value);
 
     /**
      * Sets the value of the variable the KeyValue targets (equivalent to set()).

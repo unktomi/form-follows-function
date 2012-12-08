@@ -397,7 +397,7 @@ public class F3PreTranslationSupport {
                 defs.Pointer_make.methodName,
                 new Type.MethodType(
                     List.of(syms.f3_ObjectType, syms.intType, types.erasure(syms.classType)),
-                    syms.f3_PointerType,
+                    syms.f3_PointerTypeErasure,
                     List.<Type>nil(),
                     syms.methodClass),
                 syms.f3_PointerType.tsym);

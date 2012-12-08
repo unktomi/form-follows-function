@@ -1671,7 +1671,7 @@ however this is what we need */
                              *        return if3$0tmp != null ? (Integer)if3$0tmp.get(pos$) : 0;
                              *    }
                              */
-                            JCVariableDecl tmpPtrVar = TmpVar("tmp", syms.f3_PointerType, Getter(varInfo.boundFuncResultInitSym()));
+                            JCVariableDecl tmpPtrVar = TmpVar("tmp", syms.f3_PointerTypeErasure, Getter(varInfo.boundFuncResultInitSym()));
                             addStmt(tmpPtrVar);
 
                             JCExpression ptrNonNullCond = NEnull(id(tmpPtrVar));
@@ -1751,10 +1751,10 @@ however this is what we need */
                              */
                             Name ptrVarName = attributeValueName(varInfo.boundFuncResultInitSym());
                             // declare a temp variable of type Pointer to store old value of Pointer field
-                            JCVariableDecl oldPtrVar = TmpVar("old", syms.f3_PointerType, id(ptrVarName));
+                            JCVariableDecl oldPtrVar = TmpVar("old", syms.f3_PointerTypeErasure, id(ptrVarName));
                             addStmt(oldPtrVar);
 
-                            JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerType, Getter(varInfo.boundFuncResultInitSym()));
+                            JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerTypeErasure, Getter(varInfo.boundFuncResultInitSym()));
                             addStmt(newPtrVar);
 
                             // Add the receiver of the current Var symbol as dependency to the Pointer, so that
@@ -2032,7 +2032,7 @@ however this is what we need */
                         // for a bare-synthethic, just return bound-expression
                         JCExpression returnVal = varInfo.boundInit();
                         if (varInfo.isInitWithBoundFuncResult()) {
-                            JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerType, returnVal);
+                            JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerTypeErasure, returnVal);
                             addStmt(newPtrVar);
 
                             returnVal = If(NEnull(id(newPtrVar)),
@@ -2123,10 +2123,10 @@ however this is what we need */
                                  */
                                 Name ptrVarName = attributeValueName(varInfo.boundFuncResultInitSym());
                                 // declare a temp variable of type Pointer to store old value of Pointer field
-                                JCVariableDecl oldPtrVar = TmpVar("old", syms.f3_PointerType, id(ptrVarName));
+                                JCVariableDecl oldPtrVar = TmpVar("old", syms.f3_PointerTypeErasure, id(ptrVarName));
                                 addStmt(oldPtrVar);
 
-                                JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerType, initValue);
+                                JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerTypeErasure, initValue);
                                 addStmt(newPtrVar);
 
                                 // Add the receiver of the current Var symbol as dependency to the Pointer, so that
@@ -2456,8 +2456,8 @@ however this is what we need */
                                 depGraphWriter.writeDependency(otherVar.sym, varSym);
                             }
 
-                            JCVariableDecl oldPtrVar = TmpVar("old", syms.f3_PointerType, Get(varSym));
-                            JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerType, Getter(varSym));
+                            JCVariableDecl oldPtrVar = TmpVar("old", syms.f3_PointerTypeErasure, Get(varSym));
+                            JCVariableDecl newPtrVar = TmpVar("new", syms.f3_PointerTypeErasure, Getter(varSym));
                             JCVariableDecl oldSizeVar = TmpVar("oldSize", syms.intType,
                                          If (NEnull(id(oldPtrVar)),
                                              Call(id(oldPtrVar), defs.size_PointerMethodName),
@@ -4687,7 +4687,7 @@ however this is what we need */
             else
                 mods = addInheritedAnnotationModifiers(diagPos, methSym.flags(), mods);
                 
-            Type returnType = isBound? syms.f3_PointerType : methSym.getReturnType();
+            Type returnType = isBound? syms.f3_PointerTypeErasure : methSym.getReturnType();
             
             addDefinition(Method(
                           mods,
