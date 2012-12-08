@@ -422,7 +422,7 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
               // valid or not is a matter for semantic checks to decide.
               //
               //
-	(modifiers (ENUM|CLASS|INTERFACE|FUNCTION|IDENTIFIER IS FUNCTION))=> (m1=modifiers { errNodes.append($m1.mods); }
+	(modifiers (ENUM|CLASS|INTERFACE|funcName))=> (m1=modifiers { errNodes.append($m1.mods); }
                 (
                       c=classDefinition         [$m1.mods, $m1.pos]
                       
@@ -569,7 +569,7 @@ importId
     //
     boolean haveStar = false;
     
-    // Record the posiotn of any START we find, in case we want to error upon it
+    // Record the position of any START we find, in case we want to error upon it
     //
     int starP = 0;
 }
@@ -628,64 +628,6 @@ importId
                         }
                     }
 
-                |   (STAR)=>s1=STAR (s2=STAR)?
-            
-                    {
-                        // Whether '*' || '**'
-                        //
-                        Name starBit;
-                        
-                        if  ($s2 == null) {
-                        
-                            // Second star was not present
-                            //
-                            starBit = names.asterisk;
-                            
-  
-                            
-                        } else {
-                        
-                            // Second star WAS present
-                            //
-                            starBit = names.fromString("**");
-                            
-                            // Note that ** has been reverted from the runtime, so we just
-                            // replace it with single star for the moment, and issue an error
-                            // Delete this comment and the next two lines when the runtime supports 
-                            // this again.
-                            //
-                            inError = true;     // Signal that this is malformed
-                            starBit = names.asterisk;
-                            F3Expression part = F.at(starP).Ident(starBit);
-                            endPos(part);
-                            log.error(part, MsgSym.MESSAGE_F3_IMPORT_BAD_STAR);
-                            
-                        }
-                        
-                        $pid = F.at($n2.pos).Select($pid, starBit, false);
-                        endPos($pid);
-
-                        // Build up new node in case of error
-                        //
-                        starP = pos($s1);
-                        F3Expression part = F.at(starP).Ident(starBit);
-                        errNodes.append(part);
-                        endPos(part);
-                        
-                        // If we already had a '.*{*}' part, then this makes no sense
-                        //
-                        if  (haveStar) {
-                        
-                            inError = true;     // Signal that this is malformed
-                            log.error(part, MsgSym.MESSAGE_F3_IMPORT_BAD_STAR);
-                        }
-                        
-                        
-                        // Signal that we have a star now
-                        //
-                        haveStar = true;
-                    }
-                    
                 |   // Erroneous
                 
                     {
@@ -788,7 +730,7 @@ modifiers
 modifierFlag
 
     returns [long flag]
-    : (PUBLIC (VAL|CONST)|PUBLIC_READ)=>(PUBLIC (VAL|CONST)|PUBLIC_READ) { $flag = F3Flags.PUBLIC_READ;      }    
+    : (PUBLIC (VAL|CONST|ATTRIBUTE)|PUBLIC_READ)=>(PUBLIC (VAL|CONST|ATTRIBUTE)|PUBLIC_READ) { $flag = F3Flags.PUBLIC_READ;      }    
     | ABSTRACT          { $flag = Flags.ABSTRACT;           }
     | BOUND             { $flag = F3Flags.BOUND;            }
     | DEFAULT           { $flag = F3Flags.DEFAULT;          }
@@ -1221,10 +1163,8 @@ functionDefinition [ F3Modifiers mods, int pos ]
     //
 }
 : (
-//(IDENTIFIER IS FUNCTION)=>(n3=name IS FUNCTION { name = $n3.value; })
-//        |
 
-            fun=FUNCTION  
+   fun=funcName
 
    ((OF | FORALL) genericArgs = genericParams[false, false])?
 
@@ -1310,7 +1250,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 // and there was no function body. If there is a SEMI at this point, it does not
                 // matter as it will be eaten by the enclosing rule as if it were an empty statement.
                 //
-             RETURN? bodyExpr=expression { blk = F.at(pos($fun)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>nil(), bodyExpr); }
+             RETURN? bodyExpr=expression { blk = F.at(pos($fun.tok)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>nil(), bodyExpr); }
             |
             SEMI
 
@@ -2338,12 +2278,7 @@ variableLabel
     | LET { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($LET); } 
     | CONST { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } 
     | VAL  { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($VAL); } 
-    | ATTRIBUTE     {   $modifiers = 0L; 
-                        $pos = pos($ATTRIBUTE); 
-                        F3Erroneous err = F.at($pos).Erroneous();
-                        endPos(err);
-                        log.error(err, MsgSym.MESSAGE_F3_NOT_SUPPORTED_ATTRIBUTE); 
-                    } 
+    | ATTRIBUTE { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($ATTRIBUTE); } 
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.
@@ -3798,9 +3733,10 @@ typeExpression
     | (WITH LBRACE)=>(WITH LBRACE ol = objectLiteral {
         
              $value = $relationalExpression.value;
+             $value = F.at(rPos).WithObjectLiteral($value, $ol.parts.toList());
         } RBRACE)
 
-            | AS atn=type
+   | AS atn=type
             
                 {
                     $value = F.at($relationalExpression.value.pos).TypeCast($atn.rtype, $relationalExpression.value);
@@ -3889,15 +3825,9 @@ relOps
 
     returns [F3Tag relOp]   // Returns the F3 operator type
     
-    : LTGT
-        { 
-            F3Erroneous err = F.at(pos($LTGT)).Erroneous();
-            endPos(err);
-            $relOp = F3Tag.NE;
-            log.error(err, MsgSym.MESSAGE_F3_NOT_NE);
-        }   
+    : 
                     
-    | NOTEQ  { $relOp = F3Tag.NE;   }
+    (LTGT | NOTEQ)  { $relOp = F3Tag.NE;   }
     | EQEQ   { $relOp = F3Tag.EQ;   }
     | LTEQ   { $relOp = F3Tag.LE;   }
     | GTEQ   { $relOp = F3Tag.GE;   }
@@ -4018,16 +3948,15 @@ multiplicativeExpression
 
 }
     : u1=unaryExpression    { $value = $u1.value; errNodes.append($u1.value); }
-        (
+
             { rPos = pos(); }   // Use operator as position for AST
             
-            multOps u2=unaryExpression
+        ((multOps)=>multOps u2=unaryExpression
                 
-                {
-                    $value = F.at(rPos).Binary($multOps.multOp, $value, $u2.value);
-                    endPos($value);
-                }
-       )* 
+        {
+            $value = F.at(rPos).Binary($multOps.multOp, $value, $u2.value);
+            endPos($value);
+        })*
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.
@@ -4161,6 +4090,8 @@ unaryOps
     
     : SUB           { $unOp = F3Tag.NEG; }
     | NOT           { $unOp = F3Tag.NOT; }
+    | AMP           { $unOp = F3Tag.AMP; }
+    | STAR          { $unOp = F3Tag.DEREF; }
     | SIZEOF        { $unOp = F3Tag.SIZEOF; }
     | PLUSPLUS      { $unOp = F3Tag.PREINC; }
     | SUBSUB        { $unOp = F3Tag.PREDEC; }
@@ -4529,12 +4460,11 @@ primaryExpression
             $value = $fe.value;
         }
     
-    | LPAREN e=expression {eList.append(e);} (COMMA e1=expression {eList.append(e1);})* RPAREN
-    
-        {
-            $value = F.at(pos($LPAREN)).Tuple(eList.toList());
-        }
-        
+    | LPAREN e=expression {$value = e;} (
+            COMMA e1=expression {
+                $value = F.at(rPos).Binary(F3Tag.TUPLE, $value, e1);
+            }
+          )* RPAREN
     | AT 
         LPAREN 
             tv=timeValue
@@ -4667,7 +4597,7 @@ functionExpression
 
     F3Expression bodyExpr = null;
 }
-    :   (modifiers) => modifiers FUNCTION 
+    :   (modifiers) => modifiers fun=funcName
             ((OF | FORALL) gas=genericParams[false, false] { 
                 exprbuff.appendList($gas.value);
             })?
@@ -4687,7 +4617,7 @@ functionExpression
         {
             // F3 AST
             //
-            $value = F.at(pos($FUNCTION)).FunctionValue
+            $value = F.at(pos($fun.tok)).FunctionValue
                                 (
                                     $modifiers.mods,
                                     exprbuff.toList(),
@@ -4704,13 +4634,13 @@ functionExpression
         primaryExpression 
             {
             bodyExpr = $primaryExpression.value; 
-            $value = F.at(pos($FUNCTION)).FunctionValue
+            $value = F.at(pos($fun.tok)).FunctionValue
                                 (
                                     $modifiers.mods,
                                     exprbuff.toList(),
                                     $returnTypeReference.rtype, 
                                     $formalParameters.params.toList(),
-                                    F.at(pos($FUNCTION)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>of(bodyExpr), null)
+                                    F.at(pos($fun.tok)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>of(bodyExpr), null)
                                 );
                                 
             // Tree span
@@ -4869,15 +4799,6 @@ objectLiteralPart
     
 }
     : 
-        (modifiers IDENTIFIER IS FUNCTION) => modifiers 
-              functionDefinition     [$modifiers.mods, $modifiers.pos]
-            
-                {
-                    $value = $functionDefinition.value;
-                    errNodes.append($value);
-                }
-    |
-
         (modifiers) => modifiers
         (
               functionDefinition     [$modifiers.mods, $modifiers.pos]
@@ -5797,15 +5718,12 @@ type
                 $rtype = F.at(rPos).ErroneousType(errNodes.elems);
                 
             } else {
-            
                 $rtype = F.at(rPos).TypeClass($typeName.value, $cardinality.ary);
             }
             endPos($rtype);
         }
     | typeFunction  { $rtype = $typeFunction.rtype; } 
     | typePrefixed  { $rtype = $typePrefixed.rtype; }) 
-    
-//    | typeStar      { $rtype = $typeStar.rtype;     }
     ;
 
 // Catch an error when looking for a type. The only error we can
@@ -5856,6 +5774,12 @@ TYPE id=IDENTIFIER (OF gas=genericParams[false, false] {exprbuff.appendList(gas)
         }
 ;
 
+funcName
+    returns[Token tok]
+    :
+     FUNCTION {tok = $FUNCTION; }| OPERATION {tok = $OPERATION;}
+    ;
+
 typeFunction
 
     returns [F3Type rtype]
@@ -5880,7 +5804,7 @@ typeFunction
 
     : 
 
-    FUNCTION 
+    funcName
 
         ((OF | FORALL) gas1=genericParams[false, false] { 
                 exprbuff.appendList($gas1.value);
@@ -5952,44 +5876,6 @@ typePrefixed
     
         {
             $rtype = F.at(rPos).TypeArray($type.rtype);
-            endPos($rtype);
-        }
-    ;
- // Catch an error. We create an erroneous node for anything that was at the start 
-// up to wherever we made sense of the input.
-//
-catch [RecognitionException re] {
-  
-    // First, let's report the error as the user needs to know about it
-    //
-    reportError(re);
-
-    // Now we perform standard ANTLR recovery here
-    //
-    recover(input, re);
-    
-}
-
-typeStar
-
-    returns [F3Type rtype]
-
-@init
-{
-    // Work out current position in the input stream
-    //
-    int rPos = pos();
-    
-    // Used to accumulate a list of anything that we manage to build up in the parse
-    // in case of error.
-    //
-    ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
-
-}
-    : STAR cardinality
-    
-        {
-            $rtype = F.at(rPos).TypeAny($cardinality.ary);
             endPos($rtype);
         }
     ;
@@ -6229,21 +6115,6 @@ cardinality
             $ary = TypeTree.Cardinality.ANY;
         }
     |
-    (STAR STAR STAR)=>(STAR STAR STAR) // hack
-        {
-            $ary = TypeTree.Cardinality.SINGLETON;
-        }
-    |
-    (STAR STAR)=>(STAR STAR) // hack
-        {
-            $ary = TypeTree.Cardinality.SINGLETON;
-        }
-    |
-    (STAR)=>(STAR) // hack
-        {
-            $ary = TypeTree.Cardinality.SINGLETON;
-        }
-    |
         {
             $ary = TypeTree.Cardinality.SINGLETON;
         }
@@ -6451,17 +6322,19 @@ genericParam[boolean contravar, boolean covar]
         (COLON|IS)=>((COLON|IS)
 
                       (AT ident=IDENTIFIER  { 
-                           String str = ident.toString(); 
+
+                           String str = ident.getText();
                            if (str.equals("least")) {
                               bk = BoundKind.EXTENDS;
                            } else if (str.equals("most")) {
                               bk = BoundKind.SUPER;
                            } else {
-                               // error
+                               bk = BoundKind.UNBOUND;
                            }
                         }
-                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.EXTENDS;})
-                      bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
+                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.UNBOUND;})
+                      bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})? 
+
 
       | 
        (CLASS n=identifier OF gas=genericParams[false, false] { 
@@ -6502,13 +6375,16 @@ genericArgument
                            } else if (str.equals("most")) {
                               bk = BoundKind.SUPER;
                            } else {
-                               // error
+                               bk = BoundKind.UNBOUND;
                            }
                         }
-                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.EXTENDS;})
+                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.UNBOUND;})
 
        t=type  { 
+
             $value = $t.rtype; 
+            //System.err.println("rtype="+$value);
+            //System.err.println("bk="+bk);
             $t.rtype.boundKind = bk;
         }
         //  (COLON)=>(COLON bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
@@ -7193,7 +7069,7 @@ reservedWord
     | CATCH         | CLASS     | CONTINUE      | DEF | ENUM | OF | FORALL
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR
-    | FROM          | FUNCTION  | IF            | IMPORT
+    | FROM          | FUNCTION  | IF            | IMPORT | OPERATION
     | INDEXOF       | INSERT    | INSTANCEOF    | LAZY
     | MIXIN         | MOD       | NATIVEARRAY   | NEW | INTERFACE
     | NOT           | NULL      | OR            | OVERRIDE

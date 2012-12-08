@@ -130,6 +130,7 @@ FOR             : 'for';
 FORALL          : 'forall';
 FROM            : 'from';
 FUNCTION        : 'function';
+OPERATION       : 'operation';
 IF              : 'if';
 IMPORT          : 'import';
 INDEXOF         : 'indexof';

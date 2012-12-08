@@ -250,7 +250,7 @@ public class F3BoundFiller extends F3TreeScanner {
 
                 // find the symbol of Pointer.make(Object) method.
                 // The select expression Pointer.make
-                F3Select select = f3make.Select(f3make.Type(syms.f3_PointerType), defs.make_PointerMethodName, false);
+                F3Select select = f3make.Select(f3make.Type(syms.f3_PointerTypeErasure), defs.make_PointerMethodName, false);
                 select.sym = preTrans.makeSyntheticPointerMake();
                 select.type = select.sym.type;
 
@@ -265,7 +265,7 @@ public class F3BoundFiller extends F3TreeScanner {
 
                 // call Pointer.make($$bound$result$)
                 F3FunctionInvocation apply = f3make.Apply(null, select, pointerMakeArgs.toList());
-                apply.type = syms.f3_PointerType;
+                apply.type = syms.f3_PointerTypeErasure;
 
                 blk.stats = stmts.toList();
                 blk.value = apply;

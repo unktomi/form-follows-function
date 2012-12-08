@@ -310,7 +310,7 @@ public class F3Attr implements F3Visitor {
 		}
 		if (typeArgs != null) {
 		    boolean typeCons = types.isTypeCons(localResult);
-		    List<Type> typeArgTypes = attribTypeArgs(typeArgs, env, !inSuperType);
+		    List<Type> typeArgTypes = attribTypeArgs(typeArgs, env, true);
 		    if (false && typeCons) {
 			List<Type> targs = localResult.getTypeArguments();
 			if (targs.head != null && 
@@ -354,9 +354,9 @@ public class F3Attr implements F3Visitor {
 						   localResult.tsym);
 		    } else {
 			Type bound = types.upperBound(localResult);
-			//System.err.println("localResult="+localResult);
-			//System.err.println("bound="+bound.getClass());
-			//System.err.println("bound="+types.toF3String(bound));
+			System.err.println("localResult="+localResult);
+			System.err.println("bound="+bound.getClass());
+			System.err.println("bound="+types.toF3String(bound));
 			if (bound instanceof TypeVar) {
 			    TypeVar tv = (TypeVar)bound;
 			    TypeCons tc = new TypeCons(tv.tsym.name, 
@@ -365,7 +365,7 @@ public class F3Attr implements F3Visitor {
 			    tc.args = typeArgTypes;
 			    tc.bound = tv.bound;
 			    localResult = tc;
-			    //System.err.println("tc="+tc);
+			    System.err.println("tc="+tc);
 			}
 		    }
 		    tree.type = localResult;
@@ -516,13 +516,11 @@ public class F3Attr implements F3Visitor {
 		argtypes.append(new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
-		/*
 		BoundKind bk = F3TreeInfo.boundKind(l.head);
-		if (bk != null && bk != BoundKind.UNBOUND) {
-		    System.err.println("making wildcard from: "+ l.head);
+		if (!inSuperType && bk != null && bk != BoundKind.UNBOUND) {
 		    t = new WildcardType(t, bk, syms.boundClass);
+		    System.err.println("making wildcard from: "+ l.head.getClass()+": "+types.toF3String(t));
 		} 
-		*/
 		argtypes.append(t);
 	    }
 	}
@@ -536,11 +534,14 @@ public class F3Attr implements F3Visitor {
 		argtypes.append(new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
+		/*
 		BoundKind bk = F3TreeInfo.boundKind(l.head);
 		if (bk != null && bk != BoundKind.UNBOUND) {
 		    //System.err.println("making wildcard from: "+ l.head);
 		    t = new WildcardType(t, bk, syms.boundClass);
+		    System.err.println("making wildcard from: "+ l.head+": "+types.toF3String(t));
 		} 
+		*/
 		argtypes.append(t);
 	    }
 	}
@@ -1152,6 +1153,8 @@ public class F3Attr implements F3Visitor {
 
         try {
             Type declType = attribType(tree.getF3Type(), env);
+	    //System.err.println("tree="+tree.getF3Type());
+	    //System.err.println("declType="+declType);
             declType = chk.checkNonVoid(tree.getF3Type(), declType);
             if (declType != syms.f3_UnspecifiedType) {
                 result = tree.type = v.type = declType;
@@ -1892,8 +1895,6 @@ public class F3Attr implements F3Visitor {
 	} else {
 	    // Attribute clazz expression
 	    clazztype = attribSuperType(clazz, env);
-
-
 	    if (typeArgs != null) {
 		if (tree.typeArgTypes == null) {
 		    typeArgTypes = attribTypeParams(typeArgs, env);
@@ -2236,7 +2237,7 @@ public class F3Attr implements F3Visitor {
 	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
 	    */
 	    tv.bound = bound;
-	    //System.err.println("created type var: "+ System.identityHashCode(tv) + ": " +tv);
+	    System.err.println("created type var: "+ types.toF3String(tv));
 	    //Thread.currentThread().dumpStack();
 	    return tv;
 	} else {
@@ -3226,6 +3227,21 @@ public class F3Attr implements F3Visitor {
                 result = check(tree, syms.f3_IntegerType, VAL, pkind, pt, pSequenceness);
                 return;
             }
+            case AMP: {
+                Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
+                // result type is argument type, unless this is a singleton, then convert to a sequence
+                Type owntype = types.pointerType(argtype);
+                result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
+                return;
+            }
+            case DEREF: {
+                Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
+		Type argtype1 = check(tree, argtype, VAL, pkind, types.erasure(syms.f3_PointerType), 
+				      pSequenceness);
+                Type owntype = types.pointerElementType(argtype);
+		System.err.println("argtype="+argtype);
+                result = check(tree, owntype, VAL, pkind, pt, pSequenceness); // fix me!!!
+            }
             case REVERSE: {
                 Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
                 // result type is argument type, unless this is a singleton, then convert to a sequence
@@ -3425,6 +3441,7 @@ public class F3Attr implements F3Visitor {
                 chk.checkDivZero(tree.rhs.pos(), operator, right);
             }
         } else {
+	    tree.operator = sym;
             owntype = sym.type.getReturnType();
         }
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
@@ -4037,7 +4054,7 @@ public class F3Attr implements F3Visitor {
 		System.err.println(tree);
 	    } else {
 		if (t.getArgs() != null) {
-		    List<Type> targs = attribTypeArgs(t.getArgs(), env, !inSuperType);
+		    List<Type> targs = attribTypeArgs(t.getArgs(), env, true);
 		    ct = types.applySimpleGenericType(types.erasure(ct), targs);
 		}
 		result = tree.type = ct;

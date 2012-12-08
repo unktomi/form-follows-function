@@ -377,7 +377,7 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitBinary(F3Binary tree) {
-        boolean isSpecialLiteralBinaryExpr = tree.operator == null;
+        boolean isSpecialLiteralBinaryExpr = !(tree.operator instanceof OperatorSymbol);
         boolean isEqualExpr = (tree.getF3Tag() == F3Tag.EQ ||
                 tree.getF3Tag() == F3Tag.NE);
         boolean isSequenceOp = types.isSequence(tree.lhs.type) ||
@@ -593,9 +593,9 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitInterpolateValue(F3InterpolateValue that) {
-        F3Expression pointerType = m.at(that.pos).Type(syms.f3_PointerType).setType(syms.f3_PointerType);
+        F3Expression pointerType = m.at(that.pos).Type(syms.f3_PointerTypeErasure).setType(syms.f3_PointerTypeErasure);
         Symbol pointerMakeSym = rs.resolveQualifiedMethod(that.pos(),
-                env, syms.f3_PointerType,
+                env, syms.f3_PointerTypeErasure,
                 defs.Pointer_make.methodName,
                 rs.newMethTemplate(List.of(syms.objectType),
                 List.<Type>nil()));
@@ -739,7 +739,28 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitUnary(F3Unary tree) {
-        if (tree.getF3Tag().isIncDec()) {
+	if (tree.getF3Tag() == F3Tag.AMP) {
+	    F3Unary that = tree;
+            F3VarSymbol vsym = (F3VarSymbol)F3TreeInfo.symbol(tree.getExpression());
+	    F3Expression arg1 = m.VarRef(tree.getExpression(), F3VarRef.RefKind.INST);
+	    arg1.setType(syms.f3_ObjectType);
+	    F3Expression arg2 = m.VarRef(tree.getExpression(), F3VarRef.RefKind.VARNUM);
+	    arg2.setType(syms.intType);
+	    F3Expression pointerType = m.at(that.pos).Type(syms.f3_PointerType).setType(syms.f3_PointerType);
+	    Symbol pointerMakeSym = rs.resolveQualifiedMethod(that.pos(),
+							      env, syms.f3_PointerType,
+							      defs.Pointer_make.methodName,
+							      rs.newMethTemplate(List.of(syms.objectType),
+										 List.<Type>nil()));
+	    pointerMakeSym.flags_field |= F3Flags.FUNC_POINTER_MAKE;
+	    F3Select pointerMake = (F3Select)m.at(that.pos).Select(pointerType, pointerMakeSym, false);
+	    pointerMake.sym = pointerMakeSym;
+	    F3Expression pointerCall = m.at(that.pos).Apply(List.<F3Expression>nil(),
+							    pointerMake,
+							    List.of(arg1, arg2)).setType(pointerMakeSym.type.getReturnType());
+	    result = pointerCall;
+	    System.err.println("pointerCall="+pointerCall);
+        } else if (tree.getF3Tag().isIncDec()) {
             result = lowerNumericUnary(tree);
         } else {
             F3Expression arg = tree.getF3Tag() == F3Tag.REVERSE ?

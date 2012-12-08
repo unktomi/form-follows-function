@@ -31,6 +31,7 @@ import org.f3.tools.code.F3Symtab;
 import com.sun.tools.mjavac.code.Flags;
 import com.sun.tools.mjavac.code.Kinds;
 import com.sun.tools.mjavac.code.Symbol;
+import com.sun.tools.mjavac.code.Symbol.OperatorSymbol;
 import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
 import com.sun.tools.mjavac.code.Symbol.MethodSymbol;
 import com.sun.tools.mjavac.code.Symbol.VarSymbol;
@@ -983,6 +984,10 @@ public abstract class F3AbstractTranslation
             return Call(defs.Sequences_size, transExpr);
         }
 
+        JCExpression translateAddressOf(F3Expression expr, JCExpression transExpr) {
+	    return null;
+        }
+
    }
 
     class LiteralTranslator extends ExpressionTranslator {
@@ -1239,7 +1244,7 @@ public abstract class F3AbstractTranslation
             // Return default value for Pointer type to be null
             return defaultValue.type == syms.botType ?
                 DefaultValue(theResultType) :
-                (types.isSameType(theResultType, syms.f3_PointerType)) ?
+                (types.isSameType(theResultType, syms.f3_PointerTypeErasure)) ?
                 Null() :
                 convertTranslated(defaultValue, diagPos, theFullType, theResultType);
         }
@@ -1555,7 +1560,7 @@ public abstract class F3AbstractTranslation
                 full = castFromObject(Call(app, defs.get_PointerMethodName), resultType);
             } else {
                 full = app;
-                if (true || useInvoke) {
+                if (useInvoke) {
                     if (resultType != syms.voidType) {
                         full = typeCast(resultType, syms.objectType, full);
 			//System.err.println("full="+full);
@@ -1894,7 +1899,7 @@ public abstract class F3AbstractTranslation
                 } // else FIXME: what should we do for bound function sequence params?
 
                 setDiagPos(bexpr);
-                stmts.appendList(translateToStatementsResult(bexpr, isBound? syms.f3_PointerType : mtype.getReturnType()).statements());
+                stmts.appendList(translateToStatementsResult(bexpr, isBound? syms.f3_PointerTypeErasure : mtype.getReturnType()).statements());
                 body = Block(stmts);
                 body.endpos = bexpr.endpos;
             }
@@ -2376,6 +2381,13 @@ public abstract class F3AbstractTranslation
                         return toResult(Select(transExpr, defs.length_ArrayFieldName), syms.intType);
                     }
                     return toResult(translateSizeof(expr, transExpr), syms.intType);
+                case AMP:
+                    if (expr.type.tag == TypeTags.ARRAY) {
+                        return toResult(Select(transExpr, defs.length_ArrayFieldName), syms.intType);
+                    }
+                    return toResult(translateAddressOf(expr, transExpr), syms.f3_PointerType);
+	        case DEREF:
+		    return toResult(Call(transExpr, defs.get_PointerMethodName), expr.type);
                 case REVERSE:
                     if (types.isSequence(expr.type)) {
                         // call runtime reverse of a sequence
@@ -2538,7 +2550,8 @@ public abstract class F3AbstractTranslation
 	    if (tree.infix) {
 		return Call(leftSide, methodName, rightSide);
 	    } else {
-		return Call(null, methodName, List.of(leftSide, rightSide));
+		return Call(
+			    makeAccessExpression(tree, tree.operator.owner, false), methodName, List.of(leftSide, rightSide));
 	    }
         }
 
@@ -2550,9 +2563,12 @@ public abstract class F3AbstractTranslation
 
         JCExpression durationOp() {
 	    //System.err.println("tree="+tree);
-	    //System.err.println("methodName="+tree.methodName);
-	    //System.err.println("tree.type="+tree.type);
+	    System.err.println("methodName="+tree.methodName);
+	    System.err.println("tree.type="+tree.type);
+	    System.err.println("tree.sym="+tree.operator);
             switch (tree.getF3Tag()) {
+                case TUPLE:
+                    return op(lhs(), tree.methodName, rhs());
                 case AND:
                     return op(lhs(), tree.methodName, rhs());
                 case OR:
@@ -2739,7 +2755,7 @@ public abstract class F3AbstractTranslation
                 // anything other than == or !=
                 // Duration type operator overloading
                 if (// ((isDuration(lhsType) || isDuration(rhsType))) &&
-                        tree.operator == null) { // operator check is to try to get a decent error message by falling through if the Duration method isn't matched
+		    !(tree.operator instanceof OperatorSymbol)) { // operator check is to try to get a decent error message by falling through if the Duration method isn't matched
 		    //System.err.println("calling duration op: "+tree);
                     return durationOp();
                 }

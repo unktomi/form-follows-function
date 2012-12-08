@@ -24,6 +24,8 @@
 package f3.lang;
 import org.f3.functions.*;
 import org.f3.runtime.*;
+import org.f3.runtime.sequence.*;
+import java.util.*;
 
 
 /**
@@ -175,5 +177,31 @@ public class Builtins {
 
     public static <a,b> Either<a, b> latter(b y) {
 	return Either.<a,b>latter(y);
+    }
+
+    public static <a,b> Pair<a, b> both(a x,  b y) 
+    {
+	return Pair.<a,b>both(x, y);
+    }
+
+    public static <a, F extends Functor> Sequence<a> toSequence(Functor<F, a> xs)
+    {
+	final List<a> elems = new LinkedList();
+	xs.map(new Function1<Void, a>() {
+		public Void invoke(a x) {
+		    elems.add(x);
+		    return null;
+		}
+	    });
+	return Sequences.fromCollection(TypeInfo.<a>getTypeInfo(), elems);
+    }
+
+    public static <a, b> a constant(a x, b y) 
+    {
+	return x;
+    }
+
+    public static <a, b> Pair<a,b> $comma(a x, b y) {
+	return Pair.<a,b>both(x, y);
     }
 }

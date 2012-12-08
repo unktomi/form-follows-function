@@ -897,6 +897,14 @@ public class F3TreeMaker implements F3TreeFactory {
                 defs);
     }
 
+    public F3Instanciate WithObjectLiteral(F3Expression ident,
+            List<F3Tree> defs) {
+        return Instanciate(F3Kind.WITH_OBJECT_LITERAL,
+                ident,
+                List.<F3Expression>nil(),
+                defs);
+    }
+
     public F3Instanciate InstanciateNew(F3Expression ident,
 					List<F3Expression> args) {
         return Instanciate(F3Kind.INSTANTIATE_NEW,
@@ -1026,6 +1034,12 @@ public class F3TreeMaker implements F3TreeFactory {
     public F3Type TypeVar(F3Expression className, Cardinality card, BoundKind boundKind, F3Expression bound) {
         F3Type tree = new F3TypeVar(className, card, boundKind, bound);
         tree.pos = pos;
+	//System.err.println("typevar="+tree);
+	//System.err.println("bk="+boundKind);
+	//System.err.println("bound="+bound);
+	if (bound instanceof F3Type) {
+	    ((F3Type)bound).boundKind = boundKind;
+	}
         return tree;
     }
 

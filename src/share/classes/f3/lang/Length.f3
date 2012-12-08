@@ -948,7 +948,7 @@ public class Length extends Comparable of Object, Formattable {
         if (numberOfNumerators > 1 or numberOfDenominators > 1) {
             throw ComplexLengthException {
                 lengths: [this, other]
-                operation: "divide"
+                oper: "divide"
             }
         }
         return numerator / denominator;
@@ -1094,7 +1094,7 @@ public class Length extends Comparable of Object, Formattable {
         try {
             return compareTo(other) < 0;
         } catch (e:ComplexLengthException) {
-            e.operation = "lt";
+            e.oper = "lt";
             throw e;
         }
     }
@@ -1111,7 +1111,7 @@ public class Length extends Comparable of Object, Formattable {
         try {
             return compareTo(other) <= 0;
         } catch (e:ComplexLengthException) {
-            e.operation = "le";
+            e.oper = "le";
             throw e;
         }
     }
@@ -1128,7 +1128,7 @@ public class Length extends Comparable of Object, Formattable {
         try {
             return compareTo(other) > 0;
         } catch (e:ComplexLengthException) {
-            e.operation = "gt";
+            e.oper = "gt";
             throw e;
         }
     }
@@ -1145,7 +1145,7 @@ public class Length extends Comparable of Object, Formattable {
         try {
             return compareTo(other) >= 0;
         } catch (e:ComplexLengthException) {
-            e.operation = "ge";
+            e.oper = "ge";
             throw e;
         }
     }
@@ -1172,7 +1172,7 @@ public class Length extends Comparable of Object, Formattable {
         }
         throw ComplexLengthException {
             lengths: [this, l]
-            operation: "compare"
+            oper: "compare"
         }
     }
 

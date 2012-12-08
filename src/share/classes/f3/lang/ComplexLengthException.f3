@@ -32,7 +32,7 @@ package f3.lang;
  */
 public class ComplexLengthException extends F3Exception {
     public var lengths:Length[];
-    public var operation:String;
+    public var oper:String;
 
-    override var message = bind "Cannot {operation} complex lengths, please simplify them first: {lengths}";
+    override var message = bind "Cannot {oper} complex lengths, please simplify them first: {lengths}";
 }

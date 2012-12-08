@@ -103,7 +103,7 @@ public class F3TranslateBind extends F3AbstractTranslation implements F3Visitor 
         ExpressionResult res = translateToExpressionResult(
                 expr,
                 isBoundFunctionResult(targetSymbol) ?
-                    syms.f3_PointerType :
+                    syms.f3_PointerTypeErasure :
                     targetSymbol.type);
 
         this.targetSymbol = prevTargetSymbol;

@@ -111,6 +111,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_KeyFrameType;
     public final Type f3_KeyValueTargetType;
     public final Type f3_PointerType;
+    public final Type f3_PointerTypeErasure;
     public final Type f3_ConstantType;
     public final Type f3_BoundForOverSequenceType;
     public final Type f3_BoundForOverNullableSingletonType;
@@ -263,6 +264,7 @@ public class F3Symtab extends Symtab {
         f3_KeyFrameType = enterClass("f3.animation.KeyFrame");
         f3_KeyValueTargetType = enterClass("f3.animation.KeyValueTarget");
         f3_PointerType = enterClass("org.f3.runtime.Pointer");
+        f3_PointerTypeErasure = types.erasure(f3_PointerType);
         f3_ConstantType = enterClass("org.f3.runtime.F3Constant");
         f3_BoundForOverSequenceType = enterClass(F3Defs.cBoundForOverSequence);
         f3_BoundForOverNullableSingletonType = enterClass(F3Defs.cBoundForOverNullableSingleton);

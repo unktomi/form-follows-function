@@ -231,6 +231,38 @@ $PREFIX:{T|
         }
     }
 
+    public T div(Function2<? extends T, ? super T, ? super T> f) {
+	return foldLeft(f);
+    }
+
+    public T foldLeft(Function2<? extends T, ? super T, ? super T> f) {
+	T r = get(0);
+	for (int i = 1, len = size(); i < len; i++) {
+	    r = f.invoke(r, get(i));
+	}
+	return r;
+    }
+
+    public <S> Sequence<S> mul(Function1<? extends S, ? super T> f) {
+	return map(f);
+    }
+
+    public <S> S foldLeft(Function2<? extends S, ? super S, ? super T> f, S z) {
+	S r = z;
+	for (int i = 0, len = size(); i < len; i++) {
+	    r = f.invoke(r, get(i));
+	}
+	return r;
+    }
+
+    public <S> S foldRight(Function2<? extends S, ? super T, ? super S> f, S z) {
+	S r = z;
+	for (int i = size()-1; i > 0; --i) {
+	    r = f.invoke(get(i), r);
+	}
+	return r;
+    }
+
     @Override
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());
@@ -249,7 +281,6 @@ $PREFIX:{T|
        result.add(s);
        return result;
    }
-
 
    public Sequence<T> mzero() {
        return TypeInfo.<T>getTypeInfo().emptySequence;

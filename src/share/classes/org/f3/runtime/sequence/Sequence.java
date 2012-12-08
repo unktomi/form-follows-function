@@ -29,6 +29,7 @@ import java.util.Iterator;
 import org.f3.runtime.TypeInfo;
 import org.f3.runtime.*;
 import org.f3.functions.Function1;
+import org.f3.functions.Function2;
 /**
  * Sequences are immutable, homogeneous, ordered collections.  A sequence has an element type,
  * a length, and a list of elements.  New sequences can be derived by calling the factory methods
@@ -54,6 +55,12 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public T extract();
     public Sequence<T> mzero();
     public Sequence<T> mplus(Sequence<T> s);
+
+    public T div(Function2<? extends T, ? super T, ? super T> f);
+    public <S> Sequence<S> mul(Function1<? extends S, ? super T> f);
+    public T foldLeft(Function2<? extends T, ? super T, ? super T> f);
+    public <S> S foldLeft(Function2<? extends S, ? super S, ? super T> f, S z);
+    public <S> S foldRight(Function2<? extends S, ? super T, ? super S> f, S z);
 
     /** How large is this sequence?  */
     public int size();

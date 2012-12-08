@@ -368,7 +368,7 @@ public class F3Decompose implements F3Visitor {
                  * bound function's return value. The name of the sythetic Pointer
                  * variable is derived from the given varName.
                  */
-                ptrVar = makeVar(initExpr.pos(), tmpBoundResName, initExpr, F3BindStatus.UNIDIBIND, syms.f3_PointerType);
+                ptrVar = makeVar(initExpr.pos(), tmpBoundResName, initExpr, F3BindStatus.UNIDIBIND, syms.f3_PointerTypeErasure);
                 ptrVar.sym.flags_field |= Flags.SYNTHETIC | F3Flags.VARUSE_BIND_ACCESS;
         }
         return ptrVar;
