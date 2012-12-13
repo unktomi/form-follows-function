@@ -71,7 +71,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
     }
 
     // Monad.flatmap lifts a Stream constructor to a unary operator over Streams            
-    override public function flat map of b
+    override public function flatmap of b
         from (ctor is function from a to Stream of b) 
         to Stream of b
     {
