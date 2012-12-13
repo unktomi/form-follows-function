@@ -306,10 +306,10 @@ public class Timeline {
      * @profile common
      */
     public default var keyFrames: KeyFrame[] on replace oldValues = newValues {
-        for(keyFrame: KeyFrame in newValues) {
+        for (keyFrame: KeyFrame in newValues) {
             keyFrame.owner = this;
         }
-        invalidate();
+        //invalidate();
     	sortAndComputeTL(false);
         // Right now, we rely on the validation cycle to re-evaluate (all)
         // KeyValues.

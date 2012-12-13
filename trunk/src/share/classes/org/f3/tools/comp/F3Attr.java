@@ -2237,11 +2237,11 @@ public class F3Attr implements F3Visitor {
 	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
 	    */
 	    tv.bound = bound;
-	    System.err.println("created type var: "+ types.toF3String(tv));
+	    //System.err.println("created type var: "+ types.toF3String(tv));
 	    //Thread.currentThread().dumpStack();
 	    return tv;
 	} else {
-	    System.err.println("exp="+exp.getClass());
+	    //System.err.println("exp="+exp.getClass());
 	}
 	return null;
     }
@@ -4014,8 +4014,8 @@ public class F3Attr implements F3Visitor {
 				localEnv,
 				TYP,
 				Type.noType);
-	    System.err.println("t="+t);
-	    System.err.println("targs="+targs);
+	    //System.err.println("t="+t);
+	    //System.err.println("targs="+targs);
 	    if (ta.typeArgs != null) {
 		t = new ForAll(targs, t);
 	    }

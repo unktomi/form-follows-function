@@ -348,7 +348,8 @@ public abstract class F3TranslationSupport {
 		TypeVar t = (TypeVar)x.head;
 		//System.err.println("t="+t);
 		if (t != null) {
-		    ListBuffer<JCExpression> bb = new ListBuffer<JCExpression>();
+		    ListBuffer<JCExpression> bb = 
+			new ListBuffer<JCExpression>();
 		    List<Type> bounds = types.getBounds(t);
 		    for (List<Type> y = bounds; y != null; y = y.tail) {
 			Type bt = y.head;
@@ -400,8 +401,8 @@ public abstract class F3TranslationSupport {
 	if (ERASE_BACK_END) t = types.erasure(t);
 	JCExpression exp = makeTypeTreeInner0(diagPos, t, makeIntf);
 	exp.setType(t);
-	System.err.println("t="+t);
-	System.err.println("exp="+exp);
+	//System.err.println("t="+t);
+	//	System.err.println("exp="+exp);
 	if (t == null) {
 	    throw new NullPointerException("makeTypeTreeInner: "+ diagPos);
 	}
@@ -1762,8 +1763,8 @@ public abstract class F3TranslationSupport {
             return Method(m().Modifiers(flags), returnType, methodName, params, stmts, methSym);
         }
 
-        protected JCMethodDecl Method(long flags, Type returnType, Name methodName, List<Type> paramTypes, List<JCVariableDecl> params, Symbol owner, List<JCStatement> stmts) {
-            MethodSymbol methSym = makeMethodSymbol(flags, returnType, methodName, owner, paramTypes);
+        protected JCMethodDecl Method(long flags, List<Type> typeArgs, Type returnType, Name methodName, List<Type> paramTypes, List<JCVariableDecl> params, Symbol owner, List<JCStatement> stmts) {
+            MethodSymbol methSym = makeMethodSymbol(flags, typeArgs, returnType, methodName, owner, paramTypes);
             return Method(m().Modifiers(flags), returnType, methodName, params, stmts, methSym);
         }
 
@@ -1777,7 +1778,9 @@ public abstract class F3TranslationSupport {
 	    }
 	    targsBuf.appendList(methSym.type.getTypeArguments());
 	    List<Type> targs = targsBuf.toList();
+	    //Thread.currentThread().dumpStack();
 	    //System.err.println("*sym="+methSym);
+	    //System.err.println("*sym.type="+methSym.type);
 	    //System.err.println("*sym.owner="+methSym.owner);
 	    //System.err.println("*targs="+targs);
 
@@ -2208,9 +2211,16 @@ public abstract class F3TranslationSupport {
         /**
          * Create a method symbol.
          */
-        public MethodSymbol makeMethodSymbol(long flags, Type returnType, Name methodName, Symbol owner, List<Type> argTypes) {
-            MethodType methodType = new MethodType(argTypes, returnType, List.<Type>nil(), syms.methodClass);
-            return new MethodSymbol(flags, methodName, methodType, owner);
+        public MethodSymbol makeMethodSymbol(long flags, List<Type> typeArgs, Type returnType, Name methodName, Symbol owner, List<Type> argTypes) {
+            MethodType methodType = new MethodType(argTypes, returnType, 
+						   List.<Type>nil(),
+						   syms.methodClass);
+	    //System.err.println("methodType="+methodType);
+	    Type t = methodType;
+	    if (typeArgs != null && !typeArgs.isEmpty()) {
+		t = new ForAll(typeArgs, methodType);
+	    }
+            return new MethodSymbol(flags, methodName, t, owner);
         }
 
         /*

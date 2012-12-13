@@ -2644,7 +2644,7 @@ public class F3TranslateBind extends F3AbstractTranslation implements F3Visitor 
             for (JCVariableDecl param : params) {
                 paramTypes.append(param.getType().type);
             }
-            return Method(flags, returnType, methodName, paramTypes.toList(), params, owner, Stmts(stmt));
+            return Method(flags, List.<Type>nil(), returnType, methodName, paramTypes.toList(), params, owner, Stmts(stmt));
         }
 
         // Make a set induction variable method

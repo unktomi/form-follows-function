@@ -591,7 +591,11 @@ public class F3InitializationBuilder extends F3TranslationSupport {
         // Create a method symbol.
         //
         public MethodSymbol makeMethodSymbol(long flags, Type returnType, Name methodName, List<Type> argTypes) {
-            return makeMethodSymbol(flags, returnType, methodName, getCurrentOwner(), argTypes);
+	    return makeMethodSymbol(flags, List.<Type>nil(),
+				    returnType, methodName, argTypes);
+	}
+        public MethodSymbol makeMethodSymbol(long flags, List<Type> typeArgs, Type returnType, Name methodName, List<Type> argTypes) {
+            return makeMethodSymbol(flags, typeArgs, returnType, methodName, getCurrentOwner(), argTypes);
         }
 
         //
@@ -1082,7 +1086,7 @@ however this is what we need */
                         argtypes.append(type);
                     }
                     
-                    methodSymbol = makeMethodSymbol(flags().flags, returnType, methodName, argtypes.toList());
+                    methodSymbol = makeMethodSymbol(flags().flags, List.<Type>nil(), returnType, methodName, argtypes.toList());
                 }
                 
                 return methodSymbol;
@@ -4645,7 +4649,9 @@ however this is what we need */
             ListBuffer<JCVariableDecl> params = ListBuffer.lb();
             ListBuffer<JCExpression> args = ListBuffer.lb();
             ListBuffer<Type> argTypes = ListBuffer.lb();
-            
+            List<Type> typeArgs = methSym.type.getTypeArguments();
+	    System.err.println("sym="+methSym);
+	    System.err.println("typeArgs="+typeArgs);
             boolean isProxy = isStatic &&
                               !parameters.isEmpty() &&
                               parameters.get(0).type == methSym.owner.type &&
@@ -4695,7 +4701,7 @@ however this is what we need */
                           functionName,
                           params.toList(),
                           bodyType != BODY_NONE ? stmts.toList() : null,
-                          makeMethodSymbol(mods.flags, returnType, functionName, methSym.owner, argTypes.toList())));
+                          makeMethodSymbol(mods.flags, typeArgs, returnType, functionName, methSym.owner, argTypes.toList())));
                           
             if (bodyType != BODY_NONE) {
                 optStat.recordProxyMethod();
