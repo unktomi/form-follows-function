@@ -58,9 +58,10 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
         }
     }
 
-    // map lifts a unary operator to one over Streams                                 
-    override public function of b
-        map(unaryOp is function from a to b) returns Stream of b
+    // Functor.map lifts a unary operator to one over Streams                                 
+    override public function map of b
+       from (unaryOp is function from a to b) 
+       to Stream of b
     {
         Stream of b
         {
@@ -69,11 +70,12 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
         }
     }
 
-    // flatmap lifts a Stream constructor to a unary operator over Streams            
-    override public function of b
-        flatmap(ctor is function from a to Stream of b) returns Stream of b
+    // Monad.flatmap lifts a Stream constructor to a unary operator over Streams            
+    override public function flat map of b
+        from (ctor is function from a to Stream of b) 
+        to Stream of b
     {
-        val d = bound function(x is a) returns b { ctor(x).now }
+        const d = bound function(x is a) returns b { ctor(x).now }
         var h = bind d(now);
         var t = bind for (x in later) d(x);
         Stream of b
@@ -83,9 +85,10 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
         }
     }
 
-    // coflatmap lifts a Stream destructor to a unary operator over Streams           
-    override function of b
-        coflatmap(dtor is function from Stream of a to b) returns Stream of b
+    // Comonad.coflatmap lifts a Stream destructor to a unary operator over Streams           
+    override function coflatmap of b
+        from (dtor is function from Stream of a to b) 
+        to Stream of b
     {
         Stream of b
         {
@@ -94,9 +97,12 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
         }
     }
 
-    override public function extract() returns a { now }
+    // extract - this is the counit of the Stream Comonad
+    override public function extract from () to a { now }
 
-    public bound function followedBy(xs is Stream of a) returns Stream of a
+    public bound function followedBy
+         from (xs is Stream of a) 
+         to Stream of a
     {
         Stream of a
         {
@@ -108,16 +114,19 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 
 
 // lifts a value to a Stream by repeating it indefinitely, i.e  x, x, x, ...          
-public function of a repeat(x is a) returns Stream of a
+// (this is the unit of the Stream Monad)
+public function repeat of a
+     from (x is a) 
+     to Stream of a
 {
     Stream of a
     {
         now: x
-        override val later = this
+        override var later = this
     }
 }
 
 // creates an infinite stream of 3s
-val zs = bind for (x in repeat(1), y in repeat(2)) { x + y }
+var zs = bind for (x in repeat(1), y in repeat(2)) { x + y }
 
 }}}
