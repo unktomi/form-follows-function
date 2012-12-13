@@ -1,7 +1,8 @@
 package f3.util;
+
 public abstract class Monoid of a 
 {
-    public val zero is a;
+    public const zero is a;
     abstract public function add(x is a, y is a) returns a;
 }
 
