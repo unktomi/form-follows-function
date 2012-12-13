@@ -1,0 +1,341 @@
+package f3.util;
+import org.f3.runtime.Monad;
+import org.f3.runtime.Comonad;
+
+// Lazy infinite streams
+
+public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a) 
+{
+    public const now is a;
+    public const later is Stream of a;
+
+    // zip lifts a binary operator to one over Streams
+    public function zip of (b, c) 
+    	from (f is function from (a, b) to c, 
+	      xs is Stream of b) 
+	to Stream of c
+    {
+	Stream of c
+	{
+	    now: bind f(now, xs.now);
+	    later: bind later.zip(f, xs.later);
+	}
+    }
+
+    // map lifts a unary operator to one over Streams
+    override function map of b 
+	from (f is function from a to b) 
+	to Stream of b
+    {
+	const self = this;
+	Stream of b
+	{
+	    now: bind f(self.now);
+	    later: bind for (x in self.later) f(x)
+	}
+    }
+
+    // flatmap lifts a Stream constructor to a unary operator over Streams
+    public function flatmap of b 
+	from (ctor is function from a to Stream of b) 
+	to Stream of b
+    {
+	var d = bound function from (x is a) to b { ctor(x).now }
+	var h = bind d(now);
+	var t = bind for (x in later) d(x);
+	Stream of b 
+	{ 
+	    now: bind h;
+	    later: bind t;
+	}
+    }
+
+    // coflatmap lifts a Stream destructor to a unary operator over Streams
+    public function coflatmap of b 
+    	from (dtor is function from Stream of a to b) 
+	to Stream of b
+    {
+	Stream of b
+	{
+	    now: bind dtor(this);
+	    later: bind later.coflatmap(dtor);
+	}
+    }
+
+    public bound function extract 
+	from () 
+	to a 
+    { 
+	now
+    }
+
+    public bound function coextract of b 
+	from (x is b) 
+	to Stream of b 
+    {
+	repeat(x)
+    }
+
+    public bound function next 
+	from () 
+	to Stream of a 
+    {
+	later
+    }
+
+    public bound function <<followed by>> 
+	from (xs is Stream of a) 
+	to Stream of a 
+    {
+	Stream of a {
+	    now: bind now;
+	    later: bind xs;
+	}
+    }
+
+    public bound function drop 
+	from (n is Integer) 
+	to Stream of a 
+    {
+	if n == 0 then this else later.drop(n-1)
+    }
+
+    public bound function prepend 
+	from (x is a) 
+	to Stream of a 
+    {
+	Stream of a 
+	{
+	    now: bind x;
+	    later: this;
+	}
+    }
+}
+
+function d from (xs is Stream of Number) to Stream of Number 
+{
+    xs.later * sum(repeat(1.0))
+}
+
+function integrate from (xs is Stream of Number) to Stream of Number 
+{
+    repeat(0.0).<<followed by>>(xs / sum(repeat(1.0)))
+}
+
+// lifts a value to a Stream i.e,  x, x, x, ...
+public function repeat of a 
+    from (x is a) 
+    to Stream of a 
+{
+    Stream of a 
+    {
+    	now: x;
+	override var later = this;
+    }
+}
+
+class NumOps {
+    function sub from (x is Number, y is Number) to Number { x-y }
+    function add from (x is Number, y is Number) to Number { x+y }
+    function mul from (x is Number, y is Number) to Number { x*y }
+    function div from (x is Number, y is Number) to Number { x/y }
+}
+
+const Nums = NumOps {};
+
+public function * 
+    from (xs is Stream of Number, y is Number) 
+    to Stream of Number 
+{ 
+    for (x in xs) x * y
+}
+
+public function * 
+    from (x is Number, ys is Stream of Number) 
+    to Stream of Number 
+{ 
+    for (y in ys) x * y
+}
+
+public function - 
+    from (xs is Stream of Number, 
+	  ys is Stream of Number) 
+    to Stream of Number 
+{ xs.zip(Nums.sub, ys) }
+
+public function + 
+    from (xs is Stream of Number, 
+	  ys is Stream of Number) 
+    to Stream of Number 
+{ xs.zip(Nums.add, ys) }
+
+public function * 
+    from (xs is Stream of Number, 
+	  ys is Stream of Number) 
+    to Stream of Number 
+{ xs.zip(Nums.mul, ys) }
+
+public function / 
+    from (xs is Stream of Number, 
+	  ys is Stream of Number) 
+    to Stream of Number 
+{ xs.zip(Nums.div, ys) }
+
+bound function of a asStream from (p is (a, Stream of a)) to Stream of a {
+     Stream of a {
+	 now: bind p.first;
+	 later: bind p.second;
+     }
+}
+
+// e.g sum (1, 1, 1, ...) = (0, 1, 2, 3, ...)
+public function sum 
+    from (xs is Stream of Number) 
+    to Stream of Number
+{
+    // ys = [0, xs + ys]
+    var ys is Stream of Number = 
+	Stream of Number 
+	{
+	    now: 0.0;
+	    later: bind xs + ys; 
+	}
+}
+
+// inverse of sum, e.g diff (0, 1, 2, 3, ...) = (1, 1, 1, ...)
+public bound function diff 
+    from (xs is Stream of Number) 
+    to Stream of Number
+{
+   xs.later - xs; // xs = xs[1..] - xs
+}
+
+/*
+public function invert(xs is Stream of Number, 
+		       inv is function from Number to Number) to Stream of Number {
+    var x0 = bind inv(xs.now);
+    repeat(x0).<<followed by>>(mul(repeat(-x0), mul(xs.later, invert(xs, inv))));
+}
+*/
+
+public function take of a 
+    from (n is Integer, 
+	  xs is Stream of a) 
+    to a[] 
+{
+    var ys = xs;
+    for (i in [0..<n]) { 
+	const now = ys.now;
+	ys = ys.later;
+	now
+    }
+}
+
+public bound function toStream of a 
+    from (xs is a[]) 
+    to Stream of a 
+{
+    if xs == [] then null else 
+    Stream of a 
+    {
+	now: bind xs[0];
+	later: bind toStream(xs[1..]);
+    }
+}
+
+public const <<0.0>> = constant(0.0);
+public const <<1.0>> = constant(1.0);
+public const X = <<0.0>>.<<followed by>>(<<1.0>>);
+
+public bound function constant 
+    from (x is Number) 
+    to Stream of Number 
+{
+    repeat(x).<<followed by>>(<<0.0>>);
+}
+
+public function convolve 
+    from (xs is Stream of Number, 
+	  ys is Stream of Number) 
+    to Stream of Number
+{
+    const temp is Stream of Number = xs;
+    var x is Number = bind temp.now as Number;
+    Stream of Number 
+    {
+	now: bind x * ys.now;
+	later: bind x * ys + convolve(xs.later, ys);
+    }
+}
+
+public function mul from (xs is Stream of Number, ys is Stream of Number) to Stream of Number
+{
+    Stream of Number 
+    {
+	now: bind xs.now * ys.now;
+	later: bind for (x in mul(xs.later, ys), 
+			     y in mul(repeat(xs.now), ys.later)) x + y
+    }
+}
+
+public function compose from (xs is Stream of Number, ys is Stream of Number) to Stream of Number 
+{
+    xs.<<followed by>>(mul(ys.later, compose(xs.later, ys)));
+}
+
+public function always of a 
+    from (x is a) 
+    to Stream of a 
+{
+   repeat(x)
+}
+
+function join of a 
+    from (xss is Stream of (Stream of a)) 
+    to Stream of a 
+{
+    xss.flatmap(id of Stream of a)
+}
+
+bound function <<every other>> of a 
+    from (xs is Stream of a) 
+    to Stream of a 
+{
+    xs.<<followed by>>(<<every other>>(xs.later.later))
+}
+
+function run from () to ()
+{
+    if (true) {
+	println(take(10, repeat(1.0)));
+	println(take(10, sum(repeat(1.0))));
+	println(take(10, diff(sum(repeat(1.0)))));
+	println(take(10, repeat(1.0) + repeat(1.0)));
+	println(take(10, repeat(-1.0).<<followed by>>(repeat(2.0))));
+	var j = 1.0;
+	var xs = bind for (x in repeat(j), y in repeat(2.0))  x + y;
+	var xss = bind for (x in repeat(j), y in repeat(2.0), z in repeat(10.0)) z + x + y;
+	println(take(10, xs));
+	println(take(10, xss));
+	j = 20.0;
+	println(take(10, xss));
+	println("xs={take(10, xs)}");
+	var gs = bind(sum(xs));
+	println(take(1000, gs));
+	for (x in toStream([1.2])) {
+	    println(x);
+	}
+    }
+    //println(take(200, convolve(repeat(1.0), repeat(2.0))));
+
+    //println(take(10, join(repeat(repeat("hello")))));
+    println(take(10, X));
+    println(take(10, mul(X, X)));
+    println(take(10, mul(mul(X, X), X)));
+    println(take(10, mul(mul(mul(X, X), X), X)));
+    println(take(10, sum(repeat(1.0))));
+    println(take(1000, <<every other>>(sum(repeat(1.0)))));
+}
+
+
+

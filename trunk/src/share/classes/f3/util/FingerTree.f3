@@ -1,0 +1,410 @@
+package f3.util;
+import org.f3.runtime.*;
+
+function measureAll of (Measured, Measurement) 
+    from (x is Measurer of Measurement,
+	  ys is Measured[]) 
+    to Measurement 
+{
+    var result = x.zero;
+    for (y in ys) {
+	result = x.add(result, x.measure(y));
+    }
+    return result;
+}
+
+class Node of (Measurement, a) is Measured of Measurement 
+{
+    public const elems is a[];
+    override function toString from () to String 
+    {
+	"Node {measurement} [{for (e in elems) "{e} "}]"
+    }
+}
+
+function single of (Measurement, a) 
+    from (measurer is Measurer of Measurement,
+	  x is a) 
+    to Single of (Measurement, a) 
+{
+    Single of (Measurement, a) 
+    { 
+	one: x;
+	measurement: measurer.measure(x);
+	measurer: measurer;
+    }
+}
+
+
+abstract class FingerTree of (Measurement, a) 
+    is Measured of Measurement, Monad of (FingerTree, a)
+{
+    function deep 
+	from (measurer is Measurer of Measurement,
+	      prefix is a[], 
+	      middle is FingerTree of (Measurement, Node of (Measurement, a)),
+	      suffix is a[]) 
+	to Deep of (Measurement, a) 
+    {
+	const p = measureNodes(measurer, prefix);
+	const m = middle.measurement;
+	const s = measureNodes(measurer, suffix);
+	const add = measurer.add;
+	const measurement = add(p, add(m, s));
+	Deep of (Measurement, a) 
+	{
+	    measurer: measurer;
+	    measurement: measurement;
+	    prefix: prefix;
+	    middle: middle;
+	    suffix: suffix;
+	}
+    }
+
+    public const measurer is Measurer of Measurement;
+
+    abstract public function prepend from (x is a) to FingerTree of (Measurement, a); 
+    abstract public function append from (x is a) to FingerTree of (Measurement, a);
+
+    public function prepend from (xs is a[]) to FingerTree of (Measurement, a)
+    {
+	var t = this;
+	for (x in xs) {
+	    t = t.prepend(x);
+	}
+	return t;
+    }
+
+    public function append 
+	from (xs is a[]) 
+	to FingerTree of (Measurement, a)
+    {	
+	var t = this;
+	for (x in xs) {
+	    t = t.append(x);
+	}
+	return t;
+    }
+
+    public function concat 
+	from (xs is FingerTree of (Measurement, a)) 
+	to FingerTree of (Measurement, a) 
+    {
+	var result = this;
+	for (x in xs) {
+	    result = result.append(x);
+	}
+	return result;
+    }
+    
+    abstract public function app3 
+	from (xs is a[], 
+	      t is FingerTree of (Measurement, a)) 
+	to FingerTree of (Measurement, a); 
+
+    public function map of b 
+	from (f is function from a to b) 
+	to FingerTree of (Measurement, b)
+    {
+	Empty of (Measurement, b) { measurer: measurer }
+    }
+
+    public function flatmap of b 
+	from (f is function from a to FingerTree of (Measurement, b)) 
+	to FingerTree of (Measurement, b)
+    {
+	Empty of (Measurement, b) { measurer: measurer }
+    }
+
+}
+
+class Empty of (Measurement, a) is FingerTree of (Measurement, a)
+{
+    override function app3 
+	from (xs is a[], 
+	      t is FingerTree of (Measurement, a)) 
+	to FingerTree of (Measurement, a) 
+    {
+	t.prepend(xs)
+    }
+
+    override function prepend 
+	from (x is a) 
+	to FingerTree of (Measurement, a) 
+    {
+	single(measurer, x);
+    }
+
+    override function append 
+	from (x is a) 
+	to FingerTree of (Measurement, a) 
+    {
+	prepend(x)
+    }
+}
+
+class Single of (Measurement, a) is FingerTree of (Measurement, a) 
+{
+
+    public const one is a;
+
+    override function map of b 
+	from (f is function from a to b) 
+	to Single of (Measurement, b)
+    {
+	Single of (Measurement, b) { measurer: measurer, one: f(one) }
+    }
+
+    override function flatmap of b 
+	from (f is function from a to FingerTree of (Measurement, b)) 
+	to FingerTree of (Measurement, b)
+    {
+	f(one) as FingerTree of (Measurement, b)
+    }
+
+    override function app3 
+	from (xs is a[], 
+	      t is FingerTree of (Measurement, a)) 
+	to FingerTree of (Measurement, a) 
+    {
+	t.prepend(xs).prepend(one);
+    }
+
+    // this is a pita
+    function emptyNodeTree 
+	from (measurer is Measurer of Measurement) 
+	to FingerTree of (Measurement, Node of (Measurement, a))
+    {
+        Empty of (Measurement, Node of (Measurement, a)) {
+	    measurer: measurer;
+	    measurement: measurer.zero;
+	}
+    }
+
+    override function prepend 
+	from (x is a) 
+	to FingerTree of (Measurement, a) 
+    {
+	deep(measurer, [x], emptyNodeTree(measurer), [one]);
+    }
+
+    override function append 
+	from (x is a) 
+	to FingerTree of (Measurement, a) 
+    {
+	deep(measurer, [one], emptyNodeTree(measurer), [x]);
+    }
+
+    override function toString 
+	from () 
+	to String 
+    {
+	"Single {measurement} : {one}"
+    }
+}
+
+function measureNodes of (Measurement, a) 
+    from (m is Measurer of Measurement, 
+	  nodes is a[]) 
+    to Measurement 
+{
+    var measurement = m.zero;
+    for (n in nodes) {
+	measurement = m.add(measurement, m.measure(n));
+    }
+    return measurement;
+}		
+
+function toTree of (Measurement, a) 
+    from (measurer is Measurer of Measurement, 
+	  xs is a[]) 
+    to FingerTree of (Measurement, a)
+{
+    const t is FingerTree of (Measurement, a) = Empty of (Measurement, a) { measurer: measurer };
+    t.append(xs)
+}
+
+class Deep of (Measurement, a) is FingerTree of (Measurement, a) 
+{
+    override function map of b 
+	from (f is function from a to b) 
+	to FingerTree of (Measurement, b)
+    {
+	const xs is b[] = for (x in prefix) f(x);
+	var ys is b[];
+	for (node in middle) { insert for (x in node.elems) f(x) into ys }
+	const zs is b[] = for (z in suffix) f(z);
+	toTree(measurer, [xs, ys, zs]);
+    }
+
+    override function flatmap of b 
+	from (f is function from a to FingerTree of (Measurement, b)) 
+	to FingerTree of (Measurement, b)
+    {
+	var t is FingerTree of (Measurement, b) = toTree(measurer, []);
+	for (x in prefix) t = t.concat(f(x));
+	for (x in middle) {
+	    for (y in x.elems) {
+		t = t.concat(f(y));
+		null as ()
+	    } 
+	    null as ()
+	}
+	for (x in suffix) t = t.concat(f(x));
+	return t;
+    }
+
+    function makeNode 
+	from (measurer is Measurer of Measurement, 
+	      xs is a[]) 
+	to Node of (Measurement, a) 
+    {
+	Node of (Measurement, a) { elems: xs, measurement: measureAll(measurer, xs) }
+    }
+
+    function nodes 
+	from (m is Measurer of Measurement, 
+	      xs is a[]) 
+	to (Node of (Measurement, a))[] 
+    {
+	const n = sizeof xs mod 3;
+	const r = if n == 0 then null else makeNode(m, xs[0..n]);
+	//[r, for (i in [n..<sizeof xs step 3]) {
+	//	makeNode(m, xs[i..i+2])
+        //}]
+	// workaround for compiler bugs:
+        var rs is Object[];
+	insert r into rs;
+	for (i in [n..<sizeof xs step 3]) {
+		insert makeNode(m, xs[i..i+2]) into rs;
+	}
+	return rs as (Node of (Measurement, a))[];
+    }
+
+    public const prefix is a[];
+    public const middle is FingerTree of (Measurement, Node of (Measurement, a));
+    public const suffix is a[];
+
+    override function app3 
+	from (xs is a[], 
+	      t is FingerTree of (Measurement, a)) 
+	to FingerTree of (Measurement, a) 
+    {
+	if (t instanceof Empty) {
+	    append(xs);
+	} else if (t instanceof Single) {
+	    const s = t as Single of (Measurement, a);
+	    append(xs).append(s.one);
+	} else {
+	    const d = t as Deep of (Measurement, a);
+	    const ys = nodes(measurer, [suffix, xs, d.prefix]);
+	    const mt = middle.app3(ys, d.middle);
+	    this.deep(measurer, 
+		      prefix,
+		      mt,
+		      d.suffix);
+	}
+    }
+
+    override function prepend from (x is a) to FingerTree of (Measurement, a) 
+    {
+	if (prefix.size() < 4) {
+	    this.deep(measurer, [x, prefix], middle, suffix);
+	} else {
+	    const m = middle.prepend(Node of (Measurement, a)
+				   {
+				       measurement: measureNodes(middle.measurer, prefix[1..3]);
+				       elems: prefix[1..3]
+				   });
+	    this.deep(measurer, [x, prefix[0]], m, suffix);
+	}
+    }
+
+    override function append from (x is a) to FingerTree of (Measurement, a) 
+    {
+	if (suffix.size() < 4) {
+	    this.deep(measurer, prefix, middle, [suffix, x]);
+	} else {
+	    const m = middle.append(Node of (Measurement, a)
+				  {
+				      measurement: measureNodes(middle.measurer, suffix[0..2]);
+				      elems: suffix[0..2]
+				  });
+	    this.deep(measurer, prefix, m, [suffix[3], x]);
+	}
+    }
+
+    override function toString from () to String 
+    {
+	"Deep {measurement}: {prefix}, {middle}, {suffix}";
+    }
+}
+
+class Size is Measurer of Integer 
+{
+    override function measure of a from (x is a) 
+    { 
+	if (x instanceof Measured) then (x as Measured of Integer).measurement else 1
+    }
+    override const zero = 0;
+    override function add(x, y)
+    {
+	x + y
+    }
+}
+
+const SIZE = Size {};
+
+class Seq of a is Monad of (Seq, a) {
+
+    protected var t is FingerTree of (Integer, a) = 
+	Empty of (Integer, a) 
+    { 
+	measurer: SIZE, measurement: SIZE.zero 
+    }
+
+    public function length from () to Integer 
+    {
+	t.measurement;
+    }
+
+    public function append from (x is a) to ()
+    {
+	t = t.append(x);
+    }
+
+    public function prepend from (x is a) to ()
+    {
+	t = t.append(x);
+    }
+
+    public function map of b from (f is function from a to b) to Seq of b 
+    {
+	Seq of b 
+	{ 
+	    t: t.map(f);
+	}
+    }
+
+    public function flatmap of b 
+	from (f is function from a to Seq of b) 
+	to Seq of b 
+    {
+	var t is FingerTree of (Integer, b) = Empty of (Integer, b) { measurer: SIZE };
+	for (x in this.t) { 
+	    const m = f(x);
+	    t = t.concat(m.t); 
+	}
+	Seq of b 
+	{ 
+	    t: t;
+	}
+    }
+}
+
+function run from () to () {
+    const nums = Seq of Integer {};
+    for (i in [1..10]) nums.append(i);
+    println(nums.length());
+    for (j in nums) println(j);
+}

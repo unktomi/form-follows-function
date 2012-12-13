@@ -4250,11 +4250,7 @@ postfixExpression
             | (LPAREN)=>LPAREN 
                 expressionList             
                 {
-                    if ($expressionList.args.isEmpty()) {
-                        $value = F.at(rPos).Literal(TypeTags.BOT, null);
-                    } else {
-                       $value = F.at(sPos).Apply(null, $value, $expressionList.args.toList());
-                    }
+                    $value = F.at(sPos).Apply(null, $value, $expressionList.args.toList());
                     errNodes.append($value);
                     
                 }

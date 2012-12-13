@@ -1,0 +1,119 @@
+package f3.util;
+import org.f3.runtime.*;
+
+/**
+ * Represents an optional value of type 'a'
+ *
+ * For the mathematically inclined:
+ *    Optional of a = 1 + a
+ *
+ * Optional implements Functor and Monad which means you can use it in 
+ * a 'for' loop.
+ */    
+
+public abstract class Optional of a is Monad of (Optional, a) 
+{
+    abstract override function map of b 
+	from (f is function from a to b) 
+	to Optional of b;
+
+    abstract public function flatmap of b 
+	from (f is function from a to Optional of b) 
+	to Optional of b;
+
+    abstract public function extract from () to a;
+
+    public function isAbsent from () to Boolean {
+	not isPresent()
+    }
+
+    public function isPresent from () to Boolean {
+	not isAbsent()
+    }
+}
+
+public class Present of a is Optional of a
+{
+    public const x is a;
+
+    override function isPresent from () to Boolean {
+	yes
+    }
+
+    override function map of b 
+	from (f is function from a to b) 
+	to Optional of b 
+    {
+	Present of b 
+	{
+	    x: f(x)
+	}
+    }
+
+    override function flatmap of b 
+	from (f is function from a to Optional of b) 
+	to Optional of b 
+    {
+	f(x);
+    }
+
+    public function extract from () to a 
+    { 
+	x
+    }
+
+    public function coflatmap of b 
+	from (f is function from Present of a to b) 
+	to Present of b
+    {
+	Present of b {
+	    x: f(this)
+	}
+    }
+}
+
+public class Absent of a is Optional of a 
+{
+    override function isAbsent from () to Boolean 
+    {
+	yes
+    }
+
+    override function map of b 
+	from (f is function from a to b) 
+	to Optional of b 
+    {
+	(this as Object) as Optional of b
+    }
+
+    override public function flatmap of b 
+	from (f is function from a to Optional of b) 
+	to Optional of b 
+    {
+	(this as Object) as Optional of b
+    }
+
+    public function extract from () to a 
+    { 
+	throw new java.lang.RuntimeException("Absent");
+    }
+}
+
+public function present of a 
+    from (x is a) 
+    to Optional of a 
+{
+    Present of a 
+    {
+	x: x;
+    }
+}
+
+const Nothing = Absent of Object {}
+
+public function absent of a 
+    from () 
+    to Optional of a 
+{
+    (Nothing as Object) as Absent of a;
+}

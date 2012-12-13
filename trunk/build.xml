@@ -329,7 +329,7 @@
                  <path refid="asm.class.path"/>
             </classpath>
         </taskdef>
-        <bytecode-verify path="${dist.jar}" verbose="false"/>
+        <!--bytecode-verify path="${dist.jar}" verbose="false"/-->
 <!--
         <jar compress="${jar.compress}" destfile="${dist.jar}" manifest="${manifest.file}">
             <fileset dir="${build.classes.dir}"/>
@@ -530,7 +530,7 @@
                  <path refid="asm.class.path"/>
             </classpath>
         </taskdef>
-        <bytecode-verify path="${build.classes.dir}" verbose="false"/>
+        <!--bytecode-verify path="${build.classes.dir}" verbose="false"/-->
     </target>
 
     <target depends="init,f3doc" name="-javadoc-build">

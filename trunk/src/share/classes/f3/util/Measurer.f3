@@ -1,0 +1,11 @@
+package f3.util;
+
+public abstract class Measurer of Measurement extends Monoid of Measurement 
+{
+    public function measure from (x is Measured of Measurement) to Measurement 
+    {
+    	return x.measurement
+    }
+
+    abstract public function measure of a from (x is a) to Measurement;
+}

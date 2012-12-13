@@ -1,0 +1,202 @@
+package f3.util;
+import org.f3.runtime.*;
+
+//
+// Continuation Monad/Comonad - corresponds to the logical double negation of 'a'
+//
+// logical negation is represented by
+//
+//    a implies false
+//
+// hence double negation is represented 
+//
+//    (a implies false) implies false
+//
+// i.e, taking implication as function abstraction,
+//  
+//    function from (function from a to false) to false
+//
+// However, rather than representing just a truth value, "false" is abstracted as an existentially quantified type variable, thus:
+//
+//    function of _ from (function from a to _) to _
+// 
+
+public abstract class DoubleNegation of a is Monad of (DoubleNegation, a), Comonad of (DoubleNegation, a) 
+{
+    public abstract function negate of _ 
+	from (negate_a is function from a to _) 
+	to _;
+
+    public override function map of b 
+	from (f is function from a to b) 
+	to DoubleNegation of b 
+    {
+	const self = this;
+	DoubleNegation of b
+	{
+	    override function negate of _ from (negate_b is function from b to _) to _ 
+	    {
+		const negate_a = function from (x is a) to _ 
+		    {
+			negate_b(f(x));
+		    }
+		self.negate(negate_a)
+	    }
+	}
+    }
+
+    public function flatmap of b 
+	from (f is function from a to DoubleNegation of b) 
+	to DoubleNegation of b 
+    {
+    	const self = this;
+	DoubleNegation of b 
+	{
+	    override function negate of _ 
+		from (negate_b is function from b to _) 
+                to _ 
+	    {
+		const negate_a =
+		    function from (x is a) to _ 
+		    {
+			const m is DoubleNegation of b = f(x);
+			m.negate(negate_b);
+		    }
+		self.negate(negate_a)
+	    }
+	}
+    }
+
+    public function coflatmap of b 
+	from (f is function from DoubleNegation of a to b) 
+	to DoubleNegation of b 
+    {
+    	const self = this;
+	DoubleNegation of b
+	{
+	    override function negate of _ from (negate_b is function from b to _) to _
+		{
+		    const x is b = f(self);
+		    negate_b(x);
+		}
+	}
+    }
+
+    public function extract to a from ()
+    { 
+	doublyNegate();
+    }
+
+    public function coextract of b from (x is b) to DoubleNegation of b 
+    {
+	doublyNegate(x);
+    }
+    
+    public function doublyNegate to a from ()
+    {
+	this.negate(id of a);
+    }
+
+    override function toString to String from ()
+    {
+	"(not not {doublyNegate()})"
+    }
+
+    override function equals from (obj is Object) to Boolean 
+    {
+	if (obj instanceof DoubleNegation) {
+	    (obj as DoubleNegation of Object).doublyNegate() == doublyNegate();
+	} else false
+    }
+}
+
+// this is the unit of the monad
+public function doublyNegate of a 
+    from (x is a) 
+    to DoubleNegation of a 
+{
+    DoubleNegation of a 
+    {
+	override function negate of _ from (c is function from a to _) to _ 
+	{
+	    c(x)
+	}
+    }
+}
+
+public function counit of a 
+    from (x is DoubleNegation of a) 
+    to a 
+{
+    x.doublyNegate() 
+}
+
+public function unit of a 
+    from (x is a) 
+    to DoubleNegation of a 
+{ 
+    doublyNegate(x) 
+}
+
+public function join of a 
+    from (x is DoubleNegation of DoubleNegation of a) 
+    to DoubleNegation of a 
+{ 
+    // x.doublyNegate();
+    DoubleNegation of a {
+	override function negate of _ from (negate_a is function from a to _) to _ 
+	{
+	    x.negate(function from (y is DoubleNegation of a) to _ 
+		     {
+			 y.negate(negate_a);
+		     })
+	}
+    }
+}
+
+public function cojoin of a
+    from (x is DoubleNegation of a) 
+    to DoubleNegation of DoubleNegation of a 
+{ 
+    DoubleNegation of DoubleNegation of a 
+    {
+	override function negate of _ 
+	    from (neg_neg_a is function from DoubleNegation of a to _) 
+	    to _ 
+	{
+	    neg_neg_a(x)
+	}
+    }
+}
+
+public function callCC of (a, b) 
+    from (f is function from (function from a to DoubleNegation of b) to DoubleNegation of a) 
+    to DoubleNegation of a 
+{
+    DoubleNegation of a 
+    {
+	override function negate of _ 
+	    from (negate_a is function from a to _) 
+	    to _ 
+	{
+	    f(function from (x is a) to DoubleNegation of b 
+	      {
+		  DoubleNegation of b 
+		  {
+		      override function negate of _ 
+			  from (negate_b is function from b to _) 
+			  to _ 
+		      {
+			  negate_a(x);
+		      }
+		  }
+	      }).negate(negate_a);
+	}
+    }
+} 
+
+public function run from () to ()
+{ 
+   println(for (x in doublyNegate(2), y in doublyNegate(3))  x + y);
+}
+
