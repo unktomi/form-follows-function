@@ -26,11 +26,12 @@ package org.f3.functions;
 import org.f3.runtime.F3Object;
 import org.f3.runtime.Functor;
 import org.f3.runtime.Monad;
+import org.f3.runtime.Either;
 
 public class Function1<R, A1> extends Function<R> 
     implements Monad<Function1, R> // , Comonad<Function1, R>
 {
-
+    /*
     public Function1<? extends Function1<?,?>, Function1<? extends Function1<?, ?>, 
 					                 ? super Function1<? extends R, ? super A1>>>
 	add(final Function1<R, A1> n0) 
@@ -53,6 +54,20 @@ public class Function1<R, A1> extends Function<R>
 	    }
 	};
     }
+    */
+
+    public <B> 
+	Function1<? super R, ? super Either<A1, B> >
+	or(final Function1<? extends R, ? super B> g) 
+    {
+	final Function1<R,A1> f = this;
+	return new Function1<R, Either<A1,B> >() {
+	    public R invoke(Either<A1, B> x) {
+		return x.either(f, g);
+	    }
+	};
+    }
+
 
     public <B> Function0<? extends R> mul(final A1 x) {
 	final Function1<R, A1> self = this;	

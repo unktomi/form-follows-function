@@ -328,16 +328,21 @@ public class F3ScriptClassBuilder {
                     break;
                 }
                 default: {
-                    // loose expressions, if allowed, get added to the statements/value
-                    if (isLibrary && !looseExpressionsSeen) {
-                        JCDiagnostic reason = externalAccessFound ?
-                            diags.fragment(MsgSym.MESSAGE_F3_LOOSE_IN_LIB) :
-                            diags.fragment(MsgSym.MESSAGE_F3_LOOSE_IN_RUN);
-                        log.error(tree.pos(), MsgSym.MESSAGE_F3_LOOSE_EXPRESSIONS, reason);
-                    }
-                    looseExpressionsSeen = true;
-                    value = (F3Expression) tree;
+		    if (tree instanceof F3TypeAlias) {
+			value = (F3Expression) tree;
+		    } else {
+			// loose expressions, if allowed, get added to the statements/value
+			if (isLibrary && !looseExpressionsSeen) {
+			    JCDiagnostic reason = externalAccessFound ?
+				diags.fragment(MsgSym.MESSAGE_F3_LOOSE_IN_LIB) :
+				diags.fragment(MsgSym.MESSAGE_F3_LOOSE_IN_RUN);
+			    log.error(tree.pos(), MsgSym.MESSAGE_F3_LOOSE_EXPRESSIONS, reason);
+			}
+			looseExpressionsSeen = true;
+			value = (F3Expression) tree;
+		    }
                     break;
+
                 }
             }
         }

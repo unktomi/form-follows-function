@@ -1159,6 +1159,9 @@ functionDefinition [ F3Modifiers mods, int pos ]
 
     F3Block blk = null;
 
+    F3Type rtype = null;
+    com.sun.tools.mjavac.util.List<F3Var> argTypes = com.sun.tools.mjavac.util.List.<F3Var>nil();
+
     // Accumulate any generic arguments
     //
 }
@@ -1215,22 +1218,39 @@ functionDefinition [ F3Modifiers mods, int pos ]
         )
         )
         ((OF | FORALL) (genericArgs = genericParams[false, false]))?
-        FROM?
-        formalParameters
+        ((TO)=>(
+            rt1= returnTypeReference
+            { errNodes.append($rt1.rtype); rtype = $rt1.rtype; }
+            (FROM
+            fp1=formalParameters
             {
                 // Accumulate the parameter nodes in case of error
                 //
-                for (F3Tree t : $formalParameters.params) {
+                for (F3Tree t : $fp1.params) {
                     errNodes.append(t);
                 }
+                argTypes = $fp1.params.toList();
+            })?
+        )
+        |
+        FROM?
+        fp2=formalParameters
+            {
+                // Accumulate the parameter nodes in case of error
+                //
+                for (F3Tree t : $fp2.params) {
+                    errNodes.append(t);
+                }
+                argTypes = $fp2.params.toList();
             }
             
-        returnTypeReference
+        rt2=returnTypeReference
             {
                 // Accumulate in case of error
                 //
-                errNodes.append($returnTypeReference.rtype);
-            }
+                errNodes.append($rt2.rtype);
+                rtype = $rt2.rtype;
+            })
     
         // The function block is optional if this is an abstract funtino definition
         // but in that case a semi colon is required. If this is not an abstract function
@@ -1263,8 +1283,8 @@ functionDefinition [ F3Modifiers mods, int pos ]
                             (
                                 $mods,
                                 name, 
-                                $returnTypeReference.rtype,
-                                $formalParameters.params.toList(), 
+                                rtype, 
+                                argTypes, 
                                 blk
                             );
 	    if (genericArgs != null) {
@@ -4228,11 +4248,13 @@ postfixExpression
                 )
 
             | (LPAREN)=>LPAREN 
-
-                    expressionList 
-            
+                expressionList             
                 {
-                    $value = F.at(sPos).Apply(null, $value, $expressionList.args.toList());
+                    if ($expressionList.args.isEmpty()) {
+                        $value = F.at(rPos).Literal(TypeTags.BOT, null);
+                    } else {
+                       $value = F.at(sPos).Apply(null, $value, $expressionList.args.toList());
+                    }
                     errNodes.append($value);
                     
                 }
@@ -4460,11 +4482,17 @@ primaryExpression
             $value = $fe.value;
         }
     
-    | LPAREN e=expression {$value = e;} (
+    | LPAREN 
+       (
+          e=expression {$value = e;} (
             COMMA e1=expression {
                 $value = F.at(rPos).Binary(F3Tag.TUPLE, $value, e1);
             }
-          )* RPAREN
+          )*
+       |
+           {   $value = F.at(rPos).Literal(TypeTags.BOT, null);  }
+       )
+       RPAREN
     | AT 
         LPAREN 
             tv=timeValue
@@ -5724,6 +5752,9 @@ type
         }
     | typeFunction  { $rtype = $typeFunction.rtype; } 
     | typePrefixed  { $rtype = $typePrefixed.rtype; }) 
+    |
+    q=QUES {$rtype = F.at($q.pos).TypeExists();}
+
     ;
 
 // Catch an error when looking for a type. The only error we can
@@ -6322,7 +6353,6 @@ genericParam[boolean contravar, boolean covar]
         (COLON|IS)=>((COLON|IS)
 
                       (AT ident=IDENTIFIER  { 
-
                            String str = ident.getText();
                            if (str.equals("least")) {
                               bk = BoundKind.EXTENDS;
@@ -6368,43 +6398,14 @@ genericArgument
 }
 
       : 
-                      (AT ident=IDENTIFIER  { 
-                           String str = ident.getText();
-                           if (str.equals("least")) {
-                              bk = BoundKind.EXTENDS;
-                           } else if (str.equals("most")) {
-                              bk = BoundKind.SUPER;
-                           } else {
-                               bk = BoundKind.UNBOUND;
-                           }
-                        }
-                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.UNBOUND;})
-
-       t=type  { 
-
-            $value = $t.rtype; 
-            //System.err.println("rtype="+$value);
-            //System.err.println("bk="+bk);
-            $t.rtype.boundKind = bk;
-        }
-        //  (COLON)=>(COLON bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})?
-      |
-      q=QUES {$value = F.at($q.pos).TypeExists();}
-     
-/*    
-    | QUES 
-        (  
-            ( 
-                  EXTENDS       { bk = BoundKind.EXTENDS;   }
-                | SUPER         { bk = BoundKind.SUPER;     }
-            ) 
-            typeName            { texpr = $typeName.value; }
-        )?
-        
-        {
-            // TODO: NYI - Remove or implement?
-        }
-*/
+      (PLUS { bk = BoundKind.EXTENDS; } | SUB {bk = BoundKind.SUPER;}) t=type
+        {$value = $t.rtype; $t.rtype.boundKind = bk;}
+      | 
+        DOTDOT {bk = BoundKind.SUPER; } t = type
+        {$value = $t.rtype; $t.rtype.boundKind = bk;}
+      | 
+        t = type ((DOTDOT)=>(DOTDOT { bk = BoundKind.EXTENDS; } ) |)
+        {$value = $t.rtype; $t.rtype.boundKind = bk;}
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.

@@ -119,7 +119,7 @@ public class Builtins {
                  F3Object.VFLGS$IS_READONLY);
     }
 
-    public static <T> T id(T x) {
+    public static <a> a id(a x) {
 	return x;
     }
 
@@ -172,11 +172,11 @@ public class Builtins {
     }
 
     public static <a,b> Either<a, b> former(a x) {
-	return Either.<a,b>former(x);
+	return Either.former(x);
     }
 
     public static <a,b> Either<a, b> latter(b y) {
-	return Either.<a,b>latter(y);
+	return Either.latter(y);
     }
 
     public static <a,b> Pair<a, b> both(a x,  b y) 
@@ -201,7 +201,9 @@ public class Builtins {
 	return x;
     }
 
-    public static <a, b> Pair<a,b> $comma(a x, b y) {
+    public static <a, b> Pair<a,b> $comma(a x, b y) 
+    {
 	return Pair.<a,b>both(x, y);
     }
+
 }
