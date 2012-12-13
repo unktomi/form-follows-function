@@ -1,0 +1,342 @@
+package f3.util;
+import org.f3.runtime.Monad;
+
+/**
+ * A List of 'a' is either:
+ *  
+ *   case (1) Empty - the default
+ *    
+ *   OR
+ *    
+ *   case (2) A pair of an element of type 'a' prepended to another List
+ *
+ * For the mathematically inclined:
+ *    List of a = 1 + a x List of a
+ * 
+ * List implements Functor and Monad which means among other things that
+ * you can use it in a 'for' loop.
+ */
+
+public class List of a is Monad of (List, a) 
+{
+    /**
+     * Things you can observe about a List
+     */
+    public const head is a;
+    public const tail is List of a;
+    public const length is Integer = 0; 
+    public function isEmpty from () to Boolean { yes }
+
+    /**
+     *  All List transformations can be "factored" through 
+     *  foldRight or foldLeft.
+     *  The two arguments correspond to case (1) and case (2) above.
+     *
+     *  The object 'zero' is returned for case (1) - an empty list.
+     *
+     *  The result of the 'add' function is returned for case (2) - 
+     *  the prepended element and accumulated result are passed to
+     *  'add'
+     */
+
+    public function foldRight of b 
+	from (add is function from (a, b) to b, 
+	      zero is b) 
+	to b 
+    {				    
+        zero
+    }
+    
+    public function foldLeft of b 
+	from (zero is b, add is function from (b, a) to b)
+	to b 
+    {
+        zero
+    }
+
+    public function foldLeft 
+	from (add is function from (a, a) to a) 
+	to a 
+    {
+	if (isEmpty()) { throw new java.lang.RuntimeException("Empty List") }
+	foldLeft(head, add)
+    }
+
+    public function scanLeft 
+	from (f is function from (a, a) to a) 
+	to List of a 
+    {
+	if isEmpty() then this else tail.scanLeft(f, head);
+    }
+
+    public function scanLeft of b 
+	from (f is function from (b, a) to b, z is b) 
+	to List of b 
+    {
+	var r = List of b {}
+	var q = z;
+	var l = this;
+	while (not l.isEmpty()) 
+	    {
+		const x is a = l.head;
+		r = r.prepend(q = f(q, x));
+		l = l.tail;
+	    }
+	return r;
+    }
+    
+    public function prepend 
+	from (x is a) 
+	to List of a 
+    {
+	const p = this;
+	/**
+	 * This is case (2) - an element of type 'a' prepended to another List
+	 */ 
+        List of a 
+        {
+            override const head = x;
+            override const tail = p;
+	    override const length = p.length + 1;
+	    override function isEmpty from () to Boolean { no }
+	    override function of b foldRight 
+		from (add is function from (a, b) to b, 
+		      zero is b)
+		to b 
+	    {
+		add(x, p.foldRight(add, zero));
+	    }
+
+	    override operation foldLeft of b 
+		from (zero is b, add is function from (b, a) to b) 
+		to b 
+	    {
+		var t is List of a = this;
+		var r = zero;
+		while (not t.isEmpty()) {
+		    r = add(r, t.head);
+		    t = t.tail;
+		}
+		return r
+	    }
+        }
+    }
+
+    public function / 
+	from (f is function from (a, a) to a)
+	to a
+    {
+	foldLeft(f)
+    }
+
+    public function * of b  
+	from (f is function from a to b) 
+	to List of b
+    {
+	map(f)
+    } 
+
+    public function + 
+	from (xs is List of a) 
+	to List of a 
+    {
+	concat(xs)
+    }
+
+    public function * 
+	from (x is a) 
+	to List of a 
+    {
+	prepend(x);
+    }
+
+    /**
+     * Returns the prefix of this List of length n, or just this List 
+     * if n > length.
+     */
+    public function take 
+	from (n is Integer)
+	to List of a 
+    {
+	var xs = List of a {};
+	var t is List of a = this;
+	for (i in [0..<n] where not t.isEmpty()) {
+	    xs = xs.prepend(t.head);
+	    t = t.tail;
+	}
+	return xs;
+    }
+
+    /**
+     * Returns the suffix of this List after the first n elements, or 
+     * an empty List if n >= length
+     */
+    public function drop 
+	from (n is Integer) 
+	to List of a 
+    {
+	var result is List of a = this;
+	for (i in [0..<n]) {
+	    if (result.isEmpty()) break;
+	    result = result.tail;
+	}
+	return result;
+    }
+
+    /**
+     * Returns a List with the same elements as this List in reverse
+     * order.
+     */
+    public function reverse 
+	from () 
+	to List of a 
+    {
+	foldLeft(List of a {}, (List of a).prepend)
+    }
+
+    /**
+     * Returns a List with the elements of this List concatenated
+     * with those of 'xs'.
+     */
+    public function concat 
+	from (xs is List of a) 
+	to List of a 
+    {
+        foldRight((List of a).prepend.flip(),
+		  xs);
+    }
+
+    /**
+     * Monad operation
+     */
+    public function flatmap of b 
+	from (f is function from a to List of b) 
+	to List of b 
+    {
+        foldRight(function from (x is a, 
+				 ys is List of b) 
+		  to List of b 
+		  {
+		      ys.concat(f(x))
+		  }, 
+		  List of b {})
+    }
+
+    /**
+     * Functor operation
+     */
+    override function map of b 
+	from (f is function from a to b) 
+	to List of b 
+    {
+        foldRight(function from (x is a, y is List of b) to List of b 
+		  {
+		      y.prepend(f(x))
+		  }, 
+		  List of b {})
+    }
+
+    override function toString 
+	from () 
+	to String 
+    {
+        foldRight(function from (x is a, y is String) to String
+		  {
+		      if y.length() == 0 then "{x}" else "{y}, {x}"
+		  }, 
+		  "")
+    }
+}
+
+/**
+ * List constructors
+ */
+
+public function empty of a 
+    from () 
+    to List of a 
+{ 
+    List of a {} 
+}
+
+public function toList of a 
+    from (x is a) 
+    to List of a 
+{
+    List of a {}.prepend(x)
+}
+
+public function asList of a 
+    from (xs is a[]) 
+    to List of a 
+{
+    var r = List of a {}
+    for (x in xs) {
+	r *= x;
+	null as ();
+    }
+    return r;
+}
+
+/*
+public function asList of (a, F is Functor) from (xs is F of (F, a)) to List of a 
+{
+    var r = List of a {}
+    var ys = xs;
+    for (x in ys) {
+	r *= x;
+	null as ();
+    }
+    return r;
+}
+*/
+
+function and of a 
+    from (f is function from a to Boolean,
+	  g is function from a to Boolean) 
+    to function from a to Boolean
+{
+    function from (x is a) to Boolean 
+    {
+	f(x) and g(x)
+    }
+}
+
+function or of a
+    from (f is function from a to Boolean,
+	  g is function from a to Boolean) 
+    to function from a to Boolean
+{
+    function from (x is a) to Boolean 
+    {
+	f(x) or g(x)
+    }
+}
+
+/*
+ * Test
+ */
+
+public function run 
+    from () 
+    to () 
+{
+    const xs = asList([1..10]);
+    (println * String.toUpperCase)("hello");
+    (println * String.concat.apply(" joe"))("hello");
+    for (x in xs.reverse()) {
+	println(x);
+    }
+    println(xs.drop(4).length);
+    var s = empty of String();
+    s = s.prepend("Hello");
+    s = s.prepend("World");
+    println(s);
+    println(for (x in xs, y in xs.take(3)) x * y);
+    //var i is Integer = (+ of (Integer, Integer) * List.(/));
+    println(xs + xs);
+    const <<+>> = function from (x is Integer, y is Integer) to Integer { x + y }
+    println(xs / <<+>>);
+}
+
+

@@ -1,0 +1,5 @@
+package f3.util;
+public interface Measured of Measurement 
+{
+    public const measurement is Measurement;
+}

@@ -218,9 +218,9 @@ public class F3Decompose implements F3Visitor {
     }
 
     private F3Var makeVar(DiagnosticPosition diagPos, String label, F3Expression initExpr, F3BindStatus bindStatus, Type type) {
-        F3Var var = preTrans.SynthVar(diagPos, currentVarSymbol, label, initExpr, bindStatus, type, inScriptLevel, varOwner);
-        lbVar.append(var);
-        return var;
+	F3Var var = preTrans.SynthVar(diagPos, currentVarSymbol, label, initExpr, bindStatus, type, inScriptLevel, varOwner);
+	lbVar.append(var);
+	return var;
     }
 
     private F3Var makeVar(DiagnosticPosition diagPos, Name vName, F3Expression pose, F3BindStatus bindStatus, Type type) {
@@ -615,11 +615,20 @@ public class F3Decompose implements F3Visitor {
     }
 
     public void visitSelect(F3Select tree) {
+	try {
+	    visitSelect0(tree);
+	} catch (AssertionError exc) {
+	    System.err.println(tree.pos()+": "+tree);
+	    throw exc;
+	}
+    }
+
+    public void visitSelect0(F3Select tree) {
         DiagnosticPosition diagPos = tree.pos();
         Symbol sym = tree.sym;
         Symbol selectSym = F3TreeInfo.symbolFor(tree.selected);
         if (selectSym != null
-                && ((selectSym.kind == Kinds.TYP && sym.kind != Kinds.MTH)
+	    && ((selectSym.kind == Kinds.TYP && sym.kind != Kinds.MTH)
                 || selectSym.name == names._this)) {
             // Select is just via "this" -- make it a simple Ident
             //TODO: move this to lower
@@ -689,6 +698,9 @@ public class F3Decompose implements F3Visitor {
 			if (((F3Ident)selected).getName().toString().length() == 0) {
 			    doit = false;
 			}
+		    }
+		    if (selected.type instanceof Type.PackageType) {
+			doit = false;
 		    }
 		    if (doit) {
 			selected = shred(selected);
