@@ -4438,7 +4438,7 @@ public abstract class F3AbstractTranslation
     public void visitTypeClass(F3TypeClass that) {
 	//System.err.println(that);
         //processedInParent();
-	Thread.currentThread().dumpStack();
+	//Thread.currentThread().dumpStack();
 	//result = new StatementsResult(that, makeType(that));
 	System.err.println(that);
 	result = new StatementsResult(that, List.<JCStatement>nil());
