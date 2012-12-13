@@ -434,6 +434,9 @@ public class F3Check {
 	if (found == syms.unreachableType)
 	    return found;
         if (found.tag == FORALL) {
+	    if (true) {
+		return found;
+	    }
             if (false && (req == syms.f3_UnspecifiedType || req == Type.noType))
                 // Is this the right thing to do?  FIXME
                 return types.erasure(found);

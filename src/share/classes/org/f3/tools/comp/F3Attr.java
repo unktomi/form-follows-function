@@ -2139,7 +2139,7 @@ public class F3Attr implements F3Visitor {
         // m.flags_field = chk.checkFlags(def.pos(), def.mods.flags, m, def);
         def.sym = m;
         finishFunctionDefinition(def, env);
-	if (false && def.typeArgTypes != null) {
+	if (def.typeArgTypes != null) {
 	    List<Type> typeArgTypes = def.typeArgTypes;
 	    for (List l = typeArgTypes; l != null; l = l.tail) {
 		if (l.head instanceof TypeVar) {
@@ -2151,7 +2151,6 @@ public class F3Attr implements F3Visitor {
 					 tv);
 		}
 	    }
-
 	}
 	FunctionType ftype;
 	if (def.type instanceof MethodType) {
@@ -2206,6 +2205,7 @@ public class F3Attr implements F3Visitor {
 	    tv.tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
 	    tv.args = makeTypeVars(cons.getArgs(), tv.tsym);
 	    tv.bound = types.makeTypeCons(tv, tv.args);
+	    System.err.println("typeCons: "+tv);
 	    env.info.scope.enter(((TypeVar)tv).tsym);
 	    return tv;
 	} else if (exp instanceof F3Ident) {
@@ -4099,19 +4099,19 @@ public class F3Attr implements F3Visitor {
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
 		tree.typeArgTypes = typeArgTypes = makeTypeVars(tree.typeArgs, env.info.scope.owner);
-		for (List l = typeArgTypes; l != null; l = l.tail) {
-		    if (l.head instanceof TypeVar) {
-			TypeVar tv = (TypeVar)l.head;
-			tv.lower = 
-			    new WildcardType(Type.noType,
-					     BoundKind.UNBOUND,
-					     syms.boundClass,
-					     tv);
-			
-		    }
-		}
 	    } else {
 		typeArgTypes = tree.typeArgTypes;
+	    }
+	    for (List l = typeArgTypes; l != null; l = l.tail) {
+		if (l.head instanceof TypeVar) {
+		    TypeVar tv = (TypeVar)l.head;
+		    tv.lower = 
+			new WildcardType(Type.noType,
+					 BoundKind.UNBOUND,
+					 syms.boundClass,
+					 tv);
+		    
+		    }
 	    }
 	}
         Type restype = attribType(tree.restype, env);

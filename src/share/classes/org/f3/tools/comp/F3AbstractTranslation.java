@@ -36,6 +36,7 @@ import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
 import com.sun.tools.mjavac.code.Symbol.MethodSymbol;
 import com.sun.tools.mjavac.code.Symbol.VarSymbol;
 import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.code.Type.WildcardType;
 import com.sun.tools.mjavac.code.TypeTags;
 import com.sun.tools.mjavac.tree.JCTree;
 import com.sun.tools.mjavac.tree.JCTree.*;
@@ -1563,8 +1564,8 @@ public abstract class F3AbstractTranslation
                 if (useInvoke) {
                     if (resultType != syms.voidType) {
                         full = typeCast(resultType, syms.objectType, full);
+			full = typeCast(resultType instanceof Type.TypeVar ? resultType : types.erasure(resultType), syms.objectType, full);
 			//System.err.println("full="+full);
-                        full = typeCast(resultType instanceof Type.TypeVar ? resultType : types.erasure(resultType), syms.objectType, full);
                     }
                 }
             }

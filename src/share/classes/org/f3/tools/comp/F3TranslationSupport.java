@@ -399,6 +399,9 @@ public abstract class F3TranslationSupport {
     private JCExpression makeTypeTreeInner(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
 	if (ERASE_BACK_END) t = types.erasure(t);
 	JCExpression exp = makeTypeTreeInner0(diagPos, t, makeIntf);
+	exp.setType(t);
+	System.err.println("t="+t);
+	System.err.println("exp="+exp);
 	if (t == null) {
 	    throw new NullPointerException("makeTypeTreeInner: "+ diagPos);
 	}
@@ -411,6 +414,8 @@ public abstract class F3TranslationSupport {
 	} 
 	if (t instanceof ForAll) {
 	    ForAll fa = (ForAll)t;
+	    System.err.println("fa.qtype="+fa.qtype.getClass());
+	    System.err.println("fa.qtype="+fa.qtype);
 	    if (fa.qtype instanceof MethodType) {
 		Type ftyp = syms.makeFunctionType(fa.asMethodType());
 		t = new ForAll(ftyp.getTypeArguments(), ftyp);
@@ -423,7 +428,6 @@ public abstract class F3TranslationSupport {
             case TypeTags.CLASS: {
                 JCExpression texp = null;
                 boolean isMixin = types.isMixin(t.tsym);
-
                 if (makeIntf && isMixin) {
                     texp = makeAccessExpression(diagPos, t.tsym, true);
                 } else {
@@ -446,13 +450,16 @@ public abstract class F3TranslationSupport {
             }
             case TypeTags.WILDCARD: {
                 WildcardType wtype = (WildcardType) t;
-		JCTree bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner(diagPos, wtype.type, false);
+		JCExpression bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner(diagPos, wtype.type, false);
 		//System.err.println("bound="+bound);
 		if (false) if (bound != null && wtype.type instanceof TypeVar) {
 		    TypeVar tv = (TypeVar)wtype.type;
 		    if (tv.lower instanceof WildcardType) {
 			return (JCExpression)bound;
 		    }
+		}
+		if (bound instanceof JCTree.JCWildcard) {
+		    return bound;
 		}
                 JCExpression r = make.at(diagPos).Wildcard(make.TypeBoundKind(wtype.kind),
 							   bound);
@@ -472,7 +479,7 @@ public abstract class F3TranslationSupport {
 			if (true) {
 			    JCExpression exp = make.at(diagPos).Wildcard(make.TypeBoundKind(BoundKind.UNBOUND),
 									 null);
-			    System.err.println("existentializing: "+ t +": "+exp);
+			    //System.err.println("existentializing: "+ t +": "+exp);
 			    return exp;
 			}
 		    } else {
@@ -2178,6 +2185,7 @@ public abstract class F3TranslationSupport {
 		castType = types.boxedTypeOrType(castType);
 	    }
 	    JCTree clazz = makeType(castType, true);
+	    //System.err.println("typecast: "+ clazz);
 	    return m().TypeCast(clazz, translatedExpr);
 
         }

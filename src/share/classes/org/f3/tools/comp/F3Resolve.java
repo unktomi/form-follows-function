@@ -767,9 +767,9 @@ public class F3Resolve {
             if ((tx =rawInstantiate(env, sym, memberType, argtypes, typeargtypes,
 				    allowBoxing, useVarargs, Warner.noWarnings)) == null) {
                 // inapplicable
-		//System.err.println("raw instantiate failed: "+ sym);
-		//System.err.println("argtypes: "+argtypes);
-		//System.err.println("typeargtypes: "+typeargtypes);
+		System.err.println("raw instantiate failed: "+ sym);
+		System.err.println("argtypes: "+argtypes);
+		System.err.println("typeargtypes: "+typeargtypes);
 		//Thread.currentThread().dumpStack();
                 switch (bestSoFar.kind) {
                 case ABSENT_MTH: return wrongMethod.setWrongSym(sym);
@@ -790,9 +790,9 @@ public class F3Resolve {
 		}
 	    }
         } catch (Infer.NoInstanceException ex) {
-	    //System.err.println("raw instantiate exception: "+ sym);
-	    //System.err.println("argtypes: "+argtypes);
-	    //System.err.println("typeargtypes: "+typeargtypes);
+	    System.err.println("raw instantiate exception: "+ sym);
+	    System.err.println("argtypes: "+argtypes);
+	    System.err.println("typeargtypes: "+typeargtypes);
             switch (bestSoFar.kind) {
             case ABSENT_MTH:
                 return wrongMethod.setWrongSym(sym, ex.getDiagnostic());
@@ -1676,7 +1676,7 @@ public class F3Resolve {
         Name name = treeinfo.operatorName(optag);
         Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
                                 null, true, false, true);
-	//System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
+	System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind >= WRONG_MTHS) {
 	    /*
             sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
@@ -1685,7 +1685,7 @@ public class F3Resolve {
 	    sym = findVar(env, name, MTH, 
 			  newMethTemplate(argtypes, List.<Type>nil()),
 			  true, false);
-	    //System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
+	    System.err.println("resolveOperator1.default: "+name+": "+argtypes+": "+sym);
 	}
 	
 	return sym;
@@ -1696,14 +1696,14 @@ public class F3Resolve {
         Name name = treeinfo.operatorName2(optag);
         Symbol sym = findMethod(env, argtypes.head, name, argtypes.tail,
                                 null, true, false, true);
-	//System.err.println("resolveOperator2: "+name+": "+argtypes+": "+sym);
+	System.err.println("resolveOperator2: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind != MTH) {
             //sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
 	    //null, true, false, true);
 	    sym = findVar(env, name, MTH, 
 			  newMethTemplate(argtypes, List.<Type>nil()),
 			  true, false);
-	    //System.err.println("resolveOperator2.default: "+name+": "+argtypes+": "+sym);
+	    System.err.println("resolveOperator2.default: "+name+": "+argtypes+": "+sym);
 	}
 	return sym;
     }

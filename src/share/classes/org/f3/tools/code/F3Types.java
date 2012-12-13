@@ -97,9 +97,14 @@ public class F3Types extends Types {
     }
 
     public Type makeTypeCons(Type thisType, List<Type> args) {
+	System.err.println("thisType: "+ thisType.getClass());	
+	System.err.println("make type cons: "+ args);
 	List<Type> list = List.of(thisType);
+	if ((thisType instanceof org.f3.tools.comp.F3Attr.TypeCons)) {
+	    list = list.tail;
+	}
 	list.appendList(args);
-        return applySimpleGenericType(syms.f3_TypeCons[args.size()], list);
+        return applySimpleGenericType(syms.f3_TypeCons[list.size()], list);
     }
 
     public Type makeMonadType(Type monadType, Type bodyType) {
