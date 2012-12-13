@@ -9,18 +9,22 @@ Syntax - "plain english" where possible
 Higher order functions
 
 {{{
-function of (a, b, c) curry(f is function from (a, b) to c) returns function from a to (function from b to c)
+function curry of (a, b, c) 
+     from (f is function from (a, b) to c) 
+     to function from a to (function from b to c)
 {
-    function(x is a) returns function from b to c
+    function from (x is a) to function from b to c
     {
-        function(y is b) returns c
+        function from (y is b) to c
         {
             f(x, y)
         }
     }
 }
 
-function of (a, b, c) uncurry(f is function from a to (function from b to c)) returns function from (a, b) to c
+function uncurry of (a, b, c) 
+    from (f is function from a to (function from b to c)) 
+    to function from (a, b) to c
 {
     function(x is a, y is b) returns c
     {
@@ -35,15 +39,17 @@ Monad Comprehensions
 
 // Lazy infinite streams                                                              
 
-public class Stream of a extends Comonad of a, Monad of a {
+public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a) 
+{
 
-    public val now is a;
-    public val later is Stream of a;
+    public const now is a;
+    public const later is Stream of a;
 
     // zip lifts a binary operator to one over Streams                                
-    public function of (b, c)
-        zip(binOp is function from (a, b) to c,
-            xs is Stream of b) returns Stream of c
+    public function zip of (b, c)
+        from (binOp is function from (a, b) to c,
+                  xs is Stream of b) 
+        to Stream of c
     {
         Stream of c
         {
