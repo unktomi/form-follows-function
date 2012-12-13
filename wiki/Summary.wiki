@@ -26,7 +26,7 @@ function uncurry of (a, b, c)
     from (f is function from a to (function from b to c)) 
     to function from (a, b) to c
 {
-    function(x is a, y is b) returns c
+    function from (x is a, y is b) to c
     {
         f(x)(y)
     }
