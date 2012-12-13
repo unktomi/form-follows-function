@@ -75,7 +75,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
         from (ctor is function from a to Stream of b) 
         to Stream of b
     {
-        const d = bound function(x is a) returns b { ctor(x).now }
+        const d = bound function from (x is a) to b { ctor(x).now }
         var h = bind d(now);
         var t = bind for (x in later) d(x);
         Stream of b
