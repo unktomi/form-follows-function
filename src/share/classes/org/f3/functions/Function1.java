@@ -68,7 +68,6 @@ public class Function1<R, A1> extends Function<R>
 	};
     }
 
-
     public <B> Function0<? extends R> mul(final A1 x) {
 	final Function1<R, A1> self = this;	
 	return new Function0<R>() {

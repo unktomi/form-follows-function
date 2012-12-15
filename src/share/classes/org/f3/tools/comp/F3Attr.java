@@ -1534,7 +1534,7 @@ public class F3Attr implements F3Visitor {
 	Type functorType = null;
 	Type monadType = null;
 	Type comonadType = null;
-	boolean isIter = false;
+	boolean isIter = tree.isIterable;
 	int size = tree.getInClauses().size();
 	int idx = 0;
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
@@ -1584,7 +1584,7 @@ public class F3Attr implements F3Visitor {
 	    } else      // if exprtype is T[], T is the element type of the for-each
 		if (types.isSequence(exprType)) {
 		    elemtype = types.elementType(exprType);
-		    isIter = true;
+		    //isIter = true;
 		}
             // if exprtype implements Iterable<T>, T is the element type of the for-each
             else if (types.asSuper(exprType, syms.iterableType.tsym) != null) {
@@ -1598,12 +1598,12 @@ public class F3Attr implements F3Visitor {
                 } else {
                     elemtype = types.upperBound(iterableParams.last());
                 }
-		isIter = true;
+		//isIter = true;
             }
             //FIXME: if exprtype is nativearray of T, T is the element type of the for-each (see VSGC-2784)
             else if (types.isArray(exprType)) {
                 elemtype = types.elemtype(exprType);
-		isIter = true;
+		//isIter = true;
             }
             else {
 		if ((last && !types.isFunctor(exprType)) || (!last && !types.isMonad(exprType))) {
@@ -1666,7 +1666,7 @@ public class F3Attr implements F3Visitor {
 	} else {
 	    bt = syms.unknownType;
 	}
-	boolean rawForLoop = types.isSequence(clause1Type) || isIter;
+	boolean rawForLoop = isIter; //types.isSequence(clause1Type) || isIter;
 	if (rawForLoop) {
 	    attribTree(tree.getBodyExpression(), forExprEnv, VAL, bt.tag != ERROR ? bt : Type.noType, rawForLoop ? Sequenceness.PERMITTED : Sequenceness.DISALLOWED);
 
@@ -1687,12 +1687,12 @@ public class F3Attr implements F3Visitor {
         Type bodyType = tree.getBodyExpression().type;
         if (bodyType == syms.unreachableType)
             log.error(tree.getBodyExpression(), MsgSym.MESSAGE_UNREACHABLE_STMT);
-        Type owntype = (bodyType == null || bodyType == syms.voidType)?
+        Type owntype = (isIter || bodyType == null || bodyType == syms.voidType)?
             syms.voidType :
             types.isSequence(bodyType) ?
             bodyType :
             types.sequenceType(bodyType);
-        if (true || tree.isBound()) {
+        if (!isIter) {
             F3Expression map = null;
 	    if (false && ((types.isSequence(owntype) && tree.isBound()))) {
 		map = tree.getMap(f3make, names, clause1Type ,
@@ -2676,6 +2676,10 @@ public class F3Attr implements F3Visitor {
 			   condType(tree.pos(), tree.cond.type,
 				    tree.truepart.type, falsepartType),
 			   VAL, pkind, pt, pSequenceness);
+	    if (!tree.isThen) {
+		// can only do this if no returns are contained in the if and else parts
+		//tree.type = result = syms.voidType;
+	    }
 	}
     }
     //where

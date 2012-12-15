@@ -774,7 +774,7 @@ public class Timeline {
 
         // update the base values
         baseTick = lastTick;
-        var adjustedMillis = if (forward != isReverse) timeInMillis else dur - timeInMillis;
+        var adjustedMillis = if (forward != isReverse) then timeInMillis else dur - timeInMillis;
         if (timelineDur < 0 or repeatCount < 0) {
             baseElapsed = adjustedMillis;
         } else {
@@ -809,7 +809,7 @@ public class Timeline {
         }
 
         // isReverse rewinds elapsed time
-        var timeDirection = if (isReverse) -1 else 1;
+        var timeDirection = if (isReverse) then -1 else 1;
         var elapsed = baseElapsed + (currentTick - baseTick) * Math.abs(rate) * timeDirection;
         if (totalDur >= 0) {
             elapsed = Math.min(elapsed, totalDur);
@@ -848,11 +848,11 @@ public class Timeline {
             }
         }
 
-        var cycleForward = if (isReverse) not forward else forward;
+        var cycleForward = if (isReverse) then not forward else forward;
 
         if ((not needsStop) or cycleIndex < repeatCount) {
-            var newPos = if (cycleForward) curT
-                         else if (timelineDur < 0) elapsed else dur - curT;
+            var newPos = if (cycleForward) then curT
+                         else if (timelineDur < 0) then elapsed else dur - curT;
             if (not visitFrames(curPos, newPos, false, true)) {
                 return;
             }
@@ -943,7 +943,7 @@ public class Timeline {
     }
 
     function visitCycle(catchingUp:Boolean): Boolean  {
-        var cycleT = if (forward) timelineDur else 0;
+        var cycleT = if (forward) then timelineDur else 0;
         if (not visitFrames(curPos, cycleT, catchingUp, false)) {
             return false;
         }
@@ -961,7 +961,7 @@ public class Timeline {
             frameIndex = if (forward) 0 else sortedFrames.size() - 1;
             lastKF = -1;
 
-            movePlayhead(if (forward) 0 else timelineDur);
+            movePlayhead(if (forward) then 0 else timelineDur);
         }
     }
 

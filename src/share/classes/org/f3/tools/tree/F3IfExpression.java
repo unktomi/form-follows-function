@@ -40,6 +40,8 @@ public class F3IfExpression extends F3Expression implements ConditionalExpressio
     public F3Var boundElseVar;
     public F3Var boundSizeVar;
 
+    public boolean isThen;
+
     protected F3IfExpression(F3Expression cond,
             F3Expression truepart,
             F3Expression falsepart) {

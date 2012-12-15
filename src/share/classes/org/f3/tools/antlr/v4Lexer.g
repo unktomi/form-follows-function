@@ -127,6 +127,7 @@ NO              : 'no';
 FINALLY         : 'finally';
 FIRST           : 'first';
 FOR             : 'for';
+FOREACH         : 'foreach';
 FORALL          : 'forall';
 FROM            : 'from';
 FUNCTION        : 'function';

@@ -31,7 +31,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	Stream of b
 	{
 	    now: bind f(self.now);
-	    later: bind for (x in self.later) f(x)
+	    later: bind foreach (x in self.later) f(x)
 	}
     }
 
@@ -42,7 +42,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
     {
 	var d = bound function from (x is a) to b { ctor(x).now }
 	var h = bind d(now);
-	var t = bind for (x in later) d(x);
+	var t = bind foreach (x in later) d(x);
 	Stream of b 
 	{ 
 	    now: bind h;
@@ -147,14 +147,14 @@ public function *
     from (xs is Stream of Number, y is Number) 
     to Stream of Number 
 { 
-    for (x in xs) x * y
+    foreach (x in xs) x * y
 }
 
 public function * 
     from (x is Number, ys is Stream of Number) 
     to Stream of Number 
 { 
-    for (y in ys) x * y
+    foreach (y in ys) x * y
 }
 
 public function - 
@@ -224,7 +224,7 @@ public function take of a
     to a[] 
 {
     var ys = xs;
-    for (i in [0..<n]) { 
+    foreach (i in [0..<n]) { 
 	const now = ys.now;
 	ys = ys.later;
 	now
@@ -273,8 +273,8 @@ public function mul from (xs is Stream of Number, ys is Stream of Number) to Str
     Stream of Number 
     {
 	now: bind xs.now * ys.now;
-	later: bind for (x in mul(xs.later, ys), 
-			     y in mul(repeat(xs.now), ys.later)) x + y
+	later: bind foreach (x in mul(xs.later, ys), 
+			      y in mul(repeat(xs.now), ys.later)) x + y
     }
 }
 
@@ -313,8 +313,8 @@ function run from () to ()
 	println(take(10, repeat(1.0) + repeat(1.0)));
 	println(take(10, repeat(-1.0).<<followed by>>(repeat(2.0))));
 	var j = 1.0;
-	var xs = bind for (x in repeat(j), y in repeat(2.0))  x + y;
-	var xss = bind for (x in repeat(j), y in repeat(2.0), z in repeat(10.0)) z + x + y;
+	var xs = bind foreach (x in repeat(j), y in repeat(2.0))  x + y;
+	var xss = bind foreach (x in repeat(j), y in repeat(2.0), z in repeat(10.0)) z + x + y;
 	println(take(10, xs));
 	println(take(10, xss));
 	j = 20.0;

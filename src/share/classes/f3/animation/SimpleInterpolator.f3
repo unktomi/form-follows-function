@@ -54,21 +54,21 @@ public abstract class SimpleInterpolator extends Interpolator {
      * @profile common
      */
     public override function interpolate(startValue:Object, endValue:Object, fraction:Number):Object {
-        if ((startValue instanceof java.lang.Number) and (endValue instanceof java.lang.Number)) {
+        if ((startValue instanceof java.lang.Number) and (endValue instanceof java.lang.Number)) then {
 	        var start : Number = (startValue as java.lang.Number).doubleValue();
 	        var end : Number = (endValue as java.lang.Number).doubleValue();
 	        var value = start + (end-start)*curve(fraction);
 	        if (startValue instanceof java.lang.Integer and
 	            endValue instanceof java.lang.Integer)
-	            java.lang.Integer.valueOf((value+0.5).intValue())
+	            then java.lang.Integer.valueOf((value+0.5).intValue())
 	        else
 	            java.lang.Double.valueOf(value)
         }
-        else if (startValue instanceof Interpolatable) {
+        else if (startValue instanceof Interpolatable) then {
             (startValue as Interpolatable).ofTheWay((endValue as Interpolatable), curve(fraction));
         } else {
             // discrete
-            if (fraction == 1.0) endValue else startValue;
+            if (fraction == 1.0) then endValue else startValue;
         }
     }
 

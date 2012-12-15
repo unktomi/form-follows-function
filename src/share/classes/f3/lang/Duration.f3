@@ -61,11 +61,11 @@ public def INDEFINITE: Duration = Duration { millis: Double.POSITIVE_INFINITY};
  */
 public function valueOf(ms: Double): Duration {
     if (ms == 0)
-        ZERO
+        then ZERO
     else if (ms == 1)
-        ONE
+        then ONE
     else if (ms == Double.POSITIVE_INFINITY) //TODO: handling of negative infinity
-        INDEFINITE
+        then INDEFINITE
     else
          Duration {
              millis: ms

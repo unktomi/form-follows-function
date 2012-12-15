@@ -1359,7 +1359,11 @@ public class F3Pretty implements F3Visitor {
 		return;
 	    }
             boolean first = true;
-            print("for (");
+	    if (tree.isIterable) {
+		print("for (");
+	    } else {
+		print("foreach (");
+	    }
             for (ForExpressionInClauseTree cl : tree.getInClauses()) {
 
                 // Don't try to examine erroneous in clauses. We don't wish to

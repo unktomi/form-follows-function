@@ -1233,7 +1233,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
             })?
         )
         |
-        FROM?
+        FROM
         fp2=formalParameters
             {
                 // Accumulate the parameter nodes in case of error
@@ -1243,14 +1243,31 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 }
                 argTypes = $fp2.params.toList();
             }
-            
-        rt2=returnTypeReference
+        TO rt2=type
             {
                 // Accumulate in case of error
                 //
                 errNodes.append($rt2.rtype);
                 rtype = $rt2.rtype;
+            }
+        |
+        (LPAREN) => (fp3=formalParameters
+            {
+                // Accumulate the parameter nodes in case of error
+                //
+                for (F3Tree t : $fp3.params) {
+                    errNodes.append(t);
+                }
+                argTypes = $fp3.params.toList();
+            }
+        rt3=returnTypeReference
+            {
+                // Accumulate in case of error
+                //
+                errNodes.append($rt3.rtype);
+                rtype = $rt3.rtype;
             })
+         | { rtype = F.at(rPos).TypeUnknown();} )
     
         // The function block is optional if this is an abstract funtino definition
         // but in that case a semi colon is required. If this is not an abstract function
@@ -3176,9 +3193,10 @@ forExpression
     // Used for error reporting
     //
     int rPos = pos();
+    Boolean isIterable = true;
 
 }
-    : FOR 
+    : (FOR | FOREACH {isIterable = false;})
         LPAREN 
         
             i1=inClause         
@@ -3199,7 +3217,10 @@ forExpression
                 
             {
                 errNodes.append($statement.value); 
-                $value = F.at(pos($FOR)).ForExpression(clauses.toList(), $statement.value);
+                F3ForExpression expr = 
+                    F.at(rPos).ForExpression(clauses.toList(), $statement.value);
+                expr.isIterable = isIterable;
+                $value = expr;
             }
         
         {
@@ -3323,14 +3344,14 @@ ifExpression
     // Used for error reporting
     //
     int rPos = pos();
-
+    boolean isThen = false;
 }
     : IF  (  (LPAREN)=>(LPAREN 
     
             econd=expression    { errNodes.append($econd.value);    }
             
-            RPAREN) THEN?
-          | econd = expression THEN{ errNodes.append($econd.value);    }
+            RPAREN) (THEN { isThen = true; })?
+          | econd = expression THEN{ errNodes.append($econd.value);  isThen=true;  }
           )
           statement            { sVal = $statement.value;  errNodes.append(sVal);  }
             
@@ -3341,7 +3362,9 @@ ifExpression
         {
             // The IF AST
             //
-            $value = F.at(pos($IF)).Conditional($econd.value, sVal, eVal);
+            F3IfExpression expr = F.at(pos($IF)).Conditional($econd.value, sVal, eVal);
+            expr.isThen = isThen;
+            $value = expr;
             
             // Tree span
             //
@@ -7032,7 +7055,7 @@ nameAll
 //
 allWords
     : keyword
-    | reservedWord | STAR | PLUS | SLASH | SUB | GT | LT | LE | GE | EQ | NE
+    | reservedWord | STAR | PLUS | SLASH | SUB | LT | GT | LTEQ | LTGT | GTEQ | EQ | NE
     ;
     
 // ---------------------

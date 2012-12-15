@@ -58,7 +58,7 @@ public def ZERO:Angle = Angle {value: 0, unit: AngleUnit.RADIAN}
  */
 public function valueOf(value:Double, unit:AngleUnit):Angle {
     if (value == 0)
-        ZERO
+        then ZERO
     else Angle {
         value: value
         unit: unit

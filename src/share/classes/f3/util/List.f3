@@ -332,7 +332,7 @@ public function run
     s = s.prepend("Hello");
     s = s.prepend("World");
     println(s);
-    println(for (x in xs, y in xs.take(3)) x * y);
+    println(foreach (x in xs, y in xs.take(3)) x * y);
     //var i is Integer = (+ of (Integer, Integer) * List.(/));
     println(xs + xs);
     const <<+>> = function from (x is Integer, y is Integer) to Integer { x + y }
