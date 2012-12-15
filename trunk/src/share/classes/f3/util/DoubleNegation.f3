@@ -197,6 +197,6 @@ public function callCC of (a, b)
 
 public function run from () to ()
 { 
-   println(for (x in doublyNegate(2), y in doublyNegate(3))  x + y);
+   println(foreach (x in doublyNegate(2), y in doublyNegate(3))  x + y);
 }
 

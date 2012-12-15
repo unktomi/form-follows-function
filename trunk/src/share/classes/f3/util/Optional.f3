@@ -57,7 +57,7 @@ public class Present of a is Optional of a
 	f(x);
     }
 
-    public function extract from () to a 
+    public override function extract from () to a 
     { 
 	x
     }
@@ -93,7 +93,7 @@ public class Absent of a is Optional of a
 	(this as Object) as Optional of b
     }
 
-    public function extract from () to a 
+    public override function extract from () to a 
     { 
 	throw new java.lang.RuntimeException("Absent");
     }

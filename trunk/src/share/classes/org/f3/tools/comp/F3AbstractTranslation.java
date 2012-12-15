@@ -2564,9 +2564,9 @@ public abstract class F3AbstractTranslation
 
         JCExpression durationOp() {
 	    //System.err.println("tree="+tree);
-	    System.err.println("methodName="+tree.methodName);
-	    System.err.println("tree.type="+tree.type);
-	    System.err.println("tree.sym="+tree.operator);
+	    //System.err.println("methodName="+tree.methodName);
+	    //System.err.println("tree.type="+tree.type);
+	    //System.err.println("tree.sym="+tree.operator);
             switch (tree.getF3Tag()) {
                 case TUPLE:
                     return op(lhs(), tree.methodName, rhs());

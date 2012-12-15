@@ -42,6 +42,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
     private final F3Kind f3Kind;
     public final List<F3ForExpressionInClause> inClauses;
     public final F3Expression bodyExpr;
+    public boolean isIterable;
 
     protected F3ForExpression(
             F3Kind f3Kind,
