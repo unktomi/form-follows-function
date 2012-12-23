@@ -8,7 +8,7 @@ import org.f3.functions.*;
  *    Either of (a, b) = a + b
  *
  * Either implements Functor and Monad which means you can use it in 
- * a 'for' loop.
+ * a 'foreach' loop.
  *
  */    
 

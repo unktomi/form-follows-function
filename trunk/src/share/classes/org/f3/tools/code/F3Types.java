@@ -358,8 +358,9 @@ public class F3Types extends Types {
 	return monad;
     }
 
-    public Type pointerType(Type elemType) {
-        return applySimpleGenericType(syms.f3_PointerType, boxedTypeOrType(elemType));
+    public Type pointerType(Type elemType, boolean readOnly) {
+        return applySimpleGenericType(readOnly ? syms.f3_ReadOnlyPointerType : syms.f3_PointerType, 
+				      boxedTypeOrType(elemType));
     }
 
     public Type sequenceType(Type elemType) {
@@ -368,8 +369,12 @@ public class F3Types extends Types {
 
     public Type sequenceType(Type elemType, boolean withExtends) {
         elemType = boxedTypeOrType(elemType);
-        if (withExtends)
-            elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+        if (withExtends) {
+	    //Thread.currentThread().dumpStack();
+	    if (false) {
+		elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+	    }
+	}
         return applySimpleGenericType(syms.f3_SequenceType, elemType);
     }
 
@@ -862,6 +867,12 @@ public class F3Types extends Types {
         // assert types.asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
+	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
+	     x != null; x = x.tail, y = y.tail) {
+	    if (x.head != null && boxedTypeOrType(x.head) == y.head) {
+		x.head = y.head;
+	    }
+	}
 	if (F3TranslationSupport.ERASE_BACK_END) {
 	    mt = erasure(mt);
 	    ot = erasure(ot);

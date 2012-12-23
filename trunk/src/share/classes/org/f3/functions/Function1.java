@@ -56,13 +56,13 @@ public class Function1<R, A1> extends Function<R>
     }
     */
 
-    public <B> 
-	Function1<? super R, ? super Either<A1, B> >
-	or(final Function1<? extends R, ? super B> g) 
+    public <A2> 
+	Function1<? super R, ? super Either<? extends A1, ? extends A2> >
+	or(final Function1<? extends R, ? super A2> g) 
     {
 	final Function1<R,A1> f = this;
-	return new Function1<R, Either<A1,B> >() {
-	    public R invoke(Either<A1, B> x) {
+	return new Function1<R, Either<? extends A1, ? extends A2> >() {
+	    public R invoke(Either<? extends A1, ? extends A2> x) {
 		return x.either(f, g);
 	    }
 	};

@@ -165,6 +165,7 @@ PROTECTED       : 'protected';
 PUBLIC_INIT     : 'public-init';
 PUBLIC          : 'public';
 PUBLIC_READ     : 'public-read';
+READONLY        : 'readonly';
 REPLACE         : 'replace';
 RETURN          : 'return';
 RETURNS         : 'returns';

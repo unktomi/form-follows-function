@@ -763,6 +763,8 @@ public class F3Resolve {
 	    //if (types.isSameType(memberType, expected)) {
 	    //return sym;
 	    //}
+	    if (memberType instanceof FunctionType)
+		memberType = ((FunctionType)memberType).asMethodOrForAll();
 	    Type tx;
             if ((tx =rawInstantiate(env, sym, memberType, argtypes, typeargtypes,
 				    allowBoxing, useVarargs, Warner.noWarnings)) == null) {
@@ -1042,6 +1044,7 @@ public class F3Resolve {
                     Type mt = e.sym.type;
                     if (mt instanceof FunctionType)
                         mt = ((FunctionType)mt).asMethodOrForAll();
+		    /*
                     if (!( (mt instanceof MethodType) || (mt instanceof ForAll)) ||
                             ! argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
 						  true, false, Warner.noWarnings)) {
@@ -1049,6 +1052,12 @@ public class F3Resolve {
                         return wrongMethod.setWrongSym(e.sym);
 		    }
                     return e.sym;
+		    */
+                    bestSoFar = selectBest(env, site, mt,
+                                           e.sym, bestSoFar,
+                                           allowBoxing,
+                                           useVarargs,
+                                           operator);
                 }
             }
             if (! checkArgs &&

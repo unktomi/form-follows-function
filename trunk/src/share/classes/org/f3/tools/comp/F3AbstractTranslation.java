@@ -2383,9 +2383,6 @@ public abstract class F3AbstractTranslation
                     }
                     return toResult(translateSizeof(expr, transExpr), syms.intType);
                 case AMP:
-                    if (expr.type.tag == TypeTags.ARRAY) {
-                        return toResult(Select(transExpr, defs.length_ArrayFieldName), syms.intType);
-                    }
                     return toResult(translateAddressOf(expr, transExpr), syms.f3_PointerType);
 	        case DEREF:
 		    return toResult(Call(transExpr, defs.get_PointerMethodName), expr.type);
@@ -3416,7 +3413,7 @@ public abstract class F3AbstractTranslation
                 tExpr = Call(defs.Sequences_getSingleValue, tExpr);
             }
             tExpr = typeCast(syms.objectType, expr.type, tExpr);
-            JCTree clazz = makeType(classType);
+            JCTree clazz = makeType(types.erasure(classType));
             return toResult(
                     m().TypeTest(tExpr, clazz),
                     syms.booleanType);

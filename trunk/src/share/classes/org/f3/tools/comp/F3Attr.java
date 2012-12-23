@@ -1001,6 +1001,7 @@ public class F3Attr implements F3Visitor {
             case ARRAY:
             case CLASS:
                 if (pt.tag == METHOD || pt.tag == FORALL) {
+		    System.err.println("site="+site);
                     return rs.resolveQualifiedMethod(pos, env, site, name, pt);
                 } else if (name == names._this || name == names._super) {
                     return rs.resolveSelf(pos, env, site.tsym, name);
@@ -1535,6 +1536,7 @@ public class F3Attr implements F3Visitor {
 	Type monadType = null;
 	Type comonadType = null;
 	boolean isIter = tree.isIterable;
+	boolean isSeq = false;
 	int size = tree.getInClauses().size();
 	int idx = 0;
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
@@ -1584,7 +1586,8 @@ public class F3Attr implements F3Visitor {
 	    } else      // if exprtype is T[], T is the element type of the for-each
 		if (types.isSequence(exprType)) {
 		    elemtype = types.elementType(exprType);
-		    //isIter = true;
+		    //elemtype = exprType.getTypeArguments().head;
+		    isSeq = true;
 		}
             // if exprtype implements Iterable<T>, T is the element type of the for-each
             else if (types.asSuper(exprType, syms.iterableType.tsym) != null) {
@@ -1652,7 +1655,7 @@ public class F3Attr implements F3Visitor {
 	    } else {
 		clause1Type = types.lub(clause1Type, elemtype);
 	    }
-	    //System.err.println("clause1Type="+clause1Type);
+	    System.err.println("clause1Type="+clause1Type);
             if (clause.getWhereExpression() != null) {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
@@ -1666,7 +1669,7 @@ public class F3Attr implements F3Visitor {
 	} else {
 	    bt = syms.unknownType;
 	}
-	boolean rawForLoop = isIter; //types.isSequence(clause1Type) || isIter;
+	boolean rawForLoop = isIter || isSeq;
 	if (rawForLoop) {
 	    attribTree(tree.getBodyExpression(), forExprEnv, VAL, bt.tag != ERROR ? bt : Type.noType, rawForLoop ? Sequenceness.PERMITTED : Sequenceness.DISALLOWED);
 
@@ -1681,7 +1684,7 @@ public class F3Attr implements F3Visitor {
 			       (rawForLoop) ? Sequenceness.PERMITTED : Sequenceness.DISALLOWED);
 		}
 	    }
-	}  else {
+	} else {
 	    attribTree(tree.getBodyExpression(), forExprEnv, VAL, Type.noType);
 	}
         Type bodyType = tree.getBodyExpression().type;
@@ -1692,7 +1695,12 @@ public class F3Attr implements F3Visitor {
             types.isSequence(bodyType) ?
             bodyType :
             types.sequenceType(bodyType);
-        if (!isIter) {
+
+	boolean domap = !isIter;
+	if (isSeq) {
+	    domap = tree.isBound();
+	}
+        if (domap) {
             F3Expression map = null;
 	    if (false && ((types.isSequence(owntype) && tree.isBound()))) {
 		map = tree.getMap(f3make, names, clause1Type ,
@@ -1707,6 +1715,8 @@ public class F3Attr implements F3Visitor {
 					     tree.isBound());
 		} else {
 		    Type monadElementType = clause1Type;
+		    System.err.println("monadType="+monadType);
+		    System.err.println("functorType="+functorType);		    
 		    Type typeCons = monadType == null ? functorType: monadType;
 		    if (tree.isBound() || !isIter) {
 			map = tree.getMonadMap(f3make, names, types, monadElementType,
@@ -1717,7 +1727,7 @@ public class F3Attr implements F3Visitor {
 		}
 	    }
             if (map != null) {
-		//System.err.println("map="+map);
+		System.err.println("map="+map);
                 owntype = attribExpr(map, env);
             }
         }
@@ -1944,7 +1954,7 @@ public class F3Attr implements F3Visitor {
         if (clazztype.tag == CLASS) {
             // Check that class is not abstract or mixin
             long flags = clazztype.tsym.flags();
-            if (false && (cdef == null &&
+            if ((cdef == null &&
 			  (flags & (ABSTRACT | INTERFACE | F3Flags.MIXIN)) != 0)) {
                 if ((flags & (F3Flags.MIXIN)) != 0) {
                     // VSGC-2815 - new expressions should report an error when trying to instantiate a mixin class.
@@ -2113,6 +2123,7 @@ public class F3Attr implements F3Visitor {
         }
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
         localEnv.info.scope.leave();
+	//	chk.checkAllDefined(tree.pos(), (ClassSymbol)clazz.type.tsym);
     }
 
     /** Make an attributed null check tree.
@@ -2516,6 +2527,11 @@ public class F3Attr implements F3Visitor {
                 // Empty bodies are only allowed for
                 // abstract, native, or interface methods, or for methods
                 // in a retrofit signature class.
+		if (false) {
+		    tree.mods.flags |= ABSTRACT;
+		    owner.flags_field |= ABSTRACT;
+		    m.flags_field |= ABSTRACT;
+		}
                 if ((owner.flags() & INTERFACE) == 0 &&
                     (tree.mods.flags & (ABSTRACT | NATIVE)) == 0 &&
                     !relax)
@@ -2581,7 +2597,6 @@ public class F3Attr implements F3Visitor {
             
             // If we override any other methods, check that we do so properly.
             // JLS ???
-
             if (m.owner instanceof ClassSymbol) {
                 chk.checkOverride(tree, m);
             } else {
@@ -2617,6 +2632,8 @@ public class F3Attr implements F3Visitor {
         if (m.type != null && m.type instanceof MethodType) {
            ((MethodType)m.type).argtypes = paramTypes;
         }
+
+	fixOverride(tree, m, true);
 
 	methodSymToEnv.remove(m);
 	methodSymToTree.remove(m);
@@ -3232,15 +3249,32 @@ public class F3Attr implements F3Visitor {
                 return;
             }
             case AMP: {
-                Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
-                // result type is argument type, unless this is a singleton, then convert to a sequence
-                Type owntype = types.pointerType(argtype);
-                result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
+		F3Tag tag = F3TreeInfo.skipParens(tree.arg).getF3Tag();
+		if (tag == F3Tag.IDENT || tag == F3Tag.SELECT) {
+		    Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
+		    Symbol varSym = F3TreeInfo.symbol(tree.arg);
+		    System.err.println("varSym="+varSym);
+		    boolean readOnly = true;
+		    if (varSym != null) {
+			long flags = varSym.flags();
+			readOnly = 
+			    ((flags & (F3Flags.IS_DEF | 
+				      F3Flags.PUBLIC_READ | 
+				      Flags.PARAMETER | 
+				       F3Flags.PUBLIC_INIT)) != 0);
+		    }
+		    // result type is argument type, unless this is a singleton, then convert to a sequence
+		    Type owntype = types.pointerType(argtype, readOnly);
+		    result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
+		} else {
+		    log.error(tree.pos(), MsgSym.MESSAGE_UNEXPECTED_TYPE,
+			      Resolve.kindNames(VAR), Resolve.kindName(VAL));
+		}
                 return;
             }
             case DEREF: {
                 Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
-		Type argtype1 = check(tree, argtype, VAL, pkind, types.erasure(syms.f3_PointerType), 
+		Type argtype1 = check(tree, argtype, VAL, pkind, types.erasure(syms.f3_ReadOnlyPointerType), 
 				      pSequenceness);
                 Type owntype = types.pointerElementType(argtype);
 		System.err.println("argtype="+argtype);
@@ -3592,7 +3626,6 @@ public class F3Attr implements F3Visitor {
         if (tree != null) {
             attribSupertypes(tree, c);
         }
-
         // The previous operations might have attributed the current class
         // if there was a cycle. So we test first whether the class is still
         // UNATTRIBUTED.
@@ -3619,12 +3652,13 @@ public class F3Attr implements F3Visitor {
 
             try {
                 attribClassBody(localEnv, c);
+
             } finally {
                 log.useSource(prev);
                 chk.setLint(prevLint);
             }
-
         }
+	//tree.mods.flags |= c.flags();
     }
 
     /** Clones a type without copiyng constant values
@@ -4723,7 +4757,6 @@ public class F3Attr implements F3Visitor {
 			       MethodSymbol other,
 			       ClassSymbol origin,
 			       boolean fixFlags) {
-
 	Type mt = types.memberType(origin.type, m);
 	Type ot = types.memberType(origin.type, other);
 	if (m.type.getReturnType() == syms.f3_UnspecifiedType) {
@@ -4735,16 +4768,30 @@ public class F3Attr implements F3Visitor {
 	// before comparing types.
 	List<Type> mtvars = mt.getTypeArguments();
 	List<Type> otvars = ot.getTypeArguments();
+	List<F3Var> vars = tree.operation.funParams;
+	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
+	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
+	    if (x.head != null && types.boxedTypeOrType(x.head) == y.head) {
+		vars.head.type = x.head = y.head;
+	    }
+	}
 	Type mtres = mt.getReturnType();
 	Type otres = types.subst(ot.getReturnType(), otvars, mtvars);
+	System.err.println("fix override: "+ m);
+	System.err.println("fix override: "+ other);
+
+	System.err.println("mtres="+mtres);
+	System.err.println("otres="+otres);
         
 	boolean resultTypesOK = mtres != syms.f3_UnspecifiedType &&
 	    types.returnTypeSubstitutable(mt, ot, otres, noteWarner);
+	System.err.println("resultTypesOK="+resultTypesOK);
 	if (!resultTypesOK) {
 	    if (!source.allowCovariantReturns() &&
 		m.owner != origin &&
 		m.owner.isSubClass(other.owner, types)) {
 		// allow limited interoperability with covariant returns
+		System.err.println("covariant case");
 	    }
             else {
                 Type setReturnType = null;
@@ -4766,8 +4813,11 @@ public class F3Attr implements F3Visitor {
                 else if (mtres == syms.f3_UnspecifiedType) {
                     setReturnType = otres;
                 }
-
+		if (types.boxedTypeOrType(mtres) == otres) {
+		    setReturnType = otres;
+		}
                 if (setReturnType != null) {
+		    System.err.println("setting returnType: "+ setReturnType);
                     F3Type oldType = tree.operation.getF3ReturnType();
                     tree.operation.rettype = f3make.TypeClass(f3make.Type(setReturnType), oldType.getCardinality());
                     if (mt instanceof MethodType) {

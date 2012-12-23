@@ -1165,10 +1165,6 @@ public class SequencesBase {
         return newValue;
     }
 
-    public static <T> T set1(F3Object instance, int varNum, T newValue, int index) {
-	return set(instance, varNum, newValue, index);
-    }
-
     public static <T> ArraySequence<? extends T> copy(Sequence<? extends T> oldValue) {
         ArraySequence<T> arr =  ((TypeInfo<T>) oldValue.getElementType()).emptySequence.makeNew(0);
         arr.add(oldValue);

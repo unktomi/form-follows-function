@@ -874,14 +874,14 @@ classDefinition [ F3Modifiers mods, int pos ]
             // of parsing the class until we hit '}' for the class definition
             // or get to something that is so garbled we have no choice.
             //
-            syncClass       [mems] 
+ //           syncClass       [mems] 
             
             ( 
                 classMember         [mems] 
                 
                 possiblyOptSemi
                 
-                syncClass           [mems]
+//                syncClass           [mems]
             )*
             
         RBRACE
@@ -1090,14 +1090,37 @@ classMember[ListBuffer<F3Tree> mems]
 
 }
 
-    : initDefinition                { $mems.append($initDefinition.value);      }
+    :
+/*
+        (name IS)=>
+        (
+            name IS modifiers
+            ((FUNCTION)=>(
+                FUNCTION 
+                (OF genericParams[false, false])?
+                (FROM formalParameters
+                    TO type
+                |
+                TO type FROM formalParameters
+                |)
+                (
+                    block[-1]
+                |
+                    SEMI
+                )
+                
+            )
+            |
+            type)
+       )
+*/
+    initDefinition                { $mems.append($initDefinition.value);      }
     | postInitDefinition            { $mems.append($postInitDefinition.value);  }
     |
         m=modifiers 
-      
         (
-           variableDeclaration      [$m.mods, $m.pos]       { $mems.append($variableDeclaration.value); }
-         | functionDefinition       [$m.mods, $m.pos]       { $mems.append($functionDefinition.value);  }
+        variableDeclaration      [$m.mods, $m.pos]       { $mems.append($variableDeclaration.value); }
+        | functionDefinition       [$m.mods, $m.pos]       { $mems.append($functionDefinition.value);  }
     )
     | SEMI
     
@@ -1496,9 +1519,10 @@ variableDeclaration [ F3Modifiers mods, int pos ]
     // Used by error accumulation and override construction
     //
     F3Ident part = null;
-   
+    long vmod = F3Flags.PUBLIC_INIT;
 }
-    : variableLabel  
+    :   variableLabel  { vmod = $variableLabel.modifiers; }
+
     
         n=name
         
@@ -1510,7 +1534,8 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                 errNodes.append(part);
             }
             
-        tr=typeReference    { errNodes.append($tr.rtype); }  // Accumulate for errors
+            tr=typeReference   { errNodes.append($tr.rtype); }  // Accumulate for errors)
+        
         
         (
               (EQ)=>EQ boundExpression
@@ -1525,7 +1550,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
               // in that case, and positoin it where the initializer should be.
               //
               {
-                if  (($variableLabel.modifiers & F3Flags.IS_DEF) == F3Flags.IS_DEF) {
+                if  ((vmod & F3Flags.IS_DEF) == F3Flags.IS_DEF) {
                 
                     // Create an erroneous node where we should have the intializer
                     //
@@ -1574,13 +1599,12 @@ variableDeclaration [ F3Modifiers mods, int pos ]
             // Note that syntactically, we allow all label types at all levels and must throw
             // out any invalid ones at the semantic checking phase
             //
-            long vmod = $variableLabel.modifiers;
             if (vmod == F3Flags.PUBLIC_INIT) { 
                 if (($mods.flags & Flags.PUBLIC) != 0) {
                     $mods.flags &= ~Flags.PUBLIC;
                 } else {
                     //const
-                    vmod = F3Flags.IS_DEF;
+                    //vmod = F3Flags.IS_DEF;
                 }
             } else if (vmod == F3Flags.PUBLIC_READ) { 
                 if (($mods.flags & Flags.PUBLIC) != 0) {
@@ -1609,7 +1633,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                     $value = F.at($pos).OverrideClassVar
                         (
                             $name.value,
-                            $typeReference.rtype,
+                            $tr.rtype,
                             $mods,
                             part,
                             bValue,
@@ -1623,7 +1647,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                     $value = F.at($pos).Var
                         (
                             $name.value,
-                            $typeReference.rtype,
+                            $tr.rtype,
                             $mods,
                             bValue,
                             bStatus,
@@ -1739,7 +1763,8 @@ formalParameter
     //
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 }
-    : name typeReference
+    : 
+        name typeReference
     
         { 
             if ($name.inError) {
@@ -2310,7 +2335,7 @@ variableLabel
     
     returns [long modifiers, int pos] // returns the appropriate modifier flags and the position of the token
     
-    : VAR           { $modifiers = 0L; $pos = pos($VAR); }
+    : (READONLY { $modifiers = F3Flags.PUBLIC_READ; } )? VAR { $pos = pos($VAR); }
     | DEF           { $modifiers = F3Flags.IS_DEF; $pos = pos($DEF); }
     | LET { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($LET); } 
     | CONST { $modifiers = F3Flags.PUBLIC_INIT; $pos = pos($CONST); } 
@@ -3144,10 +3169,15 @@ expression
       // local variable declarations.
       //
       m=modifiers 
-        
         variableDeclaration [$m.mods, $m.pos]
-    
         {
+            if (($m.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
+                $m.mods.flags &= ~F3Flags.PUBLIC_INIT;
+                $m.mods.flags |= F3Flags.IS_DEF;
+            }
+            if (($m.mods.flags & F3Flags.PUBLIC_READ) != 0) {
+                $m.mods.flags &= ~F3Flags.PUBLIC_READ;
+            }
             $value = $variableDeclaration.value;
         }
     ;
@@ -3759,7 +3789,7 @@ typeExpression
     : relationalExpression      { errNodes.append($relationalExpression.value); }
 
         (
-            (/*IS|*/INSTANCEOF) itn=type
+            (IS|INSTANCEOF)=>(IS|INSTANCEOF) itn=type
             
                 {
                     $value = F.at($itn.rtype.pos).TypeTest($relationalExpression.value, $itn.rtype);
@@ -6052,11 +6082,11 @@ typeReference
     //
     int rPos = pos();
 }
-    : (COLON | IS) type
+    : (COLON | IS)=>((COLON | IS) type
               
         {
             $rtype = $type.rtype;
-        }
+        })
 
     | // Untyped element, the AST needs to reflect that
     
@@ -6210,7 +6240,7 @@ typeName
     F3Expression name = null;
 }
 
-: (UPPER_THIS | qualname      { errNodes.append($qualname.value); name = $qualname.value;} )
+: (qualname      { errNodes.append($qualname.value); name = $qualname.value;} )
         (
               (OF)=>OF gas=genericArguments  { if ($gas.value != null) exprbuff.appendList($gas.value); }
               {
@@ -7089,7 +7119,7 @@ reservedWord
     | CATCH         | CLASS     | CONTINUE      | DEF | ENUM | OF | FORALL
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR
-    | FROM          | FUNCTION  | IF            | IMPORT | OPERATION
+    | IF            | IMPORT     
     | INDEXOF       | INSERT    | INSTANCEOF    | LAZY
     | MIXIN         | MOD       | NATIVEARRAY   | NEW | INTERFACE
     | NOT           | NULL      | OR            | OVERRIDE

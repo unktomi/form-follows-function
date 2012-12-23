@@ -179,6 +179,18 @@ public class Builtins {
 	return Either.latter(y);
     }
 
+    public static boolean or(boolean x, boolean y) {
+	return x || y;
+    }
+
+    public static <a,b> Pair<Either<a,b>, Either<a,b>> or(a x,  b y) {
+	return either(x, y);
+    }
+
+    public static <a,b> Pair<Either<a,b>, Either<a,b>> either(a x,  b y) {
+	return Pair.<Either<a,b>,Either<a,b>>both(Builtins.<a,b>former(x), Builtins.<a,b>latter(y));
+    }
+
     public static <a,b> Pair<a, b> both(a x,  b y) 
     {
 	return Pair.<a,b>both(x, y);

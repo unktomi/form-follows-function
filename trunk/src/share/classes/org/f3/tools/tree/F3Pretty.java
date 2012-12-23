@@ -797,15 +797,31 @@ public class F3Pretty implements F3Visitor {
             pretty.align();
             pretty.printDocComment(tree);
             pretty.print("function ");
-            pretty.print("(");
+	    if (tree.typeArgs != null && tree.typeArgs.size() > 0) {
+		pretty.print("of ");
+		if (tree.typeArgs.size() > 1) {
+		    pretty.print("(");
+		}
+		String sep = "";
+		for (F3Expression targ: tree.typeArgs) {
+		    pretty.print(sep);
+		    pretty.printExpr(targ);
+		    sep = ", ";
+		}
+		if (tree.typeArgs.size() > 1) {
+		    pretty.print(")");
+		}
+		pretty.print(" ");
+	    }
+            pretty.print("from (");
             pretty.printExprs(tree.getParams());
             pretty.print(")");
             if (tree.getType() != null) {
+		pretty.print(" to ");
                 pretty.printExpr(tree.getType());
             }
             F3Block body = tree.getBodyExpression();
             if (body != null) {
-
                 if  (body instanceof F3ErroneousBlock) {
                     pretty.print("<erroroneous>");
                 } else {
@@ -832,7 +848,7 @@ public class F3Pretty implements F3Visitor {
             pretty.printExpr(tree.mods);
             pretty.print("function ");
 	    if (tree.typeArgs != null) {
-		pretty.print(" forall (");
+		pretty.print(" of (");
 		String sep = "";
 		for (F3Expression t: tree.typeArgs) {
 		    pretty.print(sep);
@@ -842,13 +858,13 @@ public class F3Pretty implements F3Visitor {
 		pretty.print(") ");
 	    }
             pretty.print(tree.name);
-            pretty.print("(");
+            pretty.print(" from (");
             f3pretty.variableScope = SCOPE_PARAMS;
             pretty.printExprs(tree.getParams());
             f3pretty.variableScope = SCOPE_METHOD;
             pretty.print(")");
             if (tree.operation.rettype != null && tree.operation.rettype.getF3Tag() != F3Tag.TYPEUNKNOWN) {
-                pretty.print(" : ");
+                pretty.print(" to ");
                 pretty.printExpr(tree.operation.rettype);
             }
             F3Block body = tree.getBodyExpression();
@@ -1256,13 +1272,14 @@ public class F3Pretty implements F3Visitor {
             printExpr(tree.mods);
             if (variableScope != SCOPE_PARAMS) {
                 if ((tree.getModifiers().flags & F3Flags.IS_DEF) != 0) {
-                    print("def ");
+                    print("const ");
                 } else {
                     print("var ");
                 }
             }
             print(tree.getName());
             if (tree.getF3Type() != null && tree.getF3Type().getF3Tag() != F3Tag.TYPEANY) {
+		print(" ");
                 printTypeSpecifier(tree.getF3Type());
             }
             if (variableScope != SCOPE_PARAMS) {
