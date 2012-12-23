@@ -3,7 +3,7 @@ package f3.util;
 public abstract class Monoid of a 
 {
     public const zero is a;
-    abstract public function add(x is a, y is a) returns a;
+    abstract public function add from (x is a, y is a) to a;
 }
 
 

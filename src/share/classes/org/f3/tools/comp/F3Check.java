@@ -1881,7 +1881,7 @@ public class F3Check {
                         new MethodSymbol(undef.flags(), undef.name,
                                          types.memberType(c.type, undef), undef.owner);
                     log.error(pos, MsgSym.MESSAGE_DOES_NOT_OVERRIDE_ABSTRACT,
-                              c, undef1, undef1.location());
+                              c, types.toF3String(undef1, List.<VarSymbol>nil()), undef1.location());
                 }
             }
 	} catch (CompletionFailure ex) {

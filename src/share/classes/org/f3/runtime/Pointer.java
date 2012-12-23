@@ -32,11 +32,7 @@ import f3.animation.KeyValueTarget;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class Pointer<a> implements KeyValueTarget<a> {
-    private final Type type;
-    private final F3Object obj;
-    private final int varnum;
-
+public class Pointer<a> extends ConstPointer<a> implements KeyValueTarget<a> {
     @org.f3.runtime.annotation.F3Signature("(Ljava/lang/Object;)Lorg/f3/runtime/Pointer;")
     public static Pointer make(Type type, F3Object obj, int varnum) {
         return new Pointer(type, obj, varnum);
@@ -47,50 +43,7 @@ public class Pointer<a> implements KeyValueTarget<a> {
     }
 
     private Pointer(Type type, F3Object obj, int varnum) {
-        this.type = type;
-        this.obj = obj;
-        this.varnum = varnum;
-    }
-
-    public Object getDefaultValue() {
-        switch (type) {
-            case BYTE: return (byte)0;
-            case SHORT: return (short)0;
-            case INTEGER: return 0;
-            case LONG: return 0L;
-            case FLOAT: return 0.0F;
-            case DOUBLE: return 0.0D;
-            case BOOLEAN: return false;
-            case SEQUENCE: return TypeInfo.Object.emptySequence;
-            case OBJECT: return null;
-        }
-        // unknown type, so return null
-        return null;
-    }
-
-    public F3Object getF3Object() {
-        return obj;
-    }
-
-    public int getVarNum() {
-        return varnum;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public Pointer unwrap() {
-        return this;
-    }
-    
-    public a get() {
-        return (a)(obj != null? obj.get$(varnum) : getDefaultValue());
-    }
-
-    public a get(int pos) {
-        assert type == Type.SEQUENCE : "expecting a sequence type";
-        return (a)(obj != null? obj.elem$(varnum, pos) : null);
+	super(type, obj, varnum);
     }
 
     public void set(a value) {
@@ -99,51 +52,23 @@ public class Pointer<a> implements KeyValueTarget<a> {
         }
     }
 
+    public Pointer unwrap() {
+        return this;
+    }
+    
     public void set(int pos, a value) {
         assert type == Type.SEQUENCE : "expecting a sequence type";
         if (obj != null) {
-	    Sequences.set1(obj, varnum, value, pos);
+	    Sequences.<a>set(obj, varnum, value, pos);
         }
-    }
-
-    public int size() {
-        assert type == Type.SEQUENCE : "expecting a sequence type";
-        return obj != null? obj.size$(varnum)  : 0;
     }
 
     public Object getValue() {
-        return get();
+	return get();
     }
 
-    public void setValue(Object o) {
-        set((a)o);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof Pointer) {
-            Pointer other = (Pointer)o;
-            return obj == other.obj && varnum == other.varnum;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return System.identityHashCode(obj) ^ varnum;
-    }
-
-    public void addDependency(F3Object dep) {
-        if (obj != null) {
-            obj.addDependent$(varnum, dep, 0);
-        }
-    }
-
-    public void removeDependency(F3Object dep) {
-        if (obj != null) {
-            obj.removeDependent$(varnum, dep);
-        }
+    public void setValue(Object value) {
+	set((a)value);
     }
 
     public static void switchDependence(Pointer oldPtr, Pointer newPtr, F3Object dep, int depNum) {

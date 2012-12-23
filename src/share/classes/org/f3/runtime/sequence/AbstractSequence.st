@@ -247,7 +247,7 @@ $PREFIX:{T|
 	return map(f);
     }
 
-    public <S> S foldLeft(Function2<? extends S, ? super S, ? super T> f, S z) {
+    public <S> S foldLeft(S z, Function2<? extends S, ? super S, ? super T> f) {
 	S r = z;
 	for (int i = 0, len = size(); i < len; i++) {
 	    r = f.invoke(r, get(i));

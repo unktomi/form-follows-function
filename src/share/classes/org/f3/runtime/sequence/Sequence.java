@@ -47,7 +47,7 @@ import org.f3.functions.Function2;
  *
  * @author Brian Goetz
  */
-public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadPlus<Sequence, T>, Comonad<Sequence, T> {
+public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadPlus<Sequence, T>, Comonad<Sequence, T>, Foldable<T> {
 
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f);
     public <Y> Sequence<Y> flatmap(Function1<? extends Sequence<Y>, ? super T> f);
@@ -59,7 +59,7 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public T div(Function2<? extends T, ? super T, ? super T> f);
     public <S> Sequence<S> mul(Function1<? extends S, ? super T> f);
     public T foldLeft(Function2<? extends T, ? super T, ? super T> f);
-    public <S> S foldLeft(Function2<? extends S, ? super S, ? super T> f, S z);
+    public <S> S foldLeft(S z, Function2<? extends S, ? super S, ? super T> f);
     public <S> S foldRight(Function2<? extends S, ? super T, ? super S> f, S z);
 
     /** How large is this sequence?  */
@@ -108,7 +108,7 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public double getAsDouble(int position);
     
     /** Extract a slice of the sequence */
-    public Sequence<? extends T> getSlice(int startPos, int lastPos);
+    public Sequence<T> getSlice(int startPos, int lastPos);
 
     /** Select elements from the sequence matching the specified predicate. */
     public Sequence<? extends T> get(SequencePredicate<? super T> predicate);
