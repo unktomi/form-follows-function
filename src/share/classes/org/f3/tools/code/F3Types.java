@@ -371,8 +371,10 @@ public class F3Types extends Types {
         elemType = boxedTypeOrType(elemType);
         if (withExtends) {
 	    //Thread.currentThread().dumpStack();
-	    if (false) {
+	    if (!(elemType instanceof WildcardType) && !(elemType instanceof TypeVar)) {
 		elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+	    } else {
+		//System.err.println("elemType="+elemType);
 	    }
 	}
         return applySimpleGenericType(syms.f3_SequenceType, elemType);
@@ -868,7 +870,7 @@ public class F3Types extends Types {
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
-	     x != null; x = x.tail, y = y.tail) {
+	     x != null && y != null; x = x.tail, y = y.tail) {
 	    if (x.head != null && boxedTypeOrType(x.head) == y.head) {
 		x.head = y.head;
 	    }

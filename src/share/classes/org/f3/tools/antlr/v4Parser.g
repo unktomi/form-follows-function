@@ -5907,7 +5907,7 @@ typeFunction
         
             ret=typeReference   { errNodes.append($ret.rtype); }
     //|
-        //ARROW ret=type { errNodes.append($ret.rtype); }
+    //ARROW ret=type { errNodes.append($ret.rtype); }
     //( (a=type ARROW ret=type) { })+
     )
 )            

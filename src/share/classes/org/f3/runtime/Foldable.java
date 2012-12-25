@@ -3,6 +3,6 @@ import org.f3.functions.*;
 
 public interface Foldable<a> 
 {
-    public <b> b foldLeft(b z, Function2<? extends b, ? super b, ? super a> f);
-    public <b> b foldRight(Function2<? extends b, ? super a, ? super b> f, b z);
+    public <b> b foldLeft(b zero, Function2<? extends b, ? super b, ? super a> add);
+    public <b> b foldRight(Function2<? extends b, ? super a, ? super b> add, b zero);
 }
