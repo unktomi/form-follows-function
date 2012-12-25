@@ -895,17 +895,26 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitVar(F3Var tree) {
-        F3Expression init = lowerExpr(tree.getInitializer(), tree.type);
-        F3OnReplace onReplace = lowerDecl(tree.getOnReplace());
-        F3OnReplace onInvalidate = lowerDecl(tree.getOnInvalidate());
-        F3Var res = m.at(tree.pos).Var(tree.name, tree.getF3Type(), tree.mods, init, tree.getBindStatus(), onReplace, onInvalidate);
-        res.sym = tree.sym;
-        result = res.setType(tree.type);
-        F3VarInit vsi = tree.getVarInit();
-        if (vsi != null) {
-            // update the var in the var-init
-            vsi.resetVar(res);
-        }
+	try {
+	    if (tree.type == null) {
+		System.err.println(tree);
+	    }
+	    F3Expression init = lowerExpr(tree.getInitializer(), tree.type);
+	    F3OnReplace onReplace = lowerDecl(tree.getOnReplace());
+	    F3OnReplace onInvalidate = lowerDecl(tree.getOnInvalidate());
+	    F3Var res = m.at(tree.pos).Var(tree.name, tree.getF3Type(), tree.mods, init, tree.getBindStatus(), onReplace, onInvalidate);
+	    res.sym = tree.sym;
+	    result = res.setType(tree.type);
+	    F3VarInit vsi = tree.getVarInit();
+	    if (vsi != null) {
+		// update the var in the var-init
+		vsi.resetVar(res);
+	    }
+	} catch (RuntimeException exc) {
+	    System.err.println("var="+tree);
+	    System.err.println("var.type="+tree.type);
+	    throw exc;
+	}
     }
 
     public void visitVarInit(F3VarInit tree) {

@@ -18,7 +18,7 @@ class Node of (Measurement, a) is Measured of Measurement
     public const elems is a[];
     override function toString from () to String 
     {
-	"Node {measurement} [{for (e in elems) "{e} "}]"
+	"Node {measurement} [{foreach (e in this.elems) "{e} "}]"
     }
 }
 
@@ -29,15 +29,18 @@ function single of (Measurement, a)
 {
     Single of (Measurement, a) 
     { 
-	one: x;
+	x: x;
 	measurement: measurer.measure(x);
 	measurer: measurer;
     }
 }
 
 
-abstract class FingerTree of (Measurement, a) 
-    is Measured of Measurement, Monad of (FingerTree, a)
+public abstract class FingerTree of (Measurement, a) is
+    Measured of Measurement, 
+    Monad of (FingerTree, a), 
+    Foldable of a, 
+    java.lang.Iterable of a
 {
     function deep 
 	from (measurer is Measurer of Measurement,
@@ -102,7 +105,7 @@ abstract class FingerTree of (Measurement, a)
 	      t is FingerTree of (Measurement, a)) 
 	to FingerTree of (Measurement, a); 
 
-    public function map of b 
+    public override function map of b 
 	from (f is function from a to b) 
 	to FingerTree of (Measurement, b)
     {
@@ -120,6 +123,32 @@ abstract class FingerTree of (Measurement, a)
 
 class Empty of (Measurement, a) is FingerTree of (Measurement, a)
 {
+
+    override public function iterator from () to java.util.Iterator of a 
+    {
+	java.util.Iterator of a {
+	    override public function hasNext to Boolean { no }
+	    override public function next to a { null }
+	    override public function remove { }
+	}
+    }
+    
+    override public function foldLeft of b
+	from (z is b,
+	      f is function from (b, a) to b)
+	to b 
+    {
+	z
+    }
+
+    override public function foldRight of b
+	from (f is function from (a, b) to b, 
+	      z is b)
+	to b 
+    {
+	z
+    }
+
     override function app3 
 	from (xs is a[], 
 	      t is FingerTree of (Measurement, a)) 
@@ -141,25 +170,54 @@ class Empty of (Measurement, a) is FingerTree of (Measurement, a)
     {
 	prepend(x)
     }
+
+    override function toString to String {
+	"Empty"
+    }
 }
 
 class Single of (Measurement, a) is FingerTree of (Measurement, a) 
 {
 
-    public const one is a;
+    public const x is a;
+
+    override public function iterator from () to java.util.Iterator of a {
+	var done = false;
+	java.util.Iterator of a {
+	    override public function hasNext from () to Boolean { done }
+	    override public function next from () to a { done = true; x }
+	    override public function remove { }
+	}
+    }
+
+    public function foldLeft of b
+	from (z is b,
+	      f is function from (b, a) to b)
+	to b 
+    {
+	f(z, x);
+    }
+
+    public function foldRight of b
+	from (f is function from (a, b) to b, 
+	      z is b)
+	to b 
+    {
+	f(x, z);
+    }
 
     override function map of b 
 	from (f is function from a to b) 
 	to Single of (Measurement, b)
     {
-	Single of (Measurement, b) { measurer: measurer, one: f(one) }
+	Single of (Measurement, b) { measurer: measurer, x: f(x) }
     }
 
     override function flatmap of b 
 	from (f is function from a to FingerTree of (Measurement, b)) 
 	to FingerTree of (Measurement, b)
     {
-	f(one) as FingerTree of (Measurement, b)
+	f(x) as FingerTree of (Measurement, b)
     }
 
     override function app3 
@@ -167,7 +225,7 @@ class Single of (Measurement, a) is FingerTree of (Measurement, a)
 	      t is FingerTree of (Measurement, a)) 
 	to FingerTree of (Measurement, a) 
     {
-	t.prepend(xs).prepend(one);
+	t.prepend(xs).prepend(x);
     }
 
     // this is a pita
@@ -175,7 +233,8 @@ class Single of (Measurement, a) is FingerTree of (Measurement, a)
 	from (measurer is Measurer of Measurement) 
 	to FingerTree of (Measurement, Node of (Measurement, a))
     {
-        Empty of (Measurement, Node of (Measurement, a)) {
+        Empty of (Measurement, Node of (Measurement, a)) 
+	{
 	    measurer: measurer;
 	    measurement: measurer.zero;
 	}
@@ -185,21 +244,19 @@ class Single of (Measurement, a) is FingerTree of (Measurement, a)
 	from (x is a) 
 	to FingerTree of (Measurement, a) 
     {
-	deep(measurer, [x], emptyNodeTree(measurer), [one]);
+	deep(measurer, [x], emptyNodeTree(measurer), [this.x]);
     }
 
     override function append 
 	from (x is a) 
 	to FingerTree of (Measurement, a) 
     {
-	deep(measurer, [one], emptyNodeTree(measurer), [x]);
+	deep(measurer, [this.x], emptyNodeTree(measurer), [x]);
     }
 
-    override function toString 
-	from () 
-	to String 
+    override function toString to String 
     {
-	"Single {measurement} : {one}"
+	"Single {measurement} : {x}"
     }
 }
 
@@ -226,32 +283,104 @@ function toTree of (Measurement, a)
 
 class Deep of (Measurement, a) is FingerTree of (Measurement, a) 
 {
+    public const prefix is a[];
+    public const middle is FingerTree of (Measurement, Node of (Measurement, a));
+    public const suffix is a[];
+
+    override public function iterator from () to java.util.Iterator of a 
+    {
+	
+	const pi = prefix.iterator();
+	const mi = java.util.Iterator of a 
+	    {
+		var ni = middle.iterator();
+		var ii is java.util.Iterator of a;
+		override public function hasNext from () to Boolean 
+		{ 
+		    if ii.hasNext() then yes else if ni.hasNext() then (ii = ni.next().elems.iterator()).hasNext() else no;
+		}
+		override public function next from () to a
+		{
+		    ii.next();
+		}
+		override public function remove { }
+	    }
+
+	const si = suffix.iterator();
+
+	java.util.Iterator of a 
+	{
+	    override public function hasNext from () to Boolean 
+	    { 
+		pi.hasNext() or mi.hasNext() or si.hasNext()
+	    }
+
+	    override public function next from () to a
+	    { 
+		if pi.hasNext() then pi.next() else if mi.hasNext() then mi.next() else si.next();
+	    }
+
+	    override public function remove { }
+	}
+    }
+
+    public function foldLeft of b
+	from(z is b,
+	     f is function from (b, a) to b)
+	to b 
+    {
+	var r = prefix.foldLeft(z, f);
+	r = middle.foldLeft(r, 
+			    function from (z is b, n is Node of (Measurement, a)) 
+			    to b
+			    {
+				n.elems.foldLeft(z, f);
+			    });
+	suffix.foldLeft(r, f);
+    }
+
+    public function foldRight of b
+	from (f is function from (a, b) to b, 
+	      z is b)
+	to b 
+    {
+	var r = suffix.foldRight(f, z);
+	r = middle.foldRight(function from (n is Node of (Measurement, a), z is b) 
+			     to b 
+			     {
+				 n.elems.foldRight(f, z)
+			     }, 
+			     r);
+	prefix.foldRight(f, r);
+    }
+
     override function map of b 
 	from (f is function from a to b) 
 	to FingerTree of (Measurement, b)
     {
-	const xs is b[] = for (x in prefix) f(x);
-	var ys is b[];
-	for (node in middle) { insert for (x in node.elems) f(x) into ys }
-	const zs is b[] = for (z in suffix) f(z);
-	toTree(measurer, [xs, ys, zs]);
-    }
+	 const empty is FingerTree of (Measurement, b) = Empty of (Measurement, b) {};
+	 foldLeft(empty,
+		  function from (ys is FingerTree of (Measurement, b),
+				 x is a) 
+		  to FingerTree of (Measurement, b)
+		  {
+		      ys.append(f(x));
+		  });
 
-    override function flatmap of b 
-	from (f is function from a to FingerTree of (Measurement, b)) 
-	to FingerTree of (Measurement, b)
-    {
-	var t is FingerTree of (Measurement, b) = toTree(measurer, []);
-	for (x in prefix) t = t.concat(f(x));
-	for (x in middle) {
-	    for (y in x.elems) {
-		t = t.concat(f(y));
-		null as ()
-	    } 
-	    null as ()
-	}
-	for (x in suffix) t = t.concat(f(x));
-	return t;
+     }
+
+     override function flatmap of b 
+	 from (f is function from a to FingerTree of (Measurement, b)) 
+	 to FingerTree of (Measurement, b)
+     {
+	 const empty is FingerTree of (Measurement, b) = Empty of (Measurement, b) {};
+	 foldRight(function from (x is a, 
+				  ys is FingerTree of (Measurement, b)) 
+		   to FingerTree of (Measurement, b)
+		   {
+		       ys.concat(f(x));
+		   }, 
+		   empty);
     }
 
     function makeNode 
@@ -268,33 +397,27 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 	to (Node of (Measurement, a))[] 
     {
 	const n = sizeof xs mod 3;
-	const r = if n == 0 then null else makeNode(m, xs[0..n]);
-	//[r, for (i in [n..<sizeof xs step 3]) {
-	//	makeNode(m, xs[i..i+2])
-        //}]
-	// workaround for compiler bugs:
-        var rs is Object[];
-	insert r into rs;
-	for (i in [n..<sizeof xs step 3]) {
-		insert makeNode(m, xs[i..i+2]) into rs;
+	// hacks for compiler bugs...
+	var ys = [];
+	if (n > 0) {
+	    insert makeNode(m, xs[0..n]) into ys;
 	}
-	return rs as (Node of (Measurement, a))[];
+	for (i in [n..<sizeof xs step 3]) {
+	    insert makeNode(m, xs[i..i+2]) into ys;
+	}
+	return ys as (Node of (Measurement, a))[];
     }
-
-    public const prefix is a[];
-    public const middle is FingerTree of (Measurement, Node of (Measurement, a));
-    public const suffix is a[];
 
     override function app3 
 	from (xs is a[], 
 	      t is FingerTree of (Measurement, a)) 
 	to FingerTree of (Measurement, a) 
     {
-	if (t instanceof Empty) {
+	if (t is Empty) {
 	    append(xs);
-	} else if (t instanceof Single) {
+	} else if (t is Single) {
 	    const s = t as Single of (Measurement, a);
-	    append(xs).append(s.one);
+	    append(xs).append(s.x);
 	} else {
 	    const d = t as Deep of (Measurement, a);
 	    const ys = nodes(measurer, [suffix, xs, d.prefix]);
@@ -342,12 +465,12 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 
 class Size is Measurer of Integer 
 {
-    override function measure of a from (x is a) 
+    override function measure of a from (x is a) to Integer
     { 
-	if (x instanceof Measured) then (x as Measured of Integer).measurement else 1
+	if (x is Measured of Integer) then (x as Measured of Integer).measurement else 1
     }
     override const zero = 0;
-    override function add(x, y)
+    override function add from (x is Integer, y is Integer) to Integer
     {
 	x + y
     }
@@ -378,7 +501,7 @@ public class Seq of a is Monad of (Seq, a) {
 	t = t.append(x);
     }
 
-    public function map of b from (f is function from a to b) to Seq of b 
+    public override function map of b from (f is function from a to b) to Seq of b 
     {
 	Seq of b 
 	{ 
@@ -402,9 +525,10 @@ public class Seq of a is Monad of (Seq, a) {
     }
 }
 
-function run from () to () {
+function run 
+{
     const nums = Seq of Integer {};
-    for (i in [1..10]) nums.append(i);
+    for (i in [1..10000]) nums.append(i);
     println(nums.length());
-    for (j in nums) println(j);
+    foreach (j in nums) println(j);
 }

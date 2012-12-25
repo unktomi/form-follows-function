@@ -1001,7 +1001,7 @@ public class F3Attr implements F3Visitor {
             case ARRAY:
             case CLASS:
                 if (pt.tag == METHOD || pt.tag == FORALL) {
-		    System.err.println("site="+site);
+		    //System.err.println("site="+site);
                     return rs.resolveQualifiedMethod(pos, env, site, name, pt);
                 } else if (name == names._this || name == names._super) {
                     return rs.resolveSelf(pos, env, site.tsym, name);
@@ -1154,8 +1154,6 @@ public class F3Attr implements F3Visitor {
 
         try {
             Type declType = attribType(tree.getF3Type(), env);
-	    //System.err.println("tree="+tree.getF3Type());
-	    //System.err.println("declType="+declType);
             declType = chk.checkNonVoid(tree.getF3Type(), declType);
             if (declType != syms.f3_UnspecifiedType) {
                 result = tree.type = v.type = declType;
@@ -1258,9 +1256,9 @@ public class F3Attr implements F3Visitor {
 
         //variable decl in bind context with no initializer are not allowed
         if ((tree.sym.flags_field & Flags.PARAMETER) == 0 &&
-                env.tree.getF3Tag() != F3Tag.FOR_EXPRESSION &&
-                tree.getInitializer() == null &&
-                tree.getBindStatus() != F3BindStatus.UNBOUND) {
+	    env.tree.getF3Tag() != F3Tag.FOR_EXPRESSION &&
+	    tree.getInitializer() == null &&
+	    tree.getBindStatus() != F3BindStatus.UNBOUND) {
             log.error(tree.pos(), MsgSym.MESSAGE_TRIGGER_VAR_IN_BIND_MUST_HAVE_INIT, tree.sym);
         }
 
@@ -1655,7 +1653,7 @@ public class F3Attr implements F3Visitor {
 	    } else {
 		clause1Type = types.lub(clause1Type, elemtype);
 	    }
-	    System.err.println("clause1Type="+clause1Type);
+	    //System.err.println("clause1Type="+clause1Type);
             if (clause.getWhereExpression() != null) {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
@@ -1715,8 +1713,8 @@ public class F3Attr implements F3Visitor {
 					     tree.isBound());
 		} else {
 		    Type monadElementType = clause1Type;
-		    System.err.println("monadType="+monadType);
-		    System.err.println("functorType="+functorType);		    
+		    //System.err.println("monadType="+monadType);
+		    //System.err.println("functorType="+functorType);		    
 		    Type typeCons = monadType == null ? functorType: monadType;
 		    if (tree.isBound() || !isIter) {
 			map = tree.getMonadMap(f3make, names, types, monadElementType,
@@ -1727,7 +1725,7 @@ public class F3Attr implements F3Visitor {
 		}
 	    }
             if (map != null) {
-		System.err.println("map="+map);
+		//System.err.println("map="+map);
                 owntype = attribExpr(map, env);
             }
         }
@@ -3858,6 +3856,7 @@ public class F3Attr implements F3Visitor {
         boolean isSeq = types.isSequence(pt);
         Type owntype = pt.tag == NONE || pt.tag == UNKNOWN ? syms.f3_EmptySequenceType :
                 isSeq ? pt : types.sequenceType(pt);
+	System.err.println("empty seq type: "+ owntype);
         result = check(tree, owntype, VAL, pkind, Type.noType, pSequenceness);
     }
 
@@ -4777,21 +4776,13 @@ public class F3Attr implements F3Visitor {
 	}
 	Type mtres = mt.getReturnType();
 	Type otres = types.subst(ot.getReturnType(), otvars, mtvars);
-	System.err.println("fix override: "+ m);
-	System.err.println("fix override: "+ other);
-
-	System.err.println("mtres="+mtres);
-	System.err.println("otres="+otres);
-        
 	boolean resultTypesOK = mtres != syms.f3_UnspecifiedType &&
 	    types.returnTypeSubstitutable(mt, ot, otres, noteWarner);
-	System.err.println("resultTypesOK="+resultTypesOK);
 	if (!resultTypesOK) {
 	    if (!source.allowCovariantReturns() &&
 		m.owner != origin &&
 		m.owner.isSubClass(other.owner, types)) {
 		// allow limited interoperability with covariant returns
-		System.err.println("covariant case");
 	    }
             else {
                 Type setReturnType = null;
@@ -4817,7 +4808,6 @@ public class F3Attr implements F3Visitor {
 		    setReturnType = otres;
 		}
                 if (setReturnType != null) {
-		    System.err.println("setting returnType: "+ setReturnType);
                     F3Type oldType = tree.operation.getF3ReturnType();
                     tree.operation.rettype = f3make.TypeClass(f3make.Type(setReturnType), oldType.getCardinality());
                     if (mt instanceof MethodType) {
