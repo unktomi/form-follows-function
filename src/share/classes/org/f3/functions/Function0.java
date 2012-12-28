@@ -22,10 +22,11 @@
  */
 
 package org.f3.functions;
-
+import org.f3.runtime.Monad;
 import org.f3.runtime.F3Object;
 
-public class Function0<R> extends Function<R> {
+public class Function0<R> extends Function<R> implements Monad<Function0, R> {
+
     public Function0() {}
     
     public Function0(final F3Object implementor, final int number) {
@@ -46,4 +47,25 @@ public class Function0<R> extends Function<R> {
             throw new RuntimeException("invoke function missing");
         }
     }
+
+    public <Y> Function0<Y> map(final Function1<? extends Y, ? super R> f) {
+	final Function0<R> self = this;
+	return new Function0<Y>() {
+	    public Y invoke() {
+		return f.invoke(self.invoke());
+	    }
+	};
+    }
+
+    public <Y> Function0<Y> flatmap(final Function1<? extends Function0<? extends Y>, ? super R> f) {
+	final Function0<R> self = this;
+	return new Function0<Y>() {
+	    public Y invoke() {
+		final R r = self.invoke();
+	        final Function0<? extends Y> g = f.invoke(r);
+		return g.invoke();
+	    }
+	};
+    }
+
 }

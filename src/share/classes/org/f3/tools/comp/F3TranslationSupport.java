@@ -2205,6 +2205,7 @@ public abstract class F3TranslationSupport {
             ClassSymbol classSym = new ClassSymbol(flags, name, owner);
             ClassType type = new ClassType(Type.noType, List.<Type>nil(), classSym);
             classSym.type = type;
+	    classSym.members_field = new Scope(classSym);
             return classSym;
         }
 

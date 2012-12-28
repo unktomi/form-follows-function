@@ -393,7 +393,12 @@ public class F3ClassReader extends ClassReader {
             Symbol owner = translateSymbol(sym.owner);
             MethodSymbol m = translateMethodSymbol(sym.flags_field, sym, owner);
 	    try {
-		((ClassSymbol) owner).members_field.enter(m);
+		ClassSymbol ownerSym = (ClassSymbol)owner;
+		if (ownerSym.members_field == null) {
+		    System.err.println("members_field is null: "+ ownerSym);
+		} else {
+		    ownerSym.members_field.enter(m);
+		}
 	    } catch (NullPointerException exc) {
 		System.err.println("owner="+owner);
 		System.err.println("m="+m);

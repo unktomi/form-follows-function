@@ -117,14 +117,13 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
     public F3Expression getMonadMap(F3TreeMaker F, 
 				    Name.Table names,
 				    F3Types types,
-				    Type argType,
+				    Type[] argTypes,
 				    Type monadType,
 				    Type resultType,
 				    boolean isBound) {
 
         if (apply == null) {
-	    //System.err.println("argType="+argType);
-	    //System.err.println("resultType="+resultType);
+	    System.err.println("resultType="+resultType);
             List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
             apply = this.bodyExpr;
 	    int i = 0;
@@ -133,10 +132,11 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
                 F3ForExpressionInClause clause = x.head;
 		boolean first = i == 0;
 		boolean isMap = first;
+                Type argType = argTypes[i];
 		if (types.isMonad(resultType)) {
-		    //System.err.println("argType="+argType);
-		    //System.err.println("resultType="+resultType);
-		    //System.err.println("monadType="+monadType);
+		    System.err.println("argType="+argType);
+		    System.err.println("resultType="+resultType);
+		    System.err.println("monadType="+monadType);
 		    isMap = false;
 		}
 		Name select =
@@ -144,14 +144,14 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		Type type = argType;
 		if (!first) {
 		    type = monadType;
-		    //System.err.println("monad type: " + type);
+		    System.err.println("monad type: " + type);
 		}
 		boolean second = i == 1;
-		if (!first) {
+		if (false && !first) {
 		    apply = F.TypeCast(F.Type(monadType), apply);
 		}
                 apply = getMonadMap(F, names, select, argType, type, resultType, clause, apply, isBound);		
-		if (!first) {
+		if (false && !first) {
 		    apply = F.TypeCast(F.Type(monadType), apply);
 		}
 		i++;

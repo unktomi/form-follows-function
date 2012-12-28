@@ -13,8 +13,8 @@ import org.f3.runtime.Monad;
  * For the mathematically inclined:
  *    List of a = 1 + a x List of a
  * 
- * List implements Functor and Monad which means among other things that
- * you can use it in a 'for' loop.
+ * A List is a Functor and a Monad which means among other things that
+ * you can use it in a 'foreach' loop.
  */
 
 public class List of a is Monad of (List, a) 

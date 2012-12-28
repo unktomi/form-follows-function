@@ -1537,6 +1537,7 @@ public class F3Attr implements F3Visitor {
 	boolean isSeq = false;
 	int size = tree.getInClauses().size();
 	int idx = 0;
+        Type[] clauseTypes = new Type[tree.getInClauses().size()];
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
 	    boolean last = idx + 1 == size;
 
@@ -1648,6 +1649,7 @@ public class F3Attr implements F3Visitor {
                 var.type = elemtype;
                 var.sym.type = elemtype;
             }
+            clauseTypes[clauseTypes.length-1-idx] = elemtype;
 	    if (clause1Type == null) {
 		clause1Type = elemtype;
 	    } else {
@@ -1717,7 +1719,7 @@ public class F3Attr implements F3Visitor {
 		    //System.err.println("functorType="+functorType);		    
 		    Type typeCons = monadType == null ? functorType: monadType;
 		    if (tree.isBound() || !isIter) {
-			map = tree.getMonadMap(f3make, names, types, monadElementType,
+			map = tree.getMonadMap(f3make, names, types, clauseTypes,
 					       typeCons,
 					       bodyType,
 					       tree.isBound());
@@ -1725,7 +1727,7 @@ public class F3Attr implements F3Visitor {
 		}
 	    }
             if (map != null) {
-		//System.err.println("map="+map);
+		System.err.println("map="+map);
                 owntype = attribExpr(map, env);
             }
         }

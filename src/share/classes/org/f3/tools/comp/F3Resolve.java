@@ -450,12 +450,17 @@ public class F3Resolve {
 	    //System.err.println("not enough args: "+ formals + " " + argtypes);
 	    return false; // not enough args
 	}
-        if (!useVarargs)
-            return argtypes.isEmpty();
+        if (!useVarargs) {
+            if (argtypes.isEmpty()) {
+                return true;
+            }
+	    //System.err.println("not enough args: "+ formals + " " + argtypes);
+            return false;
+        }
         Type elt = types.elemtype(varargsFormal);
         while (argtypes.nonEmpty()) {
             if (!types.isConvertible(argtypes.head, elt, warn)) {
-                System.err.println("can't convert "+argtypes.head + " to " +elt);
+                //System.err.println("can't convert "+argtypes.head + " to " +elt);
                 return false;
             }
             argtypes = argtypes.tail;
@@ -713,15 +718,23 @@ public class F3Resolve {
 
     private Symbol checkArgs(Symbol sym, Type mtype) {
         Type mt = sym.type;
+        mt = reader.translateType(mt);
+	if (mt == null) {
+	    System.err.println("mt=null: "+sym+": "+sym.type);
+	    return wrongMethod.setWrongSym(sym);
+	}
         if (mt instanceof FunctionType) {
             mt = ((FunctionType)mt).asMethodOrForAll();
+        }
+        if (mtype instanceof FunctionType) {
+            mtype = ((FunctionType)mtype).asMethodOrForAll();
         }
         // Better to use selectBest, but that requires some
         // changes.  FIXME
         if (!((mt instanceof MethodType) || (mt instanceof ForAll)) ||
                 !argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
                 true, false, Warner.noWarnings)) {
-	    //System.err.println("check args failed: "+ sym + ": "+mtype);
+	    System.err.println("check args failed: "+ sym + ": "+types.toF3String(mtype) + " mt="+mt.getClass()+" "+types.toF3String(mt));
             return wrongMethod.setWrongSym(sym);
         }
         return sym;
