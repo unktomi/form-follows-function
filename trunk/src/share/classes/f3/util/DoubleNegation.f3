@@ -21,7 +21,8 @@ import org.f3.runtime.*;
 //    function of _ from (function from a to _) to _
 // 
 
-public abstract class DoubleNegation of a is Monad of (DoubleNegation, a), Comonad of (DoubleNegation, a) 
+public abstract class DoubleNegation of a is 
+       Monad of (DoubleNegation, a), Comonad of (DoubleNegation, a) 
 {
     public abstract function negate of _ 
 	from (negate_a is function from a to _) 

@@ -7,8 +7,8 @@ import org.f3.runtime.*;
  * For the mathematically inclined:
  *    Optional of a = 1 + a
  *
- * Optional implements Functor and Monad which means you can use it in 
- * a 'for' loop.
+ * An Optional 'a' is a Functor and a Monad which means you can use it in 
+ * a 'foreach' loop.
  */    
 
 public abstract class Optional of a is Monad of (Optional, a) 
@@ -36,7 +36,8 @@ public class Present of a is Optional of a
 {
     public const x is a;
 
-    override function isPresent from () to Boolean {
+    override function isPresent from () to Boolean 
+    { 
 	yes
     }
 
@@ -54,7 +55,7 @@ public class Present of a is Optional of a
 	from (f is function from a to Optional of b) 
 	to Optional of b 
     {
-	f(x);
+	f(x)
     }
 
     public override function extract from () to a 
@@ -66,7 +67,8 @@ public class Present of a is Optional of a
 	from (f is function from Present of a to b) 
 	to Present of b
     {
-	Present of b {
+	Present of b 
+	{
 	    x: f(this)
 	}
     }
