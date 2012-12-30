@@ -142,8 +142,7 @@ class Empty of (Measurement, a) is FingerTree of (Measurement, a)
     }
 
     override public function foldRight of b
-	from (f is function from (a, b) to b, 
-	      z is b)
+	from (z is b, f is function from (a, b) to b) 
 	to b 
     {
 	z
@@ -199,8 +198,8 @@ class Single of (Measurement, a) is FingerTree of (Measurement, a)
     }
 
     public function foldRight of b
-	from (f is function from (a, b) to b, 
-	      z is b)
+	from (z is b,
+	      f is function from (a, b) to b)
 	to b 
     {
 	f(x, z);
@@ -340,18 +339,17 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
     }
 
     public function foldRight of b
-	from (f is function from (a, b) to b, 
-	      z is b)
+	from (z is b, f is function from (a, b) to b) 
 	to b 
     {
-	var r = suffix.foldRight(f, z);
-	r = middle.foldRight(function from (n is Node of (Measurement, a), z is b) 
+	var r = suffix.foldRight(z, f);
+	r = middle.foldRight(r,
+			     function from (n is Node of (Measurement, a), z is b) 
 			     to b 
 			     {
-				 n.elems.foldRight(f, z)
-			     }, 
-			     r);
-	prefix.foldRight(f, r);
+				 n.elems.foldRight(z, f)
+			     }); 
+	prefix.foldRight(r, f);
     }
 
     override function map of b 
@@ -374,13 +372,14 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 	 to FingerTree of (Measurement, b)
      {
 	 const empty is FingerTree of (Measurement, b) = Empty of (Measurement, b) {};
-	 foldRight(function from (x is a, 
+	 foldRight(empty, 
+		   function from (x is a, 
 				  ys is FingerTree of (Measurement, b)) 
 		   to FingerTree of (Measurement, b)
 		   {
 		       ys.concat(f(x));
-		   }, 
-		   empty);
+		   });
+
     }
 
     function makeNode 
