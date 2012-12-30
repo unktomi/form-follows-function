@@ -24,6 +24,7 @@
 package org.f3.functions;
 
 import org.f3.runtime.F3Object;
+import org.f3.runtime.Pair;
 import org.f3.runtime.Functor;
 
 public class Function2<R, A1, A2> extends Function<R> implements Functor<Function2, R> {
@@ -38,7 +39,7 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 	};
     }
 
-    public Function2<R, A2, A1> flip() {
+    public Function2<? extends R, ? super A2, ? super A1> flip() {
 	final Function2<R, A1, A2> self = this;
 	return new Function2<R, A2, A1>() {
 	    public R invoke(A2 x1, A1 x2) {
@@ -47,8 +48,35 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 	};
     }
 
-    public Function1<R, A2> mul(final A1 x1) {
-	return apply(x1);
+    public <Y> Function2<R, A1, Y> mul(final Function1<? extends A2, ? super Y> f) {
+	final Function2<R, A1, A2> self = this;
+	return new Function2<R, A1, Y>() {
+	    public R invoke(A1 x1, Y x2) {
+		return self.invoke(x1, f.invoke(x2));
+	    }
+	};
+    }
+
+    public <Y, Z> Function2<R, Y, Z> mul(final Pair<Function1<? extends A1, ? super Y>, Function1<? extends A2, ? super Z> > p) {
+	final Function2<R, A1, A2> self = this;
+	return new Function2<R, Y, Z>() {
+	    public R invoke(Y x1, Z x2) {
+		return self.invoke(p.first.invoke(x1), p.second.invoke(x2));
+	    }
+	};
+    }
+
+    public Function1<? extends Function1<? extends R, ? super A2>, ? super A1> curry() {
+	final Function2<R, A1, A2> self = this;
+	return new Function1<Function1<? extends R, ? super A2>, A1>() {
+	    public Function1<? extends R, ? super A2> invoke(final A1 x1) {
+		return new Function1<R, A2>() {
+		    public R invoke(A2 x2) {
+			return self.invoke(x1, x2);
+		    }
+		};
+	    }
+	};
     }
 
     public Function1<R, A2> apply(final A1 x1) {

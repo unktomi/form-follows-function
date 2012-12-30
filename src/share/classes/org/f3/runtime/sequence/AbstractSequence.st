@@ -255,7 +255,7 @@ $PREFIX:{T|
 	return r;
     }
 
-    public <S> S foldRight(Function2<? extends S, ? super T, ? super S> f, S z) {
+    public <S> S foldRight(S z, Function2<? extends S, ? super T, ? super S> f) {
 	S r = z;
 	for (int i = size()-1; i > 0; --i) {
 	    r = f.invoke(get(i), r);

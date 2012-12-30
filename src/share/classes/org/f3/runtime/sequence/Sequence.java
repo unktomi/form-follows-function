@@ -60,7 +60,7 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public <S> Sequence<S> mul(Function1<? extends S, ? super T> f);
     public T foldLeft(Function2<? extends T, ? super T, ? super T> f);
     public <S> S foldLeft(S z, Function2<? extends S, ? super S, ? super T> f);
-    public <S> S foldRight(Function2<? extends S, ? super T, ? super S> f, S z);
+    public <S> S foldRight(S z, Function2<? extends S, ? super T, ? super S> f);
 
     /** How large is this sequence?  */
     public int size();
