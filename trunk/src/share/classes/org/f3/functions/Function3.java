@@ -41,6 +41,28 @@ public class Function3<R, A1, A2, A3> extends Function<R> {
             return invoke((A1)arg1, (A2)arg2, (A3)rargs[0]);
         }
     }
+
+    public Function2<R, A2, A3> apply(final A1 x1) {
+	final Function3<R, A1, A2, A3> self = this;
+	return new Function2<R, A2, A3>() {
+	    public R invoke(final A2 x2, final A3 x3) {
+		return self.invoke(x1, x2, x3);
+	    }
+	};
+    }
+
+    public Function1<R, A3> apply(final A1 x1, final A2 x2) {
+	final Function3<R, A1, A2, A3> self = this;
+	return new Function1<R, A3>() {
+	    public R invoke(final A3 x3) {
+		return self.invoke(x1, x2, x3);
+	    }
+	};
+    }
+
+    public R apply(final A1 x1, final A2 x2, final A3 x3) {
+	return invoke(x1, x2, x3);
+    }
     
     // Override this
     public R invoke(A1 x1, A2 x2, A3 x3) {

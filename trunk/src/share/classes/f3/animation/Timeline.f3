@@ -174,7 +174,7 @@ public class Timeline {
      * @profile common
      * @defaultvalue 0.0
      */
-    public-read var currentRate: Number = 0.0;
+    public readonly var currentRate: Number = 0.0;
 
     /**
      * Read-only variable to indicate the duration of one cycle of this
@@ -188,7 +188,7 @@ public class Timeline {
      * @profile common
      * @defaultvalue 0ms
      */
-    public-read protected var cycleDuration:Duration = 0ms;
+    public readonly var cycleDuration:Duration = 0ms;
 
     /**
      * Read-only variable to indicate the total duration of this
@@ -202,7 +202,7 @@ public class Timeline {
      * @profile common
      * @defaultvalue 0ms
      */
-    public-read var totalDuration:Duration = bind 
+    public readonly var totalDuration:Duration = bind 
         if (repeatCount == Timeline.INDEFINITE)
             then DURATION_INDEFINITE
             else cycleDuration * repeatCount;
@@ -336,7 +336,7 @@ public class Timeline {
      *
      * @profile common
      */
-    public-read var running: Boolean = false;
+    public readonly var running: Boolean = false;
 
     /**
      * Read-only var that indicates whether the animation is
@@ -352,7 +352,7 @@ public class Timeline {
      *
      * @profile common
      */
-    public-read var paused: Boolean = false;
+    public readonly var paused: Boolean = false;
 
     /**
      * The maximum framerate at which this animation will run, in frames per

@@ -21,6 +21,16 @@ public class Pair<a, b> implements Monad<Pair, a> {
 	second = y;
     }
 
+    public boolean equals(Object obj) {
+	if (obj instanceof Pair) {
+	    Pair p = (Pair)obj;
+	    return 
+		(first == p.first || (first != null && first.equals(p.first))) &&
+		(second == p.second || (second != null && second.equals(p.second)));
+	}
+	return false;
+    }
+
     public <c> Pair<c, b> map(Function1<? extends c, ? super a> f) {
 	return new Pair<c, b>(f.invoke(first), second);
     }
@@ -35,6 +45,10 @@ public class Pair<a, b> implements Monad<Pair, a> {
 
     public static <a, b> Pair<a, b> both(a x, b y) {
 	return new Pair<a, b>(x, y);
+    }
+
+    public Pair<b,a> flip() {
+	return new Pair<b,a>(second, first);
     }
 
     public String toString() {

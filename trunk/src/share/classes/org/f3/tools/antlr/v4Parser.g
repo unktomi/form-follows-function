@@ -730,7 +730,7 @@ modifiers
 modifierFlag
 
     returns [long flag]
-    : (PUBLIC (VAL|CONST|ATTRIBUTE)|PUBLIC_READ)=>(PUBLIC (VAL|CONST|ATTRIBUTE)|PUBLIC_READ) { $flag = F3Flags.PUBLIC_READ;      }    
+    : (PUBLIC)=>(PUBLIC            { $flag = Flags.PUBLIC;             })    
     | ABSTRACT          { $flag = Flags.ABSTRACT;           }
     | BOUND             { $flag = F3Flags.BOUND;            }
     | DEFAULT           { $flag = F3Flags.DEFAULT;          }
@@ -1538,13 +1538,20 @@ variableDeclaration [ F3Modifiers mods, int pos ]
         
         
         (
+
+            (EQ RETURN)=>EQ RETURN exp3=expression
+                {
+                    bValue  = $exp3.value;
+                    bStatus = UNIDIBIND;
+                    errNodes.append($exp3.value);
+                }
+            |
               (EQ)=>EQ boundExpression
                 {
                     bValue  = $boundExpression.value;
                     bStatus = $boundExpression.status;
                     errNodes.append($boundExpression.value);
                 }
-                
             | // Missing initializer. This is fine for var, but cannot be
               // the case for def, so we create an erroneous node for the intializer
               // in that case, and positoin it where the initializer should be.
@@ -1600,7 +1607,9 @@ variableDeclaration [ F3Modifiers mods, int pos ]
             // out any invalid ones at the semantic checking phase
             //
             if (vmod == F3Flags.PUBLIC_INIT) { 
-                if (($mods.flags & Flags.PUBLIC) != 0) {
+                if (($mods.flags & Flags.STATIC) != 0) {
+                    vmod = F3Flags.IS_DEF;
+                } else if (($mods.flags & Flags.PUBLIC) != 0) {
                     $mods.flags &= ~Flags.PUBLIC;
                 } else {
                     //const
@@ -3173,7 +3182,7 @@ expression
         {
             if (($m.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
                 $m.mods.flags &= ~F3Flags.PUBLIC_INIT;
-                $m.mods.flags |= F3Flags.IS_DEF;
+                //$m.mods.flags |= F3Flags.IS_DEF;
             }
             if (($m.mods.flags & F3Flags.PUBLIC_READ) != 0) {
                 $m.mods.flags &= ~F3Flags.PUBLIC_READ;
@@ -6268,7 +6277,9 @@ typeName
 		    }
                 }
         )
-    | LPAREN 
+    | 
+/*
+    LPAREN 
            ((typeparens  // Allows cardinality coherence, using nested paren parsing trick
             { $value = $typeparens.value; }) 
               (COMMA x=type {
@@ -6278,6 +6289,19 @@ typeName
                   $value = F.at(rPos).Ident(names.fromString("Void"));
              })  
     RPAREN
+*/
+    LPAREN
+    ((garg=genericArgument
+            { $value = $garg.value; }
+            (COMMA garg2=genericArgument
+            {
+               $value = F.at(rPos).TupleType($value, $garg2.value);
+            })*
+     )
+     | { 
+          $value = F.at(rPos).Ident(names.fromString("Void"));
+     })  
+     RPAREN
     ;
     
 

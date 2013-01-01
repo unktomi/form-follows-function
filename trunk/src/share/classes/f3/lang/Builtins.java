@@ -171,11 +171,13 @@ public class Builtins {
         };
     }
 
-    public static <a,b> Either<a, b> former(a x) {
+    public static <a,b> Either<a, b> former(a x) 
+    {
 	return Either.former(x);
     }
 
-    public static <a,b> Either<a, b> latter(b y) {
+    public static <a,b> Either<a, b> latter(b y) 
+    {
 	return Either.latter(y);
     }
 
@@ -183,11 +185,13 @@ public class Builtins {
 	return x || y;
     }
 
-    public static <a,b> Pair<Either<a,b>, Either<a,b>> or(a x,  b y) {
+    public static <a,b> Pair<Either<a,b>, Either<a,b>> or(a x,  b y) 
+    {
 	return either(x, y);
     }
 
-    public static <a,b> Pair<Either<a,b>, Either<a,b>> either(a x,  b y) {
+    public static <a,b> Pair<Either<a,b>, Either<a,b>> either(a x,  b y) 
+    {
 	return Pair.<Either<a,b>,Either<a,b>>both(Builtins.<a,b>former(x), Builtins.<a,b>latter(y));
     }
 
@@ -216,6 +220,26 @@ public class Builtins {
     public static <a, b> Pair<a,b> $comma(a x, b y) 
     {
 	return Pair.<a,b>both(x, y);
+    }
+
+    public static <a> Pair<a,java.lang.Integer> $comma(a x, int y) 
+    {
+	return Pair.<a,java.lang.Integer>both(x, y);
+    }
+
+    public static <a> Pair<java.lang.Integer, a> $comma(int x, a y) 
+    {
+	return Pair.<java.lang.Integer, a>both(x, y);
+    }
+
+    public static <a> Pair<a,java.lang.Float> $comma(a x, float y) 
+    {
+	return Pair.<a,java.lang.Float>both(x, y);
+    }
+
+    public static <a> Pair<java.lang.Float, a> $comma(float x, a y) 
+    {
+	return Pair.<java.lang.Float, a>both(x, y);
     }
 
 }

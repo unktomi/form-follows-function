@@ -516,6 +516,7 @@ public class F3Attr implements F3Visitor {
 		argtypes.append(new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
+		l.head.type = t;
 		BoundKind bk = F3TreeInfo.boundKind(l.head);
 		if (!inSuperType && bk != null && bk != BoundKind.UNBOUND) {
 		    t = new WildcardType(t, bk, syms.boundClass);
@@ -534,6 +535,7 @@ public class F3Attr implements F3Visitor {
 		argtypes.append(new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass));
 	    } else {
 		Type t = types.boxedTypeOrType(attribType(l.head, env));
+		l.head.type = t;
 		/*
 		BoundKind bk = F3TreeInfo.boundKind(l.head);
 		if (bk != null && bk != BoundKind.UNBOUND) {
@@ -704,7 +706,11 @@ public class F3Attr implements F3Visitor {
 	    //if ((req instanceof MethodType) && ((MethodType)req).getReturnType() == syms.unknownType) {
 	    //Thread.currentThread().dumpStack();
 	    //}
-            sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
+	    try {
+		sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
+	    } catch (RuntimeException exc) {
+		throw new RuntimeException("while processing: "+ tree, exc);
+	    }
         }
         tree.sym = sym;
         sym.complete();
@@ -2164,6 +2170,9 @@ public class F3Attr implements F3Visitor {
 	    }
 	}
 	FunctionType ftype;
+	if (def.type == null) {
+	    System.err.println("type is null: "+ tree);
+	}
 	if (def.type instanceof MethodType) {
 	    ftype = syms.makeFunctionType(def.type.asMethodType());
 	} else if (def.type instanceof FunctionType) {

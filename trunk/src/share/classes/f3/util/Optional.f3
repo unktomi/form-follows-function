@@ -72,6 +72,11 @@ public class Present of a is Optional of a
 	    x: f(this)
 	}
     }
+
+    override function toString to String 
+    {
+	"present: {x}"
+    }
 }
 
 public class Absent of a is Optional of a 
@@ -98,6 +103,11 @@ public class Absent of a is Optional of a
     public override function extract from () to a 
     { 
 	throw new java.lang.RuntimeException("Absent");
+    }
+
+    override function toString to String 
+    {
+	"absent"
     }
 }
 
