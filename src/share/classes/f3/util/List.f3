@@ -113,47 +113,46 @@ class Unit of a is List of a
 
 class Join of a is List of a 
 {
-
-    const  left is List of a;
-    const right is List of a;
+    const prefix is List of a;
+    const suffix is List of a;
     
-    override const length = bind left.length + right.length;
+    override const length = bind prefix.length + suffix.length;
 
     override function foldLeft of b 
         from (z is b, 
               f is function from (b, a) to b)
         to b
     {
-        right.foldLeft(left.foldLeft(z, f), f);
+        suffix.foldLeft(prefix.foldLeft(z, f), f);
     }
 
     override function foldRight of b 
         from (z is b, f is function from (a, b) to b)
         to b
     {
-        left.foldRight(right.foldRight(z, f), f);
+        prefix.foldRight(suffix.foldRight(z, f), f);
     }
 
     override public function flatmap of b 
         from (f is function from a to List of b) to List of b
     {
-        join(left.flatmap(f), right.flatmap(f))
+        join(prefix.flatmap(f), suffix.flatmap(f))
     }
 
     override public function map of b 
         from (f is function from a to b) to List of b
     {
-        join(left.map(f), right.map(f))
+        join(prefix.map(f), suffix.map(f))
     }
 
     override public function prepend from (x is a) to List of a
     {
-        join(join(unit(x), left), right)
+        join(join(unit(x), prefix), suffix)
     }
 
     override public function append from (x is a) to List of a
     {
-        join(left, join(right, unit(x)))
+        join(prefix, join(suffix, unit(x)))
     }
 }
 
@@ -170,13 +169,14 @@ function unit of a from (x is a) to List of a
 function join of a (xs is List of a, ys is List of a) to List of a 
 { 
     Join of a {
-        left: xs;
-        right: ys;
+        prefix: xs;
+        suffix: ys;
     }
 }
 
 public function toList of a from (x is a) to List of a { unit(x) }
-public function asList of a from (xs is a[]) to List of a {
+public function asList of a from (xs is a[]) to List of a 
+{
     var ys = List of a {};
     for (x in xs) {
         ys = ys.append(x)

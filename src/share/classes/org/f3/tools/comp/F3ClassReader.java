@@ -214,7 +214,7 @@ public class F3ClassReader extends ClassReader {
     /** Translate a List of raw JVM types to F3 types. */
     List<Type> translateTypes (List<Type> types) {
         if (types == null)
-            return null;
+            return List.<Type>nil();
         List<Type> ts = (List<Type>) typeMap.get(types);
         if (ts != null)
             return ts;

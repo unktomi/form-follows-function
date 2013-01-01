@@ -1540,6 +1540,10 @@ public abstract class F3AbstractTranslation
             ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
             for (F3Expression exp : typeargs) {
 		Type argType = exp.type;
+		if (argType == null) {
+		    System.err.println("exp="+exp);
+		    System.err.println("tree="+meth);
+		}
                 Type paramType = types.boxedTypeOrType(argType);
 		JCExpression t = makeType(paramType);
 		//System.err.println("t="+t.getClass()+": "+t + " from "+exp.type);

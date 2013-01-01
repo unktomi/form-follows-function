@@ -106,6 +106,15 @@ public class Function1<R, A1> extends Function<R>
 	};
     }
 
+    public Function0<R> apply(final A1 x1) {
+	final Function1<R, A1> self = this;
+	return new Function0<R>() {
+	    public R invoke() {
+		return self.invoke(x1);
+	    }
+	};
+    }
+
     public <Y> Function1<Y, A1> map(final Function1<? extends Y, ? super R> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<Y, A1>() {

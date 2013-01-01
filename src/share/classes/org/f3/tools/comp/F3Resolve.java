@@ -391,15 +391,19 @@ public class F3Resolve {
             if (l.head.tag == FORALL) instNeeded = true;
         }
         if (instNeeded) {
-	    Type r = 
-		infer.instantiateMethod(tvars,
-					(MethodType)mt,
-					argtypes,
-					allowBoxing,
-					useVarargs,
-					warn);
+	    try {
+		Type r = 
+		    infer.instantiateMethod(tvars,
+					    (MethodType)mt,
+					    argtypes,
+					    allowBoxing,
+					    useVarargs,
+					    warn);
+		return r;
+	    } catch (RuntimeException exc) {
+		throw new RuntimeException("on method "+ m + ": "+mt, exc);
+	    }
 	    //System.err.println("infer " + mt + " = "+ r);
-	    return r;
         } return
             argumentsAcceptable(argtypes, mt.getParameterTypes(),
                                 allowBoxing, useVarargs, warn)
@@ -770,7 +774,7 @@ public class F3Resolve {
 	//System.err.println("expected="+expected);
 	//System.err.println("clazz="+expected.getClass());
         try {
-	    Type memberType = types.memberType(site, sym);
+	    Type memberType = reader.translateType(types.memberType(site, sym));
 	    //System.err.println("memberType: "+types.memberType(site, sym));
 	    //System.err.println("clazz="+memberType.getClass());
 	    //if (types.isSameType(memberType, expected)) {
@@ -1135,7 +1139,7 @@ public class F3Resolve {
     }
 
     Type newMethTemplate(List<Type> argtypes, List<Type> typeargtypes) {
-        MethodType mt = new MethodType(argtypes, syms.voidType, null, syms.methodClass);
+        MethodType mt = new MethodType(argtypes, syms.voidType, List.<Type>nil(), syms.methodClass);
         return (typeargtypes == null) ? mt : (Type)new ForAll(typeargtypes, mt);
     }
          

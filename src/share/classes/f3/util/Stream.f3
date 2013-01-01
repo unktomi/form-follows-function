@@ -62,9 +62,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	}
     }
 
-    public bound function extract 
-	from () 
-	to a 
+    public bound function extract to a
     { 
 	now
     }
@@ -76,9 +74,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	repeat(x)
     }
 
-    public bound function next 
-	from () 
-	to Stream of a 
+    public bound function next to Stream of a 
     {
 	later
     }
@@ -181,7 +177,7 @@ public function /
     to Stream of Number 
 { xs.zip(Nums.div, ys) }
 
-bound function of a asStream from (p is (a, Stream of a)) to Stream of a {
+bound function asStream of a from (p is (a, Stream of a)) to Stream of a {
      Stream of a {
 	 now: bind p.first;
 	 later: bind p.second;
