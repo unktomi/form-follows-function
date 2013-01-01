@@ -240,7 +240,7 @@ public class Timeline {
     *   instead of direct assignment to {@code time} or {@code curPos}
     *   to avoid inconsistancy
     */
-    function movePlayhead(pos: Number) {
+    function movePlayhead(pos: Number):Void {
         if (pos != curPos or pos != (time.toMillis() as Number)) {
             curPos = pos;
 

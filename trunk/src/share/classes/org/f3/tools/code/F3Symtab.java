@@ -368,7 +368,9 @@ public class F3Symtab extends Symtab {
             else
                 argtypes.append(a);
         }
-        MethodType mtype = new MethodType(argtypes.toList(), restype, List.<Type>nil(), methodClass);
+        MethodType mtype = new MethodType(argtypes.toList(), restype, 
+					  List.<Type>nil(), 
+					  methodClass);
         return makeFunctionType(nargs, typarams, mtype);
     }
 
@@ -388,7 +390,9 @@ public class F3Symtab extends Symtab {
             else
                 argtypes.append(a);
         }
-        MethodType mtype = new MethodType(argtypes.toList(), restype, List.<Type>nil(), methodClass);
+        MethodType mtype = new MethodType(argtypes.toList(), restype, 
+					  List.<Type>nil(), 
+					  methodClass);
         return makeFunctionType(typarams, mtype);
     }
 
