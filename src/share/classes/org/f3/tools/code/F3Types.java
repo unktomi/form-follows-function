@@ -1071,15 +1071,15 @@ public class F3Types extends Types {
 	    //}
 	    if (t.kind == BoundKind.EXTENDS) {
 		if (t.bound == null) {
-		    buffer.append("at least ");
 		} else {
 		    visit(t.bound, buffer);
 		    buffer.append(" is ");
 		}
 		visit(t.type, buffer);
+		buffer.append("..");
 	    } else if (t.kind == BoundKind.SUPER) {
+		buffer.append("..");
 		if (t.bound == null) {
-		    buffer.append("at most ");
 		} else {
 		    visit(t.bound, buffer);
 		    buffer.append(" is ");

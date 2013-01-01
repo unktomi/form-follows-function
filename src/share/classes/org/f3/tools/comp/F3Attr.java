@@ -706,11 +706,8 @@ public class F3Attr implements F3Visitor {
 	    //if ((req instanceof MethodType) && ((MethodType)req).getReturnType() == syms.unknownType) {
 	    //Thread.currentThread().dumpStack();
 	    //}
-	    try {
-		sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
-	    } catch (RuntimeException exc) {
-		throw new RuntimeException("while processing: "+ tree, exc);
-	    }
+
+	    sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
         }
         tree.sym = sym;
         sym.complete();

@@ -391,18 +391,14 @@ public class F3Resolve {
             if (l.head.tag == FORALL) instNeeded = true;
         }
         if (instNeeded) {
-	    try {
-		Type r = 
-		    infer.instantiateMethod(tvars,
-					    (MethodType)mt,
-					    argtypes,
-					    allowBoxing,
-					    useVarargs,
-					    warn);
-		return r;
-	    } catch (RuntimeException exc) {
-		throw new RuntimeException("on method "+ m + ": "+mt, exc);
-	    }
+	    Type r = 
+		infer.instantiateMethod(tvars,
+					(MethodType)mt,
+					argtypes,
+					allowBoxing,
+					useVarargs,
+					warn);
+	    return r;
 	    //System.err.println("infer " + mt + " = "+ r);
         } return
             argumentsAcceptable(argtypes, mt.getParameterTypes(),
@@ -774,7 +770,7 @@ public class F3Resolve {
 	//System.err.println("expected="+expected);
 	//System.err.println("clazz="+expected.getClass());
         try {
-	    Type memberType = reader.translateType(types.memberType(site, sym));
+	    Type memberType = types.memberType(site, sym);
 	    //System.err.println("memberType: "+types.memberType(site, sym));
 	    //System.err.println("clazz="+memberType.getClass());
 	    //if (types.isSameType(memberType, expected)) {
