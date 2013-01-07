@@ -25,7 +25,7 @@ package org.f3.functions;
 import org.f3.runtime.Monad;
 import org.f3.runtime.F3Object;
 
-public class Function0<R> extends Function<R> implements Monad<Function0, R> {
+public class Function0<R> extends Function<R> implements /* Reader */ Monad<Function0, R> {
 
     public Function0() {}
     
@@ -54,6 +54,9 @@ public class Function0<R> extends Function<R> implements Monad<Function0, R> {
 	    public Y invoke() {
 		return f.invoke(self.invoke());
 	    }
+	    public String toString() {
+		return self + ".map("+f+")";
+	    }
 	};
     }
 
@@ -64,6 +67,9 @@ public class Function0<R> extends Function<R> implements Monad<Function0, R> {
 		final R r = self.invoke();
 	        final Function0<? extends Y> g = f.invoke(r);
 		return g.invoke();
+	    }
+	    public String toString() {
+		return self + ".flatmap("+f+")";
 	    }
 	};
     }

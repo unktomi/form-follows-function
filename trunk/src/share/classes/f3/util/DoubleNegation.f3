@@ -1,5 +1,6 @@
 package f3.util;
 import org.f3.runtime.*;
+import java.lang.Math;
 
 //
 // Continuation Monad/Comonad - corresponds to the logical double negation of 'a'
@@ -196,8 +197,41 @@ public function callCC of (a, b)
     }
 } 
 
-public function run from () to ()
+public function run
 { 
    println(foreach (x in doublyNegate(2), y in doublyNegate(3))  x + y);
+
+   const solve = function from (a is Number, b is Number, c is Number) to DoubleNegation of Number 
+       {
+	   callCC(function from (k is function from java.lang.Float to DoubleNegation of Number) to DoubleNegation of java.lang.Float {
+		   foreach (a0 in if a == 0 then k(0.0) else doublyNegate(a),
+			    d2 in doublyNegate(b*b-4*a0*c),
+			    d in if (d2 >= 0.0) then doublyNegate(Math.sqrt(d2) as Number) else k(0.0)) 
+		   {
+		       (-b-d) / (2*a);//, (-b+d)/(2*a)]
+		   }
+	       })
+       };
+   println(solve(1.0, 0.0, -9.0));
+   println(solve(1.0, 0.0, 9.0));
+   println(solve(0.0, 1.0, -9.0));
+   /*
+   const divExcept = function from (x is Integer, 
+				    y is Integer,
+				    handler is function from String to String)
+       to DoubleNegation of Integer 
+   {
+       callCC(function from (ok is function from Integer to DoubleNegation of Integer) 
+	      to DoubleNegation of Integer {
+		  for (err in callCC(function from (notOk is function from String to DoubleNegation of Object) to DoubleNegation of Object {
+			      if (y == 0) notOk("Denominator 0") else ok(x / y);
+			  }))  
+		      handler(err);
+	      })
+   }
+   const error = function from (x is String) to String { println(x); x }
+   println(divExcept(10, 2, error).extract());
+   println(divExcept(10, 0, error).extract());
+   */
 }
 

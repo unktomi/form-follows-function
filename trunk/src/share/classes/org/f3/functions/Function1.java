@@ -32,30 +32,6 @@ public class Function1<R, A1> extends Function<R>
     implements Monad<Function1, R> // , Comonad<Function1, R>
 {
     /*
-    public Function1<? extends Function1<?,?>, Function1<? extends Function1<?, ?>, 
-					                 ? super Function1<? extends R, ? super A1>>>
-	add(final Function1<R, A1> n0) 
-    {
-	final Function1<R, A1> n = (Function1<R, A1>)n0;
-	final Function1<R, A1> m = this;
-	return new Function1<Function1<?,?>, 
-	                     Function1<? extends Function1<?, ?>, 
-	                               ? super Function1<? extends R, ? super A1>>>() 
-	{
-	    public Function1<?, ?> invoke(final Function1<? extends Function1<?, ?>, 
-					                  ? super Function1<? extends R, ? super A1>> f) 
-	    {
-		final Function1 a = f.invoke(m);
-		final Function1 b = f.invoke(n);
-		return a.mul(b);
-	    }
-	    public String toString() {
-		return "("+m +") + ("+ n + ")";
-	    }
-	};
-    }
-    */
-
     public <A2> 
 	Function1<? super R, ? super Either<? extends A1, ? extends A2> >
 	or(final Function1<? extends R, ? super A2> g) 
@@ -67,12 +43,15 @@ public class Function1<R, A1> extends Function<R>
 	    }
 	};
     }
-
+    */
     public <B> Function0<? extends R> mul(final A1 x) {
 	final Function1<R, A1> self = this;	
 	return new Function0<R>() {
 	    public R invoke() {
 		return self.invoke(x);
+	    }
+	    public String toString() {
+		return self + " * " +x;
 	    }
 	};
     }
@@ -93,15 +72,14 @@ public class Function1<R, A1> extends Function<R>
 	};
     }
 
-    public <B> Function1<? extends B, ? super A1> and(final Function1<? extends B, ? super R> f) {
-	return f.composeWith(this);
-    }
-
     public Function2<R, A1, Void> uncurry() {
 	final Function1<R, A1> self = this;	
 	return new Function2<R, A1, Void>() {
 	    public R invoke(A1 x1,Void x2) {
 		return self.invoke(x1);
+	    }
+	    public String toString() {
+		return self +".uncurry()";
 	    }
 	};
     }
@@ -112,6 +90,9 @@ public class Function1<R, A1> extends Function<R>
 	    public R invoke() {
 		return self.invoke(x1);
 	    }
+	    public String toString() {
+		return self+".apply("+x1+")";
+	    }
 	};
     }
 
@@ -120,6 +101,9 @@ public class Function1<R, A1> extends Function<R>
 	return new Function1<Y, A1>() {
 	    public Y invoke(final A1 a1) {
 		return f.invoke(self.invoke(a1));
+	    }
+	    public String toString() {
+		return self+".map("+f+")";
 	    }
 	};
     }
@@ -132,27 +116,11 @@ public class Function1<R, A1> extends Function<R>
 	        Function1<? extends Y, ? super A1> g = f.invoke(r);
 		return g.invoke(x1);
 	    }
-	};
-    }
-
-    /*
-    public R extract() {
-	this.invoke(zero)
-    }
-
-    public <Y> Function1<Y, A1> coflatmap(final Function1<? extends Y ? super Function1<R, A1>> f) {
-	final Function1<R, A1> self = this;	
-	return new Function1<Y, A1>() {
-	    public Y invoke(A1 x1) {
-		return f.invoke(new Function<R, A1>() {
-			public R invoke(A1 x2) {
-			    return self.invoke(add(x1, x2));
-			}
-		    });
+	    public String toString() {
+		return self+".flatmap("+f+")";
 	    }
 	};
     }
-    */
 
     public Function1() {}
     

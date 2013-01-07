@@ -989,7 +989,7 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
-    public F3Type  TypeUnknown() {
+    public F3Type TypeUnknown() {
         F3Type tree = new F3TypeUnknown();
         tree.pos = pos;
         return tree;
@@ -1241,6 +1241,13 @@ public class F3TreeMaker implements F3TreeFactory {
         F3ErroneousForExpressionInClause tree = new F3ErroneousForExpressionInClause(errs);
         tree.pos = pos;
         return tree;
+    }
+
+
+    public F3Expression BottomType() {
+	return TypeClass(Literal(TypeTags.BOT, null), 
+			 Cardinality.SINGLETON, 
+			 (ClassSymbol)syms.botType.tsym);
     }
 
     public F3Expression TupleType(F3Expression first, F3Expression second) {

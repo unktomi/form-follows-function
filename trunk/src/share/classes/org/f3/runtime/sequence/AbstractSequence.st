@@ -263,6 +263,17 @@ $PREFIX:{T|
 	return r;
     }
 
+    public Sequence<T> prepend(T x) {
+	// fix me !!
+	return (Sequence<T>)Sequences.insertBefore(this, x, 0);
+    }
+
+    public Sequence<T> append(T x) {
+	// fix me !!
+	return (Sequence<T>)Sequences.insertBefore(this, x, size());
+    }
+
+
     @Override
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f) {
 	ObjectArraySequence<Y> result = new ObjectArraySequence<Y>(size(), TypeInfo.<Y>getTypeInfo());

@@ -396,15 +396,16 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 	to (Node of (Measurement, a))[] 
     {
 	const n = sizeof xs mod 3;
-	// hacks for compiler bugs...
-	var ys = [];
+	// hacks to work around compiler bugs...
+	//  var ys is (Node of (Measurement, a))[];
+	var ys is Object[];
 	if (n > 0) {
 	    insert makeNode(m, xs[0..n]) into ys;
 	}
 	for (i in [n..<sizeof xs step 3]) {
 	    insert makeNode(m, xs[i..i+2]) into ys;
 	}
-	return ys as (Node of (Measurement, a))[];
+	ys as (Node of (Measurement, a))[];
     }
 
     override function app3 
