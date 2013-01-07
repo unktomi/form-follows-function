@@ -68,6 +68,10 @@ public class Builtins {
      * 
      * @param val The Object to be printed
      */
+    public static void printLine(Object val) {
+	println(val);
+    }
+
     public static void println(Object val) {
         if (val == null) {
             System.out.println(val);
@@ -170,7 +174,6 @@ public class Builtins {
             }
         };
     }
-
     public static <a,b> Either<a, b> former(a x) 
     {
 	return Either.former(x);
@@ -180,7 +183,7 @@ public class Builtins {
     {
 	return Either.latter(y);
     }
-
+    /*
     public static boolean or(boolean x, boolean y) {
 	return x || y;
     }
@@ -194,7 +197,7 @@ public class Builtins {
     {
 	return Pair.<Either<a,b>,Either<a,b>>both(Builtins.<a,b>former(x), Builtins.<a,b>latter(y));
     }
-
+    */
     public static <a,b> Pair<a, b> both(a x,  b y) 
     {
 	return Pair.<a,b>both(x, y);

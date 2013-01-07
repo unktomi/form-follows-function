@@ -47,7 +47,7 @@ public class Pair<a, b> implements Monad<Pair, a> {
 	return new Pair<a, b>(x, y);
     }
 
-    public Pair<b,a> flip() {
+    public Pair<b,a> swap() {
 	return new Pair<b,a>(second, first);
     }
 

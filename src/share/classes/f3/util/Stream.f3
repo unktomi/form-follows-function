@@ -4,10 +4,10 @@ import org.f3.runtime.Comonad;
 
 // Lazy infinite streams
 
-public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a) 
+public class Stream of a is Comonad of (Stream, a..), Monad of (Stream, a..) 
 {
-    public const now is a;
-    public const later is Stream of a;
+    public readonly var now is a;
+    public readonly var later is Stream of a;
 
     // zip lifts a binary operator to one over Streams
     public function zip of (b, c) 
@@ -118,7 +118,7 @@ function integrate from (xs is Stream of Number) to Stream of Number
     repeat(0.0).<<followed by>>(xs / sum(repeat(1.0)))
 }
 
-// lifts a value to a Stream i.e,  x, x, x, ...
+// lifts a value to a Stream by repeating it indefinitely, i.e  x, x, x,...
 public function repeat of a 
     from (x is a) 
     to Stream of a 
@@ -300,7 +300,7 @@ bound function <<every other>> of a
     xs.<<followed by>>(<<every other>>(xs.later.later))
 }
 
-function run from () to ()
+function run 
 {
     if (true) {
 	println(take(10, repeat(1.0)));

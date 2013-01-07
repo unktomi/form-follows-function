@@ -26,7 +26,7 @@ public abstract class Either<a, b> implements Monad<Either, b>
     public boolean isFormer() { return !isLatter(); }
     public boolean isLatter() { return !isFormer(); }
 
-    public Either<b, a> flip() {
+    public Either<b, a> swap() {
 	if (isFormer()) {
 	    return Either.<b,a>latter(((Former<a,b>)this).former);
 	} else {

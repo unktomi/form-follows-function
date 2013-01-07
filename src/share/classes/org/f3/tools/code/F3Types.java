@@ -1064,27 +1064,22 @@ public class F3Types extends Types {
 
         @Override
         public Void visitWildcardType(WildcardType t, StringBuilder buffer) {
-	    //System.err.println("wildcard="+t);
-	    //System.err.println("wildcard.type="+t.type);
-	    //if (t.bound != null) {
-	    //		System.err.println("wildcard.bound="+t.bound.getClass()+": "+t.bound);
-	    //}
 	    if (t.kind == BoundKind.EXTENDS) {
 		if (t.bound == null) {
 		} else {
 		    visit(t.bound, buffer);
 		    buffer.append(" is ");
 		}
+		buffer.append("..");
 		visit(t.type, buffer);
-		buffer.append("..");
 	    } else if (t.kind == BoundKind.SUPER) {
-		buffer.append("..");
 		if (t.bound == null) {
 		} else {
 		    visit(t.bound, buffer);
 		    buffer.append(" is ");
 		}
 		visit(t.type, buffer);
+		buffer.append("..");
 	    } else {
 		//BoundKind.UNBOUND
 		buffer.append("?");
@@ -1107,6 +1102,10 @@ public class F3Types extends Types {
 		}
 		for (Type targ: targs) {
 		    buffer.append(str);
+		    if (!(targ instanceof WildcardType)) {
+			visit(targ, buffer);
+			buffer.append("..");
+		    }
 		    visit(targ, buffer);
 		    str = ", ";
 		}
@@ -1229,6 +1228,10 @@ public class F3Types extends Types {
 		    }
 		    for (Type targ: targs) {
 			buffer.append(str);
+			if (!(targ instanceof WildcardType)) {
+			    visit(targ, buffer);
+			    buffer.append("..");
+			}
 			visit(targ, buffer);
 			str = ", ";
 		    }

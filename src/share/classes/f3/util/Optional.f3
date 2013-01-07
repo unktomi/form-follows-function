@@ -11,7 +11,7 @@ import org.f3.runtime.*;
  * a 'foreach' loop.
  */    
 
-public abstract class Optional of a is Monad of (Optional, a) 
+public abstract class Optional of a is Monad of (Optional, a..) 
 {
     abstract override function map of b 
 	from (f is function from a to b) 
@@ -23,11 +23,13 @@ public abstract class Optional of a is Monad of (Optional, a)
 
     abstract public function extract from () to a;
 
-    public function isAbsent from () to Boolean {
+    public function isAbsent from () to Boolean 
+    {
 	not isPresent()
     }
 
-    public function isPresent from () to Boolean {
+    public function isPresent from () to Boolean 
+    {
 	not isAbsent()
     }
 }
@@ -79,7 +81,7 @@ public class Present of a is Optional of a
     }
 }
 
-public class Absent of a is Optional of a 
+public class Absent of a is Optional of a
 {
     override function isAbsent from () to Boolean 
     {
@@ -90,17 +92,17 @@ public class Absent of a is Optional of a
 	from (f is function from a to b) 
 	to Optional of b 
     {
-	(this as Object) as Optional of b
+	this as Optional of b
     }
 
     override public function flatmap of b 
 	from (f is function from a to Optional of b) 
 	to Optional of b 
     {
-	(this as Object) as Optional of b
+	this as Optional of b
     }
 
-    public override function extract from () to a 
+    public override function extract from () to a
     { 
 	throw new java.lang.RuntimeException("Absent");
     }
@@ -121,11 +123,12 @@ public function present of a
     }
 }
 
-const Nothing = Absent of Object {}
+const Nothing = Absent of Object{}
 
-public function absent of a 
-    from () 
-    to Optional of a 
+public function absent of a to Absent of a
 {
-    (Nothing as Object) as Absent of a;
+    Nothing as Absent of a;
 }
+
+
+

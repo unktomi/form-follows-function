@@ -36,23 +36,34 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 		final R r = self.invoke(x1, x2);
 		return f.invoke(r);
 	    }
-	};
-    }
-
-    public Function2<? extends R, ? super A2, ? super A1> flip() {
-	final Function2<R, A1, A2> self = this;
-	return new Function2<R, A2, A1>() {
-	    public R invoke(A2 x1, A1 x2) {
-		return self.invoke(x2, x1);
+	    public String toString() {
+		return self+"map("+f+")";
 	    }
 	};
     }
 
+    public Function2<? extends R, ? super A2, ? super A1> flip()  {
+	final Function2<R, A1, A2> self = this;
+	return new Function2<R, A2, A1>() 
+	    {
+		public R invoke(A2 x1, A1 x2) 
+		{
+		    return self.invoke(x2, x1);
+		}
+		public String toString() {
+		    return self+"flip()";
+		}
+	    };
+    }
+    
     public <Y> Function2<R, A1, Y> mul(final Function1<? extends A2, ? super Y> f) {
 	final Function2<R, A1, A2> self = this;
 	return new Function2<R, A1, Y>() {
 	    public R invoke(A1 x1, Y x2) {
 		return self.invoke(x1, f.invoke(x2));
+	    }
+	    public String toString() {
+		return self+" * "+f;
 	    }
 	};
     }
@@ -74,7 +85,13 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 		    public R invoke(A2 x2) {
 			return self.invoke(x1, x2);
 		    }
+		    public String toString() {
+			return self+".curry().apply("+x1+")";
+		    }
 		};
+	    }
+	    public String toString() {
+		return self+".curry()";
 	    }
 	};
     }
@@ -88,6 +105,9 @@ public class Function2<R, A1, A2> extends Function<R> implements Functor<Functio
 	return new Function1<R, A2>() {
 	    public R invoke(final A2 x2) {
 		return self.invoke(x1, x2);
+	    }
+	    public String toString() {
+		return self + ".apply("+x1+")";
 	    }
 	};
     }

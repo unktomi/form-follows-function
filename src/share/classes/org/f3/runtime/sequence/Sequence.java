@@ -62,6 +62,9 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public <S> S foldLeft(S z, Function2<? extends S, ? super S, ? super T> f);
     public <S> S foldRight(S z, Function2<? extends S, ? super T, ? super S> f);
 
+    public Sequence<T> prepend(T x);
+    public Sequence<T> append(T x);
+
     /** How large is this sequence?  */
     public int size();
 

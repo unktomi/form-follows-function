@@ -33,6 +33,7 @@ import com.sun.tools.mjavac.code.BoundKind;
 public abstract class F3Type extends F3Expression implements TypeTree {    
     private final Cardinality cardinality;
     public BoundKind boundKind = BoundKind.UNBOUND;
+    public F3Type upperBound;
     /**
      * @param cardinality one of the cardinality constants
      */

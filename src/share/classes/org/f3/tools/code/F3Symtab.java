@@ -253,7 +253,7 @@ public class F3Symtab extends Symtab {
         f3_SequenceProxyType = enterClass(F3Defs.cSequenceProxy);
         f3_ArraySequenceType = enterClass(F3Defs.cArraySequence);
         f3_SequencesType = enterClass(F3Defs.cSequences);
-        f3_EmptySequenceType = types.sequenceType(objectType);
+        f3_EmptySequenceType = types.sequenceType(botType);
         f3_SequenceTypeErasure = types.erasure(f3_SequenceType);
         f3_TypeConsTypeErasure = types.erasure(f3_TypeConsType);
         f3_FunctorTypeErasure = types.erasure(f3_FunctorType);

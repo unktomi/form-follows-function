@@ -133,10 +133,10 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		boolean first = i == 0;
 		boolean isMap = first;
                 Type argType = argTypes[i];
-		if (types.isMonad(resultType)) {
-		    System.err.println("argType="+argType);
-		    System.err.println("resultType="+resultType);
-		    System.err.println("monadType="+monadType);
+		if (types.isMonad(resultType) && types.isSameType(types.erasure(resultType), types.erasure(monadType))) {
+		    //System.err.println("argType="+argType);
+		    //System.err.println("resultType="+resultType);
+		    //System.err.println("monadType="+monadType);
 		    isMap = false;
 		}
 		Name select =
@@ -144,7 +144,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		Type type = argType;
 		if (!first) {
 		    type = monadType;
-		    System.err.println("monad type: " + type);
+		    //System.err.println("monad type: " + type);
 		}
 		boolean second = i == 1;
 		if (false && !first) {

@@ -2128,7 +2128,7 @@ statement
     | throwStatement        { $value = $throwStatement.value;                               }
     | returnStatement       { $value = $returnStatement.value;                              }
     | tryStatement          { $value = $tryStatement.value;                                 }
-    | expression            { $value = $expression.value;                                   }
+    | expression           { $value = $expression.value;                                   }
     ;
 
 // Catch an error. We create an erroneous node for anything that was at the start 
@@ -5713,7 +5713,7 @@ expressionList
     //
     int rPos = pos();
 }
-    : e1=expression
+    : e1=expression 
         
         {
             args.append     ($e1.value);
@@ -6299,9 +6299,13 @@ typeName
             })*
      )
      | { 
-          $value = F.at(rPos).Ident(names.fromString("Void"));
+          $value = F.at(rPos).Ident(names.fromString("Object"));
      })  
      RPAREN
+     |
+     NULL { 
+          $value = F.at(rPos).BottomType();
+     }
     ;
     
 
@@ -6424,19 +6428,7 @@ genericParam[boolean contravar, boolean covar]
 
     : (t=identifier  { $value = $t.value; })  
         (COLON|IS)=>((COLON|IS)
-
-                      (AT ident=IDENTIFIER  { 
-                           String str = ident.getText();
-                           if (str.equals("least")) {
-                              bk = BoundKind.EXTENDS;
-                           } else if (str.equals("most")) {
-                              bk = BoundKind.SUPER;
-                           } else {
-                               bk = BoundKind.UNBOUND;
-                           }
-                        }
-                      | ONLY { bk = BoundKind.UNBOUND;} | {bk = BoundKind.UNBOUND;})
-                      bound=typeName { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, bk, $bound.value);})? 
+                      bound=genericArgument { $value = F.at($bound.value.pos).TypeVar($value, TypeTree.Cardinality.SINGLETON, $bound.value.boundKind, $bound.value);})? 
 
 
       | 
@@ -6462,11 +6454,11 @@ genericParam[boolean contravar, boolean covar]
 
 genericArgument
 
-    returns [F3Expression value]
+    returns [F3Type value]
 
 @init 
 {
-    BoundKind       bk      = BoundKind.UNBOUND;
+    BoundKind       bk      = BoundKind.EXTENDS;
     F3Expression   texpr   = null; 
 }
 
@@ -6474,11 +6466,27 @@ genericArgument
       (PLUS { bk = BoundKind.EXTENDS; } | SUB {bk = BoundKind.SUPER;}) t=type
         {$value = $t.rtype; $t.rtype.boundKind = bk;}
       | 
-        DOTDOT {bk = BoundKind.SUPER; } t = type
-        {$value = $t.rtype; $t.rtype.boundKind = bk;}
-      | 
-        t = type ((DOTDOT)=>(DOTDOT { bk = BoundKind.EXTENDS; } ) |)
-        {$value = $t.rtype; $t.rtype.boundKind = bk;}
+      (DOTDOT)=>(DOTDOT {bk = BoundKind.EXTENDS; } t=type
+        {$value = $t.rtype; $t.rtype.boundKind = bk;})
+      |
+      (type DOTDOT type)=>lower=type DOTDOT upper=type
+        {
+            $lower.rtype.boundKind = BoundKind.SUPER;
+            $lower.rtype.upperBound = upper;
+            $value = $lower.rtype;
+        }
+      |
+      (type DOTDOT)=>lower=type DOTDOT
+        {
+            $lower.rtype.boundKind = BoundKind.SUPER;
+            $value = $lower.rtype;
+        }
+      |
+      lower=type
+        {
+            $lower.rtype.boundKind = BoundKind.UNBOUND;
+            $value = $lower.rtype;
+        }
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.
