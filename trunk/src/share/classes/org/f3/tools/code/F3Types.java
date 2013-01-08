@@ -358,9 +358,9 @@ public class F3Types extends Types {
 	return monad;
     }
 
-    public Type pointerType(Type elemType, boolean readOnly) {
+    public Type pointerType(Type siteType, Type elemType, boolean readOnly) {
         return applySimpleGenericType(readOnly ? syms.f3_ReadOnlyPointerType : syms.f3_PointerType, 
-				      boxedTypeOrType(elemType));
+				      List.<Type>of(siteType, boxedTypeOrType(elemType)));
     }
 
     public Type sequenceType(Type elemType) {

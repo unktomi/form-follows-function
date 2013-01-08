@@ -33,16 +33,17 @@ import f3.animation.KeyValueTarget.Type;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class ConstPointer<a> {
+public class ConstPointer<This extends F3Object,a> {
     final Type type;
-    final F3Object obj;
+    final This obj;
     final int varnum;
 
-    public static ConstPointer make(Type type, F3Object obj, int varnum) {
-        return new ConstPointer(type, obj, varnum);
+    public static <This extends F3Object, a> 
+	ConstPointer<This,a> make(Type type, This obj, int varnum) {
+        return new ConstPointer<This,a>(type, obj, varnum);
     }
     
-    public ConstPointer(Type type, F3Object obj, int varnum) {
+    public ConstPointer(Type type, This obj, int varnum) {
         this.type = type;
         this.obj = obj;
         this.varnum = varnum;
@@ -64,7 +65,7 @@ public class ConstPointer<a> {
         return null;
     }
 
-    public F3Object getF3Object() {
+    public This getF3Object() {
         return obj;
     }
 

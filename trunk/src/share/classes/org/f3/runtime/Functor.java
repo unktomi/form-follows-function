@@ -1,9 +1,9 @@
 package org.f3.runtime;
 import org.f3.functions.*;
 
-public interface Functor<This extends Functor, Source> extends TypeCons1<This, Source> {
+public interface Functor<This extends Functor, A> extends TypeCons1<This, A> {
 
-    public <NewSource> Functor<? extends This, ? extends NewSource> 
-	map(Function1<? extends NewSource, ? super Source> f);
+    public <B> Functor<? extends This, ? extends B> 
+	map(Function1<? extends B, ? super A> f);
 
 }

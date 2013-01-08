@@ -440,7 +440,7 @@ public class F3Resolve {
                 ? types.isConvertible(argtypes.head, formals.head, warn)
                 : types.isSubtypeUnchecked(argtypes.head, formals.head, warn);
             if (!works) {
-		//System.err.println("unacceptable: "+argtypes.head +": "+ formals.head);
+		System.err.println("unacceptable: "+argtypes.head +": "+ formals.head);
 		return false;
 	    }
             argtypes = argtypes.tail;
@@ -639,12 +639,32 @@ public class F3Resolve {
                     if ((e.sym.flags_field & SYNTHETIC) != 0)
                         continue;
                     if ((e.sym.kind & (MTH|VAR)) != 0) {
+			sym = e.sym;
                         if (checkArgs) {
-                            return checkArgs(e.sym, mtype);
-                        }
-                        return !e.sym.isStatic() && staticOnly ?
-                            new StaticError(e.sym) :
-                            e.sym;
+			    Type origin = e.getOrigin().owner.type;
+			    if (origin == null) {
+				System.err.println("origin is null: "+e.getOrigin() +": "+e.getOrigin().owner + " for "+sym);
+				sym = checkArgs(sym, mtype);
+			    } else {
+				sym = selectBest(env, origin, mtype,
+						 e.sym, bestSoFar,
+						 boxingEnabled,
+						 varargsEnabled,
+						 false);
+				if (!sym.exists()) {
+				    sym = checkArgs(e.sym, mtype);
+				}
+			    }
+                        } 
+			if (sym.exists()) {
+			    if (sym.owner != null) {
+				return !sym.isStatic() && staticOnly ?
+				    new StaticError(sym) :
+				    sym;
+			    } else {
+				return sym;
+			    }
+			}
                     }
                 }
             }
@@ -771,6 +791,15 @@ public class F3Resolve {
 	//System.err.println("clazz="+expected.getClass());
         try {
 	    Type memberType = types.memberType(site, sym);
+	    if (memberType.getTypeArguments().size() > 0) {
+		if (allowBoxing) {
+		    ListBuffer<Type> lb = ListBuffer.lb();
+		    for (Type t: argtypes) {
+			lb.append(types.boxedTypeOrType(t));
+		    }
+		    argtypes = lb.toList();
+		}
+	    }
 	    //System.err.println("memberType: "+types.memberType(site, sym));
 	    //System.err.println("clazz="+memberType.getClass());
 	    //if (types.isSameType(memberType, expected)) {
@@ -805,9 +834,11 @@ public class F3Resolve {
 		}
 	    }
         } catch (Infer.NoInstanceException ex) {
-	    //System.err.println("raw instantiate exception: "+ sym);
-	    //System.err.println("argtypes: "+argtypes);
-	    //System.err.println("typeargtypes: "+typeargtypes);
+	    if (allowBoxing) {
+		System.err.println("raw instantiate exception: "+ sym);
+		System.err.println("argtypes: "+argtypes);
+		System.err.println("typeargtypes: "+typeargtypes);
+	    }
             switch (bestSoFar.kind) {
             case ABSENT_MTH:
                 return wrongMethod.setWrongSym(sym, ex.getDiagnostic());

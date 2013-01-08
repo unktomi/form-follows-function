@@ -119,9 +119,9 @@ public function doublyNegate of a
 {
     DoubleNegation of a 
     {
-	override function negate of _ from (c is function from a to _) to _ 
+	override function negate of _ from (neg is function from a to _) to _ 
 	{
-	    c(x)
+	    neg(x)
 	}
     }
 }
