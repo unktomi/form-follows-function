@@ -47,7 +47,7 @@ import org.f3.functions.Function2;
  *
  * @author Brian Goetz
  */
-public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadPlus<Sequence, T>, Comonad<Sequence, T>, Foldable<T> {
+public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadPlus<Sequence, T>, Comonad<Sequence, T>, Foldable<T>, Accumulative<T> {
 
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f);
     public <Y> Sequence<Y> flatmap(Function1<? extends Sequence<Y>, ? super T> f);
@@ -61,6 +61,9 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public T foldLeft(Function2<? extends T, ? super T, ? super T> f);
     public <S> S foldLeft(S z, Function2<? extends S, ? super S, ? super T> f);
     public <S> S foldRight(S z, Function2<? extends S, ? super T, ? super S> f);
+    public <S> S accumulate(S z, Function2<? extends S, ? super S, ? super T> f);
+    public <S> S accumulateBackwards(S z, 
+				     Function2<? extends S, ? super T, ? super S> f);
 
     public Sequence<T> prepend(T x);
     public Sequence<T> append(T x);

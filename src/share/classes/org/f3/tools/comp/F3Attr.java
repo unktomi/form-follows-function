@@ -3274,6 +3274,10 @@ public class F3Attr implements F3Visitor {
 		    Symbol varSym = F3TreeInfo.symbol(tree.arg);
 		    System.err.println("varSym="+varSym);
 		    boolean readOnly = true;
+		    Type siteType = null;
+		    if (tag == F3Tag.SELECT) {
+			siteType = ((F3Select)tree.arg).selected.type;
+		    }
 		    if (varSym != null) {
 			long flags = varSym.flags();
 			readOnly = 
@@ -3283,7 +3287,11 @@ public class F3Attr implements F3Visitor {
 				       F3Flags.PUBLIC_INIT)) != 0);
 		    }
 		    // result type is argument type, unless this is a singleton, then convert to a sequence
-		    Type owntype = types.pointerType(argtype, readOnly);
+
+		    if (siteType == null) {
+			siteType = new WildcardType(syms.f3_ObjectType, BoundKind.EXTENDS, syms.boundClass);
+		    }
+		    Type owntype = types.pointerType(siteType, argtype, readOnly);
 		    result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
 		} else {
 		    log.error(tree.pos(), MsgSym.MESSAGE_UNEXPECTED_TYPE,

@@ -143,4 +143,11 @@ public class Function1<R, A1> extends Function<R>
             throw new RuntimeException("invoke function missing in "+this);
         }
     }
+
+    static public <a,b,c> Function1<? extends c, ? super a>
+	compose(Function1<? extends c, ? super b> f,
+		Function1<? extends b, ? super a> g) 
+	{
+	    return f.mul(g);
+	}
 }

@@ -1,9 +1,24 @@
 package f3.util;
 
-public abstract class Monoid of a 
+public abstract class Monoid of a
 {
     public const zero is a;
     abstract public function add from (x is a, y is a) to a;
 }
+
+public interface Reducer of (a, b) 
+{
+    public const m is Monoid of b;
+    public function append from (x is a, y is b) to b 
+    {
+	m.add(invoke(x), y)
+    }
+    public function prepend from (x is b, y is a) to b 
+    {
+	m.add(x, invoke(y))
+    }
+    public abstract function invoke from (x is a) to b;
+}
+
 
 

@@ -32,17 +32,17 @@ import f3.animation.KeyValueTarget;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class Pointer<a> extends ConstPointer<a> implements KeyValueTarget<a> {
+public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> implements KeyValueTarget<a> {
     @org.f3.runtime.annotation.F3Signature("(Ljava/lang/Object;)Lorg/f3/runtime/Pointer;")
-    public static Pointer make(Type type, F3Object obj, int varnum) {
-        return new Pointer(type, obj, varnum);
+    public static <This extends F3Object, a> Pointer<This,a> make(Type type, This obj, int varnum) {
+        return new Pointer<This,a>(type, obj, varnum);
     }
     
     public static boolean equals(Pointer p1, Pointer p2) {
         return (p1 == null) ? (p2 == null) : p1.equals(p2);
     }
 
-    private Pointer(Type type, F3Object obj, int varnum) {
+    private Pointer(Type type, This obj, int varnum) {
 	super(type, obj, varnum);
     }
 
@@ -87,11 +87,11 @@ public class Pointer<a> extends ConstPointer<a> implements KeyValueTarget<a> {
      * effective. You can explicitly unbind the pointer using the "unbind"
      * method is this class.
      */
-    public static class BoundPointer<a> extends Pointer<a> {
+    public static class BoundPointer<a> extends Pointer<F3Object, a> {
         private Pointer srcPtr;
         private F3Object listener;
 
-        private BoundPointer(Pointer<a> destPtr, Pointer<a> srcPtr, F3Object listener) {
+        private BoundPointer(Pointer<? extends F3Object,a> destPtr, Pointer<? extends F3Object,a> srcPtr, F3Object listener) {
             super(destPtr.getType(), destPtr.getF3Object(), destPtr.getVarNum());
             this.srcPtr = srcPtr;
             this.listener = listener;
@@ -120,7 +120,7 @@ public class Pointer<a> extends ConstPointer<a> implements KeyValueTarget<a> {
      *
      * @param srcPtr The source Pointer object to which the current Pointer is bound to
      */
-    public BoundPointer<a> bind(Pointer<a> srcPtr) {
+    public BoundPointer<a> bind(Pointer<? extends F3Object, a> srcPtr) {
         final F3Object thisObj = getF3Object();
         final int thisVarNum = getVarNum();
         final int srcVarNum = srcPtr.getVarNum();

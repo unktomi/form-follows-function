@@ -263,6 +263,23 @@ $PREFIX:{T|
 	return r;
     }
 
+    public <S> S accumulate(S z, Function2<? extends S, ? super S, ? super T> f) {
+	S r = z;
+	for (int i = 0, len = size(); i < len; i++) {
+	    r = f.invoke(r, get(i));
+	}
+	return r;
+    }
+
+    public <S> S accumulateBackwards(S z, 
+				     Function2<? extends S, ? super T, ? super S> f) {
+	S r = z;
+	for (int i = size()-1; i > 0; --i) {
+	    r = f.invoke(get(i), r);
+	}
+	return r;
+    }
+
     public Sequence<T> prepend(T x) {
 	// fix me !!
 	return (Sequence<T>)Sequences.insertBefore(this, x, 0);

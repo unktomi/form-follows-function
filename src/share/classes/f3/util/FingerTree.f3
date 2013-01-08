@@ -16,9 +16,9 @@ function measureAll of (Measured, Measurement)
 class Node of (Measurement, a) is Measured of Measurement 
 {
     public const elems is a[];
-    override function toString from () to String 
+    override function toString to String 
     {
-	"Node {measurement} [{foreach (e in this.elems) "{e} "}]"
+	"Node {measurement} [{foreach (e in elems) "{e} "}]"
     }
 }
 
@@ -34,7 +34,6 @@ function single of (Measurement, a)
 	measurer: measurer;
     }
 }
-
 
 public abstract class FingerTree of (Measurement, a) is
     Measured of Measurement, 
@@ -66,10 +65,14 @@ public abstract class FingerTree of (Measurement, a) is
 
     public const measurer is Measurer of Measurement;
 
-    abstract public function prepend from (x is a) to FingerTree of (Measurement, a); 
-    abstract public function append from (x is a) to FingerTree of (Measurement, a);
+    abstract public function prepend 
+	from (x is a) to FingerTree of (Measurement, a); 
 
-    public function prepend from (xs is a[]) to FingerTree of (Measurement, a)
+    abstract public function append 
+	from (x is a) to FingerTree of (Measurement, a);
+
+    public function prepend from (xs is a[]) 
+	to FingerTree of (Measurement, a)
     {
 	var t = this;
 	for (x in xs) {
@@ -180,11 +183,12 @@ class Single of (Measurement, a) is FingerTree of (Measurement, a)
 
     public const x is a;
 
-    override public function iterator from () to java.util.Iterator of a {
+    override public function iterator to java.util.Iterator of a 
+    {
 	var done = false;
 	java.util.Iterator of a {
-	    override public function hasNext from () to Boolean { done }
-	    override public function next from () to a { done = true; x }
+	    override public function hasNext to Boolean { done }
+	    override public function next to a { done = true; x }
 	    override public function remove { }
 	}
     }
@@ -294,32 +298,32 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 	    {
 		var ni = middle.iterator();
 		var ii is java.util.Iterator of a;
-		override public function hasNext from () to Boolean 
+		override public function hasNext to Boolean 
 		{ 
 		    if ii.hasNext() then yes else if ni.hasNext() then (ii = ni.next().elems.iterator()).hasNext() else no;
 		}
-		override public function next from () to a
+		override public function next to a
 		{
 		    ii.next();
 		}
-		override public function remove { }
+		override public function remove {}
 	    }
 
 	const si = suffix.iterator();
 
 	java.util.Iterator of a 
 	{
-	    override public function hasNext from () to Boolean 
+	    override public function hasNext to Boolean 
 	    { 
 		pi.hasNext() or mi.hasNext() or si.hasNext()
 	    }
 
-	    override public function next from () to a
+	    override public function next to a
 	    { 
 		if pi.hasNext() then pi.next() else if mi.hasNext() then mi.next() else si.next();
 	    }
 
-	    override public function remove { }
+	    override public function remove {}
 	}
     }
 
@@ -344,8 +348,7 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
     {
 	var r = suffix.foldRight(z, f);
 	r = middle.foldRight(r,
-			     function from (n is Node of (Measurement, a), z is b) 
-			     to b 
+			     function from (n is Node of (Measurement, a), z is b) to b
 			     {
 				 n.elems.foldRight(z, f)
 			     }); 
@@ -429,7 +432,8 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 	}
     }
 
-    override function prepend from (x is a) to FingerTree of (Measurement, a) 
+    override function prepend 
+	from (x is a) to FingerTree of (Measurement, a) 
     {
 	if (prefix.size() < 4) {
 	    this.deep(measurer, [x, prefix], middle, suffix);
@@ -443,7 +447,8 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 	}
     }
 
-    override function append from (x is a) to FingerTree of (Measurement, a) 
+    override function append 
+	from (x is a) to FingerTree of (Measurement, a) 
     {
 	if (suffix.size() < 4) {
 	    this.deep(measurer, prefix, middle, [suffix, x]);
@@ -457,7 +462,7 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
 	}
     }
 
-    override function toString from () to String 
+    override function toString to String 
     {
 	"Deep {measurement}: {prefix}, {middle}, {suffix}";
     }
@@ -486,7 +491,7 @@ public class Seq of a is Monad of (Seq, a) {
 	measurer: SIZE, measurement: SIZE.zero 
     }
 
-    public function length from () to Integer 
+    public function length to Integer 
     {
 	t.measurement;
     }
@@ -501,7 +506,8 @@ public class Seq of a is Monad of (Seq, a) {
 	t = t.append(x);
     }
 
-    public override function map of b from (f is function from a to b) to Seq of b 
+    public override function map of b 
+	from (f is function from a to b) to Seq of b 
     {
 	Seq of b 
 	{ 
