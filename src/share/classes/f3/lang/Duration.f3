@@ -76,7 +76,7 @@ public function valueOf(ms: Float): Duration {
     valueOf(ms as Double)
 }
 
-public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(ZERO);
+public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(ZERO);
 
 /**
  * A class that defines a duration of time.  Duration instances are defined in
@@ -147,6 +147,9 @@ public class Duration extends Comparable of Duration {
      * @profile common
      */
     public function sub(other:Duration):Duration {
+	if (millis == other.millis) {
+	    return ZERO;
+	}
         if (isIndefinite() or other.isIndefinite()) {
             return INDEFINITE;
         }
@@ -216,7 +219,7 @@ public class Duration extends Comparable of Duration {
         return if (isIndefinite()) INDEFINITE else valueOf(-millis);
     }
 
-    function isIndefinite() : Boolean{
+    function isIndefinite() : Boolean {
         return millis == java.lang.Float.POSITIVE_INFINITY;
     }
 

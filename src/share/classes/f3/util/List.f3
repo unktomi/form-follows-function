@@ -1,23 +1,13 @@
 package f3.util;
 import org.f3.runtime.*;
 
-// List = Empty | Unit x | Prepend x List | Append List x | Concat List List | ArrayList []
+// List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList []
 
 const EmptyList = Empty of null {};
-
-function empty of b to List of b 
-{
-    EmptyList.getEmpty(null as b)
-}
 
 public abstract class List of a is Foldable of a, Monad of (List, a)
 {
     public const length is Integer;
-
-    function getEmpty of b from (x is b) to List of b 
-    {
-	EmptyList as List of b;
-    }
 
     public function reverse to List of a 
     {
@@ -35,17 +25,17 @@ public abstract class List of a is Foldable of a, Monad of (List, a)
     
     public function append from (x is a) to List of a
     {
-	Prepend of a {
-	    prefix: x;
-	    suffix: this;
+	Append of a {
+	    prefix: this;
+	    suffix: x;
 	}
     }
 
     public function prepend from (x is a) to List of a
     {
-	Append of a {
-	    prefix: this;
-	    suffix: x;
+	Prepend of a {
+	    prefix: x
+	    suffix: this;
 	}
     }
 
@@ -147,7 +137,7 @@ class Empty of a is List of a
 }
 
 
-class Unit of a is List of a 
+class Single of a is List of a 
 {
     const x is a;
     override const length = 1;
@@ -333,17 +323,21 @@ class Concat of a is List of a
     }
 }
 
-function emptyList of a to List of a 
+function empty of a to List of a 
 { 
     EmptyList as List of a;
 }
 
-function unit of a from (x is a) to List of a 
+function single of a from (x is a) to List of a 
 { 
-    Unit of a { x: x } 
+    Single of a { x: x } 
 }
 
-public function toList of a from (x is a) to List of a { unit(x) }
+public function toList of a from (x is a) to List of a 
+{ 
+    single(x) 
+}
+
 public function asList of a from (xs is a[]) to List of a 
 {
     ArrayList of a 

@@ -382,7 +382,6 @@ public class F3ToJava extends F3AbstractTranslation {
             additionalImports.appendList(model.additionalImports);
 
             translatedDefs.appendList(model.additionalClassMembers);
-
             // build the list of implemented interfaces
             List<JCExpression> implementing = model.interfaces;
             // include the interface only once

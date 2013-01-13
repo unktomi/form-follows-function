@@ -120,7 +120,7 @@ public class F3Lower implements F3Visitor {
     @SuppressWarnings("unchecked")
     <T extends F3Tree> T lower(T tree, Type pt, LowerMode mode) {
 	if (pt == null) {
-	    throw new NullPointerException("pt is null: "+ tree);
+	    throw new NullPointerException("pt is null: "+ tree.pos + ": "+tree);
 	}
         Type prevPt = this.pt;
         LowerMode prevMode = this.mode;
@@ -763,16 +763,21 @@ public class F3Lower implements F3Visitor {
         } else if (tree.getF3Tag().isIncDec()) {
             result = lowerNumericUnary(tree);
         } else {
-            F3Expression arg = tree.getF3Tag() == F3Tag.REVERSE ?
-                lowerExpr(tree.getExpression(), tree.type) :
-                tree.getOperator() != null ?
+	    try {
+		F3Expression arg = tree.getF3Tag() == F3Tag.REVERSE ?
+		    lowerExpr(tree.getExpression(), tree.type) :
+		    (tree.getOperator() instanceof OperatorSymbol) ?
                     lowerExpr(tree.getExpression(), tree.getOperator().type.getParameterTypes().head) :
                     lowerExpr(tree.getExpression());
-            F3Unary res = m.at(tree.pos).Unary(tree.getF3Tag(), arg);
-            res.operator = tree.operator;
-            res.type = tree.type;
-            result = res;
-        }
+		F3Unary res = m.at(tree.pos).Unary(tree.getF3Tag(), arg);
+		res.methodName = tree.methodName;
+		res.operator = tree.operator;
+		res.type = tree.type;
+		result = res;
+	    } catch (NullPointerException err) {
+		throw new RuntimeException("tree="+tree, err);
+	    }
+	}
     }
 
     private F3Expression lowerNumericUnary(F3Unary tree) {

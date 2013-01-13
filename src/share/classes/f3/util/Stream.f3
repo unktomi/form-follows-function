@@ -4,7 +4,7 @@ import org.f3.runtime.Comonad;
 
 // Lazy infinite streams
 
-public class Stream of a is Comonad of (Stream, a..), Monad of (Stream, a..) 
+public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a) 
 {
     public readonly var now is a;
     public readonly var later is Stream of a;
@@ -110,7 +110,7 @@ public class Stream of a is Comonad of (Stream, a..), Monad of (Stream, a..)
 
 function d from (xs is Stream of Number) to Stream of Number 
 {
-    xs.later * sum(repeat(1.0))
+    xs.next() * sum(repeat(1.0))
 }
 
 function integrate from (xs is Stream of Number) to Stream of Number 
@@ -177,7 +177,8 @@ public function /
     to Stream of Number 
 { xs.zip(Nums.div, ys) }
 
-bound function asStream of a from (p is (a, Stream of a)) to Stream of a {
+bound function asStream of a from (p is (a, Stream of a)) to Stream of a 
+{
      Stream of a {
 	 now: bind p.first;
 	 later: bind p.second;
@@ -203,7 +204,7 @@ public bound function diff
     from (xs is Stream of Number) 
     to Stream of Number
 {
-   xs.later - xs; // xs = xs[1..] - xs
+   xs.next() - xs; // xs = xs[1..] - xs
 }
 
 /*
@@ -274,7 +275,10 @@ public function mul from (xs is Stream of Number, ys is Stream of Number) to Str
     }
 }
 
-public function compose from (xs is Stream of Number, ys is Stream of Number) to Stream of Number 
+public function compose 
+    from (xs is Stream of Number, 
+	  ys is Stream of Number) 
+    to Stream of Number 
 {
     xs.<<followed by>>(mul(ys.later, compose(xs.later, ys)));
 }

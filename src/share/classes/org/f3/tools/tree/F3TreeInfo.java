@@ -61,7 +61,7 @@ public class F3TreeInfo {
         int base = F3Tag.NEG.ordinal();
         opname = new Name[F3Tag.F3_OP_LAST.ordinal() - base + 1];
 	opname[F3Tag.NEG    .ordinal() - base] = names.hyphen;
-	opname[F3Tag.NOT    .ordinal() - base] = names.fromString("!");
+	opname[F3Tag.NOT    .ordinal() - base] = names.fromString("not");
 	opname[F3Tag.PREINC .ordinal() - base] = names.fromString("++");
 	opname[F3Tag.PREDEC .ordinal() - base] = names.fromString("--");
 	opname[F3Tag.POSTINC.ordinal() - base] = names.fromString("++");

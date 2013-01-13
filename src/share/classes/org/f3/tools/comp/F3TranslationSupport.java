@@ -391,7 +391,7 @@ public abstract class F3TranslationSupport {
             t = wtype.kind == BoundKind.EXTENDS ? wtype.type : wtype;
         }
         JCExpression texp = makeTypeTreeInner(diagPos, t, makeIntf);
-        texp.type = t;
+        //texp.type = t;
         return texp;
     }
 
@@ -400,7 +400,10 @@ public abstract class F3TranslationSupport {
     private JCExpression makeTypeTreeInner(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
 	if (ERASE_BACK_END) t = types.erasure(t);
 	JCExpression exp = makeTypeTreeInner0(diagPos, t, makeIntf);
-	exp.setType(t);
+	//	if (exp.type != t) {
+	//	    System.err.println(exp.type);
+	//System.err.println(t);
+	//}
 	//System.err.println("t="+t);
 	//	System.err.println("exp="+exp);
 	if (t == null) {
@@ -823,7 +826,7 @@ public abstract class F3TranslationSupport {
         } else {
             assert !type.isPrimitive();
             List<JCExpression> typeArgs = List.of(makeType(diagPos, type, true));
-	    if (!(type instanceof TypeVar)) {
+	    if (false && !(type instanceof TypeVar)) {
 		return call(diagPos, defs.TypeInfo_getTypeInfo, typeArgs, List.<JCExpression>nil());
 	    } else {
 		JCExpression typeInfoQualName = 
@@ -831,7 +834,10 @@ public abstract class F3TranslationSupport {
 				      defs.TypeInfo_getTypeInfo.classString);
 		JCExpression typeApply = make.at(diagPos).TypeApply(typeInfoQualName,
 								    List.of(makeType(diagPos, type)));
-		return make.at(diagPos).TypeCast(typeApply, call(diagPos, defs.TypeInfo_getTypeInfo, null, List.<JCExpression>nil()));
+		JCExpression r = make.at(diagPos).TypeCast(typeApply, 
+							   make.at(diagPos).TypeCast(makeType(diagPos, syms.objectType), call(diagPos, defs.TypeInfo_getTypeInfo, null, List.<JCExpression>nil())));
+		System.err.println("r="+r);
+		return r;
 	    }
         }
     }

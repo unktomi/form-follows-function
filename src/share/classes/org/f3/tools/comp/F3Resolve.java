@@ -391,6 +391,9 @@ public class F3Resolve {
             if (l.head.tag == FORALL) instNeeded = true;
         }
         if (instNeeded) {
+	    if (!(mt instanceof MethodType)) {
+		return null;
+	    }
 	    Type r = 
 		infer.instantiateMethod(tvars,
 					(MethodType)mt,
