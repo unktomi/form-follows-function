@@ -328,6 +328,7 @@ public class F3Symtab extends Symtab {
 
         // Enter F3 operators.
         enterUnop("sizeof", f3_SequenceType, f3_IntegerType, 0);
+        enterUnop("not", booleanType, booleanType, bool_not);
 
         //TODO: I think these are ancient garbage, needs verification
         enterUnop("lazy", doubleType, doubleType, 0);

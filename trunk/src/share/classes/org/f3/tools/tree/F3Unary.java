@@ -25,7 +25,7 @@ package org.f3.tools.tree;
 
 import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
-
+import com.sun.tools.mjavac.util.Name;
 import com.sun.tools.mjavac.code.Symbol;
 
 /**
@@ -38,6 +38,7 @@ public class F3Unary extends F3Expression implements UnaryTree, Tree {
     private F3Tag opcode;
     public F3Expression arg;
     public Symbol operator;
+    public Name methodName;
 
     protected F3Unary(F3Tag opcode, F3Expression arg) {
         this.opcode = opcode;

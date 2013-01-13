@@ -1441,7 +1441,13 @@ public class F3Attr implements F3Visitor {
             id.sym = idSym;
             id.type = type = tree.type = idSym.type;
 	    Type clazztype = localEnv.enclClass.type;
-	    Type memberType = types.memberType(localEnv.enclClass.type, idSym);
+	    Type memberType = type;
+	    try {
+		memberType = types.memberType(clazztype, idSym);
+	    } catch (NullPointerException exc) {
+		System.err.println(idSym);
+		exc.printStackTrace();
+	    }
 	    Symbol memberSym = idSym;
             id.type = type = tree.type = memberType;
 	    F3VarSymbol idSym1 = new F3VarSymbol(types, names, idSym.flags_field, idSym.name, memberType, localEnv.enclClass.sym);
@@ -3349,6 +3355,7 @@ public class F3Attr implements F3Visitor {
                 tree.getF3Tag(),
                 env,
                 types.unboxedTypeOrType(argtype));
+	tree.methodName = sym.name;
         Type owntype = syms.errType;
         if (sym instanceof OperatorSymbol) {
             // Find operator.
@@ -3359,6 +3366,8 @@ public class F3Attr implements F3Visitor {
                     : operator.type.getReturnType();
             }
         } else {
+	    tree.operator = sym;
+	    System.err.println("tree.name="+tree.methodName);
             owntype = sym.type.getReturnType();
         }
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
@@ -3920,10 +3929,10 @@ public class F3Attr implements F3Visitor {
                 log.error(tree.getStepOrNull().pos(), MsgSym.MESSAGE_F3_RANGE_STEP_INT_OR_NUMBER);
             }
         }
-		if (tree.getLower().getF3Tag() == F3Tag.LITERAL && tree.getUpper().getF3Tag() == F3Tag.LITERAL
-                && (tree.getStepOrNull() == null || tree.getStepOrNull().getF3Tag() == F3Tag.LITERAL)) {
+	if (tree.getLower().getF3Tag() == F3Tag.LITERAL && tree.getUpper().getF3Tag() == F3Tag.LITERAL
+	    && (tree.getStepOrNull() == null || tree.getStepOrNull().getF3Tag() == F3Tag.LITERAL)) {
             chk.warnEmptyRangeLiteral(tree.pos(), (F3Literal)tree.getLower(), (F3Literal)tree.getUpper(), (F3Literal)tree.getStepOrNull(), tree.isExclusive());
-		}
+	}
         Type owntype = types.sequenceType(allInt? syms.f3_IntegerType : syms.f3_FloatType);
         result = tree.type = check(tree, owntype, VAL, pkind, pt, pSequenceness);
     }
@@ -3968,7 +3977,7 @@ public class F3Attr implements F3Visitor {
          // Attribute as a tree so we can check that target is assignable
          // when pkind is VAR
          //
-         Type seqType = attribTree(seq, env, pkind, Type.noType, Sequenceness.REQUIRED);
+	Type seqType = attribTree(seq, env, pkind, Type.noType, Sequenceness.REQUIRED);
         attribExpr(tree.getFirstIndex(), env, syms.f3_IntegerType);
         if (tree.getLastIndex() != null) {
             attribExpr(tree.getLastIndex(), env, syms.f3_IntegerType);

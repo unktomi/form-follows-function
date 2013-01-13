@@ -485,6 +485,9 @@ public class F3ClassReader extends ClassReader {
 
     @Override
     public void complete(Symbol sym) throws CompletionFailure {
+	if (defs == null) {
+	    return;
+	}
         checkForIntfSymbol(sym);
         if (jreader.sourceCompleter == null)
            jreader.sourceCompleter = F3Compiler.instance(ctx);

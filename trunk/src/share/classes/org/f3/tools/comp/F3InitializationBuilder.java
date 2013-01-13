@@ -3151,7 +3151,8 @@ however this is what we need */
             
             makeApplyDefaultsMethod(varInfos, varCount);
             makeInvokeMethod(useConstants, invokeCases, mixinClasses);
-            
+	    System.err.println("varInfos="+varInfos);
+	    System.err.println("updateMap="+updateMap);
             makeInitVarsMethod(varInfos, updateMap);
             makeDependencyNumbers(useConstants, depMap, mixinClasses);
             makeFunctionNumbers(useConstants, invokeCases, mixinClasses);
@@ -3585,6 +3586,7 @@ however this is what we need */
                     addStmts(inits);
                     
                     // Emit method only if there was anything beyond the super call.
+		    System.err.println("inits="+inits.toList());
                     buildIf(!inits.isEmpty());
                 }
 
@@ -4455,7 +4457,7 @@ however this is what we need */
             }
             
             if (isLibrary) {
-                stmts.append(CallStmt(id(scriptLevelAccessSym), defs.applyDefaults_F3ObjectMethodName));
+                stmts.append(CallStmt(id(scriptLevelAccessSym), defs.applyDefaultsDebug_F3ObjectMethodName));
             }
              
             addDefinition(m().Block(Flags.STATIC, stmts.toList()));

@@ -571,6 +571,7 @@ public class F3Decompose implements F3Visitor {
             decomposeComponent(tree.arg);
         F3Unary res = f3make.at(tree.pos).Unary(tag, arg);
         res.operator = tree.operator;
+	res.methodName = tree.methodName;
         result = res;
     }
 

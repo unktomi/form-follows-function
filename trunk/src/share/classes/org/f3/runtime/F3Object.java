@@ -155,6 +155,8 @@ public interface F3Object {
     public void     initVars$     ();
     public void     applyDefaults$();
     public void     applyDefaults$(final int varNum);
+    public void     applyDefaultsDebug$();
+    public void     applyDefaultsDebug$(final int varNum);
     public void     userInit$     ();
     public void     postInit$     ();
     public void     complete$     ();

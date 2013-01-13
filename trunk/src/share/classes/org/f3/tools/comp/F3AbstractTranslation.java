@@ -1538,20 +1538,30 @@ public abstract class F3AbstractTranslation
         JCExpression fullExpression(JCExpression mungedToCheckTranslated) {
             JCExpression tMeth = Select(mungedToCheckTranslated, methodName());
             ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
-            for (F3Expression exp : typeargs) {
-		Type argType = exp.type;
-		if (argType == null) {
-		    System.err.println("exp="+exp);
-		    System.err.println("tree="+meth);
+	    JCExpression app;
+	    if (false && (msym != null && msym.isStatic())) {
+		app = m().TypeCast(makeType(types.erasure(resultType), false), 
+				   m().Apply(typeArgs.toList(),
+					     //translateExprs(typeargs), 
+					     tMeth, determineArgs()));
+		System.err.println("app="+app);
+	    } else {
+		for (F3Expression exp : typeargs) {
+		    Type argType = exp.type;
+		    if (argType == null) {
+			System.err.println("exp="+exp);
+			System.err.println("tree="+meth);
+		    }
+		    Type paramType = types.boxedTypeOrType(argType);
+		    JCExpression t = makeType(paramType, false);
+		    //System.err.println("t="+t.getClass()+": "+t + " from "+exp.type);
+		    // System.err.println("t.type="+t.type);
+		    typeArgs.append(t);
 		}
-                Type paramType = types.boxedTypeOrType(argType);
-		JCExpression t = makeType(paramType);
-		//System.err.println("t="+t.getClass()+": "+t + " from "+exp.type);
-                typeArgs.append(t);
-            }
-            JCMethodInvocation app = m().Apply(typeArgs.toList(),
-					       //translateExprs(typeargs), 
-					       tMeth, determineArgs());
+		app = m().Apply(typeArgs.toList(),
+				//translateExprs(typeargs), 
+				tMeth, determineArgs());
+	    }
 
             JCExpression full = null;
             if (callBound) {
@@ -2401,7 +2411,7 @@ public abstract class F3AbstractTranslation
                         return toResult(convertTranslated(transExpr, diagPos, expr.type, targetType), targetType);
                     }
                 case NEG:
-                    if (tree.operator == null || types.isSameType(tree.type, syms.f3_DurationType)) {
+                    if (types.isSameType(tree.type, syms.f3_DurationType)) {
                         return toResult(
                                 Call(translateExpr(tree.arg, tree.arg.type), defs.negate_DurationMethodName),
                                 syms.f3_DurationType);
@@ -2422,9 +2432,19 @@ public abstract class F3AbstractTranslation
                                 syms.f3_ColorType);
                     }
                 default:
-                    return toResult(
-                            m().Unary(tree.getOperatorTag(), transExpr),
-                            tree.type);
+		    if (!(tree.operator instanceof OperatorSymbol)) {
+			JCExpression acc = getReceiver(tree.operator);
+			System.err.println("ACC="+acc+" for " +tree.operator);
+			JCExpression call = acc == null ? Call(transExpr, tree.methodName, List.<JCExpression>nil()) :
+			    Call(acc, tree.methodName, transExpr);
+			System.err.println("call="+call);
+			return toResult(call, tree.type);
+			
+		    } else {
+			return toResult(
+					m().Unary(tree.getOperatorTag(), transExpr),
+					tree.type);
+		    }
             }
         }
     }
@@ -3124,7 +3144,7 @@ public abstract class F3AbstractTranslation
             JCStatement applyDefaultsExpr =
                     CallStmt(
                         id(receiverName),
-                        defs.applyDefaults_F3ObjectMethodName,
+                        defs.applyDefaultsDebug_F3ObjectMethodName,
                         id(loopName));
 
             if (1 < count) {
@@ -3268,7 +3288,7 @@ public abstract class F3AbstractTranslation
                 if (varSyms.nonEmpty()) {
                     makeInitApplyDefaults(type, tmpVarName);
                 } else {
-                    makeInitSupportCall(defs.applyDefaults_F3ObjectMethodName, tmpVarName);
+                    makeInitSupportCall(defs.applyDefaultsDebug_F3ObjectMethodName, tmpVarName);
                 }
 
                 // Call complete$ to do user's init and postinit blocks
@@ -4163,14 +4183,14 @@ public abstract class F3AbstractTranslation
             } else if (vsym.isSynthetic()) {
                 tor =   BlockExpression(
                             If (FlagTest(vsym, defs.varFlagINIT_MASK, defs.varFlagINIT_READY),
-                                CallStmt(getReceiver(vsym), defs.applyDefaults_F3ObjectMethodName, Offset(vsym))
+                                CallStmt(getReceiver(vsym), defs.applyDefaultsDebug_F3ObjectMethodName, Offset(vsym))
                             ),
                             Get(vsym)
                         );
             } else {
                 tor =   BlockExpression(
                             FlagChangeStmt(vsym, defs.varFlagINIT_WITH_AWAIT_MASK, defs.varFlagINIT_READY),
-                            CallStmt(getReceiver(vsym), defs.applyDefaults_F3ObjectMethodName, Offset(vsym)),
+                            CallStmt(getReceiver(vsym), defs.applyDefaultsDebug_F3ObjectMethodName, Offset(vsym)),
                             Get(vsym)
                         );
             }

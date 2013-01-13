@@ -280,6 +280,14 @@ $PREFIX:{T|
 	return r;
     }
 
+    public Sequence<T> take(int n) {
+	return Sequences.subsequence(this, 0, n);
+    }
+
+    public Sequence<T> drop(int n) {
+	return Sequences.subsequence(this, n, this.size());
+    }
+
     public Sequence<T> prepend(T x) {
 	// fix me !!
 	return (Sequence<T>)Sequences.insertBefore(this, x, 0);

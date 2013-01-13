@@ -310,6 +310,17 @@ import org.f3.runtime.sequence.Sequences;
     public static void initVars$(F3Object obj) {}
 
     public void applyDefaults$(final int varNum) {}
+    public void applyDefaultsDebug$(final int varNum) {
+        int cnt = count$();
+	//System.err.println("apply default: "+this+": "+ varNum + " of "+ cnt);
+	applyDefaults$(varNum);
+	//System.err.println("apply default: "+this+": "+ varNum+ " = "+ get$(varNum));
+    }
+    public static void applyDefaultsDebug$(F3Object obj, final int varNum) {
+	//System.err.println("apply default: "+obj+": "+ varNum);
+	applyDefaults$(obj, varNum);
+	//System.err.println("apply default: "+obj+": "+ varNum+ " = "+ obj.get$(varNum));
+    }
     public static void applyDefaults$(F3Object obj, final int varNum) {}
 
     public void applyDefaults$() {
@@ -319,6 +330,19 @@ import org.f3.runtime.sequence.Sequences;
             applyDefaults$(inx);
         }
     }
+
+    public void applyDefaultsDebug$() {
+        int cnt = count$();
+        for (int inx = 0; inx < cnt; inx += 1) {
+            varChangeBits$(inx, 0, VFLGS$INIT$READY);
+            applyDefaultsDebug$(inx);
+        }
+    }
+
+    public static void applyDefaultsDebug$(F3Object obj) {
+	applyDefaults$(obj);
+    }
+
     public static void applyDefaults$(F3Object obj) {
         int cnt = obj.count$();
         for (int inx = 0; inx < cnt; inx += 1) {
@@ -341,9 +365,11 @@ import org.f3.runtime.sequence.Sequences;
     public static short [] makeInitMap$(int count, int... offsets) {
         final short [] map = new short[count];
 	//System.err.println("init map: "+ count+": ");
+	for (int i= 0; i < count; i++) {
+	    map[i] = Short.MAX_VALUE;
+	}
         for (int i = 0; i < offsets.length; i++) {
 	    //System.err.println("offset: "+ i+": "+offsets[i]);
-            //map[offsets[i]] = (short)(i + 1);
             map[offsets[i]] = (short)i;
         }
         return map;

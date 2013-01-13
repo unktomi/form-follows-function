@@ -5,11 +5,11 @@ import java.lang.Math;
 //
 // Continuation Monad/Comonad - corresponds to the logical double negation of 'a'
 //
-// logical negation is represented by
+// The logical negation of 'a' can be represented with 
 //
 //    a implies false
 //
-// hence double negation is represented 
+// and hence double negation 
 //
 //    (a implies false) implies false
 //
@@ -203,7 +203,7 @@ public function run
 
    const solve = function from (a is Number, b is Number, c is Number) to DoubleNegation of Number 
        {
-	   callCC(function from (k is function from java.lang.Float to DoubleNegation of Number) to DoubleNegation of java.lang.Float {
+	   callCC(function from (k is function from java.lang.Float to DoubleNegation of Number) to DoubleNegation of Number {
 		   foreach (a0 in if a == 0 then k(0.0) else doublyNegate(a),
 			    d2 in doublyNegate(b*b-4*a0*c),
 			    d in if (d2 >= 0.0) then doublyNegate(Math.sqrt(d2) as Number) else k(0.0)) 

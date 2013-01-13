@@ -701,8 +701,8 @@ public class F3Types extends Types {
             return true;
 
         if (target.isPrimitive() &&
-                !source.isPrimitive() &&
-                isSubtype(boxedClass(target).type, source))
+	    !source.isPrimitive() &&
+	    isSubtype(boxedClass(target).type, source))
             return true;
 
         boolean isSourceFinal = (source.tsym.flags() & FINAL) != 0;

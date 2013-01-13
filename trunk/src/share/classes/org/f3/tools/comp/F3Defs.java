@@ -41,6 +41,7 @@ public class F3Defs {
      *
      * Format: <name>_AttributeMethodPrefix
      */
+    public static final String applyDefaultsDebug_AttributeMethodPrefix = "applyDefaultsDebug$";
     public static final String applyDefaults_AttributeMethodPrefix = "applyDefaults$";
     public static final String seq_AttributeMethodPrefix = "seq$";
     public static final String get_AttributeMethodPrefix = "get$";
@@ -281,6 +282,7 @@ public class F3Defs {
      * F3Object method Names
      */
     final Name applyDefaults_F3ObjectMethodName;
+    final Name applyDefaultsDebug_F3ObjectMethodName;
     final Name invoke_F3ObjectMethodName;
     final Name count_F3ObjectMethodName;
     final Name get_F3ObjectMethodName;
@@ -728,6 +730,7 @@ public class F3Defs {
         initVarsAttributeMethodPrefixName = names.fromString(initVars_AttributeMethodPrefix);
         initVars_F3ObjectMethodName = initVarsAttributeMethodPrefixName;
         applyDefaults_F3ObjectMethodName = names.fromString(applyDefaults_AttributeMethodPrefix);
+        applyDefaultsDebug_F3ObjectMethodName = names.fromString(applyDefaultsDebug_AttributeMethodPrefix);
         invoke_F3ObjectMethodName = names.fromString("invoke$");
         applyDefaults_AttributeMethodPrefixName = names.fromString(applyDefaults_AttributeMethodPrefix);
         update_F3ObjectMethodName = names.fromString("update$");
