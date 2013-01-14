@@ -4548,7 +4548,8 @@ primaryExpression
             }
           )*
        |
-           {   $value = F.at(rPos).Literal(TypeTags.BOT, null);  }
+           {   $value = F.at(rPos).TypeCast(F.at(rPos).Ident(names.fromString("Void")),
+                                            F.at(rPos).Literal(TypeTags.BOT, null));  }
        )
        RPAREN
     | AT 
@@ -6286,7 +6287,7 @@ typeName
                     $value = F.at(rPos).TupleType($value, x); 
                })*
             | { 
-                  $value = F.at(rPos).Ident(names.fromString("Void"));
+                  $value = F.at(rPos).Ident(names.fromString("<any?>"));
              })  
     RPAREN
 */
@@ -6299,7 +6300,7 @@ typeName
             })*
      )
      | { 
-          $value = F.at(rPos).Ident(names.fromString("Object"));
+          $value = F.at(rPos).Ident(names.fromString("Void"));
      })  
      RPAREN
      |

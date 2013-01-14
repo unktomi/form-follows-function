@@ -22,6 +22,11 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	}
     }
 
+    public bound function interleave(xs is Stream of a) to Stream of a 
+    {
+	xs.prepend(now).followedBy(xs.interleave(later));
+    }
+
     // map lifts a unary operator to one over Streams
     override function map of b 
 	from (f is function from a to b) 
@@ -79,7 +84,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	later
     }
 
-    public bound function <<followed by>> 
+    public bound function followedBy 
 	from (xs is Stream of a) 
 	to Stream of a 
     {
@@ -115,7 +120,7 @@ function d from (xs is Stream of Number) to Stream of Number
 
 function integrate from (xs is Stream of Number) to Stream of Number 
 {
-    repeat(0.0).<<followed by>>(xs / sum(repeat(1.0)))
+    repeat(0.0).followedBy(xs / sum(repeat(1.0)))
 }
 
 // lifts a value to a Stream by repeating it indefinitely, i.e  x, x, x,...
@@ -211,7 +216,7 @@ public bound function diff
 public function invert(xs is Stream of Number, 
 		       inv is function from Number to Number) to Stream of Number {
     var x0 = bind inv(xs.now);
-    repeat(x0).<<followed by>>(mul(repeat(-x0), mul(xs.later, invert(xs, inv))));
+    repeat(x0).followedBy(mul(repeat(-x0), mul(xs.later, invert(xs, inv))));
 }
 */
 
@@ -242,13 +247,13 @@ public bound function toStream of a
 
 public const <<0.0>> = constant(0.0);
 public const <<1.0>> = constant(1.0);
-public const X = <<0.0>>.<<followed by>>(<<1.0>>);
+public const X = <<0.0>>.followedBy(<<1.0>>);
 
 public bound function constant 
     from (x is Number) 
     to Stream of Number 
 {
-    repeat(x).<<followed by>>(<<0.0>>);
+    repeat(x).followedBy(<<0.0>>);
 }
 
 public function convolve 
@@ -280,7 +285,7 @@ public function compose
 	  ys is Stream of Number) 
     to Stream of Number 
 {
-    xs.<<followed by>>(mul(ys.later, compose(xs.later, ys)));
+    xs.followedBy(mul(ys.later, compose(xs.later, ys)));
 }
 
 public function always of a 
@@ -301,17 +306,34 @@ bound function <<every other>> of a
     from (xs is Stream of a) 
     to Stream of a 
 {
-    xs.<<followed by>>(<<every other>>(xs.later.later))
+    xs.followedBy(<<every other>>(xs.later.later))
 }
+
+readonly var fib is Stream of Number = bind repeat(0.0).followedBy(fib1);
+readonly var fib1 is Stream of Number = bind repeat(1.0).followedBy(fib2);
+readonly var fib2 is Stream of Number = bind fib + fib1;
+
+var ns is Stream of Number = bind repeat(1.0).followedBy(ns)+repeat(1.0);
+
+bound function avg from (xs is Stream of Number) to Stream of Number 
+{
+    var running_avg = sum(xs).prepend(0.0) / ns;
+}
+
 
 function run 
 {
+    println(take(10, fib));
+    println(take(10, toStream(foreach (n in [1..200]) n as Number)));
+    println(take(10, sum(toStream(foreach (n in [1..200]) n as Number))));
+    println(take(20, avg(toStream(foreach (n in [1..200]) n as Number))));
+
     if (true) {
 	println(take(10, repeat(1.0)));
 	println(take(10, sum(repeat(1.0))));
 	println(take(10, diff(sum(repeat(1.0)))));
 	println(take(10, repeat(1.0) + repeat(1.0)));
-	println(take(10, repeat(-1.0).<<followed by>>(repeat(2.0))));
+	println(take(10, repeat(-1.0).followedBy(repeat(2.0))));
 	var j = 1.0;
 	var xs = bind foreach (x in repeat(j), y in repeat(2.0))  x + y;
 	var xss = bind foreach (x in repeat(j), y in repeat(2.0), z in repeat(10.0)) z + x + y;
@@ -322,13 +344,10 @@ function run
 	println("xs={take(10, xs)}");
 	var gs = bind(sum(xs));
 	println(take(1000, gs));
-	for (x in toStream([1.2])) {
+	foreach (x in toStream([1.2])) {
 	    println(x);
 	}
     }
-    //println(take(200, convolve(repeat(1.0), repeat(2.0))));
-
-    //println(take(10, join(repeat(repeat("hello")))));
     println(take(10, X));
     println(take(10, mul(X, X)));
     println(take(10, mul(mul(X, X), X)));

@@ -759,7 +759,6 @@ public class F3Lower implements F3Visitor {
 							    pointerMake,
 							    List.of(arg1, arg2)).setType(pointerMakeSym.type.getReturnType());
 	    result = pointerCall;
-	    System.err.println("pointerCall="+pointerCall);
         } else if (tree.getF3Tag().isIncDec()) {
             result = lowerNumericUnary(tree);
         } else {
@@ -902,7 +901,7 @@ public class F3Lower implements F3Visitor {
     public void visitVar(F3Var tree) {
 	try {
 	    if (tree.type == null) {
-		System.err.println(tree);
+		System.err.println("type is null: "+tree);
 	    }
 	    F3Expression init = lowerExpr(tree.getInitializer(), tree.type);
 	    F3OnReplace onReplace = lowerDecl(tree.getOnReplace());
@@ -1556,6 +1555,10 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitTypeCast(F3TypeCast tree) {
+	if (tree.clazz.type == null) {
+	    System.err.println("TREE="+tree);
+	    System.err.println("TREE.clazz="+tree.clazz);
+	}
 	Type clazztype = types.erasure(tree.clazz.type);
 	//System.err.println("tree="+tree);
 	//System.err.println("clazztype="+clazztype);

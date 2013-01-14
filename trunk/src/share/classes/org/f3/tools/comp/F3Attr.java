@@ -533,7 +533,7 @@ public class F3Attr implements F3Visitor {
 		    }
 		}
 		if (!isWildcard(t) && !inSuperType && bk != null && bk != BoundKind.UNBOUND) {
-		    System.err.println("making wildcard from: "+ t.getClass()+": "+types.toF3String(t));
+		    //System.err.println("making wildcard from: "+ t.getClass()+": "+types.toF3String(t));
 		    t = new WildcardType(t, bk, syms.boundClass);
 		} 
 		argtypes.append(t);
@@ -792,8 +792,10 @@ public class F3Attr implements F3Visitor {
 	//System.err.println("checkId: "+ sym);
 	//System.err.println("pt="+pt);
         result = checkId(tree, env1.enclClass.sym.type, sym, env, actuals, pkind, pt, pSequenceness, varArgs);
-	//System.out.println("result of "+tree.pos+" "+sym + " = "+result.getClass()+": "+result);
-	//System.err.println("result="+result);
+	if (result == null) {
+	    System.out.println("result of "+tree.pos+" "+sym + " = "+result.getClass()+": "+result);
+	    System.err.println("result="+result);
+	}
 	tree.type = result;
     }
 
@@ -2573,20 +2575,6 @@ public class F3Attr implements F3Visitor {
                 log.error(tree.pos(), MsgSym.MESSAGE_NATIVE_METH_CANNOT_HAVE_BODY);
             } else {
                 F3Block body = opVal.getBodyExpression();
-                if (body.value instanceof F3Return) {
-                    if (returnType == syms.voidType) {
-                        log.error(body.value.pos(),
-                                MsgSym.MESSAGE_CANNOT_RET_VAL_FROM_METH_DECL_VOID);
-                    }
-                    /*
-                     * We are going to rewrite blocks value as an expression instead
-                     * of original return statement. So, we better save the original
-                     * return statement so that we can present it to external tree
-                     * walkers, if needed.
-                     */
-                    body.returnStatement = (F3Return) body.value;
-                    body.value = ((F3Return) body.value).expr;
-                }
                 // Attribute method bodyExpression
                 Type typeToCheck = returnType;
                 if(tree.name == defs.internalRunFunctionName) {
@@ -2610,6 +2598,24 @@ public class F3Attr implements F3Visitor {
                 if (tree.isBound() && returnType == syms.f3_VoidType) {
                     //log.error(tree.pos(), MsgSym.MESSAGE_F3_BOUND_FUNCTION_MUST_NOT_BE_VOID);
                 }                
+                if (body.value instanceof F3Return) {
+                    if (returnType == syms.voidType && 
+			(bodyType != syms.voidType && 
+			 bodyType != types.boxedTypeOrType(syms.voidType) &&
+			 bodyType != syms.unreachableType)) {
+			System.err.println("bodyType="+bodyType);
+                        log.error(body.value.pos(),
+                                MsgSym.MESSAGE_CANNOT_RET_VAL_FROM_METH_DECL_VOID);
+                    }
+                    /*
+                     * We are going to rewrite blocks value as an expression instead
+                     * of original return statement. So, we better save the original
+                     * return statement so that we can present it to external tree
+                     * walkers, if needed.
+                     */
+                    body.returnStatement = (F3Return) body.value;
+                    body.value = ((F3Return) body.value).expr;
+                }
             }
 	    if (localEnv.info.scope.next != null) { // hack!!
 		localEnv.info.scope.leave();
@@ -2913,10 +2919,13 @@ public class F3Attr implements F3Visitor {
             F3Block enclBlock = env.enclFunction.operation.bodyExpression;
             if (tree.returnType == null)
                 log.error(tree.pos(), MsgSym.MESSAGE_F3_CANNOT_INFER_RETURN_TYPE);
-            else if (tree.returnType.tag == VOID) {
+            else if (false && tree.returnType.tag == VOID) {
                 if (tree.expr != null) {
-                    log.error(tree.pos(),
-                        MsgSym.MESSAGE_CANNOT_RET_VAL_FROM_METH_DECL_VOID);
+		    System.err.println("tree.type="+tree.type);
+		    if (false) {
+			log.error(tree.pos(),
+				  MsgSym.MESSAGE_CANNOT_RET_VAL_FROM_METH_DECL_VOID);
+		    }
                 }
             } else if (tree.expr == null) {
                 if (enclBlock.type == syms.f3_UnspecifiedType)
@@ -2924,10 +2933,11 @@ public class F3Attr implements F3Visitor {
                 else if (enclBlock.type != syms.f3_VoidType)
                     log.error(tree.pos(), MsgSym.MESSAGE_MISSING_RET_VAL);
             } else {
-                if (enclBlock.type.tag == VOID) {
-                    log.error(tree.pos(), MsgSym.MESSAGE_CANNOT_RET_VAL_FROM_METH_DECL_VOID);
-                }
                 Type exprType = attribExpr(tree.expr, env);
+                if (enclBlock.type.tag == VOID) {
+		    System.err.println("tree.type1="+exprType);
+                    //log.error(tree.pos(), MsgSym.MESSAGE_CANNOT_RET_VAL_FROM_METH_DECL_VOID);
+                }
                 enclBlock.type = unionType(tree.pos(), enclBlock.type, exprType);
                 enclBlock.isVoidValueAllowed = false;
             }
@@ -3278,7 +3288,6 @@ public class F3Attr implements F3Visitor {
 		if (tag == F3Tag.IDENT || tag == F3Tag.SELECT) {
 		    Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
 		    Symbol varSym = F3TreeInfo.symbol(tree.arg);
-		    System.err.println("varSym="+varSym);
 		    boolean readOnly = true;
 		    Type siteType = null;
 		    if (tag == F3Tag.SELECT) {
@@ -3648,9 +3657,9 @@ public class F3Attr implements F3Visitor {
         try {
             annotate.flush();
             attribClass(tree, c);
-	    VarianceAnalysis ana = new VarianceAnalysis();
-	    ana.scan(tree);
-	    System.err.println(ana.result);
+	    //VarianceAnalysis ana = new VarianceAnalysis();
+	    //ana.scan(tree);
+	    //System.err.println(ana.result);
         } catch (CompletionFailure ex) {
             chk.completionError(pos, ex);
         }
@@ -3901,7 +3910,7 @@ public class F3Attr implements F3Visitor {
         boolean isSeq = types.isSequence(pt);
         Type owntype = pt.tag == NONE || pt.tag == UNKNOWN ? syms.f3_EmptySequenceType :
                 isSeq ? pt : types.sequenceType(pt);
-	System.err.println("empty seq type: "+ owntype);
+	//System.err.println("empty seq type: "+ owntype);
         result = check(tree, owntype, VAL, pkind, Type.noType, pSequenceness);
     }
 

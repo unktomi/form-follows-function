@@ -3151,8 +3151,6 @@ however this is what we need */
             
             makeApplyDefaultsMethod(varInfos, varCount);
             makeInvokeMethod(useConstants, invokeCases, mixinClasses);
-	    System.err.println("varInfos="+varInfos);
-	    System.err.println("updateMap="+updateMap);
             makeInitVarsMethod(varInfos, updateMap);
             makeDependencyNumbers(useConstants, depMap, mixinClasses);
             makeFunctionNumbers(useConstants, invokeCases, mixinClasses);
@@ -3586,7 +3584,6 @@ however this is what we need */
                     addStmts(inits);
                     
                     // Emit method only if there was anything beyond the super call.
-		    System.err.println("inits="+inits.toList());
                     buildIf(!inits.isEmpty());
                 }
 
@@ -4652,8 +4649,6 @@ however this is what we need */
             ListBuffer<JCExpression> args = ListBuffer.lb();
             ListBuffer<Type> argTypes = ListBuffer.lb();
             List<Type> typeArgs = methSym.type.getTypeArguments();
-	    System.err.println("sym="+methSym);
-	    System.err.println("typeArgs="+typeArgs);
             boolean isProxy = isStatic &&
                               !parameters.isEmpty() &&
                               parameters.get(0).type == methSym.owner.type &&

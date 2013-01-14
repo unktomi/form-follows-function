@@ -231,6 +231,44 @@ $PREFIX:{T|
         }
     }
 
+    public Sequence<T> replicate(final int n) {
+	final Sequence<T> base = this;
+	final int bsz = base.size();
+	final int sz = bsz * n;
+	return new AbstractSequence<T>(getElementType()) {
+	    public T get(int i) {
+		return base.get(i % bsz);
+	    }
+	    public int size() {
+		return sz;
+	    }
+	    public boolean getAsBoolean(int position) {
+		return base.getAsBoolean(position % bsz);
+	    }
+	    public char getAsChar(int position) {
+		return base.getAsChar(position % bsz);
+	    }
+	    public byte getAsByte(int position) {
+		return base.getAsByte(position % bsz);
+	    }
+	    public short getAsShort(int position) {
+		return base.getAsShort(position % bsz);
+	    }
+	    public int getAsInt(int position) {
+		return base.getAsInt(position % bsz);
+	    }
+	    public long getAsLong(int position) {
+		return base.getAsLong(position % bsz);
+	    }
+	    public float getAsFloat(int position) {
+		return base.getAsFloat(position % bsz);
+	    }
+	    public double getAsDouble(int position) {
+		return base.getAsDouble(position % bsz);
+	    }
+	};
+    }
+
     public T div(Function2<? extends T, ? super T, ? super T> f) {
 	return foldLeft(f);
     }
