@@ -443,7 +443,7 @@ public class F3Resolve {
                 ? types.isConvertible(argtypes.head, formals.head, warn)
                 : types.isSubtypeUnchecked(argtypes.head, formals.head, warn);
             if (!works) {
-		System.err.println("unacceptable: "+argtypes.head +": "+ formals.head);
+		//System.err.println("unacceptable: "+argtypes.head +": "+ formals.head);
 		return false;
 	    }
             argtypes = argtypes.tail;
@@ -837,11 +837,11 @@ public class F3Resolve {
 		}
 	    }
         } catch (Infer.NoInstanceException ex) {
-	    if (allowBoxing) {
-		System.err.println("raw instantiate exception: "+ sym);
-		System.err.println("argtypes: "+argtypes);
-		System.err.println("typeargtypes: "+typeargtypes);
-	    }
+	    //if (allowBoxing) {
+		//System.err.println("raw instantiate exception: "+ sym);
+		//System.err.println("argtypes: "+argtypes);
+		//System.err.println("typeargtypes: "+typeargtypes);
+	    //}
             switch (bestSoFar.kind) {
             case ABSENT_MTH:
                 return wrongMethod.setWrongSym(sym, ex.getDiagnostic());

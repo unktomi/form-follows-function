@@ -1,0 +1,218 @@
+package f3.util;
+import org.f3.runtime.*;
+import java.lang.Math;
+
+public class Possibility of a is Functor of (Possibility, a) 
+{
+    public const event is a;
+    public const likelihood is Number;
+
+    override function of b map 
+	from (f is function from a to b) to Possibility of b
+    {
+	Possibility of b 
+	{
+	    event: f(event);
+	    likelihood: likelihood;
+	}
+    }
+
+    override function toString to String 
+    {
+	"{event}: {%.02f likelihood*100}%"
+    }
+}
+
+public class Distribution of a is Monad of (Distribution, a), Foldable of Possibility of a 
+{
+
+    const likelihoods is (Possibility of a)[];
+
+    override function foldLeft of b 
+        from (z is b, 
+              f is function from (b, Possibility of a) to b)
+        to b
+    {
+        likelihoods.foldLeft(z, f)
+    }
+
+    override function foldRight of b 
+        from (z is b, f is function from (Possibility of a, b) to b)
+        to b
+    {
+        likelihoods.foldRight(z, f)
+    }
+
+    public function zip of (b, c) 
+	from (f is function from (a, b) to c,
+	      ys is Distribution of b) 
+	to Distribution of c
+    {
+	const xs = this;
+	foreach (x in xs, y in ys) f(x, y)
+    }
+
+    function normalize to Distribution of a 
+    {
+	var map = new java.util.HashMap of (a, Possibility of a);
+	for (x in likelihoods) {
+	    const p = map.get(x.event);
+	    if (p <> null) {
+		map.put(x.event, probably(x.event, p.likelihood+x.likelihood));
+	    } else {
+		map.put(x.event, x);
+	    }
+	}
+	var normalized is (Possibility of a)[];
+	for (p in map.values()) {
+	    insert p into normalized;
+	}
+	Distribution of a {
+	    likelihoods: normalized;
+	}
+    }
+
+    public function * of b
+	from (d is Distribution of b) 
+	to Distribution of ((a, b))
+    {
+	Distribution of ((a, b)) {
+	    likelihoods: foreach (x in likelihoods, y in d.likelihoods) {
+		probably((x.event, y.event), x.likelihood * y.likelihood);
+	    }
+	}
+    }
+
+    override function of b map 
+	from (f is function from a to b) 
+	to Distribution of b
+    {
+	Distribution of b {
+	    likelihoods:
+	    foreach (p in likelihoods) {
+		p.map(f);
+	    }
+	}
+    }
+
+    public function of b flatmap 
+	from (f is function from a to Distribution of b) 
+	to Distribution of b
+    {
+	Distribution of b {
+	    likelihoods: foreach (x in likelihoods,
+				  y in f(x.event).likelihoods) {
+		Possibility of b 
+		{
+		    event: y.event;
+		    likelihood: x.likelihood * y.likelihood;
+		}
+	    }
+	}.normalize();
+    }
+
+    public function pick to a 
+    {
+	var r = Math.random();
+	var result is a;
+	for (x in likelihoods) {
+	    result = x.event;
+	    if (r <= x.likelihood) {
+		break;
+	    }
+	    r -= x.likelihood;
+	}
+	return result;
+    }
+    
+    override function toString to String {
+	"{foreach (x in likelihoods) "{x}\n"}"
+    }
+}
+
+public function probably of a from (x is a, p is Number) to Possibility of a
+{
+    Possibility of a {
+	event: x;
+	likelihood: p;
+    }
+}
+
+public function certainly of a from (x is a) to Possibility of a
+{
+    probably(x, 1.0);
+}
+
+public function uniform of a from (xs is a[]) to Distribution of a
+{
+    const p = 1.0 / xs.size();
+    Distribution of a {
+	likelihoods: foreach (x in xs) probably(x, p)
+    }
+}
+
+public function weighted of a 
+    from (xs is (Possibility of a)[]) 
+    to Distribution of a 
+{
+    Distribution of a {
+	likelihoods: xs;
+    }
+}
+
+public function choose of a 
+    from (p is Number, x1 is a, x2 is a) 
+    to Distribution of a 
+{
+    weighted([probably(x1, p), probably(x2, 1-p)]);
+}
+
+public function expected
+    from (dist is Distribution of Number) to Number
+{
+    var r = 0.0;
+    for (p in dist.likelihoods) {
+	r += p.event * p.likelihood;
+    }
+    return r;
+}
+
+public function variance
+    from (xs is Distribution of Number) 
+    to Number
+{
+    const e = expected(xs);
+    expected(foreach (x in xs) {x * x - e})
+}
+
+function stdDev 
+    from (xs is Distribution of Number) 
+    to Number 
+{
+    Math.sqrt(variance(xs))
+}
+
+const die = uniform([1..6]);
+
+type Spread of a = function from a[] to Distribution of a;
+
+type Dice = Distribution of Integer[];
+
+
+function plus1 from (x is Number) to Distribution of Number 
+{
+    uniform([x, x+1]);
+}
+
+function run {
+    const twoDiceDifferBy1 = 
+    foreach (x in die, y in die) {
+	Math.abs(x - y) == 1
+    }
+    println(twoDiceDifferBy1);
+    println(plus1(1));
+    const droll = foreach (d in die) {
+	plus1(d)
+    }
+    println(droll);
+}

@@ -836,7 +836,6 @@ public abstract class F3TranslationSupport {
 								    List.of(makeType(diagPos, type)));
 		JCExpression r = make.at(diagPos).TypeCast(typeApply, 
 							   make.at(diagPos).TypeCast(makeType(diagPos, syms.objectType), call(diagPos, defs.TypeInfo_getTypeInfo, null, List.<JCExpression>nil())));
-		System.err.println("r="+r);
 		return r;
 	    }
         }

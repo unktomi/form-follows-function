@@ -68,6 +68,8 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public Sequence<T> prepend(T x);
     public Sequence<T> append(T x);
 
+    public Sequence<T> replicate(int n);
+
     public Sequence<T> take(int n);
     public Sequence<T> drop(int n);
 

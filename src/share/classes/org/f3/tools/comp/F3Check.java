@@ -635,8 +635,11 @@ public class F3Check {
      */
     Type checkNonVoid(DiagnosticPosition pos, Type t) {
 	if (t.tag == VOID && t != syms.unreachableType) {
+	    /*
 	    log.error(pos, MsgSym.MESSAGE_VOID_NOT_ALLOWED_HERE);
 	    return syms.errType;
+	    */
+	    return types.boxedTypeOrType(t);
 	} else {
 	    return t;
 	}

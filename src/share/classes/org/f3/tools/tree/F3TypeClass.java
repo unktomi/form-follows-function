@@ -41,8 +41,8 @@ public class F3TypeClass extends F3Type implements TypeClassTree {
      * @param cardinality one of the cardinality constants
      */
     protected F3TypeClass(F3Expression className,
-            Cardinality cardinality,
-            ClassSymbol sym) {
+			  Cardinality cardinality,
+			  ClassSymbol sym) {
         super(cardinality);
         this.className = className;
         this.sym = sym;
