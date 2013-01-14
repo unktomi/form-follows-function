@@ -65,6 +65,8 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public <S> S accumulateBackwards(S z, 
 				     Function2<? extends S, ? super T, ? super S> f);
 
+    public Sequence<T> reverse();
+
     public Sequence<T> prepend(T x);
     public Sequence<T> append(T x);
 

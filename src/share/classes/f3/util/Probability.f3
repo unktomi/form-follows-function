@@ -128,6 +128,12 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
     override function toString to String {
 	"{foreach (x in likelihoods) "{x}\n"}"
     }
+
+    public function montecarlo 
+	from (samples is Integer) 
+	to Distribution of a {
+	uniform(foreach (i in [0..<samples]) pick())
+    }
 }
 
 public function probably of a from (x is a, p is Number) to Possibility of a
