@@ -1,0 +1,256 @@
+package f3.util;
+import org.f3.runtime.*;
+
+// Skew binomial heap from Okasaki
+
+class Node of (a is java.lang.Comparable of a) 
+{
+    const r is Integer;
+    const x is a;
+    const xs is a[];
+    const c is (Node of a)[];
+
+    override function toString to String 
+    {
+	"(r={r}, x={x}, xs={xs}, c={c})";
+    }
+
+    function rank to Integer { r }
+    function root to a { x }
+
+    function link from (t2 is Node of a) to Node of a {
+	if (x.compareTo(t2.x) <= 0) {
+	    Node of a {
+		r: r + 1;
+		x: x;
+		xs: xs;
+		c: [t2, c];
+	    }
+	} else {
+	    Node of a {
+		r: r + 1;
+		x: t2.x;
+		xs: t2.xs;
+		c: [this, t2.c];
+	    }
+	}
+    }
+
+    function skewLink 
+	from (x is a, 
+	      t2 is Node of a) 
+	to Node of a
+    {
+	const t1 = this;
+	const n = t1.link(t2);
+	const r  = n.r;
+	const y  = n.x;
+	const ys = n.xs;
+	const c  = n.c;
+	if (x.compareTo(y) <= 0) {
+	    Node of a {
+		r:  r;
+		x:  x;
+		xs: [y, ys];
+		c:  c
+	    }
+	} else {
+	    Node of a {
+		r:  r;
+		x:  y;
+		xs: [x, ys];
+		c:  c;
+	    }
+	}
+    }
+
+    function insTree from (ts is (Node of a)[]) to (Node of a)[]
+    {
+	if (ts == []) 
+	    then [this] 
+	    else {
+		const t1 = this;
+		const t2 = ts[0];
+		if (t1.rank() < t2.rank()) 
+		    then 
+			[t1, t2, ts[1..]] 
+		    else 
+			t1.link(t2).insTree(ts[1..]);
+	    }
+    }
+}
+
+function mergeTrees of (a is java.lang.Comparable of a)
+    from (ts1 is (Node of a)[],
+	  ts2 is (Node of a)[]) 
+    to (Node of a)[]
+{
+    if (ts2 == []) 
+	then ts1
+    else if (ts1 == [])
+	then ts2
+    else {
+	const t1 = ts1[0];
+	const t2 = ts2[0];
+	if (t1.rank() < t2.rank())
+	    then [t1, mergeTrees(ts1[1..], ts2)]
+        else if (t2.rank() < t1.rank()) 
+	    then [t2, mergeTrees(ts1, ts2[1..])]
+        else t1.link(t2).insTree(mergeTrees(ts1[1..], ts2[1..]))
+    }
+}
+
+function normalize of (a is java.lang.Comparable of a)
+    from (ts is (Node of a)[])
+    to (Node of a)[]
+{
+    if (ts == []) then ts else ts[0].insTree(ts[1..]);
+}
+
+function ins of (a is java.lang.Comparable of a)
+    from (x is a,
+	  ts is (Node of a)[])
+    to (Node of a)[]
+{
+    if (ts.size() >= 2) {
+	const t1 = ts[0];
+	const t2 = ts[1];
+	const rest = ts[2..];
+	if (t1.rank() == t2.rank()) {
+	    return [t1.skewLink(x, t2), rest];
+	}
+    }
+    return [Node of a { x: x}, ts]
+}
+
+function merge of (a is java.lang.Comparable of a)
+    from (ts1 is (Node of a)[],
+	  ts2 is (Node of a)[])
+    to (Node of a)[]
+{
+    mergeTrees(normalize(ts1), normalize(ts2))
+}
+
+class Split of (a is java.lang.Comparable of a) {
+    const head is Node of a;
+    const tail is (Node of a)[];
+}
+
+function split of (a is java.lang.Comparable of a)
+    from (x is Node of a,
+	  xs is (Node of a)[]) 
+    to Split of a {
+    Split of a {
+	head: x;
+	tail: xs;
+    }
+}
+
+function removeMinTree of (a is java.lang.Comparable of a) 
+    from (ts is (Node of a)[])
+    to Split of a
+{
+    if (ts == []) {
+	throw new java.lang.RuntimeException("empty");
+    }
+    if (ts.size() == 1) 
+	then split(ts[0], ts[1..])
+    else {
+	const t1 = ts[0];
+	const ts1 = ts[1..];
+	const p = removeMinTree(ts1);
+	const t2 = p.head;
+	const ts2 = p.tail;
+	if (t1.root().compareTo(t2.root()) <= 0) 
+	    then split(t1, ts1)
+	else 
+	    split(t2, [t1, ts2])
+    }
+}
+
+public class Heap of (a is java.lang.Comparable of a) {
+
+    const ts is (Node of a)[];
+    public const length = 0;
+
+    public function isEmpty to Boolean 
+    {
+	length == 0;
+    }
+
+    public function foldLeft of b
+	from (z is b, 
+	      f is function from (b, a) to b) 
+	to b
+    {
+	var r = z;
+	var h = this;
+	while (not h.isEmpty()) {
+	    r = f(r, h.getMin());
+	    h = h.deleteMin();
+	}
+	return r;
+    }
+
+    public function insert from (x is a) to Heap of a 
+    {
+	Heap of a 
+	{
+	    length: length+1;
+	    ts: ins(x, ts)
+	}
+    }
+
+    public function getMin to a 
+    {
+	removeMinTree(ts).head.root()
+    }
+
+    function insertAll 
+	from (xs is a[],
+	      ts is (Node of a)[])
+	to (Node of a)[]
+    {
+	if (xs == []) then ts else insertAll(xs[1..], ins(xs[0], ts));
+    }
+
+    public function deleteMin to Heap of a 
+    {
+	if (isEmpty()) {
+	    throw new java.lang.RuntimeException("empty");
+	}
+	const p = removeMinTree(ts);
+	const n = p.head;
+	const xs = n.xs;
+	const ts1 = n.c;
+	const ts2 = p.tail;
+	Heap of a 
+	{
+	    length: length-1;
+	    ts: insertAll(p.head.xs, merge(ts1.reverse(), ts2))
+	}
+    }
+
+    override function toString to String 
+    {
+        foldLeft("",
+                 function from (y is String, x is a) to String
+                 {
+                     if (y == "") then "{x}" else "{y}, {x}";
+                 })
+    }
+}
+
+public function toHeap of (a is java.lang.Comparable of a) from (xs is a[]) to Heap of a 
+{
+    var h = Heap of a {};
+    for (x in xs) {
+	h = h.insert(x);
+    }
+    return h;
+}
+
+
+function run {
+    println(toHeap([[1..5].reverse(), [10..20]]));
+}
