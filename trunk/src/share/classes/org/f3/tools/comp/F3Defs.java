@@ -136,6 +136,7 @@ public class F3Defs {
     // in runtime package -- public
     public static final String cBase = runtime_PackageString + ".F3Base";
     public static final String cObject = runtime_PackageString + ".F3Object";
+    public static final String cValue = runtime_PackageString + ".F3Value";
     public static final String cErrorHandler = runtime_PackageString + ".ErrorHandler";
     public static final String cMixin = runtime_PackageString + ".F3Mixin";
     public static final String cTypeInfo = runtime_PackageString + ".TypeInfo";
@@ -430,6 +431,7 @@ public class F3Defs {
 
     final Name defaultingTypeInfo_FieldName;
     final Name emptySequence_FieldName;
+    final Name defaultValue_FieldName;
 
     final Name partResultVarNum_BoundForHelper;
     
@@ -683,6 +685,7 @@ public class F3Defs {
         lambda_MethodName = names.fromString("lambda");
         length_ArrayFieldName = names.fromString("length");
         emptySequence_FieldName = names.fromString("emptySequence");
+        defaultValue_FieldName = names.fromString("defaultValue");
         partResultVarNum_BoundForHelper = names.fromString("partResultVarNum");
         isInitialized_MethodName = names.fromString("isInitialized");
         isReadOnly_MethodName = names.fromString("isReadOnly");

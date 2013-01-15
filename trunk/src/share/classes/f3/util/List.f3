@@ -1,7 +1,7 @@
 package f3.util;
 import org.f3.runtime.*;
 
-// List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList []
+// List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[]
 
 const EmptyList = Empty of null {};
 

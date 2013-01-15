@@ -104,6 +104,7 @@ public class F3Symtab extends Symtab {
     static public final int MAX_FIXED_PARAM_LENGTH = 8;
     public final Type[] f3_FunctionTypes = new Type[MAX_FIXED_PARAM_LENGTH+1];
     public final Type f3_ObjectType;
+    public final Type f3_ValueType;
     public final Type f3_MixinType;
     public final Type f3_BaseType;
     public final Type f3_SequencesType;
@@ -306,6 +307,7 @@ public class F3Symtab extends Symtab {
         runMethodName = names.fromString(F3Defs.internalRunFunctionString);
 
         f3_ObjectType = enterClass(F3Defs.cObject);
+        f3_ValueType = enterClass(F3Defs.cValue);
         f3_MixinType = enterClass(F3Defs.cMixin);
         f3_BaseType = enterClass(F3Defs.cBase);
         

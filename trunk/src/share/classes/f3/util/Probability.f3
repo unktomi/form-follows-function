@@ -204,7 +204,6 @@ type Spread of a = function from a[] to Distribution of a;
 
 type Dice = Distribution of Integer[];
 
-
 function plus1 from (x is Number) to Distribution of Number 
 {
     uniform([x, x+1]);
