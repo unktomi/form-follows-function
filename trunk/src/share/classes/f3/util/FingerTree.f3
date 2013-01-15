@@ -490,7 +490,6 @@ public class Seq of a is Monad of (Seq, a) {
     { 
 	measurer: SIZE, measurement: SIZE.zero 
     }
-
     public function length to Integer 
     {
 	t.measurement;
@@ -530,6 +529,125 @@ public class Seq of a is Monad of (Seq, a) {
 	}
     }
 }
+
+/*
+
+abstract class Prio of (k is java.lang.Comparable of k, v) is Measured of Entry of (k, v) 
+{
+    abstract public function belowKey from (key is k) to Boolean;
+}
+
+class Finite of (k is java.lang.Comparable of k, v) is Prio of (k, v) {
+    const key is k;
+    const value is v;
+    function add from (x is Prio of (k, v)) to Prio of (k, v) 
+    {
+	if (x is Infinity of (k, v)) then this else {
+		const p = x as Finite of (k, v);
+		if (key <= p.key) this else p;
+	    }
+    }
+    override public function belowKey from (key is k) to Boolean 
+    {
+	this.key.compareTo(key) <= 0;
+    }
+}
+
+class Infinity of (k is java.lang.Comparable of k, v) is Prio of (k, v) {
+    public function add from (x is Prio of (k, v)) to Prio of (k, v) { x }
+    override public function belowKey from (key is k) to Boolean { no }
+}
+
+class PriorityMeasurer of (k is java.lang.Comparable of k, v) is Measurer of (Prio of (k, v)) {
+    override const zero = Infinity {};
+    override function add 
+	from (x is Prio of (k, v),
+	      y is Prio of (k, v)) 
+	to Prio of (k, v)
+    {
+	x.add(y)
+    }
+}
+
+public class Entry of (k, v) {
+    const key is k;
+    const value is v;
+}
+
+public class PriorityQueue of (k is java.lang.Comparable of k, v) {
+
+    protected var t is FingerTree of (Prio of (k, v), Entry of (k, v)) = 
+	Empty of (Prio of (k, v), Entry of (k, v)) 
+    { 
+	const m = PriorityMeasurer of (k, v) {
+	}
+	measurer: m, measurement: m.zero; 
+    };
+    
+    public function insert 
+	from (key is k,
+	      value is v) to ()
+    {
+	t = t.append(Entry { key: key, value: value });
+    }
+
+    public function union from (q is PriorityQueue of (k, v)) to PriorityQueue of (k, v) {
+	t = t.concat(q.t);
+	return this;
+    }
+
+    public function dequeue from (key is k) to v
+    {
+	
+    }
+	
+}
+class SeqSize is Measurer of Integer 
+{
+    override function measure of a from (x is a[]) to Integer
+    { 
+	x.size();
+    }
+    override const zero = 0;
+    override function add from (x is Integer, y is Integer) to Integer
+    {
+	x + y
+    }
+}
+
+const SEQ_SIZE = SeqSize {};
+
+public class Rope of a {
+
+    protected var seq is a[];
+    protected var t is FingerTree of (Integer, a) = 
+	Empty of (Integer, a) 
+    { 
+	measurer: SEQ_SIZE, measurement: SEQ_SIZE.zero 
+    }
+	
+
+    public function length to Integer 
+    {
+	t.measurement;
+    }
+
+    public function append from (x is a) to ()
+    {
+	insert x into seq;
+	if (seq.size() == chunkSize)
+	t = t.append(seq);
+	seq = [];
+    }
+
+    public function prepend from (x is a) to ()
+    {
+	t = t.append(x);
+    }
+
+}
+
+*/
 
 function run 
 {

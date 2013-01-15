@@ -198,9 +198,10 @@ public class Builtins {
 	return Pair.<Either<a,b>,Either<a,b>>both(Builtins.<a,b>former(x), Builtins.<a,b>latter(y));
     }
     */
-    public static <a,b> Pair<a, b> both(a x,  b y) 
+
+    public static <a,b> Pair<? extends a, ? extends b> both(a x,  b y) 
     {
-	return Pair.<a,b>both(x, y);
+	return Pair.both(x, y);
     }
 
     public static <a, F extends Functor> Sequence<a> toSequence(Functor<F, a> xs)
@@ -220,27 +221,27 @@ public class Builtins {
 	return x;
     }
 
-    public static <a, b> Pair<a,b> $comma(a x, b y) 
+    public static <a, b> Pair<? extends a,? extends b> $comma(a x, b y) 
     {
-	return Pair.<a,b>both(x, y);
+	return Pair.both(x, y);
     }
 
-    public static <a> Pair<a,java.lang.Integer> $comma(a x, int y) 
+    public static <a> Pair<? extends a,? extends java.lang.Integer> $comma(a x, int y) 
     {
 	return Pair.<a,java.lang.Integer>both(x, y);
     }
 
-    public static <a> Pair<java.lang.Integer, a> $comma(int x, a y) 
+    public static <a> Pair<? extends java.lang.Integer, ? extends a> $comma(int x, a y) 
     {
 	return Pair.<java.lang.Integer, a>both(x, y);
     }
 
-    public static <a> Pair<a,java.lang.Float> $comma(a x, float y) 
+    public static <a> Pair<? extends a,? extends java.lang.Float> $comma(a x, float y) 
     {
 	return Pair.<a,java.lang.Float>both(x, y);
     }
 
-    public static <a> Pair<java.lang.Float, a> $comma(float x, a y) 
+    public static <a> Pair<? extends java.lang.Float, ? extends a> $comma(float x, a y) 
     {
 	return Pair.<java.lang.Float, a>both(x, y);
     }
