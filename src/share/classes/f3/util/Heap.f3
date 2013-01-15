@@ -139,7 +139,8 @@ class Split of (a is java.lang.Comparable of a) {
 function split of (a is java.lang.Comparable of a)
     from (x is Node of a,
 	  xs is (Node of a)[]) 
-    to Split of a {
+    to Split of a 
+{
     Split of a {
 	head: x;
 	tail: xs;

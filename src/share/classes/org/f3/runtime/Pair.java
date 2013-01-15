@@ -31,23 +31,23 @@ public class Pair<a, b> implements Monad<Pair, a> {
 	return false;
     }
 
-    public <c> Pair<c, b> map(Function1<? extends c, ? super a> f) {
+    public <c> Pair<? extends c, ? extends b> map(Function1<? extends c, ? super a> f) {
 	return new Pair<c, b>(f.invoke(first), second);
     }
 
-    public <c, d> Pair<c, d> flatmap(Function1<? extends Pair<c, d>, ? super a> f) {
+    public <c, d> Pair<? extends c, ? extends d> flatmap(Function1<? extends Pair<? extends c, ? extends d>, ? super a> f) {
 	return f.invoke(first);
     }
     
-    public <c> Pair<Pair<a, b>, c> $comma(c x) {
+    public <c> Pair<? extends Pair<a, b>, ? extends c> $comma(c x) {
 	return new Pair<Pair<a, b>, c>(this, x);
     }
 
-    public static <a, b> Pair<a, b> both(a x, b y) {
+    public static <a, b> Pair<? extends a, ? extends b> both(a x, b y) {
 	return new Pair<a, b>(x, y);
     }
 
-    public Pair<b,a> swap() {
+    public Pair<? extends b, ? extends a> swap() {
 	return new Pair<b,a>(second, first);
     }
 

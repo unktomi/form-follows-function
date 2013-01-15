@@ -1209,7 +1209,7 @@ public class F3Attr implements F3Visitor {
 
                 initType = attribExpr(tree.getInitializer(), initEnv, declType);
 
-		//System.err.println("initType "+ v + " = "+initType.getClass()+" "+initType);
+		System.err.println("initType "+ v + " = "+initType.getClass()+" "+initType);
                 /*
                  * We introduce a synthetic variable for bound function result.
                  * See F3BoundContextAnalysis. If the type of that var is

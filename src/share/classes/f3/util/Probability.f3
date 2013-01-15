@@ -71,18 +71,18 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
 	    likelihoods: normalized;
 	}
     }
-
+/*
     public function * of b
 	from (d is Distribution of b) 
-	to Distribution of ((a, b))
+	to Distribution of (Pair of (..a, ..b))
     {
-	Distribution of ((a, b)) {
+	Distribution of (Pair of (..a, ..b)) {
 	    likelihoods: foreach (x in likelihoods, y in d.likelihoods) {
 		probably((x.event, y.event), x.likelihood * y.likelihood);
 	    }
 	}
     }
-
+*/
     override function of b map 
 	from (f is function from a to b) 
 	to Distribution of b
