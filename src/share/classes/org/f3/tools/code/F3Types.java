@@ -553,6 +553,17 @@ public class F3Types extends Types {
 	}
     }
 
+    public boolean isValueType(Type t) {
+	System.err.println("t="+t+", valueType="+syms.f3_ValueType);
+	for (Type st : supertypesClosure(t)) {
+	    System.err.println("st="+st);
+	    if (isSameType(st, syms.f3_ValueType)) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
     @Override
     public Type asSuper(Type t, Symbol sym) {
          return asSuper.visit(t, sym);

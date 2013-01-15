@@ -11,7 +11,7 @@ import org.f3.runtime.*;
  * a 'foreach' loop.
  */    
 
-public abstract class Optional of a is Monad of (Optional, a) 
+public abstract class Optional of a is Monad of (Optional, a), F3Value
 {
     abstract override function map of b 
 	from (f is function from a to b) 
@@ -79,6 +79,14 @@ public class Present of a is Optional of a
     {
 	"present: {x}"
     }
+
+    override function equals from (obj is Object) to Boolean 
+    {
+	(obj is Present of a) and {
+	    const y = obj as Present of a;
+	    x == y
+	}
+    }
 }
 
 public class Absent of a is Optional of a
@@ -111,6 +119,12 @@ public class Absent of a is Optional of a
     {
 	"absent"
     }
+
+    override function equals from (obj is Object) to Boolean 
+    {
+	obj is Absent of a
+    }
+							     
 }
 
 public function present of a 
@@ -123,12 +137,14 @@ public function present of a
     }
 }
 
-const Nothing = Absent of null {}
+static def Nothing = Absent of null {};
 
 public function absent of a to Absent of a
 {
     Nothing as Absent of a;
 }
+
+public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Nothing);
 
 
 

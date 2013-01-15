@@ -511,11 +511,14 @@ public abstract class F3TranslationSupport {
                types.isSameType(type, syms.f3_DurationType) ||
                types.isSameType(type, syms.f3_LengthType) ||
                types.isSameType(type, syms.f3_AngleType) ||
-               types.isSameType(type, syms.f3_ColorType);
+               types.isSameType(type, syms.f3_ColorType) ||
+	    types.isValueType(type);
     }
 
     JCExpression makeDefaultValue(DiagnosticPosition diagPos, Type type) {
-        return makeDefaultValue(diagPos, types.typeRep(type), type);
+        JCExpression result = makeDefaultValue(diagPos, types.typeRep(type), type);
+	System.err.println("make default value: "+ type + " = "+result);
+	return result;
     }
 
     JCExpression makeDefaultValue(DiagnosticPosition diagPos, F3VarSymbol vsym) {
@@ -543,7 +546,18 @@ public abstract class F3TranslationSupport {
             }
             // fall through
         }
+	if (types.isValueType(type)) {
+	    System.err.println("access default value: "+ type);
+	    return accessDefaultValue(diagPos, type);
+	} else {
+	    System.err.println("not a value type: "+ type);
+	}
         return makeLit(diagPos, type, typeRep.defaultValue());
+    }
+
+    JCExpression Null()                 { return make.Literal(TypeTags.BOT, null); }
+    JCExpression EQ(JCExpression v1, JCExpression v2) {
+	return make.Binary(JCTree.EQ, v1, v2);
     }
 
     /** Make an attributed tree representing a literal. This will be
@@ -782,6 +796,12 @@ public abstract class F3TranslationSupport {
         return make.at(diagPos).Select(TypeInfo(diagPos, elemType), defs.emptySequence_FieldName);
     }
 
+    JCExpression accessDefaultValue(DiagnosticPosition diagPos, Type type) {
+        JCExpression acc = castFromObject(castFromObject(make.at(diagPos).Select(TypeInfo(diagPos, type), defs.defaultValue_FieldName), syms.objectType), type);
+	return make.Conditional(EQ(TypeInfo(diagPos, type), Null()), Null(), 
+				acc);
+    }
+
     private String escapeTypeName(Type type) {
         return type.toString().replace(F3Defs.typeCharToEscape, F3Defs.escapeTypeChar);
     }
@@ -818,7 +838,8 @@ public abstract class F3TranslationSupport {
             return primitiveTypeInfo(diagPos, syms.doubleTypeName);
         } else if (types.isSameType(type, syms.f3_StringType)) {
             return primitiveTypeInfo(diagPos, syms.stringTypeName);
-        } else if (types.isSameType(type, syms.f3_DurationType)) {
+	    //} else if (types.isSameType(type, syms.f3_DurationType)) {
+	} else if (types.isValueType(type)) {
             JCExpression fieldRef = make.at(diagPos).Select(makeType(diagPos, type), defs.defaultingTypeInfo_FieldName);
             // If TYPE_INFO becomes a Location again, ad back this line
             //    fieldRef = getLocationValue(diagPos, fieldRef, TYPE_KIND_OBJECT);

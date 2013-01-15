@@ -2495,6 +2495,10 @@ public abstract class F3AbstractTranslation
             if (types.isSequence(argType) || types.isSameType(argType, syms.f3_StringType)) {
                 return Call(defs.Checks_isNull, arg);
             } else {
+		if (isValueType(argType)) {
+		    JCExpression defaultValue = makeDefaultValue(diagPos, argType);
+		    return EQ(arg, defaultValue);
+		}
                 return EQnull(arg);
             }
         }

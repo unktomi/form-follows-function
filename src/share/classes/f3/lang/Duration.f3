@@ -291,6 +291,7 @@ public class Duration extends Comparable of Duration {
     }
 
     override function equals(obj : Object) : Boolean {
+	if (obj == null) return this.equals(ZERO);
         if (obj instanceof Duration) {
             def d = obj as Duration;
             if (isSameObject(d, this)) {

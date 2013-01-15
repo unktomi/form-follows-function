@@ -132,8 +132,8 @@ function merge of (a is java.lang.Comparable of a)
 }
 
 class Split of (a is java.lang.Comparable of a) {
-    const head is Node of a;
-    const tail is (Node of a)[];
+    const first is Node of a;
+    const second is (Node of a)[];
 }
 
 function split of (a is java.lang.Comparable of a)
@@ -142,8 +142,8 @@ function split of (a is java.lang.Comparable of a)
     to Split of a 
 {
     Split of a {
-	head: x;
-	tail: xs;
+	first: x;
+	second: xs;
     }
 }
 
@@ -160,8 +160,8 @@ function removeMinTree of (a is java.lang.Comparable of a)
 	const t1 = ts[0];
 	const ts1 = ts[1..];
 	const p = removeMinTree(ts1);
-	const t2 = p.head;
-	const ts2 = p.tail;
+	const t2 = p.first;
+	const ts2 = p.second;
 	if (t1.root().compareTo(t2.root()) <= 0) 
 	    then split(t1, ts1)
 	else 
@@ -204,7 +204,7 @@ public class Heap of (a is java.lang.Comparable of a) {
 
     public function getMin to a 
     {
-	removeMinTree(ts).head.root()
+	removeMinTree(ts).first.root()
     }
 
     function insertAll 
@@ -221,14 +221,14 @@ public class Heap of (a is java.lang.Comparable of a) {
 	    throw new java.lang.RuntimeException("empty");
 	}
 	const p = removeMinTree(ts);
-	const n = p.head;
+	const n = p.first;
 	const xs = n.xs;
 	const ts1 = n.c;
-	const ts2 = p.tail;
+	const ts2 = p.second;
 	Heap of a 
 	{
 	    length: length-1;
-	    ts: insertAll(p.head.xs, merge(ts1.reverse(), ts2))
+	    ts: insertAll(p.first.xs, merge(ts1.reverse(), ts2))
 	}
     }
 
@@ -242,7 +242,8 @@ public class Heap of (a is java.lang.Comparable of a) {
     }
 }
 
-public function toHeap of (a is java.lang.Comparable of a) from (xs is a[]) to Heap of a 
+public function toHeap of (a is java.lang.Comparable of a) 
+       from (xs is a[]) to Heap of a 
 {
     var h = Heap of a {};
     for (x in xs) {
@@ -253,5 +254,5 @@ public function toHeap of (a is java.lang.Comparable of a) from (xs is a[]) to H
 
 
 function run {
-    println(toHeap([[1..5].reverse(), [10..20]]));
+    println(toHeap(foreach (i in [1..1000]) java.lang.Math.random() as Number));
 }
