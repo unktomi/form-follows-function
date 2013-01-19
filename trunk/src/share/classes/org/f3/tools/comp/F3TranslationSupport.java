@@ -517,7 +517,7 @@ public abstract class F3TranslationSupport {
 
     JCExpression makeDefaultValue(DiagnosticPosition diagPos, Type type) {
         JCExpression result = makeDefaultValue(diagPos, types.typeRep(type), type);
-	System.err.println("make default value: "+ type + " = "+result);
+	//System.err.println("make default value: "+ type + " = "+result);
 	return result;
     }
 
@@ -547,10 +547,9 @@ public abstract class F3TranslationSupport {
             // fall through
         }
 	if (types.isValueType(type)) {
-	    System.err.println("access default value: "+ type);
 	    return accessDefaultValue(diagPos, type);
 	} else {
-	    System.err.println("not a value type: "+ type);
+	    //System.err.println("not a value type: "+ type);
 	}
         return makeLit(diagPos, type, typeRep.defaultValue());
     }
@@ -2227,9 +2226,9 @@ public abstract class F3TranslationSupport {
         /*
          * Construct a symbol and type for a new class.
          */
-        protected ClassSymbol makeClassSymbol(long flags, Name name, Symbol owner) {
+        protected ClassSymbol makeClassSymbol(long flags, Name name, List<Type> targs, Symbol owner) {
             ClassSymbol classSym = new ClassSymbol(flags, name, owner);
-            ClassType type = new ClassType(Type.noType, List.<Type>nil(), classSym);
+            ClassType type = new ClassType(Type.noType, targs, classSym);
             classSym.type = type;
 	    classSym.members_field = new Scope(classSym);
             return classSym;

@@ -2,7 +2,7 @@ package org.f3.runtime;
 import org.f3.functions.*;
 
 /**
- * Represents a Pair of values of types 'a' and 'b' respectively
+ * Represents a pair of values of types 'a' and 'b' respectively
  *
  * For the mathematically inclined:
  *    Pair of (a, b) = a x b
@@ -11,7 +11,8 @@ import org.f3.functions.*;
  * a 'for' loop.
  */    
 
-public class Pair<a, b> implements Monad<Pair, a> {
+public class Pair<a, b> implements Monad<Pair, a>, Comonad<Pair, a> 
+{
 
     public final a first;
     public final b second;
@@ -35,8 +36,13 @@ public class Pair<a, b> implements Monad<Pair, a> {
 	return new Pair<c, b>(f.invoke(first), second);
     }
 
-    public <c, d> Pair<? extends c, ? extends d> flatmap(Function1<? extends Pair<? extends c, ? extends d>, ? super a> f) {
+    public <c> Pair<? extends c, ? extends b> flatmap(Function1<? extends Pair<? extends c, ? extends b>, ? super a> f) {
 	return f.invoke(first);
+    }
+
+    public <c> Pair<? extends c, ? extends b> 
+	coflatmap(Function1<? extends c, ? super Pair<? extends a, ? extends b> > f) {
+	return both(f.invoke(this), second);
     }
     
     public <c> Pair<? extends Pair<a, b>, ? extends c> $comma(c x) {

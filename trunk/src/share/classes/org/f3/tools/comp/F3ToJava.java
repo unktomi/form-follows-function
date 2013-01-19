@@ -399,7 +399,9 @@ public class F3ToJava extends F3AbstractTranslation {
 							  implementing, 
 							  model.iDefinitions);
         
-                    cInterface.sym = makeClassSymbol(mods.flags, cInterface.name, tree.sym.owner);
+                    cInterface.sym = makeClassSymbol(mods.flags, cInterface.name, 
+						     tree.typeArgTypes, 
+						     tree.sym.owner);
                     
                     membersToSymbol(cInterface);
                     System.err.println("generated: "+ cInterface);

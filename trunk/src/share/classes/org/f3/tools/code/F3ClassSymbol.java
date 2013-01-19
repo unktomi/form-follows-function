@@ -48,6 +48,7 @@ public class F3ClassSymbol extends ClassSymbol {
     private int memberVarCount = 0;
     private int scriptVarCount = 0;
     private Name defaultVar;
+    public F3ClassSymbol mixinSymbol;
     
     /** Creates a new instance of F3ClassSymbol */
     public F3ClassSymbol(long flags, Name name, Symbol owner) {

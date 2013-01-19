@@ -1595,8 +1595,8 @@ class F3AnalyzeClass {
         // Make a distinction between superclasses and mixins.
         if (isMixinClass(cSym)) {
             // Record immediate mixin classes in left to right order.
-	    System.err.println("mixin class in: "+ currentClassSym.type);
-	    System.err.println("mixin class: "+ cSym.type);
+	    //System.err.println("mixin class in: "+ currentClassSym.type);
+	    //System.err.println("mixin class: "+ cSym.type);
             if (isImmediateSuper) {
                 immediateMixins.append(cSym);
             }

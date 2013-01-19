@@ -1400,6 +1400,10 @@ public class F3Check {
 			       MethodSymbol m,
 			       MethodSymbol other,
 			       ClassSymbol origin) {
+	//System.err.println(tree);
+	//System.err.println(m);
+	//System.err.println(other);
+	//System.err.println(origin);
 	// Don't check overriding of synthetic methods or by bridge methods.
 	if ((m.flags() & (SYNTHETIC|BRIDGE)) != 0 || (other.flags() & SYNTHETIC) != 0) {
 	    return;
@@ -1769,6 +1773,7 @@ public class F3Check {
     void checkOverride(F3Tree tree, MethodSymbol m) {
         ClassSymbol origin = (ClassSymbol) m.owner;
 	origin.complete();
+	//System.err.println("check override: "+tree+": "+m);
         boolean doesOverride = false;
         if ((origin.flags() & ENUM) != 0 && names.finalize.equals(m.name)) {
             if (m.overrides(syms.enumFinalFinalize, origin, types, false)) {
@@ -1776,17 +1781,22 @@ public class F3Check {
                 return;
             }
         }
-
         for (Type t : types.supertypesClosure(origin.type)) {
+	    //System.err.println("st="+t);
+	    //System.err.println("origin="+origin.type);
             if (t.tag == CLASS) {
                 TypeSymbol c = t.tsym;
                 Scope.Entry e = c.members().lookup(m.name);
+		//System.err.println("lookup "+ m.name+"="+e +" in "+c.members());
                 while (e.scope != null) {
                     e.sym.complete();
+		    //System.err.println("other="+e.sym.owner.type);
                     if (types.overrides(m, e.sym, origin, false)) { // hack
                         checkOverride(tree, m, (MethodSymbol)e.sym, origin);
                         doesOverride = !e.sym.type.getReturnType().isErroneous();
-                    } 
+                    }  else {
+			//System.err.println("doesn't override: "+e.sym);
+		    }
                     e = e.next();
                 }
             }
