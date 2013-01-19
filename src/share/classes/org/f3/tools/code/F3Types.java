@@ -248,7 +248,7 @@ public class F3Types extends Types {
             elementType(type);
     }
 
-    Type functorElementType(Type type) {
+    public Type functorElementType(Type type) {
 	Type elemType = functorElementType0(type);
 	/*
 	if (elemType != null && 
