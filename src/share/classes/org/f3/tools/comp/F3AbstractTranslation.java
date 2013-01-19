@@ -2399,7 +2399,8 @@ public abstract class F3AbstractTranslation
                 case AMP:
                     return toResult(translateAddressOf(expr, transExpr), syms.f3_PointerType);
 	        case DEREF:
-		    return toResult(Call(transExpr, defs.get_PointerMethodName), expr.type);
+		    JCExpression exp = Call(transExpr, defs.get_PointerMethodName);
+		    return toResult(exp, tree.type);
                 case REVERSE:
                     if (types.isSequence(expr.type)) {
                         // call runtime reverse of a sequence

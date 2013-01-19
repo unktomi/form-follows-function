@@ -25,7 +25,7 @@ package org.f3.runtime;
 import org.f3.runtime.sequence.Sequences;
 import f3.animation.KeyValueTarget;
 import f3.animation.KeyValueTarget.Type;
-
+import org.f3.functions.Function1;
 
 /**
  * Pointers
@@ -33,10 +33,44 @@ import f3.animation.KeyValueTarget.Type;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class ConstPointer<This extends F3Object,a> {
+public class ConstPointer<This extends F3Object,a> implements Functor<ConstPointer, a> {
     final Type type;
     final This obj;
     final int varnum;
+
+    public static class MappedPointer<This extends F3Object, a, b> extends ConstPointer<This, b> {
+	final ConstPointer<This, a> self;
+	final Function1<? extends b, ? super a> f;
+	public MappedPointer(Type type, 
+			     This obj, 
+			     int varnum, 
+			     ConstPointer<This, a> self, 
+			     Function1<? extends b, ? super a> f) {
+	    super(type, obj, varnum);
+	    this.self = self;
+	    this.f = f;
+	}
+	public b getDefaultValue() {
+	    return f.invoke(self.getDefaultValue());
+	}
+	public b get() {
+	    return f.invoke(self.get());
+	}
+	public b get(int pos) {
+	    return f.invoke(self.get(pos));
+	}
+	public boolean equals(Object o) {
+	    if (o instanceof MappedPointer) {
+		MappedPointer p = (MappedPointer)o;
+		return self.equals(p.self) &&
+		    f.equals(p.f);
+	    }
+	    return false;
+	}
+	public int hashCode() {
+	    return super.hashCode() ^ self.hashCode() ^ f.hashCode();
+	}
+    }
 
     public static <This extends F3Object, a> 
 	ConstPointer<This,a> make(Type type, This obj, int varnum) {
@@ -49,7 +83,16 @@ public class ConstPointer<This extends F3Object,a> {
         this.varnum = varnum;
     }
 
-    public Object getDefaultValue() {
+    public <b> ConstPointer<? extends This, ? extends b>
+	map(Function1<? extends b, ? super a> f) {
+	return new MappedPointer<This, a, b>(type, obj, varnum, this, f);
+    }
+
+    public a getDefaultValue() {
+	return (a)getDefaultValue0();
+    }
+
+    Object getDefaultValue0() {
         switch (type) {
             case BYTE: return (byte)0;
             case SHORT: return (short)0;

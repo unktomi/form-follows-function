@@ -1181,6 +1181,13 @@ public class F3Resolve {
     Symbol loadClass(F3Env<F3AttrContext> env, Name name) {
         try {
             ClassSymbol c = reader.loadClass(name);
+	    if (c instanceof F3ClassSymbol) {
+		ClassSymbol mixin = ((F3ClassSymbol)c).mixinSymbol;
+		if (mixin != null) {
+		    c = mixin;
+		    System.err.println("resolved mixin: "+ c);
+		}
+	    }
             return isAccessible(env, c) ? c : new AccessError(c);
         } catch (ClassReader.BadClassFile err) {
             throw err;
@@ -2461,8 +2468,8 @@ public class F3Resolve {
                                     ((MethodSymbol) wrongSym).params);
                     else
                         wrongSymStr = wrongSym.toString();
-		    System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
-		    Thread.currentThread().dumpStack();
+		    //System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
+		    //Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,

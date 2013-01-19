@@ -248,7 +248,18 @@ public class F3Types extends Types {
             elementType(type);
     }
 
-    public Type functorElementType(Type type) {
+    Type functorElementType(Type type) {
+	Type elemType = functorElementType0(type);
+	/*
+	if (elemType != null && 
+	    !(elemType instanceof WildcardType)) {
+	    elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+	}
+	*/
+	return elemType;
+    }
+
+    Type functorElementType0(Type type) {
 	Type functor = getFunctor(type);
 	if (functor != null) {
 	    //System.err.println("*functor="+toF3String(functor));
@@ -275,6 +286,8 @@ public class F3Types extends Types {
     }
 
     public Type monadElementType(Type type) {
+	return functorElementType(type);
+	/*
 	Type monad = getMonad(type);
 	if (monad != null) {
 	    List<Type> list = monad.getTypeArguments();
@@ -290,6 +303,7 @@ public class F3Types extends Types {
 	    }
 	}
 	return null;
+	*/
     }
 
     public Type comonadElementType(Type type) {
@@ -359,8 +373,12 @@ public class F3Types extends Types {
     }
 
     public Type pointerType(Type siteType, Type elemType, boolean readOnly) {
+	elemType = boxedTypeOrType(elemType);
+	if (false && !(elemType instanceof WildcardType) && !(elemType instanceof TypeVar)) {
+	    elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+	}
         return applySimpleGenericType(readOnly ? syms.f3_ReadOnlyPointerType : syms.f3_PointerType, 
-				      List.<Type>of(siteType, boxedTypeOrType(elemType)));
+				      List.<Type>of(siteType, elemType));
     }
 
     public Type sequenceType(Type elemType) {
@@ -418,7 +436,15 @@ public class F3Types extends Types {
     }
 
     public Type pointerElementType(Type seqType) {
-        Type elemType = seqType.getTypeArguments().head;
+        Type elemType = seqType;
+        while (elemType instanceof CapturedType)
+            elemType = ((CapturedType) elemType).wildcard;
+        while (elemType instanceof WildcardType)
+            elemType = ((WildcardType) elemType).type;
+	if (elemType == null || elemType.getTypeArguments().size() < 2) {
+	    return syms.f3_AnyType;
+	}
+	elemType = elemType.getTypeArguments().tail.head;
         while (elemType instanceof CapturedType)
             elemType = ((CapturedType) elemType).wildcard;
         while (elemType instanceof WildcardType)
@@ -554,9 +580,7 @@ public class F3Types extends Types {
     }
 
     public boolean isValueType(Type t) {
-	System.err.println("t="+t+", valueType="+syms.f3_ValueType);
 	for (Type st : supertypesClosure(t)) {
-	    System.err.println("st="+st);
 	    if (isSameType(st, syms.f3_ValueType)) {
 		return true;
 	    }
@@ -614,6 +638,13 @@ public class F3Types extends Types {
 	if (isSameType(t, s)) {
 	    return true;
 	}
+	/*
+	if (isFunctor(t) && isFunctor(s)) {
+	    if (super.isConvertible(erasure(t), erasure(s), warn)) {
+		return isConvertible(functorElementType(t), functorElementType(s), warn);
+	    }
+	}
+	*/
         if (super.isConvertible(t, s, warn))
             return true;
         if (isSequence(t) && isArray(s))
@@ -877,9 +908,11 @@ public class F3Types extends Types {
         if (sym.isConstructor() || _other.kind != MTH) return false;
         if (sym == _other) return true;
         MethodSymbol other = (MethodSymbol)_other;
-        // assert types.asSuper(origin.type, other.owner) != null;
+        assert asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
+	//System.err.println("mt="+mt);
+	//System.err.println("ot="+ot);
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null && y != null; x = x.tail, y = y.tail) {
 	    if (x.head != null && boxedTypeOrType(x.head) == y.head) {
@@ -1072,22 +1105,44 @@ public class F3Types extends Types {
 	    }
 	    return null;
 	}
+	@Override
+	public Void visitCapturedType(CapturedType t, StringBuilder buffer) {
+	    
+	    if (false) {
+		if (t.lower != syms.botType) {
+		    visit(t.lower, buffer);
+		    buffer.append("..");
+		}
+	    }
+	    if (t.wildcard.kind == BoundKind.EXTENDS) {
+		buffer.append("*");
+	    } 
+	    visit(t.wildcard, buffer);
+	    if (t.wildcard.kind == BoundKind.SUPER) {
+		buffer.append("*");
+	    } 
+	    return null;
+	}
 
         @Override
         public Void visitWildcardType(WildcardType t, StringBuilder buffer) {
 	    if (t.kind == BoundKind.EXTENDS) {
 		if (t.bound == null) {
 		} else {
-		    visit(t.bound, buffer);
-		    buffer.append(" is ");
+		    if (false) {
+			visit(t.bound, buffer);
+			buffer.append(" is ");
+		    }
 		}
 		buffer.append("..");
 		visit(t.type, buffer);
 	    } else if (t.kind == BoundKind.SUPER) {
 		if (t.bound == null) {
 		} else {
-		    visit(t.bound, buffer);
-		    buffer.append(" is ");
+		    if (false) {
+			visit(t.bound, buffer);
+			buffer.append(" is ");
+		    }
 		}
 		visit(t.type, buffer);
 		buffer.append("..");
@@ -1239,10 +1294,12 @@ public class F3Types extends Types {
 		    }
 		    for (Type targ: targs) {
 			buffer.append(str);
+			/*
 			if (!(targ instanceof WildcardType)) {
 			    visit(targ, buffer);
 			    buffer.append("..");
 			}
+			*/
 			visit(targ, buffer);
 			str = ", ";
 		    }
@@ -1562,4 +1619,77 @@ public class F3Types extends Types {
 	//System.err.println("sig for : "+ toF3String(t)+": "+r);
 	return r;
     }
+
+    public Type memberType(Type t, Symbol sym) {
+        return (sym.flags() & STATIC) != 0
+            ? sym.type
+            : memberType.visit(t, sym);
+    }
+    // where
+        private SimpleVisitor<Type,Symbol> memberType = new SimpleVisitor<Type,Symbol>() {
+
+            public Type visitType(Type t, Symbol sym) {
+		//System.err.println("VISIT: "+t+" in "+sym);
+                return sym.type;
+            }
+
+            @Override
+            public Type visitWildcardType(WildcardType t, Symbol sym) {
+                return memberType(upperBound(t), sym);
+            }
+
+            @Override
+            public Type visitClassType(ClassType t, Symbol sym) {
+                Symbol owner = sym.owner;
+                long flags = sym.flags();
+                if (((flags & STATIC) == 0) && owner.type.isParameterized()) {
+                    Type base = asOuterSuper(t, owner);
+                    if (base != null) {
+                        List<Type> ownerParams = owner.type.allparams();
+                        List<Type> baseParams = base.allparams();
+                        if (ownerParams.nonEmpty()) {
+                            if (baseParams.isEmpty()) {
+                                // then base is a raw type
+                                return erasure(sym.type);
+                            } else {
+				if (false) {
+				    System.err.println("sym="+sym+", sym.type="+sym.type);
+				    for (Type t1: sym.type.getTypeArguments()) {
+					System.err.println("sym.type.param="+t1.getClass()+"@"+System.identityHashCode(t1) + ": "+t1);
+				    }
+				    for (Type t1: ownerParams) {
+					System.err.println("ownerParam="+t1.getClass()+"@"+System.identityHashCode(t1) + ": "+t1);
+				    }
+				    for (Type t1: baseParams) {
+					System.err.println("baseParam="+t1.getClass()+"@"+System.identityHashCode(t1) + ": "+t1);
+				    }
+				    if (sym.type instanceof MethodType) {
+					MethodType mt= (MethodType)sym.type;
+					for (Type t1: mt.argtypes) {
+					    System.err.println("arg'="+t1.getClass()+"@"+System.identityHashCode(t1) + ": "+t1);
+					}
+				    }
+				}
+				Type r = subst(sym.type, ownerParams, baseParams);
+				if (false) System.err.println("subst "+sym.type +" => "+r);
+				return r;
+                            }
+                        }
+                    }
+                }
+                return sym.type;
+            }
+
+            @Override
+            public Type visitTypeVar(TypeVar t, Symbol sym) {
+                return memberType(t.bound, sym);
+            }
+
+            @Override
+            public Type visitErrorType(ErrorType t, Symbol sym) {
+                return t;
+            }
+        };
+    // </editor-fold>
+
 }

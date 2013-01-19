@@ -340,6 +340,7 @@ public class F3TreeInfo {
 	case NEG:
 	case NOT:
 	case AMP:
+	case DEREF:
 	case PREINC:
 	case PREDEC:
 	case REVERSE:

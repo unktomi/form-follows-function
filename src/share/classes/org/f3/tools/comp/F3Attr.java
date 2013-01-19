@@ -1209,7 +1209,7 @@ public class F3Attr implements F3Visitor {
 
                 initType = attribExpr(tree.getInitializer(), initEnv, declType);
 
-		System.err.println("initType "+ v + " = "+initType.getClass()+" "+initType);
+		//System.err.println("initType "+ v + " = "+initType.getClass()+" "+initType);
                 /*
                  * We introduce a synthetic variable for bound function result.
                  * See F3BoundContextAnalysis. If the type of that var is
@@ -1732,12 +1732,14 @@ public class F3Attr implements F3Visitor {
 				  types.isSequence(bodyType) ? types.elementType(bodyType) : bodyType);
 	    } else {
 		if (comonadType != null) {
+		    /*
 		    Type comonadElementType = clause1Type;
 		    map = tree.getComonadMap(f3make, names, types, syms,
 					     comonadType,
 					     types.makeComonadType(comonadType, comonadElementType),
 					     bodyType,
 					     tree.isBound());
+		    */
 		} else {
 		    Type monadElementType = clause1Type;
 		    //System.err.println("monadType="+monadType);
@@ -3316,11 +3318,12 @@ public class F3Attr implements F3Visitor {
             }
             case DEREF: {
                 Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
-		Type argtype1 = check(tree, argtype, VAL, pkind, types.erasure(syms.f3_ReadOnlyPointerType), 
+		Type argtype1 = check(tree, types.erasure(argtype), VAL, pkind, 
+				      types.erasure(syms.f3_ReadOnlyPointerType), 
 				      pSequenceness);
                 Type owntype = types.pointerElementType(argtype);
-		System.err.println("argtype="+argtype);
                 result = check(tree, owntype, VAL, pkind, pt, pSequenceness); // fix me!!!
+		return;
             }
             case REVERSE: {
                 Type argtype = chk.checkNonVoid(tree.arg.pos(), attribExpr(tree.arg, env));
@@ -4123,7 +4126,6 @@ public class F3Attr implements F3Visitor {
     public void visitTypeClass(F3TypeClass tree) {
         F3Expression classNameExpr = ((F3TypeClass) tree).getClassName();
         Type type = attribType(classNameExpr, env);
-
         Cardinality cardinality = tree.getCardinality();
         if (cardinality != Cardinality.SINGLETON &&
                 type == syms.voidType) {
@@ -4131,6 +4133,12 @@ public class F3Attr implements F3Visitor {
             cardinality = Cardinality.SINGLETON;
         }
         type = sequenceType(type, cardinality);
+	BoundKind bk = tree.boundKind;
+	if (bk != null && bk != BoundKind.UNBOUND && !isWildcard(type)) {
+	    type = new WildcardType(types.boxedTypeOrType(type),
+				    bk,
+				    syms.boundClass);
+	}
         tree.type = type;
         result = type;
     }

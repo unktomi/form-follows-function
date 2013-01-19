@@ -873,7 +873,6 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                     } else {
                         long flags = st.tsym.flags_field;
                         boolean isMixin = (flags & F3Flags.MIXIN) != 0;
-
                         if (isMixin) {
                             mixing.append(stype);
                             chk.checkNotRepeated(stype.pos(), 

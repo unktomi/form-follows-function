@@ -412,15 +412,55 @@ public class F3ClassReader extends ClassReader {
         return s;
     }
     
-    void popMethodTypeArg(MethodType type) {
-        List<Type> argtypes = type.argtypes;
-        ListBuffer<Type> lb = ListBuffer.<Type>lb();
-        
-        for (int i = 1; i < argtypes.size(); i++) {
-            lb.append(argtypes.get(i));
-        }
-        
-        type.argtypes = lb.toList();
+    Type popMethodTypeArg(Type type, Name name, Type owner) {
+	MethodType mt;
+	ForAll forAll = null;
+	List<Type> argtypes;
+	if (type instanceof ForAll) {
+	    forAll = (ForAll)type;
+	    mt = type.asMethodType();
+	    argtypes = mt.argtypes;
+	    Type receiver = argtypes.head;
+	    if (false) {
+		for (Type t: forAll.getTypeVariables()) {
+		    System.err.println("t="+t.getClass()+"@"+System.identityHashCode(t) + ": "+t);
+		}
+		for (Type t: owner.allparams()) {
+		    System.err.println("owner="+t.getClass()+"@"+System.identityHashCode(t) + ": "+t);
+		}
+		for (Type t: argtypes) {
+		    System.err.println("arg="+t.getClass()+"@"+System.identityHashCode(t) + ": "+t);
+		}
+		for (Type t: receiver.allparams()) {
+		    System.err.println("rcvr="+t.getClass()+"@"+System.identityHashCode(t) + ": "+t);
+		}
+		System.err.println("pre subst: "+ argtypes);
+		for (Type t: argtypes) {
+		    System.err.println("arg="+t.getClass()+"@"+System.identityHashCode(t) + ": "+t);
+		}
+	    }
+	    argtypes = types.subst(argtypes.tail, forAll.getTypeArguments(), owner.allparams());
+	    if (false) {
+		System.err.println("post subst: "+ argtypes);
+		for (Type t: argtypes) {
+		    System.err.println("arg="+t.getClass()+"@"+System.identityHashCode(t) + ": "+t);
+		}
+	    }
+	} else {
+	    mt = (MethodType)type;
+	    argtypes = mt.argtypes.tail;
+	}
+        mt = new MethodType(argtypes,
+			    mt.getReturnType(),
+			    mt.getThrownTypes(),
+			    syms.methodClass);
+	if (forAll != null) {
+	    if (forAll.getTypeArguments().size() > 1) {
+		return new ForAll(forAll.getTypeArguments().tail, mt);
+	    }
+	}
+	//System.err.println("created: "+ name+" "+mt);
+	return mt;
     }
     
     MethodSymbol translateMethodSymbol(long flags, Symbol sym, Symbol owner) {
@@ -452,22 +492,18 @@ public class F3ClassReader extends ClassReader {
             }
         }
         Type type = translateType(mtype);
-        if (type instanceof MethodType) {
+        if ((type instanceof MethodType) || (type instanceof ForAll)) {
             boolean convertToStatic = false;
-            
             if (nameString.endsWith(F3Defs.implFunctionSuffix)) {
                 nameString = nameString.substring(0, nameString.length() - F3Defs.implFunctionSuffix.length());
                 convertToStatic = true;
             }
-            
             if (convertToStatic) {
                 flags &= ~Flags.STATIC;
-                popMethodTypeArg((MethodType)type);
+                type = popMethodTypeArg(type, name, owner.type);
             }
         }
-    
         name = names.fromString(nameString);
-        
         return new MethodSymbol(flags, name, type, owner);
     }
 
@@ -653,8 +689,7 @@ public class F3ClassReader extends ClassReader {
                 }
                 if (memsym instanceof MethodSymbol) {
                     MethodSymbol m = translateMethodSymbol(flags, memsym, csym);     
-                    csym.members_field.enter(m);
-
+                    csym.members_field.enterIfAbsent(m);
                 }
                 else if (memsym instanceof VarSymbol) {
                     // Eliminate any duplicate value/location.

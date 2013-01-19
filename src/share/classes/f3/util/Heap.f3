@@ -18,7 +18,8 @@ class Node of (a is java.lang.Comparable of a)
     function rank to Integer { r }
     function root to a { x }
 
-    function link from (t2 is Node of a) to Node of a {
+    function link from (t2 is Node of a) to Node of a 
+    {
 	if (x.compareTo(t2.x) <= 0) {
 	    Node of a {
 		r: r + 1;
@@ -141,7 +142,8 @@ function split of (a is java.lang.Comparable of a)
 	  xs is (Node of a)[]) 
     to Split of a 
 {
-    Split of a {
+    Split of a 
+    {
 	first: x;
 	second: xs;
     }

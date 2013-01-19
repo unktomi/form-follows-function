@@ -29,7 +29,7 @@ import org.f3.runtime.Functor;
 
 public class Function2<R, A1, A2> extends Function<R> implements Functor<Function2, R> {
 
-    public <Y> Function2<Y, A1, A2>  map(final Function1<? extends Y, ? super R> f) {
+    public <Y> Function2<Y, A1, A2> map(final Function1<? extends Y, ? super R> f) {
 	final Function2<R, A1, A2> self = this;
 	return new Function2<Y, A1, A2>() {
 	    public Y invoke(A1 x1, A2 x2) {
