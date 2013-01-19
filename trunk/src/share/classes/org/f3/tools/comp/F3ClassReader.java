@@ -689,7 +689,7 @@ public class F3ClassReader extends ClassReader {
                 }
                 if (memsym instanceof MethodSymbol) {
                     MethodSymbol m = translateMethodSymbol(flags, memsym, csym);     
-                    csym.members_field.enterIfAbsent(m);
+                    csym.members_field.enter(m);
                 }
                 else if (memsym instanceof VarSymbol) {
                     // Eliminate any duplicate value/location.
