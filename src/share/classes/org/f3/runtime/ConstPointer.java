@@ -33,7 +33,10 @@ import org.f3.functions.Function1;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class ConstPointer<This extends F3Object,a> implements Functor<ConstPointer, a> {
+//
+// pointers are Functors/Monads (i.e they are "containers" of 1 object, namely the thing they point at)
+//
+public class ConstPointer<This extends F3Object,a> implements Monad<ConstPointer, a>, Comonad<ConstPointer,a> {
     final Type type;
     final This obj;
     final int varnum;
@@ -86,6 +89,62 @@ public class ConstPointer<This extends F3Object,a> implements Functor<ConstPoint
     public <b> ConstPointer<? extends This, ? extends b>
 	map(Function1<? extends b, ? super a> f) {
 	return new MappedPointer<This, a, b>(type, obj, varnum, this, f);
+    }
+
+    public <b> ConstPointer<? extends F3Object, ? extends b>
+	flatmap(final Function1<? extends ConstPointer<? extends F3Object, ? extends b>, ? super a> f) {
+	final ConstPointer<This, a> self = this;
+	return new ConstPointer<F3Object, b>(Type.OBJECT, null, 0) {
+	    public b get() {
+		return f.invoke(self.get()).get();
+	    }
+	    public b getDefaultValue() {
+		return f.invoke(self.getDefaultValue()).get();
+	    }
+	    public b get(int pos) {
+		return f.invoke(self.get(pos)).get();
+	    }
+	    public boolean equals(Object o) {
+		return o == this;
+	    }
+	    public int hashCode() {
+		return self.hashCode() ^ f.hashCode();
+	    }
+	};
+    }
+
+    public <b> ConstPointer<? extends F3Object, ? extends b>
+	coflatmap(final Function1<? extends b,  ? super ConstPointer<? extends This, ? extends a>> f) {
+	final ConstPointer<This, a> self = this;
+	return new ConstPointer<F3Object, b>(Type.OBJECT, null, 0) {
+	    public b get() {
+		return f.invoke(self);
+	    }
+	    public b getDefaultValue() {
+		return f.invoke(new ConstPointer<This, a>(self.type, self.obj, self.varnum) {
+			public a get() {
+			    return self.getDefaultValue();
+			}
+		    });
+	    }
+	    public b get(final int pos) {
+		return f.invoke(new ConstPointer<This, a>(self.type, self.obj, self.varnum) {
+			public a get() {
+			    return self.get(pos);
+			}
+		    });
+	    }
+	    public boolean equals(Object o) {
+		return o == this;
+	    }
+	    public int hashCode() {
+		return self.hashCode() ^ f.hashCode();
+	    }
+	};
+    }
+
+    public a extract() {
+	return get();
     }
 
     public a getDefaultValue() {
