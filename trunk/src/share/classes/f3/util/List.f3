@@ -111,18 +111,19 @@ class Empty of a is List of a
     override const length = 0;
 
     override function accumulate of b 
-        from (z is b, 
-              f is function from (b, a) to b)
+        from (current is b, 
+              accumulator is function from (b, a) to b)
         to b
     {
-        z
+        current
     }
 
     override function accumulateBackwards of b 
-        from (z is b, f is function from (a, b) to b)
+        from (current is b, 
+	      accumulator is function from (a, b) to b)
         to b
     {
-        z
+        current
     }
 
     public override function append from (x is a) to List of a
@@ -172,18 +173,19 @@ class Single of a is List of a
     }
 
     override function accumulate of b 
-        from (z is b, 
-              f is function from (b, a) to b)
+        from (current is b, 
+              accumulator is function from (b, a) to b)
         to b
     {
-        f(z, x)
+        accumulator(current, x)
     }
 
     override function accumulateBackwards of b 
-        from (z is b, f is function from (a, b) to b)
+        from (current is b, 
+	      accumulator is function from (a, b) to b)
         to b
     {
-        f(x, z)
+        accumulator(x, current);
     }
 }
 
@@ -195,20 +197,25 @@ class Append of a is List of a
     override const length is Integer = bind prefix.length + 1;
 
     override function accumulate of b 
-        from (z is b, 
-              f is function from (b, a) to b)
+        from (initial is b, 
+              accumulator is function from (b, a) to b)
         to b
     {
-	const p = prefix.accumulate(z, f);
-	f(p, suffix)
+	var current = initial;
+	current = prefix.accumulate(current, accumulator);
+	current = accumulator(current, suffix);
+	return current;
     }
 
     override function accumulateBackwards of b 
-        from (z is b, f is function from (a, b) to b)
+        from (initial is b, 
+	      accumulator is function from (a, b) to b)
         to b
     {
-	const s = f(suffix, z);
-	prefix.accumulateBackwards(s, f)
+	var current = initial;
+	current = accumulator(suffix, current);
+	current = prefix.accumulateBackwards(current, accumulator);
+	return current;
     }
 
     override public function flatmap of b 
@@ -353,5 +360,5 @@ function run
     println(foreach (x in xs, y in xs) 
 	    {
 		x * y;
-	    })
+	    });
 }

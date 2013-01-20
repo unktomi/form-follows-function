@@ -254,7 +254,6 @@ public function toHeap of (a is java.lang.Comparable of a)
     return h;
 }
 
-
 function run {
     println(toHeap(foreach (i in [1..1000]) java.lang.Math.random() as Number));
 }

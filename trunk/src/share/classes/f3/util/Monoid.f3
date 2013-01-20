@@ -3,11 +3,16 @@ package f3.util;
 public abstract class Monoid of a
 {
     public const zero is a;
+
     abstract public function add from (x is a, y is a) to a;
-    public function append from (x is a) to function from a to a {
+
+    public function append from (x is a) to function from a to a 
+    {
 	add.apply(x)
     }
-    public function prepend from (x is a) to function from a to a {
+
+    public function prepend from (x is a) to function from a to a 
+    {
 	add.flip().apply(x)
     }
 }

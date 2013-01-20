@@ -357,6 +357,7 @@ public class F3Attr implements F3Visitor {
 						       localResult.tsym);
 			}
 		    } else {
+
 			Type bound = types.upperBound(localResult);
 			System.err.println("localResult="+localResult);
 			System.err.println("bound="+bound.getClass());
@@ -1594,11 +1595,13 @@ public class F3Attr implements F3Visitor {
             attribVar(var, forExprEnv);
             F3Expression expr = (F3Expression)clause.getSequenceExpression();
             Type exprType = types.upperBound(attribExpr(expr, forExprEnv));
-	    if (exprType instanceof MethodType) { // hack
+	    if (exprType instanceof ForAll) {
+		exprType = syms.makeFunctionType((ForAll)exprType);
+	    } else if (exprType instanceof MethodType) { // hack
 		exprType = syms.makeFunctionType((MethodType)exprType);
 	    }
             chk.checkNonVoid(((F3Tree)clause).pos(), exprType);
-
+	    System.err.println("exprType="+exprType);
             Type elemtype;
 	    if (clause.intoVar != null) {
 		if (!types.isComonad(exprType)) {
@@ -4399,7 +4402,13 @@ public class F3Attr implements F3Visitor {
 		    owntype = ((FunctionType)owntype).asMethodOrForAll();
 		    //System.err.println("owntype is now: "+ owntype);
 		}
-                if (env.info.tvars.nonEmpty()) {
+		if (owntype instanceof ForAll) {
+		    if (typeargtypes.nonEmpty()) {
+			owntype = types.subst(owntype.asMethodType(),
+					      owntype.getTypeArguments(),
+					      typeargtypes);
+		    }
+		} else if (env.info.tvars.nonEmpty()) {
                     Type owntype1 = new ForAll(env.info.tvars, owntype);
                     for (List<Type> l = env.info.tvars; l.nonEmpty(); l = l.tail) {
                         if (!owntype.contains(l.head)) {
