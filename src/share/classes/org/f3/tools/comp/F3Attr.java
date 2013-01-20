@@ -368,8 +368,9 @@ public class F3Attr implements F3Visitor {
 						       tv.bound);
 			    tc.args = typeArgTypes;
 			    tc.bound = tv.bound;
+			    tc.ctor = tv;
 			    localResult = tc;
-			    System.err.println("tc="+tc);
+			    System.err.println("tc="+tc.getClass()+": "+tc);
 			}
 		    }
 		    tree.type = localResult;
@@ -2213,6 +2214,7 @@ public class F3Attr implements F3Visitor {
     }
 
     public static class TypeCons extends TypeVar {
+	public Type ctor;
 	public List<Type> args;
 	public List<Type> getTypeArguments() {
 	    return args;
@@ -2225,6 +2227,13 @@ public class F3Attr implements F3Visitor {
 	}
 	public String toString() {
 	    return "class "+super.toString()+" of "+args;
+	}
+        public Type withTypeVar(Type t) {
+	    System.err.println("with type var: "+ this + ": "+t);
+	    return super.withTypeVar(t);
+	}
+	public boolean isA(Type t) {
+	    return lower == t;
 	}
     }
 

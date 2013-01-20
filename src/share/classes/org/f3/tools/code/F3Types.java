@@ -913,8 +913,15 @@ public class F3Types extends Types {
         Type ot = this.memberType(origin.type, other);
 	//System.err.println("mt="+mt);
 	//System.err.println("ot="+ot);
+	//System.err.println("other.owner: "+ other.owner);
+	//System.err.println("sym.owner: "+ sym.owner);
+	//System.err.println("asSuper: "+ asSuper(origin.type, other.owner));
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null && y != null; x = x.tail, y = y.tail) {
+	    if (x.head != null && y.head != null) {
+		//System.err.println("x.head="+x.head.getClass()+": "+x.head);
+		//System.err.println("y.head="+y.head.getClass()+": "+y.head);
+	    }
 	    if (x.head != null && boxedTypeOrType(x.head) == y.head) {
 		x.head = y.head;
 	    }
@@ -1671,7 +1678,7 @@ public class F3Types extends Types {
 				    }
 				}
 				Type r = subst(sym.type, ownerParams, baseParams);
-				if (false) System.err.println("subst "+sym.type +" => "+r);
+				//if (true) System.err.println("subst "+sym.type +" => "+r);
 				return r;
                             }
                         }
@@ -1692,4 +1699,168 @@ public class F3Types extends Types {
         };
     // </editor-fold>
 
+
+    public Type subst(Type t, List<Type> from, List<Type> to) {
+        return new Subst(from, to).subst(t);
+    }
+
+    private class Subst extends UnaryVisitor<Type> {
+        List<Type> from;
+        List<Type> to;
+
+        public Subst(List<Type> from, List<Type> to) {
+            int fromLength = from.length();
+            int toLength = to.length();
+            while (fromLength > toLength) {
+                fromLength--;
+                from = from.tail;
+            }
+            while (fromLength < toLength) {
+                toLength--;
+                to = to.tail;
+            }
+            this.from = from;
+            this.to = to;
+        }
+
+        Type subst(Type t) {
+	    if (t == null) {
+		System.err.println("type is null");
+		return syms.botType;
+	    }
+            if (from.tail == null)
+                return t;
+            else
+                return visit(t);
+        }
+
+        List<Type> subst(List<Type> ts) {
+            if (from.tail == null)
+                return ts;
+            boolean wild = false;
+            if (ts.nonEmpty() && from.nonEmpty()) {
+                Type head1 = subst(ts.head);
+                List<Type> tail1 = subst(ts.tail);
+                if (head1 != ts.head || tail1 != ts.tail)
+                    return tail1.prepend(head1);
+            }
+            return ts;
+        }
+
+        public Type visitType(Type t, Void ignored) {
+            return t;
+        }
+
+        @Override
+        public Type visitMethodType(MethodType t, Void ignored) {
+            List<Type> argtypes = subst(t.argtypes);
+            Type restype = subst(t.restype);
+            List<Type> thrown = subst(t.thrown);
+            if (argtypes == t.argtypes &&
+                restype == t.restype &&
+                thrown == t.thrown)
+                return t;
+            else
+                return new MethodType(argtypes, restype, thrown, t.tsym);
+        }
+
+        @Override
+        public Type visitTypeVar(TypeVar t, Void ignored) {
+	    //System.err.println("Subst t="+t);
+            for (List<Type> from = this.from, to = this.to;
+                 from.nonEmpty();
+                 from = from.tail, to = to.tail) {
+		//System.err.println("Subst from.head="+from.head);
+		if (t instanceof TypeCons) {
+		    TypeCons tc1 = (TypeCons)t;
+		    if (from.head instanceof TypeCons) {
+			TypeCons tc2 = (TypeCons)from.head;
+			if (tc1.ctor.tsym == tc2.tsym) {
+			    System.err.println("same type cons");
+			    System.err.println("to.head="+to.head);
+			    return makeTypeCons(to.head, tc1.getTypeArguments());
+			}
+		    }
+		}
+                if (t == from.head) {
+                    return to.head.withTypeVar(t);
+                }
+            }
+            return t;
+        }
+
+        @Override
+        public Type visitClassType(ClassType t, Void ignored) {
+            if (!t.isCompound()) {
+                List<Type> typarams = t.getTypeArguments();
+                List<Type> typarams1 = subst(typarams);
+                Type outer = t.getEnclosingType();
+                Type outer1 = subst(outer);
+                if (typarams1 == typarams && outer1 == outer)
+                    return t;
+                else
+                    return new ClassType(outer1, typarams1, t.tsym);
+            } else {
+                Type st = subst(supertype(t));
+                List<Type> is = upperBounds(subst(interfaces(t)));
+                if (st == supertype(t) && is == interfaces(t))
+                    return t;
+                else
+                    return makeCompoundType(is.prepend(st));
+            }
+        }
+
+        @Override
+        public Type visitWildcardType(WildcardType t, Void ignored) {
+            Type bound = t.type;
+            if (t.kind != BoundKind.UNBOUND)
+                bound = subst(bound);
+            if (bound == t.type) {
+                return t;
+            } else {
+                if (t.isExtendsBound() && bound.isExtendsBound())
+                    bound = upperBound(bound);
+                return new WildcardType(bound, t.kind, syms.boundClass, t.bound);
+            }
+        }
+
+        @Override
+        public Type visitArrayType(ArrayType t, Void ignored) {
+            Type elemtype = subst(t.elemtype);
+            if (elemtype == t.elemtype)
+                return t;
+            else
+                return new ArrayType(upperBound(elemtype), t.tsym);
+        }
+
+        @Override
+        public Type visitForAll(ForAll t, Void ignored) {
+            List<Type> tvars1 = substBounds(t.tvars, from, to);
+            Type qtype1 = subst(t.qtype);
+            if (tvars1 == t.tvars && qtype1 == t.qtype) {
+                return t;
+            } else if (tvars1 == t.tvars) {
+                return new ForAll(tvars1, qtype1);
+            } else {
+                return new ForAll(tvars1, F3Types.this.subst(qtype1, t.tvars, tvars1));
+            }
+        }
+
+        @Override
+        public Type visitErrorType(ErrorType t, Void ignored) {
+            return t;
+        }
+    }
+
+
+    // <editor-fold defaultstate="collapsed" desc="Internal utility methods">
+    private List<Type> upperBounds(List<Type> ss) {
+        if (ss.isEmpty()) return ss;
+        Type head = upperBound(ss.head);
+        List<Type> tail = upperBounds(ss.tail);
+        if (head != ss.head || tail != ss.tail)
+            return tail.prepend(head);
+        else
+            return ss;
+    }
 }

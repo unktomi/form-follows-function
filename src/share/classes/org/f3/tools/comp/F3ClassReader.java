@@ -439,7 +439,17 @@ public class F3ClassReader extends ClassReader {
 		    System.err.println("arg="+t.getClass()+"@"+System.identityHashCode(t) + ": "+t);
 		}
 	    }
-	    argtypes = types.subst(argtypes.tail, forAll.getTypeArguments(), owner.allparams());
+	    ListBuffer<Type> lb = ListBuffer.lb();
+	    // <a, b>(X.Mixin<a>, b, ...)
+	    int count = owner.allparams().size();
+	    List<Type> targs = forAll.getTypeArguments();
+	    for (int i = 0; i < count; i++) {
+		lb.append(targs.head);
+		targs = targs.tail;
+	    }
+	    List<Type> argtypes1 = types.subst(argtypes.tail, lb.toList().reverse(), owner.allparams());
+	    System.err.println("subst "+argtypes +" => "+ argtypes1);
+	    argtypes = argtypes1;
 	    if (false) {
 		System.err.println("post subst: "+ argtypes);
 		for (Type t: argtypes) {

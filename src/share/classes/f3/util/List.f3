@@ -1,26 +1,26 @@
 package f3.util;
-import org.f3.runtime.*;
+import org.f3.runtime.Monad;
 
 // List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[]
 
 const EmptyList = Empty of null {};
 
-public abstract class List of a is Foldable of a, Monad of (List, a)
+public abstract class List of a is Accumulative of a, Monad of (List, a)
 {
     public const length is Integer;
 
     public function reverse to List of a 
     {
-	foldLeft(empty() as List of a, (List of a).prepend)
+	accumulate(empty() as List of a, (List of a).prepend)
     }
 
     override function toString to String 
     {
-        foldLeft("",
-                 function from (y is String, x is a) to String
-                 {
-                     if (y == "") then "{x}" else "{y}, {x}";
-                 })
+        accumulate("",
+		   function from (y is String, x is a) to String
+		   {
+		       if (y == "") then "{x}" else "{y}, {x}";
+		   })
     }
     
     public function append from (x is a) to List of a
@@ -42,13 +42,13 @@ public abstract class List of a is Foldable of a, Monad of (List, a)
     public function flatmap of b 
         from (f is function from a to List of b) to List of b
     {
-        foldLeft(empty() as List of b, (List of b).concat * f);
+        accumulate(empty() as List of b, (List of b).concat * f);
     }
 
     override public function map of b 
         from (f is function from a to b) to List of b
     {
-        foldLeft(empty() as List of b, (List of b).append * f);
+        accumulate(empty() as List of b, (List of b).append * f);
     }
 
     public function concat 
@@ -65,21 +65,21 @@ public abstract class List of a is Foldable of a, Monad of (List, a)
     public function take from (n is Integer) to List of a 
     {
 	var count = n;
-	foldLeft(empty() as List of a,
-		 function from (ys is List of a, x is a) to List of a
-		 {
-		     if (--count > 0) ys.append(x) else ys
-		 })
+	accumulate(empty() as List of a,
+		   function from (ys is List of a, x is a) to List of a
+		   {
+		       if (--count > 0) ys.append(x) else ys;
+		   })
     }
 
     public function drop from (n is Integer) to List of a 
     {
 	var count = n;
-	foldLeft(empty() as List of a,
-		 function from (ys is List of a, x is a) to List of a
-		 {
-		     if (--count > 0) ys else ys.append(x)
-		 })
+	accumulate(empty() as List of a,
+		   function from (ys is List of a, x is a) to List of a
+		   {
+		       if (--count > 0) ys else ys.append(x);
+		   })
     }
 }
 
@@ -90,19 +90,19 @@ class ArrayList of a is List of a
 
     override const length = bind xs.size();
 
-    override function foldLeft of b 
+    override function accumulate of b 
         from (z is b, 
               f is function from (b, a) to b)
         to b
     {
-        xs.foldLeft(z, f)
+        xs.accumulate(z, f)
     }
 
-    override function foldRight of b 
+    override function accumulateBackwards of b 
         from (z is b, f is function from (a, b) to b)
         to b
     {
-        xs.foldRight(z, f)
+        xs.accumulateBackwards(z, f)
     }
 }
 
@@ -110,7 +110,7 @@ class Empty of a is List of a
 {
     override const length = 0;
 
-    override function foldLeft of b 
+    override function accumulate of b 
         from (z is b, 
               f is function from (b, a) to b)
         to b
@@ -118,7 +118,7 @@ class Empty of a is List of a
         z
     }
 
-    override function foldRight of b 
+    override function accumulateBackwards of b 
         from (z is b, f is function from (a, b) to b)
         to b
     {
@@ -135,7 +135,6 @@ class Empty of a is List of a
         toList(x)
     }
 }
-
 
 class Single of a is List of a 
 {
@@ -172,7 +171,7 @@ class Single of a is List of a
 	}
     }
 
-    override function foldLeft of b 
+    override function accumulate of b 
         from (z is b, 
               f is function from (b, a) to b)
         to b
@@ -180,7 +179,7 @@ class Single of a is List of a
         f(z, x)
     }
 
-    override function foldRight of b 
+    override function accumulateBackwards of b 
         from (z is b, f is function from (a, b) to b)
         to b
     {
@@ -195,21 +194,21 @@ class Append of a is List of a
 
     override const length is Integer = bind prefix.length + 1;
 
-    override function foldLeft of b 
+    override function accumulate of b 
         from (z is b, 
               f is function from (b, a) to b)
         to b
     {
-	const p = prefix.foldLeft(z, f);
+	const p = prefix.accumulate(z, f);
 	f(p, suffix)
     }
 
-    override function foldRight of b 
+    override function accumulateBackwards of b 
         from (z is b, f is function from (a, b) to b)
         to b
     {
 	const s = f(suffix, z);
-	prefix.foldRight(s, f)
+	prefix.accumulateBackwards(s, f)
     }
 
     override public function flatmap of b 
@@ -229,20 +228,20 @@ class Prepend of a is List of a
 
     override const length is Integer = bind suffix.length + 1;
 
-    override function foldLeft of b 
+    override function accumulate of b 
         from (z is b, 
               f is function from (b, a) to b)
         to b
     {
 	const p = f(z, prefix);
-        suffix.foldLeft(p, f);
+        suffix.accumulate(p, f);
     }
 
-    override function foldRight of b 
+    override function accumulateBackwards of b 
         from (z is b, f is function from (a, b) to b)
         to b
     {
-	const s = suffix.foldRight(z, f);
+	const s = suffix.accumulateBackwards(z, f);
 	f(prefix, s);
     }
 
@@ -264,22 +263,22 @@ class Concat of a is List of a
     
     override const length = bind prefix.length + suffix.length;
 
-    override function foldLeft of b 
+    override function accumulate of b 
         from (z is b, 
               f is function from (b, a) to b)
         to b
     {
-	const p = prefix.foldLeft(z, f);
-	suffix.foldLeft(p, f);
+	const p = prefix.accumulate(z, f);
+	suffix.accumulate(p, f);
     }
 
-    override function foldRight of b 
+    override function accumulateBackwards of b 
         from (z is b, 
 	      f is function from (a, b) to b)
         to b
     {
-	const s = suffix.foldRight(z, f);
-        prefix.foldRight(s, f);
+	const s = suffix.accumulateBackwards(z, f);
+        prefix.accumulateBackwards(s, f);
     }
 
     override public function flatmap of b 
