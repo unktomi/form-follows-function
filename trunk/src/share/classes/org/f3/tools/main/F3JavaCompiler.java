@@ -82,7 +82,12 @@ public class F3JavaCompiler extends JavaCompiler {
     public void backEnd(List<JCCompilationUnit> externalModules, ListBuffer<JavaFileObject> results) throws IOException {
         modules = externalModules;
         this.results = results;
-        compile(null, List.<String>nil(), null);
+	try {
+	    compile(null, List.<String>nil(), null);
+	} catch (RuntimeException exc) {
+	    System.err.println(externalModules);
+	    throw exc;
+	}
         this.results = null;
     }
     

@@ -426,8 +426,9 @@ public class F3InitializationBuilder extends F3TranslationSupport {
                     baseClass.type.tsym.packge() != syms.unnamedPackage) {    // Work around javac bug. the visitImport of Attr
                 // is casting to JCFieldAcces, but if you have imported an
                 // JCIdent only a ClassCastException is thrown.
-                additionalImports.append(makeType( diagPos,baseClass.type, false));
-                additionalImports.append(makeType( diagPos,baseClass.type, true));
+		Type t = types.erasure(baseClass.type);
+                additionalImports.append(makeType( diagPos, t, false));
+                additionalImports.append(makeType( diagPos, t, true));
             }
         }
         return additionalImports.toList();
