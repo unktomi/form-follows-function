@@ -1539,27 +1539,34 @@ public abstract class F3AbstractTranslation
             JCExpression tMeth = Select(mungedToCheckTranslated, methodName());
             ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
 	    JCExpression app;
+	    // there's some weird bug where (incorrect) TypeVar's were leaking through to 
+	    // the javac back end. The below hacks somehow circumvent that...
 	    if (false && (msym != null && msym.isStatic())) {
-		app = m().TypeCast(makeType(types.erasure(resultType), false), 
+		app = m().TypeCast(makeType(/*types.erasure(resultType)*/ resultType, false), 
 				   m().Apply(typeArgs.toList(),
 					     //translateExprs(typeargs), 
 					     tMeth, determineArgs()));
 		System.err.println("app="+app);
 	    } else {
-		for (F3Expression exp : typeargs) {
-		    Type argType = exp.type;
-		    if (argType == null) {
-			System.err.println("exp="+exp);
-			System.err.println("tree="+meth);
+		//System.err.println("typeargs="+typeargs);
+		for (F3Expression exp: typeargs) {
+		    /*
+		    if (exp instanceof F3TypeClass) { // hack
+			exp = ((F3TypeClass)exp).getClassName();
+			exp.type = types.boxedTypeOrType(exp.type);
 		    }
-		    Type paramType = types.boxedTypeOrType(argType);
-		    JCExpression t = makeType(paramType, false);
-		    //System.err.println("t="+t.getClass()+": "+t + " from "+exp.type);
-		    // System.err.println("t.type="+t.type);
-		    typeArgs.append(t);
+		    JCExpression te = translateExpr(exp, exp.type);
+		    System.err.println("exp="+exp.getClass() + ": "+ exp);
+		    System.err.println("te="+te);
+		    */
+		    JCExpression te = makeType(types.boxedTypeOrType(exp.type), false);
+		    if (exp.type instanceof Type.TypeVar) { // hack
+			te = m().Ident(((Type.TypeVar)exp.type).tsym.name);
+		    }
+		    typeArgs.append(te);
 		}
-		app = m().Apply(typeArgs.toList(),
-				//translateExprs(typeargs), 
+		app = m().Apply(//exprs, 
+				typeArgs.toList(),
 				tMeth, determineArgs());
 	    }
 

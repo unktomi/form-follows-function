@@ -15,6 +15,16 @@ public abstract class Monoid of a
     {
 	add.flip().apply(x)
     }
+
+    public function dual to Monoid of a {
+	const self = this;
+	Monoid of a {
+	    zero: self.zero;
+	    override function add from (x is a, y is a) to a {
+		self.add(y, x)
+	    }
+	}
+    }
 }
 
 public interface Reducer of (a, b) 

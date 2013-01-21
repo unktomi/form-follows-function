@@ -89,6 +89,14 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
         return apply;
     }
 
+    public F3Expression getIdentityMap(F3TreeMaker F, 
+				       Name.Table names,
+				       Type argType,
+				       Type resultType) 
+    {
+	return null;
+    }
+
     static F3Type makeType(F3TreeMaker f3make,
 			   Name.Table names,
 			   String typeName,

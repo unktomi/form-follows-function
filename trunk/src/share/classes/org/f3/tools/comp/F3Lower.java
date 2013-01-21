@@ -1067,11 +1067,11 @@ public class F3Lower implements F3Visitor {
         if (tree.getMap() != null) {
             result = lowerExpr(tree.getMap());
         } else {
-            result = lowerForExpression(tree);
-            patchForLoop(result, tree.getForExpressionInClauses());
-            for (F3ForExpressionInClause clause : tree.getForExpressionInClauses()) {
-                forClauseMap.remove(clause);
-            }
+	    result = lowerForExpression(tree);
+	    patchForLoop(result, tree.getForExpressionInClauses());
+	    for (F3ForExpressionInClause clause : tree.getForExpressionInClauses()) {
+		forClauseMap.remove(clause);
+	    }
         }
     }
 
