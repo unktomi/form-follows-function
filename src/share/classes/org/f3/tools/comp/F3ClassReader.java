@@ -448,7 +448,7 @@ public class F3ClassReader extends ClassReader {
 		targs = targs.tail;
 	    }
 	    List<Type> argtypes1 = types.subst(argtypes.tail, lb.toList().reverse(), owner.allparams());
-	    System.err.println("subst "+argtypes +" => "+ argtypes1);
+	    //System.err.println("subst "+argtypes +" => "+ argtypes1);
 	    argtypes = argtypes1;
 	    if (false) {
 		System.err.println("post subst: "+ argtypes);

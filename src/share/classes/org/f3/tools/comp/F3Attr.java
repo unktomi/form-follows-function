@@ -334,8 +334,12 @@ public class F3Attr implements F3Visitor {
 		    }
 		    //System.err.println("localResult="+localResult.getClass()+": "+localResult);
 		    if (localResult instanceof MethodType) {
+			/*
+			localResult = new ForAll(typeArgTypes, (MethodType)localResult);
 			localResult = types.subst(localResult.asMethodType(),
-						  localResult.getTypeArguments(), typeArgTypes); 
+						  localResult.getTypeArguments(), 
+						  typeArgTypes); 
+			*/
 		    }
 		    if (localResult instanceof FunctionType) {
 			if (false) {
@@ -357,11 +361,10 @@ public class F3Attr implements F3Visitor {
 						       localResult.tsym);
 			}
 		    } else {
-
 			Type bound = types.upperBound(localResult);
-			System.err.println("localResult="+localResult);
-			System.err.println("bound="+bound.getClass());
-			System.err.println("bound="+types.toF3String(bound));
+			//System.err.println("localResult="+localResult);
+			//System.err.println("bound="+bound.getClass());
+			//System.err.println("bound="+types.toF3String(bound));
 			if (bound instanceof TypeVar) {
 			    TypeVar tv = (TypeVar)bound;
 			    TypeCons tc = new TypeCons(tv.tsym.name, 
@@ -371,8 +374,8 @@ public class F3Attr implements F3Visitor {
 			    tc.bound = tv.bound;
 			    tc.ctor = tv;
 			    localResult = tc;
-			    System.err.println("tc="+tc.getClass()+": "+tc);
-			}
+			    //System.err.println("tc="+tc.getClass()+": "+tc);
+			} 
 		    }
 		    tree.type = localResult;
 		} else {
@@ -1601,7 +1604,7 @@ public class F3Attr implements F3Visitor {
 		exprType = syms.makeFunctionType((MethodType)exprType);
 	    }
             chk.checkNonVoid(((F3Tree)clause).pos(), exprType);
-	    System.err.println("exprType="+exprType);
+	    //System.err.println("exprType="+exprType);
             Type elemtype;
 	    if (clause.intoVar != null) {
 		if (!types.isComonad(exprType)) {
@@ -1719,11 +1722,12 @@ public class F3Attr implements F3Visitor {
         Type bodyType = tree.getBodyExpression().type;
         if (bodyType == syms.unreachableType)
             log.error(tree.getBodyExpression(), MsgSym.MESSAGE_UNREACHABLE_STMT);
-        Type owntype = (isIter || bodyType == null || bodyType == syms.voidType)?
+        Type owntype = (tree.isIterable || bodyType == null || bodyType == syms.voidType)?
             syms.voidType :
             types.isSequence(bodyType) ?
             bodyType :
             types.sequenceType(bodyType);
+
 
 	boolean domap = !isIter;
 	if (isSeq) {
@@ -4226,6 +4230,7 @@ public class F3Attr implements F3Visitor {
 	    }
 	}
         Type restype = attribType(tree.restype, env);
+	//System.err.println("restype: "+ tree);
 	if (restype == null) {
 	    System.err.println("restype is null: "+ tree);
 	    restype = syms.unknownType;
@@ -4234,8 +4239,6 @@ public class F3Attr implements F3Visitor {
             restype = syms.voidType;
         Type rtype = isWildcard(restype) ? restype : restype == syms.voidType ? syms.f3_java_lang_VoidType
                 : new WildcardType(types.boxedTypeOrType(restype), BoundKind.EXTENDS, syms.boundClass);
-
-
         ListBuffer<Type> typarams = new ListBuffer<Type>();
         ListBuffer<Type> argtypes = new ListBuffer<Type>();
         typarams.append(rtype);
@@ -4253,7 +4256,8 @@ public class F3Attr implements F3Visitor {
             typarams.append(ptype);
             nargs++;
         }
-        MethodType mtype = new MethodType(argtypes.toList(), restype, List.<Type>nil(), syms.methodClass);
+        MethodType mtype = new MethodType(argtypes.toList(), restype, 
+					  List.<Type>nil(), syms.methodClass);
         if (nargs > F3Symtab.MAX_FIXED_PARAM_LENGTH) {
             log.error(tree, MsgSym.MESSAGE_TOO_MANY_PARAMETERS);
             tree.type = result = syms.objectType;
@@ -4263,7 +4267,6 @@ public class F3Attr implements F3Visitor {
 	if (typeArgTypes != null) {
 	    ftype.typeArgs = typeArgTypes;
 	}
-
         Type type = sequenceType(ftype, tree.getCardinality());
         tree.type = type;
         result = type;

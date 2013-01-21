@@ -11,7 +11,7 @@ public abstract class List of a is Accumulative of a, Monad of (List, a)
 
     public function reverse to List of a 
     {
-	accumulate(empty() as List of a, (List of a).prepend)
+	accumulate(empty of a(), (List of a).prepend)
     }
 
     override function toString to String 
@@ -42,13 +42,13 @@ public abstract class List of a is Accumulative of a, Monad of (List, a)
     public function flatmap of b 
         from (f is function from a to List of b) to List of b
     {
-        accumulate(empty() as List of b, (List of b).concat * f);
+        accumulate(empty of b(), (List of b).concat * f);
     }
 
     override public function map of b 
         from (f is function from a to b) to List of b
     {
-        accumulate(empty() as List of b, (List of b).append * f);
+        accumulate(empty of b(), (List of b).append * f);
     }
 
     public function concat 
@@ -65,7 +65,7 @@ public abstract class List of a is Accumulative of a, Monad of (List, a)
     public function take from (n is Integer) to List of a 
     {
 	var count = n;
-	accumulate(empty() as List of a,
+	accumulate(empty of a(),
 		   function from (ys is List of a, x is a) to List of a
 		   {
 		       if (--count > 0) ys.append(x) else ys;
@@ -75,7 +75,7 @@ public abstract class List of a is Accumulative of a, Monad of (List, a)
     public function drop from (n is Integer) to List of a 
     {
 	var count = n;
-	accumulate(empty() as List of a,
+	accumulate(empty of a(),
 		   function from (ys is List of a, x is a) to List of a
 		   {
 		       if (--count > 0) ys else ys.append(x);
