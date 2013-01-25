@@ -75,6 +75,11 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     public Sequence<T> take(int n);
     public Sequence<T> drop(int n);
 
+    public Pair<Sequence<T>, Sequence<T>> splitAt(int n);
+    public Sequence<T> intersperse(T x);
+    public Sequence<T> intercalate(Sequence<T> xs);
+    public <S, U> Sequence<? extends U> zip(Function2<? extends U, ? super T, ? super S> f, Sequence<S> xs);
+
     /** How large is this sequence?  */
     public int size();
 

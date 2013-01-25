@@ -1,28 +1,21 @@
 package f3.util;
 import org.f3.runtime.Monad;
+import org.f3.runtime.Comonad;
+import java.lang.Math;
 
-// List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[]
+// List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[] | Replicate List n
 
-const EmptyList = Empty of null {};
+const EmptyList = Empty of (null) {};
+
+public function empty of a from () to List of a 
+{ 
+    EmptyList as List of a
+}
 
 public abstract class List of a is Accumulative of a, Monad of (List, a)
 {
     public const length is Integer;
 
-    public function reverse to List of a 
-    {
-	accumulate(empty of a(), (List of a).prepend)
-    }
-
-    override function toString to String 
-    {
-        accumulate("",
-		   function from (y is String, x is a) to String
-		   {
-		       if (y == "") then "{x}" else "{y}, {x}";
-		   })
-    }
-    
     public function append from (x is a) to List of a
     {
 	Append of a {
@@ -39,16 +32,32 @@ public abstract class List of a is Accumulative of a, Monad of (List, a)
 	}
     }
 
-    public function flatmap of b 
-        from (f is function from a to List of b) to List of b
+    public function reverse to List of a 
     {
-        accumulate(empty of b(), (List of b).concat * f);
+	accumulate(empty of a(), (List of a).prepend)
     }
 
+    override public function toString to String 
+    {
+        accumulate("",
+		   function from (y is String, x is a) to String
+		   {
+		       if (y == "") then "{x}" else "{y}, {x}";
+		   })
+    }
+
+    // Functor
     override public function map of b 
         from (f is function from a to b) to List of b
     {
         accumulate(empty of b(), (List of b).append * f);
+    }
+
+    // Monad
+    public function flatmap of b 
+        from (f is function from a to List of b) to List of b
+    {
+        accumulate(empty of b(), (List of b).concat * f);
     }
 
     public function concat 
@@ -68,7 +77,7 @@ public abstract class List of a is Accumulative of a, Monad of (List, a)
 	accumulate(empty of a(),
 		   function from (ys is List of a, x is a) to List of a
 		   {
-		       if (--count > 0) ys.append(x) else ys;
+		       if (--count > 0) then ys.append(x) else ys;
 		   })
     }
 
@@ -78,9 +87,176 @@ public abstract class List of a is Accumulative of a, Monad of (List, a)
 	accumulate(empty of a(),
 		   function from (ys is List of a, x is a) to List of a
 		   {
-		       if (--count > 0) ys else ys.append(x);
+		       if (--count > 0) then ys else ys.append(x);
 		   })
     }
+
+    public function replicate from (n is Integer) to List of a {
+	if (n <= 0) 
+	    then empty of a() 
+	    else if n == 1 then this 
+		else Replicate of a 
+		    {
+			self: this;
+			n: n;
+		    }
+    }
+
+    public function intersperse from (x is a) to List of a 
+    {
+	intercalate(toList(x));
+    }
+
+    public function intercalate from (xs is List of a) to List of a 
+    {
+	var first = true;
+	flatmap(function from (y is a) to List of a 
+		{
+		    if (first) then { first = false; toList(y) } else xs.append(y);
+		});
+    }
+}
+
+class Empty of a is List of a 
+{
+    override const length = 0;
+
+    override function accumulate of b 
+        from (accumulator is b, 
+              add is function from (b, a) to b)
+        to b
+    {
+	accumulator
+    }
+
+    override function accumulateBackwards of b 
+        from (accumulator is b, 
+	      add is function from (a, b) to b)
+        to b
+    {
+	accumulator
+    }
+    
+    // Optimized
+    override function concat from (xs is List of a) to List of a 
+    {
+	xs
+    }
+
+    // Optimized
+    public override function append from (x is a) to List of a
+    {
+	toList(x)
+    }
+
+    // Optimized
+    public override function prepend from (x is a) to List of a
+    {
+        toList(x)
+    }
+    
+    // Optimized
+    override public function intersperse from (x is a) to List of a 
+    {
+	this
+    }
+
+    // Optimized
+    override public function intercalate from (x is List of a) to List of a 
+    {
+	this
+    }
+}
+
+
+class Replicate of a is List of a 
+{
+    const self is List of a;
+    const n is Integer;
+
+    override var length = bind self.length * n;
+
+    override public function map of b 
+        from (f is function from a to b) to List of b
+    {
+	Replicate of b {
+	    self: self.map(f);
+	    n: n;
+	}
+    }
+
+    override public function flatmap of b 
+        from (f is function from a to List of b) to List of b
+    {
+	Replicate of b {
+	    self: self.flatmap(f);
+	    n: n;
+	}
+    }
+
+    override function reverse to List of a {
+	Replicate of a {
+	    self: self.reverse();
+	    n: n;
+	}
+    }
+
+    override function accumulate of b 
+	from (accumulator is b, 
+	      add is function from (b, a) to b)
+	to b
+    {
+	var acc = accumulator;
+	for (i in [0..<n]) {
+	    acc = self.accumulate(acc, add);
+	}
+	return acc;
+    }
+    
+    override function accumulateBackwards of b 
+	from (accumulator is b, 
+	      add is function from (a, b) to b)
+	to b
+    {
+	var acc = accumulator;
+	for (i in [0..<n]) {
+	    acc = self.accumulateBackwards(acc, add);
+	}
+	return acc;
+    }
+
+    public function take from (n0 is Integer) to List of a 
+    {
+	const n = Math.min(n0, length);
+	if (n <= self.length) then self.take(n) else {
+		const reps = n / self.length;
+		const remainder = n mod self.length;
+		const xs = 
+		    Replicate of a 
+		    {
+			self: self
+			n: reps
+		    };
+		if (remainder == 0) then xs else xs.concat(self.take(remainder))
+	    }
+    }
+
+    public function drop from (n0 is Integer) to List of a 
+    {
+	const n = length - n0;
+	if (n <= 0) then this else {
+		const reps = n / self.length;
+		const remainder = n mod self.length;
+		const xs = 
+		    Replicate of a 
+		    {
+			self: self;
+			n: reps;
+		    }
+		if (remainder == 0) then xs else self.drop(self.length-remainder).concat(xs)
+	    }
+    }
+
 }
 
 class ArrayList of a is List of a 
@@ -91,49 +267,18 @@ class ArrayList of a is List of a
     override const length = bind xs.size();
 
     override function accumulate of b 
-        from (z is b, 
-              f is function from (b, a) to b)
+        from (accumulator is b, 
+              add is function from (b, a) to b)
         to b
     {
-        xs.accumulate(z, f)
+        xs.accumulate(accumulator, add);
     }
 
     override function accumulateBackwards of b 
-        from (z is b, f is function from (a, b) to b)
+        from (accumulator is b, add is function from (a, b) to b)
         to b
     {
-        xs.accumulateBackwards(z, f)
-    }
-}
-
-class Empty of a is List of a 
-{
-    override const length = 0;
-
-    override function accumulate of b 
-        from (current is b, 
-              accumulator is function from (b, a) to b)
-        to b
-    {
-        current
-    }
-
-    override function accumulateBackwards of b 
-        from (current is b, 
-	      accumulator is function from (a, b) to b)
-        to b
-    {
-        current
-    }
-
-    public override function append from (x is a) to List of a
-    {
-	toList(x)
-    }
-
-    public override function prepend from (x is a) to List of a
-    {
-        toList(x)
+        xs.accumulateBackwards(accumulator, add)
     }
 }
 
@@ -142,16 +287,18 @@ class Single of a is List of a
     const x is a;
     override const length = 1;
 
+    // Functor
+    override public function map of b 
+        from (f is function from a to b) to List of b
+    {
+        single(f(x))
+    }
+
+    // Monad
     override public function flatmap of b 
         from (f is function from a to List of b) to List of b
     {
 	f(x)
-    }
-
-    override public function map of b 
-        from (f is function from a to b) to List of b
-    {
-        toList(f(x))
     }
 
     override public function prepend from (x is a) to List of a
@@ -173,19 +320,19 @@ class Single of a is List of a
     }
 
     override function accumulate of b 
-        from (current is b, 
-              accumulator is function from (b, a) to b)
+        from (accumulator is b, 
+              add is function from (b, a) to b)
         to b
     {
-        accumulator(current, x)
+        add(accumulator, x)
     }
 
     override function accumulateBackwards of b 
-        from (current is b, 
-	      accumulator is function from (a, b) to b)
+        from (accumulator is b, 
+	      add is function from (a, b) to b)
         to b
     {
-        accumulator(x, current);
+        add(x, accumulator);
     }
 }
 
@@ -197,25 +344,21 @@ class Append of a is List of a
     override const length is Integer = bind prefix.length + 1;
 
     override function accumulate of b 
-        from (initial is b, 
-              accumulator is function from (b, a) to b)
+        from (accumulator is b, 
+              add is function from (b, a) to b)
         to b
     {
-	var current = initial;
-	current = prefix.accumulate(current, accumulator);
-	current = accumulator(current, suffix);
-	return current;
+	const fromPrefix = prefix.accumulate(accumulator, add);
+	add(fromPrefix, suffix);
     }
 
     override function accumulateBackwards of b 
-        from (initial is b, 
-	      accumulator is function from (a, b) to b)
+        from (accumulator is b, 
+	      add is function from (a, b) to b)
         to b
     {
-	var current = initial;
-	current = accumulator(suffix, current);
-	current = prefix.accumulateBackwards(current, accumulator);
-	return current;
+	const fromSuffix = add(suffix, accumulator);
+	prefix.accumulateBackwards(fromSuffix, add);
     }
 
     override public function flatmap of b 
@@ -236,20 +379,21 @@ class Prepend of a is List of a
     override const length is Integer = bind suffix.length + 1;
 
     override function accumulate of b 
-        from (z is b, 
-              f is function from (b, a) to b)
+        from (accumulator is b, 
+              add is function from (b, a) to b)
         to b
     {
-	const p = f(z, prefix);
-        suffix.accumulate(p, f);
+	const fromPrefix = add(accumulator, prefix);
+        suffix.accumulate(fromPrefix, add);
     }
 
     override function accumulateBackwards of b 
-        from (z is b, f is function from (a, b) to b)
+        from (accumulator is b, 
+	      add is function from (a, b) to b)
         to b
     {
-	const s = suffix.accumulateBackwards(z, f);
-	f(prefix, s);
+	const fromSuffix = suffix.accumulateBackwards(accumulator, add);
+	add(prefix, fromSuffix);
     }
 
     override public function flatmap of b 
@@ -271,21 +415,21 @@ class Concat of a is List of a
     override const length = bind prefix.length + suffix.length;
 
     override function accumulate of b 
-        from (z is b, 
-              f is function from (b, a) to b)
+        from (accumulator is b, 
+	      add is function from (b, a) to b)
         to b
     {
-	const p = prefix.accumulate(z, f);
-	suffix.accumulate(p, f);
+	const fromPrefix = prefix.accumulate(accumulator, add);
+	suffix.accumulate(fromPrefix, add);
     }
 
     override function accumulateBackwards of b 
-        from (z is b, 
-	      f is function from (a, b) to b)
+        from (accumulator is b, 
+	      add is function from (a, b) to b)
         to b
     {
-	const s = suffix.accumulateBackwards(z, f);
-        prefix.accumulateBackwards(s, f);
+	const fromSuffix = suffix.accumulateBackwards(accumulator, add);
+        prefix.accumulateBackwards(fromSuffix, add);
     }
 
     override public function flatmap of b 
@@ -329,27 +473,29 @@ class Concat of a is List of a
     }
 }
 
-function empty of a to List of a 
-{ 
-    EmptyList as List of a;
-}
-
 function single of a from (x is a) to List of a 
 { 
     Single of a { x: x } 
 }
 
-public function toList of a from (x is a) to List of a 
+public function toList of a 
+    from (x is a) 
+    to List of a 
 { 
     single(x) 
 }
 
-public function asList of a from (xs is a[]) to List of a 
+public function asList of a 
+    from (xs is a[]) 
+    to List of a 
 {
-    ArrayList of a 
-    {
-	xs: xs;
-    }
+    if (xs == []) then empty of a() 
+	else if (xs.size() == 1) then single(xs[0]) 
+	    else 
+		ArrayList of a 
+		{
+		    xs: xs;
+		}
 }
 
 function run 
@@ -361,4 +507,6 @@ function run
 	    {
 		x * y;
 	    });
+    const ys = xs.replicate(10000003).take(554545);
+    println(ys.take(33));
 }

@@ -449,6 +449,9 @@ public class F3Resolve {
             argtypes = argtypes.tail;
             formals = formals.tail;
         }
+	if (formals == null) {
+	    return true;
+	}
         if (formals.head != varargsFormal) {
 	    //System.err.println("not enough args: "+ formals + " " + argtypes);
 	    return false; // not enough args

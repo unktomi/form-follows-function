@@ -164,22 +164,26 @@ public class F3Types extends Types {
 
     public Type getTypeConsThis(Type type)  {
 	if (type == null) return null;
+	if (type instanceof FunctionType) {
+	    return type;
+	}
 	if (isSequence(type)) {
 	    return type;
 	}
 	Type t = getTypeCons(type);
-	if (t == null) return null;
+	if (t == null) return type;
 	List<Type> targs = t.getTypeArguments();
 	if (targs.size() > 0) {
 	    Type result = targs.get(0);
 	    targs = targs.tail;
 	    if (targs.size() > 0) {
 		result = applySimpleGenericType(result, targs.toArray(new Type[targs.size()]));
+		System.err.println(type+" => "+result);
 	    }
 	    //System.err.println("result="+result);
 	    return result;
 	}
-	return null;
+	return type;
     }
 
     public Type getTypeCons(Type type) {
@@ -385,15 +389,34 @@ public class F3Types extends Types {
         return sequenceType(elemType, true);
     }
 
+    boolean isWildcard(Type t) {
+	if (t instanceof WildcardType) {
+	    return true;
+	}
+	if (t instanceof CapturedType) {
+	    return true;
+	}
+	if (t instanceof TypeVar) {
+	    if (true) {
+		return true;
+	    }
+	    TypeVar tv = (TypeVar)t;
+	    if (isWildcard(tv.lower)) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
     public Type sequenceType(Type elemType, boolean withExtends) {
         elemType = boxedTypeOrType(elemType);
         if (withExtends) {
 	    //Thread.currentThread().dumpStack();
-	    if (!(elemType instanceof WildcardType) && !(elemType instanceof TypeVar)) {
+	    if (!isWildcard(elemType)) {
 		elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
 	    } else {
 		//System.err.println("elemType="+elemType);
-	    }
+	    } 
 	}
         return applySimpleGenericType(syms.f3_SequenceType, elemType);
     }
@@ -541,7 +564,7 @@ public class F3Types extends Types {
 	    return true;
 	}
 	try {
-	    if (isSameType(t, s)) {
+	    if (isSameType(t, s, true)) {
 		return true;
 	    }
 	} catch (AssertionError err) {
@@ -635,7 +658,7 @@ public class F3Types extends Types {
 
     @Override
     public boolean isConvertible (Type t, Type s, Warner warn) {
-	if (isSameType(t, s)) {
+	if (isSameType(t, s, true)) {
 	    return true;
 	}
 	/*
@@ -1002,15 +1025,16 @@ public class F3Types extends Types {
 		}
 	    }
 	}
-	return isSameType(a, b, true);
+	return isSameType(a, b, false);
     }
 
     public boolean isSameType(Type a, Type b, boolean checkTypeCons) {
 	if (a == b) {
 	    return true;
 	}
-	if (false && checkTypeCons && isSameTypeCons(a, b)) {
-	    return true;
+	if (false && checkTypeCons) {
+	    a = getTypeConsThis(a);
+	    b = getTypeConsThis(b);
 	}
 	if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
 	    a = new ForAll(List.of(a), a);
@@ -1081,7 +1105,6 @@ public class F3Types extends Types {
 	Set visited = new HashSet();
         @Override
         public Void visitTypeVar(TypeVar t, StringBuilder buffer) {
-	    buffer.append(t.tsym.name);
 	    if (visited.contains(t)) {
 		return null;
 	    }
@@ -1089,9 +1112,16 @@ public class F3Types extends Types {
 	    if (t.bound != null && t.bound != syms.objectType) {
 		String str = toF3String(t.bound);
 		if (!"Object".equals(str)) {
+		    buffer.append("(");
+		    buffer.append(t.tsym.name);
 		    buffer.append(" is ");
 		    buffer.append(str);
+		    buffer.append(")");
+		} else {
+		    buffer.append(t.tsym.name);
 		}
+	    } else {
+		buffer.append(t.tsym.name);
 	    }
 	    if (t instanceof TypeCons) {
 		buffer.append(" of ");
@@ -1863,4 +1893,129 @@ public class F3Types extends Types {
         else
             return ss;
     }
+    /*
+    public BoundKind variance(final TypeVar t, BoundKind in) {
+        class VarianceAnalyzer extends SimpleVisitor<BoundKind, BoundKind> {
+	    Set visited = new HashSet();
+            @Override
+            public BoundKind visitTypeVar(TypeVar t0, BoundKind bk) {
+		if (visited.contains(t0)) {
+		    return bk;
+		}
+		visited.add(t0);
+		TypeVar t = t0;
+                BoundKind bk = visit(t.getUpperBound(), bk);
+		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
+		    return upper;
+		}
+		t = new TypeVar(t.tsym, upper, t.lower);
+		return t;
+            }
+
+            @Override
+            public Type visitCapturedType(CapturedType t, Boolean preserveWildcards) {
+                Type t1 = visit(t.wildcard, preserveWildcards);
+		//System.err.println("captured: "+ t + " => "+ t1);
+		return t1;
+            }
+
+            @Override
+            public Type visitWildcardType(WildcardType t0, Boolean preserveWildcards) {
+		if (t0.kind == BoundKind.UNBOUND) {
+		    return t0;
+		}
+		WildcardType t = t0;
+		Type vbound = t.bound;
+		Type vtype = t.type;
+		Type bound1 = null;
+		Type type1 = null;
+		if (vbound != null) {
+		    bound1 = visit(vbound, preserveWildcards);
+		} 
+		if (!preserveWildcards) {
+		    //System.err.println("wildcard: ! "+ t0 + " => "+ bound1);
+		    return bound1;
+		}
+		if (vtype != null) {
+		    type1 = visit(vtype, preserveWildcards);
+		} 
+		//System.err.println("t0="+t0);
+		//System.err.println("bound1="+bound1);
+		//System.err.println("vtype="+vtype);
+		//System.err.println("type="+type1);
+		if (bound1 != vbound || vtype != type1) {
+		    if (type1 instanceof WildcardType) {
+			//t = (WildcardType)type1;
+			bound1 = ((WildcardType)type1).bound;
+			type1 = ((WildcardType)type1).type;
+		    } 
+		    if (bound1 != null) {
+			t = new WildcardType(type1, t.kind, t.tsym, (TypeVar)bound1);
+		    } else {
+			t = new WildcardType(type1, t.kind, t.tsym);
+		    }
+		}
+		//System.err.println("wildcard: "+ t0 + " => "+ t);
+                return t;
+            }
+
+            @Override
+            public Type visitClassType(ClassType t0, Boolean preserveWildcards) {
+		ClassType t = t0;
+                List<Type> args2 = visit(t.getTypeArguments(), true);
+                Type encl2 = visit(t.getEnclosingType(), false);
+		boolean isFunc = isF3Function(t);
+                if (!isFunc &&
+		    (!isSameTypes(args2, t.getTypeArguments()) ||
+		     !isSameType(encl2, t.getEnclosingType()))) {
+		    t = new ClassType(encl2, args2, t.tsym);
+                }
+		//System.err.println("clazz: "+ t0 + " => "+ t);
+                return t;
+            }
+
+            public Type visitType(Type t, Boolean preserveWildcards) {
+		if (visited.contains(t.tsym)) {
+		    return t;
+		}
+		visited.add(t);
+		Type t1 = visitType0(t, preserveWildcards);
+		//System.err.println("type "+t + " => " + t1);
+		return t1;
+	    }
+
+            public Type visitType0(Type t, Boolean preserveWildcards) {
+                if (t == syms.botType) {
+                    return syms.objectType;
+                }
+                else if (isSameType(t, syms.f3_EmptySequenceType)) {
+                    return sequenceType(syms.objectType);
+                }
+                else if (t == syms.unreachableType) {
+                    return syms.objectType;
+                }
+                else {
+		    if (!isSameType(t, syms.voidType)) {
+			return boxedTypeOrType(t);
+		    } else {
+			return t;
+		    }
+                }
+            }
+
+            public List<Type> visit(List<Type> ts, Boolean preserveWildcards) {
+                ListBuffer<Type> buf = ListBuffer.lb();
+                for (Type t : ts) {
+                    buf.append(visit(t, preserveWildcards));
+                }
+                return buf.toList();
+            }
+        }
+	if (t == null || t.isPrimitive()) {
+	    return t;
+	}
+	//System.err.println("norm visit: "+ t.getClass() +" "+t);
+        return new VarianceAnalyzer().visit(t, true);
+    }
+    */
 }

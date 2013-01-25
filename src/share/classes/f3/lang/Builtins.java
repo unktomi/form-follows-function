@@ -245,5 +245,10 @@ public class Builtins {
     {
 	return Pair.<java.lang.Float, a>both(x, y);
     }
+    /*
+    public static Duration mul(float n, Duration d) {
+	Duration.valueOf(n * d.toMillis());
+    }
+    */
 
 }

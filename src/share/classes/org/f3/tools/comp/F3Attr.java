@@ -1632,7 +1632,7 @@ public class F3Attr implements F3Visitor {
                 } else {
                     elemtype = types.upperBound(iterableParams.last());
                 }
-		//isIter = true;
+		isIter = true;
             }
             //FIXME: if exprtype is nativearray of T, T is the element type of the for-each (see VSGC-2784)
             else if (types.isArray(exprType)) {
@@ -3044,6 +3044,19 @@ public class F3Attr implements F3Visitor {
 	    localEnv.info.varArgs = false;
 	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth);
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
+
+	    if (!(mtype instanceof FunctionType) &&
+		!(mtype instanceof MethodType) &&
+		!(mtype instanceof ForAll)) {
+		Name invoke = names.fromString("invoke");
+		F3Expression invokeTree = f3make.Select(tree.meth, invoke, true);
+		mtype = attribExpr(invokeTree, localEnv, mpt);
+		if ((mtype instanceof FunctionType) ||
+		    (mtype instanceof MethodType) ||
+		    (mtype instanceof ForAll)) {
+		    tree.meth = invokeTree;
+		}
+	    }
 	    //System.err.println("mtype "+tree.meth+"="+mtype.getClass()+" "+mtype);
 	    if (mtype instanceof FunctionType) {
 		mtype = ((FunctionType)mtype).asMethodOrForAll();
@@ -3150,7 +3163,7 @@ public class F3Attr implements F3Visitor {
 		      MsgSym.MESSAGE_F3_NOT_A_FUNC,
 		      mtype, typeargtypes, Type.toString(argtypes));
 	    tree.type = pt;
-	    result = pt;
+	    result = pt;       
 	}
 
 	
@@ -4288,8 +4301,8 @@ public class F3Attr implements F3Visitor {
 
     Type sequenceType(Type elemType, Cardinality cardinality) {
         return cardinality == cardinality.ANY
-                ? types.sequenceType(elemType)
-                : elemType;
+	    ? types.sequenceType(elemType)
+	    : elemType;
     }
 
         /** Determine type of identifier or select expression and check that
@@ -4568,6 +4581,9 @@ public class F3Attr implements F3Visitor {
             // System.out.println("method : " + owntype);
             // System.out.println("actuals: " + argtypes);
             List<Type> formals = owntype.getParameterTypes();
+	    if (formals == null) {
+		System.err.println("bad type: "+ owntype);
+	    }
             Type last = useVarargs ? formals.last() : null;
             if (sym.name==names.init &&
                 sym.owner == syms.enumSym)
@@ -4867,6 +4883,9 @@ public class F3Attr implements F3Visitor {
 	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
 	    if (x.head != null && types.boxedTypeOrType(x.head) == y.head) {
 		vars.head.type = x.head = y.head;
+	    }
+	    if (vars.head != null && y != null) {
+		vars.head.baseType = y.head;
 	    }
 	}
 	Type mtres = mt.getReturnType();

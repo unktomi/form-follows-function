@@ -774,6 +774,10 @@ public abstract class F3TranslationSupport {
             }
             if (mtype.tag == TypeTags.METHOD) {
                 List<Type> argtypes = ((MethodType) mtype).getParameterTypes();
+		if (argtypes == null) {
+		    argtypes = ((MethodType)mtype).argtypes = List.<Type>nil();
+		    System.err.println("argtypes null: "+sym);
+		}
                 int argtypesCount = argtypes.length();
                 int counter = 0;
                 for (Type argtype : argtypes) {

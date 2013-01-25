@@ -326,6 +326,60 @@ $PREFIX:{T|
 	return Sequences.subsequence(this, n, this.size());
     }
 
+    public Pair<Sequence<T>, Sequence<T>> splitAt(int n) {
+	new Pair(take(n), drop(n));
+    }
+
+    public Sequence<T> intersperse(T x) {
+	int size = this.size();
+	if (size == 0) {
+	    return this;
+	}
+	int xs_size = Sequences.size(xs);
+	final int count = size() * xs_size;
+	ObjectArraySequence<T> result = new ObjectArraySequence<U>(count, TypeInfo.<T>getTypeInfo());
+	for (int i = 0; i < size; i++) {
+	    if (i > 0) {
+		result.add(x);
+	    }
+	    result.add(get(i));
+	}
+	return result;
+    }
+
+    public Sequence<T> intercalate(Sequence<T> xs) {
+	int size = this.size();
+	if (size == 0) {
+	    return this;
+	}
+	int xs_size = Sequences.size(xs);
+	final int count = size() * xs_size;
+	ObjectArraySequence<T> result = new ObjectArraySequence<U>(count, TypeInfo.<T>getTypeInfo());
+	for (int i = 0; i < size; i++) {
+	    if (i > 0) {
+		result.add(xs);
+	    }
+	    result.add(get(i));
+	}
+	return result;
+    }
+
+    public <S, U> Sequence<? extends U> zip(Function2<? extends U, ? super T, ? super S> f, Sequence<S> xs) {
+	if (size() == 0) {
+	    return TypeInfo.<U>getTypeInfo().emptySequence;
+	}
+	final int count = Math.min(size(), Sequences.size(xs));
+	if (count == 0) {
+	    return TypeInfo.<U>getTypeInfo().emptySequence;
+	}
+	ObjectArraySequence<U> result = new ObjectArraySequence<U>(count, TypeInfo.<U>getTypeInfo());
+	for (int i = 0; i < count; i++) {
+	    U u = f.invoke(get(i), xs.get(i));
+	    result.add(u);
+	}
+	return result;
+    }
+
     public Sequence<T> prepend(T x) {
 	// fix me !!
 	return (Sequence<T>)Sequences.insertBefore(this, x, 0);
@@ -335,7 +389,6 @@ $PREFIX:{T|
 	// fix me !!
 	return (Sequence<T>)Sequences.insertBefore(this, x, size());
     }
-
 
     @Override
     public <Y> Sequence<Y> map(Function1<? extends Y, ? super T> f) {

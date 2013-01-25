@@ -437,6 +437,13 @@ public class F3Lower implements F3Visitor {
         try {
             enclFunc = tree;
             F3Block body  = (F3Block)lowerExpr(tree.getBodyExpression(), tree.type != null ? tree.type.getReturnType() : Type.noType);
+	    for (F3Var var: tree.operation.funParams) {
+		if (var.baseType != null) {
+		    System.err.println("var="+var);
+		    System.err.println("type="+var.type);
+		    System.err.println("baseType="+var.baseType);
+		}
+	    }
             F3FunctionDefinition res = m.at(tree.pos).FunctionDefinition(tree.mods, tree.name, tree.getF3ReturnType(), tree.getParams(), body);
             res.operation.definition = res;
             res.sym = tree.sym;

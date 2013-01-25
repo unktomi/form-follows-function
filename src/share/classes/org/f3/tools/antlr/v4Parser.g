@@ -7160,7 +7160,7 @@ reservedWord
     | PUBLIC_INIT   | PUBLIC_READ | RETURN      //| REVERSE
     | SIZEOF        | STATIC    | SUPER         | THEN
     | THIS          | THROW     | TRUE          | TRY
-    | TYPEOF        | VAR       | WHILE  | FOREACH
+    | TYPEOF        | VAR       | WHILE  | FOREACH | TYPE
     ;
 
 
