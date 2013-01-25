@@ -28,6 +28,7 @@ import org.f3.api.F3BindStatus;
 
 import org.f3.tools.code.F3VarSymbol;
 import com.sun.tools.mjavac.util.Name;
+import com.sun.tools.mjavac.code.Type;
 
 /**
  * Variable declaration.
@@ -38,6 +39,8 @@ import com.sun.tools.mjavac.util.Name;
 public class F3Var extends F3AbstractVar implements VariableTree {
     
     private F3VarInit varInit;
+    
+    public Type baseType;
 
     protected F3Var() {
         this(null, null, null, null, null, null, null, null);

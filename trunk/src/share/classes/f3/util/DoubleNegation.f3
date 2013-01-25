@@ -17,13 +17,14 @@ import java.lang.Math;
 //  
 //    function from (function from a to false) to false
 //
-// However, rather than representing just a truth value, "false" is abstracted as an existentially quantified type variable, thus:
+// However, rather than representing just a truth value, "false" is abstracted as an 
+// existentially quantified type variable, thus:
 //
 //    function of _ from (function from a to _) to _
 // 
 
-public abstract class DoubleNegation of a is 
-       Monad of (DoubleNegation, a), Comonad of (DoubleNegation, a) 
+public abstract class DoubleNegation of a 
+       is Monad of (DoubleNegation, a), Comonad of (DoubleNegation, a) 
 {
     public abstract function negate of _ 
 	from (negate_a is function from a to _) 
@@ -112,6 +113,18 @@ public abstract class DoubleNegation of a is
     }
 }
 
+/*
+public function doublyNegate of (a, b)
+    from (f is function from a to b) 
+    to function from DoubleNegation of a to DoubleNegation of b
+{
+    function from (xs is DoubleNegation of a) to DoubleNegation of b 
+    {
+	foreach (x in xs) f(x)
+    }
+}
+*/
+
 // this is the unit of the monad
 public function doublyNegate of a 
     from (x is a) 
@@ -170,7 +183,7 @@ public function cojoin of a
 	}
     }
 }
-
+/*
 public function callCC of (a, b) 
     from (f is function from (function from a to DoubleNegation of b) to DoubleNegation of a) 
     to DoubleNegation of a 
@@ -196,42 +209,24 @@ public function callCC of (a, b)
 	}
     }
 } 
+*/
+
+public function callCC of (a, b) 
+    from (f is function from (function from a to b) to b) 
+    to DoubleNegation of a 
+{
+    DoubleNegation of a {
+	override function negate of _ 
+	    from (negate_a is function from a to _) 
+	    to _ 
+	{
+	    f(negate_a)
+	}
+    }
+}
 
 public function run
 { 
    println(foreach (x in doublyNegate(2), y in doublyNegate(3))  x + y);
-
-   const solve = function from (a is Number, b is Number, c is Number) to DoubleNegation of Number 
-       {
-	   callCC(function from (k is function from java.lang.Float to DoubleNegation of Number) to DoubleNegation of Number {
-		   foreach (a0 in if a == 0 then k(0.0) else doublyNegate(a),
-			    d2 in doublyNegate(b*b-4*a0*c),
-			    d in if (d2 >= 0.0) then doublyNegate(Math.sqrt(d2) as Number) else k(0.0)) 
-		   {
-		       (-b-d) / (2*a);//, (-b+d)/(2*a)]
-		   }
-	       })
-       };
-   println(solve(1.0, 0.0, -9.0));
-   println(solve(1.0, 0.0, 9.0));
-   println(solve(0.0, 1.0, -9.0));
-   /*
-   const divExcept = function from (x is Integer, 
-				    y is Integer,
-				    handler is function from String to String)
-       to DoubleNegation of Integer 
-   {
-       callCC(function from (ok is function from Integer to DoubleNegation of Integer) 
-	      to DoubleNegation of Integer {
-		  for (err in callCC(function from (notOk is function from String to DoubleNegation of Object) to DoubleNegation of Object {
-			      if (y == 0) notOk("Denominator 0") else ok(x / y);
-			  }))  
-		      handler(err);
-	      })
-   }
-   const error = function from (x is String) to String { println(x); x }
-   println(divExcept(10, 2, error).extract());
-   println(divExcept(10, 0, error).extract());
-   */
 }
 

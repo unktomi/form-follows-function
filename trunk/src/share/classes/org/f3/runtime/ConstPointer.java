@@ -94,7 +94,7 @@ public class ConstPointer<This extends F3Object,a> implements Monad<ConstPointer
     public <b> ConstPointer<? extends F3Object, ? extends b>
 	flatmap(final Function1<? extends ConstPointer<? extends F3Object, ? extends b>, ? super a> f) {
 	final ConstPointer<This, a> self = this;
-	return new ConstPointer<F3Object, b>(Type.OBJECT, null, 0) {
+	return new ConstPointer<F3Object, b>(Type.OBJECT, null, 0) { // uh?
 	    public b get() {
 		return f.invoke(self.get()).get();
 	    }
@@ -116,7 +116,7 @@ public class ConstPointer<This extends F3Object,a> implements Monad<ConstPointer
     public <b> ConstPointer<? extends F3Object, ? extends b>
 	coflatmap(final Function1<? extends b,  ? super ConstPointer<? extends This, ? extends a>> f) {
 	final ConstPointer<This, a> self = this;
-	return new ConstPointer<F3Object, b>(Type.OBJECT, null, 0) {
+	return new ConstPointer<F3Object, b>(Type.OBJECT, null, 0) { // uh?
 	    public b get() {
 		return f.invoke(self);
 	    }
