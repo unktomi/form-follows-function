@@ -51,7 +51,8 @@ public class F3Flags {
     public static final long SCRIPT_PRIVATE            = FIRST_F3_MOD_FLAG << 8;  // implicily set flag if public/protected/package are not
     public static final long SCRIPT_LEVEL_SYNTH_STATIC = FIRST_F3_MOD_FLAG << 9;  // STATIC bit has been set implicitly
     public static final long OBJ_LIT_INIT              = FIRST_F3_MOD_FLAG << 10;
-    private static final long LAST_F3_MOD_FLAG         = OBJ_LIT_INIT;
+    public static final long IMPLICIT_PARAMETER        = FIRST_F3_MOD_FLAG << 11;
+    private static final long LAST_F3_MOD_FLAG         = IMPLICIT_PARAMETER;
 
     // Flags on vars to inform translation
     private static final long FIRST_VARMARK_FLAG       = LAST_F3_MOD_FLAG << 1;

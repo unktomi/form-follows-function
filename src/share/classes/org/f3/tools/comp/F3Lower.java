@@ -32,7 +32,7 @@ import org.f3.tools.code.FunctionType;
 import org.f3.tools.code.F3Symtab;
 import org.f3.tools.code.F3VarSymbol;
 import org.f3.tools.tree.F3Expression;
-
+import org.f3.api.tree.TypeTree.Cardinality;
 import com.sun.tools.mjavac.code.Flags;
 import com.sun.tools.mjavac.code.Kinds;
 import com.sun.tools.mjavac.code.TypeTags.*;
@@ -444,7 +444,16 @@ public class F3Lower implements F3Visitor {
 		    System.err.println("baseType="+var.baseType);
 		}
 	    }
-            F3FunctionDefinition res = m.at(tree.pos).FunctionDefinition(tree.mods, tree.name, tree.getF3ReturnType(), tree.getParams(), body);
+	    List<F3Var> vars = tree.getParams();
+	    if (tree.implicitArgs.size() > 0) {
+		for (F3VarSymbol sym: tree.implicitArgs) {
+		    F3Var var = m.at(tree.pos).Param(sym.name, preTrans.makeTypeTree(sym.type));
+		    var.type = sym.type;
+		    var.sym = sym;
+		    vars = vars.append(var);
+		}
+	    }
+            F3FunctionDefinition res = m.at(tree.pos).FunctionDefinition(tree.mods, tree.name, tree.getF3ReturnType(), vars, body);
             res.operation.definition = res;
             res.sym = tree.sym;
             result = res.setType(tree.type);
@@ -455,10 +464,19 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitFunctionInvocation(F3FunctionInvocation tree) {
+	/*
+	  //moved this to F3Attr to get types on the qualified identifers
+	for (Symbol sym: tree.resolvedImplicits) {
+	    F3Expression ref = m.at(tree.pos).QualIdent(sym);
+	    ref.type = sym.type;
+	    tree.args = tree.args.append(ref);
+	}
+	*/
 	if (tree.partial) {
 	    result = toFunctionValue(tree, false);
 	    return;
 	} 
+
         F3Expression meth = lowerFunctionName(tree.meth);
         List<Type> paramTypes = tree.meth.type.getParameterTypes();
 
@@ -1554,6 +1572,13 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitTypeAny(F3TypeAny tree) {
+	if (tree instanceof F3Type.TheType) {
+	    F3Type.TheType theType = (F3Type.TheType)tree;
+	    if (theType.resolvedSymbol != null) {
+		result = m.at(tree.pos).Ident(theType.resolvedSymbol);
+		return;
+	    }
+	}
         result = tree;
     }
 

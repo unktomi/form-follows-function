@@ -28,8 +28,10 @@ import org.f3.api.tree.Tree.F3Kind;
 import com.sun.tools.mjavac.code.Type;
 import com.sun.tools.mjavac.code.Symbol.MethodSymbol;
 import com.sun.tools.mjavac.util.List;
+import com.sun.tools.mjavac.util.ListBuffer;
 import com.sun.tools.mjavac.util.Name;
 import org.f3.tools.code.F3Flags;
+import org.f3.tools.code.F3VarSymbol;
 
 /**
  * A function definition.
@@ -42,6 +44,7 @@ public class F3FunctionDefinition extends F3Expression implements FunctionDefini
     public MethodSymbol sym;
     public List<F3Expression> typeArgs;
     public List<Type> typeArgTypes;
+    public List<F3VarSymbol> implicitArgs = List.<F3VarSymbol>nil();
 
     public F3FunctionDefinition(
             F3Modifiers mods,

@@ -150,6 +150,8 @@ public class F3Symtab extends Symtab {
 
     public final Name runMethodName;
 
+    public final Name the;
+
     /** The type of expressions that never returns a value to its parent.
      * E.g. an expression that always throws an Exception.
      * Likewise, a "return expression" returns from the outer function,
@@ -291,7 +293,7 @@ public class F3Symtab extends Symtab {
         for (int i = MAX_FIXED_PARAM_LENGTH; i >= 0;  i--) {
             f3_FunctionTypes[i] = enterClass(functionClassPrefix+i);
         }
-
+	the = names.fromString("the");
         booleanTypeName = names.fromString("Boolean");
         charTypeName = names.fromString("Character");
         byteTypeName = names.fromString("Byte");

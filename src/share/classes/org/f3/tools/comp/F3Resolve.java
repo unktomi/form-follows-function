@@ -593,6 +593,20 @@ public class F3Resolve {
      *  @param env     The current environment.
      *  @param name    The name of the variable or field.
      */
+
+    static Scope.Entry lookup(Scope scope, Name name, boolean isThe) {
+	if (isThe) {
+	    return scope.elems;
+	} else {
+	    return scope.lookup(name);
+	}
+    }
+
+    static Scope.Entry next(Scope.Entry e, boolean isThe) {
+	if (isThe) return e.sibling;
+	return e.next();
+    }
+
     Symbol findVar(F3Env<F3AttrContext> env, Name name, int kind, Type expected, 
 		   boolean boxingEnabled, boolean varargsEnabled) 
     {
@@ -606,6 +620,7 @@ public class F3Resolve {
             mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = (mtype instanceof MethodType) || (mtype instanceof ForAll);
 	//System.err.println("checkArgs: "+ checkArgs+": "+mtype.getClass()+": "+mtype);
+	boolean isThe = name == syms.the;
         while (env1 != null) {
             Scope sc = env1.info.scope;
             Type envClass;
@@ -641,7 +656,12 @@ public class F3Resolve {
                 }
             }
             if (sc != null) {
-                for (Scope.Entry e = sc.lookup(name); e.scope != null; e = e.next()) {
+                for (Scope.Entry e = lookup(sc, name, isThe); 
+		     e != null && e.scope != null; 
+		     e = next(e, isThe)) {
+		    if (false && isThe) {
+			System.err.println("e.sym="+e.sym);
+		    }
                     if ((e.sym.flags_field & SYNTHETIC) != 0)
                         continue;
                     if ((e.sym.kind & (MTH|VAR)) != 0) {
@@ -661,8 +681,27 @@ public class F3Resolve {
 				    sym = checkArgs(e.sym, mtype);
 				}
 			    }
-                        } 
-			if (sym.exists()) {
+                        } else if (isThe) {
+			    if (sym.kind == VAR) {
+				if (sym.type != null && types.isSubtypeUnchecked(sym.type, mtype)) {
+				    if (bestSoFar.kind == VAR) {
+					if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
+					    if (types.isSameType(bestSoFar.type, sym.type)) {
+					    // ambiguous
+						return new AmbiguityError(bestSoFar, sym);
+					    }
+					    bestSoFar = sym;
+					}
+				    } else {
+					bestSoFar = sym;
+				    }
+				}
+			    }
+			}
+			if (false && isThe) {
+			    System.err.println("sym="+sym+": "+bestSoFar);
+			}
+			if (!isThe && sym.exists()) {
 			    if (sym.owner != null) {
 				return !sym.isStatic() && staticOnly ?
 				    new StaticError(sym) :
@@ -703,8 +742,8 @@ public class F3Resolve {
         }
 	*/
         Symbol origin = null;
-        Scope.Entry e = env.toplevel.starImportScope.lookup(name);
-        for (; e.scope != null; e = e.next()) {
+        Scope.Entry e = lookup(env.toplevel.starImportScope, name, isThe);
+        for (; e != null && e.scope != null; e = next(e, isThe)) {
             sym = e.sym;
             if ((sym.kind & (MTH|VAR)) == 0)
                 continue;
@@ -716,16 +755,39 @@ public class F3Resolve {
 		//System.err.println("sym: "+ (sym.kind == VAR) + " "+ (sym.kind == MTH));
 		//System.err.println("sym: "+ sym.getClass());
 		//System.err.println("sym: "+ sym);
-                if (sym.kind == VAR || !checkArgs)
-                    bestSoFar = isAccessible(env, origin.type, sym)
-                    ? sym : new AccessError(env, origin.type, sym);
-                else { //method
+                if (sym.kind == VAR || !checkArgs) {
+		    if (!isThe) {
+			bestSoFar = isAccessible(env, origin.type, sym)
+			    ? sym : new AccessError(env, origin.type, sym);
+		    } else {
+			if (sym.kind == VAR) {
+			    if (false && isThe) {
+				System.err.println("sym="+sym);
+			    }
+			    if (types.isSubtypeUnchecked(sym.type, mtype)) {
+				if (bestSoFar.kind == VAR) {
+				    if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
+					if (types.isSameType(bestSoFar.type, sym.type)) {
+					    // ambiguous
+					    return new AmbiguityError(bestSoFar, sym);
+					}
+					bestSoFar = sym;
+				    }
+				} else {
+				    bestSoFar = sym;
+				}
+			    }
+			}
+		    }
+		} else { //method
                     bestSoFar = selectBest(env, origin.type, mtype,
                                            e.sym, bestSoFar,
                                            boxingEnabled,
                                            varargsEnabled,
                                            false);
-		    //System.err.println("select best: "+ e.sym + ": "+bestSoFar);
+		    if (false && isThe) {
+			System.err.println("select best: "+ e.sym + ": "+bestSoFar);
+		    }
 		}
             }
 	    //System.err.println("findVar: "+name+": "+sym+": "+bestSoFar);
@@ -1059,6 +1121,7 @@ public class F3Resolve {
         if (mtype instanceof FunctionType)
             mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = mtype instanceof MethodType || mtype instanceof ForAll;
+	boolean isThe = name == syms.the;
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
 	    if (c.members() == null) {
@@ -1066,19 +1129,40 @@ public class F3Resolve {
 		System.err.println("members null: "+ c);
 		continue;
 	    }
-	    for (Scope.Entry e = c.members().lookup(name);
-                 e.scope != null;
-                 e = e.next()) {
+	    for (Scope.Entry e = lookup(c.members(), name, isThe);
+                 e != null && e.scope != null;
+                 e = next(e, isThe)) {
                 if ((e.sym.kind & (VAR|MTH)) == 0 ||
                         (e.sym.flags_field & SYNTHETIC) != 0)
                     continue;
                 e.sym.complete();
                 if (! checkArgs) {
-                    // No argument list to disambiguate.
-                    if (bestSoFar.kind == ABSENT_VAR || bestSoFar.kind == ABSENT_MTH)
-                        bestSoFar = e.sym;
-                    else if (e.sym != bestSoFar && !mixableIn(bestSoFar, e.sym, site))
-                        bestSoFar = new AmbiguityError(bestSoFar, e.sym);
+		    if (!isThe) {
+			// No argument list to disambiguate.
+			if (bestSoFar.kind == ABSENT_VAR || bestSoFar.kind == ABSENT_MTH)
+			    bestSoFar = e.sym;
+			else if (e.sym != bestSoFar && !mixableIn(bestSoFar, e.sym, site))
+			    bestSoFar = new AmbiguityError(bestSoFar, e.sym);
+		    } else {
+			Symbol sym = e.sym;
+			if (sym.kind == VAR) {
+			    if (sym.type != null && 
+				mtype != null &&
+				types.isSubtypeUnchecked(sym.type, mtype)) {
+				if (bestSoFar.kind == VAR) {
+				    if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
+					if (types.isSameType(bestSoFar.type, sym.type)) {
+					    // ambiguous
+					    return new AmbiguityError(bestSoFar, sym);
+					}
+					bestSoFar = sym;
+				    }
+				} else {
+				    bestSoFar = sym;
+				}
+			    }
+			}
+		    }
                 }
                 else if (e.sym.kind == MTH) {                    
 		    //System.err.println("type="+e.sym.type);
@@ -1497,7 +1581,10 @@ public class F3Resolve {
                   Name name,
                   boolean qualified,
                   Type expected) {
-        return access(sym, pos, site, name, qualified, expected.getParameterTypes(), expected.getTypeArguments());
+	if (name == syms.the) { // hack
+	    name = names.fromString(name + " "+types.toF3String(expected));
+	}
+	return access(sym, pos, site, name, qualified, expected.getParameterTypes(), expected.getTypeArguments());
     }
     /** Same as above, but without type arguments and arguments.
      */
@@ -2472,7 +2559,6 @@ public class F3Resolve {
                     else
                         wrongSymStr = wrongSym.toString();
 		    System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
-		    Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,
@@ -2624,6 +2710,9 @@ public class F3Resolve {
             }
             Name sname = pair.sym1.name;
             if (sname == sname.table.init) sname = pair.sym1.owner.name;
+	    if (name == syms.the) {
+		sname = name;
+	    }
             log.error(pos, MsgSym.MESSAGE_REF_AMBIGUOUS, sname,
                       kindName(pair.sym1),
                       pair.sym1,

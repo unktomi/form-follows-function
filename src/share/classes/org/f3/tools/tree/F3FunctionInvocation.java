@@ -27,6 +27,7 @@ import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
 
 import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.util.List;
 
 /**
@@ -40,6 +41,8 @@ public class F3FunctionInvocation extends F3Expression implements FunctionInvoca
     public Type varargsElement;
     public boolean partial;
     public boolean immutable = false;
+
+    public List<Symbol> resolvedImplicits = List.<Symbol>nil();
 
     protected F3FunctionInvocation(List<F3Expression> typeargs,
             F3Expression meth,

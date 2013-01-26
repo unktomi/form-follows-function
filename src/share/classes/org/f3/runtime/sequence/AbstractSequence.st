@@ -327,7 +327,7 @@ $PREFIX:{T|
     }
 
     public Pair<Sequence<T>, Sequence<T>> splitAt(int n) {
-	new Pair(take(n), drop(n));
+        return new Pair(take(n), drop(n));
     }
 
     public Sequence<T> intersperse(T x) {
@@ -335,9 +335,8 @@ $PREFIX:{T|
 	if (size == 0) {
 	    return this;
 	}
-	int xs_size = Sequences.size(xs);
-	final int count = size() * xs_size;
-	ObjectArraySequence<T> result = new ObjectArraySequence<U>(count, TypeInfo.<T>getTypeInfo());
+	final int count = size();
+	ObjectArraySequence<T> result = new ObjectArraySequence<T>(count, TypeInfo.<T>getTypeInfo());
 	for (int i = 0; i < size; i++) {
 	    if (i > 0) {
 		result.add(x);
@@ -354,7 +353,7 @@ $PREFIX:{T|
 	}
 	int xs_size = Sequences.size(xs);
 	final int count = size() * xs_size;
-	ObjectArraySequence<T> result = new ObjectArraySequence<U>(count, TypeInfo.<T>getTypeInfo());
+	ObjectArraySequence<T> result = new ObjectArraySequence<T>(count, TypeInfo.<T>getTypeInfo());
 	for (int i = 0; i < size; i++) {
 	    if (i > 0) {
 		result.add(xs);
