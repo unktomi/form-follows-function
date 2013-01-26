@@ -515,10 +515,14 @@ public class F3Decompose implements F3Visitor {
         List<F3Expression> args;
         if (types.isSyntheticPointerFunction(msym)) {
             F3VarRef varRef = (F3VarRef)tree.args.head;
-            if (varRef.getReceiver() != null) {
-                varRef.setReceiver(shred(varRef.getReceiver()));
-            }
-            args = tree.args;
+	    if (varRef != null) {
+		if (varRef.getReceiver() != null) {
+		    varRef.setReceiver(shred(varRef.getReceiver()));
+		}
+		args = tree.args;
+	    } else {
+		args = List.<F3Expression>nil();
+	    }
         } else {
             List<Type> paramTypes = tree.meth.type.getParameterTypes();
 	    //System.err.println("paramTypes="+paramTypes);

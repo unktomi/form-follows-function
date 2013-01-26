@@ -1154,7 +1154,8 @@ public class F3Attr implements F3Visitor {
                             lhsVar.type != tree.rhs.type) {
                         tree.type = tree.lhs.type = lhsVar.type = lhsSym.type = types.normalize(tree.rhs.type);
                         lhsVar.setF3Type(f3make.at(tree.pos()).TypeClass(f3make.Type(lhsSym.type), lhsVar.getF3Type().getCardinality()));
-                }
+			//attribExpr(lhsVar);
+		    }
             }
         }
     }
@@ -3203,10 +3204,39 @@ public class F3Attr implements F3Visitor {
 		    List<Type> ptr = minst.argtypes;
 		    for (VarSymbol varSym: ((MethodSymbol)msym).params) {
 			if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
-			    Type expectedType = ptr.head;
-			    //System.err.println("expecting: "+ expectedType);
-			    //System.err.println("in "+env.enclClass.type);
+			    Type expectedType = reader.translateType(ptr.head);
+			    System.err.println("expecting: "+ expectedType.getClass());
+			    if (expectedType instanceof FunctionType) {
+				expectedType = ((FunctionType)expectedType).asMethodOrForAll();
+			    }
+			    System.err.println("expecting: "+ expectedType);
+			    System.err.println("in "+env.enclClass.type);
 			    Symbol sym = rs.findVar(env, syms.the, (MTH|VAR), expectedType, true, true);
+			    boolean partial = false;
+			    if (sym.kind >= AMBIGUOUS) {
+				if (sym.kind != AMBIGUOUS) {
+				    if ((expectedType instanceof MethodType) ||
+					(expectedType instanceof ForAll) ||
+					(expectedType instanceof FunctionType)) {
+					MethodType mt = expectedType.asMethodType();
+					Symbol bestSoFar = null;
+					MethodType searchType = 
+					    new MethodType(mt.argtypes.tail, mt.restype,
+							   List.<Type>nil(), syms.methodClass);
+					System.err.println("searchType="+searchType);
+					for (Type argType : mt.argtypes) {
+					    sym = rs.findMember(env,
+								argType,
+								syms.the,
+								searchType,
+								true, false,
+								false);
+					    partial = true;
+					    break;
+					}
+				    }
+				}
+			    }
 			    if (sym.kind >= AMBIGUOUS) {
 				rs.access(sym, tree, env.enclClass.sym.type, syms.the, false, expectedType);
 			    } else {
@@ -3223,8 +3253,10 @@ public class F3Attr implements F3Visitor {
 	List<F3Expression> implicitExprs = List.<F3Expression>nil();
 	for (Symbol sym: resolvedImplicits) {
 	    F3Expression exp = f3make.QualIdent(sym);
-	    attribExpr(exp, env);
-	    exp.type = sym.type;
+	    Type t = attribExpr(exp, env);
+	    System.err.println("implicit expr="+exp);
+	    System.err.println("type="+t);
+	    exp.type = t;
 	    implicitExprs = implicitExprs.append(exp);
 	}
         // We can add more methods here that we want to warn about.
@@ -5016,6 +5048,7 @@ public class F3Attr implements F3Visitor {
                 if (setReturnType != null) {
                     F3Type oldType = tree.operation.getF3ReturnType();
                     tree.operation.rettype = f3make.TypeClass(f3make.Type(setReturnType), oldType.getCardinality());
+		    attribTree(tree.operation.rettype, env, TYP, setReturnType);
                     if (mt instanceof MethodType) {
                         ((MethodType)mt).restype = setReturnType;
                     }

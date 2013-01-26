@@ -1716,8 +1716,15 @@ public abstract class F3AbstractTranslation
                     // Pointer.make has just two arguments (inst, varNum) -- we need to
                     // add an extra argument - so that the Pointer.make(Type, F3Object, int) is called.
                     F3VarRef varRef = (F3VarRef)args.head;
-                    JCExpression varType = makeKeyValueTargetType(varRef.getVarSymbol().type);
-                    targs.prepend(varType);
+		    if (varRef == null) {
+			System.err.println("varRef is null in "+meth);
+			System.err.println("selector="+selector);
+			System.err.println("msym="+msym);
+			System.err.println("msym.type="+msym.type);
+		    } else {
+			JCExpression varType = makeKeyValueTargetType(varRef.getVarSymbol().type);
+			targs.prepend(varType);
+		    }
                 }
             }
             return targs.toList();
