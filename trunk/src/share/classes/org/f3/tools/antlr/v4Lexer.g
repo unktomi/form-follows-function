@@ -175,6 +175,7 @@ STATIC          : 'static';
 STEP            : 'step';
 SUPER           : 'super';
 THEN            : 'then';
+THE             : 'the';
 TO              : 'to';
 THIS            : 'this';
 UPPER_THIS      : 'This';

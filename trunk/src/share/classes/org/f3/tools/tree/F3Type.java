@@ -25,6 +25,7 @@ package org.f3.tools.tree;
 
 import org.f3.api.tree.*;
 import com.sun.tools.mjavac.code.BoundKind;
+import com.sun.tools.mjavac.code.Symbol;
 /**
  * Abstract base for types
  *
@@ -45,4 +46,13 @@ public abstract class F3Type extends F3Expression implements TypeTree {
         this(null);
     }
     public Cardinality getCardinality() { return cardinality; }
+
+    public static class TheType extends F3TypeAny {
+	final public F3Type theType;
+	public Symbol resolvedSymbol;
+	protected TheType(F3Type t) {
+	    super(Cardinality.SINGLETON);
+	    theType = t;
+	}
+    }
 }

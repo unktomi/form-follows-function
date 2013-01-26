@@ -4534,6 +4534,11 @@ primaryExpression
             $value = $literal.value;
         }
         
+    |
+      THE theType=type
+        {
+            $value = F.at(pos($THE)).TheType($theType.rtype);
+        }
     | fe=functionExpression
     
         {

@@ -1658,6 +1658,50 @@ public class F3Types extends Types {
     }
 
     public Type memberType(Type t, Symbol sym) {
+	Type result = memberType0(t, sym);
+	if (sym instanceof MethodSymbol) {
+	    MethodSymbol msym = (MethodSymbol)sym;
+	    List<VarSymbol> params = List.<VarSymbol>nil();
+	    List<Type> ptypes = List.<Type>nil();
+	    boolean sawImplicit = false;
+	    if (msym.params != null) {
+		for (VarSymbol varSym: ((MethodSymbol)msym).params) {
+		    if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
+			sawImplicit = true;
+		    } else {
+			params = params.append(varSym);
+			ptypes = ptypes.append(varSym.type);
+		    }
+		}
+		if (sawImplicit) {
+		    MethodType mtype = result.asMethodType();
+		    mtype = new ExplicitMethodType(ptypes, mtype.restype, mtype.getTypeArguments(), syms.methodClass, result);
+		    //System.err.println("created explicit method type: "+mtype);
+		    if (result instanceof ForAll) {
+			result = new ForAll(((ForAll)result).tvars, mtype);
+		    } else {
+			result = mtype;
+		    }
+		}
+	    }
+	}
+	return result;
+    }
+
+    public static class ExplicitMethodType extends MethodType {
+	public Type implicit;
+        public ExplicitMethodType(List<Type> argtypes,
+				  Type restype,
+				  List<Type> thrown,
+				  TypeSymbol methodClass,
+				  Type implict) {
+	    super(argtypes, restype, thrown, methodClass);
+	    this.implicit = implicit;
+	}
+    }
+
+
+    public Type memberType0(Type t, Symbol sym) {
         return (sym.flags() & STATIC) != 0
             ? sym.type
             : memberType.visit(t, sym);
