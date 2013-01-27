@@ -446,6 +446,13 @@ public class F3Lower implements F3Visitor {
 		    vars = vars.append(var);
 		}
 	    }
+	    for (F3Var var : tree.implicitArgTrees) {
+		F3VarSymbol sym = var.sym;
+		var = m.at(tree.pos).Param(sym.name, preTrans.makeTypeTree(sym.type));
+		var.type = sym.type;
+		var.sym = sym;
+		vars = vars.append(var);
+	    }
             F3FunctionDefinition res = m.at(tree.pos).FunctionDefinition(tree.mods, tree.name, tree.getF3ReturnType(), vars, body);
             res.operation.definition = res;
             res.sym = tree.sym;

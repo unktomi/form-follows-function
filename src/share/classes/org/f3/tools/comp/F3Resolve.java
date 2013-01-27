@@ -607,6 +607,8 @@ public class F3Resolve {
 	return e.next();
     }
 
+    // total hack;
+
     Symbol findVar(F3Env<F3AttrContext> env, Name name, int kind, Type expected, 
 		   boolean boxingEnabled, boolean varargsEnabled) 
     {
@@ -687,8 +689,10 @@ public class F3Resolve {
 				    if (bestSoFar.kind == VAR) {
 					if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
 					    if (types.isSameType(bestSoFar.type, sym.type)) {
-					    // ambiguous
-						return new AmbiguityError(bestSoFar, sym);
+						// ambiguous
+						if (!isSameSymbol(bestSoFar, sym)) {
+						    return new AmbiguityError(bestSoFar, sym);
+						}
 					    }
 					    bestSoFar = sym;
 					}
@@ -769,7 +773,9 @@ public class F3Resolve {
 				    if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
 					if (types.isSameType(bestSoFar.type, sym.type)) {
 					    // ambiguous
-					    return new AmbiguityError(bestSoFar, sym);
+					    if (!(bestSoFar.equals(sym))) {
+						return new AmbiguityError(bestSoFar, sym);
+					    }
 					}
 					bestSoFar = sym;
 				    }
@@ -829,6 +835,16 @@ public class F3Resolve {
 
     }
 
+    boolean isSameSymbol(Symbol x, Symbol y) {
+	if (x.name == y.name) {
+	    if (x.owner == y.owner) {
+		return true;
+	    }
+	    System.err.println("different owners: "+ x.owner + " " + y.owner);
+	}
+	return false;
+    }
+
     Warner noteWarner = new Warner();
 
     /** Select the best method for a call site among two choices.
@@ -879,9 +895,6 @@ public class F3Resolve {
             if ((tx =rawInstantiate(env, sym, memberType, argtypes, typeargtypes,
 				    allowBoxing, useVarargs, Warner.noWarnings)) == null) {
                 // inapplicable
-		//System.err.println("raw instantiate failed: "+ sym);
-		//System.err.println("argtypes: "+argtypes);
-		//System.err.println("typeargtypes: "+typeargtypes);
 		//Thread.currentThread().dumpStack();
                 switch (bestSoFar.kind) {
                 case ABSENT_MTH: return wrongMethod.setWrongSym(sym);
@@ -894,19 +907,21 @@ public class F3Resolve {
 	    //System.err.println("tx: "+ tx);
 	    if (allowBoxing) { // hack
 		if (memberType instanceof ForAll) {
+		    Symbol origSym = sym;
 		    sym = sym.clone(sym.owner);
-		    sym.type = reader.translateType(tx);
-		    //System.err.println("instantiated: "+ sym.type);
-		    //System.err.println("memberType: "+ memberType);
-		    //System.err.println("tx: "+ tx);
+		    sym.type = reader.translateType(types.normalize(tx));
+		    reader.cloneMethodParams((MethodSymbol)origSym, (MethodSymbol)sym);
+		    //System.err.println("cloned "+origSym +": "+sym.type);
 		}
 	    }
         } catch (Infer.NoInstanceException ex) {
 	    //if (allowBoxing) {
-		//System.err.println("raw instantiate exception: "+ sym);
-		//System.err.println("argtypes: "+argtypes);
-		//System.err.println("typeargtypes: "+typeargtypes);
+	    //System.err.println("raw instantiate exception: "+ sym);
+	    //System.err.println("argtypes: "+argtypes);
+	    //System.err.println("typeargtypes: "+typeargtypes);
+	    //Thread.currentThread().dumpStack();
 	    //}
+	    //if (true) return bestSoFar;
             switch (bestSoFar.kind) {
             case ABSENT_MTH:
                 return wrongMethod.setWrongSym(sym, ex.getDiagnostic());
@@ -1016,6 +1031,12 @@ public class F3Resolve {
             }
             if (m1SignatureMoreSpecific) return m1;
             if (m2SignatureMoreSpecific) return m2;
+	    if (isSameSymbol(m1, m2)) { // hack
+		if (((MethodSymbol)m1).params == null) {
+		    return m2;
+		}
+		return m1;
+	    }
             return new AmbiguityError(m1, m2);
         case AMBIGUOUS:
             AmbiguityError e = (AmbiguityError)m2;
@@ -1030,6 +1051,9 @@ public class F3Resolve {
             else
                 return new AmbiguityError(err1, err2);
         default:
+	    if (true) {
+		return m1;
+	    }
             throw new AssertionError();
         }
     }
@@ -1153,7 +1177,9 @@ public class F3Resolve {
 				    if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
 					if (types.isSameType(bestSoFar.type, sym.type)) {
 					    // ambiguous
-					    return new AmbiguityError(bestSoFar, sym);
+					    if (!isSameSymbol(bestSoFar, sym)) {
+						return new AmbiguityError(bestSoFar, sym);
+					    }
 					}
 					bestSoFar = sym;
 				    }
@@ -1301,15 +1327,17 @@ public class F3Resolve {
                           TypeSymbol c) {
         Symbol bestSoFar = typeNotFound;
         Symbol sym;
-        Scope.Entry e = c.members().lookup(name);
-        while (e.scope != null) {
-            if (e.sym.kind == TYP) {
-                return isAccessible(env, site, e.sym)
-                    ? e.sym
-                    : new AccessError(env, site, e.sym);
-            }
-            e = e.next();
-        }
+	if (c.members() != null) {
+	    Scope.Entry e = c.members().lookup(name);
+	    while (e.scope != null) {
+		if (e.sym.kind == TYP) {
+		    return isAccessible(env, site, e.sym)
+			? e.sym
+			: new AccessError(env, site, e.sym);
+		}
+		e = e.next();
+	    }
+	}
         Type st = types.supertype(c.type);
         if (st != null && st.tag == CLASS) {
             sym = findMemberType(env, site, name, st.tsym);
@@ -1663,6 +1691,7 @@ public class F3Resolve {
                         Name name, int kind, Type pt) {
         Symbol sym = findIdent(env, name, kind, pt);
         if (sym.kind >= AMBIGUOUS) {
+	    System.err.println("resolveIdent " +name+" "+((pt == null) ? null : pt.getClass())+": "+pt);
             return access(sym, pos, env.enclClass.sym.type, name, false, pt);
         } else
             return sym;
@@ -2559,6 +2588,7 @@ public class F3Resolve {
                     else
                         wrongSymStr = wrongSym.toString();
 		    System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
+		    Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,
@@ -2683,6 +2713,7 @@ public class F3Resolve {
 
         AmbiguityError(Symbol sym1, Symbol sym2) {
             super(AMBIGUOUS, sym1, "ambiguity error");
+	    Thread.currentThread().dumpStack();
             this.sym1 = sym1;
             this.sym2 = sym2;
         }

@@ -1133,6 +1133,10 @@ public class F3Pretty implements F3Visitor {
 		print(ta.getIdentifier());
 		print(" = ");
 		printExpr(ta.type);
+	    } else if (tree instanceof F3Type.TheType) {
+		F3Type.TheType the = (F3Type.TheType)tree;
+		print("the ");
+		printExpr(the.theType);
 	    } else {
 		print("* ");
 		print(ary(tree));

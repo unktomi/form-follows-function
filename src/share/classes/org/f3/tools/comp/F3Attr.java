@@ -725,8 +725,10 @@ public class F3Attr implements F3Visitor {
 	    //if ((req instanceof MethodType) && ((MethodType)req).getReturnType() == syms.unknownType) {
 	    //Thread.currentThread().dumpStack();
 	    //}
-
 	    sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
+	    if (sym != null) {
+		//System.err.println("resolve ident: "+tree+" "+sym.getClass() + ": "+ sym);
+	    }
         }
         tree.sym = sym;
         sym.complete();
@@ -987,11 +989,26 @@ public class F3Attr implements F3Visitor {
 		}
 	    }
 	}
-	Type memberType = types.memberType(tree.selected.type, sym);
 	tree.type = result;
 	if (tree.sym.kind == MTH && result instanceof FunctionType) {
-	    tree.sym = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);
+	    MethodSymbol res = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);
+	    MethodSymbol origSym = (MethodSymbol)sym;
+	    if (origSym.params != null) {
+		res.params = List.<VarSymbol>nil();
+		List<Type> pts = res.type.asMethodType().argtypes;
+		for (VarSymbol vsym: origSym.params) {
+		    res.params = res.params.append(new F3VarSymbol(types, names, 
+								   vsym.flags(), vsym.name, 
+								   pts.head, 
+								   res));
+		    pts = pts.tail;
+		}
+	    }
+	    System.err.println("created method symbol: "+res);
+	    System.err.println("created method symbol params: "+res.params);
+	    tree.sym = res;
 	}
+
 	env.info.tvars = List.nil();
     }
     //where
@@ -2425,13 +2442,19 @@ public class F3Attr implements F3Visitor {
     }
 
     public void finishFunctionDefinition(F3FunctionDefinition tree, F3Env<F3AttrContext> env) {
+	finishFunctionDefinition(tree, env, true);
+    }
+
+    public void finishFunctionDefinition(F3FunctionDefinition tree, F3Env<F3AttrContext> env, boolean newEnv) {
         MethodSymbol m = tree.sym;
+	//System.err.println("Finishing: "+System.identityHashCode(m)+"@"+m.getClass()+": "+m);
 	m.owner.complete();
         F3FunctionValue opVal = tree.operation;
         F3Env<F3AttrContext> localEnv = methodSymToEnv.get(m);
 	if (localEnv == null) {
 	    localEnv = memberEnter.methodEnv(tree, env);	
-	    //methodSymToEnv.put(m, localEnv);
+	    System.err.println("creating new env: "+ tree);
+	    methodSymToEnv.put(m, localEnv);
 	}
 	if (tree.typeArgs != null) {
 	    if (tree.typeArgTypes == null) {
@@ -2453,7 +2476,7 @@ public class F3Attr implements F3Visitor {
         JavaFileObject prev = log.useSource(env.toplevel.sourcefile);
         Lint lint = lintEnv.info.lint.augment(m.attributes_field, m.flags());
         Lint prevLint = chk.setLint(lint);
-        
+
         try {
             localEnv.info.lint = lint;
 
@@ -2512,6 +2535,13 @@ public class F3Attr implements F3Visitor {
                 argbuf.append(type);
                 paramNum++;
             }
+
+	    if (tree.implicitArgTrees.nonEmpty()) {
+		for (F3Var var: tree.implicitArgTrees) {
+		    attribVar(var, localEnv);
+		    var.sym.flags_field |= F3Flags.IMPLICIT_PARAMETER | Flags.PARAMETER;
+		}
+	    }
             returnType = syms.unknownType;
             if (opVal.getF3ReturnType().getF3Tag() != F3Tag.TYPEUNKNOWN)
                 returnType = attribType(tree.getF3ReturnType(), localEnv);
@@ -2662,28 +2692,34 @@ public class F3Attr implements F3Visitor {
 
         // mark the method varargs, if necessary
         // if (isVarArgs) m.flags_field |= Flags.VARARGS;
-
         // Set the inferred types in the MethodType.argtypes and in correct symbols in MethodSymbol
         List<VarSymbol> paramSyms = List.<VarSymbol>nil();
         List<Type> paramTypes = List.<Type>nil();
         for (F3Var var : tree.getParams()) {
-
             // Skip erroneous parameters, which happens if the IDE is calling with a
             // a paritally defined function.
             //
             if (var == null || var.type == null) continue;
-            
             paramSyms = paramSyms.append(var.sym);
             paramTypes = paramTypes.append(var.type);
         }
+	for (F3Var var: tree.implicitArgTrees) {
+	    F3VarSymbol sym = var.sym;
+	    paramSyms = paramSyms.append(sym);
+	    paramTypes = paramTypes.append(sym.type);
+	}
+	//System.err.println("finishing: "+tree);
 	//System.err.println("implicit args="+tree.implicitArgs);
 	for (F3VarSymbol sym: tree.implicitArgs) {
 	    paramSyms = paramSyms.append(sym);
 	    paramTypes = paramTypes.append(sym.type);
 	}
+	//	System.err.println("m="+System.identityHashCode(m));
+	//System.err.println("m.type="+m.type);
         m.params = paramSyms;
+	//System.err.println("m.params="+m.params);
         if (m.type != null) {
-	    m.type.asMethodType().argtypes = paramTypes;
+	    //	    m.type.asMethodType().argtypes = paramTypes;
         }
 
 	fixOverride(tree, m, true);
@@ -2982,6 +3018,54 @@ public class F3Attr implements F3Visitor {
         // set paramTypes[i] to that type.
         // Otherwise, leave paramTypes[i]==null.
     }
+    
+    Symbol findThe(F3Env<F3AttrContext> env,
+		   F3Expression tree,
+		   Type expectedType) {
+	Symbol sym = findTheUnchecked(env, expectedType);
+	if (sym.kind >= AMBIGUOUS) {
+	    if (sym.kind == AMBIGUOUS) {
+		return rs.access(sym, tree, env.enclClass.sym.type, syms.the, false, expectedType);
+	    }
+	    if (!(expectedType instanceof MethodType)) {
+		System.err.println("trying as method: sym="+sym);
+		return findThe(env, tree, 
+			       new MethodType(List.<Type>nil(), expectedType, List.<Type>nil(), syms.methodClass));
+	    }
+	    return null;
+	}
+	return sym;
+    }
+
+    Symbol findTheUnchecked(F3Env<F3AttrContext> env,
+			    Type expectedType) {
+	Symbol sym = rs.findVar(env, syms.the, (MTH|VAR), expectedType, true, false);
+	System.err.println("searching for the "+expectedType+ " => "+sym);
+	if (sym.kind >= AMBIGUOUS) {
+	    if (sym.kind != AMBIGUOUS) {
+		if ((expectedType instanceof MethodType) ||
+		    (expectedType instanceof ForAll) ||
+		    (expectedType instanceof FunctionType)) {
+		    MethodType mt = expectedType.asMethodType();
+		    Symbol bestSoFar = null;
+		    MethodType searchType = 
+			new MethodType(mt.argtypes.tail, mt.restype,
+				       List.<Type>nil(), syms.methodClass);
+		    for (Type argType : mt.argtypes) {
+			sym = rs.findMember(env,
+					    argType,
+					    syms.the,
+					    searchType,
+					    true, false,
+					    false);
+			System.err.println("searching' for the "+searchType+ " => "+sym);
+			break;
+		    }
+		}
+	    }
+	}
+	return sym;
+    }
 
     //@Override
     public void visitFunctionInvocation(F3FunctionInvocation tree) {
@@ -3012,6 +3096,9 @@ public class F3Attr implements F3Visitor {
 					   (attribTree(l.head, env, VAL, Infer.anyPoly, Sequenceness.PERMITTED)
 					   ));
 	    //System.err.println("argType "+ l.head+": "+argtype);
+	    if (argtype instanceof MethodType) {
+		argtype = syms.makeFunctionType((MethodType)argtype);
+	    }
             argtypebuffer.append(argtype);
         }
         List<Type> argtypes = argtypebuffer.toList();
@@ -3046,19 +3133,21 @@ public class F3Attr implements F3Visitor {
 	    }
 
 	    localEnv.info.varArgs = false;
-	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth);
-	    mtype = attribExpr(tree.meth, localEnv, mpt);
 
-	    if (!(mtype instanceof FunctionType) &&
-		!(mtype instanceof MethodType) &&
-		!(mtype instanceof ForAll)) {
-		Name invoke = names.fromString("invoke");
-		F3Expression invokeTree = f3make.Select(tree.meth, invoke, true);
-		mtype = attribExpr(invokeTree, localEnv, mpt);
-		if ((mtype instanceof FunctionType) ||
-		    (mtype instanceof MethodType) ||
-		    (mtype instanceof ForAll)) {
-		    tree.meth = invokeTree;
+	    mtype = attribExpr(tree.meth, localEnv, mpt);
+	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth + " => "+mtype);
+	    if (false) {
+		if (!(mtype instanceof FunctionType) &&
+		    !(mtype instanceof MethodType) &&
+		    !(mtype instanceof ForAll)) {
+		    Name invoke = names.fromString("invoke");
+		    F3Expression invokeTree = f3make.Select(tree.meth, invoke, true);
+		    mtype = attribExpr(invokeTree, localEnv, mpt);
+		    if ((mtype instanceof FunctionType) ||
+			(mtype instanceof MethodType) ||
+			(mtype instanceof ForAll)) {
+			tree.meth = invokeTree;
+		    }
 		}
 	    }
 	    //System.err.println("mtype "+tree.meth+"="+mtype.getClass()+" "+mtype);
@@ -3069,9 +3158,10 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("mtype "+tree.meth+" = "+mtype);
 	}
 
-
-	if (!(mtype instanceof FunctionType) && !(mtype instanceof MethodType))  {
-	    mtype = reader.translateType(mtype);
+	if (!(mtype instanceof ErrorType)) {
+	    if (!(mtype instanceof FunctionType) && !(mtype instanceof MethodType))  {
+		mtype = reader.translateType(mtype);
+	    }
 	}
 
 	if (localEnv.info.varArgs)
@@ -3105,7 +3195,7 @@ public class F3Attr implements F3Visitor {
 							 syms.boundClass)),
 			  restype.tsym);
 	}
-
+	List<F3Expression> implicitExprs = List.<F3Expression>nil();
 	tree.type = tree.meth.type = mtype;
 	if (mtype instanceof ErrorType) {
 	    tree.type = mtype;
@@ -3169,95 +3259,88 @@ public class F3Attr implements F3Visitor {
 	    tree.type = pt;
 	    result = pt;       
 	}
-
-	
         Symbol msym = F3TreeInfo.symbol(tree.meth);
+
 	//System.err.println("tree="+tree);
 	//System.err.println("mtype="+mtype);
 	//System.err.println("msym="+msym);
 	//System.err.println("msym.type="+msym.type);
 	//System.err.println(mtype.asMethodType().getClass());
 	List<Symbol> resolvedImplicits = List.<Symbol>nil();
-	if (msym instanceof MethodSymbol && ((MethodSymbol)msym).params != null) {
-	    List<Type> args = List.<Type>nil();
-	    args = args.appendList(mtype.asMethodType().argtypes);
-	    boolean sawImplicit = false;
-	    for (VarSymbol varSym: ((MethodSymbol)msym).params) {
-		if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
-		    args = args.append(syms.botType);
-		    sawImplicit = true;
-		}
-	    }
-	    if (sawImplicit) {
-		Type inst = null;
-		try {
-		    inst = rs.rawInstantiate(env, msym, msym.type, args, 
-					     typeargtypes, true, false, 
-					     Warner.noWarnings);
-		} catch (Exception exc) {
-		    exc.printStackTrace();
-		}
-		//System.err.println("inst="+inst);
-		if (inst != null) {
-		    MethodType minst = inst.asMethodType();
-		    tree.meth.type = minst;
-		    List<Type> ptr = minst.argtypes;
-		    for (VarSymbol varSym: ((MethodSymbol)msym).params) {
+	//System.err.println("invoke.tree="+tree);
+	//System.err.println("invoke.msym="+System.identityHashCode(msym)+"@"+msym.getClass());
+	//System.err.println("invoke.msym="+msym);
+	if (!(mtype instanceof ErrorType) && msym instanceof MethodSymbol) {
+	    try {
+		//System.err.println("mtype="+mtype.getClass());
+		MethodSymbol mmsym = (MethodSymbol)msym;
+		//System.err.println("invoke.msym.params="+((MethodSymbol)msym).params);
+		List<Type> args = List.<Type>nil();
+		List<Type> formalArgs = List.<Type>nil();
+		args = args.appendList(mtype.asMethodType().argtypes);
+		boolean sawImplicit = false;
+		if (mmsym.params != null) for (VarSymbol varSym: mmsym.params) {
+			//System.err.println("param="+varSym+": "+varSym.type);
+			formalArgs = formalArgs.append(varSym.type);
 			if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
-			    Type expectedType = reader.translateType(ptr.head);
-			    System.err.println("expecting: "+ expectedType.getClass());
-			    if (expectedType instanceof FunctionType) {
-				expectedType = ((FunctionType)expectedType).asMethodOrForAll();
-			    }
-			    System.err.println("expecting: "+ expectedType);
-			    System.err.println("in "+env.enclClass.type);
-			    Symbol sym = rs.findVar(env, syms.the, (MTH|VAR), expectedType, true, true);
-			    boolean partial = false;
-			    if (sym.kind >= AMBIGUOUS) {
-				if (sym.kind != AMBIGUOUS) {
-				    if ((expectedType instanceof MethodType) ||
-					(expectedType instanceof ForAll) ||
-					(expectedType instanceof FunctionType)) {
-					MethodType mt = expectedType.asMethodType();
-					Symbol bestSoFar = null;
-					MethodType searchType = 
-					    new MethodType(mt.argtypes.tail, mt.restype,
-							   List.<Type>nil(), syms.methodClass);
-					System.err.println("searchType="+searchType);
-					for (Type argType : mt.argtypes) {
-					    sym = rs.findMember(env,
-								argType,
-								syms.the,
-								searchType,
-								true, false,
-								false);
-					    partial = true;
-					    break;
-					}
+			    args = args.append(syms.botType);
+			    sawImplicit = true;
+			}
+		    }
+		//System.err.println("formals="+formalArgs);
+		Type mtype1 = rs.newMethTemplate(formalArgs, msym.type.getTypeArguments());
+		if (sawImplicit) {
+		    Type inst = null;
+		    try {
+			inst = rs.rawInstantiate(env, msym, 
+						 //msym.type, 
+						 mtype1,
+						 args, 
+						 typeargtypes, true, false, 
+						 Warner.noWarnings);
+		    } catch (Infer.NoInstanceException exc) {
+			exc.printStackTrace();
+		    }
+		    //System.err.println("inst="+inst);
+		    if (inst == null) {
+			System.err.println("couldn't instantiate: "+ msym.type + " with "+ args);
+		    }
+		    if (inst != null) {
+			MethodType minst = inst.asMethodType();
+			tree.meth.type = minst;
+			List<Type> ptr = minst.argtypes;
+			for (VarSymbol varSym: ((MethodSymbol)msym).params) {
+			    if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
+				Type expectedType = reader.translateType(ptr.head);
+				System.err.println("expecting: "+ expectedType.getClass());
+				if (expectedType instanceof FunctionType) {
+				    expectedType = ((FunctionType)expectedType).asMethodOrForAll();
+				}
+				System.err.println("expecting: "+ expectedType);
+				System.err.println("in "+env.enclClass.type);
+				Symbol sym = findThe(env, tree, expectedType);
+				if (sym == null || sym.kind >= AMBIGUOUS) {
+				} else {
+				    System.err.println("found: "+sym);
+				    resolvedImplicits = resolvedImplicits.append(sym);
+				    F3Expression exp = f3make.QualIdent(sym);
+				    if (!types.isSubtype(sym.type, expectedType)) {
+					exp = f3make.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());
 				    }
+				    Type t = attribExpr(exp, env);
+				    System.err.println("implicit expr="+exp);
+				    System.err.println("type="+t);
+				    exp.type = t;
+				    implicitExprs = implicitExprs.append(exp);
 				}
 			    }
-			    if (sym.kind >= AMBIGUOUS) {
-				rs.access(sym, tree, env.enclClass.sym.type, syms.the, false, expectedType);
-			    } else {
-				System.err.println("found: "+sym);
-				resolvedImplicits = resolvedImplicits.append(sym);
-			    }
+			    ptr = ptr.tail;
 			}
-			ptr = ptr.tail;
 		    }
 		}
+	    } catch (Throwable t) {
+		t.printStackTrace();
 	    }
-	}
-
-	List<F3Expression> implicitExprs = List.<F3Expression>nil();
-	for (Symbol sym: resolvedImplicits) {
-	    F3Expression exp = f3make.QualIdent(sym);
-	    Type t = attribExpr(exp, env);
-	    System.err.println("implicit expr="+exp);
-	    System.err.println("type="+t);
-	    exp.type = t;
-	    implicitExprs = implicitExprs.append(exp);
 	}
         // We can add more methods here that we want to warn about.
         // If it becomes too hairy, it should be moved into a separate method,
@@ -3267,7 +3350,6 @@ public class F3Attr implements F3Visitor {
 	    msym.name == defs.start_ThreadMethodName) {
             log.warning(tree.pos(), MsgSym.MESSAGE_F3_EXPLICIT_THREAD);
         }
-
         if (msym!=null && msym.owner!=null && msym.owner.type!=null &&
                 msym.owner.type.tsym == syms.f3_PointerType.tsym &&
                 methName == defs.make_PointerMethodName &&
@@ -3333,6 +3415,7 @@ public class F3Attr implements F3Visitor {
                 }
             }
         }
+	result = tree.type;
         chk.validate(tree.typeargs);
 	// hack...
     }
@@ -3956,7 +4039,9 @@ public class F3Attr implements F3Visitor {
                 !target.compilerBootstrap(c)) {
                 log.error(superClass.pos(), MsgSym.MESSAGE_ENUM_TYPES_NOT_EXTENSIBLE);
             }
-            if (!supType.isInterface() &&
+
+            if (!(supType instanceof TypeVar) &&
+		!supType.isInterface() &&
 		!types.isF3Class(supType.tsym) &&
 		!types.isMixin(supType.tsym) &&
 		!supType.isPrimitive() &&
@@ -3965,9 +4050,9 @@ public class F3Attr implements F3Visitor {
                     javaSupertypeSymbol = supType.tsym;
                     // Verify there is a non-parametric constructor.
                     boolean hasNonParamCtor = true; // If there is no non-param constr we will create one later.
-                    for (Scope.Entry e1 = javaSupertypeSymbol.members().elems;
-                             e1 != null;
-                             e1 = e1.sibling) {
+                    if (javaSupertypeSymbol != null && javaSupertypeSymbol.members() != null) for (Scope.Entry e1 = javaSupertypeSymbol.members().elems;
+			 e1 != null;
+			 e1 = e1.sibling) {
                             Symbol s1 = e1.sym;
                             if (s1 != null &&
                                     s1.name == names.init &&
@@ -4244,12 +4329,12 @@ public class F3Attr implements F3Visitor {
 	    Type t = attribTree(theType.theType, env, TYP, Type.noType);
 	    //System.err.println("\"the\" type is "+t);
 	    ///System.err.println("env="+env);
-	    Symbol sym = rs.findVar(env, syms.the, (MTH|VAR), t, true, true);
-	    if (sym.kind >= AMBIGUOUS) {
-		if (sym.kind == AMBIGUOUS || env.enclFunction == null) {
-		    rs.access(sym, tree, env.enclClass.sym.type, syms.the, false, t);
-		} else {
-		    F3FunctionDefinition fun = env.enclFunction;
+	    System.err.println("searching for the "+t+ " in env1="+env);
+	    Symbol sym = findThe(env, tree, t);		
+	    F3FunctionDefinition fun = env.enclFunction;
+	    //System.err.println("encl fun ="+fun.sym);
+	    if (sym == null || fun == null || fun.sym != sym) {
+		if (!fun.sym.name.equals(syms.runMethodName)) {
 		    F3VarSymbol idSym1 = 
 			new F3VarSymbol(types, 
 					names, 
@@ -4257,17 +4342,18 @@ public class F3Attr implements F3Visitor {
 					names.fromString("the$"+fun.implicitArgs.size()),
 					t, 
 					env.enclFunction.sym);
-		    //System.err.println("not found: creating");
+		    System.err.println("not found: creating :"+t);
 		    theType.resolvedSymbol = idSym1;
 		    env.info.scope.enter(idSym1);
 		    fun.implicitArgs = fun.implicitArgs.append(idSym1);
 		    //System.err.println("fun="+fun);
 		    //System.err.println("fun.sym="+fun.sym);
+		    //System.err.println("fun.sym.params="+fun.sym.params);
+		    sym = idSym1;
 		}
 	    } else {
 		theType.resolvedSymbol = sym;
 	    }
-	    System.err.println("found: "+ sym);
 	    result = t;
 	    tree.type = result;
 	} else {
@@ -4568,10 +4654,9 @@ public class F3Attr implements F3Visitor {
                 }
                 break;
             case MTH: {
-                owntype = types.memberType(//types.erasure(site), 
-					   site,
+                owntype = types.memberType(site,
 					   sym);
-		//System.err.println("meth: "+ sym+": "+owntype);
+		System.err.println("meth: "+ sym+": "+owntype);
                 // This is probably wrong now that we have function expressions.
                 // Instead, we should checkMethod in visitFunctionInvocation.
                 // In that case we should also handle FunctionType. FIXME.
@@ -4581,9 +4666,17 @@ public class F3Attr implements F3Visitor {
 		    if (siteType instanceof MethodType) {
 			siteType = syms.makeFunctionType((MethodType)siteType);
 		    }
-                    owntype = checkMethod(siteType, sym, env, app.args,
-					  pt.getParameterTypes(), typeargtypes,
-					  env.info.varArgs);
+                    Type inst = checkMethod(siteType, sym, env, app.args,
+					    pt.getParameterTypes(), typeargtypes,
+					    env.info.varArgs);
+		    if (inst != null) { // hack
+			owntype = inst;
+		    } else {
+			System.err.println("inst failed: using : "+owntype);
+		    }
+		    if (owntype instanceof MethodType) {
+			owntype = syms.makeFunctionType((MethodType)owntype);
+		    }
                 } else {
 		    if (typeargtypes.nonEmpty()) {
 			owntype = types.subst(owntype.asMethodType(), 
@@ -4661,6 +4754,28 @@ public class F3Attr implements F3Visitor {
                             List<Type> argtypes,
                             List<Type> typeargtypes,
                             boolean useVarargs) {
+	if (argtypes != null) {
+	    List<Type> list = argtypes;
+	    while (list.nonEmpty()) {
+		Type arg = list.head;
+		if (arg instanceof MethodType) {
+		    arg = syms.makeFunctionType((MethodType)arg);
+		}
+		list.head = arg;
+		list = list.tail;
+	    }
+	}
+	if (typeargtypes != null) {
+	    List<Type> list = typeargtypes;
+	    while (list.nonEmpty()) {
+		Type arg = list.head;
+		if (arg instanceof MethodType) {
+		    arg = syms.makeFunctionType((MethodType)arg);
+		}
+		list.head = arg;
+		list = list.tail;
+	    }
+	}
         // Test (5): if symbol is an instance method of a raw type, issue
         // an unchecked warning if its argument types change under erasure.
         if (allowGenerics &&
@@ -4694,12 +4809,17 @@ public class F3Attr implements F3Visitor {
         // If this fails, something went wrong; we should not have
         // found the identifier in the first place.
         if (owntype == null) {
-            if (!pt.isErroneous())
-                log.error(env.tree.pos(),
-                          MsgSym.MESSAGE_INTERNAL_ERROR_CANNOT_INSTANTIATE,
-                          sym, site,
-                          Type.toString(pt.getParameterTypes()));
-            owntype = syms.errType;
+            if (!pt.isErroneous()) { 
+		if (false) { // hack
+		    log.error(env.tree.pos(),
+			      MsgSym.MESSAGE_INTERNAL_ERROR_CANNOT_INSTANTIATE,
+			      sym, site,
+			      Type.toString(pt.getParameterTypes()));
+		}
+		return null; // hack
+	    } else {
+		owntype = syms.errType;
+	    }
         } else {
             // System.out.println("call   : " + env.tree);
             // System.out.println("method : " + owntype);

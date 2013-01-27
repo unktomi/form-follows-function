@@ -460,6 +460,9 @@ public class F3TreeInfo {
      */
     public static Symbol symbol(F3Tree tree) {
 	tree = skipParens(tree);
+	if (tree instanceof F3Type.TheType) {
+	    return ((F3Type.TheType)tree).resolvedSymbol;
+	}
 	switch (tree.getF3Tag()) {
 	case IDENT:
 	    return ((F3Ident) tree).sym;

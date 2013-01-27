@@ -1515,9 +1515,11 @@ class F3AnalyzeClass {
             
             // Now analyze interfaces.
             for (Type supertype : cSym.getInterfaces()) {
-                ClassSymbol iSym = (ClassSymbol) supertype.tsym;
-		//		System.err.println("analyzing: " +iSym);
-                analyzeClass(iSym, false, true);
+		if (supertype.tsym instanceof ClassSymbol) {
+		    ClassSymbol iSym = (ClassSymbol) supertype.tsym;
+		    //		System.err.println("analyzing: " +iSym);
+		    analyzeClass(iSym, false, true);
+		}
             }
 
             // Record the superclass in top down order.
@@ -1637,6 +1639,7 @@ class F3AnalyzeClass {
 	if (memberType != sym.type) {
 	    MethodSymbol memberSym = 
 		new MethodSymbol(sym.flags_field, sym.name, memberType, currentClassSym);
+	    //System.err.println("CREATED MEMBER SYM: "+memberSym+": "+memberType);
 	    sym = memberSym;
 	}
 	//System.err.println("processMethod: "+ sym);
