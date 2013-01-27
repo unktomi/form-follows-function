@@ -1931,7 +1931,9 @@ public class F3Check {
 		for (List<Type> l = types.interfaces(c.type);
 		     undef == null && l.nonEmpty();
 		     l = l.tail) {
-		    undef = firstUndef(impl, (ClassSymbol)l.head.tsym);
+		    if (l.head.tsym instanceof ClassSymbol) {
+			undef = firstUndef(impl, (ClassSymbol)l.head.tsym);
+		    }
 		}
 	    }
             return undef;
@@ -2036,6 +2038,9 @@ public class F3Check {
 	void checkImplementations(F3ClassDeclaration tree, ClassSymbol ic) {
 	    ClassSymbol origin = tree.sym;
 	    for (List<Type> l = types.closure(ic.type); l.nonEmpty(); l = l.tail) {
+		if (!(l.head.tsym instanceof ClassSymbol)) {
+		    continue;
+		}
 		ClassSymbol lc = (ClassSymbol)l.head.tsym;
 		if ((allowGenerics || origin != lc) && (lc.flags() & (ABSTRACT|MIXIN)) != 0) {
 		    for (Scope.Entry e=lc.members().elems; e != null; e=e.sibling) {
@@ -2098,6 +2103,7 @@ public class F3Check {
         if (extending.size() > 0) {
             // Get the first extra for error position.
             F3Expression extra = extending.get(0);
+	    if (false)
             log.error(extra.pos(),
                 MsgSym.MESSAGE_F3_ONLY_MIXINS_AND_INTERFACES);
         }

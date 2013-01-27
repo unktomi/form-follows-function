@@ -728,7 +728,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
                 attr.attribExpr(tree, env);
             } else {
 		//System.err.println("finishing function defintion: "+ tree+": "+env);
-                attr.finishFunctionDefinition((F3FunctionDefinition) tree, env);
+                attr.finishFunctionDefinition((F3FunctionDefinition) tree, env, false);
             }
         }
     }
@@ -768,8 +768,8 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		completer.attr = attr;
 		m.completer = completer;
 		attr.methodSymToTree.put(m, tree);
+		attr.methodSymToEnv.put(m, methodEnv(tree, env));
 	    }
-	    //attr.methodSymToEnv.put(m, methodEnv(tree, env));
 
         } catch (NullPointerException e) {
 	    e.printStackTrace();

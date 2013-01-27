@@ -514,7 +514,33 @@ public class F3ClassReader extends ClassReader {
             }
         }
         name = names.fromString(nameString);
-        return new MethodSymbol(flags, name, type, owner);
+	MethodSymbol origSym = (MethodSymbol)sym;
+        MethodSymbol res = new MethodSymbol(flags, name, type, owner);
+	//System.err.println("TRANSLATED: "+System.identityHashCode(origSym)+": "+origSym);
+	//System.err.println("TRANSLATED TO: "+System.identityHashCode(res)+": "+origSym);
+	cloneMethodParams(origSym, res);
+	return res;
+    }
+
+    public void cloneMethodParams(MethodSymbol origSym, 
+				  MethodSymbol res) {
+	if (origSym.params != null) {
+	    //System.err.println("TRANSLATED: "+System.identityHashCode(origSym)+": "+origSym);
+	    //System.err.println("TRANSLATED TO: "+System.identityHashCode(res)+": "+res);
+	    res.params = List.<VarSymbol>nil();
+	    List<Type> pts = res.type.asMethodType().argtypes;
+	    for (VarSymbol vsym: origSym.params) {
+		//System.err.println("vsym="+vsym);
+		//System.err.println("type="+pts.head);
+		//System.err.println("type'="+vsym.type);
+		res.params = res.params.append(new F3VarSymbol(f3Types, names, 
+							       vsym.flags(), vsym.name, 
+							       vsym.type,
+							       res));
+		pts = pts.tail;
+	    }
+	    //System.err.println("res.params="+res.params);
+	}
     }
 
     // VSGC-2849 - Mixins: Change the mixin interface from $Intf to $Mixin.

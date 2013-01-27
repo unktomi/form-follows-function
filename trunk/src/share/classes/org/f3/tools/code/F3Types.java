@@ -1469,9 +1469,24 @@ public class F3Types extends Types {
                 return t;
             }
 
+	    public Type visitMethodType(MethodType t, Boolean pw) {
+		List<Type> argtypes = visit(t.argtypes, pw);
+		Type restype = visit(t.restype, pw);
+		List<Type> thrown = visit(t.thrown, pw);
+		if (argtypes == t.argtypes &&
+		    restype == t.restype &&
+		    thrown == t.thrown)
+		    return t;
+		else
+		    return new MethodType(argtypes, restype, thrown, t.tsym);
+	    }
+
             @Override
             public Type visitClassType(ClassType t0, Boolean preserveWildcards) {
 		ClassType t = t0;
+		if (isSequence(t)) {//hack
+		    t = (ClassType)sequenceType(elementType(t));
+		}
                 List<Type> args2 = visit(t.getTypeArguments(), true);
                 Type encl2 = visit(t.getEnclosingType(), false);
 		boolean isFunc = isF3Function(t);

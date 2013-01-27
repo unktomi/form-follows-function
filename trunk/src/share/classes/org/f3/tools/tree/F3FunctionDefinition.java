@@ -45,6 +45,7 @@ public class F3FunctionDefinition extends F3Expression implements FunctionDefini
     public List<F3Expression> typeArgs;
     public List<Type> typeArgTypes;
     public List<F3VarSymbol> implicitArgs = List.<F3VarSymbol>nil();
+    public List<F3Var> implicitArgTrees = List.<F3Var>nil();
 
     public F3FunctionDefinition(
             F3Modifiers mods,

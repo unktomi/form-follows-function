@@ -1184,6 +1184,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
 
     F3Type rtype = null;
     com.sun.tools.mjavac.util.List<F3Var> argTypes = com.sun.tools.mjavac.util.List.<F3Var>nil();
+    com.sun.tools.mjavac.util.List<F3Var> implicitArgs = com.sun.tools.mjavac.util.List.<F3Var>nil();
 
     // Accumulate any generic arguments
     //
@@ -1273,6 +1274,9 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 errNodes.append($rt2.rtype);
                 rtype = $rt2.rtype;
             }
+        (WITH implicits=implicitFormalParameters {
+             implicitArgs = $implicits.params.toList();
+        })?
         |
         (LPAREN) => (fp3=formalParameters
             {
@@ -1327,9 +1331,10 @@ functionDefinition [ F3Modifiers mods, int pos ]
                                 argTypes, 
                                 blk
                             );
-	    if (genericArgs != null) {
-		((F3FunctionDefinition)$value).typeArgs = genericArgs;
-	    }
+            ((F3FunctionDefinition)$value).implicitArgTrees = implicitArgs;
+            if (genericArgs != null) {
+                ((F3FunctionDefinition)$value).typeArgs = genericArgs;
+            }
             // Ensure that the function value, manufactured within the FunctionDefinition() method
             // call, receives an endPos() map
             //
@@ -1812,6 +1817,130 @@ catch [RecognitionException re] {
     // even get here.
     //
  }
+
+// IMPLICIT FORMAL
+
+// ----------------
+// Parameter lists.
+// Parse the formal parameters of a function declaration and produce the
+// corresponding AST. 
+//
+implicitFormalParameters
+
+    returns [ListBuffer<F3Var> params = new ListBuffer<F3Var>()]      // Return type is a list of all the AST nodes that represent a 
+                                                                        // formal parameter, this is used to generate the AST for the
+                                                                        // funciton definition itself.
+@init
+{
+    // Used to accumulate a list of anything that we manage to build up in the parse
+    // in case of error.
+    //
+    ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
+}
+    : LPAREN 
+    
+        (
+            fp1=implicitFormalParameter 
+    
+            {
+                // Capture the first parameter
+                //
+                params.append($fp1.var); 
+            }
+            (
+                COMMA fp2=implicitFormalParameter
+                
+                    { 
+                        // Second and subsequent parameter ASTs
+                        //
+                        params.append($fp2.var); 
+                    } 
+            )*
+            COMMA?  
+        )?
+            
+      RPAREN
+    ;
+    
+// Catch an error. We create an erroneous node for anything that was at the start 
+// up to wherever we made sense of the input.
+//
+catch [RecognitionException re] {
+  
+    // First, let's report the error as the user needs to know about it
+    //
+    reportError(re);
+
+    // Now we perform standard ANTLR recovery here
+    //
+    recover(input, re);
+    
+    // Because we have raised the error, we won't perform codegen, but we can
+    // leave the list in tact so that the IDE has something to work with. The list
+    // is optional, so even if we have gathered none, we are still good.
+    //
+ }
+ 
+// -----------------
+// Formal parameter.
+// Parse the specification of an individual function parameter and
+// produce the AST. Note that a parameter may be left empty
+//
+implicitFormalParameter
+
+    returns [F3Var var]    // Formal parameters are contained in a F3 tree var node.
+    
+@init
+{
+    // Used to accumulate a list of anything that we manage to build up in the parse
+    // in case of error.
+    //
+    ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
+}
+    : 
+        name IS THE typeReference=type
+    
+        { 
+            if ($name.inError) {
+            
+                // Looks like the name was missing, create an erroneous var instead
+                // Build up new node in case of error
+                //
+                F3Expression part = F.at($name.pos).Ident($name.value);
+                errNodes.append(part);
+                endPos(part);
+                errNodes.append($typeReference.rtype);
+                
+            } else {
+            
+                $var = F.at($name.pos).Param($name.value, $typeReference.rtype);
+            }
+            endPos($var); 
+        }
+    ;
+    
+// Catch an error. We create an erroneous node for anything that was at the start 
+// up to wherever we made sense of the input.
+//
+catch [RecognitionException re] {
+  
+    // First, let's report the error as the user needs to know about it
+    //
+    reportError(re);
+
+    // Now we perform standard ANTLR recovery here
+    //
+    recover(input, re);
+    
+    // Because both name and typeReference will recover with something
+    // sensible, we don't ned to create anything here. In theory, we can't
+    // even get here.
+    //
+ }
+
+
+
+
  
 // ------
 // block.

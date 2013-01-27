@@ -373,9 +373,9 @@ public class F3Symtab extends Symtab {
             else
                 argtypes.append(a);
         }
-        MethodType mtype = new MethodType(argtypes.toList(), restype, 
-					  List.<Type>nil(), 
-					  methodClass);
+        MethodType mtype = newMethodType(argtypes.toList(), restype, 
+					 List.<Type>nil(), 
+					 methodClass);
         return makeFunctionType(nargs, typarams, mtype);
     }
 
@@ -395,10 +395,43 @@ public class F3Symtab extends Symtab {
             else
                 argtypes.append(a);
         }
-        MethodType mtype = new MethodType(argtypes.toList(), restype, 
-					  List.<Type>nil(), 
-					  methodClass);
+        MethodType mtype = newMethodType(argtypes.toList(), restype, 
+					 List.<Type>nil(), 
+					 methodClass);
         return makeFunctionType(typarams, mtype);
+    }
+
+    MethodType newMethodType(List<Type> argtypes,
+			     Type restype,
+			     List<Type> typeargtypes,
+			     Symbol.ClassSymbol methodClass) {
+	F3Symtab syms = this;
+	if (argtypes != null) {
+	    List<Type> list = argtypes;
+	    while (list.nonEmpty()) {
+		Type arg = list.head;
+		if (arg instanceof MethodType) {
+		    arg = syms.makeFunctionType((MethodType)arg);
+		}
+		list.head = arg;
+		list = list.tail;
+	    }
+	}
+	if (typeargtypes != null) {
+	    List<Type> list = typeargtypes;
+	    while (list.nonEmpty()) {
+		Type arg = list.head;
+		if (arg instanceof MethodType) {
+		    arg = syms.makeFunctionType((MethodType)arg);
+		}
+		list.head = arg;
+		list = list.tail;
+	    }
+	}
+	if (restype instanceof MethodType) {
+	    restype = syms.makeFunctionType((MethodType)restype);
+	}
+	return new MethodType(argtypes, restype, typeargtypes, methodClass);
     }
 
     public FunctionType makeFunctionType(List<Type> typarams, MethodType mtype) {

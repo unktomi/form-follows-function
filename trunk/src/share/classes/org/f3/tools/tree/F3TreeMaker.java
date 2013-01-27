@@ -22,7 +22,8 @@
  */
 
 package org.f3.tools.tree;
-
+import java.util.Map;
+import java.util.HashMap;
 import org.f3.api.F3BindStatus;
 import org.f3.api.tree.TimeLiteralTree.Duration;
 import org.f3.api.tree.TypeTree.Cardinality;
@@ -461,6 +462,16 @@ public class F3TreeMaker implements F3TreeFactory {
         if (t == null) {
             return null;
         }
+	return Type(t, new HashMap<Type, F3Expression>());
+    }
+
+    public F3Expression Type(Type t, Map<Type, F3Expression> visited) {
+	Type ityp = t;
+        if (t == null) {
+            return null;
+        }
+	F3Expression e = visited.get(t);
+	if (e != null) return e;
 	if (t instanceof TypeVar) {
 	    TypeVar tv = (TypeVar)t;
 	    if (tv.bound != null) {
@@ -471,10 +482,17 @@ public class F3TreeMaker implements F3TreeFactory {
 		    bk = wc.kind;
 		    bound = wc.type;
 		}
-		F3Expression exp = 
-		    TypeVar(Ident(t.tsym.name), Cardinality.SINGLETON, bk, Type(bound));
-		exp.setType(t);
-		return exp;
+		try {
+		    F3Expression ident = Ident(t.tsym.name);
+		    visited.put(t, ident);
+		    F3Expression exp = 
+			TypeVar(ident, Cardinality.SINGLETON, bk, Type(bound, visited));
+		    exp.setType(t);
+		    return exp;
+		} catch (StackOverflowError err) {
+		    System.err.println("***TYPE is circular: "+ System.identityHashCode(bound)+": "+t);
+		    System.err.println("bound="+System.identityHashCode(bound) + ": "+bound);
+		}
 	    } else {
 		F3Expression exp = 
 		    TypeVar(Ident(t.tsym.name), Cardinality.SINGLETON, BoundKind.EXTENDS, null);
@@ -505,7 +523,7 @@ public class F3TreeMaker implements F3TreeFactory {
 		    paramType = types.elementType(paramType);
 		    card = Cardinality.ANY;
 		}
-		F3Expression expr = Type(paramType);
+		F3Expression expr = Type(paramType, visited);
 		F3Type typ = null;
 		if (expr instanceof F3Type) {
 		    typ = (F3Type)expr;
@@ -521,7 +539,7 @@ public class F3TreeMaker implements F3TreeFactory {
 		res = types.elementType(res);
 		card = Cardinality.ANY;
 	    }
-	    F3Expression resExpr = Type(res);
+	    F3Expression resExpr = Type(res, visited);
 	    if (resExpr instanceof F3Type) {
 		resTyp = (F3Type)resExpr;
 	    } else {
@@ -531,7 +549,7 @@ public class F3TreeMaker implements F3TreeFactory {
 	    List<Type> targs = funType.typeArgs;
 	    if (targs != null) {
 		for (Type targ: targs) {
-		    typeArgs.append(Type(targ));
+		    typeArgs.append(Type(targ, visited));
 		}
 	    }
 	    F3Type rt = TypeFunctional(ts.toList(),
@@ -573,7 +591,7 @@ public class F3TreeMaker implements F3TreeFactory {
 		{
 		    WildcardType w = (WildcardType)t;
 		    if (w.kind != BoundKind.UNBOUND) {
-			tp = Type(w.type);
+			tp = Type(w.type, visited);
 		    } else {
 			tp = TypeExists();
 		    }
@@ -585,7 +603,7 @@ public class F3TreeMaker implements F3TreeFactory {
 		}
                 break;
             case ARRAY:
-                F3Expression elem = Type(types.elemtype(t));
+                F3Expression elem = Type(types.elemtype(t), visited);
                 elem = elem instanceof F3Type ? elem : TypeClass(elem, Cardinality.SINGLETON);
                 tp = TypeArray((F3Type)elem);
                 break;
@@ -593,12 +611,12 @@ public class F3TreeMaker implements F3TreeFactory {
 		List<Type> targs = ityp.getTypeArguments();
                 Type outer = t.getEnclosingType();
                 tp = outer.tag == CLASS && t.tsym.owner.kind == TYP
-                        ? Select(Type(outer), t.tsym, false)
+		    ? Select(Type(outer, visited), t.tsym, false)
                         : QualIdent(t.tsym);
 		if (targs.size() > 0) {
 		    ListBuffer<F3Expression> typeArgs = ListBuffer.<F3Expression>lb();
 		    for (Type targ: targs) {
-			typeArgs.append(Type(targ));
+			typeArgs.append(Type(targ, visited));
 		    }
 		    if (tp instanceof F3Ident) {
 			((F3Ident) tp).typeArgs = typeArgs.toList();
