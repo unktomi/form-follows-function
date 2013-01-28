@@ -4307,8 +4307,9 @@ public class F3Attr implements F3Visitor {
     //@Override
     public void visitTypeAny(F3TypeAny tree) {
         //assert false : "MUST IMPLEMENT";
-
-	if (tree instanceof F3TypeAlias) {
+	if (tree instanceof F3Type.RawSequenceType) {
+	    tree.type = result = syms.f3_SequenceTypeErasure;
+	} else if (tree instanceof F3TypeAlias) {
 	    F3TypeAlias ta = (F3TypeAlias)tree;
             F3Env<F3AttrContext> localEnv = env;
 	    List<Type> targs = null;
@@ -5138,6 +5139,12 @@ public class F3Attr implements F3Visitor {
 	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
 	    if (x.head != null && y.head != null) {
 		System.err.println("fix override:  "+x.head+" <= "+y.head);
+		Type x1 = types.subst(y.head, x.head.getTypeArguments(), y.head.getTypeArguments());
+		if (x1 != x.head) {
+		    vars.head.baseType = x1;
+		    System.err.println("set base type: "+ vars.head + ": "+vars.head.baseType);
+		}
+		/*
 		int i = types.isTypeConsType(y.head);
 		if (i >= 0) {
 		    vars.head.baseType = y.head;
@@ -5149,6 +5156,7 @@ public class F3Attr implements F3Visitor {
 		    }
 		    System.err.println("set base type: "+ vars.head + ": "+vars.head.baseType);
 		}
+		*/
 	    }
 	    if (x.head != null && types.boxedTypeOrType(x.head) == y.head) {
 		vars.head.type = x.head = y.head;

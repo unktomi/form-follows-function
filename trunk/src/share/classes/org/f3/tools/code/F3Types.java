@@ -214,7 +214,13 @@ public class F3Types extends Types {
 	      && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL)) {
 	    return -1;
 	}
-	Type t = erasure(type);
+	Type t;
+	try {
+	    t = erasure(type);
+	} catch (Exception exc) {
+	    System.err.println("doh! type was: "+ toF3String(type));
+	    return -1;
+	}
 	for (int i = 0; i < syms.f3_TypeCons.length; i++) {
 	    if (t == syms.f3_TypeConsErasure[i]) {
 		return i;
@@ -561,6 +567,9 @@ public class F3Types extends Types {
 	if (true) {
 	    int i = isTypeConsType(s);
 	    if (i >= 0) {
+		Type tt = subst(t, t.getTypeArguments(), s.getTypeArguments());
+		System.err.println("S="+s);
+		System.err.println("TT="+tt);
 		for (Type st : supertypesClosure(t)) {
 		    if (isSameType(st, s)) {
 			System.err.println("isSubtype? "+st +": "+s);
@@ -702,34 +711,16 @@ public class F3Types extends Types {
 	return false;
     }
 
-    boolean isSameTypeCons(Type a, Type b) {
-	if (true) {
-	    Type t = getTypeConsThis(a);
-	    if (t != null && t != a) {
-		//System.err.println("testing: "+ t+", "+ b);
-		if (isSameType(erasure(t), erasure(b))) {
-		    if (t.getTypeArguments().size() == b.getTypeArguments().size()) {
-			if (isSameType(t, b, false)) {
-			    //System.err.println("matched "+a + ", "+b);
-			    return true;
-			}
-		    } else {
-			return true;
-		    }
-		}
-	    }
-	    t = getTypeConsThis(b);
-	    if (t != null && t != b) {
-		//System.err.println("testing: "+ a+", "+ t);
-		if (isSameType(erasure(a), erasure(t))) {
-		    if (a.getTypeArguments().size() == t.getTypeArguments().size()) {
-			if (isSameType(a, t, false)) {
-			    //System.err.println("matched "+a + ", "+b);
-			    return true;
-			}
-		    } else {
-			return true;
-		    }
+    boolean isSameTypeCons(Type t, Type s) {
+	int i = isTypeConsType(s);
+	if (i >= 0) {
+	    Type tt = subst(t, t.getTypeArguments(), s.getTypeArguments());
+	    System.err.println("S="+s);
+	    System.err.println("TT="+tt);
+	    for (Type st : supertypesClosure(t)) {
+		if (isSameType(st, s)) {
+		    System.err.println("same type cons"+st +": "+s);
+		    return true;
 		}
 	    }
 	}
@@ -1054,6 +1045,10 @@ public class F3Types extends Types {
 	    return true;
 	}
 	if (checkTypeCons) {
+	    if (isSameTypeCons(a, b) ||
+		isSameTypeCons(b, a)) {
+		return true;
+	    }
 	}
 	if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
 	    a = new ForAll(List.of(a), a);

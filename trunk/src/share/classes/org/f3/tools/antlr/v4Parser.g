@@ -1898,7 +1898,7 @@ implicitFormalParameter
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 }
     : 
-        name IS THE typeReference=type
+        name IS THE typeRef=type
     
         { 
             if ($name.inError) {
@@ -1909,11 +1909,10 @@ implicitFormalParameter
                 F3Expression part = F.at($name.pos).Ident($name.value);
                 errNodes.append(part);
                 endPos(part);
-                errNodes.append($typeReference.rtype);
+                errNodes.append($typeRef.rtype);
                 
             } else {
-            
-                $var = F.at($name.pos).Param($name.value, $typeReference.rtype);
+                $var = F.at($name.pos).Param($name.value, $typeRef.rtype);
             }
             endPos($var); 
         }
@@ -5943,6 +5942,7 @@ type
             }
             endPos($rtype);
         }
+    | LBRACKET RBRACKET { $rtype = F.at(pos($LBRACKET)).RawSequenceType(); }
     | typeFunction  { $rtype = $typeFunction.rtype; } 
     | typePrefixed  { $rtype = $typePrefixed.rtype; }) 
     |

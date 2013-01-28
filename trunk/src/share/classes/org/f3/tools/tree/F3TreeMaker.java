@@ -226,6 +226,12 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
+    public F3Type RawSequenceType() {
+        F3Type.RawSequenceType tree = new F3Type.RawSequenceType();
+        tree.pos = pos;
+        return tree;
+    }
+
     public F3Expression Tuple(List<F3Expression> expr) {
 	System.err.println("tuple: "+ expr);
 	if (expr.size() == 1) {
