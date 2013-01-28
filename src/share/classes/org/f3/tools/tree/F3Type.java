@@ -47,6 +47,12 @@ public abstract class F3Type extends F3Expression implements TypeTree {
     }
     public Cardinality getCardinality() { return cardinality; }
 
+    public static class RawSequenceType extends F3TypeAny {
+	protected RawSequenceType() {
+	    super(Cardinality.ANY);
+	}
+    }
+
     public static class TheType extends F3TypeAny {
 	final public F3Type theType;
 	public Symbol resolvedSymbol;

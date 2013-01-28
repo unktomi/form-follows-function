@@ -1141,6 +1141,15 @@ public class F3Resolve {
                               boolean allowBoxing,
                               boolean useVarargs,
                               boolean operator) {
+	/*
+	int i = types.isTypeConsType(site);
+	if (i >= 0) {
+	    List<Type> targs = site.getTypeArguments();
+	    Type origSite = site;
+	    site = types.applySimpleGenericType(targs.head, targs.tail);
+	    System.err.println("site "+origSite + " ==> "+site);
+	}
+	*/
         Type mtype = expected;
         if (mtype instanceof FunctionType)
             mtype = ((FunctionType)mtype).asMethodOrForAll();
@@ -1325,6 +1334,15 @@ public class F3Resolve {
                           Type site,
                           Name name,
                           TypeSymbol c) {
+	/*
+	int i = types.isTypeConsType(site);
+	if (i >= 0) {
+	    List<Type> targs = site.getTypeArguments();
+	    Type origSite = site;
+	    site = types.applySimpleGenericType(targs.head, targs.tail);
+	    System.err.println("site "+origSite + " ==> "+site);
+	}
+	*/
         Symbol bestSoFar = typeNotFound;
         Symbol sym;
 	if (c.members() != null) {
@@ -1708,6 +1726,25 @@ public class F3Resolve {
      */
     Symbol resolveQualifiedMethod(DiagnosticPosition pos, F3Env<F3AttrContext> env,
                                   Type site, Name name, Type expected) {
+	Symbol sym = resolveQualifiedMethod0(pos, env, site, name, expected);
+	if (sym.kind >= AMBIGUOUS) {
+	    int i = types.isTypeConsType(site);
+	    if (i >= 0) {
+		List<Type> targs = site.getTypeArguments();
+		Type origSite = site;
+		site = types.applySimpleGenericType(targs.head, targs.tail);
+		System.err.println("site "+origSite + " ==> "+site);
+		sym = resolveQualifiedMethod0(pos, env, site, name, expected);
+	    }
+	}
+        if (sym.kind >= AMBIGUOUS) {
+            sym = access(sym, pos, site, name, true, expected);
+        }
+	return sym;
+    }
+
+    Symbol resolveQualifiedMethod0(DiagnosticPosition pos, F3Env<F3AttrContext> env,
+				   Type site, Name name, Type expected) {
         Symbol sym = findMember(env, site, name, expected, false,
                                 env.info.varArgs=false, false);
         if (varargsEnabled && sym.kind >= WRONG_MTHS) {
@@ -1716,9 +1753,6 @@ public class F3Resolve {
             if (sym.kind >= WRONG_MTHS)
                 sym = findMember(env, site, name, expected, true,
                                  env.info.varArgs=true, false);
-        }
-        if (sym.kind >= AMBIGUOUS) {
-            sym = access(sym, pos, site, name, true, expected);
         }
         return sym;
     }

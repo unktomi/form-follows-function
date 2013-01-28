@@ -376,7 +376,6 @@ public abstract class F3TranslationSupport {
     }
 
 
-
     /**
      * Build a Java AST representing the specified type.
      * Convert F3 class references to interface references.
@@ -400,21 +399,13 @@ public abstract class F3TranslationSupport {
             t = wtype.kind == BoundKind.EXTENDS ? wtype.type : wtype;
         }
         JCExpression texp = makeTypeTreeInner(diagPos, t, makeIntf);
-        //texp.type = t;
         return texp;
     }
 
     public final static boolean ERASE_BACK_END = false;
 
     private JCExpression makeTypeTreeInner(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
-	if (ERASE_BACK_END) t = types.erasure(t);
 	JCExpression exp = makeTypeTreeInner0(diagPos, t, makeIntf);
-	//	if (exp.type != t) {
-	//	    System.err.println(exp.type);
-	//System.err.println(t);
-	//}
-	//System.err.println("t="+t);
-	//	System.err.println("exp="+exp);
 	if (t == null) {
 	    throw new NullPointerException("makeTypeTreeInner: "+ diagPos);
 	}
@@ -422,6 +413,14 @@ public abstract class F3TranslationSupport {
     }
 
     private JCExpression makeTypeTreeInner0(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
+	return makeTypeTreeInner01(diagPos, t, makeIntf, true);
+    }
+
+    JCExpression makeTypeWithTypeCons(Type t) {
+	return makeTypeTreeInner01(null, t, true, false);
+    }
+
+    private JCExpression makeTypeTreeInner01(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons) {
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	}
@@ -434,9 +433,32 @@ public abstract class F3TranslationSupport {
 	    } else {
 		System.err.println("***Make type tree "+orig+" => "+tcons.args);
 		TypeVar tv = new TypeVar(t.tsym, null, syms.botType);
-		t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
+		if (ERASE_BACK_END) {
+		    t = types.erasure(tcons.args.head);
+		} else {
+		    t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
+		}
+	    }
+	} else if (expandTypeCons) {
+	    int i = types.isTypeConsType(t);
+	    if (i >= 0) {
+		Type site = t;
+		List<Type> targs = site.getTypeArguments();
+		if (ERASE_BACK_END) {
+		    site = targs.head;
+		} else if (targs.nonEmpty()) {
+		    site = types.applySimpleGenericType(targs.head, targs.tail);
+		}
+		try {
+		    System.err.println("make type tree " + t);
+		    System.err.println(" >>> "+site);
+		    t = site;
+		} catch (Exception exc) {
+		    exc.printStackTrace();
+		}
 	    }
 	}
+	if (ERASE_BACK_END) t = types.erasure(t);
 	if (t instanceof ForAll) {
 	    ForAll fa = (ForAll)t;
 	    System.err.println("fa.qtype="+fa.qtype.getClass());
@@ -464,7 +486,7 @@ public abstract class F3TranslationSupport {
                 if (!t.getTypeArguments().isEmpty()) {
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {
-                        targs = targs.append(makeTypeTreeInner(diagPos, ta, makeIntf));
+                        targs = targs.append(makeTypeTreeInner01(diagPos, ta, makeIntf, expandTypeCons));
                     }
                     texp = make.at(diagPos).TypeApply(texp, targs);
                 }
@@ -475,7 +497,7 @@ public abstract class F3TranslationSupport {
             }
             case TypeTags.WILDCARD: {
                 WildcardType wtype = (WildcardType) t;
-		JCExpression bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner(diagPos, wtype.type, false);
+		JCExpression bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner01(diagPos, wtype.type, false, expandTypeCons);
 		//System.err.println("bound="+bound);
 		if (false) if (bound != null && wtype.type instanceof TypeVar) {
 		    TypeVar tv = (TypeVar)wtype.type;
@@ -492,12 +514,12 @@ public abstract class F3TranslationSupport {
 
             }
             case TypeTags.ARRAY: {
-                return make.at(diagPos).TypeArray(makeTypeTreeInner(diagPos,types.elemtype(t), makeIntf));
+                return make.at(diagPos).TypeArray(makeTypeTreeInner01(diagPos,types.elemtype(t), makeIntf, expandTypeCons));
             }
             default: {
 		if (t instanceof TypeVar) {
 		    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
-			return makeTypeTreeInner(diagPos, ((TypeVar)t).getUpperBound(), makeIntf);
+			return makeTypeTreeInner01(diagPos, ((TypeVar)t).getUpperBound(), makeIntf, expandTypeCons);
 		    }
 		    TypeVar tv = (TypeVar)t;
 		    if (tv.lower instanceof WildcardType) { // hack
@@ -511,7 +533,7 @@ public abstract class F3TranslationSupport {
 			//System.err.println("not existentializing: "+ t);
 		    }
 		}
-		//System.err.println("default: "+ t.getClass()+": "+t);
+		System.err.println("default: "+ t.getClass()+": "+t);
                 return make.at(diagPos).Type(t);
             }
         }
@@ -1646,6 +1668,14 @@ public abstract class F3TranslationSupport {
          */
         protected JCVariableDecl Param(Type varType, Name varName) {
             return Var(Flags.PARAMETER | Flags.FINAL, varType, varName, null);
+	}
+
+	protected JCVariableDecl Param(Type varType, Name varName, boolean expandTypeCons) {
+	    if (expandTypeCons) {
+		return Param(varType, varName);
+	    }
+            return Var(Flags.PARAMETER | Flags.FINAL, makeTypeWithTypeCons(varType),
+		       varName, null);
         }
 
        /**
@@ -1655,7 +1685,7 @@ public abstract class F3TranslationSupport {
         JCVariableDecl ReceiverParam(F3ClassDeclaration cDecl) {
 	    JCExpression type = id(interfaceName(cDecl));
 	    Type t = cDecl.type;
-	    if (!t.getTypeArguments().isEmpty()) {
+	    if (!ERASE_BACK_END && !t.getTypeArguments().isEmpty()) {
 		List<JCExpression> targs = List.nil();
 		for (Type ta : t.getTypeArguments()) {
 		    System.err.println("ta="+ta);
@@ -1824,12 +1854,14 @@ public abstract class F3TranslationSupport {
         protected JCMethodDecl Method(JCModifiers modifiers, Type returnType, Name methodName, List<JCVariableDecl> params, List<JCStatement> stmts, MethodSymbol methSym) {
 	    //System.err.println("sym2="+methSym);
 	    ListBuffer<Type> targsBuf = new ListBuffer<Type>();
-	    if (params.size() > 0) {
-		if ((modifiers.flags & Flags.STATIC) != 0) {
-		    targsBuf.appendList(methSym.owner.type.getTypeArguments());
+	    if (!ERASE_BACK_END) {
+		if (params.size() > 0) {
+		    if ((modifiers.flags & Flags.STATIC) != 0) {
+			targsBuf.appendList(methSym.owner.type.getTypeArguments());
+		    }
 		}
+		targsBuf.appendList(methSym.type.getTypeArguments());
 	    }
-	    targsBuf.appendList(methSym.type.getTypeArguments());
 	    List<Type> targs = targsBuf.toList();
 	    //Thread.currentThread().dumpStack();
 	    //System.err.println("*sym="+methSym);

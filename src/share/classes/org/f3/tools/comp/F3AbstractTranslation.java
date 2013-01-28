@@ -799,7 +799,7 @@ public abstract class F3AbstractTranslation
 	    System.out.println("convert param: "+ param.name+" "+param.type+ " base="+param.baseType);
 	    Type t = param.type;
 	    if (param.baseType != null) {
-		return Param(param.baseType, names.fromString(param.name + "$base"));
+		return Param(param.baseType, names.fromString(param.name + "$base"), false);
 	    } else {
 		return Param(param.type, param.name);
 	    }
@@ -1925,7 +1925,7 @@ public abstract class F3AbstractTranslation
                 ListBuffer<JCStatement> stmts = ListBuffer.lb();
 		for (F3Var f3Var : tree.getParams()) {
 		    if (f3Var.baseType != null) {
-			stmts.append(Var(0L, makeType(f3Var.type),
+			stmts.append(Var(Flags.FINAL, makeType(f3Var.type),
 					 f3Var.name,
 					 make.TypeCast(makeType(f3Var.type),
 						       make.Ident(names.fromString(f3Var.name+"$base")))));
