@@ -933,6 +933,7 @@ public class F3Lower implements F3Visitor {
 	    F3OnReplace onInvalidate = lowerDecl(tree.getOnInvalidate());
 	    F3Var res = m.at(tree.pos).Var(tree.name, tree.getF3Type(), tree.mods, init, tree.getBindStatus(), onReplace, onInvalidate);
 	    res.sym = tree.sym;
+	    res.baseType = tree.baseType;
 	    result = res.setType(tree.type);
 	    F3VarInit vsi = tree.getVarInit();
 	    if (vsi != null) {

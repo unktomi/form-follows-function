@@ -246,11 +246,13 @@ public class F3Symtab extends Symtab {
         f3_MonadType = enterClass(F3Defs.cMonad);
         f3_ComonadType = enterClass(F3Defs.cComonad);
         f3_TypeConsType = enterClass(F3Defs.cTypeCons);
-	f3_TypeCons = new Type[5];
-	f3_TypeConsErasure = new Type[5];
+	f3_TypeCons = new Type[6];
+	f3_TypeConsErasure = new Type[6];
+	f3_TypeCons[0] = enterClass(F3Defs.cTypeCons);
+	f3_TypeConsErasure[0] = types.erasure(f3_TypeCons[0]);
 	for (int i = 1; i <= 5; i++) {
-	    f3_TypeCons[i-1] = enterClass(F3Defs.cTypeCons+""+i);
-	    f3_TypeConsErasure[i-1] = types.erasure(f3_TypeCons[i-1]);
+	    f3_TypeCons[i] = enterClass(F3Defs.cTypeCons+""+i);
+	    f3_TypeConsErasure[i] = types.erasure(f3_TypeCons[i]);
 	}
         f3_SequenceRefType = enterClass(F3Defs.cSequenceRef);
         f3_SequenceProxyType = enterClass(F3Defs.cSequenceProxy);

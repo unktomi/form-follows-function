@@ -98,13 +98,14 @@ public class F3Types extends Types {
 
     public Type makeTypeCons(Type thisType, List<Type> args) {
 	System.err.println("thisType: "+ thisType.getClass());	
-	System.err.println("make type cons: "+ args);
+	System.err.println("make type cons: "+ args.size() + ": "+args);
 	List<Type> list = List.of(thisType);
+	int n = args.size();
 	if ((thisType instanceof org.f3.tools.comp.F3Attr.TypeCons)) {
 	    list = list.tail;
 	}
-	list.appendList(args);
-        return applySimpleGenericType(syms.f3_TypeCons[list.size()], list);
+	list = list.appendList(args);
+        return applySimpleGenericType(syms.f3_TypeCons[n], list);
     }
 
     public Type makeMonadType(Type monadType, Type bodyType) {
@@ -190,7 +191,7 @@ public class F3Types extends Types {
 	if (type == null) {
 	    return null;
 	}
-	if (isTypeConsType(type) != 0) {
+	if (isTypeConsType(type) >= 0) {
 	    return type;
 	}
 	//System.err.println("getTypeCons: "+ type);
@@ -211,18 +212,18 @@ public class F3Types extends Types {
         if (!(type != Type.noType && type != null
 	      && type.tag != TypeTags.ERROR
 	      && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL)) {
-	    return 0;
+	    return -1;
 	}
 	Type t = erasure(type);
 	for (int i = 0; i < syms.f3_TypeCons.length; i++) {
 	    if (t == syms.f3_TypeConsErasure[i]) {
-		return 1 + i;
+		return i;
 	    }
 	}
 	if (t == syms.f3_TypeConsTypeErasure) {
-	    return 1;
+	    return 0;
 	}
-	return 0;
+	return -1;
     }
 
     public boolean isSequence(Type type) {
@@ -556,6 +557,17 @@ public class F3Types extends Types {
     public boolean isSubtype(Type t, Type s, boolean capture) {
 	if (t == s) {
 	    return true;
+	}
+	if (true) {
+	    int i = isTypeConsType(s);
+	    if (i >= 0) {
+		for (Type st : supertypesClosure(t)) {
+		    if (isSameType(st, s)) {
+			System.err.println("isSubtype? "+st +": "+s);
+			return true;
+		    }
+		}
+	    }
 	}
 	if (s == syms.f3_AnyType) {
 	    return true;
@@ -934,16 +946,25 @@ public class F3Types extends Types {
         assert asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
-	//System.err.println("mt="+mt);
-	//System.err.println("ot="+ot);
-	//System.err.println("other.owner: "+ other.owner);
-	//System.err.println("sym.owner: "+ sym.owner);
-	//System.err.println("asSuper: "+ asSuper(origin.type, other.owner));
+	System.err.println("mt="+mt);
+	System.err.println("ot="+ot);
+	System.err.println("other.owner: "+ other.owner);
+	System.err.println("sym.owner: "+ sym.owner);
+	System.err.println("asSuper: "+ asSuper(origin.type, other.owner));
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null && y != null; x = x.tail, y = y.tail) {
 	    if (x.head != null && y.head != null) {
-		//System.err.println("x.head="+x.head.getClass()+": "+x.head);
-		//System.err.println("y.head="+y.head.getClass()+": "+y.head);
+		System.err.println("x.head="+x.head.getClass()+": "+x.head);
+		System.err.println("y.head="+y.head.getClass()+": "+y.head);
+		int i = isTypeConsType(y.head);
+		if (i >= 0) {
+		    for (Type st : supertypesClosure(x.head)) {
+			if (isSameType(st, y.head)) {
+			    x.head = y.head;
+			    break;
+			}
+		    }
+		}
 	    }
 	    if (x.head != null && boxedTypeOrType(x.head) == y.head) {
 		x.head = y.head;
@@ -1032,9 +1053,7 @@ public class F3Types extends Types {
 	if (a == b) {
 	    return true;
 	}
-	if (false && checkTypeCons) {
-	    a = getTypeConsThis(a);
-	    b = getTypeConsThis(b);
+	if (checkTypeCons) {
 	}
 	if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
 	    a = new ForAll(List.of(a), a);
@@ -1106,6 +1125,7 @@ public class F3Types extends Types {
         @Override
         public Void visitTypeVar(TypeVar t, StringBuilder buffer) {
 	    if (visited.contains(t)) {
+		buffer.append(t.tsym.name);
 		return null;
 	    }
 	    visited.add(t);
@@ -1867,7 +1887,10 @@ public class F3Types extends Types {
 			if (tc1.ctor.tsym == tc2.tsym) {
 			    System.err.println("same type cons");
 			    System.err.println("to.head="+to.head);
-			    return makeTypeCons(to.head, tc1.getTypeArguments());
+			    System.err.println("tc1.typeArgs="+tc1.getTypeArguments());
+			    Type res= makeTypeCons(to.head, tc1.getTypeArguments());
+			    System.err.println("res="+res);
+			    return res;
 			}
 		    }
 		}

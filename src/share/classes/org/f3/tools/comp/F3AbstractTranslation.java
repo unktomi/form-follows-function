@@ -796,8 +796,13 @@ public abstract class F3AbstractTranslation
         }
 
         JCVariableDecl convertParam(F3Var param) {
-	    //	    System.out.println("convert param: "+ param.name+" "+param.type);
-            return Param(param.type, param.name);
+	    System.out.println("convert param: "+ param.name+" "+param.type+ " base="+param.baseType);
+	    Type t = param.type;
+	    if (param.baseType != null) {
+		return Param(param.baseType, names.fromString(param.name + "$base"));
+	    } else {
+		return Param(param.type, param.name);
+	    }
         }
     }
 
@@ -1918,6 +1923,14 @@ public abstract class F3AbstractTranslation
             } else {
                 // the "normal" case
                 ListBuffer<JCStatement> stmts = ListBuffer.lb();
+		for (F3Var f3Var : tree.getParams()) {
+		    if (f3Var.baseType != null) {
+			stmts.append(Var(0L, makeType(f3Var.type),
+					 f3Var.name,
+					 make.TypeCast(makeType(f3Var.type),
+						       make.Ident(names.fromString(f3Var.name+"$base")))));
+		    }
+		}
                 if (! isBound) {
                     for (F3Var f3Var : tree.getParams()) {
                         if (types.isSequence(f3Var.sym.type)) {
