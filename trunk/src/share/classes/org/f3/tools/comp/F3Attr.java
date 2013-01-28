@@ -3022,6 +3022,10 @@ public class F3Attr implements F3Visitor {
     Symbol findThe(F3Env<F3AttrContext> env,
 		   F3Expression tree,
 		   Type expectedType) {
+	if (expectedType == syms.botType) {
+	    chk.typeTagError(tree, "inhabited type", expectedType);  
+	    return null;
+	}
 	Symbol sym = findTheUnchecked(env, expectedType);
 	if (sym.kind >= AMBIGUOUS) {
 	    if (sym.kind == AMBIGUOUS) {
@@ -3304,6 +3308,7 @@ public class F3Attr implements F3Visitor {
 		    //System.err.println("inst="+inst);
 		    if (inst == null) {
 			System.err.println("couldn't instantiate: "+ msym.type + " with "+ args);
+			//rs.resolveIdent(tree.pos, env, syms.the, VAL, mtype1);
 		    }
 		    if (inst != null) {
 			MethodType minst = inst.asMethodType();
@@ -4309,7 +4314,7 @@ public class F3Attr implements F3Visitor {
 	    List<Type> targs = null;
 	    if (ta.typeArgs != null) {
 		localEnv = newLocalEnv(tree);
-		targs = makeTypeVars(ta.typeArgs, env.info.scope.owner);
+		targs = makeTypeVars(ta.typeArgs, env.info.scope.owner, localEnv);
 	    }
             Type t = attribTree(ta.type,
 				localEnv,
@@ -4318,9 +4323,14 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("t="+t);
 	    //System.err.println("targs="+targs);
 	    if (ta.typeArgs != null) {
-		t = new ForAll(targs, t);
+		if (t instanceof FunctionType) {
+		    t = new ForAll(targs, t.asMethodType());
+		    FunctionType ft = syms.makeFunctionType(t.asMethodType());
+		    ft.typeArgs = t.getTypeArguments();
+		    t = ft;
+		}
 	    }
-	    System.err.println("t'="+t);
+	    System.err.println("t'="+types.toF3String(t));
 	    ta.tsym.type = t;
 	    result = t;
 	    tree.type = result;
@@ -5123,13 +5133,28 @@ public class F3Attr implements F3Visitor {
 	List<Type> mtvars = mt.getTypeArguments();
 	List<Type> otvars = ot.getTypeArguments();
 	List<F3Var> vars = tree.operation.funParams;
+	List<Type> newArgTypes = List.<Type>nil();
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
+	    if (x.head != null && y.head != null) {
+		System.err.println("fix override:  "+x.head+" <= "+y.head);
+		int i = types.isTypeConsType(y.head);
+		if (i >= 0) {
+		    vars.head.baseType = y.head;
+		    for (Type st : types.supertypesClosure(x.head)) {
+			if (types.isSameType(st, y.head)) {
+			    vars.head.type = x.head = y.head;
+			    break;
+			}
+		    }
+		    System.err.println("set base type: "+ vars.head + ": "+vars.head.baseType);
+		}
+	    }
 	    if (x.head != null && types.boxedTypeOrType(x.head) == y.head) {
 		vars.head.type = x.head = y.head;
 	    }
-	    if (vars.head != null && y != null) {
-		vars.head.baseType = y.head;
+	    if (vars.head != null) {
+		newArgTypes = newArgTypes.append(vars.head.type);
 	    }
 	}
 	Type mtres = mt.getReturnType();
@@ -5179,7 +5204,6 @@ public class F3Attr implements F3Visitor {
                 }
             }
 	}
-
         // now fix up the access modifiers
         if (fixFlags) {
             long origFlags = m.flags();

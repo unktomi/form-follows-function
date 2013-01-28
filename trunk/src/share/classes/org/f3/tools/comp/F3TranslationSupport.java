@@ -346,6 +346,15 @@ public abstract class F3TranslationSupport {
 	    ListBuffer<JCTypeParameter> buf = new ListBuffer<JCTypeParameter>();
 	    for (List<Type> x = typeArgTypes; x != null; x = x.tail) {
 		TypeVar t = (TypeVar)x.head;
+		if (t instanceof F3Attr.TypeCons) {
+		    System.err.println("***TYPECONS="+t);
+		    F3Attr.TypeCons tcons = (F3Attr.TypeCons)t;
+		    Type bound = syms.f3_TypeConsErasure[tcons.args.size()];
+		    if (tcons.ctor == null) {
+			t = new TypeVar(t.tsym, bound, syms.botType);
+			System.err.println("translated to: "+types.toF3String(t));
+		    }
+		}
 		//System.err.println("t="+t);
 		if (t != null) {
 		    ListBuffer<JCExpression> bb = 
@@ -415,7 +424,19 @@ public abstract class F3TranslationSupport {
     private JCExpression makeTypeTreeInner0(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
-	} 
+	}
+	if (t instanceof F3Attr.TypeCons) {
+	    Type orig = t;
+	    F3Attr.TypeCons tcons = (F3Attr.TypeCons)t;
+	    Type ctor = syms.f3_TypeConsErasure[tcons.args.size()];
+	    if (tcons.ctor == null) {
+		t = types.erasure(ctor);
+	    } else {
+		System.err.println("***Make type tree "+orig+" => "+tcons.args);
+		TypeVar tv = new TypeVar(t.tsym, null, syms.botType);
+		t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
+	    }
+	}
 	if (t instanceof ForAll) {
 	    ForAll fa = (ForAll)t;
 	    System.err.println("fa.qtype="+fa.qtype.getClass());
@@ -1637,7 +1658,10 @@ public abstract class F3TranslationSupport {
 	    if (!t.getTypeArguments().isEmpty()) {
 		List<JCExpression> targs = List.nil();
 		for (Type ta : t.getTypeArguments()) {
-		    targs = targs.append(makeType(ta));
+		    System.err.println("ta="+ta);
+		    JCExpression exp = makeType(ta);
+		    System.err.println("exp="+exp);
+		    targs = targs.append(exp);
 		}
 		type = m().TypeApply(type, targs);
 	    }

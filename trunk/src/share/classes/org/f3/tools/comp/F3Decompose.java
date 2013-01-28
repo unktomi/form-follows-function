@@ -923,6 +923,7 @@ public class F3Decompose implements F3Visitor {
                     onReplace,
                     onInvalidate);
         res.sym = tree.sym;
+	res.baseType = tree.baseType;
         res.type = tree.type;
         if (vsi != null) {
             // update the var in the var-init
