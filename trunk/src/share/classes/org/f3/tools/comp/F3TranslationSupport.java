@@ -347,27 +347,29 @@ public abstract class F3TranslationSupport {
 	    for (List<Type> x = typeArgTypes; x != null; x = x.tail) {
 		TypeVar t = (TypeVar)x.head;
 		if (t instanceof F3Attr.TypeCons) {
-		    System.err.println("***TYPECONS="+t);
+		    //System.err.println("***TYPECONS="+t);
 		    F3Attr.TypeCons tcons = (F3Attr.TypeCons)t;
 		    Type bound = syms.f3_TypeConsErasure[tcons.args.size()];
 		    if (tcons.ctor == null) {
 			t = new TypeVar(t.tsym, bound, syms.botType);
-			System.err.println("translated to: "+types.toF3String(t));
+			//System.err.println("translated to: "+types.toF3String(t));
+		    } else {
+			//System.err.println("falling thru: "+ t);
 		    }
 		}
-		//System.err.println("t="+t);
 		if (t != null) {
 		    ListBuffer<JCExpression> bb = 
 			new ListBuffer<JCExpression>();
 		    List<Type> bounds = types.getBounds(t);
 		    for (List<Type> y = bounds; y != null; y = y.tail) {
 			Type bt = y.head;
-			//System.err.println("bt="+bt);
 			if (bt != null) {
-			    bb.append(makeType(diagPos, bt, true));
+			    JCExpression bbt = makeTypeTreeInner01(diagPos, bt, true, false);
+			    bb.append(bbt);
 			}
 		    }
-		    buf.append(make.at(diagPos).TypeParameter(t.tsym.name, bb.toList()));
+		    JCTypeParameter exp = make.at(diagPos).TypeParameter(t.tsym.name, bb.toList());
+		    buf.append(exp);
 		}
 	    }
 	    tparams = buf.toList();
@@ -420,7 +422,7 @@ public abstract class F3TranslationSupport {
 	return makeTypeTreeInner01(null, t, true, false);
     }
 
-    private JCExpression makeTypeTreeInner01(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons) {
+    JCExpression makeTypeTreeInner01(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons) {
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	}
@@ -429,15 +431,22 @@ public abstract class F3TranslationSupport {
 	    F3Attr.TypeCons tcons = (F3Attr.TypeCons)t;
 	    Type ctor = syms.f3_TypeConsErasure[tcons.args.size()];
 	    if (tcons.ctor == null) {
-		t = types.erasure(ctor);
+		if (expandTypeCons) {
+		    t = types.erasure(ctor);
+		}
 	    } else {
-		System.err.println("***Make type tree "+orig+" => "+tcons.args);
+		//System.err.println("***Make type tree "+orig+" => "+tcons.args);
 		TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
 		if (ERASE_BACK_END) {
 		    t = types.erasure(tcons.args.head);
 		} else {
-		    t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
+		    if (expandTypeCons) {
+			t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
+		    } else {
+			//t = tv;
+		    }
 		}
+		//System.err.println("t="+t);
 	    }
 	} else if (expandTypeCons) {
 	    int i = types.isTypeConsType(t);
@@ -450,8 +459,8 @@ public abstract class F3TranslationSupport {
 		    site = types.applySimpleGenericType(targs.head, targs.tail);
 		}
 		try {
-		    System.err.println("make type tree " + t);
-		    System.err.println(" >>> "+site);
+		    //System.err.println("make type tree " + t);
+		    //System.err.println(" >>> "+site);
 		    t = site;
 		} catch (Exception exc) {
 		    exc.printStackTrace();
@@ -477,6 +486,7 @@ public abstract class F3TranslationSupport {
                 boolean isMixin = types.isMixin(t.tsym);
                 if (makeIntf && isMixin) {
                     texp = makeAccessExpression(diagPos, t.tsym, true);
+		    //System.err.println("acc="+texp);
                 } else {
                     if (t.isCompound()) {
                         t = types.supertype(t);
@@ -486,9 +496,12 @@ public abstract class F3TranslationSupport {
                 if (!t.getTypeArguments().isEmpty()) {
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {
+			//System.err.println("ta="+ta);
                         targs = targs.append(makeTypeTreeInner01(diagPos, ta, makeIntf, expandTypeCons));
                     }
+		    //System.err.println("targs="+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
+		    //System.err.println("final exp: "+ texp);
                 }
                 return texp;
             }
@@ -519,6 +532,7 @@ public abstract class F3TranslationSupport {
             default: {
 		if (t instanceof TypeVar) {
 		    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
+			System.err.println(t.tsym.name);
 			return makeTypeTreeInner01(diagPos, ((TypeVar)t).getUpperBound(), makeIntf, expandTypeCons);
 		    }
 		    TypeVar tv = (TypeVar)t;

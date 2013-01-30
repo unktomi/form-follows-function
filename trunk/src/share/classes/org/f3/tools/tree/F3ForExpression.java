@@ -27,6 +27,7 @@ import org.f3.api.F3BindStatus;
 import org.f3.api.tree.*;
 import org.f3.api.tree.Tree.F3Kind;
 import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.code.Symbol;
 import org.f3.tools.code.F3Flags;
 import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.ListBuffer;
@@ -126,6 +127,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 				    Name.Table names,
 				    F3Types types,
 				    Type[] argTypes,
+				    F3Expression[] typeClasses,
 				    Type monadType,
 				    Type resultType,
 				    boolean isBound) {
@@ -141,6 +143,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		boolean first = i == 0;
 		boolean isMap = first;
                 Type argType = argTypes[i];
+		F3Expression typeClass = typeClasses[i];
 		if (types.isMonad(resultType) && types.isSameType(types.erasure(resultType), types.erasure(monadType))) {
 		    //System.err.println("argType="+argType);
 		    //System.err.println("resultType="+resultType);
@@ -158,7 +161,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		if (false && !first) {
 		    apply = F.TypeCast(F.Type(monadType), apply);
 		}
-                apply = getMonadMap(F, names, select, argType, type, resultType, clause, apply, isBound);		
+                apply = getMonadMap(F, names, select, typeClass, argType, type, resultType, clause, apply, isBound);		
 		if (false && !first) {
 		    apply = F.TypeCast(F.Type(monadType), apply);
 		}
@@ -173,6 +176,7 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
     F3Expression getMonadMap(F3TreeMaker F, 
 			     Name.Table names,
 			     Name map,
+			     F3Expression typeClass,
 			     Type argType,
 			     Type monadType,
 			     Type resultType,
@@ -213,10 +217,14 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
                             params,
                             body);
         F3Ident id = F.at(bodyExpr.pos).Ident(var.name);
-        F3Select sel = 
-            F.at(bodyExpr.pos).Select(clause.getSequenceExpression(), map, false);
-
+        F3Select sel = typeClass == null ?
+            F.at(bodyExpr.pos).Select(clause.getSequenceExpression(), map, false) :
+            F.at(bodyExpr.pos).Select(typeClass, map, false);
+	
         ListBuffer<F3Expression> argsBuffer = ListBuffer.lb();
+	if (typeClass != null) {
+	    argsBuffer.append(clause.getSequenceExpression());
+	}
 	argsBuffer.append(fun);
         F3Expression apply = F.at(bodyExpr.pos).Apply(null, 
                                                       sel,

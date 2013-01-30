@@ -97,15 +97,10 @@ public class F3Types extends Types {
     }
 
     public Type makeTypeCons(Type thisType, List<Type> args) {
-	System.err.println("thisType: "+ thisType.getClass());	
-	System.err.println("make type cons: "+ args.size() + ": "+args);
+	//System.err.println("thisType: "+ thisType.getClass());	
+	//System.err.println("make type cons: "+ args.size() + ": "+args);
 	List<Type> list = List.of(thisType);
 	int n = args.size();
-	/*
-	if ((thisType instanceof org.f3.tools.comp.F3Attr.TypeCons)) {
-	    list = list.tail;
-	}
-	*/
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
     }
@@ -163,6 +158,28 @@ public class F3Types extends Types {
 	    }
 	}
 	return null;
+    }
+
+    public Type functorTypeClass(Type elemType) {
+        elemType = boxedTypeOrType(elemType);
+	elemType = erasure(elemType);
+	if (!isWildcard(elemType)) {
+	    elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+	} else {
+	    //System.err.println("elemType="+elemType);
+	} 
+        return applySimpleGenericType(syms.f3_FunctorTypeClass, elemType);
+    }
+
+    public Type monadTypeClass(Type elemType) {
+        elemType = boxedTypeOrType(elemType);
+	elemType = erasure(elemType);
+	if (!isWildcard(elemType)) {
+	    elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+	} else {
+	    //System.err.println("elemType="+elemType);
+	} 
+        return applySimpleGenericType(syms.f3_MonadTypeClass, elemType);
     }
 
     public Type getTypeConsThis(Type type)  {
@@ -1895,11 +1912,11 @@ public class F3Types extends Types {
 		    if (from.head instanceof TypeCons) {
 			TypeCons tc2 = (TypeCons)from.head;
 			if (tc1.ctor != null && tc1.ctor.tsym == tc2.tsym) {
-			    System.err.println("same type cons");
-			    System.err.println("to.head="+to.head);
-			    System.err.println("tc1.typeArgs="+tc1.getTypeArguments());
+			    //System.err.println("same type cons");
+			    //System.err.println("to.head="+to.head);
+			    //System.err.println("tc1.typeArgs="+tc1.getTypeArguments());
 			    Type res= makeTypeCons(to.head, tc1.getTypeArguments());
-			    System.err.println("res="+res);
+			    //System.err.println("res="+res);
 			    return res;
 			}
 		    }

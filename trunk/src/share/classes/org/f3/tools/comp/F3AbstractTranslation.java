@@ -796,7 +796,7 @@ public abstract class F3AbstractTranslation
         }
 
         JCVariableDecl convertParam(F3Var param) {
-	    System.out.println("convert param: "+ param.name+" "+param.type+ " base="+param.baseType);
+	    //System.out.println("convert param: "+ param.name+" "+param.type+ " base="+param.baseType);
 	    Type t = param.type;
 	    if (param.baseType != null) {
 		return Param(param.baseType, names.fromString(param.name + "$base"), false);
@@ -2462,10 +2462,10 @@ public abstract class F3AbstractTranslation
                 default:
 		    if (!(tree.operator instanceof OperatorSymbol)) {
 			JCExpression acc = getReceiver(tree.operator);
-			System.err.println("ACC="+acc+" for " +tree.operator);
+			//System.err.println("ACC="+acc+" for " +tree.operator);
 			JCExpression call = acc == null ? Call(transExpr, tree.methodName, List.<JCExpression>nil()) :
 			    Call(acc, tree.methodName, transExpr);
-			System.err.println("call="+call);
+			//System.err.println("call="+call);
 			return toResult(call, tree.type);
 			
 		    } else {

@@ -84,7 +84,9 @@ public class F3Symtab extends Symtab {
     public final Type f3_java_lang_VoidType;
     public final Type f3_SequenceType;
     public final Type f3_FunctorType;
+    public final Type f3_FunctorTypeClass;
     public final Type f3_MonadType;
+    public final Type f3_MonadTypeClass;
     public final Type f3_ComonadType;
     public final Type f3_TypeConsType;
     public final Type[] f3_TypeCons;
@@ -243,7 +245,9 @@ public class F3Symtab extends Symtab {
         f3_java_lang_VoidType = types.boxedClass(voidType).type;
         f3_SequenceType = enterClass(F3Defs.cSequence);
         f3_FunctorType = enterClass(F3Defs.cFunctor);
+        f3_FunctorTypeClass = enterClass(F3Defs.cFunctorTypeClass);
         f3_MonadType = enterClass(F3Defs.cMonad);
+        f3_MonadTypeClass = enterClass(F3Defs.cMonadTypeClass);
         f3_ComonadType = enterClass(F3Defs.cComonad);
         f3_TypeConsType = enterClass(F3Defs.cTypeCons);
 	f3_TypeCons = new Type[6];

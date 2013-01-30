@@ -406,11 +406,18 @@ public class F3InitializationBuilder extends F3TranslationSupport {
         }
 
         for (F3Expression intf : cDecl.getImplementing()) {
-            implementing.append(makeType(diagPos, intf.type, false));
+	    //System.err.println("baseClass="+intf.type);
+	    JCExpression iface = makeTypeTreeInner01(diagPos, intf.type, false, false);
+	    //System.err.println("interface "+intf + " => "+iface);
+            implementing.append(iface);
         }
 
         for (ClassSymbol baseClass : baseInterfaces) {
-            implementing.append(makeType(diagPos, javaCodeMaker.analysis.getType(baseClass), true));
+	    Type baseClassType = javaCodeMaker.analysis.getType(baseClass);
+	    //System.err.println("baseClass'="+baseClassType);
+	    JCExpression iface = makeTypeTreeInner01(diagPos, baseClassType, true, false);
+	    //System.err.println("interface' "+baseClass + " => "+iface);
+            implementing.append(iface);
         }
 
         return implementing.toList();

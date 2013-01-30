@@ -40,6 +40,7 @@ import static com.sun.tools.mjavac.code.Flags.BLOCK;
 import static com.sun.tools.mjavac.code.Kinds.*;
 import static com.sun.tools.mjavac.code.Kinds.ERRONEOUS;
 import com.sun.tools.mjavac.code.Symbol.*;
+import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.code.Type.*;
 import com.sun.tools.mjavac.code.Types.SimpleVisitor;
 import static com.sun.tools.mjavac.code.TypeTags.*;
@@ -374,9 +375,9 @@ public class F3Attr implements F3Visitor {
 			    tc.bound = tv.bound;
 			    tc.ctor = tv;
 			    localResult = tc;
-			    System.err.println("tv="+tv);
-			    System.err.println("tc="+tc.getClass()+": "+types.toF3String(tc));
-			    System.err.println("bound="+tv.bound);
+			    //System.err.println("tv="+tv);
+			    //System.err.println("tc="+tc.getClass()+": "+types.toF3String(tc));
+			    //System.err.println("bound="+tv.bound);
 			} 
 		    }
 		    tree.type = localResult;
@@ -1566,9 +1567,16 @@ public class F3Attr implements F3Visitor {
         attribExpr(tree.getBody(), localEnv);
     }
 
+    F3Expression accessThe(Symbol sym, Type expectedType) {
+	if (sym == null) return null;
+	F3Expression exp = f3make.QualIdent(sym);
+	if (!types.isSubtype(sym.type, expectedType)) {
+	    exp = f3make.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());
+	}
+	return exp;
+    }
 
-
-    private ArrayList<F3ForExpressionInClause> forClauses = null;
+    private ArrayList<F3ForExpressionInClause> forClauses = null;    
 
     //@Override
     public void visitForExpression(F3ForExpression tree) {
@@ -1588,6 +1596,7 @@ public class F3Attr implements F3Visitor {
 	int size = tree.getInClauses().size();
 	int idx = 0;
         Type[] clauseTypes = new Type[tree.getInClauses().size()];
+        F3Expression[] typeClasses = new F3Expression[tree.getInClauses().size()];
         for (ForExpressionInClauseTree cl : tree.getInClauses()) {
 	    boolean last = idx + 1 == size;
 
@@ -1660,7 +1669,17 @@ public class F3Attr implements F3Visitor {
 		//isIter = true;
             }
             else {
-		if ((last && !types.isFunctor(exprType)) || (!last && !types.isMonad(exprType))) {
+		Symbol theOne = null;
+		if (!last) {
+		    Type monadTypeClass = types.monadTypeClass(exprType);
+		    theOne = findThe(env, clause.getSequenceExpression(), monadTypeClass);
+		    typeClasses[idx] = accessThe(theOne, monadTypeClass);
+		} else {
+		    Type functorTypeClass = types.functorTypeClass(exprType);
+		    theOne = findThe(env, clause.getSequenceExpression(), functorTypeClass);
+		    typeClasses[idx] = accessThe(theOne, functorTypeClass);
+		}
+		if (theOne == null && ( (last && !types.isFunctor(exprType)) || (!last && !types.isMonad(exprType)) )) {
 		    log.warning(expr, MsgSym.MESSAGE_F3_ITERATING_NON_SEQUENCE);
 		    elemtype = exprType;
 		    isIter = true;
@@ -1672,9 +1691,31 @@ public class F3Attr implements F3Visitor {
 			    monadType = types.lub(monadType, exprType);
 			}
 			elemtype = types.monadElementType(exprType);
+			System.err.println("exprType="+exprType);
+			System.err.println("theMonad="+theOne);
+			if (theOne != null) {
+			    List<Type> targs = types.asSuper(exprType, syms.f3_TypeCons[1].tsym).getTypeArguments();
+			    monadType = targs.get(0);
+			    Type altElemType = targs.get(1);
+			    if (elemtype == null) {
+				elemtype = altElemType;
+			    }
+			    System.err.println("ELEM TYPE="+altElemType);
+			}
 		    } else {
+			System.err.println("exprType="+exprType);
+			System.err.println("theFunctor="+theOne);
 			functorType = exprType;
 			elemtype = types.functorElementType(exprType);
+			if (theOne != null) {
+			    List<Type> targs = types.asSuper(exprType, syms.f3_TypeCons[1].tsym).getTypeArguments();
+			    functorType = targs.get(0);
+			    Type altElemType = targs.get(1);
+			    if (elemtype == null) {
+				elemtype = altElemType;
+			    }
+			    System.err.println("ELEM TYPE="+altElemType);
+			}
 		    }
 		}
             }
@@ -1774,7 +1815,7 @@ public class F3Attr implements F3Visitor {
 		    //System.err.println("functorType="+functorType);		    
 		    Type typeCons = monadType == null ? functorType: monadType;
 		    if (tree.isBound() || !isIter) {
-			map = tree.getMonadMap(f3make, names, types, clauseTypes,
+			map = tree.getMonadMap(f3make, names, types, clauseTypes, typeClasses,
 					       typeCons,
 					       bodyType,
 					       tree.isBound());
@@ -5171,7 +5212,7 @@ public class F3Attr implements F3Visitor {
 		    if (tc2 >= 0 ||
 			!x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
 			vars.head.baseType = x1;
-			System.err.println("fix override:  "+x.head+" => "+x1);
+			//System.err.println("fix override:  "+m+": "+x.head+" => "+x1);
 		    }
 		}
 	    }
