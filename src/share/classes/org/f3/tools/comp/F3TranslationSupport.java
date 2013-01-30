@@ -432,7 +432,7 @@ public abstract class F3TranslationSupport {
 		t = types.erasure(ctor);
 	    } else {
 		System.err.println("***Make type tree "+orig+" => "+tcons.args);
-		TypeVar tv = new TypeVar(t.tsym, null, syms.botType);
+		TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
 		if (ERASE_BACK_END) {
 		    t = types.erasure(tcons.args.head);
 		} else {

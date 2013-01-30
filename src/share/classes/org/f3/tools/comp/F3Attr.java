@@ -5163,25 +5163,17 @@ public class F3Attr implements F3Visitor {
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
 	    if (x.head != null && y.head != null) {
-		//System.err.println("fix override:  "+x.head+" <= "+y.head);
-		Type x1 = types.subst(y.head, x.head.getTypeArguments(), y.head.getTypeArguments());
+		Type x1 = types.subst(y.head, 
+				      otvars,
+				      mtvars);
 		if (x1 != x.head) {
-		    if (false) vars.head.baseType = x1;
-		    //System.err.println("set base type: "+ vars.head + ": "+x.head +": "+x1);
-		}
-		/*
-		int i = types.isTypeConsType(y.head);
-		if (i >= 0) {
-		    vars.head.baseType = y.head;
-		    for (Type st : types.supertypesClosure(x.head)) {
-			if (types.isSameType(st, y.head)) {
-			    vars.head.type = x.head = y.head;
-			    break;
-			}
+		    int tc2 = types.isTypeConsType(y.head);
+		    if (tc2 >= 0 ||
+			!x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
+			vars.head.baseType = x1;
+			System.err.println("fix override:  "+x.head+" => "+x1);
 		    }
-		    System.err.println("set base type: "+ vars.head + ": "+vars.head.baseType);
 		}
-		*/
 	    }
 	    if (x.head != null && types.boxedTypeOrType(x.head) == y.head) {
 		vars.head.type = x.head = y.head;

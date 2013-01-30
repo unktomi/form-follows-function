@@ -1894,7 +1894,7 @@ public class F3Types extends Types {
 		    TypeCons tc1 = (TypeCons)t;
 		    if (from.head instanceof TypeCons) {
 			TypeCons tc2 = (TypeCons)from.head;
-			if (tc1.ctor.tsym == tc2.tsym) {
+			if (tc1.ctor != null && tc1.ctor.tsym == tc2.tsym) {
 			    System.err.println("same type cons");
 			    System.err.println("to.head="+to.head);
 			    System.err.println("tc1.typeArgs="+tc1.getTypeArguments());
