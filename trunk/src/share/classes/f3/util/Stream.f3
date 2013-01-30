@@ -9,6 +9,12 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
     public readonly var now is a;
     public readonly var later is Stream of a;
 
+    public bound function of b foldRight from (z is b, f is function from (a, b) to b) to b 
+    {
+        var xs = later.foldRight(z, f);
+	var workaround = f(now, xs)
+    }
+
     // zip lifts a binary operator to one over Streams
     public function zip of (b, c) 
     	from (f is function from (a, b) to c, 
@@ -312,21 +318,21 @@ bound function <<every other>> of a
 readonly var fib is Stream of Number = bind repeat(0.0).followedBy(fib1);
 readonly var fib1 is Stream of Number = bind repeat(1.0).followedBy(fib2);
 readonly var fib2 is Stream of Number = bind fib + fib1;
-
+/*
 var ns is Stream of Number = bind repeat(1.0).followedBy(ns)+repeat(1.0);
 
 bound function avg from (xs is Stream of Number) to Stream of Number 
 {
     var running_avg = sum(xs).prepend(0.0) / ns;
 }
-
+*/
 
 function run 
 {
     println(take(10, fib));
     println(take(10, toStream(foreach (n in [1..200]) n as Number)));
     println(take(10, sum(toStream(foreach (n in [1..200]) n as Number))));
-    println(take(20, avg(toStream(foreach (n in [1..200]) n as Number))));
+    //println(take(20, avg(toStream(foreach (n in [1..200]) n as Number))));
 
     if (true) {
 	println(take(10, repeat(1.0)));

@@ -514,13 +514,15 @@
             </classpath>
         </taskdef>
 
-        <f3c debug="${javac.debug}" deprecation="${javac.deprecation}"
+        <f3c enableAssertions="true" debug="${javac.debug}" deprecation="${javac.deprecation}"
                  destdir="${build.classes.dir}"
                  excludes="${excludes}" includeantruntime="false"
                  includes="**/*.f3" source="${javac.source}" sourcepath=""
                  srcdir="${src.classes.dir}" target="${javac.target}"
                  classpath="${build.classes.dir}:${javac.test.classpath}"
                  compilerclasspath="${build.classes.dir}:${javac.classpath}">
+	  <compilerarg value="-XDdumpjava"/>
+	  <!--compilerarg value="-XDdumpvarinfo"/-->
         </f3c>
 
         <taskdef name="bytecode-verify" classname="org.f3.tools.bytecodeverifier.VerifierTask">

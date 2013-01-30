@@ -404,7 +404,7 @@ public class F3ToJava extends F3AbstractTranslation {
 						     tree.sym.owner);
                     
                     membersToSymbol(cInterface);
-                    System.err.println("generated: "+ cInterface);
+                    //System.err.println("generated: "+ cInterface);
                     prependToDefinitions.append(cInterface); // prepend to the enclosing class or top-level
                 }
                 tree.hasBeenTranslated = true;
@@ -579,7 +579,6 @@ public class F3ToJava extends F3AbstractTranslation {
 
         protected AbstractStatementsResult doit() {
             optStat.recordLocalVar(vsym, tree.getBindStatus().isBound(), false);
-
             if (vsym.hasForwardReference()) {
                 // create a blank variable declaration and move the declaration to the beginning of the block
                 JCExpression init = makeDefaultValue(null, vsym);

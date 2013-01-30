@@ -374,7 +374,9 @@ public class F3Attr implements F3Visitor {
 			    tc.bound = tv.bound;
 			    tc.ctor = tv;
 			    localResult = tc;
-			    //System.err.println("tc="+tc.getClass()+": "+tc);
+			    System.err.println("tv="+tv);
+			    System.err.println("tc="+tc.getClass()+": "+types.toF3String(tc));
+			    System.err.println("bound="+tv.bound);
 			} 
 		    }
 		    tree.type = localResult;
@@ -1004,8 +1006,8 @@ public class F3Attr implements F3Visitor {
 		    pts = pts.tail;
 		}
 	    }
-	    System.err.println("created method symbol: "+res);
-	    System.err.println("created method symbol params: "+res.params);
+	    //System.err.println("created method symbol: "+res);
+	    //System.err.println("created method symbol params: "+res.params);
 	    tree.sym = res;
 	}
 
@@ -2250,9 +2252,6 @@ public class F3Attr implements F3Visitor {
 	public TypeCons(Name name, Symbol sym, Type bound) {
 	    super(name, sym, bound);
 	}
-	public String toString() {
-	    return "class "+super.toString()+" of "+args;
-	}
         public Type withTypeVar(Type t) {
 	    System.err.println("with type var: "+ this + ": "+t);
 	    return super.withTypeVar(t);
@@ -2310,6 +2309,9 @@ public class F3Attr implements F3Visitor {
 	    tv = new TypeVar(tv.tsym, bound, tv.lower);
 	    tv.tsym = new TypeSymbol(0, ident.getName(), tv, sym);
 	    */
+	    if (bound == null) {
+		bound = syms.objectType;
+	    }
 	    tv.bound = bound;
 	    //System.err.println("created type var: "+ types.toF3String(tv));
 	    //Thread.currentThread().dumpStack();
@@ -2453,7 +2455,7 @@ public class F3Attr implements F3Visitor {
         F3Env<F3AttrContext> localEnv = methodSymToEnv.get(m);
 	if (localEnv == null) {
 	    localEnv = memberEnter.methodEnv(tree, env);	
-	    System.err.println("creating new env: "+ tree);
+	    //System.err.println("creating new env: "+ tree);
 	    methodSymToEnv.put(m, localEnv);
 	}
 	if (tree.typeArgs != null) {
@@ -4309,6 +4311,25 @@ public class F3Attr implements F3Visitor {
         //assert false : "MUST IMPLEMENT";
 	if (tree instanceof F3Type.RawSequenceType) {
 	    tree.type = result = syms.f3_SequenceTypeErasure;
+	} else if (tree instanceof F3Type.TypeApply) {
+	    F3Type.TypeApply app = (F3Type.TypeApply)tree;
+            Type t = attribTree(app.className,
+				env,
+				TYP,
+				Type.noType);
+	    List<Type> targs = makeTypeVars(app.args, env.info.scope.owner, env);
+	    TypeCons cons = (TypeCons)t;
+	    System.err.println("t="+t.getClass() + ": "+t);
+	    TypeCons ap = new TypeCons(cons.tsym.name,
+				       cons.tsym,
+				       cons.bound);
+	    ap.args = targs;
+	    if (cons.bound == null) {
+		System.err.println("bound is null: "+ cons);
+	    }
+	    ap.bound = cons.bound;
+	    ap.ctor = cons;
+	    tree.type = result = ap;
 	} else if (tree instanceof F3TypeAlias) {
 	    F3TypeAlias ta = (F3TypeAlias)tree;
             F3Env<F3AttrContext> localEnv = env;
@@ -4667,7 +4688,7 @@ public class F3Attr implements F3Visitor {
             case MTH: {
                 owntype = types.memberType(site,
 					   sym);
-		System.err.println("meth: "+ sym+": "+owntype);
+		//System.err.println("meth: "+ sym+": "+owntype);
                 // This is probably wrong now that we have function expressions.
                 // Instead, we should checkMethod in visitFunctionInvocation.
                 // In that case we should also handle FunctionType. FIXME.
@@ -4686,7 +4707,11 @@ public class F3Attr implements F3Visitor {
 			System.err.println("inst failed: using : "+owntype);
 		    }
 		    if (owntype instanceof MethodType) {
-			owntype = syms.makeFunctionType((MethodType)owntype);
+			try {
+			    owntype = syms.makeFunctionType((MethodType)owntype);
+			} catch (Exception exc) { // hack
+			    // could happen if too many args
+			}
 		    }
                 } else {
 		    if (typeargtypes.nonEmpty()) {
@@ -5138,11 +5163,11 @@ public class F3Attr implements F3Visitor {
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
 	    if (x.head != null && y.head != null) {
-		System.err.println("fix override:  "+x.head+" <= "+y.head);
+		//System.err.println("fix override:  "+x.head+" <= "+y.head);
 		Type x1 = types.subst(y.head, x.head.getTypeArguments(), y.head.getTypeArguments());
 		if (x1 != x.head) {
-		    vars.head.baseType = x1;
-		    System.err.println("set base type: "+ vars.head + ": "+vars.head.baseType);
+		    if (false) vars.head.baseType = x1;
+		    //System.err.println("set base type: "+ vars.head + ": "+x.head +": "+x1);
 		}
 		/*
 		int i = types.isTypeConsType(y.head);

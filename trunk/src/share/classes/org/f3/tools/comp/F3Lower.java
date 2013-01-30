@@ -563,6 +563,9 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitIfExpression(F3IfExpression tree) {
+	if (tree.type == null) {
+	    System.err.println(tree);
+	}
         if (tree.type.tag != TypeTags.VOID &&
                 (tree.truepart.type == syms.unreachableType ||
                 (tree.falsepart != null && tree.falsepart.type == syms.unreachableType))) {

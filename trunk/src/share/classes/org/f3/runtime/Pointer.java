@@ -38,6 +38,10 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
         return new Pointer<This,a>(type, obj, varnum);
     }
     
+    public static <This extends F3Object, a> Pointer<This,a> make(This obj, int varnum) {
+        return new Pointer<This,a>(Type.OBJECT, obj, varnum);
+    }
+    
     public static boolean equals(Pointer p1, Pointer p2) {
         return (p1 == null) ? (p2 == null) : p1.equals(p2);
     }

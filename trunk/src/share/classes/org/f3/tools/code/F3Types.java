@@ -101,9 +101,11 @@ public class F3Types extends Types {
 	System.err.println("make type cons: "+ args.size() + ": "+args);
 	List<Type> list = List.of(thisType);
 	int n = args.size();
+	/*
 	if ((thisType instanceof org.f3.tools.comp.F3Attr.TypeCons)) {
 	    list = list.tail;
 	}
+	*/
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
     }
@@ -218,7 +220,8 @@ public class F3Types extends Types {
 	try {
 	    t = erasure(type);
 	} catch (Exception exc) {
-	    System.err.println("doh! type was: "+ toF3String(type));
+	    exc.printStackTrace();
+	    System.err.println("doh! type was: "+type.getClass()+": "+ toF3String(type));
 	    return -1;
 	}
 	for (int i = 0; i < syms.f3_TypeCons.length; i++) {
@@ -564,6 +567,7 @@ public class F3Types extends Types {
 	if (t == s) {
 	    return true;
 	}
+	/*
 	if (true) {
 	    int i = isTypeConsType(s);
 	    if (i >= 0) {
@@ -578,6 +582,7 @@ public class F3Types extends Types {
 		}
 	    }
 	}
+	*/
 	if (s == syms.f3_AnyType) {
 	    return true;
 	}
@@ -715,11 +720,11 @@ public class F3Types extends Types {
 	int i = isTypeConsType(s);
 	if (i >= 0) {
 	    Type tt = subst(t, t.getTypeArguments(), s.getTypeArguments());
-	    System.err.println("S="+s);
-	    System.err.println("TT="+tt);
+	    ///System.err.println("S="+s);
+	    //System.err.println("TT="+tt);
 	    for (Type st : supertypesClosure(t)) {
 		if (isSameType(st, s)) {
-		    System.err.println("same type cons"+st +": "+s);
+		    //System.err.println("same type cons"+st +": "+s);
 		    return true;
 		}
 	    }
@@ -937,16 +942,16 @@ public class F3Types extends Types {
         assert asSuper(origin.type, other.owner) != null;
         Type mt = this.memberType(origin.type, sym);
         Type ot = this.memberType(origin.type, other);
-	System.err.println("mt="+mt);
-	System.err.println("ot="+ot);
-	System.err.println("other.owner: "+ other.owner);
-	System.err.println("sym.owner: "+ sym.owner);
-	System.err.println("asSuper: "+ asSuper(origin.type, other.owner));
+	//System.err.println("mt="+mt);
+	//System.err.println("ot="+ot);
+	//System.err.println("other.owner: "+ other.owner);
+	//System.err.println("sym.owner: "+ sym.owner);
+	//System.err.println("asSuper: "+ asSuper(origin.type, other.owner));
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null && y != null; x = x.tail, y = y.tail) {
 	    if (x.head != null && y.head != null) {
-		System.err.println("x.head="+x.head.getClass()+": "+x.head);
-		System.err.println("y.head="+y.head.getClass()+": "+y.head);
+		//System.err.println("x.head="+x.head.getClass()+": "+x.head);
+		//System.err.println("y.head="+y.head.getClass()+": "+y.head);
 		int i = isTypeConsType(y.head);
 		if (i >= 0) {
 		    for (Type st : supertypesClosure(x.head)) {
@@ -1124,23 +1129,15 @@ public class F3Types extends Types {
 		return null;
 	    }
 	    visited.add(t);
-	    if (t.bound != null && t.bound != syms.objectType) {
-		String str = toF3String(t.bound);
-		if (!"Object".equals(str)) {
-		    buffer.append("(");
-		    buffer.append(t.tsym.name);
-		    buffer.append(" is ");
-		    buffer.append(str);
-		    buffer.append(")");
-		} else {
-		    buffer.append(t.tsym.name);
-		}
-	    } else {
-		buffer.append(t.tsym.name);
-	    }
 	    if (t instanceof TypeCons) {
-		buffer.append(" of ");
 		TypeCons tc = (TypeCons)t;
+		if (tc.ctor == null) {
+		    //buffer.append("class ");
+		    buffer.append(t.tsym.name);
+		} else {
+		    visit(tc.ctor, buffer);
+		}
+		buffer.append(" of ");
 		List<Type> targs = tc.args;
 		String str = "";
 		if (targs.size() > 1) {
@@ -1153,6 +1150,21 @@ public class F3Types extends Types {
 		}
 		if (targs.size() > 1) {
 		    buffer.append(")");
+		}
+	    } else {
+		if (t.bound != null && t.bound != syms.objectType) {
+		    String str = toF3String(t.bound);
+		    if (!"Object".equals(str)) {
+			buffer.append("(");
+			buffer.append(t.tsym.name);
+			buffer.append(" is ");
+			buffer.append(str);
+			buffer.append(")");
+		    } else {
+			buffer.append(t.tsym.name);
+		    }
+		} else {
+		    buffer.append(t.tsym.name);
 		}
 	    }
 	    return null;
@@ -1432,6 +1444,9 @@ public class F3Types extends Types {
                 Type upper = visit(t.getUpperBound(), preserveWildcards);
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
 		    return upper;
+		}
+		if (upper == null) {
+		    upper = syms.objectType;
 		}
 		t = new TypeVar(t.tsym, upper, t.lower);
 		return t;

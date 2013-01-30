@@ -26,6 +26,7 @@ package org.f3.tools.tree;
 import org.f3.api.tree.*;
 import com.sun.tools.mjavac.code.BoundKind;
 import com.sun.tools.mjavac.code.Symbol;
+import com.sun.tools.mjavac.util.List;
 /**
  * Abstract base for types
  *
@@ -50,6 +51,16 @@ public abstract class F3Type extends F3Expression implements TypeTree {
     public static class RawSequenceType extends F3TypeAny {
 	protected RawSequenceType() {
 	    super(Cardinality.ANY);
+	}
+    }
+
+    public static class TypeApply extends F3TypeAny {
+	public F3Expression className;
+	public List<F3Expression> args;
+	protected TypeApply(F3Expression className, Cardinality card, List<F3Expression> args) {
+	    super(card);
+	    this.className = className;
+	    this.args = args;
 	}
     }
 
