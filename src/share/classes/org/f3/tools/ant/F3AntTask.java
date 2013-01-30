@@ -110,6 +110,17 @@ public class F3AntTask extends Javac {
         }
     }
 
+    boolean enableAssertions;
+    int jdwpPort = 0;
+
+    public void setEnableAssertions(boolean value) {
+	enableAssertions = true;
+    }
+
+    public void setJDWP(int port) {
+	jdwpPort = port;
+    }
+
     public void setCompilerClassPath(Path p) {
         compilerClassPath = p;
     }
@@ -198,6 +209,7 @@ public class F3AntTask extends Javac {
 
         public boolean forkeExecute() throws Exception {
             Commandline cmd = new Commandline();
+	    F3AntTask task = (F3AntTask)getJavac();
             String executable = getJavac().getExecutable();
             if (executable != null) {
                 cmd.setExecutable(executable);
@@ -214,6 +226,12 @@ public class F3AntTask extends Javac {
                     cmd.createArgument().setValue("-Xmx" + memoryMaximumSize);
                     memoryMaximumSize = null; // don't include it in setupJavacCommandlineSwitches()
                 }
+		if (task.jdwpPort != 0) {
+                    cmd.createArgument().setValue("-Xrunjdwp:transport=dt_socket,address=" + task.jdwpPort+",server=y,suspend=y");
+		}
+		if (task.enableAssertions) {
+                    cmd.createArgument().setValue("-ea");
+		}
                 String cp = "-Xbootclasspath/p:" +
                         ((F3AntTask) getJavac()).compilerClassPath.toString();
                 cmd.createArgument().setValue(cp);

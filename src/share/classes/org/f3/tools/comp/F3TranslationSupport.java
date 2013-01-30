@@ -533,7 +533,7 @@ public abstract class F3TranslationSupport {
 			//System.err.println("not existentializing: "+ t);
 		    }
 		}
-		System.err.println("default: "+ t.getClass()+": "+t);
+		//System.err.println("default: "+ t.getClass()+": "+t);
                 return make.at(diagPos).Type(t);
             }
         }
@@ -674,7 +674,8 @@ public abstract class F3TranslationSupport {
     }
     
     Name attributeValueName(Symbol sym) {
-        return prefixedAttributeName(sym, value_AttributeFieldPrefix);
+        Name name = prefixedAttributeName(sym, value_AttributeFieldPrefix);
+	return name;
     }
 
     Name attributeGetterName(Symbol sym) {
@@ -1688,9 +1689,9 @@ public abstract class F3TranslationSupport {
 	    if (!ERASE_BACK_END && !t.getTypeArguments().isEmpty()) {
 		List<JCExpression> targs = List.nil();
 		for (Type ta : t.getTypeArguments()) {
-		    System.err.println("ta="+ta);
+		    //System.err.println("ta="+ta);
 		    JCExpression exp = makeType(ta);
-		    System.err.println("exp="+exp);
+		    //System.err.println("exp="+exp);
 		    targs = targs.append(exp);
 		}
 		type = m().TypeApply(type, targs);
@@ -1894,13 +1895,20 @@ public abstract class F3TranslationSupport {
             assert sym instanceof F3VarSymbol : "Expect a var symbol, got " + sym;
             F3VarSymbol varSym = (F3VarSymbol)sym;
             
-            if (varSym.isSpecial()) {
+            if (varSym.isSpecial() || 
+		varSym.name == names._this) // hack!!
+            {
                 JCExpression receiver = getReceiver(varSym);
                 return receiver == null ? id(varSym.name) : receiver;
             } else if (isMixinVar(varSym)) {
                 return Call(attributeGetMixinName(varSym));
-            } else if (varSym.isStatic()) {
-                return id(attributeValueName(varSym));
+            } else if (varSym.isStatic()) { 
+		String name = varSym.name.toString(); 
+		if (name.startsWith("$script$")) { // hack !!!
+		    return Select(makeType(types.erasure(sym.owner.type), false), varSym.name);
+		} else {
+		    return id(attributeValueName(varSym));
+		}
             } else {
                 return Select(getReceiver(varSym), attributeValueName(varSym));
             }

@@ -29,7 +29,7 @@ public interface Accumulative of a is org.f3.runtime.Foldable of a
     {
 	accumulateBackwards(z, f)
     }
-
+/*
     public function partition from (f is function from a to Boolean) to ((..a)[], (..a)[]) 
     {
 	var xs is (..a)[];
@@ -43,4 +43,5 @@ public interface Accumulative of a is org.f3.runtime.Foldable of a
 	    });
 	(xs, ys)
     }
+*/
 }

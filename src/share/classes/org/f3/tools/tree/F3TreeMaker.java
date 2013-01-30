@@ -1083,6 +1083,12 @@ public class F3TreeMaker implements F3TreeFactory {
         return TypeCons(className, cardinality, args, null);
     }
 
+    public F3Type TypeApply(F3Expression className, Cardinality cardinality, List<F3Expression> args) {
+        F3Type tree = new F3Type.TypeApply(className, cardinality, args);
+        tree.pos = pos;
+        return tree;
+    }
+
     public F3Type TypeExists() {
 	return new F3TypeExists();
     }

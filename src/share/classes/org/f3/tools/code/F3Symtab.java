@@ -101,7 +101,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_ComonadTypeErasure;
     public final Type f3_ShortArray;
     public final Type f3_ObjectArray;
-    static public final int MAX_FIXED_PARAM_LENGTH = 8;
+    static public final int MAX_FIXED_PARAM_LENGTH = 16;
     public final Type[] f3_FunctionTypes = new Type[MAX_FIXED_PARAM_LENGTH+1];
     public final Type f3_ObjectType;
     public final Type f3_ValueType;

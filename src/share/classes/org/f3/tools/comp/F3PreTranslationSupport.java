@@ -267,6 +267,7 @@ public class F3PreTranslationSupport {
             ns = (vsymParent==null? "" : vsymParent.toString() + "$") + id + ns;
         }
         Name name = names.fromString(ns);
+	//System.err.println("synth var: "+ vsymParent + ": "+ id+": "+name);
         long flags = F3Flags.SCRIPT_PRIVATE | Flags.SYNTHETIC | (inScriptLevel ? Flags.STATIC | F3Flags.SCRIPT_LEVEL_SYNTH_STATIC : 0L);
         F3Var var = Var(diagPos, flags, type/*types.normalize(type)*/, name, bindStatus, initExpr, owner);
         owner.members().enter(var.sym);

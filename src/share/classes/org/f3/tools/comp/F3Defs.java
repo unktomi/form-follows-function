@@ -941,7 +941,9 @@ public class F3Defs {
     }
 
     public Name scriptLevelAccessField(Name.Table names, Symbol clazz) {
-        return names.fromString(scriptLevelAccess_F3ObjectFieldString + mangleClassName(clazz, true) + "$");
+        Name result = names.fromString(scriptLevelAccess_F3ObjectFieldString + mangleClassName(clazz, true) + "$");
+	//System.err.println("clazz => "+result);
+	return result;
     }
 
     public String mangleClassName(Symbol clazz, boolean useFull) {

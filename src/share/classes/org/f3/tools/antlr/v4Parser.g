@@ -6386,32 +6386,33 @@ typeName
 
 : (qualname      { errNodes.append($qualname.value); name = $qualname.value;} )
         (
-              (OF)=>OF gas=genericArguments  { if ($gas.value != null) exprbuff.appendList($gas.value); }
-              {
-                // AST for generic
-                //
-                //F3Erroneous err = F.at(pos($OF)).Erroneous();
-                //endPos(err);
-                //log.error(err, MsgSym.MESSAGE_F3_GENERICS_UNSUPPORTED);
-                
-                // Ensure that the IDE plugin does not fall over
-                //
-		  if (name != null) {
-		      $value = F.at(rPos).Ident(name, exprbuff.toList());
-		  } else 
-{		      $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, $gas.value);
-		  }
-              }
+	 (OF)=>OF gas=genericArguments  { 
+	     if ($gas.value != null) exprbuff.appendList($gas.value); 
+	 }
+	 {
+	     // AST for generic
+	     //
+	     //
+	     if (name != null) {
+		 $value = F.at(rPos).Ident(name, exprbuff.toList());
+	     } else {
+		 $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, $gas.value);
+	     }
+	 } 
+	 ((OF)=>OF gas=genericArguments  { 
+	     if ($gas.value != null) exprbuff.appendList($gas.value); 
+	     $value = F.at(rPos).TypeApply($value, TypeTree.Cardinality.SINGLETON, $gas.value);
+	 })*
               
-            |   // Non generic
-                {
-		    if (name != null) {
-                        $value = name;
-		    } else {
-			$value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, com.sun.tools.mjavac.util.List.<F3Expression>nil());
-		    }
-                }
-        )
+	 |   // Non generic
+	 {
+	     if (name != null) {
+                $value = name;
+	     } else {
+		 $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, com.sun.tools.mjavac.util.List.<F3Expression>nil());
+	     }
+	 }
+	 )
     | 
 /*
     LPAREN 
@@ -6568,7 +6569,7 @@ genericParam[boolean contravar, boolean covar]
 
       | 
        (CLASS n=identifier OF gas=genericParams[false, false] { 
-        $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
+	   $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
       })
 /*    
     | QUES 
