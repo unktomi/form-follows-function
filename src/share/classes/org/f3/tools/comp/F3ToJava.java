@@ -390,8 +390,8 @@ public class F3ToJava extends F3AbstractTranslation {
                     JCModifiers mods = m().Modifiers(Flags.PUBLIC | Flags.INTERFACE);
                     mods = addAccessAnnotationModifiers(diagPos, tree.mods.flags, mods);
 		    //System.err.println("generating: "+ model.interfaceName);
-		    System.err.println(tree);
-		    System.err.println(tree.typeArgTypes);
+		    ///System.err.println(tree);
+		    //System.err.println(tree.typeArgTypes);
                     JCClassDecl cInterface = m().ClassDef(mods,
 							  model.interfaceName, 
 							  translateTypeParams(tree, tree.typeArgTypes),
