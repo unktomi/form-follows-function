@@ -3074,7 +3074,7 @@ public class F3Attr implements F3Visitor {
 	    if (sym.kind == AMBIGUOUS) {
 		return rs.access(sym, tree, env.enclClass.sym.type, syms.the, false, expectedType);
 	    }
-	    if (!(expectedType instanceof MethodType)) {
+	    if (false && !(expectedType instanceof MethodType)) {
 		System.err.println("trying as method: sym="+sym);
 		return findThe(env, tree, 
 			       new MethodType(List.<Type>nil(), expectedType, List.<Type>nil(), syms.methodClass));
