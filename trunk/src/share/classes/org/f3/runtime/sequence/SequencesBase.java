@@ -1142,6 +1142,9 @@ public class SequencesBase {
     }
 
     public static <T> Sequence<? extends T> set(Sequence<? extends T> oldValue, Sequence<? extends T> newValue) {
+	if (newValue == null) {
+	    newValue = TypeInfo.<T>getTypeInfo().emptySequence;
+	}
         if (newValue instanceof SequenceRef || newValue instanceof SequenceProxy) {
             // Can't have any copies of a SequenceRef
             return replaceSlice(oldValue, newValue, 0, oldValue.size());

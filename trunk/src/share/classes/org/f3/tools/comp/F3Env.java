@@ -24,6 +24,8 @@
 package org.f3.tools.comp;
 
 import com.sun.tools.mjavac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.mjavac.util.List;
+import com.sun.tools.mjavac.code.Symbol;
 import org.f3.tools.tree.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -69,6 +71,11 @@ public class F3Env<A> implements Iterable<F3Env<A>> {
     /** The next enclosing method definition.
      */
     public F3FunctionDefinition enclFunction;
+
+    public F3Var enclVar;
+
+    /* implicit the uses */
+    List<Symbol> implicitArgs = List.nil();
 
     /** Location info for debugging
      */

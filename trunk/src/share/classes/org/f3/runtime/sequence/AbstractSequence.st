@@ -362,7 +362,7 @@ $PREFIX:{T|
 	}
 	return result;
     }
-
+    @Override
     public <S, U> Sequence<? extends U> zip(Function2<? extends U, ? super T, ? super S> f, Sequence<S> xs) {
 	if (size() == 0) {
 	    return TypeInfo.<U>getTypeInfo().emptySequence;

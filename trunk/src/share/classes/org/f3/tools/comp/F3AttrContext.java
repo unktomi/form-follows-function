@@ -63,10 +63,12 @@ public class F3AttrContext {
      */
     public Lint lint;
 
+
     /** The variable whose initializer is being attributed
      * useful for detecting self-references in variable initializers
      */
     Symbol enclVar = null;
+
 
     /**
      * Is this context nested inside an on-invalidate trigger? Used in

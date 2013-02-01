@@ -1,5 +1,6 @@
 package f3.util;
-import org.f3.runtime.*;
+import org.f3.runtime.Monad;
+import org.f3.runtime.Comonad;
 import java.lang.Math;
 
 //
@@ -107,7 +108,7 @@ public abstract class DoubleNegation of a
 
     override function equals from (obj is Object) to Boolean 
     {
-	if (obj instanceof DoubleNegation) {
+	if (obj is DoubleNegation) {
 	    (obj as DoubleNegation of Object).doublyNegate() == doublyNegate();
 	} else false
     }

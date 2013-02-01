@@ -768,6 +768,8 @@ public class F3ClassReader extends ClassReader {
                 accessFlags = Flags.PUBLIC;
             } else if (a.type.tsym.flatName() == f3Syms.f3_scriptPrivateAnnotationType.tsym.flatName()) {
                 accessFlags = F3Flags.SCRIPT_PRIVATE;
+            } else if (a.type.tsym.flatName() == f3Syms.f3_implicitAnnotationType.tsym.flatName()) {
+                nonAccessFlags |= F3Flags.IMPLICIT_PARAMETER;
             }
         }
         if (accessFlags == 0L) {

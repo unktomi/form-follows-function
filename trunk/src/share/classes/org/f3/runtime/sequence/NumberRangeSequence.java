@@ -82,4 +82,5 @@ class NumberRangeSequence extends AbstractSequence<Float> implements Sequence<Fl
         for (float value = start + sourceOffset*step; index < destOffset+length; value += step, index++)
             dest[index] = value;
     }
+
 }
