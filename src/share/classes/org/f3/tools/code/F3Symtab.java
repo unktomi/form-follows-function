@@ -47,6 +47,7 @@ public class F3Symtab extends Symtab {
     public static final String packageAnnotationClassNameString = anno + ".Package";
     public static final String publicAnnotationClassNameString = anno + ".Public";
     public static final String scriptPrivateAnnotationClassNameString = anno + ".ScriptPrivate";
+    public static final String implicitAnnotationClassNameString = anno + ".Implicit";
     public static final String defaultAnnotationClassNameString = anno + ".Default";
     public static final String publicInitAnnotationClassNameString = anno + ".PublicInitable";
     public static final String publicReadAnnotationClassNameString = anno + ".PublicReadable";
@@ -129,6 +130,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_packageAnnotationType;
     public final Type f3_publicAnnotationType;
     public final Type f3_scriptPrivateAnnotationType;
+    public final Type f3_implicitAnnotationType;
     public final Type f3_defaultAnnotationType;
     public final Type f3_publicInitAnnotationType;
     public final Type f3_publicReadAnnotationType;
@@ -288,6 +290,7 @@ public class F3Symtab extends Symtab {
         f3_packageAnnotationType = enterClass(packageAnnotationClassNameString);
         f3_publicAnnotationType = enterClass(publicAnnotationClassNameString);
         f3_scriptPrivateAnnotationType = enterClass(scriptPrivateAnnotationClassNameString);
+        f3_implicitAnnotationType = enterClass(implicitAnnotationClassNameString);
         f3_defaultAnnotationType = enterClass(defaultAnnotationClassNameString);
         f3_publicInitAnnotationType = enterClass(publicInitAnnotationClassNameString);
         f3_publicReadAnnotationType = enterClass(publicReadAnnotationClassNameString);

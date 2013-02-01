@@ -991,6 +991,9 @@ public abstract class F3TranslationSupport {
         if ((flags & Flags.STATIC) != 0) {
             annotations = annotations.prepend(make.Annotation(makeIdentifier(diagPos, F3Symtab.staticAnnotationClassNameString), List.<JCExpression>nil()));
         }
+        if ((flags & F3Flags.IMPLICIT_PARAMETER) != 0) {
+            annotations = annotations.prepend(make.Annotation(makeIdentifier(diagPos, F3Symtab.implicitAnnotationClassNameString), List.<JCExpression>nil()));
+        }
 
         if (annotations.nonEmpty()) {
             ret = make.Modifiers(mods.flags, annotations);

@@ -784,7 +784,7 @@ public class F3Attr implements F3Visitor {
             F3VarSymbol v = (F3VarSymbol)sym;
 
             if (env.info.inInvalidate &&
-                    sym == env.info.enclVar) {
+		sym == env.info.enclVar) {
                 log.error(tree.pos(), MsgSym.MESSAGE_CANNOT_REF_INVALIDATE_VAR, sym);
             }
 
@@ -1232,8 +1232,14 @@ public class F3Attr implements F3Visitor {
                 // declaration position to maximal possible value, effectively
                 // marking the variable as undefined.
                 initEnv.info.enclVar = v;
+		initEnv.enclVar = tree;
 
                 initType = attribExpr(tree.getInitializer(), initEnv, declType);
+
+		if (initEnv.implicitArgs.size() > 0) {
+		    v.flags_field |= F3Flags.IMPLICIT_PARAMETER;
+		    System.err.println("IMPLICIT VAR: "+v);
+		}
 
 		//System.err.println("initType "+ v + " = "+initType.getClass()+" "+initType);
                 /*
@@ -2216,6 +2222,39 @@ public class F3Attr implements F3Visitor {
 	    memberSym = new F3VarSymbol(types, names, memberSym.flags(), memberSym.name, memberType, ownerSym);
             part.sym = memberSym;
         }
+	for (Scope.Entry ent = clazz.type.tsym.members().elems; ent != null && ent.scope != null; ent = ent.sibling) {
+	    if (ent.sym instanceof F3VarSymbol) {
+		F3VarSymbol varSym = (F3VarSymbol)ent.sym;
+		if ((varSym.flags() & STATIC) == 0) {
+		    varSym.complete();
+		}
+		if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
+		    System.err.println("varSym="+varSym);
+		    boolean assigned = false;
+		    for (F3ObjectLiteralPart localPt : tree.getParts()) {
+			if (localPt.sym == varSym) {
+			    assigned = true;
+			    break;
+			}
+		    }
+		    if (!assigned) {
+			Type memberType = types.memberType(clazz.type, varSym);
+			Symbol toAssign = findThe(localEnv, tree, memberType, true);
+			if (toAssign != null) {
+			    F3Expression exp = f3make.QualIdent(toAssign);
+			    //F3Expression exp = accessThe(toAssign, varSym.type);
+			    attribExpr(exp, localEnv, memberType);
+			    F3ObjectLiteralPart newPart = f3make.ObjectLiteralPart(varSym.name,
+										   exp,
+										   F3BindStatus.UNBOUND);
+			    newPart.sym = varSym;
+			    newPart.type = memberType;
+			    tree.parts = tree.parts.append(newPart);
+			}
+		    }
+		}
+	    }
+	}
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
         localEnv.info.scope.leave();
 	//	chk.checkAllDefined(tree.pos(), (ClassSymbol)clazz.type.tsym);
@@ -3065,13 +3104,20 @@ public class F3Attr implements F3Visitor {
     Symbol findThe(F3Env<F3AttrContext> env,
 		   F3Expression tree,
 		   Type expectedType) {
+	return findThe(env, tree, expectedType, false);
+    }
+
+    Symbol findThe(F3Env<F3AttrContext> env,
+		   F3Expression tree,
+		   Type expectedType,
+		   boolean instantiate) {
 	if (expectedType == syms.botType) {
 	    chk.typeTagError(tree, "inhabited type", expectedType);  
 	    return null;
 	}
 	Symbol sym = findTheUnchecked(env, expectedType);
 	if (sym.kind >= AMBIGUOUS) {
-	    if (sym.kind == AMBIGUOUS) {
+	    if (sym.kind == AMBIGUOUS || instantiate) {
 		return rs.access(sym, tree, env.enclClass.sym.type, syms.the, false, expectedType);
 	    }
 	    if (false && !(expectedType instanceof MethodType)) {
@@ -4405,9 +4451,8 @@ public class F3Attr implements F3Visitor {
 	    System.err.println("searching for the "+t+ " in env1="+env);
 	    Symbol sym = findThe(env, tree, t);		
 	    F3FunctionDefinition fun = env.enclFunction;
-	    //System.err.println("encl fun ="+fun.sym);
-	    if (sym == null || fun == null || fun.sym != sym) {
-		if (!fun.sym.name.equals(syms.runMethodName)) {
+	    if (sym == null) {
+		if (fun != null && !fun.sym.name.equals(syms.runMethodName)) {
 		    F3VarSymbol idSym1 = 
 			new F3VarSymbol(types, 
 					names, 
@@ -4419,10 +4464,19 @@ public class F3Attr implements F3Visitor {
 		    theType.resolvedSymbol = idSym1;
 		    env.info.scope.enter(idSym1);
 		    fun.implicitArgs = fun.implicitArgs.append(idSym1);
-		    //System.err.println("fun="+fun);
-		    //System.err.println("fun.sym="+fun.sym);
-		    //System.err.println("fun.sym.params="+fun.sym.params);
-		    sym = idSym1;
+		} else if (env.enclVar != null) {
+		    System.err.println("unresolved implicit value: "+ tree);
+		    F3VarSymbol idSym1 = 
+			new F3VarSymbol(types, 
+					names, 
+					F3Flags.IMPLICIT_PARAMETER | Flags.PARAMETER,
+					names.fromString("the$"+env.implicitArgs.size()),
+					t, 
+					env.enclVar.sym);
+		    System.err.println("not found: creating :"+t);
+		    //theType.resolvedSymbol = idSym1;
+		    env.info.scope.enter(idSym1);
+		    env.implicitArgs = env.implicitArgs.append(idSym1);
 		}
 	    } else {
 		theType.resolvedSymbol = sym;
@@ -4460,17 +4514,14 @@ public class F3Attr implements F3Visitor {
 	if (tree instanceof F3TypeThis) {
 	    F3TypeThis t = (F3TypeThis)tree;
 	    Type ct = env.enclClass.type;
-	    if (ct == null) {
-		System.err.println("ct is null"+tree.pos);
-		System.err.println(tree);
+	    Type tc0 = types.asSuper(ct, syms.f3_TypeCons[0].tsym);
+	    if (tc0 != null) {
+		result = tc0.getTypeArguments().get(0);
 	    } else {
-		if (t.getArgs() != null) {
-		    List<Type> targs = attribTypeArgs(t.getArgs(), env, true);
-		    ct = types.applySimpleGenericType(types.erasure(ct), targs);
-		}
-		result = tree.type = ct;
-		return;
+		result = ct;
 	    }
+	    tree.type = result;
+	    return;
 	}
         F3Expression classNameExpr = ((F3TypeVar) tree).getClassName();
         Type type = attribType(classNameExpr, env);

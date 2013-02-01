@@ -1,5 +1,6 @@
 package f3.util;
-import org.f3.runtime.*;
+import org.f3.runtime.Monad;
+import org.f3.runtime.F3Value;
 
 /**
  * Represents an optional value of type 'a'

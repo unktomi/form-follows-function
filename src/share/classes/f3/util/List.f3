@@ -3,6 +3,31 @@ import org.f3.runtime.Monad;
 import org.f3.runtime.Comonad;
 import java.lang.Math;
 
+public class ListMonad is f3.util.Monad of List 
+{
+    override function map of (a, b) 
+	from (xs is List of a,
+	      f is function from a to b) 
+	to List of b 
+    {
+	xs.map(f);
+    }
+
+    override function flatmap of (a, b) 
+	from (xs is List of a,
+	      f is function from a to List of b) to List of b 
+    {
+	xs.flatmap(f)
+    }
+
+    override function return of a from (x is a) to List of a 
+    {
+	List.toList(x)
+    }
+}
+
+public static const listMonad = ListMonad {};
+
 // List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[] | Replicate List n
 
 const EmptyList = Empty of (null) {};
@@ -12,7 +37,7 @@ public function empty of a from () to List of a
     EmptyList as List of a
 }
 
-public abstract class List of a is Accumulative of a, Monad of (List, a)
+public abstract class List of a is Accumulative of a, org.f3.runtime.Monad of (List, a)
 {
     public const length is Integer;
 
@@ -168,7 +193,6 @@ class Empty of a is List of a
     }
 }
 
-
 class Replicate of a is List of a 
 {
     const self is List of a;
@@ -225,7 +249,7 @@ class Replicate of a is List of a
 	return acc;
     }
 
-    public function take from (n0 is Integer) to List of a 
+    override public function take from (n0 is Integer) to List of a 
     {
 	const n = Math.min(n0, length);
 	if (n <= self.length) then self.take(n) else {
@@ -241,7 +265,7 @@ class Replicate of a is List of a
 	    }
     }
 
-    public function drop from (n0 is Integer) to List of a 
+    override public function drop from (n0 is Integer) to List of a 
     {
 	const n = length - n0;
 	if (n <= 0) then this else {

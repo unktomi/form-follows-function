@@ -5945,9 +5945,7 @@ type
     | LBRACKET RBRACKET { $rtype = F.at(pos($LBRACKET)).RawSequenceType(); }
     | typeFunction  { $rtype = $typeFunction.rtype; } 
     | typePrefixed  { $rtype = $typePrefixed.rtype; }) 
-    |
-    q=QUES {$rtype = F.at($q.pos).TypeExists();}
-
+    | q=QUES {$rtype = F.at($q.pos).TypeExists();}
     ;
 
 // Catch an error when looking for a type. The only error we can
@@ -6384,7 +6382,7 @@ typeName
     F3Expression name = null;
 }
 
-: (qualname      { errNodes.append($qualname.value); name = $qualname.value;} )
+: (qualname      { errNodes.append($qualname.value); name = $qualname.value;} | UPPER_THIS )
         (
 	 (OF)=>OF gas=genericArguments  { 
 	     if ($gas.value != null) exprbuff.appendList($gas.value); 

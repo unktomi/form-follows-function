@@ -1,5 +1,7 @@
 package f3.util;
-import org.f3.runtime.*;
+import org.f3.runtime.Functor;
+import org.f3.runtime.Monad;
+import org.f3.runtime.Foldable;
 import java.lang.Math;
 
 public class Possibility of a is Functor of (Possibility, a) 
