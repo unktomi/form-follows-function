@@ -50,6 +50,23 @@ import org.f3.tools.util.MsgSym;
  *  deletion without notice.</b>
  */
 public class F3Resolve {
+
+    public static class InstanceMethodSymbol extends MethodSymbol {
+	public MethodSymbol generic;
+	public InstanceMethodSymbol(MethodSymbol generic, Type type, Symbol owner) {
+	    super(generic.flags(), generic.name, type, owner);
+	    this.generic = generic;
+	}
+
+        public MethodSymbol clone(Symbol newOwner) {
+            InstanceMethodSymbol m = new InstanceMethodSymbol(generic, type, newOwner);
+            m.code = code;
+	    m.params = params;
+            return m;
+        }
+    }
+
+    public static boolean DEBUG_THE = Boolean.getBoolean("debug.the");
     protected static final Context.Key<F3Resolve> f3ResolveKey =
         new Context.Key<F3Resolve>();
 
@@ -345,11 +362,35 @@ public class F3Resolve {
                         List<Type> typeargtypes,
                         boolean allowBoxing,
                         boolean useVarargs,
-                        Warner warn)
+                        Warner warn) {
+	return rawInstantiate(env, m, mt, argtypes, typeargtypes, allowBoxing, useVarargs, warn, false);
+    }
+    Type rawInstantiateDebug(F3Env<F3AttrContext> env,
+			     Symbol m,
+			     Type mt,
+			     List<Type> argtypes,
+			     List<Type> typeargtypes,
+			     boolean allowBoxing,
+			     boolean useVarargs,
+			     Warner warn) {
+	return rawInstantiate(env, m, mt, argtypes, typeargtypes, allowBoxing, useVarargs, warn, true);
+    }
+
+    Type rawInstantiate(F3Env<F3AttrContext> env,
+                        Symbol m,
+                        Type mt,
+                        List<Type> argtypes,
+                        List<Type> typeargtypes,
+                        boolean allowBoxing,
+                        boolean useVarargs,
+                        Warner warn,
+			boolean debug)
         throws Infer.NoInstanceException {
         if (useVarargs && (m.flags() & VARARGS) == 0) return null;
         m.complete();
-
+	if (debug) {
+	    System.err.println("mt0="+mt);
+	}
         // tvars is the list of formal type variables for which type arguments
         // need to inferred.
         List<Type> tvars = env.info.tvars;
@@ -381,7 +422,14 @@ public class F3Resolve {
             ForAll pmt = (ForAll) mt;
             List<Type> tvars1 = types.newInstances(pmt.tvars);
             tvars = tvars.appendList(tvars1);
+	    if (debug) {
+		System.err.println("tvars="+tvars);
+		System.err.println("pmt.qtype="+pmt.qtype);
+	    }
             mt = types.subst(pmt.qtype, pmt.tvars, tvars1);
+	    if (debug) {
+		System.err.println("mt'="+mt);
+	    }
         }
         // find out whether we need to go the slow route via infer
         boolean instNeeded = tvars.tail != null/*inlined: tvars.nonEmpty()*/;
@@ -392,7 +440,14 @@ public class F3Resolve {
         }
         if (instNeeded) {
 	    if (!(mt instanceof MethodType)) {
+		if (debug) {
+		    System.err.println("mt.class="+mt.getClass());
+		}
 		return null;
+	    }
+	    if (debug) {
+		System.err.println("mt="+mt);
+		System.err.println("args="+argtypes);
 	    }
 	    Type r = 
 		infer.instantiateMethod(tvars,
@@ -401,11 +456,21 @@ public class F3Resolve {
 					allowBoxing,
 					useVarargs,
 					warn);
+	    if (debug) {
+		System.err.println("r="+r);
+		Thread.currentThread().dumpStack();
+	    }
 	    return r;
 	    //System.err.println("infer " + mt + " = "+ r);
-        } return
-            argumentsAcceptable(argtypes, mt.getParameterTypes(),
-                                allowBoxing, useVarargs, warn)
+        } 
+	if (debug) {
+	    System.err.println("arguments acceptable case");
+	    System.err.println("mt="+mt.getParameterTypes());
+	    System.err.println("args="+argtypes);
+	    Thread.currentThread().dumpStack();
+	}
+	return argumentsAcceptable(argtypes, mt.getParameterTypes(),
+				   allowBoxing, useVarargs, warn)
             ? mt
             : null;
     }
@@ -429,6 +494,27 @@ public class F3Resolve {
             return null;
         }
     }
+
+    Type instantiateDebug(F3Env<F3AttrContext> env,
+			  Type site,
+			  Symbol m,
+			  List<Type> argtypes,
+			  List<Type> typeargtypes,
+			  boolean allowBoxing,
+			  boolean useVarargs,
+			  Warner warn) {
+        try {
+            Type r = rawInstantiateDebug(env, m, types.memberType(site, m), argtypes, typeargtypes,
+					 allowBoxing, useVarargs, warn);
+	    //System.err.println("instantiated "+m+" to "+ r);
+	    return r;
+        } catch (Infer.NoInstanceException ex) {
+	    ex.printStackTrace();
+            return null;
+        }
+    }
+
+
 
     /** Check if a parameter list accepts a list of args.
      */
@@ -908,8 +994,7 @@ public class F3Resolve {
 	    if (allowBoxing) { // hack
 		if (memberType instanceof ForAll) {
 		    Symbol origSym = sym;
-		    sym = sym.clone(sym.owner);
-		    sym.type = reader.translateType(types.normalize(tx));
+		    sym = new InstanceMethodSymbol((MethodSymbol)sym, reader.translateType(types.normalize(tx)), origSym.owner);
 		    reader.cloneMethodParams((MethodSymbol)origSym, (MethodSymbol)sym);
 		    //System.err.println("cloned "+origSym +": "+sym.type);
 		}
@@ -1127,6 +1212,7 @@ public class F3Resolve {
                           operator);
         if (!(best instanceof ResolveError) && !isAccessible(env, site, best)) {
             // it is not accessible, return an error instead
+	    //System.err.println("not accessible in "+ site+": "+best);
             best = new AccessError(env, site, best);
         }
         return best;
@@ -1179,6 +1265,9 @@ public class F3Resolve {
 		    } else {
 			Symbol sym = e.sym;
 			if (sym.kind == VAR) {
+			    if (DEBUG_THE && isThe) {
+				System.err.println("checking: "+ e.sym + " == "+mtype + " bestSoFar="+bestSoFar);
+			    }
 			    if (sym.type != null && 
 				mtype != null &&
 				types.isSubtypeUnchecked(sym.type, mtype)) {
@@ -1194,6 +1283,10 @@ public class F3Resolve {
 				    }
 				} else {
 				    bestSoFar = sym;
+				}
+			    } else {
+				if (DEBUG_THE && isThe) {
+				    System.err.println("no match");
 				}
 			    }
 			}
@@ -1231,6 +1324,9 @@ public class F3Resolve {
             }
             if (! checkArgs &&
                 bestSoFar.kind != ABSENT_VAR && bestSoFar.kind != ABSENT_MTH) {
+		if (DEBUG_THE && isThe) {
+		    System.err.println("best so far: "+bestSoFar);
+		}
                 return bestSoFar;
             }
             Symbol concrete = methodNotFound;
