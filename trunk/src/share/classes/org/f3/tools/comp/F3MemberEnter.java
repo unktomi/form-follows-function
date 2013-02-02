@@ -499,7 +499,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		env1 = env1.outer;
 		System.err.println("Scope: "+ env1.info.scope.owner);
 	    }
-	    ta.tsym = new TypeSymbol(0, ta.getIdentifier(), null, env1.info.scope.owner);
+	    ta.tsym = new TypeSymbol(0, ta.getIdentifier(), syms.unknownType, env1.info.scope.owner);
 	    env1.info.scope.enter(ta.tsym);
 	    System.err.println(env1.info.scope);
 	}

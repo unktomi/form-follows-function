@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.ArrayList;
 import javax.lang.model.element.ElementKind;
 import javax.tools.JavaFileObject;
-
 import org.f3.api.tree.ForExpressionInClauseTree;
 import org.f3.api.tree.Tree.F3Kind;
 import org.f3.api.tree.TypeTree.Cardinality;
@@ -365,7 +364,14 @@ public class F3Attr implements F3Visitor {
 			//System.err.println("localResult="+localResult);
 			//System.err.println("bound="+bound.getClass());
 			//System.err.println("bound="+types.toF3String(bound));
-			if (bound instanceof TypeVar) {
+			if (bound instanceof ConstI) {
+			    ConstI consti = (ConstI)bound;
+			    System.err.println("targs="+typeArgTypes);
+			    System.err.println("i="+consti.i);
+			    if (consti.i < typeArgTypes.size()) {
+				localResult = typeArgTypes.get(consti.i);
+			    }
+			} else if (bound instanceof TypeVar) {
 			    TypeVar tv = (TypeVar)bound;
 			    TypeCons tc = new TypeCons(tv.tsym.name, 
 						       tv.tsym, 
@@ -380,9 +386,9 @@ public class F3Attr implements F3Visitor {
 			} 
 
 		    }
-		    if (types.isId(localResult)) {
-			localResult = types.idElementType(localResult);
-		    }
+		    //if (types.isId(localResult)) {
+		    //localResult = types.idElementType(localResult);
+		    //}
 		    tree.type = localResult;
 		} else {
 		    // we need to erase unspecified type arguments?
@@ -680,6 +686,8 @@ public class F3Attr implements F3Visitor {
     private void checkTypeCycle(F3Tree tree, Symbol sym) {
         if (sym.type == null) {
             F3Var var = varSymToTree.get(sym);
+	    System.err.println("tree="+tree);
+	    System.err.println("sym="+sym);
             if (var != null) {
 		JavaFileObject prevSource = log.currentSource();
 		try {
@@ -2320,6 +2328,14 @@ public class F3Attr implements F3Visitor {
 	result = check(tree, ftype, VAL, pkind, req, pSequenceness);
 	if (def.type instanceof ForAll) {
 	    result = capture(def.type);
+	}
+    }
+
+    public static class ConstI extends Type {
+	public int i;
+	public ConstI(int i) {
+	    super(0, null);
+	    this.i = i;
 	}
     }
 
@@ -4448,8 +4464,8 @@ public class F3Attr implements F3Visitor {
 				localEnv,
 				TYP,
 				Type.noType);
-	    //System.err.println("t="+t);
-	    //System.err.println("targs="+targs);
+	    System.err.println("t="+t);
+	    System.err.println("targs="+targs);
 	    if (ta.typeArgs != null) {
 		if (t instanceof FunctionType) {
 		    t = new ForAll(targs, t.asMethodType());
@@ -4457,8 +4473,13 @@ public class F3Attr implements F3Visitor {
 		    ft.typeArgs = t.getTypeArguments();
 		    t = ft;
 		} else {
-		    if (targs.contains(t)) {
-			t = types.idType(t);
+		    int i = targs.indexOf(t);
+		    if (i >= 0) {
+			if (targs.size() == 1) {
+			    t = types.idType(t);
+			} else {
+			    t = new ConstI(i);
+			}
 		    }
 		}
 	    }
@@ -4467,6 +4488,7 @@ public class F3Attr implements F3Visitor {
 	    ta.tsym.type = t;
 	    result = t;
 	    tree.type = result;
+	    return;
 	} else if (tree instanceof F3Type.TheType) {
 	    F3Type.TheType theType = (F3Type.TheType)tree;
 	    Type t = attribTree(theType.theType, env, TYP, Type.noType);

@@ -16,4 +16,8 @@ public class Id<a> implements Monad<Id, a> {
     public <b> Id<b> map(Function1<? extends b, ? super a> f) {
 	return new Id<b>(f.invoke(self));
     }
+
+    public static <a> Id<a> toId(a x) {
+	return new Id<a>(x);
+    }
 }
