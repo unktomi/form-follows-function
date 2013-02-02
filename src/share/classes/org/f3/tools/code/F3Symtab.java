@@ -86,6 +86,8 @@ public class F3Symtab extends Symtab {
     public final Type f3_SequenceType;
     public final Type f3_FunctorType;
     public final Type f3_FunctorTypeClass;
+    public final Type f3_IdType;
+    public final Type f3_IdTypeErasure;
     public final Type f3_MonadType;
     public final Type f3_MonadTypeClass;
     public final Type f3_ComonadType;
@@ -251,6 +253,8 @@ public class F3Symtab extends Symtab {
         f3_MonadType = enterClass(F3Defs.cMonad);
         f3_MonadTypeClass = enterClass(F3Defs.cMonadTypeClass);
         f3_ComonadType = enterClass(F3Defs.cComonad);
+        f3_IdType = enterClass(F3Defs.cId);
+        f3_IdTypeErasure = types.erasure(f3_IdType);
         f3_TypeConsType = enterClass(F3Defs.cTypeCons);
 	f3_TypeCons = new Type[6];
 	f3_TypeConsErasure = new Type[6];
@@ -365,6 +369,7 @@ public class F3Symtab extends Symtab {
         else
             return elemType;
     }
+
 
     public FunctionType makeFunctionType(int nargs, List<Type> typarams) {
         ListBuffer<Type> argtypes = new ListBuffer<Type>();

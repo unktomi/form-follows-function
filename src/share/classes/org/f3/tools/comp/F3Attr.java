@@ -378,6 +378,10 @@ public class F3Attr implements F3Visitor {
 			    //System.err.println("tc="+tc.getClass()+": "+types.toF3String(tc));
 			    //System.err.println("bound="+tv.bound);
 			} 
+
+		    }
+		    if (types.isId(localResult)) {
+			localResult = types.idElementType(localResult);
 		    }
 		    tree.type = localResult;
 		} else {
@@ -4452,8 +4456,13 @@ public class F3Attr implements F3Visitor {
 		    FunctionType ft = syms.makeFunctionType(t.asMethodType());
 		    ft.typeArgs = t.getTypeArguments();
 		    t = ft;
+		} else {
+		    if (targs.contains(t)) {
+			t = types.idType(t);
+		    }
 		}
 	    }
+	    System.err.println("t="+t.getClass());
 	    System.err.println("t'="+types.toF3String(t));
 	    ta.tsym.type = t;
 	    result = t;
@@ -5309,10 +5318,11 @@ public class F3Attr implements F3Visitor {
 				      mtvars);
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
+		    //System.err.println("fix override:  "+m+": "+x.head+" => "+tc2);
 		    if (tc2 >= 0 ||
 			!x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
 			vars.head.baseType = x1;
-			//System.err.println("fix override:  "+m+": "+x.head+" => "+x1);
+			
 		    }
 		}
 	    }
