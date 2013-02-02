@@ -41,6 +41,7 @@ public class F3FunctionInvocation extends F3Expression implements FunctionInvoca
     public Type varargsElement;
     public boolean partial;
     public boolean immutable = false;
+    public List<F3Expression> explicits;
 
     public List<Symbol> resolvedImplicits = List.<Symbol>nil();
 

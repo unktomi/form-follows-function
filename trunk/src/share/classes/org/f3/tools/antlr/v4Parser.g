@@ -508,7 +508,7 @@ importDecl
 
 }
     
-    : (WITH | IMPORT) importId
+    : IMPORT importId
     
         {
             // AST construction
@@ -1274,9 +1274,9 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 errNodes.append($rt2.rtype);
                 rtype = $rt2.rtype;
             }
-        (WITH implicits=implicitFormalParameters {
+	 (WITH LPAREN)=>(WITH implicits=implicitFormalParameters {
              implicitArgs = $implicits.params.toList();
-        })?
+	     })?
         |
         (LPAREN) => (fp3=formalParameters
             {
@@ -3196,9 +3196,8 @@ boundExpression
                 //TODO: warning
             }
       )?
-      
       e1=expression 
-    
+
         {
             errNodes.append($e1.value); // For erroneous node
         }
@@ -3226,8 +3225,8 @@ boundExpression
                 //
                 $status = isBidirectional? BIDIBIND : UNIDIBIND;
             }
-    
-    | e2=expression
+	 
+	    | e2=expression
     
         {
             // Unbound expression AST
@@ -3939,7 +3938,6 @@ typeExpression
 		    endPos($value);
 
 		 }
-        
     | (WITH LBRACE)=>(WITH LBRACE ol = objectLiteral {
         
              $value = $relationalExpression.value;
@@ -4406,7 +4404,7 @@ postfixExpression
     // Last element of sequence (if present)
     //
     F3Expression   lastExpr = null;
-    
+    com.sun.tools.mjavac.util.List<F3Expression> explicits = null;
     // Used to accumulate a list of anything that we manage to build up in the parse
     // in case of error.
     //
@@ -4437,18 +4435,21 @@ postfixExpression
                        
                 )
 
-            | (LPAREN)=>LPAREN 
-                expressionList             
+	      | (LPAREN)=>(LPAREN 
+                argList = expressionList
+	      RPAREN
+	      (WITH LPAREN)=>(WITH LPAREN
+	       texprs = expressionList
+		  {explicits = $texprs.args.toList();}
+	       RPAREN)?
                 {
-                    $value = F.at(sPos).Apply(null, $value, $expressionList.args.toList());
+                    $value = F.at(sPos).Apply(null, $value, $argList.args.toList());
+		    ((F3FunctionInvocation)$value).explicits = explicits;
                     errNodes.append($value);
-                    
-                }
-                RPAREN
-                {
-                    endPos($value);
-                }
-                
+		    {
+			endPos($value);
+		    }
+                })
             | (LBRACKET)=>l1=LBRACKET
             
                 {
@@ -7267,7 +7268,7 @@ keyword
     : FIRST     | IN    | INIT      | INTO
     | INVERSE   | LAST  | ON        | POSTINIT      
     | REPLACE   | STEP  | TRIGGER   | TWEEN
-    | WHERE     | WITH  | INVALIDATE
+    | WHERE     | INVALIDATE
     ;
 
 // --------------
