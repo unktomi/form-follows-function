@@ -11,7 +11,7 @@ import org.f3.functions.*;
  * a 'for' loop.
  */    
 
-public class Pair<a, b> implements Monad<Pair, a>, Comonad<Pair, a> 
+public class Pair<a, b> implements Monad<Pair, a>, Comonad<Pair, a>, TypeCons2<Pair, a, b> 
 {
 
     public final a first;

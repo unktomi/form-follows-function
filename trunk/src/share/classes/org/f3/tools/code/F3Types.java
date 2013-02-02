@@ -403,6 +403,36 @@ public class F3Types extends Types {
 	return monad;
     }
 
+    public Type idType(Type elemType) {
+	elemType = boxedTypeOrType(elemType);
+        return applySimpleGenericType(syms.f3_IdType, 
+				      List.<Type>of(elemType));
+    }
+
+    public Type idElementType(Type type) {
+	if (isId(type)) {
+	    List<Type> list = getTypeArgs(type);
+	    if (list.size() > 1) {
+		Type elemType = list.get(1);
+		while (elemType instanceof CapturedType)
+		    elemType = ((CapturedType) elemType).wildcard;
+		while (elemType instanceof WildcardType)
+		    elemType = ((WildcardType) elemType).type;
+		if (elemType == null)
+		    return syms.f3_AnyType;
+		return elemType;
+	    }
+	}
+	return null;
+    }
+
+    public boolean isId(Type type) {
+        return type != Type.noType && type != null
+            && type.tag != TypeTags.ERROR
+            && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL
+            && erasure(type) == syms.f3_IdTypeErasure;
+    }
+
     public Type pointerType(Type siteType, Type elemType, boolean readOnly) {
 	elemType = boxedTypeOrType(elemType);
 	if (false && !(elemType instanceof WildcardType) && !(elemType instanceof TypeVar)) {
@@ -967,11 +997,12 @@ public class F3Types extends Types {
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null && y != null; x = x.tail, y = y.tail) {
 	    if (x.head != null && y.head != null) {
-		//System.err.println("x.head="+x.head.getClass()+": "+x.head);
-		//System.err.println("y.head="+y.head.getClass()+": "+y.head);
 		int i = isTypeConsType(y.head);
 		if (i >= 0) {
+		    //System.err.println("x.head="+x.head.getClass()+": "+x.head);
+		    //System.err.println("y.head="+y.head.getClass()+": "+y.head);
 		    for (Type st : supertypesClosure(x.head)) {
+			//System.err.println("st="+st);
 			if (isSameType(st, y.head)) {
 			    x.head = y.head;
 			    break;

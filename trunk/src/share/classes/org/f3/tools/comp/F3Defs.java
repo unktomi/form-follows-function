@@ -149,6 +149,7 @@ public class F3Defs {
     static public final String cMonadTypeClass = runtime_PackageString + ".typeclass.Monad";
     static public final String cComonad = runtime_PackageString + ".Comonad";
     static public final String cTypeCons = runtime_PackageString + ".TypeCons";
+    static public final String cId = runtime_PackageString + ".Id";
     // in runtime package
     private static final String cUtil = runtime_PackageString + ".Util";
     private static final String cChecks = runtime_PackageString + ".Checks";
