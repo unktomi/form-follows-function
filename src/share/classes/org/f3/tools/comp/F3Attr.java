@@ -3298,6 +3298,12 @@ public class F3Attr implements F3Visitor {
 	    }
 	}
 
+	if (tree.explicits != null) {
+	    for (F3Expression exp: tree.explicits) {
+		attribExpr(exp, env);
+	    }
+	}
+
 	if (localEnv.info.varArgs)
 	    assert mtype.isErroneous() || tree.varargsElement != null;
 
@@ -3447,20 +3453,41 @@ public class F3Attr implements F3Visitor {
 				if (expectedType instanceof FunctionType) {
 				    expectedType = ((FunctionType)expectedType).asMethodOrForAll();
 				}
-				Symbol sym = findThe(env, tree, expectedType);
-				if (sym == null || sym.kind >= AMBIGUOUS) {
-				} else {
-				    System.err.println("found: "+sym);
-				    resolvedImplicits = resolvedImplicits.append(sym);
-				    F3Expression exp = f3make.QualIdent(sym);
-				    if (!types.isSubtype(sym.type, expectedType)) {
-					exp = f3make.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());
+				F3Expression implicitExpr = null;
+				if (tree.explicits != null) {
+				    for (F3Expression exp: tree.explicits) {
+					if (types.isSubtypeUnchecked(expectedType, exp.type)) {
+					    if (implicitExpr != null) {
+						if (types.isSameType(implicitExpr.type, exp.type)) {
+						    // ambiguous
+						    System.err.println("ambiguous: "+ implicitExpr.type);
+						    System.err.println("ambiguous: "+ exp.type);
+						}
+					    }
+					    implicitExpr = exp;
+					    break;
+					}
 				    }
-				    Type t = attribExpr(exp, env);
-				    System.err.println("implicit expr="+exp);
-				    System.err.println("type="+t);
-				    exp.type = t;
-				    implicitExprs = implicitExprs.append(exp);
+				}
+				if (implicitExpr == null) {
+				    Symbol sym = findThe(env, tree, expectedType);
+				    if (sym == null || sym.kind >= AMBIGUOUS) {
+				    } else {
+					System.err.println("found: "+sym);
+					resolvedImplicits = resolvedImplicits.append(sym);
+					F3Expression exp = f3make.QualIdent(sym);
+					if (!types.isSubtype(sym.type, expectedType)) {
+					    exp = f3make.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());
+					}
+					Type t = attribExpr(exp, env);
+					System.err.println("implicit expr="+exp);
+					System.err.println("type="+t);
+					exp.type = t;
+					implicitExpr = exp;
+				    }
+				}
+				if (implicitExpr != null) {
+				    implicitExprs = implicitExprs.append(implicitExpr);
 				}
 			    }
 			    ptr = ptr.tail;
