@@ -474,6 +474,9 @@ public class F3ClassReader extends ClassReader {
     }
     
     MethodSymbol translateMethodSymbol(long flags, Symbol sym, Symbol owner) {
+	if (sym instanceof F3Resolve.InstanceMethodSymbol) {
+	    return (MethodSymbol)sym;
+	}
         Name name = sym.name;
         Type mtype = sym.type;
         String nameString = name.toString();

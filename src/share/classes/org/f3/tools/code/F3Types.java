@@ -1594,6 +1594,9 @@ public class F3Types extends Types {
 	if (t.isPrimitive()) {
 	    return t;
 	}
+	if (t == syms.botType) {
+	    return t;
+	}
         return new TypeNormalizer2().visit(t, preserveWildcards);
     }
 

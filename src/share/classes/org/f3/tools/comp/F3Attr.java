@@ -211,7 +211,6 @@ public class F3Attr implements F3Visitor {
             if ((pkind & VAL) != 0 && ownkind == MTH) {
                 ownkind = VAL;
                 if (owntype instanceof MethodType) {
-
                     owntype = chk.checkFunctionType(tree.pos(), (MethodType)owntype);
                 }
             }
@@ -2614,6 +2613,7 @@ public class F3Attr implements F3Visitor {
                 }
                 pvar.type = type;
                 type = chk.checkNonVoid(pvar, attribVar(pvar, localEnv));
+		//System.err.println("attrib var: "+ pvar+": "+type);
                 argbuf.append(type);
                 paramNum++;
             }
@@ -2790,7 +2790,9 @@ public class F3Attr implements F3Visitor {
 	    paramSyms = paramSyms.append(sym);
 	    paramTypes = paramTypes.append(sym.type);
 	}
-	//System.err.println("finishing: "+tree);
+	//	System.err.println("finishing: "+tree);
+	//System.err.println("symbol="+m);
+	//System.err.println("type="+m.type);
 	//System.err.println("implicit args="+tree.implicitArgs);
 	for (F3VarSymbol sym: tree.implicitArgs) {
 	    paramSyms = paramSyms.append(sym);
@@ -3136,6 +3138,25 @@ public class F3Attr implements F3Visitor {
 	System.err.println("searching for the "+expectedType+ " => "+sym);
 	if (sym.kind >= AMBIGUOUS) {
 	    if (sym.kind != AMBIGUOUS) {
+		if (true) {
+		    List<Type> toSearch = List.nil();
+		    toSearch = toSearch.append(expectedType);
+		    toSearch.appendList(expectedType.getTypeArguments());
+		    for (Type st: toSearch) {
+			if (st instanceof ClassType) {
+			    sym = rs.findMember(env,
+						types.erasure(expectedType),
+						syms.the,
+						expectedType,
+						true, false,
+						false);
+			    System.err.println("searched "+expectedType+": "+sym);
+			    if (sym.kind <= AMBIGUOUS) {
+				return sym;
+			    }
+			}
+		    }
+		}
 		if ((expectedType instanceof MethodType) ||
 		    (expectedType instanceof ForAll) ||
 		    (expectedType instanceof FunctionType)) {
@@ -3353,40 +3374,38 @@ public class F3Attr implements F3Visitor {
 	    result = pt;       
 	}
         Symbol msym = F3TreeInfo.symbol(tree.meth);
-
-	//System.err.println("tree="+tree);
-	//System.err.println("mtype="+mtype);
-	//System.err.println("msym="+msym);
-	//System.err.println("msym.type="+msym.type);
-	//System.err.println(mtype.asMethodType().getClass());
 	List<Symbol> resolvedImplicits = List.<Symbol>nil();
-	//System.err.println("invoke.tree="+tree);
-	//System.err.println("invoke.msym="+System.identityHashCode(msym)+"@"+msym.getClass());
-	//System.err.println("invoke.msym="+msym);
 	if (!(mtype instanceof ErrorType) && msym instanceof MethodSymbol) {
 	    try {
-		//System.err.println("mtype="+mtype.getClass());
 		MethodSymbol mmsym = (MethodSymbol)msym;
-		//System.err.println("invoke.msym.params="+((MethodSymbol)msym).params);
 		List<Type> args = List.<Type>nil();
 		List<Type> formalArgs = List.<Type>nil();
-		args = args.appendList(mtype.asMethodType().argtypes);
 		boolean sawImplicit = false;
-		if (mmsym.params != null) for (VarSymbol varSym: mmsym.params) {
-			//System.err.println("param="+varSym+": "+varSym.type);
+		args = args.appendList(mtype.getParameterTypes());
+		MethodSymbol genSym = mmsym;
+		//System.err.println("mmsym="+mmsym.getClass() +": "+mmsym);
+		if (msym instanceof F3Resolve.InstanceMethodSymbol) {
+		    genSym = ((F3Resolve.InstanceMethodSymbol)mmsym).generic;
+		}
+		if (genSym.params != null) 
+		    for (VarSymbol varSym: genSym.params) {
 			formalArgs = formalArgs.append(varSym.type);
 			if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
 			    args = args.append(syms.botType);
 			    sawImplicit = true;
 			}
 		    }
-		//System.err.println("formals="+formalArgs);
-		Type mtype1 = rs.newMethTemplate(formalArgs, msym.type.getTypeArguments());
+		Type mtype1 = rs.newMethTemplate(formalArgs, genSym.type.getTypeArguments());
 		if (sawImplicit) {
 		    Type inst = null;
+		    List<Type> ts = args;
+		    while (ts.nonEmpty()) {
+			ts.head = types.normalize(ts.head, false);
+			ts = ts.tail;
+		    }
 		    try {
-			inst = rs.rawInstantiate(env, msym, 
-						 //msym.type, 
+			inst = rs.rawInstantiate(env, 
+						 genSym, 
 						 mtype1,
 						 args, 
 						 typeargtypes, true, false, 
@@ -3396,8 +3415,7 @@ public class F3Attr implements F3Visitor {
 		    }
 		    //System.err.println("inst="+inst);
 		    if (inst == null) {
-			System.err.println("couldn't instantiate: "+ msym.type + " with "+ args);
-			//rs.resolveIdent(tree.pos, env, syms.the, VAL, mtype1);
+			System.err.println("couldn't instantiate: "+ mtype1 + " with "+ args);
 		    }
 		    if (inst != null) {
 			MethodType minst = inst.asMethodType();
@@ -3406,12 +3424,9 @@ public class F3Attr implements F3Visitor {
 			for (VarSymbol varSym: ((MethodSymbol)msym).params) {
 			    if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
 				Type expectedType = reader.translateType(ptr.head);
-				System.err.println("expecting: "+ expectedType.getClass());
 				if (expectedType instanceof FunctionType) {
 				    expectedType = ((FunctionType)expectedType).asMethodOrForAll();
 				}
-				System.err.println("expecting: "+ expectedType);
-				System.err.println("in "+env.enclClass.type);
 				Symbol sym = findThe(env, tree, expectedType);
 				if (sym == null || sym.kind >= AMBIGUOUS) {
 				} else {
@@ -4674,6 +4689,9 @@ public class F3Attr implements F3Visitor {
                      boolean useVarargs) {
 	    //System.err.println("checkId: "+ sym);
             if (pt.isErroneous()) return syms.errType;
+	    //System.err.println("checkId: "+tree);
+	    //System.err.println("pkind="+pkind);
+	    //System.err.println("pt="+pt);
             Type owntype; // The computed type of this identifier occurrence.
             switch (sym.kind) {
             case TYP:
@@ -4726,7 +4744,6 @@ public class F3Attr implements F3Visitor {
                 // Test (4): if symbol is an instance field of a raw type,
                 // which is being assigned to, issue an unchecked warning if
                 // its type changes under erasure.
-
                 if (allowGenerics &&
                     pkind == VAR &&
                     v.isMember() &&
@@ -4752,6 +4769,34 @@ public class F3Attr implements F3Visitor {
 		    owntype = ((FunctionType)owntype).asMethodOrForAll();
 		    //System.err.println("owntype is now: "+ owntype);
 		}
+                if (false && ((pt instanceof MethodType) || (pt instanceof ForAll))) {
+		    owntype = types.memberType(site,
+					       sym);
+                    F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
+		    Type siteType = site;
+		    if (sym instanceof F3Resolve.InstanceMethodSymbol) {
+			sym = ((F3Resolve.InstanceMethodSymbol)sym).generic;
+		    }
+		    if (siteType instanceof MethodType) {
+			siteType = syms.makeFunctionType((MethodType)siteType);
+		    }
+                    Type inst = checkMethod(siteType, sym, env, app.args,
+					    pt.getParameterTypes(), typeargtypes,
+					    env.info.varArgs);
+		    if (inst != null) { // hack
+			owntype = inst;
+		    } else {
+			owntype = pt;
+			System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
+		    }
+		    if (owntype instanceof MethodType) {
+			try {
+			    owntype = syms.makeFunctionType((MethodType)owntype);
+			} catch (Exception exc) { // hack
+			    // could happen if too many args
+			}
+		    }
+	    } else
 		if (owntype instanceof ForAll) {
 		    if (typeargtypes.nonEmpty()) {
 			owntype = types.subst(owntype.asMethodType(),
@@ -4784,7 +4829,7 @@ public class F3Attr implements F3Visitor {
                 // This is probably wrong now that we have function expressions.
                 // Instead, we should checkMethod in visitFunctionInvocation.
                 // In that case we should also handle FunctionType. FIXME.
-                if (pt instanceof MethodType || pt instanceof ForAll) {
+                if ((pt instanceof MethodType) || (pt instanceof ForAll)) {
                     F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
 		    Type siteType = site;
 		    if (siteType instanceof MethodType) {
@@ -4796,7 +4841,8 @@ public class F3Attr implements F3Visitor {
 		    if (inst != null) { // hack
 			owntype = inst;
 		    } else {
-			System.err.println("inst failed: using : "+owntype);
+			owntype = pt;
+			System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
 		    }
 		    if (owntype instanceof MethodType) {
 			try {
@@ -4882,6 +4928,9 @@ public class F3Attr implements F3Visitor {
                             List<Type> argtypes,
                             List<Type> typeargtypes,
                             boolean useVarargs) {
+	if (sym instanceof F3Resolve.InstanceMethodSymbol) {
+	    sym = ((F3Resolve.InstanceMethodSymbol)sym).generic;
+	}
 	if (argtypes != null) {
 	    List<Type> list = argtypes;
 	    while (list.nonEmpty()) {
@@ -4925,20 +4974,20 @@ public class F3Attr implements F3Visitor {
         // any type arguments and value arguments.
         noteWarner.warned = false;
         Type owntype = rs.instantiate(env,
-                                      site,
-                                      sym,
-                                      argtypes,
-                                      typeargtypes,
-                                      true,
-                                      useVarargs,
-                                      noteWarner);
+				      site,
+				      sym,
+				      argtypes,
+				      typeargtypes,
+				      true,
+				      useVarargs,
+				      noteWarner);
         boolean warned = noteWarner.warned;
 
         // If this fails, something went wrong; we should not have
         // found the identifier in the first place.
         if (owntype == null) {
             if (!pt.isErroneous()) { 
-		if (false) { // hack
+		if (true) { 
 		    log.error(env.tree.pos(),
 			      MsgSym.MESSAGE_INTERNAL_ERROR_CANNOT_INSTANTIATE,
 			      sym, site,
