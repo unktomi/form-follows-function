@@ -1,0 +1,14 @@
+package f3.util;
+import f3.util.Functor;
+
+public interface Monad of (class F of _) is Functor of F, org.f3.runtime.typeclass.Monad of F
+{
+    public abstract function flatmap of (a, b) 
+	from (xs is F of a,
+	      f is function from a to F of b) 
+	to F of b;
+
+    public abstract function return of a
+	from (x is a) 
+	to F of a;
+}
