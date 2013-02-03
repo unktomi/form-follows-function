@@ -1,0 +1,9 @@
+package f3.util;
+
+public interface Functor of (class F of _) is org.f3.runtime.typeclass.Functor of F
+{
+    public abstract function map of (a, b)
+	from (xs is F of a,
+	      f is function from a to b) 
+        to F of b;
+}
