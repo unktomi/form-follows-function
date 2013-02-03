@@ -1,0 +1,25 @@
+package f3.util;
+
+public abstract class Ordering of a 
+{
+    public abstract function compare 
+	from (x is a, y is a) 
+	to Comparison;
+}
+
+public class ComparableOrdering of (a is java.lang.Comparable) is Ordering of a 
+{
+    override function compare from (x is a, y is a) to Comparison 
+    {
+	Comparison.fromInteger(x.compareTo(y))
+    }
+}
+
+public static const DoubleOrdering = ComparableOrdering of Double {}
+public static const NumberOrdering = ComparableOrdering of Number {}
+public static const LongOrdering = ComparableOrdering of Long {}
+public static const IntegerOrdering = ComparableOrdering of Integer {}
+public static const ShortOrdering = ComparableOrdering of Short {}
+public static const ByteOrdering = ComparableOrdering of Byte {}
+public static const CharacterOrdering = ComparableOrdering of Character {}
+
