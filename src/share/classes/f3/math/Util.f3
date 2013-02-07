@@ -1,0 +1,11 @@
+package f3.math;
+
+public function newFloatArray from (size is Integer) to nativearray of Number 
+{
+    java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, size) as nativearray of Number;
+}
+
+public function newIntArray from (size is Integer) to nativearray of Integer
+{
+    java.lang.reflect.Array.newInstance(java.lang.Integer.TYPE, size) as nativearray of Integer;
+}

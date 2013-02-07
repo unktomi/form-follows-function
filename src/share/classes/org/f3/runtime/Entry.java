@@ -65,6 +65,7 @@ public class Entry {
             commandLineArgs = clnap.getValues();
         }
         final Method main = app.getMethod(entryMethodName(), Sequence.class);
+	System.err.println("MAIN: "+main);
         Object argSeq = Sequences.make(TypeInfo.String, args);
         try {
             AccessController.doPrivileged(
@@ -121,6 +122,9 @@ public class Entry {
                             public RuntimeProvider run() {
                                 try {
                                     java.util.Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources("/META-INF/services/org.f3.runtime.RuntimeProvider");
+				    while (urls.hasMoreElements()) {
+					System.err.println("service provider: "+ urls.nextElement());
+				    }
                                     return ServiceLoader.load(RuntimeProvider.class, Thread.currentThread().getContextClassLoader()).iterator().next();
                                 } catch (ServiceConfigurationError e) {
                                     e.printStackTrace();
@@ -133,6 +137,7 @@ public class Entry {
                             }
                         });
             } catch (Exception e) {
+		e.printStackTrace();
                 // ignore all exceptions and assign the runtime default (finally block)
             } finally {
                 if (runtimeProvider == null) {

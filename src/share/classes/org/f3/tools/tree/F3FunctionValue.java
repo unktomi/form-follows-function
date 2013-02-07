@@ -41,6 +41,8 @@ public class F3FunctionValue extends F3Expression implements FunctionValueTree {
     public F3Modifiers mods;
     public List<F3Expression> typeArgs;
 
+    public boolean infer = false;
+
     public F3FunctionValue(F3Modifiers mods,
 			   F3Type rettype,
 			   List<F3Var> params,

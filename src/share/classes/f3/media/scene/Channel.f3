@@ -1,0 +1,80 @@
+package f3.media.scene;
+import f3.util.*;
+import f3.math.*;
+import java.lang.Math;
+import org.f3.runtime.*;
+import f3.media.scene.KeyFrame.Key;
+
+function binarySearch of a from (keys is (Key of a)[], t is Duration) to Integer 
+{
+    var low = 0;
+    var high = keys.size() -1;
+    while (low <= high) {
+        const mid = low + Bits.unsignedShiftRight(high-low, 1);
+        const midVal = keys[mid];
+        if (midVal.position < t) {
+            low = mid + 1;
+        } else if (midVal.position > t) {
+            high = mid - 1;
+        } else {
+            return mid;
+        }
+    }
+    return -(low + 1);
+}
+
+public class Channel of a is TimeNode 
+{
+    public const targets is (Pointer of (..F3Object, a))[];
+    public const keys is (Key of a)[];
+    readonly var sortedKeys = bind KeyFrame.sortKeys(keys);
+
+    override var contentBounds = bind getKeyBounds(sortedKeys);
+
+    function getKeyBounds from (keys is (Key of a)[]) to Interval 
+    {
+	const k0 = keys[0];
+	const k1 = keys[keys.size()-1];
+	const r = Interval { start: k0.position, end: k1.position };
+	return r;
+    }
+
+    public function pickKey from (point is Duration) to Key of a 
+    {
+        var pos = binarySearch(sortedKeys, point);
+        if (pos < 0) {
+            pos = -(pos + 1);
+        }
+        pos = Math.min(sortedKeys.size()-1, pos);
+        const key = sortedKeys[pos];
+        return key;
+    }
+
+    public function interpolate
+	from (worldTime is Duration, weight is Number, v is a) to a
+    {
+	const pos = localTime;
+	const picked = pickKey(pos);
+	var k1 is Key of a;
+	var k2 is Key of a;
+	if (picked.position < pos) {
+	    k1 = picked;
+	    k2 = picked.next;
+	} else {
+	    k1 = picked.prev;
+	    k2 = picked;
+	}
+	var t = 0.0;
+	var k = k2;
+	if (k1 == null) {
+	    t = 1.0;
+	} else if (k2 == null) {
+	    t = 0.0;
+	    k = k1;
+	} else {
+	    t = (pos - k1.position) / (k2.position - k1.position);
+	}
+	// v + k.interpolate(t) * weight
+	k.add(if (v == null) then k.zero() else v, k.scale(k.interpolate(t), weight));
+    }
+}

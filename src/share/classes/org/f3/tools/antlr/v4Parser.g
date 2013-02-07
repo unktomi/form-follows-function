@@ -422,14 +422,13 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
               // valid or not is a matter for semantic checks to decide.
               //
               //
-	(modifiers (ENUM|CLASS|INTERFACE|funcName))=> (m1=modifiers { errNodes.append($m1.mods); }
+        (modifiers (CLASS|INTERFACE|funcName))=> (m1=modifiers { errNodes.append($m1.mods); }
                 (
                       c=classDefinition         [$m1.mods, $m1.pos]
                       
                             {   errNodes.append($c.value);
                                 $items.append($c.value); 
                             }
-                    | enumDefinition [$m1.mods, $m1.pos] {}
                     | f=functionDefinition      [$m1.mods, $m1.pos]
                     
 
@@ -437,7 +436,7 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
                                 errNodes.append($f.value);
                                 $items.append($f.value); 
                             }
-		 ))
+                 ))
             
             |  typeAlias { $items.append($typeAlias.rtype); }
                 
@@ -769,53 +768,6 @@ catch [RecognitionException re] {
     
  }
 
-enumDefinition [ F3Modifiers mods, int pos ]
-
-    returns [F3Tree value] // The class definition has its own F3Tree type, but we might need Erroneous here
-    
-    // Shift contexts for error accumualtion
-    //
-    scope errorStack;
-    
-@init { 
-
-    // Search for the document comment token. At this point LT(1)
-    // returns the first on channel token, so we can scan back from
-    // there to see if there was a document comment.
-    //
-    CommonToken  docComment         = getDocComment(input.LT(1));
-
-    // List of all members
-    //
-    ListBuffer<F3Tree> mems        = new ListBuffer<F3Tree>();
-    
-    // Super class ids
-    //
-    ListBuffer<F3Expression> ids   = null;
-    
-    // Used to accumulate a list of anything that we manage to build up in the parse
-    // in case of error.
-    //
-    $errorStack::ASTErrors          = mems;
-
-    // Accumulate any generic arguments
-    //
-    ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
-}
-
-    : ENUM 
-
-
-    n1=name 
-
-    (OF gas=genericParams[false, false] {
-            exprbuff.appendList(gas);
-    })?
-    LBRACE
-    name (OF type)? ((COMMA|SEMI)+ name (OF TYPE)?)*
-    RBRACE
-    
-;
  
 // Class definition.
 // Parses a complete class definition and builds up the F3 AST
@@ -864,8 +816,7 @@ classDefinition [ F3Modifiers mods, int pos ]
 
          (OF gas=genericParams[false, false] {
            if (gas != null) exprbuff.appendList(gas);
-         })?
-
+         } COMMA? )?
          (supers  {ids = $supers.ids; })?
             
         LBRACE 
@@ -877,6 +828,7 @@ classDefinition [ F3Modifiers mods, int pos ]
  //           syncClass       [mems] 
             
             ( 
+
                 classMember         [mems] 
                 
                 possiblyOptSemi
@@ -1117,6 +1069,8 @@ classMember[ListBuffer<F3Tree> mems]
     initDefinition                { $mems.append($initDefinition.value);      }
     | postInitDefinition            { $mems.append($postInitDefinition.value);  }
     |
+      typeAlias { $mems.append($typeAlias.rtype); }
+    |
         m=modifiers 
         (
         variableDeclaration      [$m.mods, $m.pos]       { $mems.append($variableDeclaration.value); }
@@ -1140,6 +1094,47 @@ catch [RecognitionException re] {
     $mems.append(resyncClassMember(rPos, re));
     
  }
+
+patternMatch 
+
+    returns [F3Expression value] // The class definition has its own F3Tree type, but we might need Erroneous here
+    
+    // Shift contexts for error accumualtion
+    //
+    scope errorStack;
+    
+@init { 
+
+    // Search for the document comment token. At this point LT(1)
+    // returns the first on channel token, so we can scan back from
+    // there to see if there was a document comment.
+    //
+    CommonToken  docComment         = getDocComment(input.LT(1));
+
+    // List of all members
+    //
+    ListBuffer<F3Tree> mems        = new ListBuffer<F3Tree>();
+    
+    // Super class ids
+    //
+    ListBuffer<F3Expression> ids   = null;
+    
+    // Used to accumulate a list of anything that we manage to build up in the parse
+    // in case of error.
+    //
+    $errorStack::ASTErrors          = mems;
+
+    // Accumulate any generic arguments
+    //
+    ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
+}
+
+    : MATCH expression WITH
+
+        (PIPE expression SUCHTHAT expression) (SEMI PIPE expression SUCHTHAT expression)*
+    
+;
+
 
 // ----------
 // Functions.
@@ -1274,9 +1269,9 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 errNodes.append($rt2.rtype);
                 rtype = $rt2.rtype;
             }
-	 (WITH LPAREN)=>(WITH implicits=implicitFormalParameters {
+         (WITH LPAREN)=>(WITH implicits=implicitFormalParameters {
              implicitArgs = $implicits.params.toList();
-	     })?
+             })?
         |
         (LPAREN) => (fp3=formalParameters
             {
@@ -1529,7 +1524,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
     :   variableLabel  { vmod = $variableLabel.modifiers; }
 
     
-        n=name
+        n=nameAll
         
             { 
                 // Build up new node in case of error
@@ -1572,7 +1567,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                     
                     // Send out the error
                     //
-                    log.error(bValue, MsgSym.MESSAGE_F3_BAD_DEF, $name.text);
+                    log.error(bValue, MsgSym.MESSAGE_F3_BAD_DEF, $nameAll.text);
                 }
               
               }
@@ -1646,7 +1641,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                     //
                     $value = F.at($pos).OverrideClassVar
                         (
-                            $name.value,
+                            $nameAll.value,
                             $tr.rtype,
                             $mods,
                             part,
@@ -1660,7 +1655,7 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                 
                     $value = F.at($pos).Var
                         (
-                            $name.value,
+                            $nameAll.value,
                             $tr.rtype,
                             $mods,
                             bValue,
@@ -1939,6 +1934,65 @@ catch [RecognitionException re] {
 
 
 
+// ----------------
+// Parameter lists.
+// Parse the formal parameters of a function declaration and produce the
+// corresponding AST. 
+//
+formalParametersNoParens
+
+    returns [ListBuffer<F3Var> params = new ListBuffer<F3Var>()]      // Return type is a list of all the AST nodes that represent a 
+                                                                        // formal parameter, this is used to generate the AST for the
+                                                                        // funciton definition itself.
+@init
+{
+    // Used to accumulate a list of anything that we manage to build up in the parse
+    // in case of error.
+    //
+    ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
+}
+    : 
+    
+        (
+            fp1=formalParameter 
+    
+            {
+                // Capture the first parameter
+                //
+                params.append($fp1.var); 
+            }
+            (
+                COMMA fp2=formalParameter
+                
+                    { 
+                        // Second and subsequent parameter ASTs
+                        //
+                        params.append($fp2.var); 
+                    } 
+            )*
+            COMMA?  
+        )?
+            
+    ;
+    
+// Catch an error. We create an erroneous node for anything that was at the start 
+// up to wherever we made sense of the input.
+//
+catch [RecognitionException re] {
+  
+    // First, let's report the error as the user needs to know about it
+    //
+    reportError(re);
+
+    // Now we perform standard ANTLR recovery here
+    //
+    recover(input, re);
+    
+    // Because we have raised the error, we won't perform codegen, but we can
+    // leave the list in tact so that the IDE has something to work with. The list
+    // is optional, so even if we have gathered none, we are still good.
+    //
+ }
 
  
 // ------
@@ -3225,8 +3279,8 @@ boundExpression
                 //
                 $status = isBidirectional? BIDIBIND : UNIDIBIND;
             }
-	 
-	    | e2=expression
+         
+            | e2=expression
     
         {
             // Unbound expression AST
@@ -3278,7 +3332,9 @@ expression
     //
     int rPos = pos();
  }
-    : ifExpression
+    : patternMatch 
+    |
+     ifExpression
 
         {
             $value = $ifExpression.value;
@@ -3707,7 +3763,7 @@ assignmentOpExpression
                     $value = F.at(rPos).Assignop($assignOp.op, $lhs.value, $rhs.value);
                 }
                 
-            | SUCHTHAT 
+          /*  | SUCHTHAT 
                 such=orExpression { errNodes.append($such.value); }
             
                     (
@@ -3720,7 +3776,7 @@ assignmentOpExpression
                     $value = F.at(rPos).InterpolateValue($lhs.value, $such.value, $i.value);
                     
                 }
-            
+            */
             |   { 
                     // AST for expressions
                     //
@@ -3932,12 +3988,12 @@ typeExpression
                     endPos($value);
                 }
 
-	     | OF ga=genericArguments
+             | OF ga=genericArguments
                 {
-		    $value = F.at(pos($OF)).TypeApply($relationalExpression.value, ga);
-		    endPos($value);
+                    $value = F.at(pos($OF)).TypeApply($relationalExpression.value, ga);
+                    endPos($value);
 
-		 }
+                 }
     | (WITH LBRACE)=>(WITH LBRACE ol = objectLiteral {
         
              $value = $relationalExpression.value;
@@ -4435,20 +4491,24 @@ postfixExpression
                        
                 )
 
-	      | (LPAREN)=>(LPAREN 
-                argList = expressionList
-	      RPAREN
-	      (WITH LPAREN)=>(WITH LPAREN
-	       texprs = expressionList
-		  {explicits = $texprs.args.toList();}
-	       RPAREN)?
+              | (LPAREN)=>(LPAREN 
+                argList = parameterList
+              RPAREN
+              (WITH)=>(WITH 
+		       (LPAREN
+				  texprs = expressionList
+			   {explicits = $texprs.args.toList();}
+				  RPAREN
+			|
+			texp = identifier
+				  {explicits = com.sun.tools.mjavac.util.List.<F3Expression>of($texp.value);}))?
                 {
                     $value = F.at(sPos).Apply(null, $value, $argList.args.toList());
-		    ((F3FunctionInvocation)$value).explicits = explicits;
+                    ((F3FunctionInvocation)$value).explicits = explicits;
                     errNodes.append($value);
-		    {
-			endPos($value);
-		    }
+                    {
+                        endPos($value);
+                    }
                 })
             | (LBRACKET)=>l1=LBRACKET
             
@@ -5020,6 +5080,13 @@ objectLiteralPart
     
 }
     : 
+    (nameAll (COLON | SUCHTHAT))=> oli=objectLiteralInit
+        
+        {
+            $value = $oli.value;
+            errNodes.append($oli.value);
+        }
+    |
         (modifiers) => modifiers
         (
               functionDefinition     [$modifiers.mods, $modifiers.pos]
@@ -5038,12 +5105,6 @@ objectLiteralPart
                 
         )
         
-    | oli=objectLiteralInit
-        
-        {
-            $value = $oli.value;
-            errNodes.append($oli.value);
-        }
     | boundExpression
 
         {
@@ -5098,8 +5159,9 @@ objectLiteralInit
     // Indicates that something went wrong with the parse
     //
     boolean inError = false;
+    boolean isAssignment = false;
 }
-    : n1=name
+    : n1=nameAll
         {
             if  ($n1.inError || $n1.value == null) {
                 
@@ -5114,9 +5176,9 @@ objectLiteralInit
             errNodes.append(part);
             endPos(part);
         } 
-        COLON  
+        (COLON {isAssignment = false;} 
+        | SUCHTHAT { isAssignment = true; })
         boundExpression
-    
         {
             if  (inError) {
             
@@ -5138,6 +5200,7 @@ objectLiteralInit
                                             $boundExpression.value, 
                                             $boundExpression.status
                                         );
+                ((F3ObjectLiteralPart)$value).isVarAssignment = isAssignment;
             }
                                 
             // Tree span
@@ -5907,6 +5970,81 @@ expressionListOpt
     |   // Was not present
     ;
 
+
+expressionOrInferredExpression
+
+    returns [F3Expression value]
+:
+    p1=PIPE fp=formalParametersNoParens PIPE e1=expression 
+    { $value = F.at(pos($p1)).InferredExpr($fp.params.toList(), $e1.value);}
+	|
+	e2=expression
+    { $value = $e2.value; }
+
+;
+
+
+// ----------------
+// Expression list.
+// Comma separated list of expressions.
+//
+parameterList
+
+    returns [ListBuffer<F3Expression> args = new ListBuffer<F3Expression>()]  // List of expressions we pcik up
+    
+@init
+{
+    // Used to accumulate a list of anything that we manage to build up in the parse
+    // in case of error.
+    //
+    ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
+    
+    // Work out current position in the input stream
+    //
+    int rPos = pos();
+}
+    : e1=expressionOrInferredExpression
+        
+        {
+            args.append     ($e1.value);
+            errNodes.append ($e1.value);
+        }
+        
+        (
+            (COMMA | { log.error(semiPos(), MsgSym.MESSAGE_F3_MANDATORY_COMMA);} )  
+            e2=expressionOrInferredExpression
+            
+            {
+                args.append     ($e2.value);
+                errNodes.append ($e2.value);
+            }
+        
+        )*
+        COMMA?
+    |
+    ;
+// Catch an error. We create an erroneous node for anything that was at the start 
+// up to wherever we made sense of the input.
+//
+catch [RecognitionException re] {
+  
+    // First, let's report the error as the user needs to know about it
+    //
+    reportError(re);
+
+    // Now we perform standard ANTLR recovery here
+    //
+    recover(input, re);
+    
+    // Create an ERRONEOUS node
+    //
+    F3Erroneous errNode = F.at(rPos).Erroneous(args.elems);
+    endPos(errNode);
+    args = new ListBuffer<F3Expression>();
+    args.append(errNode);
+    
+}
+
 // -----
 // Types
 //
@@ -6040,7 +6178,7 @@ typeFunction
         (LPAREN 
             typeArgList 
                 { 
-		    argsList = $typeArgList.ptypes.toList();
+                    argsList = $typeArgList.ptypes.toList();
                     for (F3Tree tt : $typeArgList.ptypes) { 
                         errNodes.append(tt); 
                     } 
@@ -6385,33 +6523,33 @@ typeName
 
 : (qualname      { errNodes.append($qualname.value); name = $qualname.value;} | UPPER_THIS )
         (
-	 (OF)=>OF gas=genericArguments  { 
-	     if ($gas.value != null) exprbuff.appendList($gas.value); 
-	 }
-	 {
-	     // AST for generic
-	     //
-	     //
-	     if (name != null) {
-		 $value = F.at(rPos).Ident(name, exprbuff.toList());
-	     } else {
-		 $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, $gas.value);
-	     }
-	 } 
-	 ((OF)=>OF gas=genericArguments  { 
-	     if ($gas.value != null) exprbuff.appendList($gas.value); 
-	     $value = F.at(rPos).TypeApply($value, TypeTree.Cardinality.SINGLETON, $gas.value);
-	 })*
+         (OF)=>OF gas=genericArguments  { 
+             if ($gas.value != null) exprbuff.appendList($gas.value); 
+         }
+         {
+             // AST for generic
+             //
+             //
+             if (name != null) {
+                 $value = F.at(rPos).Ident(name, exprbuff.toList());
+             } else {
+                 $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, $gas.value);
+             }
+         } 
+         ((OF)=>OF gas=genericArguments  { 
+             if ($gas.value != null) exprbuff.appendList($gas.value); 
+             $value = F.at(rPos).TypeApply($value, TypeTree.Cardinality.SINGLETON, $gas.value);
+         })*
               
-	 |   // Non generic
-	 {
-	     if (name != null) {
+         |   // Non generic
+         {
+             if (name != null) {
                 $value = name;
-	     } else {
-		 $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, com.sun.tools.mjavac.util.List.<F3Expression>nil());
-	     }
-	 }
-	 )
+             } else {
+                 $value = F.at(rPos).TypeThis(TypeTree.Cardinality.SINGLETON, com.sun.tools.mjavac.util.List.<F3Expression>nil());
+             }
+         }
+         )
     | 
 /*
     LPAREN 
@@ -6487,11 +6625,11 @@ genericArguments0
    :
    (ga1=genericArgument 
    {
-	exprbuff.append($ga1.value);
+        exprbuff.append($ga1.value);
    } 
    (
-	COMMA ga2=genericArgument 
-	{
+        COMMA ga2=genericArgument 
+        {
             exprbuff.append($ga2.value);
         }
    )*)?
@@ -6522,11 +6660,11 @@ genericParams0[boolean contravar, boolean covar]
    :
    ga1=genericParam[contravar, covar]
    {
-	exprbuff.append($ga1.value);
+        exprbuff.append($ga1.value);
    } 
    (
-	COMMA ga2=genericParam[contravar, covar]
-	{
+        COMMA ga2=genericParam[contravar, covar]
+        {
             exprbuff.append($ga2.value);
     }
    )* 
@@ -6568,7 +6706,7 @@ genericParam[boolean contravar, boolean covar]
 
       | 
        (CLASS n=identifier OF gas=genericParams[false, false] { 
-	   $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
+           $value = F.at($n.value.pos).TypeCons($n.value, TypeTree.Cardinality.SINGLETON, $gas.value);
       })
 /*    
     | QUES 
@@ -7294,7 +7432,7 @@ reservedWord
     | PUBLIC_INIT   | PUBLIC_READ | RETURN      //| REVERSE
     | SIZEOF        | STATIC    | SUPER         | THEN
     | THIS          | THROW     | TRUE          | TRY
-    | TYPEOF        | VAR       | WHILE  | FOREACH | TYPE
+    | TYPEOF        | WHILE  | FOREACH | TYPE
     ;
 
 

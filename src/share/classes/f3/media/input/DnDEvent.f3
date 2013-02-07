@@ -1,0 +1,7 @@
+package f3.media.input;
+
+public class DnDEvent is PointerEvent 
+{
+    public function reject to () {}
+    public function accept to () {}
+}

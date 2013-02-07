@@ -1,0 +1,108 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class TimeGroup is TimeNode 
+{
+    var contentInvalid = true;
+
+    public var content is TimeNode[] inverse parent on invalidate {
+	contentInvalid = true;
+    }
+
+    override var contentBounds = bind
+	Interval.merge(bnds0, 
+		       Interval.merge(bnds1, 
+				      Interval.merge(bnds2, 
+						     Interval.merge(bnds3, 
+								    Interval.merge(bnds4, 
+										   Interval.merge(bnds5,
+												  Interval.merge(bnds6, 
+														 Interval.merge(bnds7, 
+																Interval.merge(bnds8, 
+																	       Interval.merge(bnds9,
+																	       Interval.merge(bnds10,
+Interval.merge(bnds11,
+Interval.merge(bnds12,
+	Interval.merge(bnds13,
+	Interval.merge(bnds14,
+	Interval.merge(bnds15,
+	Interval.merge(bnds16,
+	Interval.merge(bnds17,
+	Interval.merge(bnds18,
+	Interval.merge(bnds19,null))))))))))))))))))));
+
+
+    // hacks to work around excessive stack consumption
+    var bnds0 = bind mergeBounds(content[0..<50], null);
+    var bnds1 = bind mergeBounds(content[50..<100], null);
+    var bnds2 = bind mergeBounds(content[100..<150], null);
+    var bnds3 = bind mergeBounds(content[150..<200], null);
+    var bnds4 = bind mergeBounds(content[200..<250], null);
+    var bnds5 = bind mergeBounds(content[250..<300], null);
+    var bnds6 = bind mergeBounds(content[300..<350], null);
+    var bnds7 = bind mergeBounds(content[350..<400], null);
+    var bnds8 = bind mergeBounds(content[400..<450], null);
+    var bnds9 = bind mergeBounds(content[450..<500], null);
+    var bnds10 = bind mergeBounds(content[500..<550], null);
+    var bnds11 = bind mergeBounds(content[550..<600], null);
+    var bnds12 = bind mergeBounds(content[600..<650], null);
+    var bnds13 = bind mergeBounds(content[650..<700], null);
+    var bnds14 = bind mergeBounds(content[700..<750], null);
+    var bnds15 = bind mergeBounds(content[750..<800], null);
+    var bnds16 = bind mergeBounds(content[800..<850], null);
+    var bnds17 = bind mergeBounds(content[850..<900], null);
+    var bnds18 = bind mergeBounds(content[900..<950], null);
+    var bnds19 = bind mergeBounds(content[1000..], null);
+
+    bound function mergeBounds
+	from (content0 is TimeNode[], 
+	      b0 is Interval)
+	to Interval 
+    {
+        var content = content0;
+        var b = b0;
+        if (content == []) then b else {
+		var t = content[0];
+		var ts = content[1..];
+		var r = mergeBounds(ts, Interval.merge(t.bounds, b)); 
+        }
+    }
+
+    override function pickChildren
+	from (worldTime is Duration, 
+	      parentTime is Duration, 
+	      add is function from TimeNode to ())
+	to ()
+    {
+        for (n in content) {
+            n.doPick(worldTime, parentTime, add);
+        }
+    }
+
+    override function foldLeft of b
+	from (z is b, f is function from (b, TimeNode) to b) 
+	to b 
+    {
+	content.foldLeft(z, f)
+    }
+
+    override function foldRight of b
+	from (z is b, f is function from (TimeNode, b) to b) 
+	to b 
+    {
+	content.foldRight(z, f)
+    }
+
+    override protected function updateParent to () {
+	if (contentInvalid) {
+	    contentInvalid = false;
+	    for (n in content) {
+		n.parent = this;
+	    }
+	}
+    }
+
+    override function toString to String {
+	"TimeGroup ({content})";
+    }
+}

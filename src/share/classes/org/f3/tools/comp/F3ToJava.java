@@ -351,8 +351,10 @@ public class F3ToJava extends F3AbstractTranslation {
                         }
                         default: {
                             assert false : "Unexpected class member: " + def;
-                            inInstanceContext = ReceiverContext.Oops;
-                            translatedDefs.appendList(translateToSpecialResult(def).trees());
+			    if (false) {
+				inInstanceContext = ReceiverContext.Oops;
+				translatedDefs.appendList(translateToSpecialResult(def).trees());
+			    }
                             break;
                         }
                     }

@@ -1,0 +1,5 @@
+package f3.media.input;
+
+public class DropEvent extends DnDEvent {
+    public var url is String;
+}

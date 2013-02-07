@@ -1,0 +1,76 @@
+package f3.media.scene;
+import java.nio.*;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import java.lang.Math;
+
+public abstract class AbstractMesh 
+{
+    public const polygonMode is PolygonMode = PolygonMode.Fill;
+    public const indexMode is IndexMode = IndexMode.Triangles;
+    public const vertices is VertexData;
+    public const normals is VertexData;
+    public const textureCoordinates is VertexData[];
+    public readonly var bounds is Bounds;
+    public function computeBounds to Bounds 
+    {
+        const verts = vertices;
+        const count = verts.getVertexCount();
+        if (count < 1) {
+            return null;
+        }
+        var minX is Number = verts.getX(0);
+        var minY is Number = verts.getY(0);
+        var minZ is Number = verts.getZ(0);
+        var maxX is Number = minX;
+        var maxY is Number = minY;
+        var maxZ is  Number = minZ;
+        for (i in [1..<count]) {
+            const x = verts.getX(i);
+            const y = verts.getY(i);
+            const z = verts.getZ(i);
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            minZ = Math.min(minZ, z);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            maxZ = Math.max(maxZ, z);
+        }
+        Bounds.boundsFromExtent(minX, minY, minZ, maxX, maxY, maxZ);
+    }
+
+    public function updateBounds to ()
+    {
+	bounds = computeBounds();
+    }
+
+    public function intersect from (ray is Ray3) to Tuple4[] 
+    {
+        const count = vertices.getVertexCount();
+        if (count < 3 or 
+	    vertices.getCoordsPerVertex() <> 3 or
+	    indexMode <> IndexMode.Triangles) {
+            return [];
+        }
+	var result is Tuple4[];
+	for (i in [0..<count step 3]) 
+	    {
+		const pointA = point(vertices.getX(i), 
+				     vertices.getY(i), 
+				     vertices.getZ(i));
+		const pointB = point(vertices.getX(i+1), 
+				     vertices.getY(i+1), 
+				     vertices.getZ(i+1));
+		const pointC = point(vertices.getX(i+2), 
+				     vertices.getY(i+2), 
+				     vertices.getZ(i+2));
+		insert tuple(ray.intersect(pointA, pointB, pointC), i / 3) into result;
+	    }
+	return result;
+    }
+
+    abstract public function getIndexBuffer to IntBuffer;
+    abstract public function getVertexBuffer to FloatBuffer;
+    abstract public function getNormalBuffer to FloatBuffer;
+    abstract public function getTextureBuffers to FloatBuffer[];
+}

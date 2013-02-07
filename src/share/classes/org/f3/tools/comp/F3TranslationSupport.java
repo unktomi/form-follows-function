@@ -423,6 +423,10 @@ public abstract class F3TranslationSupport {
     }
 
     JCExpression makeTypeTreeInner01(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons) {
+	while (t != null && t.tsym != null && 
+	       t.tsym instanceof F3Resolve.TypeAliasSymbol) {
+	    t = t.tsym.type;
+	}
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	}
@@ -1383,7 +1387,8 @@ public abstract class F3TranslationSupport {
 		System.err.println("owner="+ownerThis);
 		System.err.println("receiver="+receiver);
 		System.err.println("enclosing="+enclosingClassDecl);
-                throw new AssertionError("Cannot find owner");
+                //throw new AssertionError("Cannot find owner");
+		return receiver;
             }
             else if (!currentThis.isSubClass(ownerThis, types)) {
                 return resolveThisInternal(ownerThis, currentThis.owner.enclClass(), Call(receiver, defs.outerAccessor_MethodName));

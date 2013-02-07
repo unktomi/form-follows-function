@@ -408,10 +408,10 @@ def DF = ThreadLocal of DecimalFormat {
  */
 public class Color extends Comparable of Object, Formattable, Interpolatable {
 
-    public-init var red:Float;
-    public-init var green:Float;
-    public-init var blue:Float;
-    public-init var opacity:Float = 1.0;
+    public const red is Number;
+    public const green is Number;
+    public const blue is Number;
+    public const opacity is Number = 1.0;
 
     /**
      * Returns a color that has the red, green, blue, and opacity channels
@@ -559,11 +559,11 @@ public class Color extends Comparable of Object, Formattable, Interpolatable {
      * @profile common
      */        
     override function toString():String {
-        def r = red * 100;
-        def g = green * 100;
-        def b = blue * 100;
-        def o = opacity * 100;
-        return "color({%.0f r}%, {%.0f g}%, {%.0f b}%{if (o != 100) ", {%.0f o}%" else ""})";
+        const r = red * 100;
+        const g = green * 100;
+        const b = blue * 100;
+        const o = opacity * 100;
+        return "color({%.0f r}%, {%.0f g}%, {%.0f b}%{if (o != 100) ", {%.0f o}" else ""})";
     }
 
     function toHex(hex:Integer, digits:Integer, upper:Boolean) {

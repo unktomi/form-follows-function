@@ -1,0 +1,63 @@
+package f3.math;
+
+// Temporal Bounds
+
+public class Interval 
+{
+    public const start is Duration;
+    public const end is Duration;
+    public const duration = bind end - start;
+
+    override function toString to String {
+	"Interval {start}, {end}";
+    }
+
+    public function mul from (scale is Number) to Interval 
+    {
+	Interval {
+	    start: start;
+	    end: end*scale;
+	}
+    }
+
+    public function intersects from (t is Duration) to Boolean 
+    {
+	const pt = 0s + t;
+	start <= pt and end >= pt
+    }
+
+    override public function equals from (obj is Object) to Boolean 
+    {
+	(obj is Interval) and {
+	    const i = obj as Interval;
+	    start == i.start and end == i.end;
+	}
+    }
+}
+
+public function merge
+    from (x is Interval, 
+	  y is Interval)
+    to Interval
+{
+    if (x == null) then y 
+    else if (y == null) then x 
+    else Interval {
+        start: x.start.min(y.start);
+        end: x.end.max(y.end);
+    }
+}
+
+public function intersect
+    from (x is Interval, 
+	  y is Interval)
+    to Interval 
+{
+    if (x == null or y == null) then null
+    else {
+        const start = x.start.max(y.start);
+        const end = y.end.min(y.end);
+        if (start >= end) then null
+	    else Interval { start: start, end: end };
+    }
+}

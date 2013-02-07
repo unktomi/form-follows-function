@@ -1,0 +1,79 @@
+package f3.math;
+import java.lang.Math;
+
+public function Tuple2 from (x is Number, y is Number) to Tuple2 {
+    Tuple2 {
+	x: x;
+	y: y;
+    }
+}
+
+public class Tuple2 
+{
+    public const x is Number;
+    public const y is Number;
+
+    public function <<,>>
+	from (z is Number) 
+	to Tuple3
+    {
+	Tuple3 {
+	    x: x;
+	    y: y;
+	    z: z;
+	}
+    }
+
+    override public function equals 
+	from (obj is Object) 
+	to Boolean 
+    {
+	obj is Tuple2 and {
+	    const v = obj as Tuple2;
+	    x == v.x and 
+	    y == v.y
+	}
+    }
+/*
+    override function eq from (v is Tuple2) to Boolean 
+    {
+	x == v.x and 
+	y == v.y
+    }
+*/
+    public function lengthSquared to Number 
+    {
+	x*x + 
+        y*y
+    }
+
+    public function length to Number
+    {
+	Math.sqrt(lengthSquared());
+    }
+
+    override function toString to String 
+    {
+	"\{ x: {x}, y: {y} \}"
+    }
+
+}
+
+public function <<,>>
+    from (x is Number, y is Number) 
+    to Tuple2
+{
+    Tuple2 {
+	x: x;
+	y: y;
+    }
+}
+
+public static const <<0>> = Tuple2 {x: 0.0, y: 0.0};
+public static const <<1>> = Tuple2 {x: 1.0, y: 1.0};
+
+function run {
+    const v = Tuple2(1.0, 1.0);
+    println(v == <<1>>);
+    println(v != <<0>>);
+}

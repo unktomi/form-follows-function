@@ -1,0 +1,18 @@
+package f3.media.input;
+import f3.media.scene.Scene;
+import f3.media.scene.Stage;
+
+public interface InputEvent 
+{
+    public const count is Integer;
+    public const stage is Stage;
+    public const scene is Scene;
+    public const altKey is Boolean;
+    public const ctrlKey is Boolean;
+    public const shiftKey is Boolean;
+    public const metaKey is Boolean;
+    public readonly var propagate = true;
+    public function stopPropagation to () {
+        propagate = false
+    }
+}

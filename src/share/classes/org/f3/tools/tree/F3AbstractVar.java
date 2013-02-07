@@ -38,7 +38,7 @@ public abstract class F3AbstractVar extends F3Expression implements VariableTree
     public Name name;
     private F3Type f3type;
     public final F3Modifiers mods;
-    private final F3Expression init;
+    public F3Expression init;
     private final F3OnReplace[] triggers;
     
     public F3VarSymbol sym;

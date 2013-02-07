@@ -139,8 +139,10 @@ public class F3ClassReader extends ClassReader {
     public F3ClassSymbol enterClass(ClassSymbol jsymbol) {
         Name className = jsymbol.flatname;
         boolean mixin = className.endsWith(defs.mixinClassSuffixName);
-        if (mixin)
-            className = className.subName(0, className.len - defs.mixinClassSuffixName.len);
+        if (mixin) {
+            className = 
+		className.subName(0, className.len - defs.mixinClassSuffixName.len);
+	}
         F3ClassSymbol cSym = (F3ClassSymbol) enterClass(className);
         //cSym.flags_field |= jsymbol.flags_field;
         if (mixin)
@@ -246,8 +248,14 @@ public class F3ClassReader extends ClassReader {
 
     /** Translate raw JVM type to F3 type. */
     Type translateType (Type type) {
+	if (type == Type.noType) {
+	    return type;
+	}
         if (type == null)
             return null;
+	if (type.tsym instanceof F3Resolve.TypeAliasSymbol) {
+	    return translateType(type.tsym.type);
+	}
         Type t = (Type) typeMap.get(type);
         if (t != null)
             return t;
@@ -280,13 +288,22 @@ public class F3ClassReader extends ClassReader {
                 t = syms.floatType;
                 break;
             case TYPEVAR:
-                TypeVar tv = (TypeVar) type;
-                TypeVar tx = new TypeVar(null, (Type) null, (Type) null);
-                typeMap.put(type, tx); // In case of a cycle.
-                tx.bound = translateType(tv.bound);
-                tx.lower = translateType(tv.lower);
-                tx.tsym = new TypeSymbol(0, tv.tsym.name, tx, translateSymbol(tv.tsym.owner));
-                return tx;
+		{
+		    TypeVar tv = (TypeVar) type;
+		    TypeVar tx = new TypeVar(null, (Type) null, (Type) null);
+		    tx.tsym = new TypeSymbol(0, tv.tsym.name, tx, 
+					     tv.tsym.owner);
+		    typeMap.put(type, tx); // In case of a cycle.
+		    Type lower = translateType(tv.lower);
+		    Type upper = translateType(tv.bound);
+		    tx.bound = upper;
+		    tx.lower = lower;
+		    tx.tsym = new TypeSymbol(0, tv.tsym.name, tx, translateSymbol(tv.tsym.owner));
+		    //System.err.println("tv="+tv);
+		    //System.err.println("tx="+tx);
+		    tv = tx;
+		    return tv;
+		}
             case FORALL:
                 ForAll tf = (ForAll) type;
                 t = new ForAll(translateTypes(tf.tvars), translateType(tf.qtype));
@@ -352,6 +369,8 @@ public class F3ClassReader extends ClassReader {
                         };
                     typeMap.put(type, ntype); // In case of a cycle.
                     ntype.typarams_field = translateTypes(type.getTypeArguments());
+		    //System.err.println("translated type args from : "+ type+": "+type.getTypeArguments());
+		    //System.err.println("translated type args to: "+ ntype+": "+ntype.typarams_field);
                     return ntype;
                 }
                 break;
@@ -360,9 +379,9 @@ public class F3ClassReader extends ClassReader {
                 break;
             case METHOD:
                 t = new MethodType(translateTypes(type.getParameterTypes()),
-                        translateType(type.getReturnType()),
-                        translateTypes(type.getThrownTypes()),
-                        syms.methodClass);
+				   translateType(type.getReturnType()),
+				   translateTypes(type.getThrownTypes()),
+				   syms.methodClass);
                 break;
             default:
                 t = type; // FIXME
@@ -377,6 +396,8 @@ public class F3ClassReader extends ClassReader {
 	if (tsym instanceof ClassSymbol) {
 	    ClassSymbol csym = (ClassSymbol) tsym; // FIXME
 	    return enterClass(csym);
+	} else {
+	    System.err.println("sym="+tsym.getClass()+": "+tsym);
 	}
 	return tsym;
     }
@@ -415,6 +436,7 @@ public class F3ClassReader extends ClassReader {
     Type popMethodTypeArg(Type type, Name name, Type owner) {
 	MethodType mt;
 	ForAll forAll = null;
+	System.err.println("popMethodTypeArg: "+ name+": "+type.getClass()+": "+type+" in: "+owner);
 	List<Type> argtypes;
 	if (type instanceof ForAll) {
 	    forAll = (ForAll)type;
@@ -460,14 +482,22 @@ public class F3ClassReader extends ClassReader {
 	    mt = (MethodType)type;
 	    argtypes = mt.argtypes.tail;
 	}
+	if (argtypes == null) {
+	    System.err.println("fucked up: "+name+": "+type);
+	    return type;
+	}
         mt = new MethodType(argtypes,
 			    mt.getReturnType(),
 			    mt.getThrownTypes(),
 			    syms.methodClass);
 	if (forAll != null) {
-	    if (forAll.getTypeArguments().size() > 1) {
-		return new ForAll(forAll.getTypeArguments().tail, mt);
+	    System.err.println("forall="+forAll);
+	    int count = owner.getTypeArguments().size();
+	    List<Type> targs = forAll.getTypeArguments();
+	    for (int i = 0; i < count; i++) {
+		targs = targs.tail;
 	    }
+	    return new ForAll(targs, mt);
 	}
 	//System.err.println("created: "+ name+" "+mt);
 	return mt;
@@ -505,11 +535,14 @@ public class F3ClassReader extends ClassReader {
             }
         }
         Type type = translateType(mtype);
+	//System.err.println("mtype="+mtype);
+	//System.err.println("type="+type);
         if ((type instanceof MethodType) || (type instanceof ForAll)) {
             boolean convertToStatic = false;
             if (nameString.endsWith(F3Defs.implFunctionSuffix)) {
                 nameString = nameString.substring(0, nameString.length() - F3Defs.implFunctionSuffix.length());
                 convertToStatic = true;
+		System.err.println("name string: "+ nameString);
             }
             if (convertToStatic) {
                 flags &= ~Flags.STATIC;

@@ -1,0 +1,29 @@
+package f3.media.scene;
+import f3.math.LinearMath.*;
+import f3.math.*;
+
+public interface Transform 
+{
+    // translation
+    public var tx is Number;
+    public var ty is Number;
+    public var tz is Number;
+    // rotation
+    public var rx is Number;
+    public var ry is Number;
+    public var rz is Number;
+    // scale
+    public var sx is Number = 1.0;
+    public var sy is Number = 1.0;
+    public var sz is Number = 1.0;
+    // rotation/scale pivot
+    public var px is Number;
+    public var py is Number;
+    public var pz is Number;
+
+    public bound function computeTransform to Mat4 
+    {
+        translate(tx+px, ty+py, tz+pz)*rotate(rx, ry, rz)*scale(sx, sy, sz)*translate(-px, -py, -pz);
+    }
+
+}

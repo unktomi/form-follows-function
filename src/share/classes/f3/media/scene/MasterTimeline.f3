@@ -1,0 +1,15 @@
+package f3.media.scene;
+
+package var timelines = new java.util.WeakHashMap of (Timeline, null);
+
+public function getTimelines to Timeline[] 
+{
+    foreach (x in timelines.keySet()) x;
+}
+
+public function setPlayhead from (worldTime is Duration) to () 
+{
+    for (t in getTimelines()) {
+	t.setPlayhead(worldTime);
+    }
+}

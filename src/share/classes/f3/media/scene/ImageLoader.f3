@@ -1,0 +1,8 @@
+package f3.media.scene;
+
+public interface ImageLoader 
+{
+    public abstract function loadImage 
+	from (url is String)
+	to AbstractTexture;
+}

@@ -1,0 +1,11 @@
+package f3.media.input;
+
+public abstract class MouseInputHandler 
+{
+    public function onMouseUp from (event is MouseEvent) to () {}
+    public function onMouseDown from (event is MouseEvent) to () {}
+    public function onMouseMove from (event is MouseEvent) to () {}
+    public function onMouseDrag from (event is MouseEvent) to () {}
+    public function onMouseEnter from (event is MouseEvent) to () {}
+    public function onMouseLeave from (event is MouseEvent) to () {}
+}

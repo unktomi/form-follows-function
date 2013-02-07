@@ -1,0 +1,67 @@
+package f3.math;
+import org.f3.runtime.F3Value;
+import org.f3.runtime.TypeInfo;
+
+public class Intersection {
+    public const point is Point3;
+    public const t is Number;
+}
+
+public function Intersection from (p is Point3, t is Number) to Intersection 
+{
+    Intersection { point: p, t: t }
+}
+
+public function Plane from (p is Point3, n is Vec3) to Plane 
+{
+    Plane {
+	point: p;
+	normal: n;
+    }
+}
+
+public class Plane is F3Value
+{
+    public const point is Point3 = Point3.<<0>>;
+    public const normal is Vec3 = Vec3.Z_AXIS;
+    const c is Number;
+    postinit {
+	c = normal.dot(point);
+    }
+
+    override public function equals from (obj is Object) to Boolean 
+    {
+        (obj instanceof Plane) and {
+	    const p = obj as Plane;
+            p.point == point and p.normal == normal;
+        } 
+    }
+
+    public function pseudoDistance from (pt is Point3) to Number 
+    {
+        normal.dot(pt) - c;
+    }
+
+    public function intersectRay from (ray is Ray3) to Intersection
+    {
+        const proj = normal.dot(ray.direction);
+        if (proj == 0) 
+	    then null 
+	    else {
+		const t = (c - normal.dot(ray.origin)) / proj;
+        	Intersection(ray.origin + ray.direction*t, t)
+	    }
+    }
+
+    public function transform from (t is Mat4) to Plane 
+    {
+        Plane { point: t * point, normal: (t * normal).normalize() }
+    }
+
+    override function toString():String {
+        "\{ Plane point: {point}, normal: {normal}, c: {c} \}";
+    }
+}
+
+
+public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Plane {});

@@ -1,0 +1,54 @@
+package f3.math;
+import java.lang.Math;
+
+public class Mat2 
+{
+    // column 1               // column 2
+    public val xx is Number;  public val xy is Number;  
+    public val yx is Number;  public val yy is Number;
+
+    override public function equals(obj is Object) returns Boolean 
+    {
+	if (super.equals(obj)) return true;
+	obj is Mat2 and {
+	    const m = obj as Mat2;
+	    xx == m.xx and xy == m.xy and
+	    yx == m.yx and yy == m.yy
+	}
+    }
+
+    public function mul(v is Vec2) returns Vec2 
+    {
+	if (this == <<1>>) then v else
+	Vec2 
+	{
+	    x: v.x * xx + v.x * yx;
+	    y: v.y * xy + v.y * yy;
+	}
+    }
+
+    public function mul(m is Mat2) returns Mat2
+    {
+	if (this == <<1>>) then m else if (m == <<1>>) then this else
+	Mat2
+        {
+	    xx: xx * m.xx + yx * m.xy;  yx: xx * m.yx + yx * m.yy; 
+            xy: xy * m.xx + yy * m.xy;  yy: xy * m.yx + yy * m.yy;
+	}
+    }
+
+    override function toString() returns String
+    {
+	"{%8f xx} {%8f xy}\n{%8f yx} {%8f yy}"
+    }
+
+}
+
+public static const <<1>> = Mat2 {xx: 1.0, xy: 0.0, 
+				  yx: 0.0, yy: 1.0};
+
+function run {
+    println(<<1>> * <<1>> * Vec2.<<1>> * 2);
+}
+
+public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<1>>);

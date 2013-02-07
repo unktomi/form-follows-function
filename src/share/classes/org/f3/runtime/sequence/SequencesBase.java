@@ -234,6 +234,7 @@ public class SequencesBase {
 
     /** Factory for simple sequence generation */
     public static<T> Sequence<T> make(TypeInfo<T> ti, T... values) {
+	System.err.println("MAKE "+values+": "+values.length);
         if (values == null || values.length == 0)
             return ti.emptySequence; 
         else

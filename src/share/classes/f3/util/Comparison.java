@@ -6,7 +6,7 @@ public enum Comparison
 
     public static Comparison fromInteger(int i) 
     {
-	return (i < 0) ? Less : i > 0 ? Greater : Equal;
+	return (i < 0) ? Less : (i > 0) ? Greater : Equal;
     }
 
 }

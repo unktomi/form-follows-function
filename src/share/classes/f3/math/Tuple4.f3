@@ -1,0 +1,51 @@
+package f3.math;
+import org.f3.runtime.*;
+import java.lang.Math;
+
+public static const <<0>> = Tuple4 {x: 0.0, y: 0.0, z: 0.0, w: 0.0};
+public static const <<1>> = Tuple4 {x: 1.0, y: 1.0, z: 1.0, w: 1.0};
+
+public class Tuple4 is F3Value
+{
+    public const x is Number;
+    public const y is Number;
+    public const z is Number;
+    public const w is Number;
+
+    override public function equals from (obj is Object) to Boolean 
+    {
+	obj instanceof Tuple4 and {
+	    const v = obj as Tuple4;
+	    x == v.x and 
+	    y == v.y and
+	    z == v.z and
+	    w == v.w
+	}
+    }
+
+    public function mul from (n is Number) to Tuple4
+    {
+	if (n == 0) then <<0>> else if (n == 1) then this else 
+	Tuple4 
+        { 
+	    x: x*n;
+	    y: y*n;
+	    z: z*n;
+	    w: w*n;
+	} 
+    }
+
+    public function div from (n is Number) to Tuple4
+    {
+	mul(1/n)
+    }
+
+    override function toString from () to String 
+    {
+	"\{ x: {x}, y: {y}, z: {z}, w: {w} \}"
+    }
+
+}
+
+public static def TYPE_INFO is TypeInfo of ..Tuple4 = 
+       org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

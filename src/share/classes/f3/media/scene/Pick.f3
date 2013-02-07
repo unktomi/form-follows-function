@@ -1,0 +1,14 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class Pick 
+{
+    public const node is Node;
+    public const t is Number;
+    public const w is Tuple3;
+    public const mesh is AbstractMesh;
+    public const tri is Integer;
+    public const worldPoint is Point3;
+    public var dragPoint0 is Point3;
+    public var dragPoint1 is Point3;
+}

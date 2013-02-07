@@ -459,6 +459,14 @@ public class F3TreeInfo {
      *  otherwise return null.
      */
     public static Symbol symbol(F3Tree tree) {
+	Symbol sym = symbol0(tree);
+	if (sym instanceof org.f3.tools.comp.F3Resolve.TypeAliasSymbol) {
+	    sym = sym.type.tsym;
+	}
+	return sym;
+    }
+
+    public static Symbol symbol0(F3Tree tree) {
 	tree = skipParens(tree);
 	if (tree instanceof F3Type.TheType) {
 	    return ((F3Type.TheType)tree).resolvedSymbol;

@@ -1,0 +1,54 @@
+package f3.math;
+
+// 1x2 affine transform matrix (translation + scale in time dimension)
+
+public static const <<1>> is TimeMat = TimeMat { rate: 1.0, time: 0s };
+
+public class TimeMat 
+{
+    public const rate is Number;
+    public const time is Duration;
+
+    override function equals from (obj is Object) to Boolean 
+    {
+        (obj is TimeMat) and {
+            const m = obj as TimeMat;
+            m.time == time and m.rate == rate;
+        }
+    }
+
+    public function mul from (t0 is Duration) to Duration 
+    {
+        const t = if t0 == null then 0s else t0;
+        if (rate == 0) then 0s else time + t / rate;
+    }
+
+    public function mul from (i is Interval) to Interval
+    {
+	Interval {
+	    start: mul(i.start);
+	    end: mul(i.end);
+	}
+    }
+
+    public function mul from (mat is TimeMat) to TimeMat 
+    {
+        TimeMat {
+            time: if (rate == 0) then 0s else time + mat.time/rate;
+            rate: rate * mat.rate;
+        }
+    }
+
+    public function inverse to TimeMat 
+    {
+        TimeMat {
+            time: -time * rate;
+            rate: if (rate == 0) then 0 else 1.0 / rate;
+        }
+    }
+
+    override function toString to String 
+    {
+        "\{ time: {time}, rate: {rate} \}";
+    }
+}

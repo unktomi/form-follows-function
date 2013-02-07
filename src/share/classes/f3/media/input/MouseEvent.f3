@@ -1,0 +1,26 @@
+package f3.media.input;
+import f3.math.*;
+import f3.media.scene.Pick;
+
+public class MouseEvent is PointerEvent 
+{
+    public const screenDrag is Tuple2;
+    public const buttons is Integer[];
+    public const clickCount is Integer;
+    public function isMouseButtonDown
+	from (buttons is Integer[]) to Boolean 
+    {
+        for (x in this.buttons, y in buttons) {
+            if (x == y) {return true}
+        }
+        return false;
+    }
+/*
+    public readonly var dragStart = bind worldToLocal*picked.dragPoint0;
+    public readonly var drag: Vec3 = bind location - dragStart;
+    public readonly var sceneDrag = bind picked.dragPoint0 - picked.dragPoint1;
+*/
+    override function toString to String {
+        "Mouse Event screen {screenx}, {screeny} button {buttons} scene {sceneLocation}";
+    }
+}

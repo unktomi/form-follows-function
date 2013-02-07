@@ -1,0 +1,10 @@
+package f3.media.scene;
+
+public class StageNode is MeshNode, Stage, AbstractTexture {
+
+    public var drawingSurface is AbstractTexture;
+    override var mesh = bind MeshBuffer.quad(width, height);
+    override function getTextureId to Integer {
+        drawingSurface.getTextureId();
+    }
+}

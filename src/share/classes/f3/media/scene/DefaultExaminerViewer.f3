@@ -1,0 +1,63 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import java.lang.Math;
+
+public class DefaultExaminerViewer extends ExaminerViewer {
+    public var camera: PerspectiveCamera;
+    override function getCameraOrientation():Quat {
+        return quat(camera.rx, camera.ry, camera.rz);
+    }
+    override function getCameraPosition():Point3 {
+        return point(camera.tx, camera.ty, camera.tz);
+    }
+    override function setCameraOrientation(ori:Quat):Void {
+        var angles = ori.toAngles();
+        camera.rx = angles.x;
+        camera.ry = angles.y;
+        camera.rz = angles.z;
+	println("camera ori => {angles} / {camera.worldTransform}");
+    }
+
+    override function setCameraPosition(pos:Point3):Void {
+        camera.tx = pos.x;
+        camera.ty = pos.y;
+        camera.tz = pos.z;
+	println("camera pos => {pos} / {camera.worldTransform}");
+    }
+
+    override function getCameraNearDistance():Number {
+        return camera.near;
+    }
+
+    override function getCameraFarDistance():Number {
+        return camera.far;
+    }
+
+    override function setCameraNearDistance(n:Number):Void {
+        camera.near = n;
+    }
+
+    override function setCameraFarDistance(n:Number):Void {
+        camera.far = n;
+    }
+
+    override function getCameraViewAllPosition(bounds:Bounds):Point3 {
+        var halfWidth = bounds.extent.x;
+        var halfHeight = bounds.extent.y;
+        var halfDepth = bounds.extent.z;
+        var radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
+        // Now figure out how far to move
+        var minAngle = if (camera.heightAngle < camera.widthAngle) camera.heightAngle else camera.widthAngle;
+        if (minAngle == 0.0) {
+            return null;
+        }
+        // Required distance back from center of bounding sphere
+        var dist = radius / Math.sin(Math.toRadians(minAngle / 2)) as Number;
+        // Compute backoff vector from center
+        var backoff = Vec3.Z_AXIS;
+        backoff = getCameraOrientation() * backoff;
+        backoff = backoff * dist;
+        return backoff + bounds.center;
+    }
+}

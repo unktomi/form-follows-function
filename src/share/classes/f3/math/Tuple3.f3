@@ -1,0 +1,54 @@
+package f3.math;
+import org.f3.runtime.*;
+import java.lang.Math;
+
+public static const <<0>> = Tuple3 {x: 0.0, y: 0.0, z: 0.0};
+public static const <<1>> = Tuple3 {x: 1.0, y: 1.0, z: 1.0};
+
+public class Tuple3 is F3Value
+{
+    public const x is Number;
+    public const y is Number;
+    public const z is Number;
+
+    override public function equals from (obj is Object) to Boolean 
+    {
+	obj is Tuple3 and {
+	    const v = obj as Tuple3;
+	    x == v.x and 
+	    y == v.y and
+	    z == v.z
+	}
+    }
+
+    public function * from (n is Number) to Tuple3 
+    {   
+    	if n == 0 then <<0>> else if n == 1 then this else
+	Tuple3 { 
+	    x: x*n;
+	    y: y*n;
+	    z: z*n;
+	}
+    }
+
+    public function lengthSquared to Number 
+    {
+	x*x + 
+        y*y +
+	z*z    
+    }
+
+    public function length to Number
+    {
+	Math.sqrt(lengthSquared());
+    }
+
+    override function toString to String 
+    {
+	"\{ x: {x}, y: {y}, z: {z} \}"
+    }
+
+}
+
+public static def TYPE_INFO is TypeInfo of ..Tuple3 = 
+       org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

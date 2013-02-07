@@ -1,0 +1,14 @@
+package f3.media.input;
+
+public interface Focusable {
+    public readonly var focused is Boolean;
+    public function acceptFocus to Boolean { focused = true }
+    public function loseFocus to Boolean { focused = false }
+    public function getKeyboardInputHandler to KeyboardInputHandler 
+    {
+	if (this is KeyboardInputHandler) {
+            return this as KeyboardInputHandler;
+        }
+        return null;
+    }
+}

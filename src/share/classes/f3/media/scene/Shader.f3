@@ -1,0 +1,18 @@
+package f3.media.scene;
+import f3.math.*;
+
+public abstract class Parameter of a 
+{
+    const name is String;
+    public abstract function get to a;
+    public abstract function set from (x is a) to ();
+}
+
+public abstract class Shader {
+    public const id is String;
+    abstract public function apply from (mesh is AbstractMesh,
+    					 worldTransform is Mat4,
+					 viewMatrix is Mat4,
+					 projectionMatrix is Mat4) to ();
+    abstract public function reset to ();
+}

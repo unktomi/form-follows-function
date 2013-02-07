@@ -1,0 +1,349 @@
+package f3.math;
+import java.lang.Math;
+import f3.math.LinearMath.*;
+
+public static const <<1>> = Quat { w: 1.0 };
+public static const <<0>> = Quat { };
+
+// mostly from ardor3d
+
+public class Quat is Tuple4 
+{
+    public function mul 
+	from (n is Number) 
+	to Quat 
+    {
+	Quat {
+	    x: x * n;
+	    y: y * n;
+	    z: z * n;
+	    w: w * n;
+	}
+    }
+
+    public function mul 
+	from (v is Vec3) 
+	to Vec3 
+    {
+	const vx = 
+	    w * w * v.x + 
+	    2 * y * w * v.z - 
+	    2 * z * w * v.y + 
+	    x * x * v.x +
+	    2 * y * x * v.y +
+	    z * x * v.z -
+	    z * z * v.x - 
+	    y * y * v.x;
+
+	const  vy = 2 * x * y * v.x + 
+	    y * y * v.y + 
+	    2 * z * y * v.z + 
+	    2 * w * z * v.x - 
+	    z * z * v.y + 
+	    w * w * v.y - 
+	    2 * x * w * v.z -
+	    x * x * v.y;
+	
+	const vz = 2 * x * z * v.x + 
+	    2 * y * z * v.y +
+	    z * z * v.z - 
+	    2 * w * y * v.x - 
+	    y * y * v.z + 
+	    2 * w * x * v.y - 
+	    x * x * v.z + 
+	    w * w * v.z;
+	Vec3 {
+	    x: vx;
+	    y: vy;
+	    z: vz;
+	}
+    }
+
+    public function mul 
+	from (q is Quat) to Quat 
+    {
+	const qx = q.x;
+	const qy = q.y;
+	const qz = q.z;
+	const qw = q.w;
+        const x = this.x * qw + this.y * qz - this.z * qy + this.w * qx;
+        const y = -this.x * qz + this.y * qw + this.z * qx + this.w * qy;
+        const z = this.x * qy - this.y * qx + this.z * qw + this.w * qz;
+        const w = -this.x * qx - this.y * qy - this.z * qz + this.w * qw;
+	Quat {
+	    x: x;
+	    y: y;
+	    z: z;
+	    w: w;
+	}
+    }
+
+    public function normalize from () to Quat
+    {
+	const lenSq = lengthSquared();
+	if (lenSq != 1 and lenSq != 0) then mul(1/Math.sqrt(lenSq)) else this
+    }
+
+    public function lengthSquared from () to Number 
+    {
+	x*x + 
+        y*y +
+	z*z +
+	w*w   
+    }
+
+    public function length from () to Number
+    {
+	Math.sqrt(lengthSquared());
+    }
+
+    public function inverse to Quat {
+	const scale = 1.0 / lengthSquared();
+	Quat {
+	    x: -x*scale;
+	    y: -y*scale;
+	    z: -z*scale;
+	    w: w*scale;
+	}
+    }
+
+    public function conjugate to Quat {
+	Quat {
+	    x: -x;
+	    y: -y;
+	    z: -z;
+	    w: w;
+	}
+    }
+    
+    public function dot from (q is Quat) to Number  
+    {
+	x * q.x +
+	y * q.y +
+	z * q.z +
+	w * q.w;
+    }
+
+    public function slerp from (target is Quat, t is Number) to Quat 
+    {
+	const startQuat = this;
+	const q2 = target;
+        var dotP = startQuat.dot(q2);
+	var changeAmnt = t;
+	var r = 1.0;
+        if (dotP < 0.0) {
+            // Negate the second quaternion and the result of the dot product
+            //q2.multiplyLocal(-1);
+	    r = -1;
+            dotP = -dotP;
+        }
+
+        // Set the first and second scale for the interpolation
+        var scale0 = 1 - changeAmnt;
+        var scale1 = changeAmnt;
+
+        // Check if the angle between the 2 quaternions was big enough to
+        // warrant such calculations
+        if ((1 - dotP) > 0.1) {// Get the angle between the 2 quaternions,
+            // and then store the sin() of that angle
+            const theta = Math.acos(dotP);
+            const invSinTheta = 1.0 / Math.sin(theta);
+
+            // Calculate the scale for q1 and q2, according to the angle and
+            // it's sine value
+            scale0 = Math.sin((1 - changeAmnt) * theta) * invSinTheta;
+            scale1 = Math.sin((changeAmnt * theta)) * invSinTheta;
+        }
+        // Calculate the x, y, z and w values for the quaternion by using a
+        // special form of linear interpolation for quaternions.
+        const x = (scale0 * startQuat.x) + (scale1 * q2.x);
+        const y = (scale0 * startQuat.y) + (scale1 * q2.y);
+        const z = (scale0 * startQuat.z) + (scale1 * q2.z);
+        const w = (scale0 * startQuat.w) + (scale1 * q2.w);
+	Quat {
+	    x: x;
+	    y: y;
+	    z: z;
+	    w: w;
+	}
+    }
+
+    public function toAngles to Tuple3 
+    {
+        const sqw = w * w;
+        const sqx = x * x;
+        const sqy = y * y;
+        const sqz = z * z;
+        const unit = sqx + sqy + sqz + sqw; // if normalized is one, otherwise
+        // is correction factor
+        const test = x * y + z * w;
+        if (test > 0.499 * unit) { // singularity at north pole
+            tuple(2 * Math.atan2(x, w),
+		  Math.PI/2.0,
+		  0)
+        } else if (test < -0.499 * unit) { // singularity at south pole
+	    tuple(-2 * Math.atan2(x, w),
+		  -Math.PI/2.0,
+		  0)
+        } else {
+            tuple(Math.atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw),
+		  Math.asin(2 * test / unit),
+		  Math.atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw))
+        }
+    }
+}
+
+public function lookAt 
+    from (dir is Vec3,
+	  up is Vec3) 
+    to Quat
+{
+    const z = dir.normalize();
+    const y = up.normalize();
+    const x = z.cross(y).normalize();
+    Quat(x, y, z)
+}
+
+public function Quat from (x is Vec3, y is Vec3, z is Vec3) to Quat 
+{
+    Quat(x.x, y.x, z.x,
+	 x.y, y.y, z.y,
+	 x.z, y.z, z.z)
+}
+
+public function Quat from (degrees is Number, axis0 is Vec3) to Quat 
+{
+    if (axis0 == Vec3.<<0>>) {
+	return <<1>>;
+    }
+    const angle = Math.toRadians(degrees);
+    var axis = axis0.normalize();
+    const halfAngle = 0.5 * angle;
+    const sin = Math.sin(halfAngle);
+    const w = Math.cos(halfAngle);
+    const x = sin * axis.x;
+    const y = sin * axis.y;
+    const z = sin * axis.z;
+    Quat {
+	x: x;
+	y: y;
+	z: z;
+	w: w;
+    }
+}
+
+public function Quat from (eulerAngles is Tuple3) to Quat {
+    Quat(eulerAngles.x,
+	 eulerAngles.y,
+	 eulerAngles.z)
+}
+
+public function Quat from (rx is Number, ry is Number, rz is Number) to Quat 
+{
+    const heading = rx;
+    const attitude = ry;
+    const bank = rz;
+    var angle = heading * 0.5;
+    const sinHeading = Math.sin(angle);
+    const cosHeading = Math.cos(angle);
+    angle = attitude * 0.5;
+    const sinAttitude = Math.sin(angle);
+    const cosAttitude = Math.cos(angle);
+    angle = bank * 0.5;
+    const sinBank = Math.sin(angle);
+    const cosBank = Math.cos(angle);
+    
+    // variables used to reduce multiplication calls.
+    const cosHeadingXcosAttitude = cosHeading * cosAttitude;
+    const sinHeadingXsinAttitude = sinHeading * sinAttitude;
+    const cosHeadingXsinAttitude = cosHeading * sinAttitude;
+    const sinHeadingXcosAttitude = sinHeading * cosAttitude;
+    
+    var w = (cosHeadingXcosAttitude * cosBank - sinHeadingXsinAttitude * sinBank);
+    var x = (cosHeadingXcosAttitude * sinBank + sinHeadingXsinAttitude * cosBank);
+    var y = (sinHeadingXcosAttitude * cosBank + cosHeadingXsinAttitude * sinBank);
+    var z = (cosHeadingXsinAttitude * cosBank - sinHeadingXcosAttitude * sinBank);
+
+    const l = Math.sqrt(w*w+x*x+y*y+z*z);
+
+    w /= l;
+    x /= l;
+    y /= l;
+    z /= l;
+
+    Quat {
+	x: x;
+	y: y;
+	z: z;
+	w: w;
+    }
+}
+
+public function Quat from (m is Mat4) to Quat 
+{
+    Quat(m.xx, m.xy, m.xz, m.yx, m.yy, m.yz, m.zx, m.zy, m.zz);
+}
+
+public function Quat 
+    from (m00 is Number,
+	  m01 is Number,
+	  m02 is Number,
+	  m10 is Number,
+	  m11 is Number,
+	  m12 is Number,
+	  m20 is Number,
+	  m21 is Number,
+	  m22 is Number) 
+    to Quat
+{
+
+    // Uses the Graphics Gems code, from
+    // ftp://ftp.cis.upenn.edu/pub/graphics/shoemake/quatut.ps.Z
+    // *NOT* the "Matrix and Quaternions FAQ", which has errors!
+    // the trace is the sum of the diagonal elements; see
+    // http://mathworld.wolfram.com/MatrixTrace.html
+    const t = m00 + m11 + m22;
+    // we protect the division by s by ensuring that s>=1
+    var x is Number;
+    var y is Number;
+    var z is Number;
+    var w is Number;
+    if (t >= 0) { // |w| >= .5
+	var s = Math.sqrt(t + 1); // |s|>=1 ...
+	w = 0.5 * s;
+	s = 0.5 / s; // so this division isn't bad
+	x = (m21 - m12) * s;
+	y = (m02 - m20) * s;
+            z = (m10 - m01) * s;
+    } else if ((m00 > m11) and (m00 > m22)) {
+	var s = Math.sqrt(1.0 + m00 - m11 - m22); // |s|>=1
+	x = s * 0.5; // |x| >= .5
+	s = 0.5 / s;
+	y = (m10 + m01) * s;
+	z = (m02 + m20) * s;
+	w = (m21 - m12) * s;
+    } else if (m11 > m22) {
+	var s = Math.sqrt(1.0 + m11 - m00 - m22); // |s|>=1
+	y = s * 0.5; // |y| >= .5
+	s = 0.5 / s;
+	x = (m10 + m01) * s;
+	z = (m21 + m12) * s;
+	w = (m02 - m20) * s;
+    } else {
+	var s = Math.sqrt(1.0 + m22 - m00 - m11); // |s|>=1
+	z = s * 0.5; // |z| >= .5
+	s = 0.5 / s;
+	x = (m02 + m20) * s;
+	y = (m21 + m12) * s;
+            w = (m10 - m01) * s;
+    }
+    Quat {
+	x: x;
+	y: y;
+	z: z;
+	w: w;
+    }
+}
+
+public static def TYPE_INFO =
+       org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

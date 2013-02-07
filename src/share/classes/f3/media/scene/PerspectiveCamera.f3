@@ -1,0 +1,27 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import java.lang.Math.*;
+
+// from jogl
+
+public function widthAngleToHeightAngle
+       from (widthAngle is Number, aspectRatio is Number) 
+       to Number 
+{
+    return 2 * toDegrees(atan(tan(toRadians(widthAngle / 2)) / aspectRatio));
+}
+
+/** A 3D perspective camera where the origin is at the center of the
+    screen, the positive X axis goes to the right, and the positive Y
+    axis goes up. */
+
+public class PerspectiveCamera is Camera 
+{
+    public var heightAngle is Number = 30;
+    override var far is Number = 100;
+    override var near is Number = 1;
+    public readonly var widthAngle is Number = 
+        bind 2 * toDegrees(tan(aspectRatio * tan(toRadians(heightAngle/2))));
+    override var projectionMatrix = bind persp(near, far, heightAngle, aspectRatio);
+}

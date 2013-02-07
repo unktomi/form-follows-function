@@ -36,12 +36,16 @@ function single of (Measurement, a)
     }
 }
 
-public abstract class FingerTree of (Measurement, a) is
-    Measured of Measurement, 
-    Monad of (FingerTree, a), 
-    Foldable of a, 
-    java.lang.Iterable of a
+public abstract class FingerTree of (Measurement, a)
+    is Measured of Measurement, 
+       Monad of (FingerTree, a), 
+       Foldable of a, 
+       java.lang.Iterable of a
 {
+    type M = Measurer of Measurement;
+    type FTree = FingerTree of (Measurement, a);
+    type NodeFTree = FingerTree of (Measurement, Node of (Measurement, a));
+
     function deep 
 	from (measurer is Measurer of Measurement,
 	      prefix is a[], 
@@ -96,6 +100,8 @@ public abstract class FingerTree of (Measurement, a) is
     public function concat 
 	from (xs is FingerTree of (Measurement, a)) 
 	to FingerTree of (Measurement, a) 
+//	from (xs is FTree) 
+//	to FTree
     {
 	var result = this;
 	for (x in xs) {

@@ -38,6 +38,7 @@ public class F3ObjectLiteralPart extends F3Expression implements ObjectLiteralPa
     private final F3Expression expr;
     private final F3BindStatus explicitBindStatus;
     public Symbol sym;
+    public boolean isVarAssignment;
    /*
     * @param selector member name and class name of member
     * @param init type of attribute

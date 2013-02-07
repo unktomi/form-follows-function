@@ -1,0 +1,101 @@
+package f3.math;
+import java.lang.Math;
+
+public static const <<0>> = Point3 {x: 0.0, y: 0.0, z: 0.0};
+public static const <<1>> = Point3 {x: 1.0, y: 1.0, z: 1.0};
+
+public class Point3 is Tuple3
+{
+    public function dot from (v is Vec3) to Number 
+    {
+	x*v.x + 
+        y*v.y +
+	z*v.z
+    }
+
+    public function add from (v is Vec3) to Point3
+    {
+	Point3 
+	{ 
+	    x: x + v.x;
+	    y: y + v.y;
+	    z: z + v.z;
+	} 
+    }
+
+    public function add from (v is Tuple3) to Point3
+    {
+	Point3 
+	{ 
+	    x: x + v.x;
+	    y: y + v.y;
+	    z: z + v.z;
+	} 
+    }
+
+    public function sub from (v is Tuple3) to Point3
+    {
+	Point3 
+	{ 
+	    x: x - v.x;
+	    y: y - v.y;
+	    z: z - v.z;
+	} 
+    }
+
+    public function sub from (v is Point3) to Vec3
+    {
+	Vec3 
+	{ 
+	    x: x - v.x;
+	    y: y - v.y;
+	    z: z - v.z;
+	} 
+    }
+
+    public function negate from () to Point3
+    {
+	Point3 
+	{ 
+	    x: -x;
+	    y: -y;
+	    z: -z;
+	} 
+    }
+
+    public function mul from (n is Number) to Point3
+    {
+	if (n == 0) then <<0>> else if (n == 1) then this else 
+	Point3 
+        { 
+	    x: x*n;
+	    y: y*n;
+	    z: z*n;
+	} 
+    }
+
+    public function div from (n is Number) to Point3
+    {
+	mul(1/n)
+    }
+
+
+    public function lerp from (t is Number, target is Point3) to Point3 
+    {
+	const inv_t = 1 - t;
+	Point3 
+        { 
+	    x: inv_t*x + t*target.x;
+	    y: inv_t*y + t*target.y; 
+	    z: inv_t*z + t*target.z;
+        }
+    }
+
+    override function toString from () to String 
+    {
+	"\{ x: {x}, y: {y}, z: {z} \}"
+    }
+}
+
+public static def TYPE_INFO =
+       org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
