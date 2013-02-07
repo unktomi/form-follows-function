@@ -1,0 +1,83 @@
+package f3.media.scene;
+
+public class Group is Node 
+{
+    var contentInvalid = true;
+
+    public var content is Node[] 
+    on invalidate 
+    {
+        contentInvalid = true;
+    }
+
+    override var contentBounds = bind 
+       Bounds.merge(bnds0, 
+                    Bounds.merge(bnds1, 
+                                 Bounds.merge(bnds2, 
+                                              Bounds.merge(bnds3, 
+                                                           Bounds.merge(bnds4, 
+                                                                        Bounds.merge(bnds5,
+                                                                                     Bounds.merge(bnds6, 
+                                                                                                  Bounds.merge(bnds7, 
+                                                                                                               Bounds.merge(bnds8, 
+                                                                                                                            Bounds.merge(bnds9, null))))))))));
+
+                     
+    // hacks to work around excessive stack consumption
+    var bnds0 = bind mergeBounds(content[0..<100], null);
+    var bnds1 = bind mergeBounds(content[100..<200], null);
+    var bnds2 = bind mergeBounds(content[200..<300], null);
+    var bnds3 = bind mergeBounds(content[300..<400], null);
+    var bnds4 = bind mergeBounds(content[400..<500], null);
+    var bnds5 = bind mergeBounds(content[500..<600], null);
+    var bnds6 = bind mergeBounds(content[600..<700], null);
+    var bnds7 = bind mergeBounds(content[700..<800], null);
+    var bnds8 = bind mergeBounds(content[800..<900], null);
+    var bnds9 = bind mergeBounds(content[900..], null);
+
+    override function updateParent {
+	if (contentInvalid) {
+	    contentInvalid = false;
+	    for (x in content) {
+		x.setParent(this);
+		x.updateParent();
+	    }
+	}
+    }
+
+    bound function mergeBounds
+	from (content0 is Node[], b0 is Bounds) 
+	to Bounds 
+    {
+        var content = content0;
+        var b = b0;
+        if (content == []) then b
+        else mergeBounds(content[1..], Bounds.merge(b, content[0].bounds));
+    }
+
+    override public function foldLeft of b
+	from (z is b, f is function from (b, Node) to b) 
+	to b
+    {
+	//    println("foldleft {id} => content={content}");
+	content.foldLeft(f(z, this), 
+			 function from (z is b, n is Node) to b 
+			 {
+			     n.foldLeft(f(z, n), f); 
+			 })
+    }
+
+    override public function foldRight of b
+	from (z is b, f is function from (Node, b) to b)
+	to b
+    {
+	const r = 
+	    content.foldRight(z,
+			      function from (n is Node, z is b) to b 
+			      {
+				  f(n, n.foldRight(z, f))
+			      });
+	f(this, r);
+    }
+
+}

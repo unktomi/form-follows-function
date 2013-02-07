@@ -1,0 +1,104 @@
+package f3.math;
+import java.lang.Math;
+
+public class Vec2 is Tuple2
+{
+    public function dot 
+	from (v is Vec2) 
+	to Number 
+    {
+	x*v.x + 
+        y*v.y 
+    }
+
+    public function add 
+	from (v is Vec2) 
+	to Vec2
+    {
+	Vec2 
+	{ 
+	    x: x + v.x;
+	    y: y + v.y;
+	} 
+    }
+
+    public function sub 
+	from (v is Vec2) 
+	to Vec2
+    {
+	Vec2 
+	{ 
+	    x: x - v.x;
+	    y: y - v.y;
+	} 
+    }
+
+    public function negate 
+	from () 
+	to Vec2
+    {
+	Vec2 
+	{ 
+	    x: -x;
+	    y: -y;
+	} 
+    }
+
+    public function mul 
+	from (s is Number) 
+	to Vec2
+    {
+	Vec2 
+        { 
+	    x: x*s;
+	    y: y*s;
+	} 
+    }
+
+    public function div 
+	from (n is Number) 
+	to Vec2
+    {
+	mul(1/n)
+    }
+
+    public function normalize 
+	from () 
+	to Vec2 
+    {
+	const lenSq = lengthSquared();
+	if (lenSq <> 1 and lenSq <> 0) then mul (1/Math.sqrt(lenSq)) else this
+    }
+
+    override public function lengthSquared 
+	from () 
+	to Number 
+    {
+	x*x + 
+        y*y
+    }
+
+    override public function length to Number
+    {
+	Math.sqrt (lengthSquared ());
+    }
+
+    public function lerp from (t is Number, target is Vec2) to Vec2 
+    {
+	const inv_t = 1 - t;
+	Vec2 
+        { 
+	    x: inv_t*x + t*target.x;
+	    y: inv_t*y + t*target.y; 
+        }
+    }
+
+    override function toString to String 
+    {
+	"\{ x: {x}, y: {y} \}"
+    }
+
+}
+
+public var <<0>> = Vec2 {x: 0.0, y: 0.0};
+public var <<1>> = Vec2 {x: 1.0, y: 1.0};

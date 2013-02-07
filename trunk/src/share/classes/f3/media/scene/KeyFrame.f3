@@ -1,0 +1,145 @@
+package f3.media.scene;
+import java.lang.Math;
+import org.f3.runtime.*;
+import f3.util.*;
+import f3.math.*;
+
+public function sortKeys of a 
+       from (keys is (Key of a)[])
+       to (Key of a)[]
+{
+    const list = new java.util.ArrayList of Object (keys.size());
+    for (k in keys) list.add(k);
+    java.util.Collections.sort(list, java.util.Comparator of Object
+			       {
+				   override function compare from (x is Object, 
+				   	    	     	     	   y is Object) to Integer 
+				   {
+				       const k1 = x as Key of ?;
+				       const k2 = y as Key of ?;
+				       const d = k1.position - k2.position;
+				       if (d == 0s) then 0 else if (d < 0s) then -1 else 1;
+				   }
+			       });
+    var prev is Key = null;
+    var result is (Key of a)[];
+    for (obj in list) {
+        var k = obj as Key of a;
+        k.prev = prev;
+        prev.next = k;
+        prev = k;
+        insert k into result;
+    }
+    return result;
+}
+
+public abstract class NumberInterpolator is Interpolator of Number 
+{
+
+    override function scale from (x is Number, weight is Number) to Number 
+    {
+	x * weight;
+    }
+
+    override function add from (x is Number, y is Number) to Number 
+    {
+	x + y;
+    }
+
+    override const zero = 0.0;
+}
+
+public static const Linear = NumberInterpolator
+{
+    override function interpolate from (k is Key of Number, t is Number) to Number 
+    {
+	k.prev.value + t * (k.value - k.prev.value)
+    }
+}
+
+const FPS = 24.0;
+
+public class Tangent is NumberInterpolator 
+{
+    public const kix is Number;
+    public const kiy is Number;
+    public const kox is Number;
+    public const koy is Number;
+
+    override function interpolate from (k is Key of Number, t is Number) to Number 
+    {
+	doInterpolate(k.prev.value, k.value, 
+		      k.position - k.prev.position,
+		      t);
+    }
+
+    function doInterpolate 
+	from (startValue is Number, 
+	      endValue is Number, 
+	      duration is Duration,
+	      t is Number)
+	to Number 
+    {
+
+	const outTangent = koy / (kox * FPS);
+	const inTangent = kiy / (kix * FPS);
+	const oneThirdDelta = duration / 3.0s;
+	const p1Delta = outTangent * oneThirdDelta;
+	const p2Delta = inTangent * oneThirdDelta;
+	const oneMinusT = 1.0 - t;
+	const tSquared = t * t;
+	const oneMinusTSquared = oneMinusT * oneMinusT;
+	const p0 = startValue;
+	const p3 = endValue;
+	const p1 = p0 + p1Delta;
+	const p2 = p3 + p2Delta;
+	((oneMinusTSquared * oneMinusT * p0) +
+	 (3 * oneMinusTSquared * t * p1) +
+	 (3 * oneMinusT * tSquared * p2) +
+	 (tSquared * t * p3));
+    }
+}
+
+public abstract class Interpolator of a 
+{
+    abstract function interpolate from (k is Key of a, t is Number) to a;
+
+    public function scale from (x is a, weight is Number) to a 
+    {
+	x
+    }
+    public function add from (x is a, y is a) to a 
+    {
+	y
+    }
+    public const zero is a;
+}
+
+public class Key of a 
+{
+    public const position is Duration;
+    public const value is a;
+    public readonly var prev is Key of a;
+    public readonly var next is Key of a;
+    public function interpolate from (t is Number) to a 
+    {
+	interpolator.interpolate(this, t);
+    }
+    public const interpolator is Interpolator of a;
+
+    public function zero() to a 
+    {
+	interpolator.zero;
+    }
+
+    public function scale from (x is a, weight is Number) to a 
+    {
+	interpolator.scale(x, weight);
+    }
+
+    public function add from (x is a, y is a) to a 
+    {
+	interpolator.add(x, y);
+    }
+}
+

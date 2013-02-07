@@ -765,6 +765,19 @@ public class F3TreeMaker implements F3TreeFactory {
         tree.pos = pos;
         return tree;
     }
+
+    public F3FunctionValue InferredExpr(List<F3Var> params,
+					F3Expression exp) {
+	F3FunctionValue fv = 
+	    FunctionValue(Modifiers(0L),
+			  List.<F3Expression>nil(), 
+			  TypeUnknown(), 
+			  params, 
+			  Block(0L, List.<F3Expression>nil(), 
+				exp));
+	fv.infer = true;
+	return fv;
+    }
         
     public F3FunctionDefinition FunctionDefinition(
             F3Modifiers modifiers,
@@ -1212,7 +1225,7 @@ public class F3TreeMaker implements F3TreeFactory {
             F3OnReplace onInvalidate) {
 	if (initializer instanceof F3Select) {
 	    if (bindStatus == UNIDIBIND) {
-		bindStatus = BIDIBIND;
+		//bindStatus = BIDIBIND;
 	    }
 	}
 	F3Var tree = new F3Var(name, type,

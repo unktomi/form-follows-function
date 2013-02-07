@@ -346,6 +346,14 @@ $PREFIX:{T|
 	return result;
     }
 
+    public T first() {
+	return get(0);
+    }
+
+    public T last() {
+	return get(size()-1);
+    }
+
     public Sequence<T> intercalate(Sequence<T> xs) {
 	int size = this.size();
 	if (size == 0) {

@@ -1,0 +1,38 @@
+package f3.media.scene;
+import f3.math.*;
+import org.f3.runtime.*;
+
+// A User-defined Node in the 3d spatial affine transform hierarchy
+
+public abstract class AbstractNode is Node 
+{
+    protected var internalContent is Node;
+    override var contentBounds = bind internalContent.bounds;
+    override function updateParent {
+	internalContent.setParent(this);
+    }
+
+    override public function foldLeft of b
+	from (z is b, f is function from (b, Node) to b) 
+	to b
+    {
+	internalContent.foldLeft(f(z, this), 
+				 function from (z is b, n is Node) to b 
+				 {
+				     n.foldLeft(f(z, n), f); 
+				 })
+    }
+
+    override public function foldRight of b
+	from (z is b, f is function from (Node, b) to b) 
+	to b
+    {
+	const r = 
+	    internalContent.foldRight(z,
+				      function from (n is Node, z is b) to b 
+				      {
+					  f(n, n.foldRight(z, f))
+				      });
+	f(this, r);
+    }
+}

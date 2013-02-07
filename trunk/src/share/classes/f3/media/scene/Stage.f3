@@ -1,0 +1,200 @@
+package f3.media.scene;
+import f3.media.input.*;
+
+public interface Stage 
+{
+    public const alphaBits is Integer = 0;
+    public const colorBits is Integer = 32;
+    public const depthBits is Integer = 32;
+    public const stencilBits is Integer = 0;
+
+    public var width is Integer = 1024;
+    public var height is Integer = 512;
+    public var content is Scene[];
+    
+    public function resize from (width is Integer, height is Integer) to () 
+    {
+	this.width = width; this.height = height;
+	println("resize {width} {height}");
+	for (scene in content) {
+	    println("scene {scene} {scene.width} {scene.height}");
+	}
+    }
+
+    public bound function getStageWidth to Number 
+    {
+	width;
+    }
+
+    public bound function getStageHeight to Number 
+    {
+	height;
+    }
+
+    public function pick
+	from (screenx is Number, screeny is Number)
+	to Pick[]
+    {
+	var result is Pick[];
+	for (scene in content.reverse()) {
+	    const ns = scene.pick(screenx, screeny);
+	    insert ns into result;
+	    if (ns <> [] and ns.reverse()[0].node.blocksPointer) {
+		break;
+	    }
+	}
+	return result;
+    }
+
+    public function injectMouseDown from (event is MouseEvent) to () 
+    {
+	println("mouse down: {event}");
+        for (h in mouseHandlers) {
+            h.onMouseDown(event);
+        }
+        var focusSet = false;
+        for (c in content.reverse()) {
+            c.injectMouseDown(event);
+            if (not focusSet and c.focus != null) {
+                focusSet = true;
+                focusedScene = c;
+            }
+        }
+        if (not focusSet) {
+            focusedScene = null;
+        }
+    }
+
+    public function injectMouseUp from (event:MouseEvent)to () {
+        for (h in mouseHandlers) {
+            h.onMouseUp(event);
+        }
+        for (c in content.reverse()) {
+            c.injectMouseUp(event);
+        }
+    }
+
+    public function injectMouseMove from (event:MouseEvent)to () {
+        for (h in mouseHandlers) {
+            h.onMouseMove(event);
+        }
+        for (c in content.reverse()) {
+            c.injectMouseMove(event);
+        }
+    }
+
+    protected var mouseHandlers is MouseInputHandler[];
+
+    public function addMouseInputHandler from (h is MouseInputHandler) to ()
+    {
+	delete h from mouseHandlers;
+        insert h into mouseHandlers;
+    }
+
+    public function removeMouseInputHandler from (h is MouseInputHandler) to ()
+    {
+        delete h from mouseHandlers;
+    }
+
+    protected var dndHandlers is DnDInputHandler[];
+
+    public function addDnDInputHandler from (h is DnDInputHandler) to ()
+    {
+        delete h from dndHandlers;
+        insert h into dndHandlers;
+    }
+
+    public function removeDnDInputHandler from (h is DnDInputHandler) to () 
+    {
+        delete h from dndHandlers;
+    }
+
+    public function injectDragEnter from (event is DragEvent) to () 
+    {
+        for (h in dndHandlers) {
+            h.onDragEnter(event);
+        }
+        for (c in content.reverse()) {
+            c.injectDragEnter(event);
+        }
+    }
+
+    public function injectDragLeave from (event is DragEvent) to () 
+    {
+        for (h in dndHandlers) {
+            h.onDragLeave(event);
+        }
+        for (c in content.reverse()) {
+            c.injectDragLeave(event);
+        }
+    }
+
+    public function injectDragOver from (event is DragEvent) to () 
+    {
+        for (h in dndHandlers) {
+            h.onDragOver(event);
+        }
+        for (c in content.reverse()) {
+            c.injectDragOver(event);
+        }
+    }
+
+    public function injectDrop from (event is DropEvent) to () 
+    {
+        for (h in dndHandlers) {
+            h.onDrop(event);
+        }
+        for (c in content.reverse()) {
+            c.injectDrop(event);
+        }
+    }
+
+    public readonly var currentCursor is Cursor;
+
+    protected var keyboardHandlers is  KeyboardInputHandler[];
+
+    public readonly var focusedScene is Scene;
+
+    protected function getFocusedScene to Scene 
+    {
+        return focusedScene;
+    }
+
+    const keysDown = new java.util.TreeSet of Integer;
+
+    public function injectKeyDown from (event is KeyboardEvent)to () {
+        getFocusedScene().injectKeyDown(event);
+        keysDown.add(event.keyCode);
+        for (h in keyboardHandlers) {
+            h.onKeyDown(event);
+        }
+    }
+
+    public function injectKeyInput from (event is KeyboardEvent) to () 
+    {
+        getFocusedScene().injectKeyInput(event);
+        for (h in keyboardHandlers) {
+            h.onKeyInput(event);
+        }
+    }
+
+    public function injectKeyUp from (event is KeyboardEvent) to () 
+    {
+        keysDown.remove(event.keyCode);
+        getFocusedScene().injectKeyUp(event);
+        for (h in keyboardHandlers) {
+            h.onKeyUp(event);
+        }
+    }
+
+    public function addKeyboardInputHandler from (h is KeyboardInputHandler) to () 
+    {
+        delete h from keyboardHandlers;
+        insert h into keyboardHandlers;
+    }
+
+    public function removeKeyboardInputHandler from (h is KeyboardInputHandler) to () 
+    {
+        delete h from keyboardHandlers;
+    }
+}

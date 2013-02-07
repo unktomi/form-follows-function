@@ -1,0 +1,52 @@
+package f3.media.scene;
+import f3.math.*;
+import org.f3.runtime.*;
+
+// A Node in the 3d spatial affine transform hierarchy
+
+public abstract class Node is Foldable of Node
+{
+    public var id is String;
+    public readonly var parent is Node;
+    public var visible is Boolean = true;
+    public readonly var worldVisible is Boolean =  
+	bind visible and parent.worldVisible;
+
+    readonly var parentWorldTransform is Mat4 = 
+	bind Mat4.<<1>> * parent.worldTransform;
+    public readonly var transform is Mat4 = Mat4.<<1>>;
+    public readonly var worldTransform is Mat4 = 
+	bind parentWorldTransform * transform;
+
+    public readonly var bounds is Bounds = bind transform * contentBounds;
+    public readonly var worldBounds is Bounds = bind parentWorldTransform * bounds;
+    public readonly var contentBounds is Bounds;
+
+    public readonly var blocksPointer is Boolean = false;
+    public readonly var containsPointer is Boolean;
+    protected function setContainsPointer from (value is Boolean) to () { containsPointer = value; }
+    public readonly var pickable is Boolean = true;
+    public readonly var worldPickable is Boolean = 
+	bind pickable and parent.worldPickable;
+
+    override public function foldLeft of b
+	from (z is b, f is function from (b, Node) to b) 
+	to b
+    {
+	f(z, this);
+    }
+
+    override public function foldRight of b
+	from (z is b, f is function from (Node, b) to b) 
+	to b
+    {
+	f(this, z)
+    }
+
+    public function updateParent from () to () { }
+    protected function setParent from (n is Node) to () { parent = n }
+
+}
+
+
+

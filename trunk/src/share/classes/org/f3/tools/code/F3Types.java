@@ -562,6 +562,7 @@ public class F3Types extends Types {
     }
 
     public Type boxedTypeOrType(Type t) {
+	if (t == syms.botType) return t;
         return (t.isPrimitive() || t == syms.voidType)?
                       boxedClass(t).type
                     : t;
@@ -1819,6 +1820,9 @@ public class F3Types extends Types {
             public Type visitClassType(ClassType t, Symbol sym) {
                 Symbol owner = sym.owner;
                 long flags = sym.flags();
+		if (owner == null) {
+		    return sym.type;
+		}
                 if (((flags & STATIC) == 0) && owner.type.isParameterized()) {
                     Type base = asOuterSuper(t, owner);
                     if (base != null) {

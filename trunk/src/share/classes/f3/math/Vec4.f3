@@ -1,0 +1,127 @@
+package f3.math;
+import java.lang.Math;
+
+public static const <<0>> = Vec4 {x: 0.0, y: 0.0, z: 0.0, w: 0.0};
+public static const <<1>> = Vec4 {x: 1.0, y: 1.0, z: 1.0, w: 1.0};
+
+public function toVec4
+    from (x is Number, y is Number, z is Number,  w is Number) 
+    to Vec4
+{
+    Vec4 {
+	x: x;
+	y: y;
+	z: z;
+	w: w;
+    }
+}
+
+public class Vec4 is Tuple4
+{
+
+    public function xyz from () to Vec3 {
+	Vec3 {
+	    x: x;
+	    y: y;
+	    z: z;
+	}
+    }
+
+    public function dot from (v is Vec4) to Number 
+    {
+	x*v.x + 
+        y*v.y +
+	z*v.z +
+	z*v.w
+    }
+
+    public function add from (v is Vec4) to Vec4
+    {
+	Vec4 
+	{ 
+	    x: x + v.x;
+	    y: y + v.y;
+	    z: z + v.z;
+	    w: w + v.w;
+	} 
+    }
+
+    public function sub from (v is Vec4) to Vec4
+    {
+	Vec4 
+	{ 
+	    x: x - v.x;
+	    y: y - v.y;
+	    z: z - v.z;
+	    w: w - v.w;
+	} 
+    }
+
+    public function negate from () to Vec4
+    {
+	Vec4 
+	{ 
+	    x: -x;
+	    y: -y;
+	    z: -z;
+	    w: -w;
+	} 
+    }
+
+    override public function mul from (n is Number) to Vec4
+    {
+	if (n == 0) then <<0>> else if (n == 1) then this else 
+	Vec4 
+        { 
+	    x: x*n;
+	    y: y*n;
+	    z: z*n;
+	    w: w*n;
+	} 
+    }
+
+    override public function div from (n is Number) to Vec4
+    {
+	mul(1/n)
+    }
+
+    public function normalize from () to Vec4 
+    {
+	const lenSq = lengthSquared();
+	if (lenSq != 1 and lenSq != 0) then mul(1/Math.sqrt(lenSq)) else this
+    }
+
+    public function lengthSquared from () to Number 
+    {
+	x*x + 
+        y*y +
+	z*z +
+	w*w   
+    }
+
+    public function length from () to Number
+    {
+	Math.sqrt(lengthSquared());
+    }
+
+    public function lerp from (t is Number, target is Vec4) to Vec4 
+    {
+	const inv_t = 1 - t;
+	Vec4 
+        { 
+	    x: inv_t*x + t*target.x;
+	    y: inv_t*y + t*target.y; 
+	    z: inv_t*z + t*target.z;
+	    w: inv_t*w + t*target.w;
+        }
+    }
+
+    override function toString from () to String 
+    {
+	"\{ x: {x}, y: {y}, z: {z}, w: {w} \}"
+    }
+
+}
+
+public static def TYPE_INFO =
+       org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

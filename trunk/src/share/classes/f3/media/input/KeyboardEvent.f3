@@ -1,0 +1,7 @@
+package f3.media.input;
+
+public class KeyboardEvent is InputEvent 
+{
+    public var keyChar is String;
+    public var keyCode is Integer;
+}

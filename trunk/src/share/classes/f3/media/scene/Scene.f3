@@ -1,0 +1,436 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import f3.media.input.*;
+
+public class Scene 
+{
+    public var stage is Stage;
+    public var background is Color = Color.BLACK;
+    public readonly var id is String;
+    public var visible is Boolean = true;
+    public readonly var width is Number = bind getStageWidth();
+    public readonly var height is Number = bind getStageHeight();
+    bound function getStageWidth to Number {
+	stage.width;
+    }
+    bound function getStageHeight to Number {
+	stage.height;
+    }
+    public var camera is Camera = PerspectiveCamera {};
+    public var content is Node[];
+
+    public readonly var focus is Focusable;
+
+    public readonly var root is Node = {
+	const scene = this;
+	Group {
+	    override var worldVisible = bind visible and scene.visible;
+	    override var id = bind "{scene.id}#root";
+	    content: bind [scene.content];
+	}
+    }
+
+    public function pick
+	from (screenx is Number, screeny is Number)
+	to Pick[]
+    {
+        pick(camera.getPickRay(screenx, screeny))
+    }
+
+    public function pick from (ray is Ray3) to Pick[] 
+    {
+	var result is Pick[];
+	const pickedMeshes = pickGeometry(ray);
+	const picked = new java.util.HashSet of Node;
+        for (p in pickedMeshes) {
+            var par = p.node.parent;
+            var toAdd is Pick[];
+            while (par != null) {
+                if (picked.contains(par)) {
+                    break;
+                }
+                picked.add(par);
+                insert Pick 
+		{
+                    worldPoint: p.worldPoint;
+                    node: par;
+                    t: p.t;
+                    mesh: p.mesh;
+                    tri: p.tri;
+                    w: p.w;
+                } into toAdd;
+                par = par.parent;
+            }
+            insert toAdd.reverse() into result;
+            insert p into result;
+        }
+        for (p in result) {
+            if (p.node.blocksPointer) {
+                return result[0..indexof p];
+            }
+        }
+        return result;
+    }
+
+    public function pickGeometry 
+	from (ray is Ray3) to Pick[]
+    {
+        var result is Pick[];
+        root.foldLeft((), 
+		      function from (_ is (), n is Node) to () 
+		      {
+			  if (n is MeshNode and 
+			      n.worldVisible and
+			      n.worldPickable and
+			      n.worldBounds.intersects(ray)) 
+			      {
+				  const mesh = (n as MeshNode).mesh;
+				  const localRay = n.worldTransform.inverse() * ray;
+				  const points = mesh.intersect(localRay);
+				  const nearest is Tuple4;
+				  for (i in points) {
+				      if (nearest == null or i.x < nearest.x) {
+					  nearest = i;
+				      }
+				  }
+				  if (nearest != null) {
+				      const pt = nearest;
+				      const verts = mesh.vertices;
+				      const tri = pt.w as Integer;
+				      const j = tri * 3;
+				      const x0 = verts.getX(j);
+				      const y0 = verts.getY(j);
+				      const z0 = verts.getZ(j);
+				      const x1 = verts.getX(j+1);
+				      const y1 = verts.getY(j+1);
+				      const z1 = verts.getZ(j+1);
+				      const x2 = verts.getX(j+2);
+				      const y2 = verts.getY(j+2);
+				      const z2 = verts.getZ(j+2);
+				      const w = tuple(1.0-(pt.y+pt.z), 
+						      pt.y, 
+						      pt.z);
+				      const v0 = vector(x0, y0, z0);
+				      const v1 = vector(x1, y1, z1);
+				      const v2 = vector(x2, y2, z2);
+				      const point = 
+					  v0 * w.x + 
+					  v1 * w.y + 
+					  v2 * w.z;
+				      insert Pick 
+				      {
+					  node: n;
+					  worldPoint: n.worldTransform * (Point3.<<0>>+point);
+					  t: pt.x;
+					  mesh: mesh;
+					  tri: tri;
+					  w: w;
+				      } into result;
+				  } else {
+				      println("no intersection {n} {n.worldBounds}");
+				  }
+			      }
+		      });
+	//sort(result);
+	return result;
+    }
+
+    var mouseX is Number;
+    var mouseY is Number;
+    var underMouse is Pick[];
+    var pressed is Pick[];
+
+    public function update to () 
+    {
+	updateCamera();
+	root.updateParent();
+    }
+
+    public function updateCamera to () 
+    {
+	if (camera.parent == null) {
+	    camera.setParent(root);
+	}
+	camera.resize(width, height);
+    }
+
+    function updateMouse from (mouseX is Number, mouseY is Number) to ()
+    {
+        if (width == 0 or height == 0) {
+            return;
+        }
+        var oldMouseX = this.mouseX;
+        var oldMouseY = this.mouseY;
+        this.mouseX = mouseX;
+        this.mouseY = this.height-mouseY;
+        updateCamera();
+        var nowUnderMouse = pick(mouseX, mouseY);
+        var mouseV = camera.toWorld(mouseX, mouseY, 0);
+        root.foldLeft((), function(_ is(), n is Node) to () {
+		/*
+                if (n instanceof MeshNode) {
+                    var mn = n as MeshNode;
+                    var mesh = mn.mesh;
+                    var texUnit = 0;
+                    var texCoords = mesh.textureCoordinates;
+                    for (p in mn.shader.parameters) {
+			const value = p.get() as Object;
+			if (value is StageNode) {
+			    var picked:Pick; 
+			    for (x in nowUnderMouse) {
+				if (x.node == n) {
+				    picked = x;
+				    break;
+				}
+			    }
+			    var stageNode = value as StageNode;
+			    if (stageNode.width != 0 
+				and stageNode.height != 0) {
+				var mx: Number;
+				var my: Number;
+				if (picked != null) {
+				    var tri = picked.tri;
+				    var w = picked.w;
+				    var st = texCoords[texUnit];
+				    var s0 = st.getX(tri);
+				    var t0 = st.getY(tri);
+				    var s1 = st.getX(tri+1);
+				    var t1 = st.getY(tri+1);
+				    var s2 = st.getX(tri+2);
+				    var t2 = st.getY(tri+2);
+				    var s = s0*w.x + s1*w.y + s2*w.z;
+				    var t = t0*w.x + t1*w.y + t2*w.z;
+				    mx = s * stageNode.width;
+				    my = t * stageNode.height;
+				}
+				var me = MouseEvent {
+				    screenx: mx;
+				    screeny: my;
+				}
+				stageNode.injectMouseMove(me);
+			    }
+			    texUnit++;
+			}
+                        }
+		}
+		*/
+	    });
+        var event = MouseEvent {
+            sceneLocation: mouseV;
+            screenx: mouseX;
+            screeny: mouseY;
+            screenDrag: tuple(mouseX - oldMouseX, mouseY - oldMouseY);
+        }
+        for (x in underMouse) oldUnderMouse.put(x.node, x);
+        underMouse = nowUnderMouse;
+        for (i in nowUnderMouse) {
+            var old = oldUnderMouse.remove(i.node) as Pick;
+            if (old == null) {
+                println("enter {i.node}");
+                doMouseEnter(i, event);
+            }
+        }
+        for (x in oldUnderMouse.keySet()) {
+            var pr = oldUnderMouse.get(x) as Pick;
+            println("leave {pr.node}");
+            doMouseLeave(pr, event);
+        }
+        oldUnderMouse.clear();
+        for (i in underMouse) {
+            doMouseMove(i, event);
+        }
+        for (i in pressed) {
+            doMouseDrag(i, event);
+        }
+    }
+
+    public function injectKeyDown(event:KeyboardEvent):Void {
+        focus.getKeyboardInputHandler().onKeyDown(event);
+    }
+
+    public function injectKeyUp(event:KeyboardEvent):Void {
+        focus.getKeyboardInputHandler().onKeyUp(event);
+    }
+
+    public function injectKeyInput(event:KeyboardEvent):Void {
+        println("focus={focus}");
+        focus.getKeyboardInputHandler().onKeyInput(event);
+    }
+
+    public function injectMouseMove(event:MouseEvent):Void {
+        updateMouse(event.screenx, event.screeny);
+    }
+
+    public function injectMouseDown(event:MouseEvent):Void {
+        pressed = underMouse;
+        var focusSet = false;
+        for (p in underMouse) {
+            println("n={p.node}");
+            if (not focusSet and (p.node instanceof Focusable)) {
+                var f = p.node as Focusable;
+                if (f == focus or f.acceptFocus()) {
+                    if (f != focus) {
+                        focus.loseFocus();
+                        focus = f;
+
+                    }
+                    focusSet = true;
+                }
+                println("f={f} focus={focus} focusSet {focusSet}");
+            }
+            doMouseDown(p, event);
+        }
+        if (not focusSet) {
+            focus.loseFocus();
+            focus = null;
+        }
+    }
+
+    public function injectMouseUp(event:MouseEvent):Void {
+        var dragged = pressed;
+        pressed = [];
+        for (x in dragged) {
+            doMouseUp(x, event);
+        }
+    }
+
+    public function injectDragEnter(event:DragEvent):Void {
+    }
+
+    public function injectDragLeave(event:DragEvent):Void {
+    }
+
+    public function injectDragOver(event:DragEvent):Void {
+    }
+
+    public function injectDrop(event:DropEvent):Void {
+    }
+
+    var oldUnderMouse = new java.util.HashMap of (Node, Pick);
+
+    function getMouseInputHandlers from (p:Pick) to MouseInputHandler[] 
+    {
+        //return p.node.getMouseInputHandlers();
+	null
+    }
+
+    function doMouseEnter(p:Pick, worldEvent:MouseEvent):Void {
+        p.node.setContainsPointer(true);
+        var hs = getMouseInputHandlers(p);
+        if (hs != []) {
+            var e = makeMouseEvent(null, p, worldEvent);
+            for (h in hs) {
+                h.onMouseEnter(e);
+                if (not e.propagate) {
+                    break;
+                }
+            }
+        }
+    }
+
+    function doMouseLeave(p:Pick, worldEvent:MouseEvent):Void {
+        p.node.setContainsPointer(false);
+        var hs = getMouseInputHandlers(p);
+        if (hs != []) {
+            var e = makeMouseEvent(null, p, worldEvent);
+            for (h in hs) {
+                h.onMouseLeave(e);
+                if (not e.propagate) {
+                    break;
+                }
+            }
+        }
+    }
+    function doMouseUp(p:Pick, worldEvent:MouseEvent):Void {
+        var hs = getMouseInputHandlers(p);
+        if (hs != []) {
+            worldEvent.stopPropagation();
+            var e = makeMouseEvent(null, p, worldEvent);
+            for (h in hs) {
+                h.onMouseUp(e);
+                if (not e.propagate) {
+                    break;
+                }
+            }
+        }
+    }
+    function doMouseDown(p:Pick, worldEvent:MouseEvent):Void {
+        var hs = getMouseInputHandlers(p);
+        if (hs != []) {
+            worldEvent.stopPropagation();
+            var e = makeMouseEvent(null, p, worldEvent);
+            for (h in hs) {
+                h.onMouseDown(e);
+                if (not e.propagate) {
+                    break;
+                }
+            }
+        }
+    }
+
+    function getDrag(p:Pick):Pick {
+        for (d in underMouse) {
+            if (d.node == p.node) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    function doMouseMove(p:Pick, worldEvent:MouseEvent):Void {
+        var hs = getMouseInputHandlers(p);
+        if (hs != []) {
+            worldEvent.stopPropagation();
+            var e = makeMouseEvent(null, p, worldEvent);
+            for (h in hs) {
+                h.onMouseMove(makeMouseEvent(null, p, worldEvent));
+                if (not e.propagate) {
+                    break;
+                }
+            }
+        }
+    }
+
+    function doMouseDrag(p:Pick, event:MouseEvent):Void {
+        const hs = getMouseInputHandlers(p);
+        if (hs <> []) {
+            const translation = p.node.worldTransform.getTranslation();
+            const ray = camera.getPickRay(event.screenx, event.screeny);
+	    const normal = ray.direction.negate();
+            const plane = Plane { 
+                normal: normal;
+                point: translation;
+            }
+            const hit = plane.intersectRay(ray);
+            p.dragPoint0 = p.dragPoint1;
+            p.dragPoint1 = hit.point;
+            for (h in hs) {
+                h.onMouseDrag(makeMouseEvent(null, p, event));
+            }
+        }
+    }
+
+
+    function makeMouseEvent
+	from (dragStart is Pick, p is Pick, worldEvent is MouseEvent) 
+	to MouseEvent 
+    {
+        const e = worldEvent;
+        MouseEvent {
+            clickCount: e.clickCount;
+            stage: e.stage;
+            scene: this;
+            altKey: e.altKey;
+            ctrlKey: e.ctrlKey;
+            shiftKey: e.shiftKey;
+            metaKey: e.metaKey;
+            screenx: e.screenx;
+            screeny: e.screeny;
+            screenDrag: e.screenDrag;
+            sceneLocation: e.sceneLocation;
+            buttons: e.buttons;
+            picked: p;
+        }
+    }
+}

@@ -299,6 +299,9 @@ public class F3Attr implements F3Visitor {
 		result = syms.unknownType;
 	    }
 	    Type localResult = result;
+	    if (localResult.tsym instanceof F3Resolve.TypeAliasSymbol) {
+		localResult = localResult.tsym.type;
+	    }
 	    if (localResult.tag != ERROR) { // hack!!
 		List<F3Expression> typeArgs = null;
 		if (tree instanceof F3Ident) {
@@ -1264,7 +1267,7 @@ public class F3Attr implements F3Visitor {
                 }
                 chk.checkType(tree.pos(), initType, declType,
 			      types.isSequence(declType) ? Sequenceness.REQUIRED : Sequenceness.PERMITTED /* DISALLOWED */, false);
-                chk.checkBidiBind( tree.getInitializer(),tree.getBindStatus(), initEnv, v.type);
+                chk.checkBidiBind(tree.getInitializer(),tree.getBindStatus(), initEnv, v.type);
             }
             else if (tree.type != null)
                 initType = tree.type;
@@ -2291,10 +2294,15 @@ public class F3Attr implements F3Visitor {
         def.pos = tree.pos;
         tree.definition = def;
 	def.typeArgs = tree.typeArgs;
+	def.infer = tree.infer;
         MethodSymbol m = new MethodSymbol(SYNTHETIC, def.name, null, env.enclClass.sym);
         // m.flags_field = chk.checkFlags(def.pos(), def.mods.flags, m, def);
         def.sym = m;
-        finishFunctionDefinition(def, env);
+	if (tree.infer) {
+	    result = tree.type = syms.botType;
+	    return;
+	}
+	finishFunctionDefinition(def, env);
 	if (def.typeArgTypes != null) {
 	    List<Type> typeArgTypes = def.typeArgTypes;
 	    for (List l = typeArgTypes; l != null; l = l.tail) {
@@ -2600,6 +2608,7 @@ public class F3Attr implements F3Visitor {
             int paramNum = 0;
             List<F3Var> params = tree.getParams();
             int paramCount = params.size();
+	    boolean inferring = false;
             for (List<F3Var> l = params; l.nonEmpty(); l = l.tail) {
 
                 F3Var pvar = l.head;
@@ -2613,31 +2622,44 @@ public class F3Attr implements F3Visitor {
                         ||  pvar.getF3Type() instanceof F3ErroneousType   // There, but flagged as an erroneous type for some  syntactic reason
                     ) 
                         continue;   // Hence, we can't do anythign with this parameter definitionm skip it
-
-                
-                Type type;
-
-                if (pparam != null && pparam.nonEmpty()) {
-                    type = pparam.head;
-                    pparam = pparam.tail;
-                }
-                else {
-                    type = syms.objectType;
-                    if (pvar.getF3Type() instanceof F3TypeUnknown) {
-                        Type t = searchSupersForParamType (owner, m.name, paramCount, paramNum);
-                        if (t == Type.noType)
-                            log.warning(pvar.pos(), MsgSym.MESSAGE_F3_AMBIGUOUS_PARAM_TYPE_FROM_SUPER);
-                        else if (t != null)
-                            type = t;
-                    }
-                }
-                pvar.type = type;
-                type = chk.checkNonVoid(pvar, attribVar(pvar, localEnv));
+		Type type;
+		if (pvar.type == null) {
+		    if (pparam != null && pparam.nonEmpty()) {
+			type = pparam.head;
+			pparam = pparam.tail;
+		    }
+		    else {
+			type = syms.objectType;
+			if (pvar.getF3Type() instanceof F3TypeUnknown) {
+			    Type t = searchSupersForParamType (owner, m.name, paramCount, paramNum);
+			    if (t == Type.noType)
+				log.warning(pvar.pos(), MsgSym.MESSAGE_F3_AMBIGUOUS_PARAM_TYPE_FROM_SUPER);
+			    else if (t != null)
+				type = t;
+			}
+		    }
+		    pvar.type = type;
+		    boolean infer = false;
+		    if (pvar.getInitializer() instanceof F3FunctionValue) {
+			F3FunctionValue val = (F3FunctionValue)pvar.getInitializer();
+			if (val.infer) {
+			    infer = true;
+			}
+		    }
+		    if (infer) {
+			inferring = true;
+			type = syms.botType;
+		    } else {
+			type = chk.checkNonVoid(pvar, attribVar(pvar, localEnv));
+		    }
+		} else {
+		    type = pvar.type;
+		    memberEnter.memberEnter(pvar, localEnv);
+		}
 		//System.err.println("attrib var: "+ pvar+": "+type);
                 argbuf.append(type);
                 paramNum++;
             }
-
 	    if (tree.implicitArgTrees.nonEmpty()) {
 		for (F3Var var: tree.implicitArgTrees) {
 		    attribVar(var, localEnv);
@@ -2677,11 +2699,21 @@ public class F3Attr implements F3Visitor {
 		System.err.println("return type was null: "+ tree);
 		returnType = syms.unknownType;
 	    }
-            mtype = new MethodType(argbuf.toList(),
+	    List<Type> argList = argbuf.toList();
+	    if (inferring) {
+		List<Type> l = argList;
+		while (l.nonEmpty()) {
+		    if (l.head != null && l.head != syms.botType) {
+			l.head = types.boxedTypeOrType(l.head);
+		    }
+		    l = l.tail;
+		}
+	    }
+	    mtype = new MethodType(argList,
 				   returnType, // may be unknownType
 				   List.<Type>nil(),
 				   syms.methodClass);
-
+	    //System.err.println("mtype="+mtype);
 	    if (tree.typeArgTypes != null) {
 		ListBuffer<Type> lb = ListBuffer.lb();
 		if (tree.typeArgTypes != null) {
@@ -2700,6 +2732,34 @@ public class F3Attr implements F3Visitor {
                     returnType = m.getReturnType();
                 }
             }
+	    {
+	        List<VarSymbol> paramSyms = List.<VarSymbol>nil();
+		List<Type> paramTypes = List.<Type>nil();
+		for (F3Var var : tree.getParams()) {
+		    // Skip erroneous parameters, which happens if the IDE is calling with a
+		    // a paritally defined function.
+		    //
+		    if (var == null || var.type == null) continue;
+		    paramSyms = paramSyms.append(var.sym);
+		    paramTypes = paramTypes.append(var.type);
+		}
+		for (F3Var var: tree.implicitArgTrees) {
+		    F3VarSymbol sym = var.sym;
+		    paramSyms = paramSyms.append(sym);
+		    paramTypes = paramTypes.append(sym.type);
+		}
+		//	System.err.println("finishing: "+tree);
+		//System.err.println("symbol="+m);
+		//System.err.println("type="+m.type);
+		//System.err.println("implicit args="+tree.implicitArgs);
+		for (F3VarSymbol sym: tree.implicitArgs) {
+		    paramSyms = paramSyms.append(sym);
+		    paramTypes = paramTypes.append(sym.type);
+		}
+		//	System.err.println("m="+System.identityHashCode(m));
+		//System.err.println("m.type="+m.type);
+		m.params = paramSyms;
+	    }
 
             if (tree.getBodyExpression() == null) {
                 // Empty bodies are only allowed for
@@ -2791,36 +2851,38 @@ public class F3Attr implements F3Visitor {
             chk.setLint(prevLint);
             log.useSource(prev);
         }
-
+	{
+	    List<VarSymbol> paramSyms = List.<VarSymbol>nil();
+	    List<Type> paramTypes = List.<Type>nil();
+	    for (F3Var var : tree.getParams()) {
+		// Skip erroneous parameters, which happens if the IDE is calling with a
+		// a paritally defined function.
+		//
+		if (var == null || var.type == null) continue;
+		paramSyms = paramSyms.append(var.sym);
+		paramTypes = paramTypes.append(var.type);
+	    }
+	    for (F3Var var: tree.implicitArgTrees) {
+		F3VarSymbol sym = var.sym;
+		paramSyms = paramSyms.append(sym);
+		paramTypes = paramTypes.append(sym.type);
+	    }
+	    //	System.err.println("finishing: "+tree);
+	    //System.err.println("symbol="+m);
+	    //System.err.println("type="+m.type);
+	    //System.err.println("implicit args="+tree.implicitArgs);
+	    for (F3VarSymbol sym: tree.implicitArgs) {
+		paramSyms = paramSyms.append(sym);
+		paramTypes = paramTypes.append(sym.type);
+	    }
+	    //	System.err.println("m="+System.identityHashCode(m));
+	    //System.err.println("m.type="+m.type);
+	    m.params = paramSyms;
+	}
+	
         // mark the method varargs, if necessary
         // if (isVarArgs) m.flags_field |= Flags.VARARGS;
         // Set the inferred types in the MethodType.argtypes and in correct symbols in MethodSymbol
-        List<VarSymbol> paramSyms = List.<VarSymbol>nil();
-        List<Type> paramTypes = List.<Type>nil();
-        for (F3Var var : tree.getParams()) {
-            // Skip erroneous parameters, which happens if the IDE is calling with a
-            // a paritally defined function.
-            //
-            if (var == null || var.type == null) continue;
-            paramSyms = paramSyms.append(var.sym);
-            paramTypes = paramTypes.append(var.type);
-        }
-	for (F3Var var: tree.implicitArgTrees) {
-	    F3VarSymbol sym = var.sym;
-	    paramSyms = paramSyms.append(sym);
-	    paramTypes = paramTypes.append(sym.type);
-	}
-	//	System.err.println("finishing: "+tree);
-	//System.err.println("symbol="+m);
-	//System.err.println("type="+m.type);
-	//System.err.println("implicit args="+tree.implicitArgs);
-	for (F3VarSymbol sym: tree.implicitArgs) {
-	    paramSyms = paramSyms.append(sym);
-	    paramTypes = paramTypes.append(sym.type);
-	}
-	//	System.err.println("m="+System.identityHashCode(m));
-	//System.err.println("m.type="+m.type);
-        m.params = paramSyms;
 	//System.err.println("m.params="+m.params);
         if (m.type != null) {
 	    //	    m.type.asMethodType().argtypes = paramTypes;
@@ -3260,6 +3322,23 @@ public class F3Attr implements F3Visitor {
 	    if (restype == syms.unknownType) {
 		restype = syms.voidType;
 	    }
+
+	    if (false && argtypes.size() > 0) {
+		Type x = argtypes.head;
+		List<Type> xs = argtypes.tail;
+		Symbol sym = rs.findMethod(env, x, methName, xs, typeargtypes, true, false, false);
+		if (sym.kind < AMBIGUOUS) {
+		    System.err.println("found: "+sym);
+		    int pos = tree.meth.pos;
+		    tree.meth = f3make.Select(tree.args.head, methName, false);
+		    tree.meth.pos = pos;
+		    F3TreeInfo.setSymbol(tree.meth, sym);
+		    tree.meth.type = sym.type;
+		    tree.args = tree.args.tail;
+		    argtypes = xs;
+		}
+	    }
+
 	    Type mpt = new MethodType(argtypes, pt, List.<Type>nil(), syms.methodClass);
 
 	    if (typeargtypes.nonEmpty()) {
@@ -3267,7 +3346,6 @@ public class F3Attr implements F3Visitor {
 	    }
 
 	    localEnv.info.varArgs = false;
-
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
 	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth + " => "+mtype);
 	    if (false) {
@@ -3404,6 +3482,9 @@ public class F3Attr implements F3Visitor {
 	if (!(mtype instanceof ErrorType) && msym instanceof MethodSymbol) {
 	    try {
 		MethodSymbol mmsym = (MethodSymbol)msym;
+		if (mtype.getParameterTypes() == null) {
+		    System.err.println("bad type: "+ msym.name);
+		}
 		List<Type> args = List.<Type>nil();
 		List<Type> formalArgs = List.<Type>nil();
 		boolean sawImplicit = false;
@@ -3423,6 +3504,7 @@ public class F3Attr implements F3Visitor {
 		    }
 		Type mtype1 = rs.newMethTemplate(formalArgs, genSym.type.getTypeArguments());
 		if (sawImplicit) {
+		    System.err.println("saw implicit: "+ tree+ ": "+msym);
 		    Type inst = null;
 		    List<Type> ts = args;
 		    while (ts.nonEmpty()) {
@@ -3526,8 +3608,45 @@ public class F3Attr implements F3Visitor {
             }
         }
 	tree.resolvedImplicits = resolvedImplicits;
+	System.err.println("implicit exprs="+implicitExprs);
 	for (F3Expression exp: implicitExprs) {
 	    tree.args = tree.args.append(exp);
+	}
+	if (msym != null) {
+            List<F3Expression> params = tree.getArguments();
+	    List<Type> pts = msym.type.getParameterTypes();
+	    //System.err.println("msym.type="+msym.type);
+            for (List<F3Expression> l = params; l.nonEmpty(); l = l.tail) {
+		if (pts.head == null) {
+		    continue;
+		}
+		Type t = reader.translateType(types.normalize(pts.head));
+		pts = pts.tail;
+		if (t instanceof FunctionType) {
+		    t = ((FunctionType)t).asMethodOrForAll();
+		}
+		//System.err.println("t="+t);
+		F3Expression pvar = l.head;
+		if (pvar instanceof F3FunctionValue) {
+		    F3FunctionValue val = (F3FunctionValue)pvar;
+		    if (val.infer) {
+			val.infer = false;
+			List<Type> inferred = t.getParameterTypes();
+			System.err.println("inferred="+inferred);
+			for (F3Var var: val.funParams) {
+			    Type ip = inferred.head;
+			    System.err.println("inferred type="+ip);
+			    //var.init = f3make.Type(ip);
+			    var.type = ip;
+			    System.err.println("inferred type exp="+var.init);
+			    //attribVar(var, env);
+			    inferred = inferred.tail;
+			}
+			val.type = t;
+			finishFunctionDefinition(val.definition, env);
+		    }
+		}
+	    }
 	}
         if (msym!=null && msym.owner!=null && msym.owner.type!=null &&
                 (msym.owner.type.tsym == syms.f3_AutoImportRuntimeType.tsym ||
@@ -4888,25 +5007,28 @@ public class F3Attr implements F3Visitor {
                 // Instead, we should checkMethod in visitFunctionInvocation.
                 // In that case we should also handle FunctionType. FIXME.
                 if ((pt instanceof MethodType) || (pt instanceof ForAll)) {
-                    F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
-		    Type siteType = site;
-		    if (siteType instanceof MethodType) {
-			siteType = syms.makeFunctionType((MethodType)siteType);
-		    }
-                    Type inst = checkMethod(siteType, sym, env, app.args,
-					    pt.getParameterTypes(), typeargtypes,
-					    env.info.varArgs);
-		    if (inst != null) { // hack
-			owntype = inst;
-		    } else {
+		    if (env.tree instanceof F3FunctionInvocation) {
+			F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
+			Type siteType = site;
+			if (siteType instanceof MethodType) {
+			    siteType = syms.makeFunctionType((MethodType)siteType);
+			}
+			Type inst = checkMethod(siteType, sym, env, app.args,
+						pt.getParameterTypes(), typeargtypes,
+						env.info.varArgs);
+			if (inst != null) { // hack
+			    owntype = inst;
+			} else {
 			owntype = pt;
 			System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
-		    }
-		    if (owntype instanceof MethodType) {
-			try {
-			    owntype = syms.makeFunctionType((MethodType)owntype);
-			} catch (Exception exc) { // hack
-			    // could happen if too many args
+			Thread.currentThread().dumpStack();
+			}
+			if (owntype instanceof MethodType) {
+			    try {
+				owntype = syms.makeFunctionType((MethodType)owntype);
+			    } catch (Exception exc) { // hack
+				// could happen if too many args
+			    }
 			}
 		    }
                 } else {
@@ -4995,6 +5117,8 @@ public class F3Attr implements F3Visitor {
 		Type arg = list.head;
 		if (arg instanceof MethodType) {
 		    arg = syms.makeFunctionType((MethodType)arg);
+		} else {
+		    //arg = types.boxedTypeOrType(arg);
 		}
 		list.head = arg;
 		list = list.tail;
@@ -5006,6 +5130,8 @@ public class F3Attr implements F3Visitor {
 		Type arg = list.head;
 		if (arg instanceof MethodType) {
 		    arg = syms.makeFunctionType((MethodType)arg);
+		} else {
+		    //arg = types.boxedTypeOrType(arg);
 		}
 		list.head = arg;
 		list = list.tail;
@@ -5068,7 +5194,7 @@ public class F3Attr implements F3Visitor {
                 sym.owner == syms.enumSym)
                 formals = formals.tail.tail;
 	    List<F3Expression> args = argtrees;
-	    while (formals.head != last) {
+	    while (formals != null && formals.head != last) {
 		F3Tree arg = args.head;
 		Warner warn = chk.convertWarner(arg.pos(), arg.type, formals.head);
 		assertConvertible(arg, arg.type, formals.head, warn);

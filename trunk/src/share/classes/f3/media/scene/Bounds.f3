@@ -1,0 +1,301 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import java.lang.Math;
+
+// Spatial Bounds
+// return values of whichSide
+public static const INTERSECTING = 0;
+public static const INSIDE = -1;
+public static const OUTSIDE = 1;
+
+public static const UNIT = Bounds { extent: Tuple3.<<1>> * 0.5 };
+
+public class Bounds is Mat4.Transformable of Bounds
+{
+    public const center is Point3 = Point3.<<0>>;
+    public const extent is Tuple3 = Tuple3.<<0>>;
+
+    override public function premultiply from (m is Mat4) to Bounds 
+    {
+	Bounds.transformBounds(m, this)
+    }
+
+    override public function equals
+	from (obj is Object) 
+	to Boolean 
+    {
+        (obj is Bounds) and {
+            var other = obj as Bounds;
+            other.center == center and other.extent == extent;
+        }
+    }
+
+    public function contains
+	from (point is Point3) 
+	to Boolean 
+    {
+        not (center.x - extent.x > point.x or 
+             center.x + extent.x < point.x or
+             center.y - extent.y > point.y or 
+             center.y + extent.y < point.y or
+             center.z - extent.z > point.z or
+             center.z + extent.z < point.z);
+    }
+
+    public function intersects
+	from (ray is Ray3) 
+	to Boolean 
+    {
+        if (ray == null) return false;
+        const x = extent.x;
+        const diff = ray.origin - center;
+        const fWdU0 = ray.direction.dot(Vec3.X_AXIS);
+        const fAWdU0 = Math.abs(fWdU0);
+        const fDdU0 = diff.dot(Vec3.X_AXIS);
+        const fADdU0 = Math.abs(fDdU0);
+        if (fADdU0 > x and fDdU0 * fWdU0 >= 0.0) {
+            return false;
+        }
+        const y = extent.y;
+        const fWdU1 = ray.direction.dot(Vec3.Y_AXIS);
+        const fAWdU1 = Math.abs(fWdU1);
+        const fDdU1 = diff.dot(Vec3.Y_AXIS);
+        const fADdU1 = Math.abs(fDdU1);
+        if (fADdU1 > y  and  fDdU1 * fWdU1 >= 0.0) {
+            return false;
+        }
+        const z = extent.z;
+        const fWdU2 = ray.direction.dot(Vec3.Z_AXIS);
+        const fAWdU2 = Math.abs(fWdU2);
+        const fDdU2 = diff.dot(Vec3.Z_AXIS);
+        const fADdU2 = Math.abs(fDdU2);
+        if (fADdU2 > z and fDdU2 * fWdU2 >= 0.0) {
+            return false;
+        }
+        const wCrossD = ray.direction.cross(diff);
+        const fAWxDdU0 = Math.abs(wCrossD.dot(Vec3.X_AXIS));
+        var rhs = y * fAWdU2 + z * fAWdU1;
+        if (fAWxDdU0 > rhs) {
+            return false;
+        }
+        const fAWxDdU1 = Math.abs(wCrossD.dot(Vec3.Y_AXIS));
+        rhs = x * fAWdU2 + z * fAWdU0;
+        if (fAWxDdU1 > rhs) {
+            return false;
+        }
+        const fAWxDdU2 = Math.abs(wCrossD.dot(Vec3.Z_AXIS));
+        rhs = x * fAWdU1 + y * fAWdU0;
+        if (fAWxDdU2 > rhs) {
+            return false;
+        }
+        return true;
+    }
+
+    public function whichSide
+	from (plane is Plane3) 
+	to Integer 
+    {
+        const normal = plane.normal.normalize();
+        const radius = 
+            Math.abs(extent.x*normal.x)+
+            Math.abs(extent.y*normal.y)+
+            Math.abs(extent.z*normal.z);
+        const distance = plane.pseudoDistance(center);
+        if (distance < -radius) then INSIDE
+        else if (distance > radius) then OUTSIDE
+        else 0
+    }
+
+    override function toString to String 
+    {
+        "center {center} extent {extent}";
+    }
+
+    public function corners to Point3[] 
+    {
+        [center - extent,       
+         center + vector(extent.x, -extent.y, -extent.z),
+         center + vector(extent.x, extent.y, -extent.z),
+         center + vector(-extent.x, extent.y, -extent.z),
+         center + vector(extent.x, -extent.y, extent.z),
+         center + vector(-extent.x, -extent.y, extent.z),
+         center + extent,
+         center + vector(-extent.x, extent.y, extent.z)];    
+    }
+
+    public function width to Number 
+    {
+        extent.x * 2;
+    }
+
+    public function height to Number 
+    {
+        extent.y * 2;
+    }
+
+    public function depth to Number 
+    {
+        extent.z * 2;
+    }
+
+    public function min	to Vec3 
+    {
+        vector(center.x-extent.x,
+	       center.y-extent.y,
+	       center.z-extent.z);
+    }
+
+    public function max	to Vec3 
+    {
+        vector(center.x+extent.x,
+	       center.y+extent.y,
+	       center.z+extent.z);
+    }
+}
+
+public function boundsFromExtent
+    from (minX is Number, minY is Number, minZ is Number, 
+	  maxX is Number, maxY is Number, maxZ is Number) 
+    to Bounds 
+{
+    const x = 0.5*(maxX - minX);
+    const y = 0.5*(maxY - minY);
+    const z = 0.5*(maxZ - minZ);
+    Bounds {
+        center: point(minX + x, minY + y, minZ + z);
+        extent: tuple(x, y, z);
+    }
+}
+
+public function transformBounds
+    from (mat is Mat4, 
+	  b is Bounds) 
+    to Bounds 
+{
+    if (mat == null or mat == Mat4.<<1>>) {
+        return b;
+    }
+    const t = mat.getTranslation();
+    var minX = t.x;
+    var maxX = t.x;
+    var minY = t.y;
+    var maxY = t.y;
+    var minZ = t.z;
+    var maxZ = t.z;
+    
+    const c = b.center;
+    const e = b.extent;
+    const bminx = c.x - e.x;
+    const bmaxx = c.x + e.x;
+    const bminy = c.y - e.y;
+    const bmaxy = c.y + e.y;
+    const bminz = c.z - e.z;
+    const bmaxz = c.z + e.z;
+    
+    const m00 = mat.get(0, 0);
+    if (m00 > 0) {
+        minX += m00 * bminx; 
+        maxX += m00 * bmaxx;
+    } else {
+        minX += m00 * bmaxx;
+        maxX += m00 * bminx;
+    }
+    const m01 = mat.get(1, 0);
+    if (m01 > 0) {
+        minY += m01 * bminx; 
+        maxY += m01 * bmaxx;
+    } else {
+        minY += m01 * bmaxx;
+        maxY += m01 * bminx;
+    }
+    const m02 = mat.get(2, 0);
+    if (m02 > 0) {
+        minZ += m02 * bminx; 
+        maxZ += m02 * bmaxx;
+    } else {
+        minZ += m02 * bmaxx;
+        maxZ += m02 * bminx;
+    }
+    const m10 = mat.get(0, 1);
+    if (m10 > 0) {
+        minX += m10 * bminy; 
+        maxX += m10 * bmaxy;
+    } else {
+        minX += m10 * bmaxy;
+        maxX += m10 * bminy;
+    }
+    const m11 = mat.get(1, 1);
+    if (m11 > 0) {
+        minY += m11 * bminy; 
+        maxY += m11 * bmaxy;
+    } else {
+        minY += m11 * bmaxy;
+        maxY += m11 * bminy;
+    }
+    const m12 = mat.get(2, 1);
+    if (m12 > 0) {
+        minZ += m12 * bminy; 
+        maxZ += m12 * bmaxy;
+    } else {
+        minZ += m12 * bmaxy;
+        maxZ += m12 * bminy;
+    }
+    const m20 = mat.get(0, 2);
+    if (m20 > 0) {
+        minX += m20 * bminz; 
+        maxX += m20 * bmaxz;
+    } else {
+        minX += m20 * bmaxz;
+        maxX += m20 * bminz;
+    }
+    const m21 = mat.get(1, 2);
+    if (m21 > 0) {
+        minY += m21 * bminz; 
+        maxY += m21 * bmaxz;
+    } else {
+        minY += m21 * bmaxz;
+        maxY += m21 * bminz;
+    }
+    const m22 = mat.get(2, 2);
+    if (m22 > 0) {
+        minZ += m22 * bminz; 
+        maxZ += m22 * bmaxz;
+    } else {
+        minZ += m22 * bmaxz;
+        maxZ += m22 * bminz;
+    }
+    boundsFromExtent(minX, minY, minZ,
+                     maxX, maxY, maxZ);
+}
+
+
+public function merge
+    from (b1_ is Bounds, b2_ is Bounds) 
+    to Bounds 
+{
+    const b1 = if (Tuple3.<<0>> == b1_.extent) then null else b1_;
+    const b2 = if (Tuple3.<<0>> == b2_.extent) then null else b2_;
+    if (b1 == null) then b2
+    else if (b2 == null) then b1
+    else {
+        var c = b1.center;
+        var e = b1.extent;
+        var minX = c.x - e.x;
+        var maxX = c.x + e.x;
+        var minY = c.y - e.y;
+        var maxY = c.y + e.y;
+        var minZ = c.z - e.z;
+        var maxZ = c.z + e.z;
+        c = b2.center;
+        e = b2.extent;
+        minX = Math.min(minX, c.x - e.x);
+        maxX = Math.max(maxX, c.x + e.x);
+        minY = Math.min(minY, c.y - e.y);
+        maxY = Math.max(maxY, c.y + e.y);
+        minZ = Math.min(minZ, c.z - e.z);
+        maxZ = Math.max(maxZ, c.z + e.z);
+        boundsFromExtent(minX, minY, minZ,
+                         maxX, maxY, maxZ);
+    }
+}

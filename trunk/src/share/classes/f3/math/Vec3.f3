@@ -1,0 +1,186 @@
+package f3.math;
+import java.lang.Math;
+import f3.math.LinearMath.*;
+
+public static const <<0>> = Vec3 {x: 0.0, y: 0.0, z: 0.0};
+public static const <<1>> = Vec3 {x: 1.0, y: 1.0, z: 1.0};
+
+public static const X_AXIS = Vec3 {x: 1.0, y: 0.0, z: 0.0};
+public static const Y_AXIS = Vec3 {x: 0.0, y: 1.0, z: 0.0};
+public static const Z_AXIS = Vec3 {x: 0.0, y: 0.0, z: 1.0};
+
+public class Vec3 is Tuple3
+{
+    public function +
+	from (p is Point3) 
+	to Point3 
+    {
+	p + this
+    }
+
+    public function dot
+	from (v is Tuple3) 
+	to Number 
+    {
+	x*v.x + 
+        y*v.y +
+	z*v.z
+    }
+
+    public function cross 
+	from (v is Tuple3) 
+	to Vec3 
+    {
+	Vec3 
+	{
+	    x: y*v.z - z*v.y;
+	    y: z*v.z - x*v.z;
+	    z: x*v.y - y*v.x;
+	}
+    }
+
+    public function translate
+	from (dx is Number,
+	      dy is Number,
+	      dz is Number) 
+	to Vec3
+    {
+	Vec3 
+	{ 
+	    x: x + dx;
+	    y: y + dy;
+	    z: z + dz;
+	} 
+    }
+
+    public function +
+	from (v is Number[])
+	to Vec3
+    {
+	Vec3 
+	{ 
+	    x: x + v[0]
+	    y: y + v[1]
+	    z: z + v[2]
+	} 
+    }
+
+    public function +
+	from (v is Vec3) 
+	to Vec3
+    {
+	Vec3 
+	{ 
+	    x: x + v.x;
+	    y: y + v.y;
+	    z: z + v.z;
+	} 
+    }
+
+    public function negate 
+	to Vec3
+    {
+	Vec3 
+	{ 
+	    x: -x;
+	    y: -y;
+	    z: -z;
+	} 
+    }
+
+    public function - to Vec3
+    {
+	Vec3 
+	{ 
+	    x: -x;
+	    y: -y;
+	    z: -z;
+	} 
+    }
+
+    override public function * from (n is Number) to Vec3
+    {
+	if (n == 0) then <<0>> else if (n == 1) then this else 
+	Vec3 
+        { 
+	    x: x*n;
+	    y: y*n;
+	    z: z*n;
+	} 
+    }
+
+    public function / from (n is Number) to Vec3
+    {
+	this * (1/n)
+    }
+
+    public function normalize to Vec3 
+    {
+	const lenSq = lengthSquared();
+	if (lenSq <> 1 and lenSq <> 0) then this * (1/Math.sqrt(lenSq) as Number) else this
+    }
+
+    public function projector to Mat4 
+    {
+	matrix(x * x, y * x, z * x, 0,
+	       x * y, y * y, z * y, 0,
+	       x * z, y * z, z * z, 0,
+	       0    , 0    , 0    , 1);
+    }
+
+    public function project from (v is Tuple3) to Vec3 
+    {
+	this * this.dot(v);
+    }
+
+    public function lerp
+	from (t is Number, 
+	      target is Vec3) 
+	to Vec3 
+    {
+	const inv_t = 1 - t;
+	Vec3 
+        { 
+	    x: inv_t*x + t*target.x;
+	    y: inv_t*y + t*target.y; 
+	    z: inv_t*z + t*target.z;
+        }
+    }
+
+    override function toString to String 
+    {
+	"\{ x: {x}, y: {y}, z: {z} \}"
+    }
+
+    public function <<,>> from (w is Number) to Vec4 
+    {
+	xyzw(w)
+    }
+
+    public function xyzw 
+	from (w is Number) 
+	to Vec4
+    {
+	Vec4 
+	{
+	    x: x;
+	    y: y;
+	    z: z;
+	    w: w;
+	}
+    }
+
+    public function rotate(degrees is Number) to Mat4 
+    {
+	LinearMath.rotateNormalAxis(degrees, this);
+    }
+}
+
+function run 
+{
+    const v = <<1>>;
+    println(-v);
+}
+
+
+public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

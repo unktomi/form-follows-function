@@ -1,0 +1,120 @@
+package f3.math;
+import f3.math.LinearMath.*;
+
+public class Ray3 is Mat4.Transformable of Ray3 {
+
+    public const origin is Point3 = Point3.<<0>>;
+    public const direction is Vec3 = Vec3.Z_AXIS;
+
+    const alongVec is Point3 = {
+        const denom = direction.lengthSquared();
+        if (denom == 0) {
+            throw new java.lang.RuntimeException("Ray3: direction was the zero vector");
+        }
+        origin - direction * origin.dot(direction);
+    }
+
+    public function projectPoint from (pt is Point3) to Point3 
+    {
+        const proj = direction.dot(pt);
+        direction * proj + alongVec;
+    }
+
+    override public function equals from (obj is Object) to Boolean 
+    {
+        (obj instanceof Ray3) and {
+            const r = obj as Ray3;
+            r.origin == origin and r.direction == direction;
+        } 
+    }
+
+    public function intersectLine from (start is Point3, end is Point3) to Point3 
+    {
+        const startA = origin;
+        var lineADir = direction;
+        const startB = start;
+        var lineBDir = end - start;
+        const lineBLen = lineBDir.length();
+        lineBDir = lineBDir.normalize();
+        const triNorm = lineADir.cross(lineBDir);
+        const lineAnormal = lineADir.cross(triNorm);
+        const dot = lineAnormal.dot(lineBDir);
+        if (dot == 0) {
+            return null ;// no intersect due to parallel lines
+        }  else  {
+            const distanceAlongB = lineAnormal.dot(startB - startA ) / lineBLen;
+            if (distanceAlongB > 0  and distanceAlongB < lineBLen)  {
+                return lineBDir*distanceAlongB + startB;
+            }
+            else return null;
+        }
+    }
+
+    override public function premultiply from (t is Mat4) to Ray3 
+    {
+        Ray3 { 
+	    origin: t * origin;
+	    direction: (t * direction).normalize(); 
+	}
+    }
+
+    // returns Tuple3(distance, weight1, weight2);
+    public function intersect
+	from (pointA is Point3, 
+	      pointB is Point3, 
+	      pointC is Point3)
+	to Tuple3 
+    {
+        const direction = this.direction.normalize();
+        const diff = origin - pointA;
+        const edge1 = pointB - pointA;
+        const edge2 = pointC - pointA;
+        const norm = edge1.cross(edge2);
+        var dirDotNorm = direction.dot(norm);
+        var sign is Number;
+        if (dirDotNorm > LinearMath.EPSILON) {
+            sign = 1.0;
+        } else if (dirDotNorm < -LinearMath.EPSILON) {
+            sign = -1.0;
+            dirDotNorm = -dirDotNorm;
+        } else {
+            // ray and triangle are parallel
+            //println("parallel {dirDotNorm}");
+            return null;
+        }
+        const dirDotDiffxEdge2 = sign * direction.dot(diff.cross(edge2));
+        if (dirDotDiffxEdge2 >= 0.0) {
+            const dirDotEdge1xDiff = sign * direction.dot(edge1.cross(diff));
+            if (dirDotEdge1xDiff >= 0.0) {
+                if (dirDotDiffxEdge2 + dirDotEdge1xDiff <= dirDotNorm) {
+                    const diffDotNorm = -sign * diff.dot(norm);
+                    if (diffDotNorm >= 0.0) {
+                        const inv =  1.0 / dirDotNorm;
+                        const  t = diffDotNorm * inv;
+                        const w1 = dirDotDiffxEdge2 * inv;
+                        const w2 = dirDotEdge1xDiff * inv;
+                        // w0 = 1.0-(w1+w2);
+                        return Tuple3 { x: t y: w1 z: w2 };
+                    } else {
+                        //println("diffDotNorm={diffDotNorm}");
+                    }
+                } else {
+                    //println("dirDotDiffxEdge2={dirDotDiffxEdge2}");
+                    //println("dirDotEdge1xDiff={dirDotEdge1xDiff}");
+                    //println("dirDotNorm={dirDotNorm}");
+                }
+            } else {
+                //println("dirDotEdge1xDiff={dirDotEdge1xDiff}");
+            }
+        } else {
+            //println("dirDotDiffxEdge2={dirDotDiffxEdge2}");
+        }
+        return null;
+    }   
+
+    override function toString to String 
+    {
+        "origin {origin} direction {direction}";
+    }
+
+}

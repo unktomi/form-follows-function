@@ -1430,6 +1430,23 @@ public class F3Resolve {
                           Type site,
                           Name name,
                           TypeSymbol c) {
+	Symbol bestSoFar = findMemberType0(env, site, name, c);
+	if (bestSoFar != null) {
+	    if (bestSoFar instanceof F3Resolve.TypeAliasSymbol) {
+		bestSoFar.complete();
+		if (bestSoFar.type != syms.unknownType) {
+		    bestSoFar = bestSoFar.type.tsym;
+		}
+		System.err.println(name + " => "+types.toF3String(bestSoFar.type));
+	    }
+	}
+	return bestSoFar;
+    }
+
+    Symbol findMemberType0(F3Env<F3AttrContext> env,
+                          Type site,
+                          Name name,
+                          TypeSymbol c) {
 	/*
 	int i = types.isTypeConsType(site);
 	if (i >= 0) {
@@ -1531,11 +1548,32 @@ public class F3Resolve {
         return null;
     }
 
+    public static class TypeAliasSymbol extends TypeSymbol 
+    {
+	public TypeAliasSymbol(Name name, Type type, Symbol owner) {
+	    super(0, name, type, owner);
+	}
+    }
+
    /** Find an unqualified type symbol.
      *  @param env       The current environment.
      *  @param name      The type's name.
      */
     Symbol findType(F3Env<F3AttrContext> env, Name name) {
+	Symbol bestSoFar = findType0(env, name);
+	if (bestSoFar != null) {
+	    if (bestSoFar instanceof F3Resolve.TypeAliasSymbol) {
+		bestSoFar.complete();
+		if (bestSoFar.type != syms.unknownType) {
+		    bestSoFar = bestSoFar.type.tsym;
+		}
+		System.err.println(name + " => "+types.toF3String(bestSoFar.type));
+	    }
+	}
+	return bestSoFar;
+    }
+
+    Symbol findType0(F3Env<F3AttrContext> env, Name name) {
         Symbol bestSoFar = typeNotFound;
         Symbol sym;
         boolean staticOnly = false;
@@ -1587,7 +1625,6 @@ public class F3Resolve {
             if (sym.exists()) return sym;
             else if (sym.kind < bestSoFar.kind) bestSoFar = sym;
         }
-
         return bestSoFar;
     }
 
@@ -1609,7 +1646,6 @@ public class F3Resolve {
             if (sym.exists()) return sym;
             else if (sym.kind < bestSoFar.kind) bestSoFar = sym;
         }
-
         if ((kind & TYP) != 0) {
             sym = findType(env, name);
             if (sym.exists()) return sym;

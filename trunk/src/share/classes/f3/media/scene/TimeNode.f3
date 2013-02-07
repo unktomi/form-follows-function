@@ -1,0 +1,112 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.util.*;
+import org.f3.runtime.Foldable;
+
+// A Node in the 1d temporal affine transform hierarchy
+
+public abstract class TimeNode is Foldable of TimeNode
+{
+    public const id is String;
+    public var parent is TimeNode;
+
+    public readonly var pickable is Boolean = true;
+    public readonly var worldPickable is Boolean = 
+	bind if parent == null then pickable else pickable and parent.worldPickable;
+
+    public var playTime is Duration = 0s;
+    public var playRate is Number = 1.0;
+    public var playCount is Number = 1.0;
+
+    public var blendWeight is Number = 1.0;
+    public readonly var worldBlendWeight is Number =
+	bind if parent == null then blendWeight else parent.worldBlendWeight * blendWeight;
+
+    public readonly var transform is TimeMat =
+	bind TimeMat { time: playTime, rate: playRate }
+
+    public readonly var worldTransform is TimeMat = 
+	bind if (parent == null) then transform else parent.worldTransform * transform;
+
+    public readonly var bounds is Interval = bind computeBounds(transform, contentPlayRange);
+    function computeBounds from (m is TimeMat, b is Interval) to Interval {
+	m * b;
+    }
+    public readonly var worldBounds is Interval = bind parent.worldTransform * bounds;
+    public readonly var loopedPlayRange = 
+	bind if (contentPlayRange == null) then null else contentPlayRange * (if (playCount < 0) then Number.MAX_VALUE else playCount);
+    public readonly var contentPlayRange is Interval = 
+        bind if (playRange == null) then contentBounds else Interval.intersect(contentBounds, playRange);
+    public readonly var contentBounds is Interval;
+
+    public var playRange is Interval;
+
+    public var paused is Boolean;
+
+    public readonly var currentTime is Duration; // "now" in parent space
+    public readonly var localTime is Duration; // "now" in content space
+
+    public function visit of a from (f is function from TimeNode to a) to ()
+    {
+	foldLeft((),
+		 function from (_ is (), t is TimeNode) to ()
+		 {
+		     f(t);
+		 });
+    }
+
+    override function foldLeft of b
+	from (z is b, f is function from (b, TimeNode) to b) 
+	to b 
+    {
+	f(z, this)
+    }
+
+    override function foldRight of b
+	from (z is b, f is function from (TimeNode, b) to b) 
+	to b 
+    {
+	f(this, z)
+    }
+
+    protected function doPick
+	from (worldTime is Duration, 
+	      parentTime is Duration, 
+	      add is function from TimeNode to ())
+	to ()
+    {
+        var picked = false;
+        if (worldPickable) {
+            picked = bounds.intersects(parentTime);
+            if (picked) {
+                add(this);
+            }
+        }
+        currentTime = parentTime; 
+	// hack: avoid boxing
+        var now = (((parentTime.toMillis() - playTime.toMillis()) * playRate) - 
+		   contentPlayRange.start.toMillis());
+        var dur = contentPlayRange.duration.toMillis();
+	if (dur <> 0) {
+	    now = now mod dur;
+	}
+        localTime = Duration.valueOf(now);
+	const f = (if (picked) then add else null) as function from TimeNode to ();
+        pickChildren(worldTime, 
+		     localTime, 
+		     f);
+    }
+
+    protected function pickChildren
+	from (worldTime is Duration, 
+	      parentTime is Duration, 
+	      add is function from TimeNode to ())
+	to () {}
+
+    protected function update from (worldTime is Duration) to () {
+    }
+
+    protected function updateParent to () {
+    }
+
+}

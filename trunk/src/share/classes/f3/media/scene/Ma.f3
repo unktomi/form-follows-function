@@ -1,0 +1,1748 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import f3.media.scene.*;
+import org.f3.runtime.Pointer;
+import org.f3.runtime.F3Object;
+import java.lang.Math;
+
+class MaModel 
+{
+    const nodeMap is java.util.Map of (String, MNode) = 
+	new java.util.HashMap of (String, MNode) ();
+
+    function findNode(name is String) to MNode {
+	nodeMap.get(name);
+    }
+
+    var current is MNode on replace {
+	nodeMap.put(current.name, current);
+    }
+
+    var effectLoader is CGEffectLoader;
+
+    function createNode from (cmd is Command) to () 
+    {
+	const nodeType = cmd.getString(0);
+	const name = cmd.getString("n");
+	const parent = cmd.getString("p");
+	current = 
+	    if (nodeType == "transform") 
+		then MTransform {name: name, parent: findNode(parent)}
+	    else if (nodeType == "joint") 
+		then MJoint {name: name, parent: findNode(parent)}
+	    else if (nodeType == "camera") 
+		then MCamera {name: name, parent: findNode(parent)}
+	    else if (nodeType == "mesh") 
+		then MMesh {name: name, parent: findNode(parent)}
+	    else if (nodeType == "phong" or nodeType == "blinn" or nodeType == "lambert") 
+		then MShader {type: nodeType, name: name}
+	    else if (nodeType == "cgfxShader") 
+		then null
+	    else if (nodeType == "cgfxVector") 
+		then null
+	    else if (nodeType == "file") 
+		then MFile {name: name}
+	    else if (nodeType == "shadingEngine") 
+		then MShadingEngine {name: name}
+	    else if (nodeType.startsWith("animCurve")) 
+		then MAnimCurve__ {name: name, parent: findNode(parent)}
+	    else if (nodeType == "character") 
+		then MCharacter {name: name}
+	    else if (nodeType == "addDoubleLinear") 
+		then MAddDoubleLinear {name: name}
+	    else if (nodeType == "multiplyDivide") 
+		then MMultiplyDivide {name: name}
+	    else null;
+    }
+
+    var lastSetAttr is Command;
+    function mergeSetAttr from (next is Command) to () 
+    {
+	const c = lastSetAttr;
+	lastSetAttr = null;
+	if (c != null) {
+	    next.namedArgs.putAll(c.namedArgs);
+	}
+    }
+
+    function processCommand from (cmd is Command) to () 
+    {
+	const n = cmd.name;
+	if (n == "createNode") {
+	    createNode(cmd);
+	} else if (n == "setAttr") {
+	    if (cmd.args.size() > 1) {
+		mergeSetAttr(cmd);
+		setAttr(cmd);
+	    } else {
+		lastSetAttr = cmd;
+	    }
+	} else if (n == "addAttr") {
+	    addAttr(cmd);
+	} else if (n == "connectAttr") {
+	    connectAttr(cmd)
+	}
+    }
+
+    function addAttr from (cmd is Command) to () 
+    {
+	const shortName = cmd.getString("sn");
+	const longName = cmd.getString("ln");
+	const dataType = cmd.getString("at");
+	current.addAttr(cmd);
+    }
+
+    function setAttr from (cmd is Command) to () 
+    {
+	current.setAttr(cmd);
+    }
+    
+    function connectAttr from (cmd is Command) to () 
+    {
+	const source = cmd.getString(0);
+	var dot = source.indexOf(".");
+	const sourceName = source.substring(0, dot);
+	const sourcePath = source.substring(dot+1);
+	const target = cmd.getString(1);
+	dot = target.indexOf(".");
+	const targetName = target.substring(0, dot);
+	const targetPath = target.substring(dot+1);
+	const sourceNode = findNode(sourceName);
+	const targetNode = findNode(targetName);
+	//println("connectAttr {sourceNode} => {targetNode} from {sourcePath} to {targetPath}");
+	const conn = 
+	    Connection 
+	    {
+		sourceNode: sourceNode;
+		sourcePath: sourcePath;
+		targetNode: targetNode;
+		targetPath: targetPath;
+	    }
+	sourceNode.addConnectionFrom(conn);
+	targetNode.addConnectionTo(conn);
+    }
+
+    const spatialMap is java.util.Map of (MNode, Node) = 
+	new java.util.HashMap of (MNode, Node) ();
+
+    const temporalMap is java.util.Map of (MNode, TimeNode) = 
+	new java.util.HashMap of (MNode, TimeNode) ();
+
+    public var url is String;
+
+    public var spatialRoot is Group;
+    public var temporalRoot is TimeGroup;
+    var channels is TimeNode[];
+
+    function toNode from (n is MSpatial) to Node 
+    {
+	if spatialMap.containsKey(n)
+	    then spatialMap.get(n) 
+	    else spatialMap.put(n, n.toNode(this))
+    }
+
+    function resolveInput 
+	from (n is MNode, 
+	      attr is String, 
+	      value is Number) 
+	to function from () to Number 
+    {
+	var result is function from () to Number;
+	for (c in n.connectionsToThis.get(attr)) {
+	    if (c.sourceNode is MUtility of Number) {
+		const src = c.sourceNode as MUtilityOfNumber;
+		result = src.getOutput(this, c.sourcePath);
+		break;
+	    } else {
+		const ptr = resolveSourcePointer(c) as Pointer of (?, Number);
+		if (ptr <> null) {
+		    result = function from () to Number { ptr.get() }
+		    break;
+		}
+	    }
+	}
+	if (result == null) {
+	    result = function from () to Number { value }
+	}
+	result as function from() to Number;
+    }
+
+    function resolveInput from (n is MUtility, attr is String, value is Tuple3) to function from () to Tuple3 {
+	var result is function from () to Tuple3;
+	for (c in n.connectionsToThis.get(attr)) {
+	    if (c.sourceNode is MUtility of Tuple3) {
+		const src = c.sourceNode as MUtilityOfTuple3;
+		result = src.getOutput(this, c.sourcePath);
+		break;
+	    } else {
+		const ptr = resolveSourcePointer(c) as Pointer of (?, Tuple3);
+		if (ptr <> null) {
+		    result = function from () to Tuple3 { ptr.get() }
+		    break;
+		}
+	    }
+	}
+	if (result == null) {
+	    const fx = resolveInput(n, "{attr}x", value.x);
+	    const fy = resolveInput(n, "{attr}y", value.y);
+	    const fz = resolveInput(n, "{attr}z", value.z);
+	    result = function from () to Tuple3 {
+		tuple(fx(), fy(), fz());
+	    }
+	}
+	result as function from () to Tuple3;
+    }
+
+    function resolveTargetPointer
+	from (c is Connection) to Pointer of (..F3Object, ?)
+    {
+	const target = c.targetNode;
+	if (target instanceof MCharacter) {
+	    (target as MCharacter).resolveTargetPointer(this, c)
+	} else if (target instanceof MSpatial) {
+	    const resolved = toNode(target as MSpatial);
+	    target.getPointer(c.targetPath, resolved);
+	} else null
+    }
+
+    function resolveSourcePointer
+	from (c is Connection) to Pointer of (..F3Object, ?)
+    {
+	const target = c.sourceNode;
+	if (target instanceof MCharacter) {
+	    (target as MCharacter).resolveSourcePointer(this, c)
+	} else if (target instanceof MSpatial) {
+	    const resolved = toNode(target as MSpatial);
+	    target.getPointer(c.sourcePath, resolved);
+	} else null
+    }
+
+    function getNumberTargets 
+	from (n is MNode, sourcePath is String) to (Pointer of (..F3Object, Number))[]
+    {
+	//println("getNumberTargets {sourcePath}");
+	foreach (c in n.connectionsFromThis.get(sourcePath)) {
+	    const ptr = resolveTargetPointer(c) as Pointer of (..F3Object, Number);
+	    println("resolved {ptr} from {n.name} {sourcePath}");
+	    ptr;
+	}
+    }
+
+    function toParentNode from (n is MSpatial) to Group
+    {
+	const node = toNode(n);
+	if (node == null) then spatialRoot else node as Group;
+    }
+
+    function toChannel from (n is MAnimCurve) to TimeNode
+    {
+	if (temporalMap.containsKey(n)) then temporalMap.get(n) else {
+		const ch = n.toChannel(this);
+		//		println("{this} => {ch}");
+		insert ch into channels;
+		temporalMap.put(n, ch);
+	    }
+    }
+
+    function generateScene 
+    {
+	spatialRoot = Group {id: url};
+	temporalRoot = TimeGroup {id: url};
+	for (n in nodeMap.values()) {
+	    if (n is MSpatial) {
+		toNode(n as MSpatial)
+	    } else if (n is MAnimCurve) {
+		toChannel(n as MAnimCurve);
+	    } 
+	}
+	var j = 0;
+	var g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
+	//println("channels={channels}");
+	for (ch in channels) {
+	    if (g.content.size() > 50) { // hack
+		insert g into temporalRoot.content;
+		g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
+	    }
+	    insert ch into g.content;
+	}
+	insert g into temporalRoot.content;
+	println(spatialRoot.foldLeft("", function from (y is String, x is Node) to String 
+				     {
+					 if (y == "") then "{x.id}" else "{y} -> {x.id}";
+				     }));
+	println(temporalRoot.foldLeft("", function from (y is String, x is TimeNode) to String 
+				      {
+					  if (y == "") then "{x.id}" else "{y} -> {x.id}";
+				      }));
+    }
+}
+
+class Connection {
+    const sourceNode is MNode;
+    const sourcePath is String;
+    const targetNode is MNode;
+    const targetPath is String;
+    override function toString to String {
+	"{sourceNode.name} {sourcePath} => {targetNode.name} {targetPath}"
+    }
+}
+
+
+class MNode {
+    const connectionsFromThis is java.util.Map of (String, Connection[]) =
+	new java.util.HashMap of (String, Connection[]);
+    const connectionsToThis is java.util.Map of (String, Connection[]) =
+	new java.util.HashMap of (String, Connection[]);
+    const name is String;
+    const parent is MNode;
+
+    function getPointer 
+	from (path is String, target is Object) 
+	to Pointer of (?, ?) 
+    {
+	null
+    }
+
+    function resolveInput from (m is MaModel, p is String) to function from () to Object {
+	println("{name} can't resolve: {p}");
+	null;
+    }
+
+    function addConnectionTo from (c is Connection) to () 
+    {
+	const conns = connectionsToThis.get(c.targetPath);
+	connectionsToThis.put(c.targetPath, [c, conns])
+    }
+
+    function addConnectionFrom from (c is Connection) to () 
+    {
+	const conns = connectionsFromThis.get(c.sourcePath);
+	connectionsFromThis.put(c.sourcePath, [c, conns])
+    }
+
+    function addAttr from (cmd is Command) to () 
+    {
+    }
+
+    function setAttr from (cmd is Command) to () 
+    {
+    }
+}
+
+abstract class MSpatial is MNode {
+    public var visible is Boolean = true;
+    abstract function toNode from (m is MaModel) to Node;
+    override function setAttr from (cmd is Command) to () {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "v") {
+	    visible = cmd.getBoolean();
+	}
+    }
+
+    override function resolveInput from (m is MaModel, p is String) to function from () to Object {
+	const ptr = getPointer(p, m.toNode(this));
+	if (ptr <> null) {
+	    function from () to Object {
+		ptr.get();
+	    }
+	} else super.resolveInput(m, p);
+    }
+
+    function getPointer 
+	from (path is String, target is Object) 
+	to Pointer of (?, ?) 
+    {
+	if (false and path == "v") {
+	    const n = target as Node;
+	    &n.visible
+	} else super.getPointer(path, target);
+    }
+}
+
+abstract class MUtility is MNode
+{
+}
+
+abstract class MUtilityOfNumber is MUtility {
+    abstract function getOutput from (m is MaModel, attr is String) to function from () to Number;
+}
+
+abstract class MUtilityOfTuple3 is MUtility {
+    abstract function getOutput from (m is MaModel, attr is String) to function from () to Tuple3;
+}
+
+class MMultiplyDivide is MUtilityOfTuple3
+{
+    var i1 is Tuple3;
+    var i2 is Tuple3;
+    var op is Integer;
+
+    override function resolveInput from (m is MaModel, p is String) to function from () to Object {
+	
+	if (p.startsWith("i1")) {
+	    const t = m.resolveInput(this, "i1", i1);
+	    if (p == "i1x") {
+		function from () to Number {
+		    t().x
+		}
+	    } else if (p == "i1y") {
+		function from () to Number {
+		    t().y
+		}
+	    } else if (p == "i1z") {
+		function from () to Number {
+		    t().z
+		}
+	    } else null
+	} else if (p.startsWith("i2")) {
+	    const t = m.resolveInput(this, "i2", i2);
+	    if (p == "i2x") {
+		function from () to Number {
+		    t().x
+		}
+	    } else if (p == "i2y") {
+		function from () to Number {
+		    t().y
+		}
+	    } else if (p == "i2z") {
+		function from () to Number {
+		    t().z
+		}
+	    } else null
+	} else null;
+    }
+
+    override function getOutput from (m is MaModel, attr is String) to function from () to Tuple3
+    {
+	if (attr == "o") {
+	    const input1 is function from () to Tuple3 = m.resolveInput(this, "i1", i1);
+	    const input2 is function from () to Tuple3 = m.resolveInput(this, "i2", i2);
+	    if (op == 0) {
+		// select first
+		input1 as function from () to Tuple3;
+	    } else if (op == 1) {
+		// multiply
+		function from () to Tuple3 {
+		    const t1 is Tuple3 = input1();
+		    const t2 is Tuple3 = input2();
+		    tuple(t1.x*t2.x, 
+			  t1.y*t2.y,
+			  t1.z*t2.z);
+		}
+	    } else if (op == 2) {
+		// divide
+		function from () to Tuple3 {
+		    const t1 is Tuple3 = input1();
+		    const t2 is Tuple3 = input2();
+		    tuple(t1.x/t2.x, 
+			  t1.y/t2.y,
+			  t1.z/t2.z);
+		}
+	    } else if (op == 3) {
+		// pow
+		function from () to Tuple3 {
+		    const t1 is Tuple3 = input1();
+		    const t2 is Tuple3 = input2();
+		    tuple(Math.pow(t1.x,t2.x), 
+			  Math.pow(t1.y,t2.y),
+			  Math.pow(t1.z,t2.z));
+		}
+	    } else null
+	} else null
+    }
+
+    override function setAttr from (cmd is Command) to () {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "i1") {
+	    i1 = cmd.getVec3();
+	} else if (n == "i2") {
+	    i2 = cmd.getVec3();
+	} else if (n == "op") {
+	    op = cmd.getInt();
+	}
+    }
+}
+
+class MAddDoubleLinear is MUtilityOfNumber
+{
+    var i1 is Number;
+    var i2 is Number;
+
+    override function getOutput from (m is MaModel, attr is String) to function from () to Number
+    {
+
+	if (attr == "o") {
+	    const input1 = m.resolveInput(this, "i1", i1);
+	    const input2 = m.resolveInput(this, "i2", i2);
+	    function from () to Number { input1() + input2() }
+	} else null
+    }
+
+    override function setAttr from (cmd is Command) to () {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "i1") {
+	    i1 = cmd.getFloat();
+	} else if (n == "i2") {
+	    i2 = cmd.getFloat();
+	}
+    }
+}
+
+class MTemporal is MNode {
+}
+
+class MTransform is MSpatial {
+
+    var t is Vec3;
+    var r is Vec3;
+    var s is Vec3 = Vec3.<<1>>;
+    var rp is Vec3;
+    var rpt is Vec3;
+    var sp is Vec3;
+    var spt is Vec3;
+    var tmrp is Vec3;
+    var ro is Integer;
+    
+    override function setAttr from (cmd is Command) to () 
+    {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "t") {
+	    t = cmd.getVec3();
+	} else if (n == "r") {
+	    r = cmd.getVec3();
+	} else if (n == "s") {
+	    s = cmd.getVec3();
+	} else if (n == "rp") {
+	    rp = cmd.getVec3();
+	} else if (n == "rpt") {
+	    rp = cmd.getVec3();
+	} else if (n == "sp") {
+	    sp = cmd.getVec3();
+	} else if (n == "spt") {
+	    spt = cmd.getVec3();
+	} else if (n == "tmrp") {
+	    tmrp = cmd.getVec3();
+	} else if (n == "ro") {
+	    ro = cmd.getInt();
+	}
+    }
+
+    override public function getPointer
+	from (ptr is String, target is Object) 
+	to Pointer of (?, ?)
+    {
+	println("get pointer {name} attr={ptr} target={target}");
+
+	const n = target as MaTransform;
+
+	if ptr == "tx" 
+        then &n.tx as Pointer of (?, ?)
+	else if ptr == "ty"
+        then &n.ty as Pointer of (?, ?)
+	else if ptr == "tz"
+        then &n.tz as Pointer of (?, ?)
+
+        else if ptr == "sx" 
+        then &n.sx as Pointer of (?, ?)
+	else if ptr == "sy"
+        then &n.sy as Pointer of (?, ?)
+	else if ptr == "sz"
+        then &n.sz as Pointer of (?, ?)
+
+        else if ptr == "rx" 
+        then &n.rx as Pointer of (?, ?)
+	else if ptr == "ry"
+        then &n.ry as Pointer of (?, ?)
+	else if ptr == "rz"
+        then &n.rz as Pointer of (?, ?)
+
+        else if ptr == "rpx" 
+        then &n.rpx as Pointer of (?, ?)
+	else if ptr == "rpy"
+        then &n.rpy as Pointer of (?, ?)
+	else if ptr == "rpz"
+        then &n.rpz as Pointer of (?, ?)
+
+        else if ptr == "spx" 
+        then &n.spx as Pointer of (?, ?)
+	else if ptr == "spy"
+        then &n.spy as Pointer of (?, ?)
+	else if ptr == "spz"
+        then &n.spz as Pointer of (?, ?)
+
+        else if ptr == "rptx" 
+        then &n.rptx as Pointer of (?, ?)
+	else if ptr == "rpty"
+        then &n.rpty as Pointer of (?, ?)
+	else if ptr == "rptz"
+        then &n.rptz as Pointer of (?, ?)
+
+        else if ptr == "sptx" 
+        then &n.sptx as Pointer of (?, ?)
+	else if ptr == "spty"
+        then &n.spty as Pointer of (?, ?)
+	else if ptr == "sptz"
+        then &n.sptz as Pointer of (?, ?)
+
+        else if ptr == "tmrpx" 
+        then &n.tmrpx as Pointer of (?, ?)
+	else if ptr == "tmrpy"
+        then &n.tmrpy as Pointer of (?, ?)
+	else if ptr == "tmprz"
+        then &n.tmrpz as Pointer of (?, ?)
+       else super.getPointer(ptr, target)
+    }
+
+    override operation toNode from (m is MaModel) to Node 
+    {
+	const tn = MaTransform {
+
+	    visible: visible;
+
+	    id: name
+
+	    tx: t.x;
+	    ty: t.y;
+	    tz: t.z;
+
+	    sx: s.x;
+	    sy: s.y;
+	    sz: s.z;
+
+	    rx: r.x;
+	    ry: r.y;
+	    rz: r.z;
+
+	    ro: ro;
+
+	    rpx: rp.x;
+	    rpy: rp.y;
+	    rpz: rp.z;
+
+	    spx: sp.x;
+	    spy: sp.y;
+	    spz: sp.z;
+
+	    rptx: rpt.x;
+	    rpty: rpt.y;
+	    rptz: rpt.z;
+
+	    sptx: spt.x;
+	    spty: spt.y;
+	    sptz: spt.z;
+
+	    tmrpx: tmrp.x;
+	    tmrpy: tmrp.y;
+	    tmrpz: tmrp.z;
+	}
+	m.spatialMap.put(this, tn);
+	const p = m.toParentNode(parent as MSpatial);
+	insert tn into p.content;
+	println("to {name}:");
+	for (c in connectionsToThis.values()) {
+	    for (x in c) {
+		println(x);
+		println(x.sourceNode.resolveInput(m, x.sourcePath));
+	    }
+	}
+	println("from {name}:");
+	for (c in connectionsFromThis.values()) {
+	    for (x in c) {
+		const ptr = getPointer(x.sourcePath, tn);
+		println(x);
+		println("ptr={ptr}");
+		println(x.targetNode.resolveInput(m, x.targetPath));
+	    }
+	}
+	return tn;
+    }
+}
+
+class MCamera is MSpatial 
+{
+    var ortho is Boolean = no;
+    var hfa is Number;
+    var vfa is Number;
+    var fcp is Number;
+    var ncp is Number;
+    var fl is Number;
+    var ow is Number;
+    var lsr is Number;
+    var ff is Number;
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	const attr = cmd.getAttr();
+	if (attr == "o") {
+	    ortho = yes;
+	} else if (attr == "hfa") {
+	    hfa = cmd.getFloat()
+	} else if (attr == "vfa") {
+	    vfa = cmd.getFloat()
+	} else if (attr == "fcp") {
+	    fcp = cmd.getFloat()
+	} else if (attr == "ncp") {
+	    ncp = cmd.getFloat()
+	} else if (attr == "ow") {
+	    ow = cmd.getFloat()
+	} else if (attr == "fl") {
+	    fl = cmd.getFloat()
+	} else if (attr == "lsr") {
+	    lsr = cmd.getFloat()
+	} else if (attr == "ff") {
+	    ff = cmd.getFloat()
+	}
+    }
+
+    override function toNode from (m is MaModel) to Node 
+    {
+	if (ortho) {
+	    null
+	} else {
+	    if (ff == 1) {
+		const horizontalAngle = Math.toDegrees(2.0*Math.atan(25.4 * hfa*lsr / 2.0 / fl));
+		PerspectiveCamera {
+		    id: name;
+		    near: ncp;
+		    far: fcp;
+		    override var widthAngle = horizontalAngle;
+		    override var heightAngle = bind PerspectiveCamera.widthAngleToHeightAngle(widthAngle, aspectRatio);
+		}
+	    } else {
+		const verticalAngle = Math.toDegrees(2.0*Math.atan(25.4 * vfa / 2.0 / fl));
+		PerspectiveCamera {
+		    id: name;
+		    near: ncp;
+		    far: fcp;
+		    heightAngle: verticalAngle;
+		}
+	    }
+	}
+    }
+}
+
+class MJoint is MTransform {
+    // TBD
+}
+
+class MCharacter is MNode {
+
+    function resolveTargetPointer from (m is MaModel, toThis is Connection) to Pointer of (..F3Object, ?) 
+    {
+	// toThis connects to one of my inputs; forward to the corresponding connection 
+	for (conn in connectionsFromThis.get(toThis.targetPath)) {
+	    const ptr = m.resolveTargetPointer(conn);
+	    if (ptr <> null) return ptr;
+	    println("failed to resolve target {toThis.targetPath} using {conn}");
+	}
+	return null;
+    }
+
+    function resolveSourcePointer from (m is MaModel, toThis is Connection) to Pointer of (..F3Object, ?) 
+    {
+	// toThis connects to one of my inputs; forward to the corresponding connection 
+	for (conn in connectionsToThis.get(toThis.targetPath)) {
+	    const ptr = m.resolveSourcePointer(conn);
+	    if (ptr <> null) return ptr;
+	    println("failed to resolve source {toThis.targetPath} using {conn}");
+	}
+	return null;
+    }
+}
+
+class UVData {
+    public var uvSet is Integer;
+    public var uvIndices is Integer[]; 
+    override function toString to String {
+	"UVData: {uvSet}, uvIndices: {uvIndices}";
+    }
+}
+
+class PolyfaceData {
+    public var faceEdges is Integer[];
+    public var holes is Integer[];
+    public var mu is UVData;
+    override function toString to String {
+	"faceEdges: {faceEdges}, holes: {holes}, mu: {mu}";
+    }
+}
+
+// attribute structure paths
+class PathNode {
+}
+
+class Index is PathNode {
+    const index is Integer;
+    override function toString to String {
+	"[{index}]"
+    }
+}
+
+class Field is PathNode {
+    const name is String;
+    override function toString to String {
+	".{name}"
+    }
+}
+
+class Range is PathNode {
+    const startIndex is Integer;
+    const endIndex is Integer;
+    override function toString to String {
+	"[{startIndex}:{endIndex}]"
+    }
+}
+
+class Path {
+    const path is PathNode[];
+    override function toString to String {
+	"{path}"
+    }
+}
+
+function parsePath from (path is String) to Path
+{
+    const izer = new java.util.StringTokenizer(path, ".[]:", true);
+    var result is PathNode[];
+    while (izer.hasMoreTokens()) {
+	const elem = izer.nextToken();
+	var pnode is PathNode;
+	if (elem == "[") {
+	    const i1 = izer.nextToken();
+	    const t = izer.nextToken();
+	    var i2 is String = null;
+	    if (t == ":") { 
+		i2 = izer.nextToken();
+		izer.nextToken(); // ignore "]"
+		pnode = Range {
+		    startIndex: Integer.parseInt(i1);
+		    endIndex: Integer.parseInt(i2);
+		}
+	    } else {
+		pnode = Index {
+		    index: Integer.parseInt(i1);
+		}
+	    }
+	} else if (elem == ".") {
+	    pnode = Field {
+		name: izer.nextToken()
+	    }
+	} else {
+	    pnode = Field {
+		name: elem;
+	    }
+	}
+	insert pnode into result;
+    }
+    return Path {path: result};
+}
+
+class UVSet {
+    const uvIndex is Integer;
+    const uvs is Number[];
+    override function toString to String {
+	"uvSet: {uvIndex}, uvs: {uvs}";
+    }
+}
+
+class MMesh is MSpatial 
+{
+    var verts is Number[];
+    var pointTweaks is Number[];
+    var normals is Number[];
+    var edges is Integer[];
+    var polyfaces is PolyfaceData[];
+    var uvSets is UVSet[];
+
+    function faceEdgeIndex from (i is Integer) to Integer 
+    {
+	if (i < 0) then -i-1 else i;
+    }
+    
+    function edgeStart from (faceEdge is Integer) to Integer {
+	faceEdgeToEdge(faceEdge, true);
+    }
+
+    function edgeEnd from (faceEdge is Integer) to Integer {
+	faceEdgeToEdge(faceEdge, false);
+    }
+
+    function faceEdgeToEdge(faceEdge is Integer, 
+			    fromStart is Boolean) to Integer 
+    {
+	const bwd = faceEdge < 0;
+	const i = faceEdgeIndex(faceEdge); 
+	const j = if (bwd == fromStart) then 1 else 0;
+	edges[i*3+j];
+    }
+    
+    function isSmooth from (faceEdge is Integer) to Boolean 
+    {
+	const i = faceEdgeIndex(faceEdge);
+	edges[i*3+2] != 0
+    }
+
+    function uv from (uvSet is Integer, uvIndex is Integer) to Point2
+    {
+	const uvs = uvSets[uvSet].uvs;
+	const i0 = uvIndex * 2;
+	const i1 = i0+1;
+	point(uvs[i0], uvs[i1]);
+    }
+    
+    function vertex from (i is Integer) to Point3 
+    {
+	const i0 = 3*i;
+	const i1 = i0+1;
+	const i2 = i1+1;
+	point(verts[i0] + pointTweaks[i0],
+	      verts[i1] + pointTweaks[i1],
+	      verts[i2] + pointTweaks[i2])
+    }
+
+    function normal from (i is Integer) to Vec3 
+    {
+	const i0 = 3*i;
+	const i1 = i0+1;
+	const i2 = i1+1;
+	vector(normals[i0],
+	       normals[i1],
+	       normals[i2])
+    }
+
+    function buildMesh
+    {
+	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
+	var norms is Vec3[];
+	if (this.normals == []) {
+	    for (polyface in polyfaces) {
+		var norm = Vec3.<<0>>;
+		const faceEdges = polyface.faceEdges;
+		for (faceEdge in faceEdges) {
+		    const i = indexof faceEdge;
+		    const edge = edgeStart(faceEdge);
+		    const next = edgeEnd(faceEdge);
+		    const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
+		    const v0 = vertex(edge);
+		    const v1 = vertex(next);
+		    const v2 = vertex(prev);
+   		    norm += (v1 - v0).cross(v2 - v0);
+		}
+		norm = norm.normalize();
+		//		println("norm={norm}");
+		insert [norm.x, norm.y, norm.z] into normals;
+	    }
+	} else {
+	    const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
+	    for (f in polyfaces) {
+		const faceIndex = indexof f;
+		for (faceEdge in f.faceEdges) {
+		    if (isSmooth(faceEdge)) {
+			const e0 = edgeStart(faceEdge);
+			const e1 = edgeEnd(faceEdge);
+			edgeToFace1.put(e0, [faceEdge, faceIndex]);
+			edgeToFace1.put(e1, [faceEdge, faceIndex]);
+		    }
+		}
+	    }
+	    const stack = new java.util.Stack of Integer;
+	    const faceToNormal = new java.util.TreeMap of (Integer, Vec3);
+	    const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
+	    while (edgeToFace1.size() > 0) {
+		const ent = edgeToFace1.pollFirstEntry();
+		const edge1 = ent.getKey();
+		const indices1 = ent.getValue();
+		var faces is Integer[];
+		const faceEdge = indices1[0];
+		const faceIndex = indices1[1];
+		stack.push(faceEdge);
+		stack.push(faceIndex);
+		while (not stack.isEmpty()) {
+		    const faceEdge1 = stack.pop();
+		    const faceIndex1 = stack.pop();
+		    insert faceIndex1 into faces;
+		    const iter = edgeToFace1.entrySet().iterator();
+		    while (iter.hasNext()) {
+			const n = iter.next();
+			const edge2 = n.getKey();
+			const indices2 = n.getValue();
+			const faceEdge2 = indices2[0];
+			const faceIndex2 = indices2[1];
+			if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
+			    stack.push(faceEdge2);
+			    stack.push(faceIndex2);
+			    iter.remove();
+			}
+		    }
+		}
+		edgeToFace2.put(edge1, faces);
+	    }
+	    for (f in polyfaces) {
+		const faceIndex = indexof f;
+		for (faceEdge in f.faceEdges) {
+		    const edge = edgeStart(faceEdge);
+		    const faces = edgeToFace2.get(edge);
+		    if (faces == []) {
+                        //norms.add(this.normal(faceIndex));
+		    } else {
+			var norm = Vec3.<<0>>;
+			for (j in faces) {
+			    const faceNorm = this.normal(j);
+			    norm += faceNorm;
+			}
+			insert norm into norms;
+		    }
+		}
+	    }
+	}
+    }
+
+    function getMesh to AbstractMesh
+    {
+	//println("UVS={uvSets}");
+	const startIndex = 0;
+	const endIndex = polyfaces.size();
+	for (i in [startIndex..<endIndex]) {
+	    const f = polyfaces[i];
+	    const mu = f.mu;
+	    const edge0 = edgeStart(f.faceEdges[0]);
+	    const norm0 = i;
+	    const uv0 = mu.uvIndices[0];
+	    var edge1 = edgeStart(f.faceEdges[1]);
+	    var norm1 = i;
+	    var uv1 = mu.uvIndices[1];
+	    for (j in [2..<f.faceEdges.size()]) {
+		insertVertex(edge0, norm0, mu.uvSet, uv0);
+		insertVertex(edge1, norm1, mu.uvSet, uv1);
+		const edge2 = edgeStart(f.faceEdges[j]);
+		const norm2 = i;
+		const uv2 = mu.uvIndices[j];
+		insertVertex(edge2, norm2, mu.uvSet, uv2);
+		edge1 = edge2;
+		norm1 = norm2;
+		uv1 = uv2;
+	    }
+	}
+	MeshBuffer {
+	    indexBuffer: ib.getBuffer();
+	    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb.getBuffer() };
+	    normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb.getBuffer() };
+	    textureBuffers: [MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb.getBuffer() }];
+	}.toMesh()
+    }
+
+    const ib = new IntBufferBuilder();
+    const vb = new FloatBufferBuilder();
+    const nb = new FloatBufferBuilder();
+    const uvb = new FloatBufferBuilder();
+
+    function insertVertex
+	from (edge is Integer, norm is Integer, uvSet is Integer, uvIndex is Integer) 
+	to ()
+    {
+	const v = this.vertex(edge);
+	const n = this.normal(norm);
+	const uv = this.uv(uvSet, uvIndex);
+	//	println("{ib.getBufferSize()} vert {v} norm={n} uv={uv}");
+	ib.add(ib.getBufferSize());
+	vb.add(v.x, v.y, v.z);
+	nb.add(n.x, n.y, n.z);
+	uvb.add(uv.x, uv.y);
+    }
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "vt") {
+	    verts = cmd.getFlatFloat3Array();
+	} else if (n == "pt") {
+	    pointTweaks = cmd.getFlatFloat3Array();
+	} else if (n == "n") {
+	    normals = cmd.getFlatFloat3Array();
+	    for (v in normals) {
+		if (v > 1e10) { // bogus normals
+		    normals = [];
+		    break;
+		}
+	    }
+	} else if (n == "ed") {
+	    edges = cmd.getFlatInt3Array();
+	} else if (n == "fc") {
+	    polyfaces = cmd.getPolyfaceData();
+	} else if (n == "uvst") {
+            // uv sets
+	    const path = cmd.getPath();
+	    const index = path.path[1] as Index;
+	    const field = path.path[2] as Field;
+	    if (field.name == "uvsp") {
+		const range = path.path[3] as Range;
+		const uvIndex = index.index;
+		const values = cmd.getFlatFloat2Array();
+		if (uvSets[uvIndex] == null) {
+		    insert UVSet {
+			uvIndex: uvIndex;
+			uvs: values;
+		    } into uvSets;
+		} else {
+		    uvSets[uvIndex].uvs[range.startIndex..range.endIndex] = values;
+		}
+	    }
+	}
+    }
+
+    override function toNode from (m is MaModel) to Node {
+	buildMesh();
+	const mesh = getMesh();
+	const shaderConn = connectionsFromThis.get("iog");
+	const mshaderNode = 
+	    if (shaderConn <> null) {
+		println("shaderConn={shaderConn}");
+		println("shaderConn={shaderConn[0].targetNode}");
+		println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+		println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
+		shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MShader;
+	    } else null;
+	const shader = mshaderNode.toShader(m);
+	//println("mesh : {r.id} => {r.bounds}");
+	const p = m.toParentNode(parent as MSpatial);
+	//println("parent is {p.id}");
+	const r = MeshNode {
+	    //visible: visible;
+	    id: name;
+	    mesh: mesh;
+	    shader: shader;
+	}
+	m.spatialMap.put(this, r);
+	insert r into p.content;
+	//println("parent.content={p.content}");
+	return r;
+    }
+}
+
+class MShader is MNode 
+{
+    public const type is String;
+
+    var c is Tuple3 = tuple(0.5, 0.5, 0.5);
+    var ambc is Tuple3 =Tuple3.<<0>>;;
+    var ic is Tuple3 = Tuple3.<<0>>;
+    var sc is Tuple3 = Tuple3.<<0>>;
+    var dc is Number = 0.8;
+    var ec is Number = 0.3;
+    var cp is Number = 20.0;
+    var it is Tuple3 = Tuple3.<<0>>;
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "c") {
+	    c = cmd.getVec3();
+	} else if (n == "ambc") {
+	    ambc = cmd.getVec3();
+	} else if (n == "sc") {
+	    sc = cmd.getVec3();
+	} else if (n == "cp") {
+	    cp = cmd.getFloat();
+	} else if (n == "ic") {
+	    ic = cmd.getVec3();
+	} else if (n == "dc") {
+	    dc = cmd.getFloat();
+	} else if (n == "it") {
+	    it = cmd.getVec3();
+	}
+    }
+
+    var shader is Shader;
+
+    function toShader from (m is MaModel) to Shader 
+    {
+	if (shader == null) {
+	    const alpha = 1.0 - it.x;
+	    const diffuse = Color.color(c.x * dc, c.y * dc, c.z * dc, alpha);
+	    const ambient = Color.color(ambc.x, ambc.y, ambc.z, alpha);
+	    const emissive = Color.color(ic.x, ic.y, ic.z, alpha);
+	    const specular = Color.color(sc.x, sc.y, sc.z, alpha);
+	    const shininess = if (this.type == "phong") then cp else 100 - 99 * Math.sqrt(ec);
+	    println("effectLoader={m.effectLoader}");
+	    shader = m.effectLoader.loadDefaultShader(null,
+						      diffuse,
+						      ambient,
+						      emissive,
+						      specular,
+						      shininess);
+	}
+	println("toShader => {shader}");
+	return shader;
+    }
+}
+
+class MShadingEngine is MNode {
+    override function setAttr from (cmd is Command) to () 
+    {
+	super.setAttr(cmd)
+    }
+}
+
+class MFile is MNode {
+    var ftn is String;
+    override function setAttr from (cmd is Command) to () 
+    {
+	const n = cmd.getAttr();
+	if (n == "ftn") {
+	    ftn = cmd.getString();
+	}
+    }
+}
+
+// http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/animCurve.html
+abstract class MAnimCurve of a is MTemporal 
+{
+    var kix is Number[];
+    var kiy is Number[];
+    var kox is Number[];
+    var koy is Number[];
+    var kit is Integer[];
+    var kot is Integer[];
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "kix") {
+	    kix = cmd.getFloatArray();
+	} else if (n == "kiy") {
+	    kiy = cmd.getFloatArray();
+	} else if (n == "kox") {
+	    kox = cmd.getFloatArray();
+	} else if (n == "koy") {
+	    koy = cmd.getFloatArray();
+	} else if (n == "kit") {
+	    kit = cmd.getIntArray();
+	} else if (n == "kot") {
+	    kot = cmd.getIntArray();
+	}
+    }
+
+    abstract function toChannel from (m is MaModel) to Channel of a;
+
+}
+
+const FPS = 1s/24.0;
+
+class MAnimCurve__ is MAnimCurve of Number 
+{
+    var ktv is Vec2[];
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	super.setAttr(cmd);
+	const n = cmd.getAttr();
+	if (n == "ktv") {
+	    ktv = cmd.getFloat2Array();
+	}
+    }
+
+    function getInterpolator from (i is Integer) to KeyFrame.NumberInterpolator 
+    {
+	if (i >= kix.size()) {
+	    return KeyFrame.Linear;
+	}
+	KeyFrame.Tangent {
+	    kix: kix[i];
+	    kiy: kiy[i];
+	    kox: kox[i];
+	    koy: koy[i];
+	}
+    }
+
+    override function toChannel from (m is MaModel) to Channel of Number 
+    {
+	Channel of Number 
+	{
+	    id: name;
+	    targets: m.getNumberTargets(this, "o");
+	    keys:
+	    foreach (x in ktv) {
+		KeyFrame.Key of Number {
+		    position: FPS * (x.x - 1)
+		    value: x.y;
+		    interpolator: getInterpolator(indexof x);
+		}
+	    }
+	}
+    }
+}
+
+
+class Command 
+{
+    const name is String;
+    const args is String[];
+    const namedArgs is java.util.Map of (String, String) 
+	= new java.util.HashMap of (String, String) ();
+
+    override function toString to String 
+    {
+	"{name} {foreach (ent in namedArgs.entrySet()) "-{ent.getKey()} {ent.getValue()}"} {foreach (arg in args) " {arg}"}"
+    }
+
+    public function getBoolean() to Boolean {
+	const s = getString(1);
+	s == "yes" or s == "true" 
+    }
+
+    public function getString to String {
+	getString(1)
+    }
+
+    public function getInt to Integer 
+    {
+	getInt(1)
+    }
+
+    public function getFloat to Number 
+    {
+	getFloat(1)
+    }
+
+    public function getAttr to String 
+    {
+	const attr = getString(0);
+	const bracket = attr.indexOf("[");
+	if (bracket > 0) {
+	    return attr.substring(1, bracket);
+	}
+	return attr.substring(1)
+    }
+
+    public function getPath to Path 
+    {
+	parsePath(getString(0))
+    }
+    
+    public function getFloatArray to Number[] 
+    {
+	const count = getCount("s", 1);
+	foreach (k in [1..count]) getFloat(k)
+    }
+
+    public function getIntArray to Integer[] 
+    {
+	const count = getCount("s", 1);
+	foreach (k in [1..count]) getInt(k)
+    }
+
+    public function getFloat2Array to Vec2[] 
+    {
+	const count = getCount("s", 2);
+	foreach (k in [1..count*2 step 2]) vector(getFloat(k), getFloat(k+1))
+    }
+
+    public function getFlatFloat2Array to Number[] 
+    {
+	const count = getCount("s", 2);
+	foreach (k in [1..count*2]) getFloat(k);
+    }
+
+    public function getFloat3Array to Vec3[] 
+    {
+	const count = getCount("s", 3);
+	foreach (k in [1..count*3 step 3]) vector(getFloat(k), getFloat(k+1), getFloat(k+2))
+    }
+
+    public function getFlatFloat3Array to Number[] 
+    {
+	const count = getCount("s", 3);
+	foreach (k in [1..count*3]) getFloat(k)
+    }
+
+    public function getFlatInt3Array to Integer[] 
+    {
+	const count = getCount("s", 3);
+	foreach (k in [1..count*3]) getInt(k)
+    }
+
+    public function getPolyfaceData to PolyfaceData[] 
+    {
+	const len = args.size();
+	var i = 1;
+	var faceData is PolyfaceData[];
+	while (i < len) {
+	    var cmd = getString(i++);
+	    var faceEdges is Integer[];
+	    var mu is UVData;
+	    var holes is Integer[];
+	    var vals is Integer[];
+	    if (cmd == "f") {
+		const count = getInt(i++);
+		for (j in [0..<count]) {
+		    insert getInt(i++) into faceEdges;
+		}
+	    }
+	    cmd = getString(i++);
+	    if (cmd == "mu") {
+		const uvSet = getInt(i++);
+		var uvs is Integer[];
+		const count = getInt(i++);
+		for (j in [0..<count]) {
+		    insert getInt(i++) into uvs;
+		}
+		mu = UVData {
+		    uvSet: uvSet;
+		    uvIndices: uvs;
+		}
+	    }
+	    insert PolyfaceData {
+		faceEdges: faceEdges;
+		mu: mu;
+	    } into faceData;
+	}
+	return faceData;
+    }
+
+    const NEG = "-".charAt(0);
+
+    function isInt from (idx is Integer) to Boolean 
+    {
+	const str = getString(idx);
+	const len = str.length();
+	if (len == 0) {
+	    return false;
+	}
+	var ch = str.charAt(0);
+	var i = 0;
+	if (ch == NEG) {
+	    if (len == 1) {
+		return false;
+	    }
+	    ++i;
+	} 
+	while (i < len) {
+	    if (not Character.isDigit(str.charAt(i++))) {
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    public function getVec3 to Vec3 
+    {
+	vector(getFloat(1), getFloat(2), getFloat(3))
+    }
+
+    public function getVec2 to Vec2 
+    {
+	vector(getFloat(1), getFloat(2));
+    }
+
+    public function getCount(size is String, width is Integer) to Integer 
+    {
+	const c = (args.size()-1) / width; 
+	const s = getString(size);
+	if (s <> null) then Math.min(Integer.parseInt(s), c) else c;
+    }
+
+    public function getInt from (key is String) to Integer 
+    {
+	java.lang.Integer.parseInt(getString(key));
+    }
+
+    public function getInt from (i is Integer) to Integer 
+    {
+	java.lang.Integer.parseInt(getString(i));
+    }
+
+    public function getFloat from (key is String) to Number 
+    {
+	try {
+	    return java.lang.Float.parseFloat(getString(key));
+	} catch (e) {
+	    println("error {this}, key={key}");
+	    return 0.0;
+	}
+    }
+
+    public function getFloat from (i is Integer) to Number 
+    {
+	try {
+	    return java.lang.Float.parseFloat(getString(i));
+	} catch (e) {
+	    println("error {this}, index={i}");
+	    return 0.0;
+	}
+    }
+
+    public function getString from (key is String) to String 
+    {
+	trim(namedArgs.get(key));
+    }
+
+    public function getString from (i is Integer) to String 
+    {
+	trim(args[i]);
+    }
+
+    public function trim from (s is String) to String 
+    {
+	if (s.startsWith("\"")) then s.substring(1, s.length()-1) else s;
+    }
+}
+
+class MaParser 
+{
+    public var effectLoader is CGEffectLoader;
+    var pos = 0;
+    const buf = new java.lang.StringBuffer;
+    var tokens = new java.util.ArrayList of String;
+    const cmds = new java.util.ArrayList of Command;
+
+    function flush() {
+	if (buf.length() > 0) {
+	    tokens.add(buf.toString());
+	    buf.setLength(0);
+	}
+    }
+
+    function consumeUntil(input is String, end is Character) {
+	const len = input.length();
+	while (pos < len) {
+	    const ch = input.charAt(pos++);
+	    buf.append(ch);
+	    if (ch == end) {
+		break;
+	    }
+	}
+	flush()
+    }
+
+    function tokenize from (s is String) to () 
+    {
+	const ws = " \r\n\t";
+	const quot = "\"";
+	const izer = new java.util.StringTokenizer(s, ";");
+	while (izer.hasMoreTokens()) {
+	    const tok = izer.nextToken();
+	    if (tok.startsWith("//")) {
+		continue;
+	    }
+	    buf.setLength(0);
+	    var len = tok.length();
+	    pos = 0;
+	    while (pos < len) {
+		const ch = tok.charAt(pos++);
+		if (ws.indexOf(ch) >= 0) {
+		    flush();
+		} else if (quot.indexOf(ch) == 0) {
+		    flush();
+		    buf.append(ch);
+		    consumeUntil(tok, quot.charAt(0));
+		} else {
+		    buf.append(ch);
+		}
+	    }
+	    flush();
+	    if (tokens.size() > 0) {
+		const cmd = parseCommand(tokens);
+		if (cmd <> null) {
+		    cmds.add(cmd);
+		}
+		tokens.clear();
+	    }
+	}
+    }
+
+    public operation parse from (u is java.net.URL) to MaModel 
+    {
+	const r = new java.io.BufferedReader(new java.io.InputStreamReader(u.openStream()));
+	const buf = new java.lang.StringBuffer();
+	while (true) {
+	    const ch is Integer = r.read();
+	    if (ch <= 0) {
+		break;
+	    }
+	    buf.append(ch as Character);
+	}
+	parse(u.toString(), buf.toString())
+    }
+
+    public operation parse from (url is String, input is String) to MaModel 
+    {
+	tokenize(input);
+	//	for (cmd in cmds) {
+	    //	    println(cmd);
+	//	}
+	const model = MaModel {
+	    effectLoader: effectLoader;
+	    url: url
+	}
+	for (cmd in cmds) {
+	    model.processCommand(cmd)
+	}
+	model.generateScene();
+	return model;
+    }
+
+    operation parseCommand from (cmds is java.util.List of String) to Command 
+    {
+	const cmd = Command {
+	    name: cmds.get(0);
+	}
+	var i = 1;
+	const len = cmds.size();
+	while (i < len) {
+	    const s = cmds.get(i++);
+	    if (s.startsWith("-") and not java.lang.Character.isDigit(s.charAt(1))) {
+		const v is String = if (i < len) then cmds.get(i++) else "";
+		cmd.namedArgs.put(s.substring(1), v);
+	    } else {
+		insert s into cmd.args;
+	    }
+	}
+	return cmd
+    }
+}
+
+const RotateOrder =   
+   [0, 1, 2,  // 0=xyz
+    1, 2, 0,  // 1=yzx
+    2, 0, 1,  // 2=zxy
+    0, 2, 1,  // 3=xzy
+    1, 0, 2,  // 4=yxz
+    2, 1, 0]; // 5=zyx
+
+const axes = [Vec3.X_AXIS, Vec3.Y_AXIS, Vec3.Z_AXIS];
+
+// http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/transform.html
+public class MaTransform is Group 
+{
+    // translation
+    public var tx is Number;
+    public var ty is Number;
+    public var tz is Number;
+    // rotation
+    public var rx is Number;
+    public var ry is Number;
+    public var rz is  Number;
+    // scale
+    public var sx is Number = 1.0;
+    public var sy is Number = 1.0;
+    public var sz is Number = 1.0;
+    // rotate pivot
+    public var rpx is Number;
+    public var rpy is Number;
+    public var rpz is Number;
+    // rotate pivot translate
+    public var rptx is Number;
+    public var rpty is Number;
+    public var rptz is Number;
+    // scale pivot
+    public var spx is Number;
+    public var spy is Number;
+    public var spz is Number;
+    // scale pivot translate
+    public var sptx is Number;
+    public var spty is Number;
+    public var sptz is Number;
+    // transMinusRotatePivot
+    public var tmrpx is Number;
+    public var tmrpy is Number;
+    public var tmrpz is Number;
+    // rotate order
+    public var ro is Integer;
+
+    function rotate 
+	from (rx is Number, ry is Number, rz is Number, ro is Integer) 
+	to Mat4 
+    {
+	const angles = [rx, ry, rz];
+	var result = Mat4.<<1>>;
+	for (i in [0..<3]) { 
+	    const j = RotateOrder[i*3+ro]; 
+	    result *= axes[j].rotate(angles[j]);
+	}
+	return result;
+    }
+
+    // translation
+    public readonly var t is Vec3 = bind vector(tx, ty, tz);
+    // rotation
+    public readonly var r is Mat4 = bind rotate(rx, ry, rz, ro);
+    // scale
+    public readonly var s is Vec3 = bind vector(sx, sy, sz);
+    
+    override var transform = 
+        bind 
+	translate(tx+rpx+rptx, 
+		  ty+rpy+rpty, 
+		  tz+rpz+rptz) * 
+	r *
+	translate(-rpx+spx, 
+		  -rpy+spy, 
+		  -rpz+spz) *
+	scale(sx, sy, sz) *
+	translate(-spx, 
+		  -spy, 
+		  -spz);
+}
+
+// http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/joint.html
+
+operation dumpScene (spatialRoot is Node) 
+{
+    println(spatialRoot.foldLeft("", function from (y is String, x is Node) to String 
+				 {
+				     if (y == "") 
+					 then "{x.id} =\n{x.transform}" 
+					 else "{y}\n{x.id} {x.getClass()} =\n{x.transform}";
+				 }));
+}
+
+class ModelContent {
+    public var spatial is Node;
+    public var temporal is TimeNode;
+}
+
+public class Model {
+
+    public var url is String;
+    public const effectLoader is CGEffectLoader = the CGEffectLoader;
+
+    public bound function getSpatialRoot to Node 
+    {
+	modelContent.spatial;
+    }
+
+    public bound function getTemporalRoot to TimeNode 
+    {
+	modelContent.temporal;
+    }
+
+    readonly var modelContent is ModelContent = bind load(url, effectLoader); 
+
+    function load from (url is String, effectLoader is CGEffectLoader) to ModelContent 
+    {
+	const p = MaParser {effectLoader: effectLoader};
+	const m = p.parse(new java.net.URL(url));
+	println("parsed model: {m} root={m.spatialRoot}");
+	m.spatialRoot.updateParent();
+	const r = ModelContent {
+	    spatial: m.spatialRoot;
+	    temporal: m.temporalRoot;
+	}
+	println("modelContent.spatial = {r.spatial}");
+	return r;
+    }
+}
+
+public operation run (args is String[]) {
+    const p = MaParser {};
+    const m = p.parse(new java.net.URL(args[0]));
+}
+

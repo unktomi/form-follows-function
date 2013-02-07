@@ -128,6 +128,9 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
     /** Extract a slice of the sequence */
     public Sequence<T> getSlice(int startPos, int lastPos);
 
+    public T last();
+    public T first();
+
     /** Select elements from the sequence matching the specified predicate. */
     public Sequence<? extends T> get(SequencePredicate<? super T> predicate);
 

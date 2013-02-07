@@ -1,0 +1,10 @@
+package f3.media.scene;
+
+public abstract class VertexData {
+    public abstract function getVertexCount to Integer;
+    public abstract function getCoordsPerVertex to Integer;
+    public abstract function getX from (i is Integer) to Number;
+    public abstract function getY from (i is Integer) to Number;
+    public abstract function getZ from (i is Integer) to Number;
+    public abstract function getW from (i is Integer) to Number;
+}

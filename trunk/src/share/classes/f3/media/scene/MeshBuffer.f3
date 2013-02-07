@@ -1,0 +1,211 @@
+package f3.media.scene;
+import java.nio.*;
+import f3.math.*;
+import f3.math.LinearMath.*;
+
+public const UNIT_CUBE = cube(Point3.<<0>>, Tuple3.<<1>>);
+
+// from ardor3d
+
+public function cube
+    from (center is Point3, 
+	  extent is Tuple3)
+    to AbstractMesh
+{
+    const indices = [2, 1, 0, 
+		     3, 2, 0, 
+		     6, 5, 4, 
+		     7, 6, 4, 
+		     10, 9, 8, 
+		     11, 10, 8, 
+		     14, 13, 12, 
+		     15, 14, 12, 
+		     18, 17, 16, 
+		     19, 18, 16, 
+		     22, 21, 20, 
+		     23, 22, 20];
+    const ibuf = BufferUtils.createIntBuffer(sizeof indices);
+    for (i in indices) ibuf.put(i);
+    ibuf.rewind();
+    const vb = BufferUtils.createVector3Buffer(24);
+    const nb = BufferUtils.createVector3Buffer(24);
+    const tb = BufferUtils.createVector2Buffer(24);
+    const putv = function from (b is java.nio.FloatBuffer, vs is Tuple3[]) to () 
+    {
+	for (v in vs) 
+	    b.put(v.x).put(v.y).put(v.z);
+    }
+    const put = function from (b is java.nio.FloatBuffer, ns is Integer[]) to () 
+    {
+        for (n in ns) {
+            b.put(n);
+        }
+    }
+    const verts = [center - extent,       
+		   center + tuple(extent.x, -extent.y, -extent.z),
+		   center + tuple(extent.x, extent.y, -extent.z),
+		   center + tuple(-extent.x, extent.y, -extent.z),
+		   center + tuple(extent.x, -extent.y, extent.z),
+		   center + tuple(-extent.x, -extent.y, extent.z),
+		   center + extent,
+		   center + tuple(-extent.x, extent.y, extent.z)];
+    putv(vb,
+         foreach (i in [0, 1, 2, 3, // back
+                    1, 4, 6, 2, // right
+                    4, 5, 7, 6, // front
+                    5, 0, 3, 7, // left
+                    2, 6, 7, 3, // top
+                    0, 5, 4, 1]) // bottom
+	 verts[i]);
+    put(nb, 
+        foreach (i in [0..<4]) [0, 0, -1]); // back
+    put(nb, 
+        foreach (i in [0..<4]) [1, 0, 0]);  // right
+    put(nb, 
+        foreach (i in [0..<4]) [0, 0, 1]); // front
+    put(nb, 
+        foreach (i in [0..<4]) [-1, 0, 0]); // left
+    put(nb, 
+        foreach (i in [0..<4]) [0, 1, 0]); // top 
+    put(nb, 
+        foreach (i in [0..<4]) [0, -1, 0]); // bottom
+    for (i in [0..<6]) {
+        tb.put(0).put(0);
+        tb.put(0).put(1);
+        tb.put(1).put(1);
+        tb.put(1).put(0);
+    }
+    const result = MeshBuffer {
+        indexBuffer: ibuf;
+        vertexBuffer: VertexAttributeBuffer {
+            coordsPerVertex: 3;
+            buffer: vb;
+        }
+        textureBuffers: VertexAttributeBuffer {
+            coordsPerVertex: 2;
+            buffer: tb;
+        }
+        normalBuffer: VertexAttributeBuffer {
+            coordsPerVertex: 3;
+            buffer: nb;
+        }
+    }.toMesh();
+}
+
+public function quad
+   from (width is Number, 
+         height is Number) 
+    to AbstractMesh
+{
+    var indices = [0, 1, 2, 0, 2, 3];
+    var ibuf = BufferUtils.createIntBuffer(sizeof indices);
+    for (i in indices) ibuf.put(i);
+    var vb =  BufferUtils.createVector3Buffer(4);
+    var nb =  BufferUtils.createVector3Buffer(4);
+    var tb =  BufferUtils.createVector2Buffer(4);
+    vb.put(-width/2).put(height/2).put(0);
+    vb.put(-width/2).put(-height/2).put(0);
+    vb.put(width/2).put(-height/2).put(0);
+    vb.put(width/2).put(height/2).put(0);
+    for (i in [0..<4]) {
+        nb.put(0).put(0).put(1);
+    }
+    tb.put(0).put(1);
+    tb.put(0).put(0);
+    tb.put(1).put(0);
+    tb.put(1).put(1);
+    var result = MeshBuffer {
+        indexBuffer: ibuf;
+        vertexBuffer: VertexAttributeBuffer {
+            coordsPerVertex: 3;
+            buffer: vb;
+        }
+        textureBuffers: VertexAttributeBuffer {
+            coordsPerVertex: 2;
+            buffer: tb;
+        }
+        normalBuffer: VertexAttributeBuffer {
+            coordsPerVertex: 3;
+            buffer: nb;
+        }
+    }.toMesh();
+}
+
+public class VertexAttributeBuffer {
+    public const coordsPerVertex is Integer;
+    public const buffer is java.nio.FloatBuffer;
+}
+
+public function createVertexBuffer 
+    from (coordsPerVertex is Integer,
+	  verts is Number[])
+    to VertexAttributeBuffer {
+    const vbuf = BufferUtils.createFloatBuffer(verts.size() / coordsPerVertex);
+    vbuf.put(verts);
+    VertexAttributeBuffer {
+	coordsPerVertex: coordsPerVertex;
+	buffer: vbuf;
+    }
+}
+
+public class MeshBuffer 
+{
+    public const indexBuffer is IntBuffer;
+    public const vertexBuffer is  VertexAttributeBuffer;
+    public const normalBuffer is  VertexAttributeBuffer;
+    public const textureBuffers is VertexAttributeBuffer[];
+
+    public function toMesh to AbstractMesh 
+    {
+	const self = this;
+	const result = 
+	    AbstractMesh 
+	    {
+	        override public function getIndexBuffer to IntBuffer { indexBuffer }
+		override public function getVertexBuffer to FloatBuffer { vertexBuffer.buffer }
+		override public function getNormalBuffer to FloatBuffer { normalBuffer.buffer }
+		override public function getTextureBuffers to FloatBuffer[] { foreach (t in textureBuffers) t.buffer }
+
+		override const vertices =
+		{
+		    const count = indexBuffer.limit();
+		    const coordsPerVertex = self.vertexBuffer.coordsPerVertex;
+		    const vertexBuffer = self.vertexBuffer.buffer;
+		    VertexData {
+			function idx from (i is Integer) to Integer {
+			    indexBuffer.get(i);
+			}
+			override function getVertexCount to Integer {count}
+			override function getCoordsPerVertex to Integer {coordsPerVertex}
+			override function getX from (vertex is Integer) to Number {vertexBuffer.get(idx(vertex)*coordsPerVertex+0)}
+			override function getY from (vertex is Integer) to Number {vertexBuffer.get(idx(vertex)*coordsPerVertex+1)}
+			override function getZ from (vertex is Integer) to Number {vertexBuffer.get(idx(vertex)*coordsPerVertex+2)}
+			override function getW from (vertex is Integer) to Number {vertexBuffer.get(idx(vertex)*coordsPerVertex+3)}
+		    }
+		}
+		
+		override const textureCoordinates =
+		{
+		    foreach (i in textureBuffers) {
+			const textureBuffer = i.buffer;
+			const coordsPerVertex = i.coordsPerVertex;
+			const count = indexBuffer.limit();
+			VertexData {
+			    function idx from (i is Integer) to Integer {
+				indexBuffer.get(i);
+			    }
+			    override function getVertexCount to Integer {count}
+			    override function getCoordsPerVertex to Integer {coordsPerVertex}
+			    override function getX from (vertex is Integer) to Number {textureBuffer.get(idx(vertex)*coordsPerVertex+0)}
+			    override function getY from (vertex is Integer) to Number {textureBuffer.get(idx(vertex)*coordsPerVertex+1)}
+			    override function getZ from (vertex is Integer) to Number {textureBuffer.get(idx(vertex)*coordsPerVertex+2)}
+			    override function getW from (vertex is Integer) to Number {textureBuffer.get(idx(vertex)*coordsPerVertex+3)}
+			}
+		    }
+		}
+	    };
+	result.updateBounds();
+	return result;
+    }
+}
+

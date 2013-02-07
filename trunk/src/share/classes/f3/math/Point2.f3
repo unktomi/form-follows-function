@@ -1,0 +1,69 @@
+package f3.math;
+import java.lang.Math;
+
+public class Point2 is Tuple2
+{
+    public function dot from (v is Vec2) to Number 
+    {
+	x*v.x + 
+        y*v.y 
+    }
+
+    public function add from (v is Vec2) to Point2
+    {
+	Point2 
+	{ 
+	    x: x + v.x;
+	    y: y + v.y;
+	} 
+    }
+
+    public function add from (v is Tuple2) to Point2
+    {
+	Point2 
+	{ 
+	    x: x + v.x;
+	    y: y + v.y;
+	} 
+    }
+
+    public function sub from (v is Tuple2) to Point2
+    {
+	Point2 
+	{ 
+	    x: x - v.x;
+	    y: y - v.y;
+	} 
+    }
+
+    public function sub 
+	from (v is Point2) 
+	to Vec2
+    {
+	Vec2 
+	{ 
+	    x: x - v.x;
+	    y: y - v.y;
+	} 
+    }
+
+    public function negate 
+	from () 
+	to Point2
+    {
+	Point2 
+	{ 
+	    x: -x;
+	    y: -y;
+	} 
+    }
+
+    override function toString to String 
+    {
+	"\{ x: {x}, y: {y} \}"
+    }
+
+}
+
+public var <<0>> = Point2 {x: 0.0, y: 0.0};
+public var <<1>> = Point2 {x: 1.0, y: 1.0};

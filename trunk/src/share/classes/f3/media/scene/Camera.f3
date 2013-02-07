@@ -1,0 +1,256 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import java.lang.Math;
+
+//
+// frustum plane extraction from viewProjection matrix:
+//
+// left = row3 + row0
+// right = row3 - row0
+// bot = row3 + row1
+// top = row3 - row1
+// near = row3 + row2
+// far = row3 - row2
+const R = [0, 0, 1, 1, 2, 2];
+
+public function getFrustumPlanes
+    from (t is Mat4) 
+    to Plane3[] 
+{
+    const x3 = t.get(3, 0);
+    const y3 = t.get(3, 1);
+    const z3 = t.get(3, 2);
+    const w3 = t.get(3, 3);
+    var sign = 1;
+    foreach (i in [0..<6]) {
+        const row = R[i];
+        const x = x3 + sign*t.get(row, 0);
+        const y = y3 + sign*t.get(row, 1);
+        const z = z3 + sign*t.get(row, 2);
+        const w = w3 + sign*t.get(row, 3);
+        sign = -sign;
+        const norm = 1.0/(Math.sqrt(x*x+x*x+z*z) as Number);
+        const xyz = Vec3 { x: x*norm, y: y*norm, z: z*norm };
+        Plane3 {
+            normal: xyz;
+            point: Point3.<<0>> + (xyz * -w * norm);
+        }
+    }
+}
+
+public abstract class Camera is TransformNode 
+{
+    public var width is Number;
+    public var height is Number;
+
+    public function resize 
+	from (width is Number, height is Number) to ()
+    {
+	if (width <> this.width or height <> this.height) {
+	    this.width = width;
+	    this.height = height;
+	    println("resized to {this.width} {this.height}");
+	}
+    }
+
+    public var near is Number;
+    public var far is Number;
+    public readonly var aspectRatio is Number = bind if (height == 0) then 0.0 else width / height;
+    public readonly var projectionMatrix is Mat4 = Mat4.<<1>> on invalidate 
+    {
+        needsDraw = true;
+    }
+    public readonly var projectionInverse is Mat4 = bind projectionMatrix.inverse();
+    public readonly var viewInverse is Mat4 = bind worldTransform;
+    public readonly var viewMatrix is Mat4 = bind viewInverse.inverse();
+    public readonly var viewProjection is Mat4 = bind projectionMatrix * viewMatrix;
+    public readonly var viewProjectionInverse is Mat4 = bind viewProjection.inverse();
+    public readonly var frustumPlanes is Plane3[] = bind getFrustumPlanes(viewProjection);
+    public readonly var frustumBounds is Bounds = bind
+        calcFrustumBounds(viewProjectionInverse);
+
+    function calcFrustumBounds 
+	from (mat is Mat4) 
+	to Bounds 
+    {
+        Bounds.transformBounds(mat, Bounds.UNIT);
+    }
+
+    public readonly var needsDraw is Boolean = true;
+
+    override var worldTransform on invalidate 
+    {
+        needsDraw = true;
+    }
+
+    public function contains 
+	from (bounds is Bounds) to Boolean 
+    {
+        if (bounds == null) {
+            return false;
+        }
+        for (i in frustumPlanes) {
+            var side = bounds.whichSide(i);
+            if (side == Bounds.INSIDE) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function ortho
+	from (near is Number, far is Number, 
+	      left is Number, right is Number, 
+	      bottom is Number, top is Number) 
+	to Mat4 
+    {
+        const tx = -(right+left) / (right-left);
+        const ty = -(top+bottom) / (top-bottom);
+        const tz = -(far+near)   / (far-near);
+        matrix(2/(right-left), 0,              0,             tx,
+	                    0, 2/(top-bottom), 0,             ty,
+                            0, 0,              -2/(far-near), tz,
+                            0, 0,              0,              1);
+    }
+
+    public function persp
+	from (near is Number, 
+	      far is Number,
+	      fovY is Number,
+	      aspect is Number) 
+	to Mat4 
+    {
+    println("PERSP {near} {far} {fovY} {aspect}");
+    if (aspect == 0) { return Mat4.<<1>> }
+        const h = Math.tan(Math.toRadians(fovY) * 0.5) * near;
+        const w = h * aspect;
+        const left = -w;
+        const right = w;
+        const bot = -h;
+        const top = h;
+        if (right-left == 0 or top-bot == 0 or far-near == 0) {
+            throw new java.lang.RuntimeException("invalid dimensions {this} {near} {far} {fovY} {aspect}");
+        }
+        const xx = 2 * near / (right - left);
+        const yy = 2 * near / (top - bot);
+        const zx = (right + left) / (right - left);
+        const zy = (top + bot) / (top - bot);
+        const zz = -(far + near) / (far - near);
+        const zw = -1;
+        const wz = -(2*far*near) / (far - near);
+        const ww = 0;
+	matrix(xx,  0,  zx,  0,
+	        0, yy,  zy,  0,
+	        0,  0,  zz, wz,
+	        0,  0,  zw, ww);
+    }
+
+    public function toWorld
+	from (v is Point3) 
+	to Point3
+    {
+        toWorld(v.x, v.y, v.z);
+    }
+
+    public function toWorld
+	from (screenx is Number, 
+	      screeny is Number) 
+	to Point3
+    {
+        toWorld(screenx, screeny, 0);
+    }
+
+    public function toWorld
+	from (screenx is Number, screeny is Number, z0 is Number) 
+	to Point3 
+    {
+        // assumes screen coords left-handed        
+        // map to range 0..1
+        var x = screenx / width;
+        var y = (height - screeny) / height;
+        // map to range -1..1
+        x *= 2;
+        x -= 1;
+        y *= 2;
+        y -= 1;
+        var z = -z0 * 2;
+        z -= 1;
+        const projv = vector(x, y, z, 1.0);
+        var worldv = viewProjectionInverse * projv;
+        worldv /= worldv.w; // convert from homogeneous coords
+        const result = worldv.xyz();
+        return point(result);
+    }
+
+    public function toScreen
+	from (worldBounds is Bounds) 
+	to Bounds 
+    {
+        const cs = foreach (c in worldBounds.corners()) toScreen(c);
+        var minX = cs[0].x;
+        var minY = cs[0].y;
+        var maxX = minX;
+        var maxY = minY;
+        for (c in cs[1..]) 
+	{
+            minX = Math.min(c.x, minX);
+            minY = Math.min(c.y, minY);
+            maxX = Math.max(c.x, maxX);
+            maxY = Math.max(c.y, maxY);
+        }
+        return Bounds.boundsFromExtent(minX, minY, 0, maxX, maxY, 0);
+    }
+
+    public function toScreen
+	from (worldLocation is Point3) 
+	to Vec3 
+    {
+        const worldv = vector(worldLocation, 1.0);
+        var projv = viewProjection * worldv;
+        projv /= projv.w; // convert from homogeneous coords
+        // map from range -1..1 to 0..1
+        var x = (projv.x + 1)/2;
+        var y = (projv.y + 1)/2;
+        var z = (projv.z + 1)/2;
+        // scale to screen and convert to left-handed
+        x *= width;
+        y *= height;
+        y -= height;
+        y = -y;
+        const screenv = Vec3 {
+	    x: x;
+	    y: y;
+	    z: z;
+	}
+        return screenv;
+    }
+
+    public function getPickRay
+	from (screenx is Number, 
+	      screeny is Number) 
+	to Ray3 
+    {
+        if (width == 0 or height == 0) {
+            return null;
+        }
+        const origin = toWorld(screenx, screeny, 1.0);
+        const dir = toWorld(screenx, screeny, -1.0) - origin;
+        Ray3 {
+            origin: origin;
+            direction: dir.normalize();
+        }
+    }
+
+    public readonly var worldDirection = bind worldTransform * Vec3.Z_AXIS;
+
+    public function distanceTo
+	from (worldPoint is Point3) 
+	to Number 
+    {
+	const dir = worldDirection;
+        const pos = worldTransform.getTranslation() - worldPoint;
+        (dir * Math.abs(pos.dot(dir) / dir.dot(dir))).length();
+    }
+}
+

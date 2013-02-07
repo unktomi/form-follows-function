@@ -1,0 +1,8 @@
+package f3.media.input;
+
+public abstract class KeyboardInputHandler 
+{
+    public function onKeyDown from (event is KeyboardEvent) to () {}
+    public function onKeyUp from (event is KeyboardEvent) to () {}
+    public function onKeyInput from (event is KeyboardEvent) to () {}
+}

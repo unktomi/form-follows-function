@@ -1,0 +1,92 @@
+package f3.media.scene;
+import f3.util.*;
+import f3.math.*;
+import java.lang.Math;
+import org.f3.runtime.*;
+
+public class Timeline 
+{
+    init {
+	MasterTimeline.timelines.put(this, null);
+    }
+    function interpolateChannels from (channels is (Channel of (?))[],
+				       worldTime is Duration) to () 
+    {
+
+	const map is java.util.Map of (Pointer of (?, Object), (Channel of Object)[]) = 
+	    new java.util.HashMap of (Pointer of (?, Object), (Channel of Object)[])();
+	for (ch in channels where ch.worldBlendWeight > 0.0) 
+	{
+	    for (target0 in ch.targets) {
+		const target = target0 as Pointer of (?, Object);
+		const chs = map.get(target);
+		map.put(target, [chs, ch as Channel of Object]);
+	    }
+	}
+	for (ent in map.entrySet()) {
+	    const target = ent.getKey();
+	    const chs = ent.getValue();
+	    var weight = 0.0;
+	    for (ch in chs) {
+		weight += ch.worldBlendWeight;
+	    }
+	    var r;
+	    var first = true;
+	    for (ch in chs) {
+		const w = ch.blendWeight / weight;
+		r = interpolateChannel(ch, worldTime, r, w);
+
+	    }
+	    target.set(r);
+	}
+    }
+
+    function interpolateChannel
+	from (ch is Channel of Object, 
+	      worldTime is Duration,
+	      r is Object, 
+	      weight is Number) 
+	to Object 
+    {
+	ch.interpolate(worldTime, weight, r);
+    }
+
+    public var content is TimeNode[];
+    public const root is TimeGroup = TimeGroup { content: bind content };
+    public readonly var underPlayhead is TimeNode[];
+
+    public function setPlayhead
+	from (worldTime is Duration) 
+	to () 
+    {
+	root.updateParent();
+        underPlayhead = pick(worldTime);
+        const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
+        interpolateChannels(chs, worldTime);
+        root.visit(function from (n is TimeNode) to () 
+		   { 
+		       n.update(worldTime);
+		   });
+    }
+
+    public readonly var playhead is Duration;
+
+    public function pick
+	from (point is Duration)
+	to TimeNode[] 
+    {
+        var result is TimeNode[];
+        root.doPick(point, 
+		    point, 
+		    function from (n is TimeNode) to ()
+		    {
+			insert n into result;
+		    });
+        return result;
+    }
+
+}
+
+
+
+

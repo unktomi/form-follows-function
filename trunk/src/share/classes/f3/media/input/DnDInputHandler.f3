@@ -1,0 +1,9 @@
+package f3.media.input;
+
+public abstract class DnDInputHandler 
+{
+    public function onDragEnter from (event is DragEvent) to () {}
+    public function onDragLeave from (event is DragEvent) to () {}
+    public function onDragOver from (event is DragEvent) to () {}
+    public function onDrop from (event is DropEvent) to () {}
+}

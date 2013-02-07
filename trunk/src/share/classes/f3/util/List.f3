@@ -10,7 +10,7 @@ public class ListMonad is f3.util.Monad of List
 	      f is function from a to b) 
 	to List of b 
     {
-	xs.map(f);
+	map(xs, f)
     }
 
     override function flatmap of (a, b) 
