@@ -34,9 +34,11 @@ import org.f3.functions.Function1;
  * @author A. Sundararajan
  */
 //
-// pointers are Functors/Monads (i.e they are "containers" of 1 object, namely the thing they point at)
+// Pointers are Functors/Monads/Comonads (i.e they are "containers" of 1 object, namely the thing they point at)
 //
-public class ConstPointer<This extends F3Object,a> implements Monad<ConstPointer, a>, Comonad<ConstPointer,a> {
+
+public class ConstPointer<This extends F3Object,a> implements Monad<ConstPointer, a>, Comonad<ConstPointer, a>, f3.lang.MemberRef<This>, f3.lang.ConstRef<a> 
+{
     final Type type;
     final This obj;
     final int varnum;

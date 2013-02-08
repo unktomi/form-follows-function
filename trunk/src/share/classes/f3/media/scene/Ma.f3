@@ -11,7 +11,8 @@ class MaModel
     const nodeMap is java.util.Map of (String, MNode) = 
 	new java.util.HashMap of (String, MNode) ();
 
-    function findNode(name is String) to MNode {
+    function findNode from (name is String) to MNode 
+    {
 	nodeMap.get(name);
     }
 
@@ -598,7 +599,7 @@ class MTransform is MSpatial {
        else super.getPointer(ptr, target)
     }
 
-    override operation toNode from (m is MaModel) to Node 
+    override function toNode from (m is MaModel) to Node 
     {
 	const tn = MaTransform {
 
@@ -1293,7 +1294,7 @@ class Command
 	"{name} {foreach (ent in namedArgs.entrySet()) "-{ent.getKey()} {ent.getValue()}"} {foreach (arg in args) " {arg}"}"
     }
 
-    public function getBoolean() to Boolean {
+    public function getBoolean to Boolean {
 	const s = getString(1);
 	s == "yes" or s == "true" 
     }
@@ -1558,7 +1559,7 @@ class MaParser
 	}
     }
 
-    public operation parse from (u is java.net.URL) to MaModel 
+    public function parse from (u is java.net.URL) to MaModel 
     {
 	const r = new java.io.BufferedReader(new java.io.InputStreamReader(u.openStream()));
 	const buf = new java.lang.StringBuffer();
@@ -1572,7 +1573,7 @@ class MaParser
 	parse(u.toString(), buf.toString())
     }
 
-    public operation parse from (url is String, input is String) to MaModel 
+    public function parse from (url is String, input is String) to MaModel 
     {
 	tokenize(input);
 	//	for (cmd in cmds) {
@@ -1589,7 +1590,7 @@ class MaParser
 	return model;
     }
 
-    operation parseCommand from (cmds is java.util.List of String) to Command 
+    function parseCommand from (cmds is java.util.List of String) to Command 
     {
 	const cmd = Command {
 	    name: cmds.get(0);
@@ -1694,7 +1695,7 @@ public class MaTransform is Group
 
 // http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/joint.html
 
-operation dumpScene (spatialRoot is Node) 
+function dumpScene (spatialRoot is Node) 
 {
     println(spatialRoot.foldLeft("", function from (y is String, x is Node) to String 
 				 {
@@ -1741,7 +1742,8 @@ public class Model {
     }
 }
 
-public operation run (args is String[]) {
+public function run from (args is String[]) to () 
+{
     const p = MaParser {};
     const m = p.parse(new java.net.URL(args[0]));
 }

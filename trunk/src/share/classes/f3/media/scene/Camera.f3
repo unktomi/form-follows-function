@@ -16,7 +16,7 @@ const R = [0, 0, 1, 1, 2, 2];
 
 public function getFrustumPlanes
     from (t is Mat4) 
-    to Plane3[] 
+    to Plane[] 
 {
     const x3 = t.get(3, 0);
     const y3 = t.get(3, 1);
@@ -32,7 +32,7 @@ public function getFrustumPlanes
         sign = -sign;
         const norm = 1.0/(Math.sqrt(x*x+x*x+z*z) as Number);
         const xyz = Vec3 { x: x*norm, y: y*norm, z: z*norm };
-        Plane3 {
+        Plane {
             normal: xyz;
             point: Point3.<<0>> + (xyz * -w * norm);
         }
@@ -66,7 +66,7 @@ public abstract class Camera is TransformNode
     public readonly var viewMatrix is Mat4 = bind viewInverse.inverse();
     public readonly var viewProjection is Mat4 = bind projectionMatrix * viewMatrix;
     public readonly var viewProjectionInverse is Mat4 = bind viewProjection.inverse();
-    public readonly var frustumPlanes is Plane3[] = bind getFrustumPlanes(viewProjection);
+    public readonly var frustumPlanes is Plane[] = bind getFrustumPlanes(viewProjection);
     public readonly var frustumBounds is Bounds = bind
         calcFrustumBounds(viewProjectionInverse);
 
@@ -121,8 +121,8 @@ public abstract class Camera is TransformNode
 	      aspect is Number) 
 	to Mat4 
     {
-    println("PERSP {near} {far} {fovY} {aspect}");
-    if (aspect == 0) { return Mat4.<<1>> }
+	println("PERSP {near} {far} {fovY} {aspect}");
+        if (aspect == 0) { return Mat4.<<1>> }
         const h = Math.tan(Math.toRadians(fovY) * 0.5) * near;
         const w = h * aspect;
         const left = -w;

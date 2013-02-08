@@ -93,7 +93,7 @@ public class Bounds is Mat4.Transformable of Bounds
     }
 
     public function whichSide
-	from (plane is Plane3) 
+	from (plane is Plane) 
 	to Integer 
     {
         const normal = plane.normal.normalize();

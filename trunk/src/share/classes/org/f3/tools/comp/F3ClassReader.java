@@ -256,6 +256,35 @@ public class F3ClassReader extends ClassReader {
 	if (type.tsym instanceof F3Resolve.TypeAliasSymbol) {
 	    return translateType(type.tsym.type);
 	}
+	int tc = f3Types.isTypeConsType(type);
+	if (tc >= 0) {
+	    System.err.println("translating type cons: "+ tc+": "+type.getClass() + ": "+type);
+	    if (type instanceof TypeVar) {
+	    } else if (type instanceof WildcardType) {
+	    } else {
+		List<Type> args = type.getTypeArguments();
+		if (args.size() > 0) {
+		    if (args.head instanceof TypeVar) {
+			TypeVar tv = (TypeVar)args.head;
+			    //translateType(args.head);
+			F3Attr.TypeCons tcons = 
+			    new F3Attr.TypeCons(tv.tsym.name,
+						tv.tsym,
+						tv.bound);
+			tcons.args = args.tail;
+			tcons.bound = tv.bound;
+			tcons.ctor = tv;
+			typeMap.put(type, tcons);
+			System.err.println("translated to': "+ f3Types.toF3String(tcons));
+			return tcons;
+		    } else {
+			type = f3Types.applySimpleGenericType(args.head, args.tail);
+		    }
+		}
+	    }
+	    System.err.println("translated to: "+ type);
+
+	}
         Type t = (Type) typeMap.get(type);
         if (t != null)
             return t;
