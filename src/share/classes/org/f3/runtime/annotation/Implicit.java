@@ -34,6 +34,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  */
 @Retention(RUNTIME)
 @Documented
-@Target({METHOD, FIELD, TYPE})
+@Target({PARAMETER, FIELD, METHOD})
 public @interface Implicit {
 }

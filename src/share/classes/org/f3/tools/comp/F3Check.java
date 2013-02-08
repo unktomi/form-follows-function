@@ -1405,6 +1405,7 @@ public class F3Check {
 	//System.err.println(other);
 	//System.err.println(origin);
 	// Don't check overriding of synthetic methods or by bridge methods.
+	m.complete();
 	if ((m.flags() & (SYNTHETIC|BRIDGE)) != 0 || (other.flags() & SYNTHETIC) != 0) {
 	    return;
 	}

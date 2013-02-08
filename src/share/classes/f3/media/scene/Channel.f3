@@ -1,8 +1,9 @@
 package f3.media.scene;
 import f3.util.*;
 import f3.math.*;
+import f3.lang.Ref;
 import java.lang.Math;
-import org.f3.runtime.*;
+//import org.f3.runtime.*;
 import f3.media.scene.KeyFrame.Key;
 
 function binarySearch of a from (keys is (Key of a)[], t is Duration) to Integer 
@@ -25,7 +26,7 @@ function binarySearch of a from (keys is (Key of a)[], t is Duration) to Integer
 
 public class Channel of a is TimeNode 
 {
-    public const targets is (Pointer of (..F3Object, a))[];
+    public const targets is (Ref of a)[];
     public const keys is (Key of a)[];
     readonly var sortedKeys = bind KeyFrame.sortKeys(keys);
 

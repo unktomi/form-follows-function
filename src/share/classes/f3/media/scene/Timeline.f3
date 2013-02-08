@@ -2,23 +2,24 @@ package f3.media.scene;
 import f3.util.*;
 import f3.math.*;
 import java.lang.Math;
-import org.f3.runtime.*;
+import f3.lang.Ref;
 
 public class Timeline 
 {
     init {
 	MasterTimeline.timelines.put(this, null);
     }
+
     function interpolateChannels from (channels is (Channel of (?))[],
 				       worldTime is Duration) to () 
     {
 
-	const map is java.util.Map of (Pointer of (?, Object), (Channel of Object)[]) = 
-	    new java.util.HashMap of (Pointer of (?, Object), (Channel of Object)[])();
+	const map is java.util.Map of (Ref of Object, (Channel of Object)[]) = 
+	    new java.util.HashMap of (Ref of Object, (Channel of Object)[])();
 	for (ch in channels where ch.worldBlendWeight > 0.0) 
 	{
 	    for (target0 in ch.targets) {
-		const target = target0 as Pointer of (?, Object);
+		const target = target0 as Ref of Object;
 		const chs = map.get(target);
 		map.put(target, [chs, ch as Channel of Object]);
 	    }

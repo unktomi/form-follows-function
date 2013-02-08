@@ -32,7 +32,7 @@ import f3.animation.KeyValueTarget;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> implements KeyValueTarget<a> {
+public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> implements KeyValueTarget<a>, f3.lang.MemberRef<This>, f3.lang.Ref<a> {
     @org.f3.runtime.annotation.F3Signature("(Ljava/lang/Object;)Lorg/f3/runtime/Pointer;")
     public static <This extends F3Object, a> Pointer<This,a> make(Type type, This obj, int varnum) {
         return new Pointer<This,a>(type, obj, varnum);

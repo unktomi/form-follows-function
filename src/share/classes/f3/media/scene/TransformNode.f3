@@ -26,5 +26,29 @@ public class TransformNode is Group//, Transform
         translate(tx+px, ty+py, tz+pz)*rotate(rx, ry, rz)*scale(sx, sy, sz)*translate(-px, -py, -pz);
     }
 
-    override var transform = bind computeTransform();
+    override var transform = //bind computeTransform();
+
+        bind trsp(tx, ty, tz,      
+                  rx, ry, rz,
+                  sx, sy, sz,
+                  px, py, pz);
+
+    function trsp 
+	from (tx is Number,
+	      ty is Number,
+	      tz is Number,
+	      rx is Number,
+	      ry is Number,
+	      rz is Number,
+	      sx is Number,
+	      sy is Number,
+	      sz is Number,
+	      px is Number,
+	      py is Number,
+	      pz is Number) 
+	to Mat4 
+    {
+        println("{id} => t={tx},{ty},{tz} r={rx},{ry},{rz} s={sx},{sy},{sz} p={px},{py},{pz}");
+        translate(tx+px, ty+py, tz+pz)*rotate(rx, ry, rz)*scale(sx, sy, sz)*translate(-px, -py, -pz);
+    }
 }
