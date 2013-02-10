@@ -15,4 +15,7 @@ public abstract class Shader {
 					 viewMatrix is Mat4,
 					 projectionMatrix is Mat4) to ();
     abstract public function reset to ();
+
+    public abstract function getParameter from (name is String) to Parameter;
+    public abstract function getParameters to Parameter[];
 }

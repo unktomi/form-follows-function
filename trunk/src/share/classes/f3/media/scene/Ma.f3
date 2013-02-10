@@ -6,6 +6,12 @@ import org.f3.runtime.Pointer;
 import org.f3.runtime.F3Object;
 import java.lang.Math;
 
+class MAttr {
+    const longName is String;
+    const shortName is String;
+    const type is String;
+}
+
 class MaModel 
 {
     const nodeMap is java.util.Map of (String, MNode) = 
@@ -19,6 +25,7 @@ class MaModel
     var current is MNode; 
 
     var effectLoader is CGEffectLoader;
+    var imageLoader is ImageLoader;
 
     function createNode from (cmd is Command) to () 
     {
@@ -37,7 +44,7 @@ class MaModel
 	    else if (nodeType == "phong" or nodeType == "blinn" or nodeType == "lambert") 
 		then MShader {type: nodeType, name: name}
 	    else if (nodeType == "cgfxShader") 
-		then null
+		then MCGFXShader {name: name}
 	    else if (nodeType == "cgfxVector") 
 		then null
 	    else if (nodeType == "file") 
@@ -790,6 +797,12 @@ class PolyfaceData {
     public var faceEdges is Integer[];
     public var holes is Integer[];
     public var mu is UVData;
+
+    function getUV from (uvIndex is Integer) to Integer {
+	if (mu == null) return 0;
+	return mu.uvIndices[uvIndex];
+    }
+
     override function toString to String {
 	"faceEdges: {faceEdges}, holes: {holes}, mu: {mu}";
     }
@@ -947,7 +960,8 @@ class MMesh is MSpatial
 	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
 	println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()}");
 	var norms is Vec3[];
-	if (this.normals == []) {
+	if (true or this.normals == []) {
+	    this.normals = [];
 	    for (polyface in polyfaces) {
 		var norm = Vec3.<<0>>;
 		const faceEdges = polyface.faceEdges;
@@ -1040,27 +1054,36 @@ class MMesh is MSpatial
 	    const mu = f.mu;
 	    const edge0 = edgeStart(f.faceEdges[0]);
 	    const norm0 = i;
-	    const uv0 = mu.uvIndices[0];
+	    const uv0 = f.getUV(0);
 	    var edge1 = edgeStart(f.faceEdges[1]);
 	    var norm1 = i;
-	    var uv1 = mu.uvIndices[1];
+	    var uv1 = f.getUV(1);
 	    for (j in [2..<f.faceEdges.size()]) {
 		insertVertex(edge0, norm0, mu.uvSet, uv0);
 		insertVertex(edge1, norm1, mu.uvSet, uv1);
 		const edge2 = edgeStart(f.faceEdges[j]);
 		const norm2 = i;
-		const uv2 = mu.uvIndices[j];
+		const uv2 = f.getUV(j);
 		insertVertex(edge2, norm2, mu.uvSet, uv2);
 		edge1 = edge2;
 		norm1 = norm2;
 		uv1 = uv2;
 	    }
 	}
+	const ib = this.ib.getBuffer();
+	const vb = this.vb.getBuffer();
+	const nb = this.nb.getBuffer();
+	const uvb = this.uvb.getBuffer();
+        const tanb = BufferUtils.createVector3Buffer(ib.limit());
+        const binb = BufferUtils.createVector3Buffer(ib.limit());
+	TangentBinormal.addStreams(ib, vb, uvb,nb, tanb, binb);
 	MeshBuffer {
-	    indexBuffer: ib.getBuffer();
-	    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb.getBuffer() };
-	    normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb.getBuffer() };
-	    textureBuffers: [MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb.getBuffer() }];
+            indexBuffer: ib;
+	    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
+	    normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb };
+	    textureBuffers: [MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb },
+                             MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
+                             MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
 	}.toMesh()
     }
 
@@ -1068,6 +1091,8 @@ class MMesh is MSpatial
     const vb = new FloatBufferBuilder();
     const nb = new FloatBufferBuilder();
     const uvb = new FloatBufferBuilder();
+    const tanb = new FloatBufferBuilder();
+    const binb = new FloatBufferBuilder();
 
     function insertVertex
 	from (edge is Integer, norm is Integer, uvSet is Integer, uvIndex is Integer) 
@@ -1169,7 +1194,7 @@ class MMesh is MSpatial
 		println("shaderConn={shaderConn[0].targetNode}");
 		println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
 		println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
-		shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MShader;
+		shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
 	    } else null;
 	const shader = mshaderNode.toShader(m);
 	//println("mesh : {r.id} => {r.bounds}");
@@ -1188,7 +1213,56 @@ class MMesh is MSpatial
     }
 }
 
-class MShader is MNode 
+abstract class MAbstractShader is MNode {
+    abstract function toShader from (m is MaModel) to Shader;
+}
+
+class MCGFXShader is MAbstractShader 
+{
+    var t is String; // technique
+    var s is String; // shader
+    var val_ is String[];
+    var vas_ is String[];
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	const n = cmd.getAttr();
+	if (n == "val") {
+	    val_ = cmd.getStringArray();
+	} else if (n == "vas") {
+	    vas_ = cmd.getStringArray();
+	} else if (n == "s") {
+	    s = cmd.getString();
+	} else if (n == "t") {
+	    t = cmd.getString();
+	} else super.setAttr(cmd);
+    }
+
+    override function toShader from (m is MaModel) to Shader
+    {
+	println("MA URL = {m.url}");
+	const baseURL = new java.net.URL(m.url);
+	var shader = m.effectLoader.loadEffect(new java.net.URL(baseURL, s).toString(), t);
+	println("toShader => {shader}");
+	for (conns in connectionsToThis.values()) {
+	    for (conn in conns) {
+		println("looking for textures: {conn}");
+		if (conn.sourceNode instanceof MFile) {
+		    const file = conn.sourceNode as MFile;
+		    println("found file: {file}");
+		    const paramName = conn.targetPath;
+		    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
+		    println("p={p} for {paramName}");
+		    println("imageloader={m.imageLoader}");
+		    p.set(m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString()));
+		}
+	    }
+	}
+	return shader;
+    }
+}
+
+class MShader is MAbstractShader 
 {
     public const type is String;
 
@@ -1203,7 +1277,6 @@ class MShader is MNode
 
     override function setAttr from (cmd is Command) to () 
     {
-	super.setAttr(cmd);
 	const n = cmd.getAttr();
 	if (n == "c") {
 	    c = cmd.getVec3();
@@ -1219,7 +1292,7 @@ class MShader is MNode
 	    dc = cmd.getFloat();
 	} else if (n == "it") {
 	    it = cmd.getVec3();
-	}
+	} else super.setAttr(cmd);
     }
 
     var shader is Shader;
@@ -1241,7 +1314,6 @@ class MShader is MNode
 						      specular,
 						      shininess);
 	}
-	println("toShader => {shader}");
 	return shader;
     }
 }
@@ -1394,6 +1466,12 @@ class Command
     {
 	const count = getCount("s", 1);
 	foreach (k in [1..count]) getFloat(k)
+    }
+
+    public function getStringArray to String[] 
+    {
+	const count = getInt(1);
+	foreach (k in [1..count]) getString(k)
     }
 
     public function getIntArray to Integer[] 
@@ -1561,6 +1639,7 @@ class Command
 class MaParser 
 {
     public var effectLoader is CGEffectLoader;
+    public var imageLoader is ImageLoader;
     var pos = 0;
     const buf = new java.lang.StringBuffer;
     var tokens = new java.util.ArrayList of String;
@@ -1651,13 +1730,15 @@ class MaParser
     public function parse from (url is String, input is String) to MaModel 
     {
 	tokenize(input);
-	//	for (cmd in cmds) {
-	    //	    println(cmd);
-	//	}
 	const model = MaModel {
 	    effectLoader: effectLoader;
+	    imageLoader: imageLoader;
 	    url: url
 	}
+	println("Model.url={model.url}");
+	model.url = url;
+	model.imageLoader = imageLoader;
+	println("Model.url={model.url}");
 	for (cmd in cmds) {
 	    model.processCommand(cmd)
 	}
@@ -1796,6 +1877,7 @@ public class Model {
 
     public var url is String;
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
+    public const imageLoader is ImageLoader = the ImageLoader;
 
     public bound function getCameras to Camera[]
     {
@@ -1812,11 +1894,11 @@ public class Model {
 	modelContent.temporal;
     }
 
-    readonly var modelContent is ModelContent = bind load(url, effectLoader); 
+    readonly var modelContent is ModelContent = bind load(url, effectLoader, imageLoader); 
 
-    function load from (url is String, effectLoader is CGEffectLoader) to ModelContent 
+    function load from (url is String, effectLoader is CGEffectLoader, imageLoader is ImageLoader) to ModelContent 
     {
-	const p = MaParser {effectLoader: effectLoader};
+	const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader};
 	const m = p.parse(new java.net.URL(url));
 	println("parsed model: {m} root={m.spatialRoot}");
 	m.spatialRoot.updateParent();
