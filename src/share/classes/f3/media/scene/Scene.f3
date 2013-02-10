@@ -27,6 +27,7 @@ public class Scene
 	Group {
 	    override var worldVisible = bind visible and scene.visible;
 	    override var id = bind "{scene.id}#root";
+	    override var worldTransform = Mat4.<<1>>;
 	    content: bind [scene.content];
 	}
     }

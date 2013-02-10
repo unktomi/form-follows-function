@@ -591,4 +591,4 @@ function run {
     println(m * Point3.<<1>> * 2);
 }
 
-public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<1>>);
+public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
