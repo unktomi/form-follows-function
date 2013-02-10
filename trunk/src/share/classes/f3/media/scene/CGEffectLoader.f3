@@ -3,16 +3,16 @@ package f3.media.scene;
 public interface CGEffectLoader 
 {
     abstract public function 
-	loadDefaultShader(diffuseTexture is AbstractTexture,
-			  diffuse is Color,
-			  ambient is Color,
-			  emissive is Color,
-			  specular is Color,
-			  shininess is Number)
-	to Shader; 
+        from loadDefaultShader(diffuseTexture is AbstractTexture,
+                               diffuse is Color,
+                               ambient is Color,
+                               emissive is Color,
+                               specular is Color,
+                               shininess is Number)
+        to Shader; 
 
     abstract public function loadEffect
-	from (url is String,
-	      technique is String)
-	to Shader;
+        from (url is String,
+              technique is String)
+        to Shader;
 }
