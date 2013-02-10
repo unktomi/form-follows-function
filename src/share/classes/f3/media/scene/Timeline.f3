@@ -52,18 +52,30 @@ public class Timeline
 	ch.interpolate(worldTime, weight, r);
     }
 
+    public var paused is Boolean = false;
     public var content is TimeNode[];
-    public const root is TimeGroup = TimeGroup { content: bind content };
+    public const root is TimeGroup = 
+    {
+	const timeline = this;
+	TimeGroup { 
+	    content: bind content; 
+	    override var worldTransform = TimeMat.<<1>>;
+	    override var worldPaused = bind timeline.paused;
+	}
+    }
     public readonly var underPlayhead is TimeNode[];
 
     public function setPlayhead
 	from (worldTime is Duration) 
 	to () 
     {
+	playhead = worldTime;
 	root.updateParent();
         underPlayhead = pick(worldTime);
-        const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
-        interpolateChannels(chs, worldTime);
+	if (not paused) {
+	    const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
+	    interpolateChannels(chs, worldTime);
+	}
         root.visit(function from (n is TimeNode) to () 
 		   { 
 		       n.update(worldTime);

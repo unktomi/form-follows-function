@@ -42,6 +42,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public var playRange is Interval;
 
     public var paused is Boolean;
+    public readonly var worldPaused is Boolean = bind paused or parent.worldPaused;
 
     public readonly var currentTime is Duration; // "now" in parent space
     public readonly var localTime is Duration; // "now" in content space
