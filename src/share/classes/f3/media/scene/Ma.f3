@@ -16,9 +16,7 @@ class MaModel
 	nodeMap.get(name);
     }
 
-    var current is MNode on replace {
-	nodeMap.put(current.name, current);
-    }
+    var current is MNode; 
 
     var effectLoader is CGEffectLoader;
 
@@ -55,6 +53,9 @@ class MaModel
 	    else if (nodeType == "multiplyDivide") 
 		then MMultiplyDivide {name: name}
 	    else null;
+	if (current <> null) {
+	    nodeMap.put(current.name, current);
+	}
     }
 
     var lastSetAttr is Command;
@@ -72,7 +73,11 @@ class MaModel
 	const n = cmd.name;
 	if (n == "createNode") {
 	    createNode(cmd);
+	    //println(cmd);
+	    //println("current={current}");
 	} else if (n == "setAttr") {
+	    //println(cmd);
+	    //println("current={current}");
 	    if (cmd.args.size() > 1) {
 		mergeSetAttr(cmd);
 		setAttr(cmd);
@@ -135,6 +140,11 @@ class MaModel
     public var spatialRoot is Group;
     public var temporalRoot is TimeGroup;
     var channels is TimeNode[];
+
+    function getCameras to Camera[] {
+	var result is Camera[];
+	foreach (n in spatialMap.values() where n is Camera) n as Camera;
+    }
 
     function toNode from (n is MSpatial) to Node 
     {
@@ -251,11 +261,13 @@ class MaModel
 	spatialRoot = Group {id: url};
 	temporalRoot = TimeGroup {id: url};
 	for (n in nodeMap.values()) {
-	    if (n is MSpatial) {
-		toNode(n as MSpatial)
-	    } else if (n is MAnimCurve) {
-		toChannel(n as MAnimCurve);
-	    } 
+	    const r = 
+		if (n is MSpatial) {
+		    toNode(n as MSpatial)
+		} else if (n is MAnimCurve) {
+		    toChannel(n as MAnimCurve);
+		} else null;
+	    //	    println("generating: {n} => {r}");
 	}
 	var j = 0;
 	var g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
@@ -666,23 +678,27 @@ class MTransform is MSpatial {
 
 class MCamera is MSpatial 
 {
-    var ortho is Boolean = no;
-    var hfa is Number;
-    var vfa is Number;
-    var fcp is Number;
-    var ncp is Number;
-    var fl is Number;
-    var ow is Number;
-    var lsr is Number;
-    var ff is Number;
+    var ortho is Boolean = false;
+    var hfa is Number = 2.4;
+    var vfa is Number = 3.6;
+    var fcp is Number = 1000;
+    var ncp is Number = .1;
+    var fl is Number = 35.0;
+    var ow is Number = 10.0;
+    var lsr is Number = 1.0;
+    var ff is Number = 1.0;
 
     override function setAttr from (cmd is Command) to () 
     {
 	const attr = cmd.getAttr();
 	if (attr == "o") {
-	    ortho = yes;
+	    ortho = true;
+	} else if (attr == "cap") {
+	    const v = cmd.getVec3();
+	    vfa = v.x;
+	    hfa = v.y;
 	} else if (attr == "hfa") {
-	    hfa = cmd.getFloat()
+	    hfa = cmd.getFloat();
 	} else if (attr == "vfa") {
 	    vfa = cmd.getFloat()
 	} else if (attr == "fcp") {
@@ -696,34 +712,40 @@ class MCamera is MSpatial
 	} else if (attr == "lsr") {
 	    lsr = cmd.getFloat()
 	} else if (attr == "ff") {
-	    ff = cmd.getFloat()
-	}
+	    ff = cmd.getFloat();
+	} else super.setAttr(cmd);
     }
 
     override function toNode from (m is MaModel) to Node 
     {
-	if (ortho) {
-	    null
-	} else {
-	    if (ff == 1) {
-		const horizontalAngle = Math.toDegrees(2.0*Math.atan(25.4 * hfa*lsr / 2.0 / fl));
-		PerspectiveCamera {
-		    id: name;
-		    near: ncp;
-		    far: fcp;
-		    override var widthAngle = horizontalAngle;
-		    override var heightAngle = bind PerspectiveCamera.widthAngleToHeightAngle(widthAngle, aspectRatio);
-		}
+	const n = 
+	    if (ortho) {
+		null
 	    } else {
-		const verticalAngle = Math.toDegrees(2.0*Math.atan(25.4 * vfa / 2.0 / fl));
-		PerspectiveCamera {
-		    id: name;
-		    near: ncp;
-		    far: fcp;
-		    heightAngle: verticalAngle;
+		if (ff == 1) {
+		    const horizontalAngle = Math.toDegrees(2.0*Math.atan(25.4 * hfa*lsr / 2.0 / fl));
+		    PerspectiveCamera {
+			id: name;
+			near: ncp;
+			far: fcp;
+			override var widthAngle = horizontalAngle;
+			override var heightAngle = bind PerspectiveCamera.widthAngleToHeightAngle(widthAngle, aspectRatio);
+		    }
+		} else {
+		    const verticalAngle = Math.toDegrees(2.0*Math.atan(25.4 * vfa / 2.0 / fl));
+		    PerspectiveCamera {
+			id: name;
+			near: ncp;
+			far: fcp;
+			heightAngle: verticalAngle;
+		    }
 		}
 	    }
-	}
+	println("camera {name} => {n}");
+	m.spatialMap.put(this, n);
+	const p = m.toParentNode(parent as MSpatial);
+	insert n into p.content;
+	return n;
     }
 }
 
@@ -859,6 +881,7 @@ class MMesh is MSpatial
     var edges is Integer[];
     var polyfaces is PolyfaceData[];
     var uvSets is UVSet[];
+    var faceNorms is Vec3[];
 
     function faceEdgeIndex from (i is Integer) to Integer 
     {
@@ -908,6 +931,9 @@ class MMesh is MSpatial
 
     function normal from (i is Integer) to Vec3 
     {
+	if (faceNorms <> []) {
+	    return faceNorms[i];
+	}
 	const i0 = 3*i;
 	const i1 = i0+1;
 	const i2 = i1+1;
@@ -919,6 +945,7 @@ class MMesh is MSpatial
     function buildMesh
     {
 	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
+	println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()}");
 	var norms is Vec3[];
 	if (this.normals == []) {
 	    for (polyface in polyfaces) {
@@ -996,7 +1023,7 @@ class MMesh is MSpatial
 			    const faceNorm = this.normal(j);
 			    norm += faceNorm;
 			}
-			insert norm into norms;
+			insert norm into faceNorms;
 		    }
 		}
 	    }
@@ -1061,21 +1088,56 @@ class MMesh is MSpatial
 	super.setAttr(cmd);
 	const n = cmd.getAttr();
 	if (n == "vt") {
-	    verts = cmd.getFlatFloat3Array();
+	    const path = cmd.getPath();
+	    const values = cmd.getFlatFloat3Array();
+	    if (path.path[1] instanceof Range) {
+		const r = path.path[1] as Range;
+		verts[r.startIndex*3..r.endIndex*3] = values;
+	    } else {
+		verts = values;
+	    }
 	} else if (n == "pt") {
-	    pointTweaks = cmd.getFlatFloat3Array();
+	    const path = cmd.getPath();
+	    const values = cmd.getFlatFloat3Array();
+	    if (path.path[1] instanceof Range) {
+		const r = path.path[1] as Range;
+		pointTweaks[r.startIndex*3..r.endIndex*3] = values;
+	    } else {
+		pointTweaks = values;
+	    }
 	} else if (n == "n") {
-	    normals = cmd.getFlatFloat3Array();
-	    for (v in normals) {
+	    const path = cmd.getPath();
+	    const values = cmd.getFlatFloat3Array();
+	    for (v in values) {
 		if (v > 1e10) { // bogus normals
 		    normals = [];
-		    break;
+		    return;
 		}
 	    }
+	    if (path.path[1] instanceof Range) {
+		const r = path.path[1] as Range;
+		normals[r.startIndex*3..r.endIndex*3] = values;
+	    } else {
+		normals = values;
+	    }
 	} else if (n == "ed") {
-	    edges = cmd.getFlatInt3Array();
+	    const path = cmd.getPath();
+	    const values = cmd.getFlatInt3Array();
+	    if (path.path[1] instanceof Range) {
+		const r = path.path[1] as Range;
+		edges[r.startIndex*3..r.endIndex*3] = values;
+	    } else {
+		edges = values;
+	    }
 	} else if (n == "fc") {
-	    polyfaces = cmd.getPolyfaceData();
+	    const path = cmd.getPath();
+	    const values = cmd.getPolyfaceData();
+	    if (path.path[1] instanceof Range) {
+		const r = path.path[1] as Range;
+		polyfaces[r.startIndex..r.endIndex] = values;
+	    } else {
+		polyfaces = values;
+	    }
 	} else if (n == "uvst") {
             // uv sets
 	    const path = cmd.getPath();
@@ -1091,7 +1153,7 @@ class MMesh is MSpatial
 			uvs: values;
 		    } into uvSets;
 		} else {
-		    uvSets[uvIndex].uvs[range.startIndex..range.endIndex] = values;
+		    uvSets[uvIndex].uvs[range.startIndex*2..range.endIndex*2] = values;
 		}
 	    }
 	}
@@ -1291,7 +1353,7 @@ class Command
 
     override function toString to String 
     {
-	"{name} {foreach (ent in namedArgs.entrySet()) "-{ent.getKey()} {ent.getValue()}"} {foreach (arg in args) " {arg}"}"
+	"{name} {foreach (ent in namedArgs.entrySet()) " -{ent.getKey()} {ent.getValue()}"} {foreach (arg in args) " {arg}"}"
     }
 
     public function getBoolean to Boolean {
@@ -1507,16 +1569,29 @@ class MaParser
     function flush() {
 	if (buf.length() > 0) {
 	    tokens.add(buf.toString());
+	    //println("token: {buf}");
 	    buf.setLength(0);
 	}
     }
 
     function consumeUntil(input is String, end is Character) {
 	const len = input.length();
+	const backslash = "\\";
+	const escapes = "ntr";
+	const escaped = "\n\t\r";
 	while (pos < len) {
-	    const ch = input.charAt(pos++);
+	    var ch = input.charAt(pos++);
+	    var escape = false;
+	    if (backslash.indexOf(ch) == 0) {
+		escape = true;
+		ch = input.charAt(pos++);
+		const i = escapes.indexOf(ch);
+		if (i >= 0) {
+		    ch = escaped.charAt(i);
+		}
+	    }
 	    buf.append(ch);
-	    if (ch == end) {
+	    if (not escape and ch == end) {
 		break;
 	    }
 	}
@@ -1600,7 +1675,13 @@ class MaParser
 	while (i < len) {
 	    const s = cmds.get(i++);
 	    if (s.startsWith("-") and not java.lang.Character.isDigit(s.charAt(1))) {
-		const v is String = if (i < len) then cmds.get(i++) else "";
+		var j = i;
+		var v is String = if (i < len) then cmds.get(j++) else "";
+		if (v.startsWith("-") and not java.lang.Character.isDigit(v.charAt(1))) {
+		    v = null;
+		}  else {
+		    i = j;
+		}
 		cmd.namedArgs.put(s.substring(1), v);
 	    } else {
 		insert s into cmd.args;
@@ -1708,12 +1789,18 @@ function dumpScene (spatialRoot is Node)
 class ModelContent {
     public var spatial is Node;
     public var temporal is TimeNode;
+    public var cameras is Camera[];
 }
 
 public class Model {
 
     public var url is String;
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
+
+    public bound function getCameras to Camera[]
+    {
+	modelContent.cameras;
+    }
 
     public bound function getSpatialRoot to Node 
     {
@@ -1736,6 +1823,7 @@ public class Model {
 	const r = ModelContent {
 	    spatial: m.spatialRoot;
 	    temporal: m.temporalRoot;
+	    cameras: m.getCameras();
 	}
 	println("modelContent.spatial = {r.spatial}");
 	return r;

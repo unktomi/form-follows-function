@@ -147,12 +147,17 @@ public class Scene
 	root.updateParent();
     }
 
+    var lastCamera is Camera = null;
     public function updateCamera to () 
     {
 	if (camera.parent == null) {
 	    camera.setParent(root);
 	}
 	camera.resize(width, height);
+	if (camera <> lastCamera) {
+	    lastCamera = camera;
+	    println("camera={camera} {camera.id}");
+	}
     }
 
     function updateMouse from (mouseX is Number, mouseY is Number) to ()

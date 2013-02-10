@@ -1,5 +1,6 @@
 package f3.math;
 import java.lang.Math;
+import java.lang.Math.*;
 import f3.math.LinearMath.*;
 
 public static const <<1>> = Quat { w: 1.0 };
@@ -9,7 +10,7 @@ public static const <<0>> = Quat { };
 
 public class Quat is Tuple4 
 {
-    public function mul 
+    override public function mul 
 	from (n is Number) 
 	to Quat 
     {
@@ -178,18 +179,60 @@ public class Quat is Tuple4
         // is correction factor
         const test = x * y + z * w;
         if (test > 0.499 * unit) { // singularity at north pole
-            tuple(2 * Math.atan2(x, w),
-		  Math.PI/2.0,
-		  0)
+            const rx is Number = 2 * Math.atan2(x, w);
+	    const ry is Number = Math.PI/2.0;
+	    const rz is Number = 0.0;
+	    Tuple3 {
+		x: toDegrees(rx);
+		y: toDegrees(ry);
+		z: toDegrees(rz);
+	    }
         } else if (test < -0.499 * unit) { // singularity at south pole
-	    tuple(-2 * Math.atan2(x, w),
-		  -Math.PI/2.0,
-		  0)
+	    const rx is Number = -2 * Math.atan2(x, w);
+	    const ry is Number = -Math.PI/2.0;
+	    const rz is Number = 0.0;
+	    Tuple3 {
+		x: toDegrees(rx);
+		y: toDegrees(ry);
+		z: toDegrees(rz);
+	    }
         } else {
-            tuple(Math.atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw),
-		  Math.asin(2 * test / unit),
-		  Math.atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw))
+            const rx is Number = Math.atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw);
+	    const ry is Number = Math.asin(2 * test / unit);
+	    const rz is Number = Math.atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw);
+	    Tuple3 {
+		x: toDegrees(rx);
+		y: toDegrees(ry);
+		z: toDegrees(rz);
+	    }
         }
+    }
+
+    public function toMat4 to Mat4 
+    {
+	const norm = lengthSquared();
+        const s = if (norm > 0.0) then 2.0 / norm else 0.0;
+
+        // compute xs/ys/zs first to save 6 multiplications, since xs/ys/zs                        
+        // will be used 2-4 times each.                                                            
+        const xs = x * s;
+        const ys = y * s;
+        const zs = z * s;
+        const xx = x * xs;
+        const xy = x * ys;
+        const xz = x * zs;
+        const xw = w * xs;
+        const yy = y * ys;
+        const yz = y * zs;
+        const yw = w * ys;
+        const zz = z * zs;
+        const zw = w * zs;
+
+        // using s=2/norm (instead of 1/norm) saves 9 multiplications by 2 here                    
+	LinearMath.matrix(1.0 - (yy + zz), xy - zw, xz + yw, 0,
+			  xy + zw, 1.0 - (xx + zz), yz - xw, 0,
+			  xz - yw, yz + xw, 1.0 - (xx + yy), 0,
+			  0, 0, 0, 1);
     }
 }
 
@@ -240,9 +283,9 @@ public function Quat from (eulerAngles is Tuple3) to Quat {
 
 public function Quat from (rx is Number, ry is Number, rz is Number) to Quat 
 {
-    const heading = rx;
-    const attitude = ry;
-    const bank = rz;
+    const heading = Math.toRadians(rx);
+    const attitude = Math.toRadians(ry);
+    const bank = Math.toRadians(rz);
     var angle = heading * 0.5;
     const sinHeading = Math.sin(angle);
     const cosHeading = Math.cos(angle);
@@ -264,12 +307,13 @@ public function Quat from (rx is Number, ry is Number, rz is Number) to Quat
     var y = (sinHeadingXcosAttitude * cosBank + cosHeadingXsinAttitude * sinBank);
     var z = (cosHeadingXsinAttitude * cosBank - sinHeadingXcosAttitude * sinBank);
 
-    const l = Math.sqrt(w*w+x*x+y*y+z*z);
+    const mag = Math.sqrt(w*w+x*x+y*y+z*z);
+    const n = 1.0 / mag;
 
-    w /= l;
-    x /= l;
-    y /= l;
-    z /= l;
+    w *= n;
+    x *= n;
+    y *= n;
+    z *= n;
 
     Quat {
 	x: x;

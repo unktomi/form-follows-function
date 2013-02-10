@@ -2,7 +2,7 @@ package f3.util;
 import org.f3.runtime.Monad;
 import org.f3.runtime.Comonad;
 import java.lang.Math;
-
+/*
 public class ListMonad is f3.util.Monad of List 
 {
     override function map of (a, b) 
@@ -10,7 +10,7 @@ public class ListMonad is f3.util.Monad of List
 	      f is function from a to b) 
 	to List of b 
     {
-	map(xs, f)
+	xs.map(f)
     }
 
     override function flatmap of (a, b) 
@@ -27,6 +27,7 @@ public class ListMonad is f3.util.Monad of List
 }
 
 public static const listMonad = ListMonad {};
+*/
 
 // List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[] | Replicate List n
 

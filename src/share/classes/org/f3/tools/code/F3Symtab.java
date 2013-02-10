@@ -91,6 +91,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_MonadType;
     public final Type f3_MonadTypeClass;
     public final Type f3_ComonadType;
+    public final Type f3_TypeApplyType;
     public final Type f3_TypeConsType;
     public final Type[] f3_TypeCons;
 
@@ -256,6 +257,7 @@ public class F3Symtab extends Symtab {
         f3_IdType = enterClass(F3Defs.cId);
         f3_IdTypeErasure = types.erasure(f3_IdType);
         f3_TypeConsType = enterClass(F3Defs.cTypeCons);
+        f3_TypeApplyType = enterClass(F3Defs.cTypeApply);
 	f3_TypeCons = new Type[6];
 	f3_TypeConsErasure = new Type[6];
 	f3_TypeCons[0] = enterClass(F3Defs.cTypeCons);

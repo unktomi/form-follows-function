@@ -101,7 +101,16 @@ import org.f3.runtime.sequence.Sequences;
  * @author Robert Field
  */
  public class F3Base implements F3Object {
+     public static boolean f3debug = false;
+     public static boolean isDebug (F3Object obj) {
+	 return f3debug;
+     }
+     public static void setDebug(Object obj, boolean value) {
+	 f3debug = value;
+     }
+
     public boolean initialized$internal$ = false;
+
     public boolean isInitialized$internal$() {
         return initialized$internal$;
     }
@@ -312,14 +321,22 @@ import org.f3.runtime.sequence.Sequences;
     public void applyDefaults$(final int varNum) {}
     public void applyDefaultsDebug$(final int varNum) {
         int cnt = count$();
-	//System.err.println("apply default: "+this+": "+ varNum + " of "+ cnt);
+	if (f3debug) {
+	    System.err.println("apply default: "+this+": "+ varNum + " of "+ cnt);
+	}
 	applyDefaults$(varNum);
-	//System.err.println("apply default: "+this+": "+ varNum+ " = "+ get$(varNum));
+	if (f3debug) {
+	    System.err.println("apply default: "+this+": "+ varNum+ " = "+ get$(varNum));
+	}
     }
     public static void applyDefaultsDebug$(F3Object obj, final int varNum) {
-	//System.err.println("apply default: "+obj+": "+ varNum);
+	if (isDebug(obj)) {
+	    System.err.println("apply default: "+obj+": "+ varNum);
+	}
 	applyDefaults$(obj, varNum);
-	//System.err.println("apply default: "+obj+": "+ varNum+ " = "+ obj.get$(varNum));
+	if (isDebug(obj)) {
+	    System.err.println("apply default: "+obj+": "+ varNum+ " = "+ obj.get$(varNum));
+	}
     }
     public static void applyDefaults$(F3Object obj, final int varNum) {}
 
@@ -364,7 +381,6 @@ import org.f3.runtime.sequence.Sequences;
     //
     public static short [] makeInitMap$(int count, int... offsets) {
         final short [] map = new short[count];
-	//System.err.println("init map: "+ count+": ");
 	for (int i= 0; i < count; i++) {
 	    map[i] = Short.MAX_VALUE;
 	}
