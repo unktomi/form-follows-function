@@ -2360,7 +2360,7 @@ public class F3Attr implements F3Visitor {
 	    super(name, sym, bound);
 	}
         public Type withTypeVar(Type t) {
-	    System.err.println("with type var: "+ this + ": "+t);
+	    //System.err.println("with type var: "+ this + ": "+t);
 	    return super.withTypeVar(t);
 	}
 	public boolean isA(Type t) {
@@ -2385,7 +2385,7 @@ public class F3Attr implements F3Visitor {
 	    tv.tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
 	    tv.args = makeTypeVars(cons.getArgs(), tv.tsym);
 	    tv.bound = types.makeTypeCons(tv, tv.args);
-	    System.err.println("typeCons: "+tv);
+	    //System.err.println("typeCons: "+tv);
 	    env.info.scope.enter(((TypeVar)tv).tsym);
 	    return tv;
 	} else if (exp instanceof F3Ident) {
@@ -3562,8 +3562,8 @@ public class F3Attr implements F3Visitor {
 					    exp = f3make.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());
 					}
 					Type t = attribExpr(exp, env);
-					System.err.println("implicit expr="+exp);
-					System.err.println("type="+t);
+					//System.err.println("implicit expr="+exp);
+					//System.err.println("type="+t);
 					exp.type = t;
 					implicitExpr = exp;
 				    }
@@ -3608,7 +3608,7 @@ public class F3Attr implements F3Visitor {
             }
         }
 	tree.resolvedImplicits = resolvedImplicits;
-	System.err.println("implicit exprs="+implicitExprs);
+	//	System.err.println("implicit exprs="+implicitExprs);
 	for (F3Expression exp: implicitExprs) {
 	    tree.args = tree.args.append(exp);
 	}
@@ -5467,11 +5467,11 @@ public class F3Attr implements F3Visitor {
         }
     }
 
-    public boolean fixOverride(F3FunctionDefinition tree,
-			       MethodSymbol m,
-			       MethodSymbol other,
-			       ClassSymbol origin,
-			       boolean fixFlags) {
+    private boolean fixOverride(F3FunctionDefinition tree,
+				MethodSymbol m,
+				MethodSymbol other,
+				ClassSymbol origin,
+				boolean fixFlags) {
 	Type mt = types.memberType(origin.type, m);
 	Type ot = types.memberType(origin.type, other);
 	if (m.type.getReturnType() == syms.f3_UnspecifiedType) {
@@ -5493,11 +5493,16 @@ public class F3Attr implements F3Visitor {
 				      mtvars);
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
-		    //System.err.println("fix override:  "+m+": "+x.head+" => "+tc2);
 		    if (tc2 >= 0 ||
 			!x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
+			/*
+			System.err.println("fix override:  base: "+ot);
+			System.err.println("fix override:  derived: "+mt);
+			System.err.println("base arg="+y.head);
+			System.err.println("derived arg="+x.head);
+			System.err.println("derived arg'="+x1);
+			*/
 			vars.head.baseType = x1;
-			
 		    }
 		}
 	    }

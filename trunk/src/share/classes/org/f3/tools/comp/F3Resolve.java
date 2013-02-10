@@ -961,6 +961,10 @@ public class F3Resolve {
 	//System.err.println("clazz="+expected.getClass());
         try {
 	    Type memberType = types.memberType(site, sym);
+	    if (memberType == null || memberType.getTypeArguments() == null) {
+		System.err.println("bad type: "+ site+": "+sym);
+		return bestSoFar;
+	    }
 	    if (memberType.getTypeArguments().size() > 0) {
 		if (allowBoxing) {
 		    ListBuffer<Type> lb = ListBuffer.lb();

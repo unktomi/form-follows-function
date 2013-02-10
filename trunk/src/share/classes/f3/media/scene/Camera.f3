@@ -130,7 +130,8 @@ public abstract class Camera is TransformNode
         const bot = -h;
         const top = h;
         if (right-left == 0 or top-bot == 0 or far-near == 0) {
-            throw new java.lang.RuntimeException("invalid dimensions {this} {near} {far} {fovY} {aspect}");
+            //throw new java.lang.RuntimeException("invalid dimensions {this} {near} {far} {fovY} {aspect}");
+	    return Mat4.<<1>>;
         }
         const xx = 2 * near / (right - left);
         const yy = 2 * near / (top - bot);

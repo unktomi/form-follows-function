@@ -258,7 +258,7 @@ public class F3ClassReader extends ClassReader {
 	}
 	int tc = f3Types.isTypeConsType(type);
 	if (tc >= 0) {
-	    System.err.println("translating type cons: "+ tc+": "+type.getClass() + ": "+type);
+	    //System.err.println("translating type cons: "+ tc+": "+type.getClass() + ": "+type);
 	    if (type instanceof TypeVar) {
 	    } else if (type instanceof WildcardType) {
 	    } else {
@@ -275,14 +275,14 @@ public class F3ClassReader extends ClassReader {
 			tcons.bound = tv.bound;
 			tcons.ctor = tv;
 			typeMap.put(type, tcons);
-			System.err.println("translated to': "+ f3Types.toF3String(tcons));
+			//			System.err.println("translated to': "+ f3Types.toF3String(tcons));
 			return tcons;
 		    } else {
 			type = f3Types.applySimpleGenericType(args.head, args.tail);
 		    }
 		}
 	    }
-	    System.err.println("translated to: "+ type);
+	    //System.err.println("translated to: "+ type);
 
 	}
         Type t = (Type) typeMap.get(type);
@@ -465,7 +465,7 @@ public class F3ClassReader extends ClassReader {
     Type popMethodTypeArg(Type type, Name name, Type owner) {
 	MethodType mt;
 	ForAll forAll = null;
-	System.err.println("popMethodTypeArg: "+ name+": "+type.getClass()+": "+type+" in: "+owner);
+	//System.err.println("popMethodTypeArg: "+ name+": "+type.getClass()+": "+type+" in: "+owner);
 	List<Type> argtypes;
 	if (type instanceof ForAll) {
 	    forAll = (ForAll)type;
@@ -571,7 +571,7 @@ public class F3ClassReader extends ClassReader {
             if (nameString.endsWith(F3Defs.implFunctionSuffix)) {
                 nameString = nameString.substring(0, nameString.length() - F3Defs.implFunctionSuffix.length());
                 convertToStatic = true;
-		System.err.println("name string: "+ nameString);
+		//System.err.println("name string: "+ nameString);
             }
             if (convertToStatic) {
                 flags &= ~Flags.STATIC;

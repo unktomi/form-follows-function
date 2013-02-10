@@ -1,5 +1,6 @@
 package f3.math;
 import java.lang.Math;
+import f3.math.Quat.*;
 
 public static const EPSILON = 0.00001;
 
@@ -9,7 +10,7 @@ public function quat
 	  rz is Number)
     to Quat
 {
-    Quat.Quat(rx, ry, rz)
+    Quat(rx, ry, rz)
 }
 
 
@@ -205,12 +206,10 @@ public function rotate
     from (rx is Number, ry is Number, rz is Number) 
     to Mat4 
 {
-    if (rx == 0 and ry == 0 and rz == 0) 
-	then Mat4.<<1>> 
-	else 
-	    rotateNormalAxis(rz, Vec3.Z_AXIS) * 
-		rotateNormalAxis(ry, Vec3.Y_AXIS) * 
-   		    rotateNormalAxis(rx, Vec3.X_AXIS);
+    if (rx == 0 and ry == 0 and rz == 0) {
+	return Mat4.<<1>>;
+    }
+    quat(rx, ry, rz).toMat4();
 }
 
 public function rotate

@@ -6,6 +6,9 @@ import org.f3.runtime.*;
 
 public abstract class Node is Foldable of Node
 {
+    override function toString to String {
+	"{super.toString()} {id}"
+    }
     public var id is String;
     public readonly var parent is Node;
     public var visible is Boolean = true;

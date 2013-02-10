@@ -96,10 +96,32 @@ public class F3Types extends Types {
 	return getComonad(upperBound(type)) != null;
     }
 
+    // T a b c -> TypeApply<TypeApply<TypeApply<T, a>, b, c>
+    public Type makeTypeApply(Type thisType, List<Type> args) {
+	for (Type t: args) {
+	    thisType = applySimpleGenericType(syms.f3_TypeApplyType, List.of(t));
+	}
+	return thisType;
+    }
+
     public Type makeTypeCons(Type thisType, List<Type> args) {
-	//System.err.println("thisType: "+ thisType.getClass());	
-	//System.err.println("make type cons: "+ args.size() + ": "+args);
 	List<Type> list = List.of(thisType);
+	if (thisType.getTypeArguments().size() > 0) {
+	    //System.err.println("thisType: "+ thisType.getClass() + ": "+thisType);	
+	    if (thisType instanceof TypeCons) {
+		TypeCons cons = (TypeCons)thisType;
+		if (cons.ctor != null) {
+		    //System.err.println("ctor="+cons.ctor.getClass()+": "+cons.ctor);
+		    list.head = cons.ctor;
+		    args = cons.args.appendList(args);
+		} else {
+		}
+	    } else {
+		list.head = erasure(thisType);
+		args = thisType.getTypeArguments().appendList(args);
+	    }
+	}
+	//System.err.println("make type cons: "+ args.size() + ": "+args);
 	int n = args.size();
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
@@ -204,6 +226,24 @@ public class F3Types extends Types {
 	    return result;
 	}
 	return type;
+    }
+    
+    public Type applyTypeCons(Type t) {
+	if (t instanceof TypeCons) {
+	    return t;
+	}
+	List<Type> args = t.getTypeArguments();
+	int i = isTypeConsType(t);
+	if (i < 0 || args.size() < 1) {
+	    return t;
+	}
+	if (args.tail == null) {
+	    return args.head;
+	}
+	if (args.head instanceof TypeVar) {
+	    return t;
+	}
+	return applySimpleGenericType(args.head, args.tail);
     }
 
     public Type getTypeCons(Type type) {
@@ -765,19 +805,30 @@ public class F3Types extends Types {
     }
 
     boolean isSameTypeCons(Type t, Type s) {
+	return isSameTypeCons(t, s, false);
+    }
+
+    boolean isSameTypeCons(Type t, Type s, boolean debug) {
+	//System.err.println("s="+s);
+	//System.err.println("t="+t);
 	int i = isTypeConsType(s);
+	boolean doit = false;
 	if (i >= 0) {
-	    Type tt = subst(t, t.getTypeArguments(), s.getTypeArguments());
-	    ///System.err.println("S="+s);
-	    //System.err.println("TT="+tt);
-	    for (Type st : supertypesClosure(t)) {
-		if (isSameType(st, s)) {
-		    //System.err.println("same type cons"+st +": "+s);
-		    return true;
-		}
-	    }
+	    s = applyTypeCons(s);
+	    doit = true;
 	}
-        return false;
+	i = isTypeConsType(t);
+	if (i >= 0) {
+	    t = applyTypeCons(t);
+	    doit = true;
+	}
+	//System.err.println("s'="+s);
+	//System.err.println("t'="+t);
+	if (doit) {
+	    boolean result = isSameType(s, t);
+	    //  System.err.println(s + " ==  " + t + " => "+ result);
+	}
+	return false;
     }
 
     @Override
@@ -992,6 +1043,8 @@ public class F3Types extends Types {
         Type ot = this.memberType(origin.type, other);
 	//System.err.println("mt="+mt);
 	//System.err.println("ot="+ot);
+	//System.err.println("mt="+mt);
+	//System.err.println("ot="+ot);
 	//System.err.println("other.owner: "+ other.owner);
 	//System.err.println("sym.owner: "+ sym.owner);
 	//System.err.println("asSuper: "+ asSuper(origin.type, other.owner));
@@ -1000,15 +1053,14 @@ public class F3Types extends Types {
 	    if (x.head != null && y.head != null) {
 		int i = isTypeConsType(y.head);
 		if (i >= 0) {
-		    //System.err.println("x.head="+x.head.getClass()+": "+x.head);
-		    //System.err.println("y.head="+y.head.getClass()+": "+y.head);
-		    for (Type st : supertypesClosure(x.head)) {
-			//System.err.println("st="+st);
-			if (isSameType(st, y.head)) {
-			    x.head = y.head;
-			    break;
-			}
+		    System.err.println("x.head'="+x.head.getClass()+": "+x.head);
+		    System.err.println("y.head'="+y.head.getClass()+": "+y.head);
+		    Type tt = applyTypeCons(y.head);
+		    System.err.println("tt'="+tt);
+		    if (isSameType(tt, x.head)) {
+			x.head = y.head;
 		    }
+		    System.err.println("x.head''="+x.head);
 		}
 	    }
 	    if (x.head != null && boxedTypeOrType(x.head) == y.head) {
@@ -1023,6 +1075,16 @@ public class F3Types extends Types {
             this.isSubSignature(mt, ot) &&
             (!checkResult || this.resultSubtype(mt, ot, Warner.noWarnings));
     }
+
+    public boolean resultSubtype(Type t, Type s, Warner warner) {
+	Type rt = t.getReturnType();
+	Type st = s.getReturnType();
+	if (isSameType(rt, st)) {
+	    return true;
+	}
+	return super.resultSubtype(t, s, warner);
+    }
+
 
     /**
      * Returns a list of all supertypes of t, without duplicates, where supertypes
@@ -1950,11 +2012,11 @@ public class F3Types extends Types {
 		    if (from.head instanceof TypeCons) {
 			TypeCons tc2 = (TypeCons)from.head;
 			if (tc1.ctor != null && tc1.ctor.tsym == tc2.tsym) {
-			    //System.err.println("same type cons");
-			    //System.err.println("to.head="+to.head);
-			    //System.err.println("tc1.typeArgs="+tc1.getTypeArguments());
+			    System.err.println("same type cons");
+			    System.err.println("to.head="+to.head);
+			    System.err.println("tc1.typeArgs="+tc1.getTypeArguments());
 			    Type res= makeTypeCons(to.head, tc1.getTypeArguments());
-			    //System.err.println("res="+res);
+			    System.err.println("res="+res);
 			    return res;
 			}
 		    }
