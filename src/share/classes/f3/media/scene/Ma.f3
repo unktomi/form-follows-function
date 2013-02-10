@@ -2,8 +2,7 @@ package f3.media.scene;
 import f3.math.*;
 import f3.math.LinearMath.*;
 import f3.media.scene.*;
-import org.f3.runtime.Pointer;
-import org.f3.runtime.F3Object;
+import f3.lang.Ref;
 import java.lang.Math;
 
 class MAttr {
@@ -46,7 +45,7 @@ class MaModel
 	    else if (nodeType == "cgfxShader") 
 		then MCGFXShader {name: name}
 	    else if (nodeType == "cgfxVector") 
-		then null
+		then MCGFXVector {name: name}
 	    else if (nodeType == "file") 
 		then MFile {name: name}
 	    else if (nodeType == "shadingEngine") 
@@ -173,7 +172,7 @@ class MaModel
 		result = src.getOutput(this, c.sourcePath);
 		break;
 	    } else {
-		const ptr = resolveSourcePointer(c) as Pointer of (?, Number);
+		const ptr = resolveSourcePointer(c) as Ref of Number;
 		if (ptr <> null) {
 		    result = function from () to Number { ptr.get() }
 		    break;
@@ -194,7 +193,7 @@ class MaModel
 		result = src.getOutput(this, c.sourcePath);
 		break;
 	    } else {
-		const ptr = resolveSourcePointer(c) as Pointer of (?, Tuple3);
+		const ptr = resolveSourcePointer(c) as Ref of Tuple3;
 		if (ptr <> null) {
 		    result = function from () to Tuple3 { ptr.get() }
 		    break;
@@ -213,7 +212,7 @@ class MaModel
     }
 
     function resolveTargetPointer
-	from (c is Connection) to Pointer of (..F3Object, ?)
+	from (c is Connection) to Ref of ?
     {
 	const target = c.targetNode;
 	if (target instanceof MCharacter) {
@@ -225,7 +224,7 @@ class MaModel
     }
 
     function resolveSourcePointer
-	from (c is Connection) to Pointer of (..F3Object, ?)
+	from (c is Connection) to Ref of ?
     {
 	const target = c.sourceNode;
 	if (target instanceof MCharacter) {
@@ -237,11 +236,11 @@ class MaModel
     }
 
     function getNumberTargets 
-	from (n is MNode, sourcePath is String) to (Pointer of (..F3Object, Number))[]
+	from (n is MNode, sourcePath is String) to (Ref of Number)[]
     {
 	//println("getNumberTargets {sourcePath}");
 	foreach (c in n.connectionsFromThis.get(sourcePath)) {
-	    const ptr = resolveTargetPointer(c) as Pointer of (..F3Object, Number);
+	    const ptr = resolveTargetPointer(c) as Ref of Number;
 	    println("resolved {ptr} from {n.name} {sourcePath}");
 	    ptr;
 	}
@@ -319,7 +318,7 @@ class MNode {
 
     function getPointer 
 	from (path is String, target is Object) 
-	to Pointer of (?, ?) 
+	to Ref of ?
     {
 	null
     }
@@ -372,7 +371,7 @@ abstract class MSpatial is MNode {
 
     function getPointer 
 	from (path is String, target is Object) 
-	to Pointer of (?, ?) 
+	to Ref of ?
     {
 	if (false and path == "v") {
 	    const n = target as Node;
@@ -554,67 +553,67 @@ class MTransform is MSpatial {
 
     override public function getPointer
 	from (ptr is String, target is Object) 
-	to Pointer of (?, ?)
+	to Ref of ?
     {
 	println("get pointer {name} attr={ptr} target={target}");
 
 	const n = target as MaTransform;
 
 	if ptr == "tx" 
-        then &n.tx as Pointer of (?, ?)
+        then &n.tx as Ref of ?
 	else if ptr == "ty"
-        then &n.ty as Pointer of (?, ?)
+        then &n.ty as Ref of ?
 	else if ptr == "tz"
-        then &n.tz as Pointer of (?, ?)
+        then &n.tz as Ref of ?
 
         else if ptr == "sx" 
-        then &n.sx as Pointer of (?, ?)
+        then &n.sx as Ref of ?
 	else if ptr == "sy"
-        then &n.sy as Pointer of (?, ?)
+        then &n.sy as Ref of ?
 	else if ptr == "sz"
-        then &n.sz as Pointer of (?, ?)
+        then &n.sz as Ref of ?
 
         else if ptr == "rx" 
-        then &n.rx as Pointer of (?, ?)
+        then &n.rx as Ref of ?
 	else if ptr == "ry"
-        then &n.ry as Pointer of (?, ?)
+        then &n.ry as Ref of ?
 	else if ptr == "rz"
-        then &n.rz as Pointer of (?, ?)
+        then &n.rz as Ref of ?
 
         else if ptr == "rpx" 
-        then &n.rpx as Pointer of (?, ?)
+        then &n.rpx as Ref of ?
 	else if ptr == "rpy"
-        then &n.rpy as Pointer of (?, ?)
+        then &n.rpy as Ref of ?
 	else if ptr == "rpz"
-        then &n.rpz as Pointer of (?, ?)
+        then &n.rpz as Ref of ?
 
         else if ptr == "spx" 
-        then &n.spx as Pointer of (?, ?)
+        then &n.spx as Ref of ?
 	else if ptr == "spy"
-        then &n.spy as Pointer of (?, ?)
+        then &n.spy as Ref of ?
 	else if ptr == "spz"
-        then &n.spz as Pointer of (?, ?)
+        then &n.spz as Ref of ?
 
         else if ptr == "rptx" 
-        then &n.rptx as Pointer of (?, ?)
+        then &n.rptx as Ref of ?
 	else if ptr == "rpty"
-        then &n.rpty as Pointer of (?, ?)
+        then &n.rpty as Ref of ?
 	else if ptr == "rptz"
-        then &n.rptz as Pointer of (?, ?)
+        then &n.rptz as Ref of ?
 
         else if ptr == "sptx" 
-        then &n.sptx as Pointer of (?, ?)
+        then &n.sptx as Ref of ?
 	else if ptr == "spty"
-        then &n.spty as Pointer of (?, ?)
+        then &n.spty as Ref of ?
 	else if ptr == "sptz"
-        then &n.sptz as Pointer of (?, ?)
+        then &n.sptz as Ref of ?
 
         else if ptr == "tmrpx" 
-        then &n.tmrpx as Pointer of (?, ?)
+        then &n.tmrpx as Ref of ?
 	else if ptr == "tmrpy"
-        then &n.tmrpy as Pointer of (?, ?)
+        then &n.tmrpy as Ref of ?
 	else if ptr == "tmprz"
-        then &n.tmrpz as Pointer of (?, ?)
+        then &n.tmrpz as Ref of ?
        else super.getPointer(ptr, target)
     }
 
@@ -762,7 +761,7 @@ class MJoint is MTransform {
 
 class MCharacter is MNode {
 
-    function resolveTargetPointer from (m is MaModel, toThis is Connection) to Pointer of (..F3Object, ?) 
+    function resolveTargetPointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
 	// toThis connects to one of my inputs; forward to the corresponding connection 
 	for (conn in connectionsFromThis.get(toThis.targetPath)) {
@@ -773,7 +772,7 @@ class MCharacter is MNode {
 	return null;
     }
 
-    function resolveSourcePointer from (m is MaModel, toThis is Connection) to Pointer of (..F3Object, ?) 
+    function resolveSourcePointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
 	// toThis connects to one of my inputs; forward to the corresponding connection 
 	for (conn in connectionsToThis.get(toThis.targetPath)) {
@@ -1091,8 +1090,6 @@ class MMesh is MSpatial
     const vb = new FloatBufferBuilder();
     const nb = new FloatBufferBuilder();
     const uvb = new FloatBufferBuilder();
-    const tanb = new FloatBufferBuilder();
-    const binb = new FloatBufferBuilder();
 
     function insertVertex
 	from (edge is Integer, norm is Integer, uvSet is Integer, uvIndex is Integer) 
@@ -1224,6 +1221,15 @@ class MCGFXShader is MAbstractShader
     var val_ is String[];
     var vas_ is String[];
 
+    override public function getPointer
+	from (ptr is String, target is Object) 
+	to Ref of ?
+    {
+	const shader = target as Shader;
+	return shader.getParameter(ptr);
+    }
+
+
     override function setAttr from (cmd is Command) to () 
     {
 	const n = cmd.getAttr();
@@ -1260,6 +1266,51 @@ class MCGFXShader is MAbstractShader
 	}
 	return shader;
     }
+}
+
+
+class CGFXVectorNode is Node {
+    public var wv is Vec3;
+    public var wvw is Number;
+}
+
+class MCGFXVector is MSpatial {
+    
+    var wv is Vec3 = Vec3.<<0>>;
+    var wvw is Number;
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	const n = cmd.getAttr();
+	if (n == "wv") {
+	    wv = cmd.getVec3();
+	} else if (n == "wvw") {
+	    wvw = cmd.getFloat();
+	} else super.setAttr(cmd);
+    }
+
+    override public function getPointer
+	from (ptr is String, target is Object) 
+	to Ref of ?
+    {
+	const n = target as CGFXVectorNode;
+	if (ptr == "wv") {
+	    return &n.wv;
+	} else if (ptr == "wvw") {
+	    return &n.wvw;
+	} else {
+	    return null
+	}
+    }
+
+    override function toNode from (m is MaModel) to Node {
+	CGFXVectorNode {
+	    id: name;
+	    wvw: wvw;
+	    wv: wv;
+	}
+    }
+    
 }
 
 class MShader is MAbstractShader 
@@ -1307,7 +1358,21 @@ class MShader is MAbstractShader
 	    const specular = Color.color(sc.x, sc.y, sc.z, alpha);
 	    const shininess = if (this.type == "phong") then cp else 100 - 99 * Math.sqrt(ec);
 	    println("effectLoader={m.effectLoader}");
-	    shader = m.effectLoader.loadDefaultShader(null,
+	    var image is AbstractTexture;
+	    for (conns in connectionsToThis.values()) {
+		for (conn in conns) {
+		    println("looking for textures: {conn}");
+		    if (conn.sourceNode instanceof MFile) {
+			const file = conn.sourceNode as MFile;
+			println("found file: {file}");
+			const paramName = conn.targetPath;
+			const baseURL = new java.net.URL(m.url);
+			image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
+			break;
+		    }
+		}
+	    }
+	    shader = m.effectLoader.loadDefaultShader(image,
 						      diffuse,
 						      ambient,
 						      emissive,

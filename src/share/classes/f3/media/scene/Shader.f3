@@ -1,7 +1,7 @@
 package f3.media.scene;
 import f3.math.*;
 
-public abstract class Parameter of a 
+public abstract class Parameter of a is f3.lang.Ref of a
 {
     const name is String;
     public abstract function get to a;
