@@ -1,15 +1,18 @@
 package f3.media.scene;
 import f3.math.*;
+import f3.lang.Ref;
 
-public abstract class Parameter of a is f3.lang.Ref of a
+public abstract class Parameter of a is Ref of a
 {
     const name is String;
     public abstract function get to a;
     public abstract function set from (x is a) to ();
+    public abstract function bindTo from (ref is Ref of a) to ();
 }
 
 public abstract class Shader {
     public const id is String;
+    public var uvMap is Integer[] = [];
     abstract public function apply from (mesh is AbstractMesh,
     					 worldTransform is Mat4,
 					 viewMatrix is Mat4,
@@ -18,4 +21,5 @@ public abstract class Shader {
 
     public abstract function getParameter from (name is String) to Parameter;
     public abstract function getParameters to Parameter[];
+    public abstract function setParameter from (name is String, value is Object) to ();
 }

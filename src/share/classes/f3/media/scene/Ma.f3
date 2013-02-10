@@ -9,6 +9,8 @@ class MAttr {
     const longName is String;
     const shortName is String;
     const type is String;
+    var value is Object;
+    const parent is MAttr;
 }
 
 class MaModel 
@@ -31,6 +33,7 @@ class MaModel
 	const nodeType = cmd.getString(0);
 	const name = cmd.getString("n");
 	const parent = cmd.getString("p");
+
 	current = 
 	    if (nodeType == "transform") 
 		then MTransform {name: name, parent: findNode(parent)}
@@ -79,11 +82,7 @@ class MaModel
 	const n = cmd.name;
 	if (n == "createNode") {
 	    createNode(cmd);
-	    //println(cmd);
-	    //println("current={current}");
 	} else if (n == "setAttr") {
-	    //println(cmd);
-	    //println("current={current}");
 	    if (cmd.args.size() > 1) {
 		mergeSetAttr(cmd);
 		setAttr(cmd);
@@ -99,9 +98,6 @@ class MaModel
 
     function addAttr from (cmd is Command) to () 
     {
-	const shortName = cmd.getString("sn");
-	const longName = cmd.getString("ln");
-	const dataType = cmd.getString("at");
 	current.addAttr(cmd);
     }
 
@@ -140,6 +136,9 @@ class MaModel
 
     const temporalMap is java.util.Map of (MNode, TimeNode) = 
 	new java.util.HashMap of (MNode, TimeNode) ();
+
+    const shaderMap is java.util.Map of (MNode, Shader) = 
+	new java.util.HashMap of (MNode, Shader) ();
 
     public var url is String;
 
@@ -220,6 +219,9 @@ class MaModel
 	} else if (target instanceof MSpatial) {
 	    const resolved = toNode(target as MSpatial);
 	    target.getPointer(c.targetPath, resolved);
+	} else if (target instanceof MAbstractShader) {
+	    const resolved = toShader(target as MAbstractShader);
+	    target.getPointer(c.targetPath, resolved);
 	} else null
     }
 
@@ -232,16 +234,17 @@ class MaModel
 	} else if (target instanceof MSpatial) {
 	    const resolved = toNode(target as MSpatial);
 	    target.getPointer(c.sourcePath, resolved);
+	} else if (target instanceof MAbstractShader) {
+	    const resolved = toShader(target as MAbstractShader);
+	    target.getPointer(c.targetPath, resolved);
 	} else null
     }
 
     function getNumberTargets 
 	from (n is MNode, sourcePath is String) to (Ref of Number)[]
     {
-	//println("getNumberTargets {sourcePath}");
 	foreach (c in n.connectionsFromThis.get(sourcePath)) {
 	    const ptr = resolveTargetPointer(c) as Ref of Number;
-	    println("resolved {ptr} from {n.name} {sourcePath}");
 	    ptr;
 	}
     }
@@ -262,6 +265,14 @@ class MaModel
 	    }
     }
 
+    function toShader from (n is MAbstractShader) to Shader
+    {
+	if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
+		const shader = n.toShader(this);
+		shaderMap.put(n, shader);
+	    }
+    }
+
     function generateScene 
     {
 	spatialRoot = Group {id: url};
@@ -273,11 +284,9 @@ class MaModel
 		} else if (n is MAnimCurve) {
 		    toChannel(n as MAnimCurve);
 		} else null;
-	    //	    println("generating: {n} => {r}");
 	}
 	var j = 0;
 	var g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
-	//println("channels={channels}");
 	for (ch in channels) {
 	    if (g.content.size() > 50) { // hack
 		insert g into temporalRoot.content;
@@ -313,6 +322,8 @@ class MNode {
 	new java.util.HashMap of (String, Connection[]);
     const connectionsToThis is java.util.Map of (String, Connection[]) =
 	new java.util.HashMap of (String, Connection[]);
+    const attrs is java.util.Map of (String, MAttr) =
+	new java.util.HashMap of (String, MAttr);
     const name is String;
     const parent is MNode;
 
@@ -342,10 +353,59 @@ class MNode {
 
     function addAttr from (cmd is Command) to () 
     {
+	const shortName = cmd.getString("sn");
+	const longName = cmd.getString("ln");
+	const t = cmd.getString("at");
+	const parent = cmd.getString("p");
+	const attr = MAttr {
+	    shortName: shortName;
+	    longName: longName;
+	    type: t;
+	    parent: attrs.get(parent);
+	}
+	attrs.put(attr.shortName, attr);
+	attrs.put(attr.longName, attr);
     }
 
     function setAttr from (cmd is Command) to () 
     {
+	const attr = attrs.get(cmd.getAttr());
+	if (attr != null) {
+	    const t = attr.type;
+	    const value = 
+		if (t == "bool") {
+		    cmd.getBoolean();
+		} else if (t == "float") {
+		    cmd.getFloat();
+		} else if (t == "float2") {
+		    cmd.getVec2();
+		} else if (t == "float3") {
+		    cmd.getVec3();
+		} else if (t == "int") {
+		    cmd.getInt()
+		} else if (t == "long") {
+		    cmd.getInt()
+		} else if (t == "fltMatrix") {
+		    cmd.getMatrix();
+		} else null;
+	    //println("setAttr {attr.shortName} {attr.type} = {value}");
+	    if (attr.parent <> null) {
+		const suffix = attr.shortName.substring(attr.parent.shortName.length()).toLowerCase();
+		if (attr.parent.type == "float3") {
+		    var v = attr.parent.value as Tuple3;
+		    var n = value as Number;
+		    if (suffix == "x") {
+			v = tuple(n, v.y, v.z);
+		    } else if (suffix == "y") {
+			v = tuple(v.x, n, v.z);
+		    } else if (suffix == "z") {
+			v = tuple(v.x, v.y, n);
+		    }
+		    attr.parent.value = v;
+		}
+	    }
+	    attr.value = value;
+	}
     }
 }
 
@@ -375,7 +435,7 @@ abstract class MSpatial is MNode {
     {
 	if (false and path == "v") {
 	    const n = target as Node;
-	    &n.visible
+	    &n.visible;
 	} else super.getPointer(path, target);
     }
 }
@@ -555,7 +615,7 @@ class MTransform is MSpatial {
 	from (ptr is String, target is Object) 
 	to Ref of ?
     {
-	println("get pointer {name} attr={ptr} target={target}");
+	//	println("get pointer {name} attr={ptr} target={target}");
 
 	const n = target as MaTransform;
 
@@ -614,7 +674,7 @@ class MTransform is MSpatial {
         then &n.tmrpy as Ref of ?
 	else if ptr == "tmprz"
         then &n.tmrpz as Ref of ?
-       else super.getPointer(ptr, target)
+        else super.getPointer(ptr, target)
     }
 
     override function toNode from (m is MaModel) to Node 
@@ -662,22 +722,6 @@ class MTransform is MSpatial {
 	m.spatialMap.put(this, tn);
 	const p = m.toParentNode(parent as MSpatial);
 	insert tn into p.content;
-	println("to {name}:");
-	for (c in connectionsToThis.values()) {
-	    for (x in c) {
-		println(x);
-		println(x.sourceNode.resolveInput(m, x.sourcePath));
-	    }
-	}
-	println("from {name}:");
-	for (c in connectionsFromThis.values()) {
-	    for (x in c) {
-		const ptr = getPointer(x.sourcePath, tn);
-		println(x);
-		println("ptr={ptr}");
-		println(x.targetNode.resolveInput(m, x.targetPath));
-	    }
-	}
 	return tn;
     }
 }
@@ -747,7 +791,7 @@ class MCamera is MSpatial
 		    }
 		}
 	    }
-	println("camera {name} => {n}");
+	//println("camera {name} => {n}");
 	m.spatialMap.put(this, n);
 	const p = m.toParentNode(parent as MSpatial);
 	insert n into p.content;
@@ -943,9 +987,11 @@ class MMesh is MSpatial
 
     function normal from (i is Integer) to Vec3 
     {
-	if (faceNorms <> []) {
-	    return faceNorms[i];
-	}
+	if (faceNorms <> []) then faceNorms[i] else normalVec(i);
+    }
+
+    function normalVec from (i is Integer) to Vec3 
+    {
 	const i0 = 3*i;
 	const i1 = i0+1;
 	const i2 = i1+1;
@@ -960,7 +1006,6 @@ class MMesh is MSpatial
 	println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()}");
 	var norms is Vec3[];
 	if (true or this.normals == []) {
-	    this.normals = [];
 	    for (polyface in polyfaces) {
 		var norm = Vec3.<<0>>;
 		const faceEdges = polyface.faceEdges;
@@ -975,7 +1020,6 @@ class MMesh is MSpatial
    		    norm += (v1 - v0).cross(v2 - v0);
 		}
 		norm = norm.normalize();
-		//		println("norm={norm}");
 		insert [norm.x, norm.y, norm.z] into normals;
 	    }
 	} else {
@@ -1029,7 +1073,7 @@ class MMesh is MSpatial
 		    const edge = edgeStart(faceEdge);
 		    const faces = edgeToFace2.get(edge);
 		    if (faces == []) {
-                        //norms.add(this.normal(faceIndex));
+                        insert this.normalVec(faceIndex) into faceNorms;
 		    } else {
 			var norm = Vec3.<<0>>;
 			for (j in faces) {
@@ -1045,7 +1089,6 @@ class MMesh is MSpatial
 
     function getMesh to AbstractMesh
     {
-	//println("UVS={uvSets}");
 	const startIndex = 0;
 	const endIndex = polyfaces.size();
 	for (i in [startIndex..<endIndex]) {
@@ -1081,8 +1124,8 @@ class MMesh is MSpatial
 	    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
 	    normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb };
 	    textureBuffers: [MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb },
-                             MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
-                             MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
+			     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
+			     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
 	}.toMesh()
     }
 
@@ -1098,7 +1141,6 @@ class MMesh is MSpatial
 	const v = this.vertex(edge);
 	const n = this.normal(norm);
 	const uv = this.uv(uvSet, uvIndex);
-	//	println("{ib.getBufferSize()} vert {v} norm={n} uv={uv}");
 	ib.add(ib.getBufferSize());
 	vb.add(v.x, v.y, v.z);
 	nb.add(n.x, n.y, n.z);
@@ -1187,16 +1229,14 @@ class MMesh is MSpatial
 	const shaderConn = connectionsFromThis.get("iog");
 	const mshaderNode = 
 	    if (shaderConn <> null) {
-		println("shaderConn={shaderConn}");
-		println("shaderConn={shaderConn[0].targetNode}");
-		println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
-		println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
+		//println("shaderConn={shaderConn}");
+		//println("shaderConn={shaderConn[0].targetNode}");
+		//println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+		//println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
 		shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
 	    } else null;
 	const shader = mshaderNode.toShader(m);
-	//println("mesh : {r.id} => {r.bounds}");
 	const p = m.toParentNode(parent as MSpatial);
-	//println("parent is {p.id}");
 	const r = MeshNode {
 	    //visible: visible;
 	    id: name;
@@ -1205,7 +1245,6 @@ class MMesh is MSpatial
 	}
 	m.spatialMap.put(this, r);
 	insert r into p.content;
-	//println("parent.content={p.content}");
 	return r;
     }
 }
@@ -1218,8 +1257,8 @@ class MCGFXShader is MAbstractShader
 {
     var t is String; // technique
     var s is String; // shader
-    var val_ is String[];
-    var vas_ is String[];
+    var vals is String[];
+    var vas is String[];
 
     override public function getPointer
 	from (ptr is String, target is Object) 
@@ -1229,14 +1268,13 @@ class MCGFXShader is MAbstractShader
 	return shader.getParameter(ptr);
     }
 
-
     override function setAttr from (cmd is Command) to () 
     {
 	const n = cmd.getAttr();
 	if (n == "val") {
-	    val_ = cmd.getStringArray();
+	    vals = cmd.getStringArray();
 	} else if (n == "vas") {
-	    vas_ = cmd.getStringArray();
+	    vas = cmd.getStringArray();
 	} else if (n == "s") {
 	    s = cmd.getString();
 	} else if (n == "t") {
@@ -1246,37 +1284,67 @@ class MCGFXShader is MAbstractShader
 
     override function toShader from (m is MaModel) to Shader
     {
-	println("MA URL = {m.url}");
 	const baseURL = new java.net.URL(m.url);
 	var shader = m.effectLoader.loadEffect(new java.net.URL(baseURL, s).toString(), t);
-	println("toShader => {shader}");
+	m.shaderMap.put(this, shader);
 	for (conns in connectionsToThis.values()) {
 	    for (conn in conns) {
-		println("looking for textures: {conn}");
 		if (conn.sourceNode instanceof MFile) {
 		    const file = conn.sourceNode as MFile;
-		    println("found file: {file}");
 		    const paramName = conn.targetPath;
 		    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
-		    println("p={p} for {paramName}");
-		    println("imageloader={m.imageLoader}");
-		    p.set(m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString()));
+		    const image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
+		    p.set(image);
 		}
 	    }
 	}
+	var uvs is Integer[];
+	for (i in [0..<vals.size() step 4]) {
+	    const n = vals[i];
+	    const t = vals[i+1];
+	    const sem = vals[i+3];
+	    if (sem.startsWith("TEXCOORD")) {
+		const unit = Integer.parseInt(sem.substring(8));
+		for (j in [uvs.size()..unit]) {
+		    insert 0 into uvs;
+		}
+		const name = vas[1+(i-1) / 4];
+		if (name.startsWith("uv:map")) {
+		    const uvIndex = Integer.parseInt(name.substring(6))-1;
+		    uvs[unit] = uvIndex;
+		} else if (name.startsWith("binormal:map")) {
+		    uvs[unit] = 1;
+		} else if (name.startsWith("tangent:map")) {
+		    uvs[unit] = 2;
+		}
+	    }
+	}
+	for (attr in attrs.values() where attr.parent == null) {
+	    if (attr.value <> null) {
+		var name = attr.shortName;
+		var value = attr.value;
+		//println("setting {name} {attr.type} to {value}");
+		try {
+		    shader.setParameter(name, value);
+		} catch (e is java.lang.Exception) {
+		    e.printStackTrace();
+		}
+	    }
+	}
+	shader.uvMap = uvs;
 	return shader;
     }
 }
 
 
 class CGFXVectorNode is Node {
-    public var wv is Vec3;
+    public var wv is Tuple3;
     public var wvw is Number;
 }
 
 class MCGFXVector is MSpatial {
     
-    var wv is Vec3 = Vec3.<<0>>;
+    var wv is Tuple3 = Tuple3.<<0>>;
     var wvw is Number;
 
     override function setAttr from (cmd is Command) to () 
@@ -1298,17 +1366,35 @@ class MCGFXVector is MSpatial {
 	    return &n.wv;
 	} else if (ptr == "wvw") {
 	    return &n.wvw;
+	} else if (ptr == "m") {
+	    return &n.transform;
 	} else {
 	    return null
 	}
     }
 
     override function toNode from (m is MaModel) to Node {
-	CGFXVectorNode {
+	var n is Node;
+	m.spatialMap.put(this, null);
+	for (conn in connectionsToThis.get("m")) {
+	    if (conn.sourcePath == "wm") {
+		n = (conn.sourceNode as MSpatial).toNode(m);
+	    }
+	}
+	const vecNode = CGFXVectorNode {
 	    id: name;
 	    wvw: wvw;
-	    wv: wv;
+	    wv: bind n.worldTransform.getTranslation();
 	}
+	m.spatialMap.put(this, vecNode);
+	for (conn in connectionsFromThis.get("wv")) {
+	    if (conn.targetNode instanceof MCGFXShader) {
+		var shader = m.toShader(conn.targetNode as MCGFXShader);
+		const p = shader.getParameter(conn.targetPath);
+		p.bindTo(&vecNode.wv);
+	    }
+	}
+	return vecNode;
     }
     
 }
@@ -1357,19 +1443,16 @@ class MShader is MAbstractShader
 	    const emissive = Color.color(ic.x, ic.y, ic.z, alpha);
 	    const specular = Color.color(sc.x, sc.y, sc.z, alpha);
 	    const shininess = if (this.type == "phong") then cp else 100 - 99 * Math.sqrt(ec);
-	    println("effectLoader={m.effectLoader}");
 	    var image is AbstractTexture;
-	    for (conns in connectionsToThis.values()) {
-		for (conn in conns) {
-		    println("looking for textures: {conn}");
-		    if (conn.sourceNode instanceof MFile) {
-			const file = conn.sourceNode as MFile;
-			println("found file: {file}");
-			const paramName = conn.targetPath;
-			const baseURL = new java.net.URL(m.url);
-			image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
-			break;
-		    }
+	    var uvMap is Integer[] = [];
+	    for (conn in connectionsToThis.get("c")) {
+		if (conn.sourceNode instanceof MFile) {
+		    const file = conn.sourceNode as MFile;
+		    const paramName = conn.targetPath;
+		    const baseURL = new java.net.URL(m.url);
+		    image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
+		    uvMap = [0];
+		    break;
 		}
 	    }
 	    shader = m.effectLoader.loadDefaultShader(image,
@@ -1378,6 +1461,7 @@ class MShader is MAbstractShader
 						      emissive,
 						      specular,
 						      shininess);
+	    shader.uvMap = uvMap;
 	}
 	return shader;
     }
@@ -1536,7 +1620,7 @@ class Command
     public function getStringArray to String[] 
     {
 	const count = getInt(1);
-	foreach (k in [1..count]) getString(k)
+	foreach (k in [0..<count]) getString(k+2);
     }
 
     public function getIntArray to Integer[] 
@@ -1638,6 +1722,10 @@ class Command
 	return true;
     }
 
+    public function getMatrix to Mat4 {
+	Mat4.fromColumns(getFloatArray());
+    }
+
     public function getVec3 to Vec3 
     {
 	vector(getFloat(1), getFloat(2), getFloat(3))
@@ -1678,7 +1766,11 @@ class Command
     public function getFloat from (i is Integer) to Number 
     {
 	try {
-	    return java.lang.Float.parseFloat(getString(i));
+	    const str = getString(i);
+	    if (str == "nan") {
+		return 0;
+	    }
+	    return java.lang.Float.parseFloat(str);
 	} catch (e) {
 	    println("error {this}, index={i}");
 	    return 0.0;
@@ -1713,7 +1805,6 @@ class MaParser
     function flush() {
 	if (buf.length() > 0) {
 	    tokens.add(buf.toString());
-	    //println("token: {buf}");
 	    buf.setLength(0);
 	}
     }
@@ -1800,10 +1891,8 @@ class MaParser
 	    imageLoader: imageLoader;
 	    url: url
 	}
-	println("Model.url={model.url}");
 	model.url = url;
 	model.imageLoader = imageLoader;
-	println("Model.url={model.url}");
 	for (cmd in cmds) {
 	    model.processCommand(cmd)
 	}
@@ -1965,14 +2054,12 @@ public class Model {
     {
 	const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader};
 	const m = p.parse(new java.net.URL(url));
-	println("parsed model: {m} root={m.spatialRoot}");
 	m.spatialRoot.updateParent();
 	const r = ModelContent {
 	    spatial: m.spatialRoot;
 	    temporal: m.temporalRoot;
 	    cameras: m.getCameras();
 	}
-	println("modelContent.spatial = {r.spatial}");
 	return r;
     }
 }
