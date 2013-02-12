@@ -6,15 +6,15 @@ import java.lang.Math;
 //
 // Continuation Monad/Comonad - corresponds to the logical double negation of 'a'
 //
-// The logical negation of 'a' can be represented with 
+// The logical negation of 'a' can be represented in terms of implication:
 //
 //    a implies false
 //
-// and hence double negation 
+// and hence double negation:
 //
 //    (a implies false) implies false
 //
-// i.e, taking implication as function abstraction,
+// and taking implication as function abstraction:
 //  
 //    function from (function from a to false) to false
 //
@@ -184,33 +184,6 @@ public function cojoin of a
 	}
     }
 }
-/*
-public function callCC of (a, b) 
-    from (f is function from (function from a to DoubleNegation of b) to DoubleNegation of a) 
-    to DoubleNegation of a 
-{
-    DoubleNegation of a 
-    {
-	override function negate of _ 
-	    from (negate_a is function from a to _) 
-	    to _ 
-	{
-	    f(function from (x is a) to DoubleNegation of b 
-	      {
-		  DoubleNegation of b 
-		  {
-		      override function negate of _ 
-			  from (negate_b is function from b to _) 
-			  to _ 
-		      {
-			  negate_a(x);
-		      }
-		  }
-	      }).negate(negate_a);
-	}
-    }
-} 
-*/
 
 public function callCC of (a, b) 
     from (f is function from (function from a to b) to b) 
@@ -226,8 +199,15 @@ public function callCC of (a, b)
     }
 }
 
-public function run
+public function run from () to  ()
 { 
-   println(foreach (x in doublyNegate(2), y in doublyNegate(3))  x + y);
+   println(foreach (x in doublyNegate(2), 
+		    y in doublyNegate(3),
+		    z in callCC(function from (k is function from Integer to String) to String
+				{
+				    //"no way";
+				    k(x+y);
+				})
+		    )  "{x + y} {z}");
 }
 

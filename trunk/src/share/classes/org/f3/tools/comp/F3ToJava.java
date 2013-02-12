@@ -1110,6 +1110,8 @@ public class F3ToJava extends F3AbstractTranslation {
     public void visitFunctionValue(F3FunctionValue tree) {
         F3FunctionDefinition def = tree.definition;
 	Type t = tree.type;
+	System.err.println("TREE = "+tree);
+	System.err.println("T="+t);
 	result = new FunctionValueTranslator(make.Ident(defs.lambda_MethodName), def, tree.pos(), t.asMethodType(), tree.type).doit();
     }
 

@@ -59,7 +59,7 @@ public class FunctionType extends Type.ClassType {
     /** Copy constructor. */
     public FunctionType(FunctionType orig) {
         this(orig.getEnclosingType(), orig.typarams_field, orig.tsym,
-                orig.mtype);
+	     orig.mtype);
 	this.typeArgs = orig.typeArgs;
     }
 

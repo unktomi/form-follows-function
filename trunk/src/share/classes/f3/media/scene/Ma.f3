@@ -987,11 +987,6 @@ class MMesh is MSpatial
 
     function normal from (i is Integer) to Vec3 
     {
-	if (faceNorms <> []) then faceNorms[i] else normalVec(i);
-    }
-
-    function normalVec from (i is Integer) to Vec3 
-    {
 	const i0 = 3*i;
 	const i1 = i0+1;
 	const i2 = i1+1;
@@ -1073,7 +1068,7 @@ class MMesh is MSpatial
 		    const edge = edgeStart(faceEdge);
 		    const faces = edgeToFace2.get(edge);
 		    if (faces == []) {
-                        insert this.normalVec(faceIndex) into faceNorms;
+                        insert this.normal(faceIndex) into faceNorms;
 		    } else {
 			var norm = Vec3.<<0>>;
 			for (j in faces) {
@@ -1171,6 +1166,7 @@ class MMesh is MSpatial
 	    }
 	} else if (n == "n") {
 	    const path = cmd.getPath();
+	    println("NORMAL PATH={path.path[1]}");
 	    const values = cmd.getFlatFloat3Array();
 	    for (v in values) {
 		if (v > 1e10) { // bogus normals
@@ -1201,6 +1197,27 @@ class MMesh is MSpatial
 		polyfaces[r.startIndex..r.endIndex] = values;
 	    } else {
 		polyfaces = values;
+	    }
+	} else if (n == "iog") {
+	    const path = cmd.getPath();
+	    const index = path.path[1] as Index;
+	    const field = path.path[2] as Field;
+	    if (field.name == "og") {
+		const ogIndex = path.path[3] as Index;
+		const gcl = path.path[4] as Field;
+		if (gcl.name == "gcl") {
+		    const componentList = cmd.getStringArray();
+		    for (comp in componentList) {
+			const compPath = parsePath(comp);
+			println("compPath={compPath}");
+			if (compPath.path[0] is Field) {
+			    const f = compPath.path[0] as Field;
+			    if (f.name == "f") {
+				//const fr = compPath.path[1] as Range;
+			    }
+			}
+		    }
+		}
 	    }
 	} else if (n == "uvst") {
             // uv sets

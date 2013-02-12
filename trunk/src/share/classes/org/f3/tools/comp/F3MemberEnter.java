@@ -929,14 +929,6 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 					 interfaceSet);
                 }
             }
-	    if (tree.typeArgTypes != null) {
-		int count = tree.typeArgTypes.size();
-		if (count > 0) {
-		    Type tc = types.makeTypeCons(types.erasure(ct), tree.typeArgTypes);
-		    //interfaces.append(tc);
-		    System.err.println("TC="+tc);
-		}
-	    }
 
             if ((c.flags_field & ANNOTATION) != 0) {
                 ct.interfaces_field = List.of(syms.annotationType);
