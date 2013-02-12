@@ -44,7 +44,7 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
     {
         likelihoods.foldRight(z, f)
     }
-
+/*
     public function zip of (b, c) 
 	from (f is function from (a, b) to c,
 	      ys is Distribution of b) 
@@ -53,7 +53,7 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
 	const xs = this;
 	foreach (x in xs, y in ys) f(x, y)
     }
-
+*/
     function normalize to Distribution of a 
     {
 	var map = new java.util.HashMap of (a, Possibility of a);

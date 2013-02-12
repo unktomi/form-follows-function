@@ -121,7 +121,8 @@ public class F3Types extends Types {
 		args = thisType.getTypeArguments().appendList(args);
 	    }
 	}
-	System.err.println("make type cons: "+ thisType+": "+args.size() + ": "+args);
+	//list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
+	System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
 	int n = args.size();
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
@@ -244,7 +245,7 @@ public class F3Types extends Types {
 	if (args.head instanceof TypeVar) {
 	    return t;
 	}
-	return applySimpleGenericType(args.head, args.tail);
+	return applySimpleGenericType(upperBound(args.head), args.tail);
     }
 
     public Type getTypeCons(Type type) {

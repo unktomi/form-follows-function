@@ -142,10 +142,18 @@ public class F3ClassDeclaration extends F3Expression implements ClassDeclaration
     public List<F3Expression> getMixing() {
         return mixing;
     }
+    
+    public void addImplementing(F3Expression s) {
+	implementing = implementing.append(s);
+    }
+
+    public void addMixing(F3Expression s) {
+	mixing = mixing.append(s);
+    }
 
     public void setDifferentiatedExtendingImplementingMixing(List<F3Expression> extending,
-                                                       List<F3Expression> implementing,
-                                                       List<F3Expression> mixing) {
+							     List<F3Expression> implementing,
+							     List<F3Expression> mixing) {
         this.extending    = extending;
         this.implementing = implementing;
         this.mixing       = mixing;

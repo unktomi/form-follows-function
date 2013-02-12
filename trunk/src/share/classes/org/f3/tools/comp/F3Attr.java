@@ -1714,13 +1714,16 @@ public class F3Attr implements F3Visitor {
 			System.err.println("exprType="+exprType);
 			System.err.println("theMonad="+theOne);
 			if (theOne != null) {
-			    List<Type> targs = types.asSuper(exprType, syms.f3_TypeCons[1].tsym).getTypeArguments();
-			    monadType = targs.get(0);
-			    Type altElemType = targs.get(1);
-			    if (elemtype == null) {
-				elemtype = altElemType;
+			    Type tcons = types.asSuper(exprType, syms.f3_TypeCons[1].tsym);
+			    if (tcons != null) {
+				List<Type> targs = tcons.getTypeArguments();
+				monadType = targs.get(0);
+				Type altElemType = targs.get(1);
+				if (elemtype == null) {
+				    elemtype = altElemType;
+				}
+				System.err.println("ELEM TYPE="+altElemType);
 			    }
-			    System.err.println("ELEM TYPE="+altElemType);
 			}
 		    } else {
 			System.err.println("exprType="+exprType);
@@ -4140,36 +4143,6 @@ public class F3Attr implements F3Visitor {
         try {
             annotate.flush();
             attribClass(tree, c);
-	if (tree.typeArgTypes != null && false) {
-	    int count = tree.typeArgTypes.size();
-	    if (count > 0) {
-		Type tc = types.makeTypeCons(types.erasure(c.type), tree.typeArgTypes);
-		//System.err.println("TC="+tc);
-		boolean found = false;
-		Type e0 = types.erasure(tc);
-		System.err.println("e0="+e0);
-		for (Type iface : types.supertypesClosure(c.type)) {
-		    Type e1 = types.erasure(iface);
-		    if (types.isTypeConsType(e1) >= 0) {
-			System.err.println("iface="+iface + " / " +e1);
-			for (Type iface2 : types.supertypesClosure(tc, true)) {
-			    System.err.println("iface="+iface2 + " / "+ types.erasure(iface2));
-			    if (types.isTypeConsType(iface2) >= 0 && types.isSameType(e1, types.erasure(iface2))) {
-				found = true;
-				break;
-			    }
-			}
-		    }
-		}
-		if (!found) {
-		    ClassType ct = (ClassType)c.type;
-		    System.err.println("adding "+tc);
-		    ct.interfaces_field = ct.interfaces_field.append(tc);
-		    ct.allparams_field = null;
-		    System.err.println("interfaces => "+ct.interfaces_field);
-		}
-	    }
-	}
 	    //VarianceAnalysis ana = new VarianceAnalysis();
 	    //ana.scan(tree);
 	    //System.err.println(ana.result);
@@ -4191,6 +4164,7 @@ public class F3Attr implements F3Visitor {
         if (tree != null) {
             attribSupertypes(tree, c);
         }
+
         // The previous operations might have attributed the current class
         // if there was a cycle. So we test first whether the class is still
         // UNATTRIBUTED.
@@ -4320,9 +4294,9 @@ public class F3Attr implements F3Visitor {
 
         Symbol javaSupertypeSymbol = null;
         for (F3Expression superClass : tree.getSupertypes()) {
-	    
             Type supType = superClass.type == null ? attribSuperType(superClass, env)
                                                    : superClass.type;
+	    supType.tsym.complete();
 	    //System.err.println("tree="+superClass);
 	    //System.err.println("supType "+c+"="+supType);
 	    //System.err.println("supType.sym="+supType.tsym.type);
@@ -4384,6 +4358,37 @@ public class F3Attr implements F3Visitor {
                 }
             }
         }
+
+	if (tree.typeArgTypes != null) {
+	    int count = tree.typeArgTypes.size();
+	    if (count > 0) {
+		//System.err.println("TC="+tc);
+		Type thisType = types.erasure(c.type);
+		boolean found = false;
+		List<Type> bounds = List.nil();
+		for (Type iface : types.supertypesClosure(c.type)) {
+		    if (types.isTypeConsType(iface) == 0) {
+			System.err.println("found: "+ iface);
+			bounds = bounds.append(iface.getTypeArguments().head);
+		    }
+		}
+		if (bounds.size() == 0) {
+		    Type tc = types.makeTypeCons(thisType, tree.typeArgTypes);
+		    ClassType ct = (ClassType)c.type;
+		    System.err.println("adding "+tc);
+		    ct.interfaces_field = ct.interfaces_field.append(tc);
+		    ct.allparams_field = null;
+		    System.err.println("interfaces => "+ct.interfaces_field);
+		    if (false) {
+			F3Expression exp = f3make.at(tree.pos).Type(tc);
+			exp.type = tc;
+			if (!types.isMixin(c)) {
+			    tree.addImplementing(exp);
+			}
+		    }
+		}
+	    }
+	}
     }
 
     //@Override

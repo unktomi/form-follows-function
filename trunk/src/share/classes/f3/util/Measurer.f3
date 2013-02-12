@@ -7,5 +7,5 @@ public abstract class Measurer of Measurement is Monoid of Measurement
     	return x.measurement
     }
 
-    abstract public function measure of a from (x is a) to Measurement;
+    abstract public function measure of b from (x is b) to Measurement;
 }
