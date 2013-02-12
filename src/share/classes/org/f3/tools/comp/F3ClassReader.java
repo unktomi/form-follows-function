@@ -247,26 +247,30 @@ public class F3ClassReader extends ClassReader {
     }
 
     /** Translate raw JVM type to F3 type. */
-    Type translateType (Type type) {
+    public Type translateType (Type type) {
 	if (type == Type.noType) {
 	    return type;
 	}
-        if (type == null)
+        if (type == null) 
             return null;
+        Type t = (Type) typeMap.get(type);
+        if (t != null)
+            return t;
 	if (type.tsym instanceof F3Resolve.TypeAliasSymbol) {
 	    return translateType(type.tsym.type);
 	}
 	int tc = f3Types.isTypeConsType(type);
-	if (tc >= 0) {
-	    //System.err.println("translating type cons: "+ tc+": "+type.getClass() + ": "+type);
+	/*
+	if (false && tc >= 0) {
+	    System.err.println("translating type cons: "+ tc+": "+type.getClass() + ": "+type);
 	    if (type instanceof TypeVar) {
 	    } else if (type instanceof WildcardType) {
 	    } else {
 		List<Type> args = type.getTypeArguments();
 		if (args.size() > 0) {
 		    if (args.head instanceof TypeVar) {
-			TypeVar tv = (TypeVar)args.head;
-			    //translateType(args.head);
+			//TypeVar tv = (TypeVar)args.head;
+			TypeVar tv = (TypeVar)translateType(args.head);
 			F3Attr.TypeCons tcons = 
 			    new F3Attr.TypeCons(tv.tsym.name,
 						tv.tsym,
@@ -275,19 +279,16 @@ public class F3ClassReader extends ClassReader {
 			tcons.bound = tv.bound;
 			tcons.ctor = tv;
 			typeMap.put(type, tcons);
-			//			System.err.println("translated to': "+ f3Types.toF3String(tcons));
+			System.err.println("translated to': "+ f3Types.toF3String(tcons));
 			return tcons;
 		    } else {
 			type = f3Types.applySimpleGenericType(args.head, args.tail);
 		    }
 		}
 	    }
-	    //System.err.println("translated to: "+ type);
-
+	    System.err.println("translated to: "+ type);
 	}
-        Type t = (Type) typeMap.get(type);
-        if (t != null)
-            return t;
+	*/
         switch (type.tag) {
             case VOID:
                 t = syms.voidType;
@@ -318,20 +319,25 @@ public class F3ClassReader extends ClassReader {
                 break;
             case TYPEVAR:
 		{
+
 		    TypeVar tv = (TypeVar) type;
+		    TypeSymbol tsym = (TypeSymbol)typeMap.get(tv.tsym);
+		    if (tsym != null) {
+			return tsym.type;
+		    }
 		    TypeVar tx = new TypeVar(null, (Type) null, (Type) null);
-		    tx.tsym = new TypeSymbol(0, tv.tsym.name, tx, 
-					     tv.tsym.owner);
+		    tx.tsym = new TypeSymbol(0, tv.tsym.name, tx, tv.tsym.owner);
+		    typeMap.put(tv.tsym, tx.tsym);
 		    typeMap.put(type, tx); // In case of a cycle.
+		    tx.tsym.owner = translateSymbol(tv.tsym.owner);
+		    //System.err.println("created type var: "+ System.identityHashCode(tx) +"@"+tx);
 		    Type lower = translateType(tv.lower);
 		    Type upper = translateType(tv.bound);
 		    tx.bound = upper;
 		    tx.lower = lower;
-		    tx.tsym = new TypeSymbol(0, tv.tsym.name, tx, translateSymbol(tv.tsym.owner));
 		    //System.err.println("tv="+tv);
 		    //System.err.println("tx="+tx);
-		    tv = tx;
-		    return tv;
+		    return tx;
 		}
             case FORALL:
                 ForAll tf = (ForAll) type;
@@ -398,6 +404,7 @@ public class F3ClassReader extends ClassReader {
                         };
                     typeMap.put(type, ntype); // In case of a cycle.
                     ntype.typarams_field = translateTypes(type.getTypeArguments());
+		    //ntype.allparams_field = null;
 		    //System.err.println("translated type args from : "+ type+": "+type.getTypeArguments());
 		    //System.err.println("translated type args to: "+ ntype+": "+ntype.typarams_field);
                     return ntype;
@@ -672,23 +679,21 @@ public class F3ClassReader extends ClassReader {
             ClassType ct = (ClassType)csym.type;
             ClassType jt = (ClassType)jsymbol.type;
             csym.members_field = new Scope(csym);
-
+	    //System.err.println("ct="+ct);
             // flags are derived from flag bits and access modifier annoations
             csym.flags_field = flagsFromAnnotationsAndFlags(jsymbol);
-            
-            ct.typarams_field = translateTypes(jt.typarams_field);
+
+
             ct.setEnclosingType(translateType(jt.getEnclosingType()));
             
             ct.supertype_field = translateType(jt.supertype_field);
-            
+	    //System.err.println("st="+jt.supertype_field);            
             // VSGC-2841 - Mixins: Cannot find firePropertyChange method in SwingComboBox.f3
             if (ct.supertype_field != null && 
                 ct.supertype_field.tsym != null &&
                 ct.supertype_field.tsym.kind == TYP) {
                 
             }
-
-            
             ListBuffer<Type> interfaces = new ListBuffer<Type>();
             Type iface = null;
             if (jt.interfaces_field != null) { // true for ErrorType
@@ -696,6 +701,7 @@ public class F3ClassReader extends ClassReader {
                      it.tail != null;
                      it = it.tail) {
                     Type itype = it.head;
+		    //System.err.println("itype="+itype);
                     checkForIntfSymbol(itype.tsym);
                     if (((ClassSymbol) itype.tsym).flatname == defs.cObjectName) {
                         csym.flags_field |= F3Flags.F3_CLASS;
@@ -710,6 +716,7 @@ public class F3ClassReader extends ClassReader {
                         csym.flags_field |= F3Flags.MIXIN | F3Flags.F3_CLASS;
                     } else {
                         itype = translateType(itype);
+			//System.err.println("itype'="+itype);
                         interfaces.append(itype);
                     }
                 }
@@ -731,7 +738,13 @@ public class F3ClassReader extends ClassReader {
                     }
                 }
             }
-            ct.interfaces_field = interfaces.toList();
+
+
+	    if (jt.interfaces_field != null) {
+		ct.interfaces_field = interfaces.toList();
+	    }
+
+	    //System.err.println("ifaces="+ct.interfaces_field);
 
             // Now translate the members.
             // Do an initial "reverse" pass so we copy the order.
@@ -749,6 +762,7 @@ public class F3ClassReader extends ClassReader {
 
             Set<Name> priorNames = new HashSet<Name>();
 	    enterTypevars(ct);
+            ct.typarams_field = translateTypes(jt.typarams_field);
             handleSyms:
             for (List<Symbol> l = symlist; l.nonEmpty(); l=l.tail) {
                 Symbol memsym = l.head;

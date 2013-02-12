@@ -378,8 +378,8 @@ public class F3Attr implements F3Visitor {
 			    TypeVar tv = (TypeVar)bound;
 			    TypeCons tc = new TypeCons(tv.tsym.name, 
 						       tv.tsym, 
-						       tv.bound);
-			    tc.args = typeArgTypes;
+						       tv.bound,
+						       typeArgTypes);
 			    tc.bound = tv.bound;
 			    tc.ctor = tv;
 			    localResult = tc;
@@ -2356,11 +2356,12 @@ public class F3Attr implements F3Visitor {
 	public Type upperBound() {
 	    return this;
 	}
-	public TypeCons(Name name, Symbol sym, Type bound) {
+	public TypeCons(Name name, Symbol sym, Type bound, List args) {
 	    super(name, sym, bound);
+	    this.args = args;
 	}
         public Type withTypeVar(Type t) {
-	    //System.err.println("with type var: "+ this + ": "+t);
+	    //System.err.println("with type var: "+ this + ": "+t.getClass()+ ": "+t);
 	    return super.withTypeVar(t);
 	}
 	public boolean isA(Type t) {
@@ -2381,12 +2382,13 @@ public class F3Attr implements F3Visitor {
 	    F3TypeCons cons = (F3TypeCons)exp;
 	    exp = cons.getClassName();
 	    F3Ident ident = (F3Ident)exp;
-	    TypeCons tv = new TypeCons(ident.getName(), sym, syms.botType);
-	    tv.tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
-	    tv.args = makeTypeVars(cons.getArgs(), tv.tsym);
+	    TypeCons tv = new TypeCons(ident.getName(), sym, syms.botType, null);
+	    TypeSymbol tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
+	    tv.tsym = tsym;
+	    env.info.scope.enter(tsym);
+	    tv.args = makeTypeVars(cons.getArgs(), tsym);
 	    tv.bound = types.makeTypeCons(tv, tv.args);
-	    //System.err.println("typeCons: "+tv);
-	    env.info.scope.enter(((TypeVar)tv).tsym);
+	    System.err.println("typeCons: "+tv);
 	    return tv;
 	} else if (exp instanceof F3Ident) {
 	    F3Ident ident = (F3Ident)exp;
@@ -2656,7 +2658,6 @@ public class F3Attr implements F3Visitor {
 		    type = pvar.type;
 		    memberEnter.memberEnter(pvar, localEnv);
 		}
-		//System.err.println("attrib var: "+ pvar+": "+type);
                 argbuf.append(type);
                 paramNum++;
             }
@@ -2713,7 +2714,6 @@ public class F3Attr implements F3Visitor {
 				   returnType, // may be unknownType
 				   List.<Type>nil(),
 				   syms.methodClass);
-	    //System.err.println("mtype="+mtype);
 	    if (tree.typeArgTypes != null) {
 		ListBuffer<Type> lb = ListBuffer.lb();
 		if (tree.typeArgTypes != null) {
@@ -4140,6 +4140,36 @@ public class F3Attr implements F3Visitor {
         try {
             annotate.flush();
             attribClass(tree, c);
+	if (tree.typeArgTypes != null && false) {
+	    int count = tree.typeArgTypes.size();
+	    if (count > 0) {
+		Type tc = types.makeTypeCons(types.erasure(c.type), tree.typeArgTypes);
+		//System.err.println("TC="+tc);
+		boolean found = false;
+		Type e0 = types.erasure(tc);
+		System.err.println("e0="+e0);
+		for (Type iface : types.supertypesClosure(c.type)) {
+		    Type e1 = types.erasure(iface);
+		    if (types.isTypeConsType(e1) >= 0) {
+			System.err.println("iface="+iface + " / " +e1);
+			for (Type iface2 : types.supertypesClosure(tc, true)) {
+			    System.err.println("iface="+iface2 + " / "+ types.erasure(iface2));
+			    if (types.isTypeConsType(iface2) >= 0 && types.isSameType(e1, types.erasure(iface2))) {
+				found = true;
+				break;
+			    }
+			}
+		    }
+		}
+		if (!found) {
+		    ClassType ct = (ClassType)c.type;
+		    System.err.println("adding "+tc);
+		    ct.interfaces_field = ct.interfaces_field.append(tc);
+		    ct.allparams_field = null;
+		    System.err.println("interfaces => "+ct.interfaces_field);
+		}
+	    }
+	}
 	    //VarianceAnalysis ana = new VarianceAnalysis();
 	    //ana.scan(tree);
 	    //System.err.println(ana.result);
@@ -4289,19 +4319,16 @@ public class F3Attr implements F3Visitor {
         }
 
         Symbol javaSupertypeSymbol = null;
-
         for (F3Expression superClass : tree.getSupertypes()) {
 	    
             Type supType = superClass.type == null ? attribSuperType(superClass, env)
                                                    : superClass.type;
 	    //System.err.println("tree="+superClass);
-	    //System.err.println("supType="+supType);
+	    //System.err.println("supType "+c+"="+supType);
 	    //System.err.println("supType.sym="+supType.tsym.type);
-
 	    if (supType instanceof FunctionType) {
 		supType = types.normalize(supType, false);
 	    }
-
             // java.lang.Enum may not be subclassed by a non-enum
             if (supType.tsym == syms.enumSym &&
                 ((c.flags_field & (Flags.ENUM|Flags.COMPOUND)) == 0))
@@ -4590,8 +4617,8 @@ public class F3Attr implements F3Visitor {
 	    System.err.println("t="+t.getClass() + ": "+t);
 	    TypeCons ap = new TypeCons(cons.tsym.name,
 				       cons.tsym,
-				       cons.bound);
-	    ap.args = targs;
+				       cons.bound,
+				       targs);
 	    if (cons.bound == null) {
 		System.err.println("bound is null: "+ cons);
 	    }
@@ -4787,8 +4814,8 @@ public class F3Attr implements F3Visitor {
             if (argtype == syms.f3_UnspecifiedType)
                 argtype = syms.objectType;
             argtypes.append(argtype);
-            //Type ptype = types.boxedTypeOrType(argtype);
-            Type ptype = argtype;
+            Type ptype = types.boxedTypeOrType(argtype);
+            //Type ptype = argtype;
 	    if (!isWildcard(ptype)) {
 		ptype = new WildcardType(ptype, BoundKind.SUPER, syms.boundClass);
 	    }
@@ -5351,6 +5378,7 @@ public class F3Attr implements F3Visitor {
             // Check to make sure that mixins don't cause any conflicts.
             chk.checkMixinConflicts(tree);
         }
+
          
         // Check that all extended classes and interfaces
         // are compatible (i.e. no two define methods with same arguments
@@ -5488,9 +5516,9 @@ public class F3Attr implements F3Visitor {
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
 	    if (x.head != null && y.head != null) {
-		Type x1 = types.subst(y.head, 
-				      otvars,
-				      mtvars);
+		Type x1 = types.subst2(y.head, 
+				       otvars,
+				       mtvars);
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
 		    if (tc2 >= 0 ||

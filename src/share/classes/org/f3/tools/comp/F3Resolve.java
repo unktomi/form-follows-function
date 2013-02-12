@@ -897,6 +897,7 @@ public class F3Resolve {
     //where
 
     private Symbol checkArgs(Symbol sym, Type mtype) {
+	sym.complete();
         Type mt = sym.type;
         mt = reader.translateType(mt);
 	if (mt == null) {

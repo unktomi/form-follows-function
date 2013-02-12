@@ -3009,7 +3009,14 @@ public abstract class F3AbstractTranslation
 	    for (F3Var f3Var : def.getParams()) {
 		setDiagPos(f3Var);
 		Name paramName = f3Var.getName();
-		Type paramType = f3Var.sym.type;
+		//Type paramType = f3Var.sym.type;
+		Type paramType = f3Var.type; // hack
+		if (f3Var.sym.type == null) {
+		    System.err.println("var="+f3Var);
+		    System.err.println("var.sym="+f3Var.sym);
+		    System.err.println("var.sym.type="+f3Var.sym.type);
+		    System.err.println("var.type="+f3Var.type);
+		}
 		if (!types.isSequence(paramType)) { // hack !!!
 		    //paramType = types.erasure(paramType);
 		}

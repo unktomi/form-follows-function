@@ -168,6 +168,7 @@ public class F3Symtab extends Symtab {
 
     private F3Types types;
 
+
     public static final String functionClassPrefix =
             "org.f3.functions.Function";
 
@@ -199,6 +200,7 @@ public class F3Symtab extends Symtab {
         // FIXME It would be better to make 'names' in super-class be protected.
         Name.Table names = Name.Table.instance(context);
         types = F3Types.instance(context);
+
         Options options = Options.instance(context);
         String numberChoice = options.get("Number");
 
@@ -366,12 +368,25 @@ public class F3Symtab extends Symtab {
     }
 
     private Type boxedTypeOrType(Type elemType) {
+	/*
         if (elemType.isPrimitive() || elemType == voidType)
             return types.boxedClass(elemType).type;
         else
             return elemType;
+	*/
+	return types.boxedTypeOrType(elemType);
     }
 
+    public FunctionType makeFunctionType(int nargs, List<Type> typarams, boolean box) {
+	if (box) {
+	    List<Type> boxedArgs = List.<Type>nil();
+	    for (Type arg: typarams) {
+		boxedArgs = boxedArgs.append(types.boxedTypeOrType(arg));
+	    }
+	    typarams = boxedArgs;
+	}
+	return makeFunctionType(nargs, typarams);
+    }
 
     public FunctionType makeFunctionType(int nargs, List<Type> typarams) {
         ListBuffer<Type> argtypes = new ListBuffer<Type>();
@@ -459,6 +474,11 @@ public class F3Symtab extends Symtab {
     public FunctionType makeFunctionType(int nargs, List<Type> typarams, MethodType mtype) {
         assert (nargs <= MAX_FIXED_PARAM_LENGTH);
         Type funtype = f3_FunctionTypes[nargs];
+	List<Type> boxedArgs = List.<Type>nil();
+	for (Type arg: typarams) {
+	    boxedArgs = boxedArgs.append(types.boxedTypeOrType(arg));
+	}
+	typarams = boxedArgs;
         FunctionType ftype = 
 	    new FunctionType(funtype.getEnclosingType(), typarams, funtype.tsym, mtype);
 	ftype.typeArgs = mtype.getTypeArguments();
@@ -476,7 +496,7 @@ public class F3Symtab extends Symtab {
     }
 
     public FunctionType makeFunctionType(ForAll fa) {
-	FunctionType ft = makeFunctionType(fa.asMethodType());
+	FunctionType ft = makeFunctionType((MethodType)fa.qtype);
 	ft.typeArgs = fa.getTypeArguments();
 	return ft;
     }

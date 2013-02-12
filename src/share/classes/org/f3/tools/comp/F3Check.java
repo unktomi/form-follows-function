@@ -2155,16 +2155,21 @@ public class F3Check {
 			      Map<TypeSymbol,Type> seensofar,
 			      Type type) {
 	    if (type.isErroneous()) return;
-	    for (List<Type> l = types.interfaces(type); l.nonEmpty(); l = l.tail) {
+	    List<Type> l = types.interfaces(type);
+	    //System.err.println("check class bounds: "+type);
+	    //System.err.println("interfaces: "+l);
+	    for ( ; l.nonEmpty(); l = l.tail) {
 		Type it = l.head;
 		Type oldit = seensofar.put(it.tsym, it);
 		if (oldit != null) {
 		    List<Type> oldparams = oldit.allparams();
 		    List<Type> newparams = it.allparams();
 		    if (!types.containsTypeEquivalent(oldparams, newparams))
-			log.error(pos, MsgSym.MESSAGE_CANNOT_INHERIT_DIFF_ARG,
-				  it.tsym, Type.toString(oldparams),
-				  Type.toString(newparams));
+			{
+			    log.error(pos, MsgSym.MESSAGE_CANNOT_INHERIT_DIFF_ARG,
+				      it.tsym, Type.toString(oldparams),
+				      Type.toString(newparams));
+			}
 		}
 		checkClassBounds(pos, seensofar, it);
 	    }

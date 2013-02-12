@@ -107,21 +107,21 @@ public class F3Types extends Types {
     public Type makeTypeCons(Type thisType, List<Type> args) {
 	List<Type> list = List.of(thisType);
 	if (thisType.getTypeArguments().size() > 0) {
-	    //System.err.println("thisType: "+ thisType.getClass() + ": "+thisType);	
 	    if (thisType instanceof TypeCons) {
 		TypeCons cons = (TypeCons)thisType;
 		if (cons.ctor != null) {
-		    //System.err.println("ctor="+cons.ctor.getClass()+": "+cons.ctor);
+		    System.err.println("ctor="+cons.ctor.getClass()+": "+cons.ctor);
 		    list.head = cons.ctor;
 		    args = cons.args.appendList(args);
 		} else {
+		    //list.head = erasure(syms.f3_TypeCons[args.size()]);
 		}
 	    } else {
 		list.head = erasure(thisType);
 		args = thisType.getTypeArguments().appendList(args);
 	    }
 	}
-	//System.err.println("make type cons: "+ args.size() + ": "+args);
+	System.err.println("make type cons: "+ thisType+": "+args.size() + ": "+args);
 	int n = args.size();
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
@@ -230,6 +230,7 @@ public class F3Types extends Types {
     
     public Type applyTypeCons(Type t) {
 	if (t instanceof TypeCons) {
+	    System.err.println("early return: "+toF3String(t));
 	    return t;
 	}
 	List<Type> args = t.getTypeArguments();
@@ -602,6 +603,11 @@ public class F3Types extends Types {
     }
 
     public Type boxedTypeOrType(Type t) {
+	/*
+	if ((t instanceof MethodType) || (t instanceof ForAll)) {
+	    return syms.asFunctionType(t);
+	}
+	*/
 	if (t == syms.botType) return t;
         return (t.isPrimitive() || t == syms.voidType)?
                       boxedClass(t).type
@@ -809,8 +815,8 @@ public class F3Types extends Types {
     }
 
     boolean isSameTypeCons(Type t, Type s, boolean debug) {
-	//System.err.println("s="+s);
-	//System.err.println("t="+t);
+	//System.err.println("s="+s.getClass()+": "+s);
+	//System.err.println("t="+t.getClass()+": "+t);
 	int i = isTypeConsType(s);
 	boolean doit = false;
 	if (i >= 0) {
@@ -1039,37 +1045,34 @@ public class F3Types extends Types {
         if (sym == _other) return true;
         MethodSymbol other = (MethodSymbol)_other;
         assert asSuper(origin.type, other.owner) != null;
-        Type mt = this.memberType(origin.type, sym);
-        Type ot = this.memberType(origin.type, other);
-	//System.err.println("mt="+mt);
-	//System.err.println("ot="+ot);
-	//System.err.println("mt="+mt);
-	//System.err.println("ot="+ot);
-	//System.err.println("other.owner: "+ other.owner);
-	//System.err.println("sym.owner: "+ sym.owner);
-	//System.err.println("asSuper: "+ asSuper(origin.type, other.owner));
+	Type mt_1 = sym.type;
+	Type ot_1 = other.type;
+        Type mt0 = this.memberType(origin.type, sym);
+        Type ot0 = this.memberType(origin.type, other);
+	Type mt = mt0;
+	Type ot = ot0;
+	/*
 	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
 	     x != null && y != null; x = x.tail, y = y.tail) {
-	    if (x.head != null && y.head != null) {
-		int i = isTypeConsType(y.head);
-		if (i >= 0) {
-		    System.err.println("x.head'="+x.head.getClass()+": "+x.head);
-		    System.err.println("y.head'="+y.head.getClass()+": "+y.head);
-		    Type tt = applyTypeCons(y.head);
-		    System.err.println("tt'="+tt);
-		    if (isSameType(tt, x.head)) {
-			x.head = y.head;
-		    }
-		    System.err.println("x.head''="+x.head);
-		}
-	    }
 	    if (x.head != null && boxedTypeOrType(x.head) == y.head) {
 		x.head = y.head;
 	    }
 	}
+	*/
 	if (F3TranslationSupport.ERASE_BACK_END) {
 	    mt = erasure(mt);
 	    ot = erasure(ot);
+	} else {
+	    mt = normalize(mt);
+	    ot = normalize(ot);
+	}
+	if (false) {
+	    System.err.println("mt-1="+mt_1);
+	    System.err.println("mt0="+mt0);
+	    System.err.println("mt1="+mt);
+	    System.err.println("ot-1="+ot_1);
+	    System.err.println("ot0="+ot0);
+	    System.err.println("ot1="+ot);
 	}
         return
             this.isSubSignature(mt, ot) &&
@@ -1207,8 +1210,11 @@ public class F3Types extends Types {
     public String toF3String(Type type) {
         StringBuilder buffer = new StringBuilder();
         typePrinter.visit(type, buffer);
+	visited.clear();
         return buffer.toString();
     }
+
+    final Set visited = new HashSet();
 
     SimpleVisitor typePrinter = new SimpleVisitor<Void, StringBuilder>() {
 
@@ -1232,7 +1238,6 @@ public class F3Types extends Types {
             return null;
         }
 
-	Set visited = new HashSet();
         @Override
         public Void visitTypeVar(TypeVar t, StringBuilder buffer) {
 	    if (visited.contains(t)) {
@@ -1242,12 +1247,13 @@ public class F3Types extends Types {
 	    visited.add(t);
 	    if (t instanceof TypeCons) {
 		TypeCons tc = (TypeCons)t;
+		//System.err.println("tc="+tc);
+		//System.err.println("tc.ctor="+tc.ctor);
+		//System.err.println("tc.args="+tc.args);
 		if (tc.ctor == null) {
-		    //buffer.append("class ");
-		    buffer.append(t.tsym.name);
-		} else {
-		    visit(tc.ctor, buffer);
+		    buffer.append("class ");
 		}
+		buffer.append(t.tsym.name);
 		buffer.append(" of ");
 		List<Type> targs = tc.args;
 		String str = "";
@@ -1550,6 +1556,9 @@ public class F3Types extends Types {
 		if (visited.contains(t0)) {
 		    return t0;
 		}
+		if (t0 instanceof TypeCons) {
+		    return t0;
+		}
 		visited.add(t0);
 		TypeVar t = t0;
                 Type upper = visit(t.getUpperBound(), preserveWildcards);
@@ -1637,6 +1646,11 @@ public class F3Types extends Types {
 		    t = new ClassType(encl2, args2, t.tsym);
                 }
 		//System.err.println("clazz: "+ t0 + " => "+ t);
+		if (isTypeConsType(t) >= 0) {
+		    Type r = applyTypeCons(t);
+		    System.err.println("APPLY TCONS "+t+" => "+r);
+		    return r;
+		}
                 return t;
             }
 
@@ -1695,16 +1709,17 @@ public class F3Types extends Types {
     }
 
     class TypeNormalizer2 extends SimpleVisitor<Type, Boolean> {
-	@Override
-            public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) {
-	    TypeVar t = t0;
-	    Type upper = visit(t.getUpperBound(), preserveWildcards);
-	    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
-		return upper;
+	    @Override
+            public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) 
+	    {
+		TypeVar t = t0;
+		Type upper = visit(t.getUpperBound(), preserveWildcards);
+		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
+		    return upper;
+		}
+		t = new TypeVar(t.tsym, upper, visit(t.lower, preserveWildcards));
+		return t;
 	    }
-	    t = new TypeVar(t.tsym, upper, visit(t.lower, preserveWildcards));
-	    return t;
-	}
 	
             @Override
             public Type visitCapturedType(CapturedType t, Boolean preserveWildcards) {
@@ -1768,7 +1783,12 @@ public class F3Types extends Types {
 		     !isSameType(encl2, t.getEnclosingType()))) {
 		    t = new ClassType(encl2, args2, t.tsym);
                 }
-                return t;
+		if (isTypeConsType(t) >= 0) {
+		    Type r = applyTypeCons(t);
+		    System.err.println("APPLY TCONS "+t+" => "+r);
+		    return r;
+		}
+		return t;
             }
 
             public Type visitType(Type t, Boolean preserveWildcards) {
@@ -1818,6 +1838,7 @@ public class F3Types extends Types {
 
     public Type memberType(Type t, Symbol sym) {
 	Type result = memberType0(t, sym);
+	//System.err.println("result of member type "+ t +": "+ result);
 	if (sym instanceof MethodSymbol) {
 	    MethodSymbol msym = (MethodSymbol)sym;
 	    List<VarSymbol> params = List.<VarSymbol>nil();
@@ -1869,7 +1890,7 @@ public class F3Types extends Types {
         private SimpleVisitor<Type,Symbol> memberType = new SimpleVisitor<Type,Symbol>() {
 
             public Type visitType(Type t, Symbol sym) {
-		//System.err.println("VISIT: "+t+" in "+sym);
+		System.err.println("VISIT: "+t+" in "+sym);
                 return sym.type;
             }
 
@@ -1887,6 +1908,8 @@ public class F3Types extends Types {
 		}
                 if (((flags & STATIC) == 0) && owner.type.isParameterized()) {
                     Type base = asOuterSuper(t, owner);
+		    //System.err.println("t="+toF3String(t));
+		    //System.err.println("base="+toF3String(base));
                     if (base != null) {
                         List<Type> ownerParams = owner.type.allparams();
                         List<Type> baseParams = base.allparams();
@@ -1913,7 +1936,7 @@ public class F3Types extends Types {
 					}
 				    }
 				}
-				Type r = subst(sym.type, ownerParams, baseParams);
+				Type r = subst2(sym.type, ownerParams, baseParams);
 				//if (true) System.err.println("subst "+sym.type +" => "+r);
 				return r;
                             }
@@ -1925,6 +1948,10 @@ public class F3Types extends Types {
 
             @Override
             public Type visitTypeVar(TypeVar t, Symbol sym) {
+		System.err.println("member type "+ toF3String(t));
+		System.err.println("bound="+toF3String(t.bound));
+		if (t instanceof TypeCons) {
+		}
                 return memberType(t.bound, sym);
             }
 
@@ -1936,7 +1963,13 @@ public class F3Types extends Types {
     // </editor-fold>
 
 
-    public Type subst(Type t, List<Type> from, List<Type> to) {
+    public List<Type> subst2(List<Type> ts,
+			     List<Type> from,
+			     List<Type> to) {
+        return new Subst(from, to).subst(ts);
+    }
+
+    public Type subst2(Type t, List<Type> from, List<Type> to) {
         return new Subst(from, to).subst(t);
     }
 
@@ -2002,26 +2035,28 @@ public class F3Types extends Types {
 
         @Override
         public Type visitTypeVar(TypeVar t, Void ignored) {
-	    //System.err.println("Subst t="+t);
+	    //System.err.println("Subst t="+System.identityHashCode(t)+"@"+t.getClass()+": "+t);
             for (List<Type> from = this.from, to = this.to;
                  from.nonEmpty();
                  from = from.tail, to = to.tail) {
-		//System.err.println("Subst from.head="+from.head);
+		//System.err.println("Subst from.head="+System.identityHashCode(from.head)+"@"+from.head.getClass()+": "+from.head);
+		//System.err.println("t="+toF3String(t));
+		//System.err.println("from="+toF3String(from.head));
+		//System.err.println("to="+toF3String(to.head));
 		if (t instanceof TypeCons) {
 		    TypeCons tc1 = (TypeCons)t;
 		    if (from.head instanceof TypeCons) {
 			TypeCons tc2 = (TypeCons)from.head;
-			if (tc1.ctor != null && tc1.ctor.tsym == tc2.tsym) {
-			    System.err.println("same type cons");
-			    System.err.println("to.head="+to.head);
-			    System.err.println("tc1.typeArgs="+tc1.getTypeArguments());
-			    Type res= makeTypeCons(to.head, tc1.getTypeArguments());
+			if (tc1.ctor == tc2) {
+			    Type res = makeTypeCons(to.head, tc1.getTypeArguments());
 			    System.err.println("res="+res);
+			    res = subst2(res, from, to);
+			    System.err.println("res'="+res);
 			    return res;
 			}
 		    }
 		}
-                if (t == from.head) {
+                if (t == from.head || t.tsym.name == from.head.tsym.name) { // hack!!!
                     return to.head.withTypeVar(t);
                 }
             }
@@ -2081,7 +2116,7 @@ public class F3Types extends Types {
             } else if (tvars1 == t.tvars) {
                 return new ForAll(tvars1, qtype1);
             } else {
-                return new ForAll(tvars1, F3Types.this.subst(qtype1, t.tvars, tvars1));
+                return new ForAll(tvars1, F3Types.this.subst2(qtype1, t.tvars, tvars1));
             }
         }
 
@@ -2227,4 +2262,78 @@ public class F3Types extends Types {
         return new VarianceAnalyzer().visit(t, true);
     }
     */
+
+
+    public List<Type> interfaces(Type t) {
+        return interfaces.visit(t);
+    }
+    // where
+        private UnaryVisitor<List<Type>> interfaces = new UnaryVisitor<List<Type>>() {
+
+            public List<Type> visitType(Type t, Void ignored) {
+                return List.nil();
+            }
+
+            @Override
+            public List<Type> visitClassType(ClassType t, Void ignored) {
+                if (t.interfaces_field == null) {
+                    List<Type> interfaces = ((ClassSymbol)t.tsym).getInterfaces();
+                    if (t.interfaces_field == null) {
+                        // If t.interfaces_field is null, then t must
+                        // be a parameterized type (not to be confused
+                        // with a generic type declaration).
+                        // Terminology:
+                        //    Parameterized type: List<String>
+                        //    Generic type declaration: class List<E> { ... }
+                        // So t corresponds to List<String> and
+                        // t.tsym.type corresponds to List<E>.
+                        // The reason t must be parameterized type is
+                        // that completion will happen as a side
+                        // effect of calling
+                        // ClassSymbol.getInterfaces.  Since
+                        // t.interfaces_field is null after
+                        // completion, we can assume that t is not the
+                        // type of a class/interface declaration.
+                        assert t != t.tsym.type : t.toString();
+                        List<Type> actuals = t.allparams();
+                        List<Type> formals = t.tsym.type.allparams();
+                        if (actuals.isEmpty()) {
+                            if (formals.isEmpty()) {
+                                // In this case t is not generic (nor raw).
+                                // So this should not happen.
+                                t.interfaces_field = interfaces;
+                            } else {
+                                t.interfaces_field = erasure(interfaces);
+                            }
+                        } else {
+			    List<Type> s = subst2(interfaces, formals, actuals);
+                            t.interfaces_field = upperBounds(s);
+                        }
+                    }
+                }
+                return t.interfaces_field;
+            }
+
+            @Override
+            public List<Type> visitTypeVar(TypeVar t, Void ignored) {
+                if (t.bound.isCompound())
+                    return interfaces(t.bound);
+
+                if (t.bound.isInterface())
+                    return List.of(t.bound);
+
+                return List.nil();
+            }
+        };
+    // </editor-fold>
+
+    boolean isSameSymbol(Symbol x, Symbol y) {
+	if (x.name == y.name) {
+	    if (x.owner == y.owner) {
+		return true;
+	    }
+	    System.err.println("different owners: "+ x.owner + " " + y.owner);
+	}
+	return false;
+    }
 }

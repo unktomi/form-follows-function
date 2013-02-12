@@ -415,7 +415,7 @@ public abstract class F3TranslationSupport {
     }
 
     private JCExpression makeTypeTreeInner0(DiagnosticPosition diagPos, Type t, boolean makeIntf) {
-	return makeTypeTreeInner01(diagPos, t, makeIntf, true);
+	return makeTypeTreeInner01(diagPos, t, makeIntf, false);
     }
 
     JCExpression makeTypeWithTypeCons(Type t) {
@@ -435,27 +435,34 @@ public abstract class F3TranslationSupport {
 	    F3Attr.TypeCons tcons = (F3Attr.TypeCons)t;
 	    Type ctor = syms.f3_TypeConsErasure[tcons.args.size()];
 	    if (tcons.ctor == null) {
-		if (expandTypeCons) {
-		    t = types.erasure(ctor);
+		if (!expandTypeCons) {
+		    System.err.println("expanding'0: "+ types.toF3String(t));
+		    //t = types.erasure(ctor);
 		}
+		t = new TypeVar(t.tsym, types.erasure(ctor), syms.botType);
 	    } else {
 		//System.err.println("***Make type tree "+orig+" => "+tcons.args);
-		TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
 		if (ERASE_BACK_END) {
 		    t = types.erasure(tcons.args.head);
 		} else {
-		    if (expandTypeCons) {
+		    if (!expandTypeCons) {
+			System.err.println("expanding'1: "+ types.toF3String(t));
+			TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
 			t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
 		    } else {
 			//t = tv;
+			t = new TypeVar(t.tsym, null, syms.botType);
 		    }
 		}
 		//System.err.println("t="+t);
 	    }
+	    System.err.println("expanding' "+orig+" => "+ t);
 	} else if (expandTypeCons) {
 	    int i = types.isTypeConsType(t);
 	    if (i >= 0) {
 		Type site = t;
+		System.err.println("expanding'': "+ t);
+		Thread.currentThread().dumpStack();
 		List<Type> targs = site.getTypeArguments();
 		if (ERASE_BACK_END) {
 		    site = targs.head;
@@ -468,6 +475,14 @@ public abstract class F3TranslationSupport {
 		    t = site;
 		} catch (Exception exc) {
 		    exc.printStackTrace();
+		}
+	    }
+	} else {
+	    if (t.isParameterized()) {
+		Type base = t.tsym.type;
+		if (base.getTypeArguments().size() > t.getTypeArguments().size()) {
+		    System.err.println("wrong # of type args: "+ t + " <> "+ base);
+		    t = types.makeTypeCons(types.erasure(t), t.getTypeArguments());
 		}
 	    }
 	}
@@ -502,8 +517,8 @@ public abstract class F3TranslationSupport {
                     for (Type ta : t.getTypeArguments()) {
 			//System.err.println("ta="+ta);
                         targs = targs.append(makeTypeTreeInner01(diagPos, ta, makeIntf, expandTypeCons));
-                    }
-		    //System.err.println("targs="+targs);
+                   }
+		    System.err.println(t.getTypeArguments()+" => "+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
 		    //System.err.println("final exp: "+ texp);
                 }
