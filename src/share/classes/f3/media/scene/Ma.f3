@@ -995,12 +995,14 @@ class MMesh is MSpatial
 	       normals[i2])
     }
 
+    const edgeToNormal = new java.util.TreeMap of (Integer, Vec3);
+
     function buildMesh
     {
 	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
 	println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()}");
 	var norms is Vec3[];
-	if (true or this.normals == []) {
+	if (this.normals == []) {
 	    for (polyface in polyfaces) {
 		var norm = Vec3.<<0>>;
 		const faceEdges = polyface.faceEdges;
@@ -1017,66 +1019,64 @@ class MMesh is MSpatial
 		norm = norm.normalize();
 		insert [norm.x, norm.y, norm.z] into normals;
 	    }
-	} else {
-	    const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
-	    for (f in polyfaces) {
-		const faceIndex = indexof f;
-		for (faceEdge in f.faceEdges) {
-		    if (isSmooth(faceEdge)) {
-			const e0 = edgeStart(faceEdge);
-			const e1 = edgeEnd(faceEdge);
-			edgeToFace1.put(e0, [faceEdge, faceIndex]);
-			edgeToFace1.put(e1, [faceEdge, faceIndex]);
+	} 
+	const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
+	for (f in polyfaces) {
+	    const faceIndex = indexof f;
+	    for (faceEdge in f.faceEdges) {
+		if (isSmooth(faceEdge)) {
+		    const e0 = edgeStart(faceEdge);
+		    const e1 = edgeEnd(faceEdge);
+		    edgeToFace1.put(e0, [faceEdge, faceIndex]);
+		    edgeToFace1.put(e1, [faceEdge, faceIndex]);
+		}
+	    }
+	}
+	const stack = new java.util.Stack of Integer;
+	const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
+	while (edgeToFace1.size() > 0) {
+	    const ent = edgeToFace1.pollFirstEntry();
+	    const edge1 = ent.getKey();
+	    const indices1 = ent.getValue();
+	    var faces is Integer[];
+	    const faceEdge = indices1[0];
+	    const faceIndex = indices1[1];
+	    stack.push(faceIndex);
+	    stack.push(faceEdge);
+	    while (not stack.isEmpty()) {
+		const faceEdge1 = stack.pop();
+		const faceIndex1 = stack.pop();
+		insert faceIndex1 into faces;
+		const iter = edgeToFace1.entrySet().iterator();
+		while (iter.hasNext()) {
+		    const n = iter.next();
+		    const edge2 = n.getKey();
+		    const indices2 = n.getValue();
+		    const faceEdge2 = indices2[0];
+		    const faceIndex2 = indices2[1];
+		    if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
+			stack.push(faceIndex2);
+			stack.push(faceEdge2);
+			iter.remove();
 		    }
 		}
 	    }
-	    const stack = new java.util.Stack of Integer;
-	    const faceToNormal = new java.util.TreeMap of (Integer, Vec3);
-	    const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
-	    while (edgeToFace1.size() > 0) {
-		const ent = edgeToFace1.pollFirstEntry();
-		const edge1 = ent.getKey();
-		const indices1 = ent.getValue();
-		var faces is Integer[];
-		const faceEdge = indices1[0];
-		const faceIndex = indices1[1];
-		stack.push(faceEdge);
-		stack.push(faceIndex);
-		while (not stack.isEmpty()) {
-		    const faceEdge1 = stack.pop();
-		    const faceIndex1 = stack.pop();
-		    insert faceIndex1 into faces;
-		    const iter = edgeToFace1.entrySet().iterator();
-		    while (iter.hasNext()) {
-			const n = iter.next();
-			const edge2 = n.getKey();
-			const indices2 = n.getValue();
-			const faceEdge2 = indices2[0];
-			const faceIndex2 = indices2[1];
-			if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
-			    stack.push(faceEdge2);
-			    stack.push(faceIndex2);
-			    iter.remove();
-			}
+	    edgeToFace2.put(edge1, faces);
+	}
+	for (f in polyfaces) {
+	    const faceIndex = indexof f;
+	    for (faceEdge in f.faceEdges) {
+		const edge = edgeStart(faceEdge);
+		const faces = edgeToFace2.get(edge);
+		if (faces == []) {
+		    //edgeToNormal.put(edge, this.normal(faceIndex));
+		} else {
+		    var norm = Vec3.<<0>>;
+		    for (j in faces) {
+			const faceNorm = this.normal(j);
+			norm += faceNorm;
 		    }
-		}
-		edgeToFace2.put(edge1, faces);
-	    }
-	    for (f in polyfaces) {
-		const faceIndex = indexof f;
-		for (faceEdge in f.faceEdges) {
-		    const edge = edgeStart(faceEdge);
-		    const faces = edgeToFace2.get(edge);
-		    if (faces == []) {
-                        insert this.normal(faceIndex) into faceNorms;
-		    } else {
-			var norm = Vec3.<<0>>;
-			for (j in faces) {
-			    const faceNorm = this.normal(j);
-			    norm += faceNorm;
-			}
-			insert norm into faceNorms;
-		    }
+		    edgeToNormal.put(edge, norm);
 		}
 	    }
 	}
@@ -1134,7 +1134,7 @@ class MMesh is MSpatial
 	to ()
     {
 	const v = this.vertex(edge);
-	const n = this.normal(norm);
+	const n = if edgeToNormal.containsKey(edge) then edgeToNormal.get(edge) else this.normal(norm);
 	const uv = this.uv(uvSet, uvIndex);
 	ib.add(ib.getBufferSize());
 	vb.add(v.x, v.y, v.z);
