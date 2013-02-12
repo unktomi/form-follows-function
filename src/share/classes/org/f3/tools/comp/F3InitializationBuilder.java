@@ -412,7 +412,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
             implementing.append(iface);
         }
 	ClassType ct = (ClassType)cDecl.type;
-	if (ct.interfaces_field != null) {
+	if (false) if (ct.interfaces_field != null) {
 	    for (Type iface: ct.interfaces_field) {
 		if (types.isTypeConsType(iface) >= 0) {
 		    JCExpression exp = makeTypeTreeInner01(diagPos, iface, true, false);
