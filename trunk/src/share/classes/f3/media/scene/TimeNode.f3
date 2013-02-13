@@ -28,7 +28,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public readonly var worldTransform is TimeMat = 
 	bind if (parent == null) then transform else parent.worldTransform * transform;
 
-    public readonly var bounds is Interval = bind computeBounds(transform, contentPlayRange);
+    public readonly var bounds is Interval = bind computeBounds(transform, loopedPlayRange);
     function computeBounds from (m is TimeMat, b is Interval) to Interval {
 	m * b;
     }
@@ -37,7 +37,12 @@ public abstract class TimeNode is Foldable of TimeNode
 	bind if (contentPlayRange == null) then null else contentPlayRange * (if (playCount < 0) then Number.MAX_VALUE else playCount);
     public readonly var contentPlayRange is Interval = 
         bind if (playRange == null) then contentBounds else Interval.intersect(contentBounds, playRange);
+
     public readonly var contentBounds is Interval;
+    
+    protected function setContentBounds from (bounds is Interval) to () {
+	contentBounds = bounds;
+    }
 
     public var playRange is Interval;
 
@@ -79,6 +84,7 @@ public abstract class TimeNode is Foldable of TimeNode
         var picked = false;
         if (worldPickable) {
             picked = bounds.intersects(parentTime);
+	    //	    println("{id} bounds {bounds} parentTime {parentTime} => {picked}");
             if (picked) {
                 add(this);
             }
@@ -92,6 +98,7 @@ public abstract class TimeNode is Foldable of TimeNode
 	    now = now mod dur;
 	}
         localTime = Duration.valueOf(now);
+	//	println("{id} now={localTime} of {1ms*dur}");
 	const f = (if (picked) then add else null) as function from TimeNode to ();
         pickChildren(worldTime, 
 		     localTime, 
@@ -110,4 +117,26 @@ public abstract class TimeNode is Foldable of TimeNode
     protected function updateParent to () {
     }
 
+    public function play to ()
+    {
+        if (parent is Player) {
+            (parent as Player).play(this);
+        } else {
+            advanceToPlayhead();
+        }
+    }
+
+    public function advanceToPlayhead to () {
+        const cur = currentTime / playRate;
+        if (playTime > cur or cur - playTime > bounds.end) { // must advance to playhead
+            playFromStart();
+        } else { // already intersecting playhead
+            paused = false;
+        }
+    }
+
+    public function playFromStart to () {
+        paused = false;
+        playTime = currentTime / playRate; // advance to playhead
+    }
 }

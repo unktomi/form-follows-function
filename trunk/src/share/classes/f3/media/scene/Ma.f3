@@ -1110,7 +1110,7 @@ class MMesh is MSpatial
 	const uvb = this.uvb.getBuffer();
         const tanb = BufferUtils.createVector3Buffer(ib.limit());
         const binb = BufferUtils.createVector3Buffer(ib.limit());
-	TangentBinormal.addStreams(ib, vb, uvb,nb, tanb, binb);
+	ImportUtils.addTangentBinormalStreams(ib, vb, uvb,nb, tanb, binb);
 	MeshBuffer {
             indexBuffer: ib;
 	    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };

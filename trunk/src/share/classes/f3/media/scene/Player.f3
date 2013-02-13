@@ -1,0 +1,5 @@
+package f3.media.scene;
+
+public interface Player {
+    public abstract function play from (clip is TimeNode) to ();
+}
