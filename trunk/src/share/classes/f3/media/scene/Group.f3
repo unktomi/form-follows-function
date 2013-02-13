@@ -59,7 +59,6 @@ public class Group is Node
 	from (z is b, f is function from (b, Node) to b) 
 	to b
     {
-	//    println("foldleft {id} => content={content}");
 	content.foldLeft(f(z, this), 
 			 function from (z is b, n is Node) to b 
 			 {

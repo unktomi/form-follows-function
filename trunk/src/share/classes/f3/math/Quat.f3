@@ -2,7 +2,7 @@ package f3.math;
 import java.lang.Math;
 import java.lang.Math.*;
 import f3.math.LinearMath.*;
-
+import f3.util.Bits.*;
 public static const <<1>> = Quat { w: 1.0 };
 public static const <<0>> = Quat { };
 
@@ -26,37 +26,19 @@ public class Quat is Tuple4
 	from (v is Vec3) 
 	to Vec3 
     {
-	const vx = 
-	    w * w * v.x + 
-	    2 * y * w * v.z - 
-	    2 * z * w * v.y + 
-	    x * x * v.x +
-	    2 * y * x * v.y +
-	    z * x * v.z -
-	    z * z * v.x - 
-	    y * y * v.x;
-
-	const  vy = 2 * x * y * v.x + 
-	    y * y * v.y + 
-	    2 * z * y * v.z + 
-	    2 * w * z * v.x - 
-	    z * z * v.y + 
-	    w * w * v.y - 
-	    2 * x * w * v.z -
-	    x * x * v.y;
-	
-	const vz = 2 * x * z * v.x + 
-	    2 * y * z * v.y +
-	    z * z * v.z - 
-	    2 * w * y * v.x - 
-	    y * y * v.z + 
-	    2 * w * x * v.y - 
-	    x * x * v.z + 
-	    w * w * v.z;
+        const x = this.w * this.w * v.x + 2 * this.y * this.w * v.z - 2 * this.z * this.w
+            * v.y + this.x * this.x * v.x + 2 * this.y * this.x * v.y + 2 * this.z
+            * this.x * v.z - this.z * this.z * v.x - this.y * this.y * v.x;
+        const y = 2 * this.x * this.y * v.x + this.y * this.y * v.y + 2 * this.z * this.y
+            * v.z + 2 * this.w * this.z * v.x - this.z * this.z * v.y + this.w * this.w
+            * v.y - 2 * this.x * this.w * v.z - this.x * this.x * v.y;
+        const z = 2 * this.x * this.z * v.x + 2 * this.y * this.z * v.y + this.z * this.z
+            * v.z - 2 * this.w * this.y * v.x - this.y * this.y * v.z + 2 * this.w
+            * this.x * v.y - this.x * this.x * v.z + this.w * this.w * v.z;
 	Vec3 {
-	    x: vx;
-	    y: vy;
-	    z: vz;
+	    x: x;
+	    y: y;
+	    z: z;
 	}
     }
 
@@ -127,6 +109,12 @@ public class Quat is Tuple4
 
     public function slerp from (target is Quat, t is Number) to Quat 
     {
+	if (t == 0) {
+	    return this;
+	}
+	if (t == 1) {
+	    return target;
+	}
 	const startQuat = this;
 	const q2 = target;
         var dotP = startQuat.dot(q2);
@@ -169,6 +157,11 @@ public class Quat is Tuple4
 	}
     }
 
+    public function toAngles(order is Integer) to Tuple3 
+    {
+	EulFromMatrix(toMat4(), order);
+    }
+
     public function toAngles to Tuple3 
     {
         const sqw = w * w;
@@ -178,34 +171,27 @@ public class Quat is Tuple4
         const unit = sqx + sqy + sqz + sqw; // if normalized is one, otherwise
         // is correction factor
         const test = x * y + z * w;
+	var rx is Number;
+	var ry is Number;
+	var rz is Number;
         if (test > 0.499 * unit) { // singularity at north pole
-            const rx is Number = 2 * Math.atan2(x, w);
-	    const ry is Number = Math.PI/2.0;
-	    const rz is Number = 0.0;
-	    Tuple3 {
-		x: toDegrees(rx);
-		y: toDegrees(ry);
-		z: toDegrees(rz);
-	    }
+            rx = 2 * Math.atan2(x, w);
+	    ry = Math.PI/2.0;
+	    rz = 0.0;
         } else if (test < -0.499 * unit) { // singularity at south pole
-	    const rx is Number = -2 * Math.atan2(x, w);
-	    const ry is Number = -Math.PI/2.0;
-	    const rz is Number = 0.0;
-	    Tuple3 {
-		x: toDegrees(rx);
-		y: toDegrees(ry);
-		z: toDegrees(rz);
-	    }
+	    rx = -2 * Math.atan2(x, w);
+	    ry = -Math.PI/2.0;
+	    rz = 0.0;
         } else {
-            const rx is Number = Math.atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw);
-	    const ry is Number = Math.asin(2 * test / unit);
-	    const rz is Number = Math.atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw);
-	    Tuple3 {
-		x: toDegrees(rx);
-		y: toDegrees(ry);
-		z: toDegrees(rz);
-	    }
+            rx = Math.atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw);
+	    ry = Math.asin(2 * test / unit);
+	    rz = Math.atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw);
         }
+	Tuple3 {
+	    x: toDegrees(rx);
+	    y: toDegrees(ry);
+	    z: toDegrees(rz);
+	}
     }
 
     public function toMat4 to Mat4 
@@ -260,7 +246,7 @@ public function Quat from (degrees is Number, axis0 is Vec3) to Quat
 	return <<1>>;
     }
     const angle = Math.toRadians(degrees);
-    var axis = axis0.normalize();
+    const axis = axis0.normalize();
     const halfAngle = 0.5 * angle;
     const sin = Math.sin(halfAngle);
     const w = Math.cos(halfAngle);
@@ -325,7 +311,9 @@ public function Quat from (rx is Number, ry is Number, rz is Number) to Quat
 
 public function Quat from (m is Mat4) to Quat 
 {
-    Quat(m.xx, m.xy, m.xz, m.yx, m.yy, m.yz, m.zx, m.zy, m.zz);
+    Quat(m.xx, m.xy, m.xz, 
+	 m.yx, m.yy, m.yz, 
+	 m.zx, m.zy, m.zz);
 }
 
 public function Quat 
@@ -358,7 +346,7 @@ public function Quat
 	s = 0.5 / s; // so this division isn't bad
 	x = (m21 - m12) * s;
 	y = (m02 - m20) * s;
-            z = (m10 - m01) * s;
+	z = (m10 - m01) * s;
     } else if ((m00 > m11) and (m00 > m22)) {
 	var s = Math.sqrt(1.0 + m00 - m11 - m22); // |s|>=1
 	x = s * 0.5; // |x| >= .5
@@ -379,7 +367,7 @@ public function Quat
 	s = 0.5 / s;
 	x = (m02 + m20) * s;
 	y = (m21 + m12) * s;
-            w = (m10 - m01) * s;
+	w = (m10 - m01) * s;
     }
     Quat {
 	x: x;
@@ -388,6 +376,135 @@ public function Quat
 	w: w;
     }
 }
+
+
+//----------------------------------------------------------------------
+// Full euler angle decomposition into any angle order
+//
+// http://tog.acm.org/GraphicsGems//gemsiv/euler_angle/
+
+// Order type constants, constructors, extractors //
+// There are 24 possible conventions, designated by:    //
+//	  o EulAxI = axis used initially		    //
+//	  o EulPar = parity of axis permutation		    //
+//	  o EulRep = repetition of initial axis as last	    //
+//	  o EulFrm = frame from which axes are taken	    //
+// Axes I,J,K will be a permutation of X,Y,Z.	    //
+// Axis H will be either I or K, depending on EulRep.   //
+// Frame S takes axes from initial static frame.	    //
+// If ord = (AxI=X, Par=Even, Rep=No, Frm=S), then	    //
+// {a,b,c,ord} means Rz(c)Ry(b)Rx(a), where Rz(c)v	    //
+// rotates v around Z by c radians.			    //
+
+const EulFrmS = 0;
+const EulFrmR = 1;
+function EulFrm from (ord is Integer) to Integer { bitAnd(ord, 1) }
+const EulRepNo = 0;
+const EulRepYes = 1;
+function EulRep from (ord is Integer) to Integer { bitAnd(shiftRight(ord, 1), 1) }
+const EulParEven = 0;
+const EulParOdd = 1;
+function EulPar from (ord is Integer) to Integer { bitAnd(shiftRight(ord, 2), 1) }
+const EulSafe = [0, 1, 2, 0];
+const EulNext = [1, 2, 0, 1];
+function EulAxI from (ord is Integer) to Integer { EulSafe[bitAnd(shiftRight(ord,3), 3)] }
+function EulAxJ from (ord is Integer) to Integer {
+    EulNext[EulAxI(ord)+(if (EulPar(ord)==EulParOdd) then 1 else 0)]
+}
+function EulAxK from (ord is Integer) to Integer {
+    EulNext[EulAxI(ord)+(if (EulPar(ord)<>EulParOdd) then 1 else 0)]
+}
+function EulAxH from (ord is Integer) to Integer {
+    if (EulRep(ord)==EulRepNo) then EulAxK(ord) else EulAxI(ord);
+}
+/* EulOrd creates an order value between 0 and 23 from 4-tuple choices. */
+function EulOrd from (i is Integer, p is Integer, r is Integer,  f is Integer) to Integer { 
+    var j = shiftLeft(i, 1) + p;
+    j = shiftLeft(j, 1) + r;
+    j = shiftLeft(j, 1) + f;
+    return j;
+}
+/* Static axes */
+const EulOrdXYZs = EulOrd(0,EulParEven,EulRepNo,EulFrmS);
+const EulOrdXYXs = EulOrd(0,EulParEven,EulRepYes,EulFrmS);
+const EulOrdXZYs = EulOrd(0,EulParOdd,EulRepNo,EulFrmS);
+const EulOrdXZXs = EulOrd(0,EulParOdd,EulRepYes,EulFrmS);
+const EulOrdYZXs = EulOrd(1,EulParEven,EulRepNo,EulFrmS);
+const EulOrdYZYs = EulOrd(1,EulParEven,EulRepYes,EulFrmS);
+const EulOrdYXZs = EulOrd(1,EulParOdd,EulRepNo,EulFrmS);
+const EulOrdYXYs = EulOrd(1,EulParOdd,EulRepYes,EulFrmS);
+const EulOrdZXYs = EulOrd(2,EulParEven,EulRepNo,EulFrmS);
+const EulOrdZXZs = EulOrd(2,EulParEven,EulRepYes,EulFrmS);
+const EulOrdZYXs = EulOrd(2,EulParOdd,EulRepNo,EulFrmS);
+const EulOrdZYZs = EulOrd(2,EulParOdd,EulRepYes,EulFrmS);
+/* Rotating axes */
+const EulOrdZYXr = EulOrd(0,EulParEven,EulRepNo,EulFrmR);
+const EulOrdXYXr = EulOrd(0,EulParEven,EulRepYes,EulFrmR);
+const EulOrdYZXr = EulOrd(0,EulParOdd,EulRepNo,EulFrmR);
+const EulOrdXZXr = EulOrd(0,EulParOdd,EulRepYes,EulFrmR);
+const EulOrdXZYr = EulOrd(1,EulParEven,EulRepNo,EulFrmR);
+const EulOrdYZYr = EulOrd(1,EulParEven,EulRepYes,EulFrmR);
+const EulOrdZXYr = EulOrd(1,EulParOdd,EulRepNo,EulFrmR);
+const EulOrdYXYr = EulOrd(1,EulParOdd,EulRepYes,EulFrmR);
+const EulOrdYXZr = EulOrd(2,EulParEven,EulRepNo,EulFrmR);
+const EulOrdZXZr = EulOrd(2,EulParEven,EulRepYes,EulFrmR);
+const EulOrdXYZr = EulOrd(2,EulParOdd,EulRepNo,EulFrmR);
+const EulOrdZYZr = EulOrd(2,EulParOdd,EulRepYes,EulFrmR);
+
+public static const EULER_XYZ = EulOrdXYZs;
+public static const EULER_XZY = EulOrdXZYs;
+public static const EULER_YZX = EulOrdYZXs;
+public static const EULER_YXZ = EulOrdYXZs;
+public static const EULER_ZXY = EulOrdZXYs;
+public static const EULER_ZYX = EulOrdZYXs;
+
+// Convert matrix to Euler angles (in radians).
+function EulFromMatrix from (M is Mat4, order is Integer) to Tuple3 
+{
+    const i = EulAxI(order);
+    const j = EulAxJ(order);
+    const k = EulAxK(order);
+    const h = EulAxH(order);
+    const n = EulPar(order);
+    const s = EulRep(order);
+    const f = EulFrm(order);
+    var rx is Number;
+    var ry is Number;
+    var rz is Number;
+    if (s == EulRepYes) {
+	const sy = Math.sqrt(M.get(i, j)*M.get(i, j) + M.get(i, k)*M.get(i, k)) as Number;
+	if (sy > 16*EPSILON) {
+	    rx = Math.atan2(M.get(i, j), M.get(i, k)) as Number;
+	    ry = Math.atan2(sy, M.get(i, i)) as Number;
+	    rz = Math.atan2(M.get(j, i), -M.get(k, i)) as Number;
+	} else {
+	    rx = Math.atan2(-M.get(j, k), M.get(j, j)) as Number;
+	    ry = Math.atan2(sy, M.get(i, i)) as Number;
+	    rz = 0;
+	}
+    } else {
+	const cy = Math.sqrt(M.get(i, i)*M.get(i, i) + M.get(j, i)*M.get(j, i)) as Number;
+	if (cy > 16*LinearMath.EPSILON) {
+	    rx = Math.atan2(M.get(k, j), M.get(k, k)) as Number;
+	    ry = Math.atan2(-M.get(k, i), cy) as Number;
+	    rz = Math.atan2(M.get(j, i), M.get(i, i)) as Number;
+	} else {
+	    rx = Math.atan2(-M.get(j, k), M.get(j, j)) as Number;
+	    ry = Math.atan2(-M.get(k, i), cy) as Number;
+	    rz = 0;
+	}
+    }
+    if (n == EulParOdd) { rx = -rx; ry = -ry; rz = -rz }
+    if (f == EulFrmR) { const t = rx; rx = rz; rz = t }
+    
+    Tuple3 {
+	x: Math.toDegrees(rx);
+	y: Math.toDegrees(ry);
+	z: Math.toDegrees(rz);
+    }
+}
+
+
 
 public static def TYPE_INFO =
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
