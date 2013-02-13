@@ -2,7 +2,8 @@ package f3.math;
 import java.lang.Math;
 import f3.math.Quat.*;
 
-public static const EPSILON = 0.00001;
+public static const EPSILON = 0.000001;
+public static const ZERO_TOLERANCE = .00001;
 
 public function quat
     from (rx is Number,
@@ -223,19 +224,6 @@ public function rotateNormalAxis
     from (degrees is Number, axis is Vec3) 
     to Mat4 
 {
-    if (degrees == 0) {
-	return Mat4.<<1>>
-    }
-    const a = Math.toRadians(degrees);
-    const c = Math.cos(a);
-    const s = Math.sin(a);
-    const ic = 1-c;
-    const x = axis.x;
-    const y = axis.y;
-    const z = axis.z;
-    matrix(x*x*ic +   c, x*y*ic - z*s, x*z*ic + y*s, 0,
-	   y*x*ic + z*s, y*y*ic +   c, y*z*ic - x*s, 0,
-	   z*x*ic - y*s, z*y*ic + x*s, z*z*ic +   c, 0,
-	   0,            0,            0           , 1);
+    if (degrees == 0) then Mat4.<<1>> else Quat(degrees, axis).toMat4();
 }
 

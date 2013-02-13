@@ -5,63 +5,61 @@ import java.lang.Math;
 
 public class DefaultExaminerViewer extends ExaminerViewer {
 
-    public var camera: PerspectiveCamera;
+    public var camera is PerspectiveCamera;
     
-    override function getCameraOrientation():Quat {
+    override function getCameraOrientation to Quat {
         return quat(camera.rx, camera.ry, camera.rz);
     }
 
-    override function getCameraPosition():Point3 {
+    override function getCameraPosition to Point3 {
         return point(camera.tx, camera.ty, camera.tz);
     }
 
-    override function setCameraOrientation(ori:Quat):Void {
-        var angles = ori.toAngles();
+    override function setCameraOrientation from (ori is Quat) to () {
+        const angles = ori.toAngles();
         camera.rx = angles.x;
         camera.ry = angles.y;
         camera.rz = angles.z;
-	println("camera ori => {angles} / {camera.worldTransform}");
     }
 
-    override function setCameraPosition(pos:Point3):Void {
+    override function setCameraPosition from (pos is Point3) to () {
         camera.tx = pos.x;
         camera.ty = pos.y;
         camera.tz = pos.z;
-	println("camera pos => {pos} / {camera.worldTransform}");
     }
 
-    override function getCameraNearDistance():Number {
+    override function getCameraNearDistance to Number {
         return camera.near;
     }
 
-    override function getCameraFarDistance():Number {
+    override function getCameraFarDistance to Number {
         return camera.far;
     }
 
-    override function setCameraNearDistance(n:Number):Void {
+    override function setCameraNearDistance from (n is Number) to () {
         camera.near = n;
     }
 
-    override function setCameraFarDistance(n:Number):Void {
+    override function setCameraFarDistance from (n is Number) to () {
         camera.far = n;
     }
 
-    override function getCameraViewAllPosition(bounds:Bounds):Point3 {
-        var halfWidth = bounds.extent.x;
-        var halfHeight = bounds.extent.y;
-        var halfDepth = bounds.extent.z;
-        var radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
+    override function getCameraViewAllPosition from (bounds is Bounds) to Point3 {
+        const halfWidth = bounds.extent.x;
+        const halfHeight = bounds.extent.y;
+        const halfDepth = bounds.extent.z;
+        const radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
         // Now figure out how far to move
-        var minAngle = if (camera.heightAngle < camera.widthAngle) camera.heightAngle else camera.widthAngle;
+        const minAngle = if (camera.heightAngle < camera.widthAngle) camera.heightAngle else camera.widthAngle;
         if (minAngle == 0.0) {
             return null;
         }
         // Required distance back from center of bounding sphere
-        var dist = radius / Math.sin(Math.toRadians(minAngle / 2)) as Number;
+        const dist = radius / Math.sin(Math.toRadians(minAngle / 2)) as Number;
         // Compute backoff vector from center
         var backoff = Vec3.Z_AXIS;
         backoff = getCameraOrientation() * backoff;
-        backoff = backoff * dist;
+        backoff *= dist;
         return backoff + bounds.center;
     }
 }

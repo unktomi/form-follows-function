@@ -937,7 +937,7 @@ class MMesh is MSpatial
     var edges is Integer[];
     var polyfaces is PolyfaceData[];
     var uvSets is UVSet[];
-    var faceNorms is Vec3[];
+    var faceNormals is Vec3[];
 
     function faceEdgeIndex from (i is Integer) to Integer 
     {
@@ -1000,26 +1000,23 @@ class MMesh is MSpatial
     function buildMesh
     {
 	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
-	println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()}");
-	var norms is Vec3[];
-	if (this.normals == []) {
-	    for (polyface in polyfaces) {
-		var norm = Vec3.<<0>>;
-		const faceEdges = polyface.faceEdges;
-		for (faceEdge in faceEdges) {
-		    const i = indexof faceEdge;
-		    const edge = edgeStart(faceEdge);
-		    const next = edgeEnd(faceEdge);
-		    const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
-		    const v0 = vertex(edge);
+	println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()} uvSets {uvSets.size()}");
+	for (polyface in polyfaces) {
+	    var norm = Vec3.<<0>>;
+	    const faceEdges = polyface.faceEdges;
+	    for (faceEdge in faceEdges) {
+		const i = indexof faceEdge;
+		const edge = edgeStart(faceEdge);
+		const next = edgeEnd(faceEdge);
+		const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
+		const v0 = vertex(edge);
 		    const v1 = vertex(next);
 		    const v2 = vertex(prev);
    		    norm += (v1 - v0).cross(v2 - v0);
-		}
-		norm = norm.normalize();
-		insert [norm.x, norm.y, norm.z] into normals;
 	    }
-	} 
+	    norm = norm.normalize();
+	    insert norm into faceNormals;
+	}
 	const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
 	for (f in polyfaces) {
 	    const faceIndex = indexof f;
@@ -1073,7 +1070,7 @@ class MMesh is MSpatial
 		} else {
 		    var norm = Vec3.<<0>>;
 		    for (j in faces) {
-			const faceNorm = this.normal(j);
+			const faceNorm = faceNormals[j];
 			norm += faceNorm;
 		    }
 		    edgeToNormal.put(edge, norm);
@@ -1130,11 +1127,16 @@ class MMesh is MSpatial
     const uvb = new FloatBufferBuilder();
 
     function insertVertex
-	from (edge is Integer, norm is Integer, uvSet is Integer, uvIndex is Integer) 
+	from (edge is Integer, face is Integer, uvSet is Integer, uvIndex is Integer) 
 	to ()
     {
 	const v = this.vertex(edge);
-	const n = if edgeToNormal.containsKey(edge) then edgeToNormal.get(edge) else this.normal(norm);
+	const n = 
+	    if (normals <> []) 
+		then this.normal(edge) 
+		else if (edgeToNormal.containsKey(edge)) 
+		    then edgeToNormal.get(edge) 
+		    else faceNormals[face];
 	const uv = this.uv(uvSet, uvIndex);
 	ib.add(ib.getBufferSize());
 	vb.add(v.x, v.y, v.z);

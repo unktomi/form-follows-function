@@ -9,72 +9,71 @@ import java.lang.Math;
 
 public abstract class ExaminerViewer extends MouseInputHandler {
 
-    abstract function getCameraOrientation():Quat;
-    abstract function getCameraPosition():Point3;
-    abstract function setCameraOrientation(ori:Quat):Void;
-    abstract function setCameraPosition(pos:Point3):Void;
-    abstract function getCameraNearDistance():Number;
-    abstract function getCameraFarDistance():Number;
-    abstract function setCameraNearDistance(n:Number):Void;
-    abstract function setCameraFarDistance(n:Number):Void;
-    abstract function getCameraViewAllPosition(bounds:Bounds):Point3;
+    public abstract function getCameraOrientation to Quat;
+    public abstract function getCameraPosition to Point3;
+    public abstract function setCameraOrientation from (ori is Quat) to ();
+    public abstract function setCameraPosition from (pos is Point3) to ();
+    public abstract function getCameraNearDistance to Number;
+    public abstract function getCameraFarDistance to Number;
+    public abstract function setCameraNearDistance from (n is Number) to ();
+    public abstract function setCameraFarDistance from (n is Number) to ();
+    public abstract function getCameraViewAllPosition from (bounds is Bounds) to Point3;
 
     /** This is the distance of the center point in front of the
         camera, around which rotations occur and toward which zooms in
         and out occur. */
-    public var centerDistance: Number = 10.0;
+    public var centerDistance is Number = 10.0;
 
     // Whether the viewer's camera is currently active
-    public var enabled: Boolean = true;
+    public var enabled is Boolean = true;
 
     // Break recursive update cycles during view all operations
-    var updatesDisabled: Boolean;
+    var updatesDisabled is Boolean;
 
     /** Speed at which rotation occurs. */
-    public var rotateSpeed = 1.0;
+    public var rotateSpeed is Number = 1.0;
 
     /** Speed at which translation and dollying in / out occurs. */
-    public var dollySpeed = 4.0;
+    public var dollySpeed is Number = 4.0;
 
     /** Optionally constrains the up vector of the camera to point
         toward this direction. */
-    public var upVector: Vec3 = Vec3.Y_AXIS;
+    public var upVector is Vec3 = Vec3.Y_AXIS;
 
     /** Whether the camera should perform a "view all" operation
         during the next update cycle. */
-    public var doViewAll: Boolean; 
+    public var doViewAll is Boolean; 
 
-    var focalPoint: Point3 = Point3.<<0>>;
+    var focalPoint is Point3 = Point3.<<0>>;
     var minCenterDistance = 0.01;
-    var button1Down: Boolean;
-    var button2Down: Boolean;
-    var button3Down: Boolean;
+    var button1Down is Boolean;
+    var button2Down is Boolean;
+    var button3Down is Boolean;
 
     /** The target camera this ExaminerViewer is controlling */
 
     var dragging = false;
-    public var mouseX:Number;
-    public var mouseY:Number;
+    public var mouseX is Number;
+    public var mouseY is Number;
 
-    override function onMouseDown(event:MouseEvent) {
+    override function onMouseDown from (event is MouseEvent) to () {
         for (b in event.buttons) {
             mouseDown(b, event.ctrlKey, event.altKey);
         }
     }
 
-    override function onMouseUp(event:MouseEvent) {
+    override function onMouseUp from (event is MouseEvent) to () {
         for (b in event.buttons) {
             mouseUp(b);
         }
     }
 
-    override function onMouseMove(event:MouseEvent) {
+    override function onMouseMove from (event is MouseEvent) to () {
         mouseMove(event.screenx, event.screeny,
                   event.ctrlKey, event.altKey);
     }
 
-    public function mouseDown(button:Integer, isControlDown:Boolean, isAltDown:Boolean) {
-	println("mouseDown {button} {isControlDown} {isAltDown}");
+    public function mouseDown from (button is Integer, isControlDown is Boolean, isAltDown is Boolean) to () {
         if (button == 1) {
             button1Down = true;
         } else if (button == 2) {
@@ -85,8 +84,7 @@ public abstract class ExaminerViewer extends MouseInputHandler {
         dragging = button1Down or button2Down or button3Down;
     }
 
-    public function mouseUp(button:Integer) {
-	println("mouseUp {button}");
+    public function mouseUp from (button is Integer) to () {
         if (button == 1) {
             button1Down = false;
         } else if (button == 2) {
@@ -97,14 +95,18 @@ public abstract class ExaminerViewer extends MouseInputHandler {
         dragging = button1Down or button2Down or button3Down;
     }
 
-    public function mouseMove(mouseX:Number, mouseY:Number, isControlDown:Boolean, isAltDown:Boolean) to Boolean {
-	println("mouseMove {mouseX} {mouseY} control={isControlDown} alt={isAltDown}");
+    public function mouseMove 
+	from (mouseX is Number, 
+	      mouseY is Number, 
+	      isControlDown is Boolean, 
+	      isAltDown is Boolean) 
+	to Boolean 
+    {
         var dragX = mouseX - this.mouseX;
         var dragY = mouseY - this.mouseY;
         this.mouseY = mouseY;
         this.mouseX = mouseX;
-        dragging = button1Down or button2Down or button3Down;
-	println("dragging {dragging}");
+	dragging = button1Down or button2Down or button3Down;
         if (dragging) {
             var doRotation =
                 (button1Down and not button2Down and not button3Down);
@@ -127,11 +129,11 @@ public abstract class ExaminerViewer extends MouseInputHandler {
             updateFocalPoint();
             if (doRotation) {
                 // Rotation functionality
-                var xRads = Math.PI * -1.0 * dragY * rotateSpeed / 1000.0;
-                var yRads = Math.PI * -1.0 * dragX * rotateSpeed / 1000.0;
-                var xRot = Quat.Quat(Math.toDegrees(xRads), Vec3.X_AXIS);
-                var yRot = Quat.Quat(Math.toDegrees(yRads), Vec3.Y_AXIS);
-                var newRot = yRot * xRot;
+                const xRads = Math.PI * -1.0 * dragY * rotateSpeed / 1000.0;
+                const yRads = Math.PI * -1.0 * dragX * rotateSpeed / 1000.0;
+                const xRot = Quat.Quat(Math.toDegrees(xRads), Vec3.X_AXIS);
+                const yRot = Quat.Quat(Math.toDegrees(yRads), Vec3.Y_AXIS);
+                const newRot = yRot * xRot;
                 var ori = getCameraOrientation();
                 if (ori == null) { ori = Quat.<<1>> }
                 ori *= newRot;
@@ -141,30 +143,28 @@ public abstract class ExaminerViewer extends MouseInputHandler {
                 if (upVector != null) {
                     var cameraUp = Vec3.Y_AXIS;
                     cameraUp = ori.normalize() * cameraUp;
-                    var dotp = cameraUp.dot(upVector);
-                    if (Math.abs(dotp) > LinearMath.EPSILON) {
+                    const dotp = cameraUp.dot(upVector);
+                    if (Math.abs(dotp) > LinearMath.ZERO_TOLERANCE) {
                         // Form orthonormal basis
-                        var back = ori * Vec3.Z_AXIS;
+                        const back = ori * Vec3.Z_AXIS;
                         var up = upVector;
                         var right = up.cross(back);
                         right = right.normalize();
-                        up = back.cross(right);
+                        up = back.cross(right).normalize();
                         ori = Quat.Quat(right, up, back);
                     }
                 }
-		println("rotation");
                 updateCamera(ori);
             } else if (doZoom) {
                 // Zoom functionality
                 // FIXME: implement this in terms of mouse wheel
-                var ori = getCameraOrientation();
-                var diff = dollySpeed * (-1.0 * dragY - dragX) / 100.0;
+                const ori = getCameraOrientation();
+                const diff = dollySpeed * (-1.0 * dragY - dragX) / 100.0;
                 var newCenterDistance = centerDistance + diff;
                 if (newCenterDistance < minCenterDistance) {
                     newCenterDistance = minCenterDistance;
                 }
                 centerDistance = newCenterDistance;
-                println("doZoom {centerDistance}");
                 updateCameraPosition(ori);
             } else if (doTranslation) {
                 // Translate functionality
@@ -175,49 +175,39 @@ public abstract class ExaminerViewer extends MouseInputHandler {
                 // Rotate this by camera's orientation
                 var ori = getCameraOrientation();
                 var worldDiff = ori * localDiff;
-                //println("doTranslation {worldDiff}");
                 // Add on to focal point
                 focalPoint = focalPoint + worldDiff;
-		println("translation");
                 updateCameraPosition(ori);
-            } else {
-		println("no action");
-	    }
+            }
             return true;
         }
         return false;
     }
 
-    public function focusCamera(object:Node):Void {
+    public function focusCamera from (object is Node) to () {
         viewAll(object);
     }
 
-    public function focusCamera(scene:Scene):Void {
+    public function focusCamera from (scene is Scene) to () {
         focusCamera(scene.root);
     }
 
-    public function focusCamera(bounds:Bounds):Void {
+    public function focusCamera from (bounds is Bounds) to () {
         viewAll(bounds, bounds.center, bounds.extent.length());
     }
 
-    package function viewAll(object:Node):Void {
-        var bounds = object.worldBounds;
+    package function viewAll from (object is Node) to () {
+        const bounds = object.worldBounds;
         if (bounds == null) { return }
-        var newPos = getCameraViewAllPosition(bounds);
+        const newPos = getCameraViewAllPosition(bounds);
         if (newPos == null) { return }
         viewAll(bounds, newPos, (newPos - bounds.center).length());
     }
 
-    package function viewAll(bounds:Bounds, newPos: Point3, centerDistance:Number) : Void {
-
-        //        println("view all bounds={bounds}");
-
+    package function viewAll from (bounds is Bounds, newPos is Point3, centerDistance is Number) to () {
         if (bounds.extent.length() == 0) {
             return;
         }
-
-        //println("newPos={newPos}");
-
         if (newPos == null) {
             // Assume this camera doesn't know how to deal with view all requests
             doViewAll = false;
@@ -230,17 +220,13 @@ public abstract class ExaminerViewer extends MouseInputHandler {
         var halfDepth = bounds.extent.z;
         var radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
         
-        // println("bounds radius = {radius}");
         updatesDisabled = true;
         // The camera moves to the new position
         setCameraPosition(newPos);
         // The focal point becomes the center of the sphere
-        println("camera moved to {newPos}");
         focalPoint = bounds.center;
-         println("new focal point {focalPoint}");
         // The center distance becomes the distance between the two
         this.centerDistance = (focalPoint - newPos).length();
-        println("new center distance {centerDistance}");
         // Potentially update the near and far clipping planes
         if (getCameraNearDistance() > centerDistance - radius) {
             setCameraNearDistance(centerDistance - radius);
@@ -270,27 +256,26 @@ public abstract class ExaminerViewer extends MouseInputHandler {
         doViewAll = false;
     }
 
-    function updateCamera(ori: Quat) {
+    function updateCamera from (ori is Quat) to () {
         setCameraOrientation(ori);
         updateCameraPosition(ori);
         // Now we need to set the orientation in the camera
     }
 
-    function updateCameraPosition(ori: Quat) {
+    function updateCameraPosition from (ori is  Quat) to () {
         // Assume we aren't updating the camera's orientation
         // Move camera back from focal point
 	try {
 	    var tmp = Vec3.Z_AXIS;
 	    tmp *= centerDistance;
 	    tmp = ori * tmp;
-	    println("setting pos {focalPoint + tmp}");
 	    setCameraPosition(focalPoint + tmp);
 	} catch (e is java.lang.Throwable) {
 	    e.printStackTrace();
 	}
     }
 
-    public function updateFocalPoint() {
+    public function updateFocalPoint to () {
         // Compute the focal point based on the camera's current position
         var pos = getCameraPosition();
         var ori = getCameraOrientation();

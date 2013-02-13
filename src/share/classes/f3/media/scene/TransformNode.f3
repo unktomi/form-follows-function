@@ -48,7 +48,7 @@ public class TransformNode is Group//, Transform
 	      pz is Number) 
 	to Mat4 
     {
-        println("{id} => t={tx},{ty},{tz} r={rx},{ry},{rz} s={sx},{sy},{sz} p={px},{py},{pz}");
+    //        println("{id} => t={tx},{ty},{tz} r={rx},{ry},{rz} s={sx},{sy},{sz} p={px},{py},{pz}");
         translate(tx+px, ty+py, tz+pz)*rotate(rx, ry, rz)*scale(sx, sy, sz)*translate(-px, -py, -pz);
     }
 }
