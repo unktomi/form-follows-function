@@ -2,12 +2,12 @@ package f3.media.scene;
 import java.nio.*;
 import java.util.*;
 
-public class TangentBinormal 
+public class ImportUtils
 {
 
     //from ardor3d
 
-    static public class Matrix3 {
+    public static class Matrix3 {
 	Vector3 columns[];
 	public Matrix3() {
 	    columns = new Vector3[3];
@@ -69,7 +69,7 @@ public class TangentBinormal
     
     // from ardor3d
     
-    static public class Vector3 {
+    public static class Vector3 {
 	float data[] = new float[3];
 	public Vector3() {}
 	public Vector3(float x, float y, float z) {
@@ -231,12 +231,12 @@ public class TangentBinormal
     
     // from o3d
 
-    public static void addStreams(IntBuffer ib,
-				  FloatBuffer vb,
-				  FloatBuffer tb,
-				  FloatBuffer nb,
-				  FloatBuffer tanb,
-				  FloatBuffer binb) 
+    public static void addTangentBinormalStreams(IntBuffer ib,
+						 FloatBuffer vb,
+						 FloatBuffer tb,
+						 FloatBuffer nb,
+						 FloatBuffer tanb,
+						 FloatBuffer binb) 
     {
         // Generates a key for the tangentFrames map from a position and normal
         // vector. Rounds position and normal to allow some tolerance.
@@ -386,5 +386,112 @@ public class TangentBinormal
         result += "]]";
         return result;
     }             
-        
+
+
+    public static class MeshData {
+	IntBuffer indexBuffer;
+	FloatBufferData vertexCoords = new FloatBufferData(null, 3);
+	List<FloatBufferData> textureCoords = new ArrayList();
+	FloatBufferData normalCoords;
+	FloatBufferData tangentCoords;
+	FloatBufferData binormalCoords;
+	public void setIndexBuffer(IntBuffer buf) {
+	    indexBuffer = buf;
+	}
+	public IntBuffer getIndexBuffer() {
+	    return indexBuffer;
+	}
+	public void setVertexCoords(FloatBufferData buf) {
+	    vertexCoords = buf;
+	}
+	public FloatBufferData getVertexCoords() {
+	    return vertexCoords;
+	}
+	public FloatBuffer getVertexBuffer() {
+	    return vertexCoords.getBuffer();
+	}
+	public void setVertexBuffer(FloatBuffer buffer) {
+	    setVertexCoords(new FloatBufferData(buffer, 3));
+	}
+	public void setTextureCoords(FloatBufferData coords, int i) {
+	    while (textureCoords.size() <= i) {
+		textureCoords.add(null);
+	    }
+	    textureCoords.set(i, coords);
+	}
+	public FloatBufferData getTextureCoords(int i) {
+	    if (i >= textureCoords.size()) {
+		return null;
+	    }
+	    return textureCoords.get(i);
+	}
+	public List<FloatBufferData> getTextureCoords() {
+	    return textureCoords;
+	}
+	public FloatBuffer getTextureBuffer(int i) {
+	    FloatBufferData coords = getTextureCoords(i);
+	    if (coords == null) {
+		return null;
+	    }
+	    return coords.getBuffer();
+	}
+	public void setTextureBuffer(FloatBuffer buffer, int i) {
+	    setTextureCoords(new FloatBufferData(buffer, 2), i);
+	}
+	public void setNormalCoords(FloatBufferData coords) {
+	    normalCoords = coords;
+	}
+	public FloatBuffer getNormalBuffer() {
+	    return normalCoords.getBuffer();
+	}
+	public void setNormalBuffer(FloatBuffer buffer) {
+	    setNormalCoords(new FloatBufferData(buffer, 3));
+	}
+	public FloatBufferData getNormalCoords() {
+	    return normalCoords;
+	}
+	public void setTangentCoords(FloatBufferData coords) {
+	    tangentCoords = coords;
+	}
+	public FloatBuffer getTangentBuffer() {
+	    if (tangentCoords == null) return null;
+	    return tangentCoords.getBuffer();
+	}
+	public void setTangentBuffer(FloatBuffer buffer) {
+	    setTangentCoords(new FloatBufferData(buffer, 3));
+	}
+	public FloatBufferData getTangentCoords() {
+	    return tangentCoords;
+	}
+	public void setBinormalCoords(FloatBufferData coords) {
+	    binormalCoords = coords;
+	}
+	public FloatBuffer getBinormalBuffer() {
+	    if (binormalCoords == null) return null;
+	    return binormalCoords.getBuffer();
+	}
+	public void setBinormalBuffer(FloatBuffer buffer) {
+	    setBinormalCoords(new FloatBufferData(buffer, 3));
+	}
+	public FloatBufferData getBinormalCoords() {
+	    return binormalCoords;
+	}
+    }
+
+    public static class FloatBufferData {
+	FloatBuffer buffer;
+	int valuesPerTuple;
+	public FloatBufferData(FloatBuffer buf, int valuesPerTuple) {
+	    this.buffer = buf;
+	    this.valuesPerTuple = valuesPerTuple;
+	}
+	public FloatBuffer getBuffer() {return buffer;}
+	public int getCoordsPerVertex() {return valuesPerTuple;}
+	public void setBuffer(FloatBuffer buf) {
+	    buffer = buf;
+	}
+	public int getCount() {
+	    return buffer.limit() / valuesPerTuple;
+	}
+    }
 }

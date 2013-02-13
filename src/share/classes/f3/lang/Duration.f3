@@ -162,7 +162,7 @@ public class Duration extends Comparable of Duration {
      *
      * @profile common
      */ 
-    public function mul(n:Number):Duration {
+    public function mul(n is Double):Duration {
         return valueOf(millis * n);
     }
 

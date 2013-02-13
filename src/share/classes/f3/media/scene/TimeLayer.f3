@@ -1,0 +1,106 @@
+package f3.media.scene;
+
+/**
+ * Provides a layer for a set of clips, only one of which is playing at any given time.
+ * As a clip is played in the layer, it fades in, and any playing clips fade out.
+ */
+
+class Blender {
+    const start is Duration;
+    const end is Duration;
+    const target is TimeNode;
+    var w is Number;
+    function update from (now is Duration) to () {
+        var t = (now - start) / (end - start);
+        if (t > 1) t = 1;
+        w = 1.0 - t;
+    }
+}
+
+public class TimeLayer is TimeGroup, Player 
+{
+
+    public var fadeDuration is Duration = 0.3s;
+
+    var blendIn is TimeNode = null;
+    var blendOut is Blender[];
+    var blendStart is Duration = 0s;
+    var blendEnd is Duration = 0s;
+
+    var clips is TimeNode[] on replace deleted[i..j] = inserted {
+        for (n in inserted) {
+            n.blendWeight = 0.0;
+        }
+        for (clip in deleted[i..j]) {
+            if (blendIn == clip) {
+                blendIn == null;
+                blendOut = [];
+            }
+        }
+    }
+
+    override function update from (_ is Duration) to () {
+	update();
+    }
+
+    function update {
+        clips = content;
+        if (blendIn <> null and blendOut <> []) {
+            var t = 0.0;
+            if (currentTime >= blendStart) {
+                t = 1.0;
+                if (blendEnd > currentTime) {
+                    var dur = (blendEnd - blendStart);
+                    if (dur <> 0s) {
+                        t = (currentTime-blendStart)  / dur;
+                    } 
+                }
+            }
+            var totalWeight = 0.0;
+            for (b in blendOut) {
+                b.update(currentTime);
+                totalWeight += b.w;
+            }
+            var inv_t = 1.0 - t;
+            for (b in blendOut) {
+                b.target.blendWeight = inv_t * (b.w / totalWeight);
+            }
+            blendIn.blendWeight = t;
+            if (t == 1.0) {
+                blendOut = [];
+            }
+        }
+        if (blendIn == null) {
+            (blendIn = clips[0]).blendWeight = 1.0;
+            for (clip in clips[1..]) clip.blendWeight = 0.0;
+            blendOut = [];
+        } else if (blendOut == []) {
+            blendIn.blendWeight = 1.0;
+        }
+        if (blendOut == []) {
+            setContentBounds(blendIn.bounds);
+        }
+    }
+
+    override var contentBounds = null;
+
+    override function play from (clip is TimeNode) to () {
+        if (clip == blendIn) {
+            return;
+        }
+        var outgoing = blendIn;
+        blendIn = clip;
+        blendStart = currentTime;
+        blendEnd = blendStart + fadeDuration;
+        if (outgoing <> null) {
+            insert Blender {
+                target: outgoing;
+                start: blendStart;
+                end: blendEnd;
+            } into blendOut;
+        } else {
+            setContentBounds(blendIn.bounds);
+        }
+        update();
+    }
+}
