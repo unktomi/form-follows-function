@@ -8,8 +8,8 @@ public interface Stage
     public const depthBits is Integer = 32;
     public const stencilBits is Integer = 0;
 
-    public var width is Integer = 1024;
-    public var height is Integer = 512;
+    public var width is Integer = 640;
+    public var height is Integer = 480;
     public var content is Scene[];
     
     public function resize 

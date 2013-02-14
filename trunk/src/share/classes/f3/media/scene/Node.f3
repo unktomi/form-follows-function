@@ -15,7 +15,7 @@ public abstract class Node is Foldable of Node
     public readonly var worldVisible is Boolean =  
 	bind visible and parent.worldVisible;
 
-    readonly var parentWorldTransform is Mat4 = 
+    public readonly var parentWorldTransform is Mat4 = 
 	bind Mat4.<<1>> * parent.worldTransform;
     public readonly var transform is Mat4 = Mat4.<<1>>;
     public readonly var worldTransform is Mat4 = 
@@ -46,7 +46,7 @@ public abstract class Node is Foldable of Node
 	f(this, z)
     }
 
-    public function updateParent from () to () { }
+    public function updateParent from () to () {}
     protected function setParent from (n is Node) to () { parent = n }
 
 }

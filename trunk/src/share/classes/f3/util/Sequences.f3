@@ -1,1 +1,9 @@
 package f3.util;
+
+public function sort of a 
+    from (xs is (..a)[], 
+	  comparator is java.util.Comparator of a..) 
+    to (..a)[] 
+{
+    if (xs.size() <= 1) then xs else org.f3.runtime.sequence.Sequences.sort of a(xs, comparator);
+}      

@@ -1,18 +1,19 @@
 package f3.util;
 import org.f3.runtime.Monad;
 import org.f3.runtime.F3Value;
+import f3.lang.ConstRef;
 
 /**
  * Represents an optional value of type 'a'
  *
- * For the mathematically inclined:
+ * For the algebraically inclined:
  *    Optional of a = 1 + a
  *
  * An Optional 'a' is a Functor and a Monad which means you can use it in 
  * a 'foreach' loop.
  */    
 
-public abstract class Optional of a is Monad of (Optional, a), F3Value
+public abstract class Optional of a is Monad of (Optional, a), F3Value, ConstRef of a
 {
     abstract override function map of b 
 	from (f is function from a to b) 
@@ -22,7 +23,7 @@ public abstract class Optional of a is Monad of (Optional, a), F3Value
 	from (f is function from a to Optional of b) 
 	to Optional of b;
 
-    abstract public function extract to a;
+    abstract public function get to a;
 
     public function isAbsent from () to Boolean 
     {
@@ -42,16 +43,13 @@ public class Present of a is Optional of a
     override function isPresent from () to Boolean 
     { 
 	yes
-    }
+   }
 
     override function map of b 
 	from (f is function from a to b) 
 	to Optional of b 
     {
-	Present of b 
-	{
-	    x: f(x)
-	}
+	optionally(f(x))
     }
 
     override function flatmap of b 
@@ -61,7 +59,7 @@ public class Present of a is Optional of a
 	f(x)
     }
 
-    public override function extract to a 
+    public override function get to a 
     { 
 	x
     }
@@ -101,19 +99,19 @@ public class Absent of a is Optional of a
 	from (f is function from a to b) 
 	to Optional of b 
     {
-	Nothing as Optional of b
+	absent of b()
     }
 
     override public function flatmap of b 
 	from (f is function from a to Optional of b) 
 	to Optional of b 
     {
-	Nothing as Optional of b
+	absent of b()
     }
 
-    public override function extract to a
+    public override function get to a
     { 
-	throw new java.lang.RuntimeException("Absent");
+	null
     }
 
     override function toString to String 
@@ -125,7 +123,11 @@ public class Absent of a is Optional of a
     {
 	obj is Absent of a
     }
-							     
+}
+
+public function optionally of a from (x is a) to Optional of a
+{
+    if ((x as Object) == null) then absent of a() else present(x)
 }
 
 public function present of a 
@@ -138,14 +140,12 @@ public function present of a
     }
 }
 
-static def Nothing = Absent of null {};
-
 public function absent of a to Absent of a
 {
     Nothing as Absent of a;
 }
 
+static def Nothing = Absent of null {};
+
 public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Nothing);
-
-
 

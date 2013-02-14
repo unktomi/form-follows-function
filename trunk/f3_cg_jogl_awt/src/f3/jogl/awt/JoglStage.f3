@@ -1,0 +1,1530 @@
+package f3.jogl.awt;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import f3.util.Bits;
+import f3.media.scene.*;
+import f3.media.input.*;
+import java.awt.Frame;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.AffineTransform;
+import java.awt.BasicStroke;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.dnd.*;
+import java.awt.datatransfer.*;
+import java.awt.event.KeyEvent;
+import javax.media.opengl.GLProfile;
+import javax.media.opengl.GLContext;
+import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLEventListener;
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
+import javax.media.opengl.glu.GLU;
+import javax.media.opengl.glu.gl2.GLUgl2;
+import javax.media.opengl.awt.GLCanvas;
+import java.lang.Math;
+import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureData;
+import com.jogamp.opengl.util.texture.TextureIO;
+import java.lang.IllegalStateException;
+import java.nio.*;
+
+function pot from (n is Integer) to Integer 
+{
+    var result = 2;
+    while (result < n) {
+        result *= 2;
+    }
+    return result;
+}
+
+const NUM_SAMPLES = java.lang.Integer.getInteger("numSamples", 8);
+const SAMPLE_BUFFERS = NUM_SAMPLES != 0;
+const DEPTH_BITS = java.lang.Integer.getInteger("depthBits", 32);
+
+class DefaultPhongShader is CGFXShader 
+{
+    public var lightWorldPos is Point3 = Point3.<<0>>;
+    override function apply
+	from (mesh is AbstractMesh,
+	      worldTransform is Mat4,
+	      viewMatrix is Mat4,
+	      projectionMatrix is Mat4)
+	to ()
+    {
+        setParameter("lightWorldPos", lightWorldPos);
+        super.apply(mesh, worldTransform, viewMatrix, projectionMatrix);
+    }
+}
+
+class DefaultPhongShader4 is CGFXShader 
+{
+    public var lightWorldPos1 is Point3 = Point3.<<0>>;
+    public var lightWorldPos2 is Point3 = Point3.<<0>>;
+    public var lightWorldPos3 is Point3 = Point3.<<0>>;
+    public var lightWorldPos4 is Point3 = Point3.<<0>>;
+    public var lightMask is Tuple4 = Tuple4.<<1>>;
+    override function apply
+	from (mesh is AbstractMesh,
+	      worldTransform is Mat4,
+	      viewMatrix is Mat4,
+	      projectionMatrix is Mat4)
+	to ()
+    {
+        setParameter("lightWorldPos1", lightWorldPos1);
+        setParameter("lightWorldPos2", lightWorldPos2);
+        setParameter("lightWorldPos3", lightWorldPos3);
+        setParameter("lightWorldPos4", lightWorldPos4);
+        setParameter("lightMask", lightMask);
+        super.apply(mesh, worldTransform, viewMatrix, projectionMatrix);
+    }
+}
+
+class JoglCGEffectLoader is CGEffectLoader 
+{
+    override public function loadDefaultShader(diffuseTexture is AbstractTexture,
+                                               diffuse is Color,
+                                               ambient is Color,
+                                               emissive is Color,
+                                               specular is Color,
+                                               shininess is Number)
+	to Shader 
+    {
+        var shader is CGFXShader;
+        if (diffuseTexture == null) {
+            shader = DefaultPhongShader4 { 
+                url: "{__DIR__}phong4.cgfx";
+                technique: if (diffuse.opacity == 1) "Opaque" else "Transparent";
+                override function isTransparent():Boolean {
+                    return diffuse.opacity != 1;
+                }
+            }
+        } else {
+            shader = DefaultPhongShader4 { 
+                url: "{__DIR__}phong4-textured.cgfx"
+            }
+            println("loading shader with texture {diffuseTexture}");
+            shader.setParameter("texSampler0", diffuseTexture);
+        }
+        shader.setParameter("diffuse", diffuse);
+        shader.setParameter("emissive", emissive);
+        var ambientIntensity = 
+	    vector(ambient.red, ambient.green, ambient.blue, ambient.opacity);
+        const lightIntensity = Vec4.<<1>> - ambientIntensity;
+        shader.setParameter("ambientIntensity", ambientIntensity);
+        shader.setParameter("lightIntensity", lightIntensity);
+        shader.setParameter("specular", specular);
+        shader.setParameter("shininess", shininess);
+        shader.setParameter("colorMult", Vec4.<<1>>);
+        return shader;
+    }
+
+    override public function loadEffect
+	from (url is String,
+	      technique is String)
+	to Shader
+    {
+
+        var result = CGFXShader {
+            url: url;
+            technique: technique;
+        }
+        return result;
+    }
+}
+
+
+def ENABLE_VBOS = java.lang.Boolean.getBoolean("enable.vbos");
+
+class MeshVBO {
+    var gl is GL2;
+    var indexBuffer is Integer;
+    var vertexBuffer is Integer;
+    var normalBuffer is Integer;
+    var textureBuffers is Integer[];
+    override function finalize() {
+        org.f3.runtime.Entry.deferAction(java.lang.Runnable {
+                override function run() {
+                    var count = sizeof textureBuffers + 3;
+                    var ids = BufferUtils.createIntBuffer(count);
+                    ids.put(indexBuffer);
+                    ids.put(vertexBuffer);
+                    ids.put(normalBuffer);
+                    for (i in textureBuffers) {
+                        ids.put(i);
+                    }
+                    ids.flip();
+                    gl.glDeleteBuffers(ids.remaining(), ids);
+                }
+            });
+    }
+}
+
+var meshToVBO = new java.util.HashMap of (AbstractMesh, MeshVBO);
+
+function bufferData
+    from (gl is GL2, 
+	  buffer is java.nio.FloatBuffer)
+    to Integer 
+{
+    const ibuf = BufferUtils.createIntBuffer(1);
+    gl.glGenBuffers(1, ibuf);
+    const id = ibuf.get(0);
+    buffer.rewind();
+    gl.glBindBuffer(GL.GL_ARRAY_BUFFER, id);
+    gl.glBufferData(GL.GL_ARRAY_BUFFER, buffer.limit() * 4,  buffer, GL.GL_STATIC_DRAW);
+    gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+    return id;
+}
+
+function bufferData(gl:GL2, buffer:java.nio.IntBuffer):Integer {
+    var ibuf = BufferUtils.createIntBuffer(1);
+    gl.glGenBuffers(1, ibuf);
+    var id = ibuf.get(0);
+    buffer.rewind();
+    gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, id);
+    gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, buffer.limit() * 4,  buffer, GL.GL_STATIC_DRAW);
+    gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
+    return id;
+}
+
+function getVBO
+    from (gl is GL2, mesh is AbstractMesh)
+    to MeshVBO 
+{
+    if (not ENABLE_VBOS) {
+        return null;
+    }
+    var vb = meshToVBO.get(mesh) as MeshVBO;
+    if (vb == null) {
+        vb = MeshVBO {gl:gl};
+        meshToVBO.put(mesh, vb);
+        vb.indexBuffer = bufferData(gl, mesh.getIndexBuffer());
+        vb.vertexBuffer = bufferData(gl, mesh.getVertexBuffer());
+        vb.normalBuffer = bufferData(gl, mesh.getNormalBuffer());
+        vb.textureBuffers = foreach (i in [0..<mesh.getTextureBuffers().size()]) {
+            bufferData(gl, mesh.getTextureBuffers()[i]);
+        };
+    }
+    return vb;
+}
+
+var DEBUG_USE_DEFAULT_SHADER = 
+    java.lang.Boolean.getBoolean("debug.use.default.shader");
+
+const SHADER_DEBUG = java.lang.Boolean.getBoolean("debug.cgfx");
+
+function genTexture
+    from (gl is GL2, width is Integer, height is Integer)
+    to Texture 
+{
+    const ibuf = BufferUtils.createIntBuffer(1);
+    gl.glGenTextures(ibuf.limit(), ibuf); 
+    const id = ibuf.get(0);
+    const glp = GLProfile.get("GL2");
+    const tex = TextureIO.newTexture(id,
+				     GL.GL_TEXTURE_2D,
+				     width, height,
+				     width, height,
+				     false);
+    tex.updateImage(gl, new TextureData(glp, 
+                                        GL.GL_RGBA8, 
+                                        width, height, 
+                                        0,
+                                        GL2.GL_RGBA,
+                                        GL2.GL_UNSIGNED_BYTE,
+                                        false, 
+                                        false, 
+                                        true, 
+                                        null, 
+                                        null));
+    return tex;
+}
+
+
+
+class OffscreenSurface is JoglTexture 
+{
+    var sceneRenderer: SceneRenderer;
+    override var tex = bind genTexture(gl, pot_width, pot_height);
+    const _backgroundColor:Color;
+    var _width is Integer = bind (width+0.5) as Integer;
+    var _height is Integer = bind (height+0.5) as Integer;
+    var pot_width = bind pot(_width);
+    var pot_height = bind pot(_height);
+    const _samples:Integer = 0;
+    const _depthBits:Integer = 24;
+    const _stencilBits:Integer = 8;
+    var _fboID is Integer;
+    var _depthRBID is Integer;
+    var _msfboID is Integer;
+    var _msDepthID is Integer;
+    var _mscolorRBID is Integer;
+    var _msdepthRBID is Integer;
+    var lastTextureId is Integer;
+
+    function activate to () 
+    {
+        // Lazy init
+        if (_fboID == 0) {
+            var ibuf = BufferUtils.createIntBuffer(1);
+            gl.glGetIntegerv(gl.GL_MAX_SAMPLES, ibuf);
+            var maxSamples = ibuf.get(0);
+            var _samples = Math.min(this._samples, maxSamples);
+            println("samples={this._samples} max={maxSamples}");
+            var buffer = BufferUtils.createIntBuffer(1);
+            // Create our texture binding FBO
+            gl.glGenFramebuffers(1, buffer); // generate id
+            _fboID = buffer.get(0);
+            // Create a depth renderbuffer to use for RTT use
+            gl.glGenRenderbuffers(1, buffer); // generate id
+            _depthRBID = buffer.get(0);
+            gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, _depthRBID);
+            var format = GL2.GL_DEPTH_COMPONENT;
+            if (_depthBits == 24 and _stencilBits == 8) {
+                format = GL.GL_DEPTH24_STENCIL8;
+            } else if (_depthBits == 16) {
+                format = GL.GL_DEPTH_COMPONENT16;
+            } else if (_depthBits == 24) {
+                format = GL.GL_DEPTH_COMPONENT24;
+            } else if (_depthBits == 32) {
+                format = GL.GL_DEPTH_COMPONENT32;
+            }
+            gl.glRenderbufferStorage(GL.GL_RENDERBUFFER, format, pot_width, pot_height);
+            // unbind...
+            gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
+            checkFBOComplete(_fboID);  
+            // release
+            gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
+            // add multisample framebuffer + renderbuffers
+            if (_samples != 0) {
+                // create ms framebuffer object
+                gl.glGenFramebuffers(1, buffer);
+                _msfboID = buffer.get(0);
+                // create ms renderbuffers
+                gl.glGenRenderbuffers(1, buffer); // generate id
+                _mscolorRBID = buffer.get(0);
+                gl.glGenRenderbuffers(1, buffer); // generate id
+                _msdepthRBID = buffer.get(0);
+
+                // set up renderbuffer properties
+                gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, _mscolorRBID);
+                gl.glRenderbufferStorageMultisample(GL.GL_RENDERBUFFER, 
+                                                    _samples, GL.GL_RGBA, pot_width, pot_height);
+
+                gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, _msdepthRBID);
+                gl.glRenderbufferStorageMultisample(GL.GL_RENDERBUFFER, _samples, 
+                                                    GL.GL_DEPTH24_STENCIL8, pot_width, pot_height);
+
+                gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
+
+                gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, _msfboID);
+                gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0,
+                        GL.GL_RENDERBUFFER, _mscolorRBID);
+                gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT,
+                        GL.GL_RENDERBUFFER, _msdepthRBID);
+                // check for errors
+                checkFBOComplete(_msfboID);
+
+                // release
+                gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
+            }
+        }
+        bindFrameBuffer();
+     }
+
+    function bindFrameBuffer to ()
+    {
+         if (_samples > 0) {
+            gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _msfboID);
+        } else {
+            gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
+        }
+        gl.glViewport(0, 0, _width, _height);
+    }
+
+    function checkFBOComplete from (fboID is Integer) to ()
+    {
+        var status = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER);
+        if (status == GL.GL_FRAMEBUFFER_COMPLETE) {
+            
+        } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
+            throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT exception");
+        } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
+            throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT exception");
+        } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS) {
+            throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS exception");
+        } else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
+            throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER exception");
+        } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_FORMATS) {
+            throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_FORMATS exception");
+        } else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
+            throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER exception");
+        } else if (status == GL.GL_FRAMEBUFFER_UNSUPPORTED) {
+            throw new IllegalStateException("FrameBuffer {fboID} has caused a GL_FRAMEBUFFER_UNSUPPORTED exception");
+        } else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE) {
+            throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE exception.");
+        }
+    }
+
+    function blitMSFBO to () 
+    {
+        if (_samples > 0) {
+            gl.glBindFramebuffer(GL2.GL_READ_FRAMEBUFFER, _msfboID);
+            gl.glBindFramebuffer(GL2.GL_DRAW_FRAMEBUFFER, _fboID);
+            var bits is Integer = GL.GL_COLOR_BUFFER_BIT;
+            if (_depthBits > 0) {
+                bits = Bits.add(bits, GL.GL_DEPTH_BUFFER_BIT);
+            }
+            gl.glBlitFramebuffer(0, 0, _width, _height, 
+                                 0, 0, pot_width, pot_height, 
+                                 bits, GL.GL_LINEAR);
+
+            println("blitting framebuffer {_msfboID} {_fboID} {_width} {_height} {pot_width} {pot_height}");
+        }
+        if (false) {
+            tex.bind(gl);
+            gl.glGenerateMipmap(tex.getTarget());
+        }
+        gl.glBindFramebuffer(GL2.GL_READ_FRAMEBUFFER, 0);
+        gl.glBindFramebuffer(GL2.GL_DRAW_FRAMEBUFFER, 0);
+        gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
+    }
+
+    function cleanup to () 
+    {
+        if (_fboID != 0) {
+            const id = BufferUtils.createIntBuffer(1);
+            id.put(_fboID);
+            id.rewind();
+            gl.glDeleteFramebuffers(id.limit(), id);
+        }
+
+        if (_msdepthRBID != 0) {
+            const id = BufferUtils.createIntBuffer(1);
+            id.put(_depthRBID);
+            id.rewind();
+            gl.glDeleteRenderbuffers(id.limit(), id);
+        }
+    }
+
+    function setupForDraw to ()
+    {
+        const textureId = tex.getTextureObject(gl);
+        if (lastTextureId != 0 and lastTextureId != textureId) {
+            var ibuf = BufferUtils.createIntBuffer(1);
+            ibuf.clear();
+            ibuf.put(lastTextureId);
+            ibuf.rewind();
+            gl.glDeleteTextures(1, ibuf);
+        }
+        lastTextureId = textureId;
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
+        gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, 
+                                  GL.GL_COLOR_ATTACHMENT0, 
+                                  GL.GL_TEXTURE_2D, textureId, 0);
+        if (_depthBits > 0) {
+            gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
+                                         gl.GL_DEPTH_ATTACHMENT,
+                                         gl.GL_RENDERBUFFER,
+                                         _depthRBID);
+        }
+        gl.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0);
+        gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0);
+        if (_samples > 0) {
+            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, _msfboID);
+            gl.glFramebufferRenderbuffer(gl.GL_DRAW_FRAMEBUFFER,
+                                         gl.GL_COLOR_ATTACHMENT0,
+                                         gl.GL_RENDERBUFFER,
+                                         _mscolorRBID);
+            if (_depthBits > 0) {
+                gl.glFramebufferRenderbuffer(gl.GL_DRAW_FRAMEBUFFER,
+                                             gl.GL_DEPTH_ATTACHMENT,
+                                             gl.GL_RENDERBUFFER,
+                                             _msdepthRBID);
+                if (_stencilBits > 0) {
+                    gl.glFramebufferRenderbuffer(gl.GL_DRAW_FRAMEBUFFER,
+                                                 gl.GL_STENCIL_ATTACHMENT,
+                                                 gl.GL_RENDERBUFFER,
+                                                 _msdepthRBID);
+                }
+            }
+        } 
+        checkFBOComplete(_fboID);  
+    }
+
+    function renderScenes 
+	from (gl is GL2, scenes is Scene[])
+	to ()
+    {
+        push();
+        setupForDraw();
+        var dirty = false;
+        for (scene in scenes where scene.visible) {
+            if (sceneRenderer.renderScene(gl, scene, _width, _height, dirty)) {
+                dirty = true;
+            }
+        }
+        blitMSFBO();
+        pop();
+    }
+
+    function push to ()
+    {
+        activate()
+    }
+
+    function pop to () 
+    {
+        sceneRenderer.parent.activate();        
+    }
+
+}
+
+class JoglTexture is AbstractTexture {
+    const tex is Texture;
+    const gl is GL2;
+    const id is String;
+    public var width = bind tex.getWidth();
+    public var height = bind tex.getHeight();
+    override function getTextureId to Integer {
+        tex.getTextureObject(gl);
+    }
+    override function toString to String {
+        "Texture {id}";
+    }
+}
+
+class JoglImageLoader is ImageLoader {
+    const glp is GLProfile = GLProfile.get("GL2");
+    var gl is GL2;
+    var loaded = new java.util.HashMap of (String, java.lang.ref.WeakReference of Texture);
+
+    override public function loadImage from (url is String)
+	to AbstractTexture 
+    {
+        try {
+            var result = loadTexture2D0(url);
+	    println("LOAD IMAGE {url} => {result}");
+	    return result;
+        } catch (t:java.lang.Throwable) {
+            t.printStackTrace();
+        }
+        return null;
+    }
+    function loadTexture2D0
+	from (url is String)
+	to AbstractTexture 
+    {
+        //if (url.endsWith(".mp4") or url.endsWith(".mov") or url.endsWith(".wmv")) {
+        //    return Movie {url: url};
+	// }
+        var ref = loaded.get(url) as java.lang.ref.WeakReference;
+        var texture is Texture = ref.get() as Texture;
+        if (texture == null) {
+            if (true) {
+                var im is java.awt.Image;
+                var tWidth is Integer;
+                var tHeight is Integer;
+                var w is Integer;
+                var h is Integer;
+                if (url.endsWith(".png")) {
+                    var decoder = new PNGDecoder(new java.io.BufferedInputStream(new java.net.URL(url).openStream()));
+                    tWidth = decoder.getWidth();
+                    tHeight = decoder.getHeight();
+                    var buffer = BufferUtils.createByteBuffer(4*tWidth*tHeight);
+                    decoder.decode(buffer, tWidth*4, 
+                                   PNGDecoder.TextureFormat.RGBA);
+                    w = pot(tWidth);
+                    h = pot(tHeight);
+                    if (w != tWidth or h != tHeight) {
+                        var glu = new GLUgl2();
+                        var potBuffer = BufferUtils.createByteBuffer(4*w*h);
+                        buffer.rewind();
+                        glu.gluScaleImage(GL.GL_RGBA, tWidth, tHeight,
+                                          GL.GL_UNSIGNED_BYTE,
+                                          buffer, w, h, GL.GL_UNSIGNED_BYTE,
+                                          potBuffer);
+                        buffer = potBuffer;
+                    }
+                    buffer.rewind();
+                    texture = TextureIO.newTexture(new TextureData(glp,
+                                                                   GL.GL_RGBA8,
+                                                                   w, h,
+                                                                   0,
+                                                                   GL2.GL_RGBA,
+                                                                   GL2.GL_UNSIGNED_BYTE,
+                                                                   false,
+                                                                   false,
+                                                                   true,
+                                                                   buffer,
+                                                                   null));
+                } else {
+                    javax.imageio.ImageIO.setUseCache(false);
+                    im = javax.imageio.ImageIO.read(new java.net.URL(url));
+                    tWidth = im.getWidth(null);
+                    tHeight = im.getHeight(null);
+                    w = pot(tWidth);
+                    h = pot(tHeight);
+                    var tFlippedBufferedImage = 
+                        new java.awt.image.BufferedImage(w, h,
+                                                         java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                    var tG2D = tFlippedBufferedImage.createGraphics(); 
+                    tG2D.drawImage(im,
+                                   0, h, w, 0, 
+                                   0, 0, tWidth, tHeight,
+                                   null); 
+                    tG2D.dispose(); 
+                    texture = AWTTextureIO.newTexture(glp, tFlippedBufferedImage, true);
+                }
+                texture = TextureIO.newTexture(texture.getTextureObject(gl),
+                                               texture.getTarget(),
+                                               tWidth,
+                                               tHeight,
+                                               w,
+                                               h,
+                                               texture.getMustFlipVertically());
+            } else {
+                texture = TextureIO.newTexture(new java.net.URL(url), false, null);
+            }
+            println("loaded texture {url}");
+            loaded.put(url, new java.lang.ref.WeakReference of Texture(texture));
+        } else {
+            texture = TextureIO.newTexture(texture.getTextureObject(gl),
+                                           texture.getTarget(),
+                                           texture.getWidth(),
+                                           texture.getHeight(),
+                                           texture.getImageWidth(),
+                                           texture.getImageHeight(),
+                                           texture.getMustFlipVertically());
+        }
+        texture.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
+        texture.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
+        texture.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+        texture.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+        JoglTexture {
+            id: url;
+            gl: gl;
+            tex: texture;
+        }
+    }
+}
+
+class SceneRenderer {
+
+    public var parent is SceneRenderer;
+
+    var phongShader is Shader;
+    var transparentToDraw = new java.util.ArrayList of MeshNode;
+    var opaqueToDraw = new java.util.ArrayList of MeshNode;
+
+    var activate is function from () to ();
+
+    function renderStageNode 
+	from (gl is GL2, stageNode is StageNode)
+	to ()
+    {
+        var surface = stageNode.drawingSurface as OffscreenSurface;
+        if (surface == null) {
+            surface = OffscreenSurface {
+                gl: gl;
+                sceneRenderer: SceneRenderer {
+                }
+                override var width = bind stageNode.width;
+                override var height = bind stageNode.height;
+            }
+            surface.sceneRenderer.activate = surface.activate;
+            stageNode.drawingSurface = surface;
+        }
+        surface.sceneRenderer.parent = this;
+        surface.renderScenes(gl, stageNode.content);
+    }
+
+    var offscreenToRender = new java.util.HashSet of StageNode;
+    var lastDrawn = new java.util.HashSet of MeshNode;
+    var lightPositions: Point3[]; // hack
+    var lastCamera: Camera;
+
+    function renderScene(gl is GL2, scene:Scene, width:Number, height:Number, dirty0:Boolean):Boolean {
+
+        //if (scene.clip != []) {
+            // @todo render to stencil buffer
+        //}
+	//println("render scene");
+        opaqueToDraw.clear();
+        transparentToDraw.clear();
+        offscreenToRender.clear();
+        var opaqueTris = 0;
+        var transparentTris = 0;
+        var lights is PointLight[];
+        var dirty = dirty0;
+	//println("scene.root={scene.root} => {scene.content}");
+	scene.update();
+        scene.root.foldLeft((), function from (_ is (), n is Node) to () {
+		//		println("n={n} {n.id} p={n.parent} vis={n.worldVisible} wt={n.worldTransform}");
+		if (n.worldTransform == null) {
+		    println("no world transform: {n.id} => {n.worldTransform} parent={n.parent.id}");
+		    return;
+		}
+                if (n.worldVisible) {
+		    if (n is PointLight) {
+			insert (n as PointLight) into lights;
+		    }
+                    if (n is MeshNode) {
+                        if (scene.camera.contains(n.worldBounds)) {
+                            var mn = n as MeshNode;
+                            var shader = mn.shader;
+                            if (mn.shader != null) {
+                                for (p in (mn.shader as CGFXShader).parameters) {
+                                    var value = (p as CGFXShader.Parameter of Object).get();
+                                    if (value is StageNode) {
+                                        const stageNode = value as StageNode;
+                                        offscreenToRender.add(stageNode);
+                                    }
+                                }
+                            } 
+                            if (not dirty) {
+                                dirty = true; //mn.shader.isDirty() or mn.needsDraw;
+                            }
+                            var tris = mn.mesh.getIndexBuffer().limit() / 3;
+                            if (false) { //shader.isTransparent()) {
+                                transparentToDraw.add(mn);
+                                transparentTris += tris;
+                            } else {
+                                opaqueToDraw.add(mn);
+                                opaqueTris += tris;
+                            }
+                            lastDrawn.remove(n);
+                        } else {
+			    //  println("culled {n.id} {n.worldBounds}");
+                            if (lastDrawn.remove(n)) {
+                                dirty = true;
+                            }
+                        }
+                    }
+                }
+            });
+        for (i in offscreenToRender) {
+            renderStageNode(gl, i as StageNode);
+        }
+        offscreenToRender.clear();
+        scene.updateCamera();
+        var camera = scene.camera;
+        dirty = dirty or camera.needsDraw;
+        dirty = dirty or lastDrawn.size() != 0;
+        lastDrawn.clear();
+        lastDrawn.addAll(opaqueToDraw);
+        lastDrawn.addAll(transparentToDraw);
+        var positions is Point3[] = foreach (light in lights) light.location;
+        if (positions <> lightPositions) {
+            lightPositions = positions;
+            dirty = true;
+        }
+        if (scene.camera <> lastCamera) {
+            lastCamera = scene.camera;
+            dirty = true;
+        }
+	dirty = true;
+        if (not dirty) {
+            return false;
+        }
+	//println("gl ={gl}");
+        gl.glViewport(0, 0, width, height);
+	//println("scene={scene} bg={scene.background} {width} {height}");
+	//println("toDraw={opaqueToDraw}");
+        if (scene.background != null) {
+            var bg = scene.background;
+	    //  println("clearing {bg} {java.lang.Thread.currentThread()}");
+            gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
+            gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
+        } else {
+	    if (true) {
+		gl.glClearColor(1, 1, 1, 1);
+		gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
+	    } else {
+		gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
+	    }
+        }
+        if (true) {
+            if (true) {//not (camera instanceof Camera2D)) {
+                // sort opaque front to back      
+                java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
+                        override public function compare(x is MeshNode, y is MeshNode):Integer {
+                            var xz = camera.distanceTo(x.worldTransform.getTranslation());
+                            var yz = camera.distanceTo(y.worldTransform.getTranslation());
+                            var cmp = xz - yz;
+                            return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
+                        }
+                    });
+                //sort transparent back to front
+                java.util.Collections.sort(transparentToDraw, java.util.Comparator of MeshNode {
+                        override public function compare(x is MeshNode, y is MeshNode):Integer {
+                            var xz = camera.distanceTo(x.worldTransform.getTranslation());
+                            var yz = camera.distanceTo(y.worldTransform.getTranslation());
+                            var cmp = -(xz - yz);
+                            return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
+                        }
+                    });
+            }
+        }
+        /*
+        gl.glEnable(GL.GL_DEPTH_TEST);
+        gl.glDepthFunc(GL.GL_LESS);
+        gl.glDepthMask(true);
+        gl.glDisable(gl.GL_CULL_FACE);
+        gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
+        gl.glPolygonOffset(10, 10);
+        gl.glEnable(GL.GL_TEXTURE_2D);
+        */
+        onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
+        draw(gl, camera, opaqueToDraw, lightPositions);
+        opaqueToDraw.clear();
+        draw(gl, camera, transparentToDraw, lightPositions);
+        transparentToDraw.clear();
+        //camera.needsDraw = false;
+        return true;
+    }
+
+    function onDraw 
+	from (transparent is Integer, 
+	      transpTris is Integer, 
+	      opaque is Integer, 
+	      opaqueTris is Integer)
+	to ()
+    {
+    }
+
+    var polygonMode = PolygonMode.Fill;
+
+    function draw
+	from (gl is GL2,
+	      camera is Camera, 
+	      toDraw is java.util.List of MeshNode, 
+	      lights is Point3[])
+	to ()
+    {
+        var cameraLight = camera.worldTransform.getTranslation();
+        for (n in toDraw) {
+            var mn = n as MeshNode;
+            var mesh = mn.mesh;
+            var indexBuffer = mesh.getIndexBuffer();
+            var vertexBuffer = mesh.getVertexBuffer();
+            var normalBuffer = mesh.getNormalBuffer();
+            var shader = mn.shader;
+	    //println("shader={shader}");
+            var texParams = 
+		foreach (p in shader.getParameters() where p instanceof CGFXShader.SamplerParameter) p as CGFXShader.SamplerParameter;
+            if (DEBUG_USE_DEFAULT_SHADER or shader == null) {
+                if (phongShader == null) {
+                    phongShader = (the CGEffectLoader).loadDefaultShader(null,
+									 Color.GRAY,
+									 Color.BLACK,
+									 Color.BLACK,
+									 Color.GRAY,
+									 20);
+                }
+                shader = phongShader;
+            }
+            var vbo = getVBO(gl, mesh);
+            vertexBuffer.rewind();
+            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+            if (vbo != null) {
+                gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.vertexBuffer);
+                gl.glVertexPointer(mesh.vertices.getCoordsPerVertex(), 
+                                   GL.GL_FLOAT, 0, 0);
+            } else {
+                vertexBuffer.rewind();
+                gl.glVertexPointer(mesh.vertices.getCoordsPerVertex(), 
+                                   GL.GL_FLOAT, 0, vertexBuffer);
+            }
+            if (normalBuffer == null) {
+                gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+            } else {
+                gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+                if (vbo != null) {
+                    gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo.normalBuffer);
+                    gl.glNormalPointer(GL.GL_FLOAT, 0, 0);
+                } else {
+                    normalBuffer.rewind();
+                    gl.glNormalPointer(GL.GL_FLOAT, 0, normalBuffer);
+                }
+            }
+	    const texUnits = shader.uvMap.size();
+	    const coords = foreach (i in shader.uvMap) mesh.textureCoordinates[i];
+	    for (unit in [0..<texUnits]) {
+		var textureBuffer = mesh.getTextureBuffers()[shader.uvMap[unit]];
+		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
+		if (textureBuffer != null) {
+		    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		    if (vbo != null) {
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.textureBuffers[unit]);
+			gl.glTexCoordPointer(coords[unit].getCoordsPerVertex(), 
+					     GL.GL_FLOAT, 0, 0);
+		    } else {
+			textureBuffer.rewind();
+			gl.glTexCoordPointer(coords[unit].getCoordsPerVertex(), 
+					     GL.GL_FLOAT, 0, textureBuffer);
+		    }
+		} else {
+		    gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		}
+            }
+            //println("applying shader {shader}");
+	    if (texUnits > 0) {
+                gl.glEnable(GL.GL_TEXTURE_2D);
+            } else {
+                gl.glDisable(GL.GL_TEXTURE_2D);
+            }
+            var allLights = if lights == [] then [cameraLight] else lights;
+            const bnds = mn.worldBounds;
+            allLights = f3.util.Sequences.sort(allLights, java.util.Comparator of Point3 {
+                    override function compare from (x is Point3, y is Point3) to Integer {
+                        const p0 = x;
+                        const p1 = y;
+                        const d0 = (p0 - bnds.center).length();
+                        const d1 = (p1 - bnds.center).length();
+                        const cmp = d0 - d1;
+                        if (cmp < 0) then -1 else if (cmp > 0) 1 else 0;
+                    }
+                });
+            const closestLight = allLights[0];
+            try {
+                if (shader instanceof DefaultPhongShader) {
+                    (shader as DefaultPhongShader).lightWorldPos = closestLight;
+                } else if (shader instanceof DefaultPhongShader4) {
+                    var ds = shader as DefaultPhongShader4;
+		    ds.lightWorldPos1 = allLights[0];
+                    ds.lightWorldPos2 = allLights[1];
+                    ds.lightWorldPos3 = allLights[2];
+                    ds.lightWorldPos4 = allLights[3];
+                    ds.lightMask = tuple(1,
+					 if (sizeof allLights > 1) 1 else 0,
+					 if (sizeof allLights > 2) 1 else 0,
+					 if (sizeof allLights > 3) 1 else 0);
+                }
+		if (mn.worldTransform == null or camera.viewMatrix == null or camera.projectionMatrix == null) {
+		    println("bad transform {mn.id} or {camera.id}");
+		    continue;
+		}
+		///println("applying shader {shader} to {mn.id}");
+		shader.apply(mesh,
+                             mn.worldTransform,
+                             camera.viewMatrix,
+                             camera.projectionMatrix);
+            } catch (e is java.lang.Exception) {
+                e.printStackTrace();
+                (shader = phongShader).apply(mesh,
+                                             mn.worldTransform,
+                                             camera.viewMatrix,
+                                             camera.projectionMatrix);
+
+            }
+            if (mesh.polygonMode != polygonMode) {
+                polygonMode = mesh.polygonMode;
+                gl.glPolygonMode(GL.GL_FRONT_AND_BACK, if (mesh.polygonMode == PolygonMode.Line) GL2.GL_LINE else if (mesh.polygonMode == PolygonMode.Point) GL2.GL_POINT else GL2.GL_FILL);
+            }
+            const mode = if (mesh.indexMode == IndexMode.Lines) GL.GL_LINES else if (mesh.indexMode == IndexMode.Points) GL.GL_POINTS else GL.GL_TRIANGLES;
+            if (vbo != null) {
+                gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vbo.indexBuffer);
+                gl.glDrawElements(mode,
+                                  indexBuffer.limit(),
+                                  GL2.GL_UNSIGNED_INT,
+                                  0);
+            } else {
+                indexBuffer.rewind();
+                gl.glDrawElements(mode,
+                                  indexBuffer.limit(),
+                                  GL2.GL_UNSIGNED_INT,
+                                  indexBuffer);
+            }            
+	    for (unit in [0..<texUnits]) {
+		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
+		gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+            }
+            shader.reset();
+            //mn.needsDraw = false;
+            //shader.validate();
+        }
+    }
+}
+
+public class Listener extends GLEventListener, DropTargetListener {
+
+    var screenx is Number;
+    var screeny is Number;
+    //    var gl is GL2;
+    var stage is JoglStage;
+    var ctx is  GLContext;
+    function makeDropEvent
+	from (e is java.awt.dnd.DropTargetDropEvent) 
+	to DropEvent
+    {
+        var getData = function from () to String
+	    {
+		e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
+		var t = e.getTransferable();
+		var flavors = [DataFlavor.stringFlavor, DataFlavor.javaFileListFlavor];
+		var dataList: String[];
+		for (i in t.getTransferDataFlavors()) {
+		    for (j in flavors) {
+			if (j == i) {
+			    var td = t.getTransferData(j);
+			    if (td instanceof java.util.List) {
+				td = (td as java.util.List).get(0);
+			    }
+			    if (td instanceof java.io.File) {
+				td = (td as java.io.File).toURL().toString();
+			    }
+			    insert td.toString() into dataList;
+			}
+		    }
+		};
+		dataList[0];
+	    }
+        DropEvent {
+            url: bind getData();
+            override function reject to () {
+                e.rejectDrop();
+            }
+            override function accept to () {
+                e.dropComplete(true);
+            }
+        }
+    }
+    
+    function makeDragEvent
+	from (e is java.awt.dnd.DropTargetDragEvent) 
+	to DragEvent
+    {
+        DragEvent {
+            screenx: screenx;
+            screeny: screeny;
+            override function reject to () {
+                e.rejectDrag();
+            }
+            override function accept to () {
+                e.acceptDrag(e.getSourceActions());
+            }
+        }
+    }
+    
+    function makeDragEvent
+	from (e is java.awt.dnd.DropTargetEvent) 
+	to DragEvent
+    {
+        DragEvent {
+            screenx: screenx;
+            screeny: screeny;
+            override function reject to () {
+                // error
+            }
+            override function accept to () {
+                //error
+            }
+        }
+    }
+
+    function mouseMove
+	from (x is Number, y is Number, 
+	      controlDown is Boolean, 
+	      altDown is Boolean, 
+	      metaDown is Boolean, 
+	      shiftDown is Boolean)
+	to ()
+    {
+        stage.injectMouseMove(MouseEvent {
+                screenx: screenx = x;
+                screeny: screeny = y;
+                altKey: altDown;
+                ctrlKey: controlDown;
+                metaKey: metaDown;
+                shiftKey: shiftDown;
+            });
+    }
+
+    function mouseDown
+	from (button:Integer, 
+	      controlDown:Boolean, 
+	      altDown:Boolean, 
+	      metaDown:Boolean, 
+	      shiftDown:Boolean, 
+	      clickCount:Integer)
+	to ()
+    {
+        var e:MouseEvent;
+        stage.injectMouseDown(e=MouseEvent {
+                screenx: screenx;
+                screeny: screeny;
+                altKey: altDown;
+                ctrlKey: controlDown;
+                metaKey: metaDown;
+                buttons: button;
+                clickCount: clickCount;
+            });
+    }
+
+    function mouseUp(button:Integer, controlDown:Boolean, altDown:Boolean, metaDown:Boolean, shiftDown:Boolean):Void {
+        var e:MouseEvent;
+        stage.injectMouseUp(e=MouseEvent {
+                screenx: screenx;
+                screeny: screeny;
+                ctrlKey: controlDown;
+                altKey: altDown;
+                metaKey: metaDown;
+                buttons: button;
+            });
+    }
+
+    override function dragEnter(e:DropTargetDragEvent):Void {
+        try {
+            ctx.makeCurrent();
+            stage.injectDragEnter(makeDragEvent(e));
+        } finally {
+            ctx.release();
+        }
+    }
+
+    override function dragOver(e:DropTargetDragEvent):Void {
+        try {
+            ctx.makeCurrent();
+            stage.injectDragOver(makeDragEvent(e));
+        } finally {
+            ctx.release();
+        }
+    }
+
+    override function dragExit(e:DropTargetEvent):Void {
+        try {
+            ctx.makeCurrent();
+            stage.injectDragLeave(makeDragEvent(e));
+        } finally {
+            ctx.release();
+        }
+    }
+
+    override function dropActionChanged(e:DropTargetDragEvent):Void {
+    }
+
+    override function drop(e:DropTargetDropEvent):Void {
+        try {
+            ctx.makeCurrent();
+            stage.injectDrop(makeDropEvent(e));
+        } finally {
+            ctx.release();
+        }
+    }
+
+    function setup(gl:GL2, width:Integer, height:Integer):Void {
+        ctx = GLContext.getCurrent();
+        //Shape2D.PATH2D_FACTORY = JoglPath2DFactory {};
+        //Text.TEXT_FACTORY = JoglTextFactory {};
+        //CGEffectLoader.INSTANCE = JoglCGEffectLoader{};
+        //ImageLoader.INSTANCE = JoglImageLoader {gl:gl};
+	ImageLoader_INSTANCE.gl = gl; // hack
+        gl.setSwapInterval(1);
+	println("SETUP {width} {height}");
+	stage.resize(width, height);
+    }
+
+    var mouseX: Number;
+    var mouseY: Number;
+    var setTitle: function(str:String):Void;
+    var setCursor: function(cursor: Cursor):Void;
+    var mainSceneRenderer:SceneRenderer;
+
+    var opaque = 0;
+    var transp = 0;
+
+    var opaqueTris = 0;
+    var transpTris = 0;
+    var startTime: Long;
+
+    var stageTitle: String;
+
+    function render(gl:GL2, width:Integer, height:Integer):Void {
+        if (stageTitle != stage.title) {
+            setTitle(stageTitle = stage.title);
+        }
+
+        var now = java.lang.System.currentTimeMillis();
+        if (startTime == 0) startTime = now;
+        var currentTime = 1ms *(now - startTime);
+	MasterTimeline.setPlayhead(currentTime);
+        stage.flush();
+        //stage.updateStage(currentTime);
+        //stage.postupdateStage(currentTime);
+        setCursor(stage.currentCursor);
+        if (mainSceneRenderer == null and gl != null) {
+            mainSceneRenderer = SceneRenderer {
+                activate: function() {
+                    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+                }
+                override function onDraw(t:Integer, tt:Integer, o:Integer, ot:Integer) {
+                    opaque += o;
+                    transp += t;
+                    transp_tris += tt;
+                    opaque_tris += ot;
+                }
+            }
+        }
+
+        opaque = 0;
+        transp = 0;
+        transp_tris = 0;
+        opaque_tris = 0;
+        var dirty = false;
+        for (scene in stage.content) {
+	    scene.stage = stage;
+	}
+        for (scene in stage.content where scene.visible) {
+            if (mainSceneRenderer.renderScene(gl, scene, width, height, dirty)) {
+                dirty = true;
+            }
+        }
+        if (lastOpaque != opaque or lastTransp != transp) {
+            lastTransp = transp;
+            lastOpaque = opaque;
+            //setTitle("{title} opaque {opaque} ({opaque_tris}) transp {transp} ({transp_tris})");
+        }
+    }
+    var title: String;
+    var opaque_tris = 0;
+    var transp_tris = 0;
+    var lastTransp = 0;
+    var lastOpaque = 0;
+    override function dispose(drawable:GLAutoDrawable):Void {}
+    override function display(drawable:GLAutoDrawable):Void {
+        render(drawable.getGL().getGL2(), drawable.getWidth(), drawable.getHeight());
+    }
+    var animator:com.jogamp.opengl.util.Animator;
+    override function init(drawable:GLAutoDrawable):Void {
+        animator = new com.jogamp.opengl.util.Animator(drawable);
+        //animator.setRunAsFastAsPossible(true);
+        animator.start();
+    }
+    override function reshape(drawable:GLAutoDrawable, x:Integer, y:Integer, w:Integer, h:Integer):Void {
+        setup(drawable.getGL().getGL2(), w, h);
+    }
+}
+
+var keyMap = new java.util.TreeMap of (Integer, Integer);
+
+function map(inkey:Integer, outkey:Integer):Void {
+    keyMap.put(inkey, outkey);
+}
+
+function mapKeyCode(k:Integer):Integer {
+    var k0 = keyMap.get(k); 
+    println("keymap {k} => {k0}");
+    if (k0 == null) {
+        return 0;
+    }
+    return k0 as Integer;
+}
+
+function buildKeyMap() {
+    map(KeyEvent.VK_BACK_SPACE, Keys.Backspace);
+    map(KeyEvent.VK_SPACE, Keys.Spacebar);
+    map(KeyEvent.VK_TAB, Keys.Tab);
+    map(KeyEvent.VK_ENTER, Keys.Enter);
+    map(KeyEvent.VK_SHIFT, Keys.Shift);
+    map(KeyEvent.VK_CONTROL, Keys.Ctrl);
+    map(KeyEvent.VK_ALT, Keys.Alt);
+    map(KeyEvent.VK_PAUSE, Keys.PauseBreak);
+    map(KeyEvent.VK_CAPS_LOCK, Keys.CapsLock);
+    map(KeyEvent.VK_ESCAPE, Keys.Esc);
+    map(KeyEvent.VK_PAGE_UP, Keys.PageUp);
+    map(KeyEvent.VK_PAGE_DOWN, Keys.PageDown);
+    map(KeyEvent.VK_END, Keys.End);
+    map(KeyEvent.VK_HOME, Keys.Home);
+    map(KeyEvent.VK_LEFT, Keys.Left); 
+    map(KeyEvent.VK_UP, Keys.Up);
+    map(KeyEvent.VK_RIGHT, Keys.Right);
+    map(KeyEvent.VK_DOWN, Keys.Down);
+    map(KeyEvent.VK_INSERT, Keys.Insert);
+    //    map(KeyEvent.VK_DELETE, Keys.Delete);
+    map(KeyEvent.VK_DELETE, Keys.Backspace);
+    map(KeyEvent.VK_0, Keys._0);
+    map(KeyEvent.VK_1, Keys._1);
+    map(KeyEvent.VK_2, Keys._2);
+    map(KeyEvent.VK_3, Keys._3);
+    map(KeyEvent.VK_4, Keys._4);
+    map(KeyEvent.VK_5, Keys._5);
+    map(KeyEvent.VK_6, Keys._6);
+    map(KeyEvent.VK_7, Keys._7);
+    map(KeyEvent.VK_8, Keys._8);
+    map(KeyEvent.VK_9, Keys._9);
+    map(KeyEvent.VK_SEMICOLON, Keys.Semicolon);
+    map(KeyEvent.VK_EQUALS, Keys.Equals);
+    map(KeyEvent.VK_A, Keys.A);
+    map(KeyEvent.VK_B, Keys.B);
+    map(KeyEvent.VK_C, Keys.C);
+    map(KeyEvent.VK_D, Keys.D);
+    map(KeyEvent.VK_E, Keys.E);
+    map(KeyEvent.VK_F, Keys.F);
+    map(KeyEvent.VK_G, Keys.G);
+    map(KeyEvent.VK_H, Keys.H);
+    map(KeyEvent.VK_I, Keys.I);
+    map(KeyEvent.VK_J, Keys.J);
+    map(KeyEvent.VK_K, Keys.K);
+    map(KeyEvent.VK_L, Keys.L);
+    map(KeyEvent.VK_M, Keys.M);
+    map(KeyEvent.VK_N, Keys.N);
+    map(KeyEvent.VK_O, Keys.O);
+    map(KeyEvent.VK_P, Keys.P);
+    map(KeyEvent.VK_Q, Keys.Q);
+    map(KeyEvent.VK_R, Keys.R);
+    map(KeyEvent.VK_S, Keys.S);
+    map(KeyEvent.VK_T, Keys.T);
+    map(KeyEvent.VK_U, Keys.U);
+    map(KeyEvent.VK_V, Keys.V);
+    map(KeyEvent.VK_W, Keys.W);
+    map(KeyEvent.VK_X, Keys.X);
+    map(KeyEvent.VK_Y, Keys.Y);
+    map(KeyEvent.VK_Z, Keys.Z);
+    map(KeyEvent.VK_WINDOWS, Keys.Windows);
+    map(KeyEvent.VK_CONTEXT_MENU, Keys.RightClick);
+
+    map(KeyEvent.VK_F1, Keys.F1);
+    map(KeyEvent.VK_F2, Keys.F2);
+    map(KeyEvent.VK_F3, Keys.F3);
+    map(KeyEvent.VK_F4, Keys.F4);
+    map(KeyEvent.VK_F5, Keys.F5);
+    map(KeyEvent.VK_F6, Keys.F6);
+    map(KeyEvent.VK_F7, Keys.F7);
+    map(KeyEvent.VK_F8, Keys.F8);
+    map(KeyEvent.VK_F9, Keys.F9);
+    map(KeyEvent.VK_F10, Keys.F10);
+    map(KeyEvent.VK_F11, Keys.F11);
+    map(KeyEvent.VK_F12, Keys.F12);
+    
+    map(KeyEvent.VK_NUM_LOCK, Keys.NumLock);
+    map(KeyEvent.VK_SCROLL_LOCK, Keys.ScrollLock);
+}
+
+var lastKey: Integer;
+function makeKeyEvent(e:java.awt.event.KeyEvent):KeyboardEvent {
+    var keyCode = e.getKeyCode();
+    if (keyCode == 0) {
+        keyCode = lastKey;
+    }
+    lastKey = keyCode;
+    keyCode = mapKeyCode(keyCode);
+    var char = "{e.getKeyChar()}";
+    KeyboardEvent {
+        keyChar: char;
+        keyCode: keyCode;
+        altKey: e.isAltDown();
+        ctrlKey: e.isControlDown();
+        shiftKey: e.isShiftDown();
+        metaKey: e.isMetaDown();
+    }
+}
+
+public class JoglStage is Stage 
+{
+    var listener is  Listener;
+    public var title is String;
+    var todo is (function from () to ())[];
+
+    public function invoke from (fun is function from () to ()) to () {
+        insert fun into todo;
+    }
+
+    function flush {
+        var funs = todo;
+        todo = [];
+        for (fun in funs) fun();
+    }
+
+    postinit {
+        //        java.lang.Thread.sleep(java.lang.Integer.MAX_VALUE);
+	println("setup");
+	setup();
+	for (scene in content) {
+	    scene.stage = this;
+	}
+    }
+
+    //override var width: Integer = 640;
+    // override var height: Integer = 480;
+
+    function setup {
+        var glp = GLProfile.get("GL2");
+        var caps = new GLCapabilities(glp);
+        println("samples={SAMPLE_BUFFERS} numSamples={NUM_SAMPLES} depthBits={DEPTH_BITS}");
+        caps.setDepthBits(DEPTH_BITS);
+        caps.setSampleBuffers(SAMPLE_BUFFERS);
+        caps.setNumSamples(NUM_SAMPLES);
+        var canvas = new GLCanvas(caps);
+        var frame = new Frame();
+        frame.setSize(width, height);
+        frame.add(canvas);
+        frame.addWindowListener(java.awt.event.WindowAdapter {
+                override public function windowClosing(e:java.awt.event.WindowEvent) {
+                    java.lang.System.exit(0);
+                }
+            });
+	/*
+	Font.FONT_FACTORY = JoglFontFactory {};
+        TextLayout.newInstance = function() {
+            JoglTextLayout {};
+        }
+	*/
+        buildKeyMap();
+        listener = Listener { stage: this }
+        listener.setTitle = function(title:String) {
+            frame.setTitle(title);
+        }
+        listener.setCursor = function(cursor:Cursor) {
+            if (cursor.type == CursorType.POINTER) {
+                frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+            } else if (cursor.type == CursorType.HAND) {
+                frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+            } else if (cursor.type == CursorType.IBEAM) {
+                frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.TEXT_CURSOR));
+            } else {
+                frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+            }
+        }
+        //Shape2D.PATH2D_FACTORY = JoglPath2DFactory {};
+        //Text.TEXT_FACTORY = JoglTextFactory {};
+        canvas.addMouseListener(java.awt.event.MouseAdapter {
+                override function mousePressed(e:java.awt.event.MouseEvent):Void {
+                    listener.mouseDown(e.getButton(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown(), e.getClickCount());
+                }
+                override function mouseReleased(e:java.awt.event.MouseEvent):Void {
+                    listener.mouseUp(e.getButton(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
+                }
+            });
+        canvas.addMouseMotionListener(java.awt.event.MouseMotionAdapter {
+                override function mouseMoved(e:java.awt.event.MouseEvent):Void {
+                    listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
+                }
+                override function mouseDragged(e:java.awt.event.MouseEvent):Void {
+                    listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
+                }
+            });
+        canvas.addKeyListener(java.awt.event.KeyAdapter {
+                override function keyPressed(e:java.awt.event.KeyEvent):Void {
+                    injectKeyDown(makeKeyEvent(e));
+                }
+                override function keyReleased(e:java.awt.event.KeyEvent):Void {
+                    injectKeyUp(makeKeyEvent(e));
+                }
+                override function keyTyped(e:java.awt.event.KeyEvent):Void {
+                    injectKeyInput(makeKeyEvent(e));
+                }
+            });
+        canvas.addGLEventListener(listener);
+        new DropTarget(canvas, listener);
+        frame.setVisible(true);
+        canvas.requestFocus();
+        frame.requestFocus();
+    }
+}
+
+public static const CGEffectLoader_INSTANCE = JoglCGEffectLoader{};
+public static const ImageLoader_INSTANCE = JoglImageLoader {};
+
+var currentCamera is Camera on replace {
+    println("currentCamera=>{currentCamera}");
+}
+
+public function run from (args is String[]) to ()
+{
+    println("args={args}");
+    var playerUrl is String;
+    const model is Ma.Model = bind if (playerUrl == "") then null else Ma.Model {
+		effectLoader: the CGEffectLoader;
+		imageLoader: the ImageLoader;
+		url: playerUrl;
+	    };
+    const player = Timeline {
+	content: TimeLayer {
+	    content: bind model.getTemporalRoot();
+	    playCount: -1;
+	}
+    }
+    const camera = PerspectiveCamera {
+        id: "free";
+	ty: 3.0;
+	tz: 13.7;
+	near: .0001;
+	far: 1000;
+    }
+
+    const viewer = DefaultExaminerViewer {
+	camera: camera;
+    }
+
+    const doDrop = function from (url is String) to () {
+	stage.title = url;
+	if (url.endsWith(".ma")) {
+	    playerUrl = url;
+	} 
+	setCamera(0);
+	viewer.focusCamera(model.getSpatialRoot());
+    }
+    
+    currentCamera = camera;
+    const stage = JoglStage {
+	title: new java.io.File(args[0]).getName();
+	content: Scene {
+	    override var camera = bind currentCamera on invalidate {
+		println("scene camera invalidated {currentCamera}");
+	    }
+	    background: Color.BLACK;
+	    content: bind [model.getSpatialRoot()];
+	}
+    }
+
+    const setCamera = function from (i is Integer) to ()
+    {
+	if (i == 0) {
+	    currentCamera = camera;
+	} else {
+	    const cam = model.getCameras()[i-1];
+	    println("i={i}");
+	    println("cam={cam}");
+	    println("cameras={model.getCameras()}");
+	    if (cam <> null) {
+		currentCamera = cam;
+	    }
+	}
+    }
+    stage.addMouseInputHandler(viewer);
+    stage.addKeyboardInputHandler(KeyboardInputHandler {
+	    override function onKeyDown from (event is KeyboardEvent) to () {
+		if (event.propagate) {
+		    if (event.keyCode == Keys.F) {
+			viewer.focusCamera(stage.content[0]);
+		    } else if (event.keyCode >= Keys._0 and event.keyCode <= Keys._9) {
+			var index = event.keyCode - Keys._0;
+			setCamera(index);
+		    } else if (event.keyCode == Keys.D) {
+			DEBUG_USE_DEFAULT_SHADER = not DEBUG_USE_DEFAULT_SHADER;
+		    }
+		}
+	    }
+	});
+    stage.addDnDInputHandler(DnDInputHandler {
+	    override function onDrop from (event is DropEvent) to () {
+		var url = event.url;
+		event.accept();
+		try {
+		    const checkProtocol = new java.net.URL(url);
+		    doDrop(url);
+		} catch (exception is java.lang.Exception) {
+		    exception.printStackTrace();
+		}
+	    }
+	});
+
+}
+
+
+
+
