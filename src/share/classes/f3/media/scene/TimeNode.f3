@@ -11,28 +11,28 @@ public abstract class TimeNode is Foldable of TimeNode
     public var parent is TimeNode;
 
     public readonly var pickable is Boolean = true;
-    public readonly var worldPickable is Boolean = 
-	bind if parent == null then pickable else pickable and parent.worldPickable;
+    public readonly var scenePickable is Boolean = 
+	bind if parent == null then pickable else pickable and parent.scenePickable;
 
     public var playTime is Duration = 0s;
     public var playRate is Number = 1.0;
     public var playCount is Number = 1.0;
 
     public var blendWeight is Number = 1.0;
-    public readonly var worldBlendWeight is Number =
-	bind if parent == null then blendWeight else parent.worldBlendWeight * blendWeight;
+    public readonly var sceneBlendWeight is Number =
+	bind if parent == null then blendWeight else parent.sceneBlendWeight * blendWeight;
 
     public readonly var transform is TimeMat =
 	bind TimeMat { time: playTime, rate: playRate }
 
-    public readonly var worldTransform is TimeMat = 
-	bind if (parent == null) then transform else parent.worldTransform * transform;
+    public readonly var sceneTransform is TimeMat = 
+	bind if (parent == null) then transform else parent.sceneTransform * transform;
 
     public readonly var bounds is Interval = bind computeBounds(transform, loopedPlayRange);
     function computeBounds from (m is TimeMat, b is Interval) to Interval {
 	m * b;
     }
-    public readonly var worldBounds is Interval = bind parent.worldTransform * bounds;
+    public readonly var sceneBounds is Interval = bind parent.sceneTransform * bounds;
     public readonly var loopedPlayRange = 
 	bind if (contentPlayRange == null) then null else contentPlayRange * (if (playCount < 0) then Number.MAX_VALUE else playCount);
     public readonly var contentPlayRange is Interval = 
@@ -47,7 +47,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public var playRange is Interval;
 
     public var paused is Boolean;
-    public readonly var worldPaused is Boolean = bind paused or parent.worldPaused;
+    public readonly var scenePaused is Boolean = bind paused or parent.scenePaused;
 
     public readonly var currentTime is Duration; // "now" in parent space
     public readonly var localTime is Duration; // "now" in content space
@@ -76,13 +76,13 @@ public abstract class TimeNode is Foldable of TimeNode
     }
 
     protected function doPick
-	from (worldTime is Duration, 
+	from (sceneTime is Duration, 
 	      parentTime is Duration, 
 	      add is function from TimeNode to ())
 	to ()
     {
         var picked = false;
-        if (worldPickable) {
+        if (scenePickable) {
             picked = bounds.intersects(parentTime);
 	    //	    println("{id} bounds {bounds} parentTime {parentTime} => {picked}");
             if (picked) {
@@ -100,18 +100,18 @@ public abstract class TimeNode is Foldable of TimeNode
         localTime = Duration.valueOf(now);
 	//	println("{id} now={localTime} of {1ms*dur}");
 	const f = (if (picked) then add else null) as function from TimeNode to ();
-        pickChildren(worldTime, 
+        pickChildren(sceneTime, 
 		     localTime, 
 		     f);
     }
 
     protected function pickChildren
-	from (worldTime is Duration, 
+	from (sceneTime is Duration, 
 	      parentTime is Duration, 
 	      add is function from TimeNode to ())
 	to () {}
 
-    protected function update from (worldTime is Duration) to () {
+    protected function update from (sceneTime is Duration) to () {
     }
 
     protected function updateParent to () {

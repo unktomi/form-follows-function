@@ -25,9 +25,9 @@ public class Scene
     public readonly var root is Node = {
 	const scene = this;
 	Group {
-	    override var worldVisible = bind visible and scene.visible;
+	    override var sceneVisible = bind visible and scene.visible;
 	    override var id = bind "{scene.id}#root";
-	    override var parentWorldTransform = Mat4.<<1>>;
+	    override var parentSceneTransform = Mat4.<<1>>;
 	    content: bind [scene.content];
 	}
     }
@@ -54,7 +54,7 @@ public class Scene
                 picked.add(par);
                 insert Pick 
 		{
-                    worldPoint: p.worldPoint;
+                    scenePoint: p.scenePoint;
                     node: par;
                     t: p.t;
                     mesh: p.mesh;
@@ -82,12 +82,12 @@ public class Scene
 		      function from (_ is (), n is Node) to () 
 		      {
 			  if (n is MeshNode and 
-			      n.worldVisible and
-			      n.worldPickable and
-			      n.worldBounds.intersects(ray)) 
+			      n.sceneVisible and
+			      n.scenePickable and
+			      n.sceneBounds.intersects(ray)) 
 			      {
 				  const mesh = (n as MeshNode).mesh;
-				  const localRay = n.worldTransform.inverse() * ray;
+				  const localRay = n.sceneTransform.inverse() * ray;
 				  const points = mesh.intersect(localRay);
 				  const nearest is Tuple4;
 				  for (i in points) {
@@ -122,18 +122,22 @@ public class Scene
 				      insert Pick 
 				      {
 					  node: n;
-					  worldPoint: n.worldTransform * (Point3.<<0>>+point);
+					  scenePoint: n.sceneTransform * (Point3.<<0>> + point);
 					  t: pt.x;
 					  mesh: mesh;
 					  tri: tri;
 					  w: w;
 				      } into result;
 				  } else {
-				      println("no intersection {n} {n.worldBounds}");
+				      println("no intersection {n} {n.sceneBounds}");
 				  }
 			      }
 		      });
-	//sort(result);
+	result = f3.util.Sequences.sort(result, java.util.Comparator of Pick {
+		override function compare from (p0 is Pick , p1 is Pick) to Integer  {
+		    java.lang.Math.signum(p0.t - p1.t) as Integer;
+		}
+	});
 	return result;
     }
 
@@ -149,6 +153,7 @@ public class Scene
     }
 
     var lastCamera is Camera = null;
+
     public function updateCamera to () 
     {
 	if (camera.parent == null) {
@@ -157,7 +162,6 @@ public class Scene
 	camera.resize(width, height);
 	if (camera <> lastCamera) {
 	    lastCamera = camera;
-	    println("camera={camera} {camera.id}");
 	}
     }
 
@@ -166,13 +170,13 @@ public class Scene
         if (width == 0 or height == 0) {
             return;
         }
-        var oldMouseX = this.mouseX;
-        var oldMouseY = this.mouseY;
+        const oldMouseX = this.mouseX;
+        const oldMouseY = this.mouseY;
         this.mouseX = mouseX;
         this.mouseY = this.height-mouseY;
         updateCamera();
-        var nowUnderMouse = pick(mouseX, mouseY);
-        var mouseV = camera.toWorld(mouseX, mouseY, 0);
+        const nowUnderMouse = pick(mouseX, mouseY);
+        const mouseV = camera.toScene(mouseX, mouseY, 0);
         root.foldLeft((), function(_ is(), n is Node) to () {
 		/*
                 if (n instanceof MeshNode) {
@@ -222,7 +226,7 @@ public class Scene
 		}
 		*/
 	    });
-        var event = MouseEvent {
+        const event = MouseEvent {
             sceneLocation: mouseV;
             screenx: mouseX;
             screeny: mouseY;
@@ -231,15 +235,13 @@ public class Scene
         for (x in underMouse) oldUnderMouse.put(x.node, x);
         underMouse = nowUnderMouse;
         for (i in nowUnderMouse) {
-            var old = oldUnderMouse.remove(i.node) as Pick;
+            const old = oldUnderMouse.remove(i.node) as Pick;
             if (old == null) {
-                println("enter {i.node}");
                 doMouseEnter(i, event);
             }
         }
         for (x in oldUnderMouse.keySet()) {
             var pr = oldUnderMouse.get(x) as Pick;
-            println("leave {pr.node}");
             doMouseLeave(pr, event);
         }
         oldUnderMouse.clear();
@@ -251,30 +253,29 @@ public class Scene
         }
     }
 
-    public function injectKeyDown(event:KeyboardEvent):Void {
+    public function injectKeyDown from (event is KeyboardEvent) to () {
         focus.getKeyboardInputHandler().onKeyDown(event);
     }
 
-    public function injectKeyUp(event:KeyboardEvent):Void {
+    public function injectKeyUp from (event is KeyboardEvent) to () {
         focus.getKeyboardInputHandler().onKeyUp(event);
     }
 
-    public function injectKeyInput(event:KeyboardEvent):Void {
-        println("focus={focus}");
+    public function injectKeyInput from (event is KeyboardEvent) to () {
         focus.getKeyboardInputHandler().onKeyInput(event);
     }
 
-    public function injectMouseMove(event:MouseEvent):Void {
+    public function injectMouseMove from (event is MouseEvent) to () {
         updateMouse(event.screenx, event.screeny);
     }
 
-    public function injectMouseDown(event:MouseEvent):Void {
+    public function injectMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
         var focusSet = false;
         for (p in underMouse) {
             println("n={p.node}");
             if (not focusSet and (p.node instanceof Focusable)) {
-                var f = p.node as Focusable;
+                const f = p.node as Focusable;
                 if (f == focus or f.acceptFocus()) {
                     if (f != focus) {
                         focus.loseFocus();
@@ -321,11 +322,11 @@ public class Scene
 	null
     }
 
-    function doMouseEnter(p:Pick, worldEvent:MouseEvent):Void {
+    function doMouseEnter(p:Pick, sceneEvent:MouseEvent):Void {
         p.node.setContainsPointer(true);
         var hs = getMouseInputHandlers(p);
         if (hs != []) {
-            var e = makeMouseEvent(null, p, worldEvent);
+            var e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseEnter(e);
                 if (not e.propagate) {
@@ -335,11 +336,11 @@ public class Scene
         }
     }
 
-    function doMouseLeave(p:Pick, worldEvent:MouseEvent):Void {
+    function doMouseLeave(p:Pick, sceneEvent:MouseEvent):Void {
         p.node.setContainsPointer(false);
         var hs = getMouseInputHandlers(p);
         if (hs != []) {
-            var e = makeMouseEvent(null, p, worldEvent);
+            var e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseLeave(e);
                 if (not e.propagate) {
@@ -348,11 +349,11 @@ public class Scene
             }
         }
     }
-    function doMouseUp(p:Pick, worldEvent:MouseEvent):Void {
+    function doMouseUp(p:Pick, sceneEvent:MouseEvent):Void {
         var hs = getMouseInputHandlers(p);
         if (hs != []) {
-            worldEvent.stopPropagation();
-            var e = makeMouseEvent(null, p, worldEvent);
+            sceneEvent.stopPropagation();
+            var e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseUp(e);
                 if (not e.propagate) {
@@ -361,11 +362,11 @@ public class Scene
             }
         }
     }
-    function doMouseDown(p:Pick, worldEvent:MouseEvent):Void {
+    function doMouseDown(p:Pick, sceneEvent:MouseEvent):Void {
         var hs = getMouseInputHandlers(p);
         if (hs != []) {
-            worldEvent.stopPropagation();
-            var e = makeMouseEvent(null, p, worldEvent);
+            sceneEvent.stopPropagation();
+            var e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseDown(e);
                 if (not e.propagate) {
@@ -384,13 +385,13 @@ public class Scene
         return null;
     }
 
-    function doMouseMove(p:Pick, worldEvent:MouseEvent):Void {
+    function doMouseMove(p:Pick, sceneEvent:MouseEvent):Void {
         var hs = getMouseInputHandlers(p);
         if (hs != []) {
-            worldEvent.stopPropagation();
-            var e = makeMouseEvent(null, p, worldEvent);
+            sceneEvent.stopPropagation();
+            var e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
-                h.onMouseMove(makeMouseEvent(null, p, worldEvent));
+                h.onMouseMove(makeMouseEvent(null, p, sceneEvent));
                 if (not e.propagate) {
                     break;
                 }
@@ -401,7 +402,7 @@ public class Scene
     function doMouseDrag(p:Pick, event:MouseEvent):Void {
         const hs = getMouseInputHandlers(p);
         if (hs <> []) {
-            const translation = p.node.worldTransform.getTranslation();
+            const translation = p.node.sceneTransform.getTranslation();
             const ray = camera.getPickRay(event.screenx, event.screeny);
 	    const normal = ray.direction.negate();
             const plane = Plane { 
@@ -419,10 +420,10 @@ public class Scene
 
 
     function makeMouseEvent
-	from (dragStart is Pick, p is Pick, worldEvent is MouseEvent) 
+	from (dragStart is Pick, p is Pick, sceneEvent is MouseEvent) 
 	to MouseEvent 
     {
-        const e = worldEvent;
+        const e = sceneEvent;
         MouseEvent {
             clickCount: e.clickCount;
             stage: e.stage;

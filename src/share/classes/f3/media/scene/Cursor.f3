@@ -1,5 +1,18 @@
 package f3.media.scene;
 
 public class Cursor {
-     public const type is CursorType;
+    public const type is CursorType;
+    override function equals from (obj is Object) to Boolean {
+        obj instanceof Cursor and {
+            const cursor = obj as Cursor;
+            cursor.type == this.type;
+        }
+    }
 }
+
+
+public static const Default = Cursor {type: CursorType.POINTER};
+public static const Hand = Cursor {type: CursorType.HAND};
+public static const IBeam = Cursor {type: CursorType.IBEAM};
+
+

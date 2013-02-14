@@ -2,5 +2,5 @@ package f3.media.scene;
 import f3.math.Point3;
 
 public class PointLight is Node {
-    public readonly var location is Point3 = bind worldTransform.getTranslation();
+    public readonly var location is Point3 = bind sceneTransform.getTranslation();
 }

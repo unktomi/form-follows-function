@@ -14,7 +14,7 @@ public abstract class Shader {
     public const id is String;
     public var uvMap is Integer[] = [];
     abstract public function apply from (mesh is AbstractMesh,
-    					 worldTransform is Mat4,
+    					 sceneTransform is Mat4,
 					 viewMatrix is Mat4,
 					 projectionMatrix is Mat4) to ();
     abstract public function reset to ();

@@ -11,12 +11,12 @@ public class Timeline
     }
 
     function interpolateChannels from (channels is (Channel of (?))[],
-				       worldTime is Duration) to () 
+				       sceneTime is Duration) to () 
     {
 
 	const map is java.util.Map of (Ref of Object, (Channel of Object)[]) = 
 	    new java.util.HashMap of (Ref of Object, (Channel of Object)[])();
-	for (ch in channels where ch.worldBlendWeight > 0.0) 
+	for (ch in channels where ch.sceneBlendWeight > 0.0) 
 	{
 	    for (target0 in ch.targets) {
 		const target = target0 as Ref of Object;
@@ -29,13 +29,13 @@ public class Timeline
 	    const chs = ent.getValue();
 	    var weight = 0.0;
 	    for (ch in chs) {
-		weight += ch.worldBlendWeight;
+		weight += ch.sceneBlendWeight;
 	    }
 	    var r;
 	    var first = true;
 	    for (ch in chs) {
 		const w = ch.blendWeight / weight;
-		r = interpolateChannel(ch, worldTime, r, w);
+		r = interpolateChannel(ch, sceneTime, r, w);
 
 	    }
 	    target.set(r);
@@ -44,12 +44,12 @@ public class Timeline
 
     function interpolateChannel
 	from (ch is Channel of Object, 
-	      worldTime is Duration,
+	      sceneTime is Duration,
 	      r is Object, 
 	      weight is Number) 
 	to Object 
     {
-	ch.interpolate(worldTime, weight, r);
+	ch.interpolate(sceneTime, weight, r);
     }
 
     public var paused is Boolean = false;
@@ -59,26 +59,26 @@ public class Timeline
 	const timeline = this;
 	TimeGroup { 
 	    content: bind content; 
-	    override var worldTransform = TimeMat.<<1>>;
-	    override var worldPaused = bind timeline.paused;
+	    override var sceneTransform = TimeMat.<<1>>;
+	    override var scenePaused = bind timeline.paused;
 	}
     }
     public readonly var underPlayhead is TimeNode[];
 
     public function setPlayhead
-	from (worldTime is Duration) 
+	from (sceneTime is Duration) 
 	to () 
     {
-	playhead = worldTime;
+	playhead = sceneTime;
 	root.updateParent();
-        underPlayhead = pick(worldTime);
+        underPlayhead = pick(sceneTime);
 	if (not paused) {
 	    const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
-	    interpolateChannels(chs, worldTime);
+	    interpolateChannels(chs, sceneTime);
 	}
         root.visit(function from (n is TimeNode) to () 
 		   { 
-		       n.update(worldTime);
+		       n.update(sceneTime);
 		   });
     }
 

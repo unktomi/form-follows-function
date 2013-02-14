@@ -8,7 +8,7 @@ public class Pick
     public const w is Tuple3;
     public const mesh is AbstractMesh;
     public const tri is Integer;
-    public const worldPoint is Point3;
+    public const scenePoint is Point3;
     public var dragPoint0 is Point3;
     public var dragPoint1 is Point3;
 }

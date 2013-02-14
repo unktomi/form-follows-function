@@ -36,13 +36,11 @@ public class Group is Node
     var bnds9 = bind mergeBounds(content[900..], null);
 
     override function updateParent {
-	if (true or contentInvalid) {
-	    contentInvalid = false;
-	    for (x in content) {
-		x.setParent(this);
-		x.updateParent();
-	    }
+	for (x in content) {
+	    x.setParent(this);
+	    x.updateParent();
 	}
+	update();
     }
 
     bound function mergeBounds

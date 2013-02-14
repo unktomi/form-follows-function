@@ -10,27 +10,28 @@ public abstract class Node is Foldable of Node
 	"{super.toString()} {id}"
     }
     public var id is String;
+    public var cursor is Cursor = Cursor.Default;
     public readonly var parent is Node;
     public var visible is Boolean = true;
-    public readonly var worldVisible is Boolean =  
-	bind visible and parent.worldVisible;
+    public readonly var sceneVisible is Boolean =  
+	bind visible and parent.sceneVisible;
 
-    public readonly var parentWorldTransform is Mat4 = 
-	bind Mat4.<<1>> * parent.worldTransform;
+    public readonly var parentSceneTransform is Mat4 = 
+	bind if parent == null then Mat4.<<1>> else parent.sceneTransform;
     public readonly var transform is Mat4 = Mat4.<<1>>;
-    public readonly var worldTransform is Mat4 = 
-	bind parentWorldTransform * transform;
+    public readonly var sceneTransform is Mat4 = 
+	bind parentSceneTransform * transform;
 
     public readonly var bounds is Bounds = bind transform * contentBounds;
-    public readonly var worldBounds is Bounds = bind parentWorldTransform * bounds;
+    public readonly var sceneBounds is Bounds = bind parentSceneTransform * bounds;
     public readonly var contentBounds is Bounds;
 
     public readonly var blocksPointer is Boolean = false;
     public readonly var containsPointer is Boolean;
     protected function setContainsPointer from (value is Boolean) to () { containsPointer = value; }
     public readonly var pickable is Boolean = true;
-    public readonly var worldPickable is Boolean = 
-	bind pickable and parent.worldPickable;
+    public readonly var scenePickable is Boolean = 
+	bind pickable and parent.scenePickable;
 
     override public function foldLeft of b
 	from (z is b, f is function from (b, Node) to b) 
@@ -46,9 +47,9 @@ public abstract class Node is Foldable of Node
 	f(this, z)
     }
 
-    public function updateParent from () to () {}
+    public function updateParent from () to () { update() }
     protected function setParent from (n is Node) to () { parent = n }
-
+    public function update from () to () {}
 }
 
 
