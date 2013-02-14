@@ -1,15 +1,109 @@
-How to run (only macosx)
+This project is a work in progress - resurrecting the F3 programming language.
 
-svn checkout https://form-follows-function.googlecode.com/svn/trunk/ form-follows-function
+Syntax - "plain english"-ish
 
-cd form-follows-function
+Lazy and reactive self-adjusting computation with mutation.
 
-ant
+Higher order functions. Higher order generics. Implicit values a la Scala.
 
-cd f3_cg_jogl_awt
+interface Functor of (class F of _) 
+{
+    abstract function map of (a, b)
+        from (xs is F of a,
+              f is function from a to b)
+        to F of b;
+}
+Monad Comprehensions
 
-ant
 
-./demo.sh
+// Lazy infinite streams                                                              
 
-Then drag & drop .ma (maya ascii) files on the window. 
+public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a) 
+{
+
+    public const now is a;
+    public const later is Stream of a;
+
+    // zip lifts a binary operator to one over Streams                                
+    public function zip of (b, c)
+        from (binOp is function from (a, b) to c,
+                  xs is Stream of b) 
+        to Stream of c
+    {
+        Stream of c
+        {
+            now: bind binOp(now, xs.now)
+            later: bind later.zip(binOp, xs.later)
+        }
+    }
+
+    // Functor.map lifts a unary operator to one over Streams                                 
+    override public function map of b
+       from (unaryOp is function from a to b) 
+       to Stream of b
+    {
+        Stream of b
+        {
+            now: bind unaryOp(this.now)
+            later: bind this.later.map(unaryOp)
+        }
+    }
+
+    // Monad.flatmap lifts a Stream constructor to a unary operator over Streams            
+    override public function flatmap of b
+        from (ctor is function from a to Stream of b) 
+        to Stream of b
+    {
+        const d = bound function from (x is a) to b { ctor(x).now }
+        var h = bind d(now);
+        var t = bind for (x in later) d(x);
+        Stream of b
+        {
+            now: bind h
+            later: bind t
+        }
+    }
+
+    // Comonad.coflatmap lifts a Stream deconstructor to a unary operator over Streams           
+    override function coflatmap of b
+        from (dtor is function from Stream of a to b) 
+        to Stream of b
+    {
+        Stream of b
+        {
+            now: bind dtor(this)
+            later: bind later.coflatmap(dtor)
+        }
+    }
+
+    // extract - this is the counit of the Stream Comonad
+    override public function extract from () to a { now }
+
+    public bound function followedBy
+         from (xs is Stream of a) 
+         to Stream of a
+    {
+        Stream of a
+        {
+            now: bind now
+            later: bind xs
+        }
+    }
+}
+
+
+// lifts a value to a Stream by repeating it indefinitely, i.e  x, x, x, ...          
+// (this is the unit of the Stream Monad)
+public function repeat of a
+     from (x is a) 
+     to Stream of a
+{
+    Stream of a
+    {
+        now: x
+        override var later = this
+    }
+}
+
+// creates an infinite stream of 3s
+var zs = bind foreach (x in repeat(1), y in repeat(2)) { x + y }
