@@ -174,9 +174,9 @@ public abstract class ExaminerViewer extends MouseInputHandler {
 				       0.0);
                 // Rotate this by camera's orientation
                 var ori = getCameraOrientation();
-                var worldDiff = ori * localDiff;
+                var sceneDiff = ori * localDiff;
                 // Add on to focal point
-                focalPoint = focalPoint + worldDiff;
+                focalPoint = focalPoint + sceneDiff;
                 updateCameraPosition(ori);
             }
             return true;
@@ -197,7 +197,7 @@ public abstract class ExaminerViewer extends MouseInputHandler {
     }
 
     package function viewAll from (object is Node) to () {
-        const bounds = object.worldBounds;
+        const bounds = object.sceneBounds;
         if (bounds == null) { return }
         const newPos = getCameraViewAllPosition(bounds);
         if (newPos == null) { return }

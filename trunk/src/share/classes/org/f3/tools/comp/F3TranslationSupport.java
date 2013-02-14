@@ -507,6 +507,9 @@ public abstract class F3TranslationSupport {
                     texp = makeAccessExpression(diagPos, t.tsym, true);
 		    //System.err.println("acc="+texp);
                 } else {
+		    if (isMixin) {
+			Thread.currentThread().dumpStack();
+		    }
                     if (t.isCompound()) {
                         t = types.supertype(t);
                     }
@@ -529,7 +532,7 @@ public abstract class F3TranslationSupport {
             }
             case TypeTags.WILDCARD: {
                 WildcardType wtype = (WildcardType) t;
-		JCExpression bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner01(diagPos, wtype.type, false, expandTypeCons);
+		JCExpression bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner01(diagPos, wtype.type, makeIntf, expandTypeCons);
 		//System.err.println("bound="+bound);
 		if (false) if (bound != null && wtype.type instanceof TypeVar) {
 		    TypeVar tv = (TypeVar)wtype.type;

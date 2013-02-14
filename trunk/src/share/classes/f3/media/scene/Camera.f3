@@ -62,7 +62,7 @@ public abstract class Camera is TransformNode
         needsDraw = true;
     }
     public readonly var projectionInverse is Mat4 = bind projectionMatrix.inverse();
-    public readonly var viewInverse is Mat4 = bind worldTransform;
+    public readonly var viewInverse is Mat4 = bind sceneTransform;
     public readonly var viewMatrix is Mat4 = bind viewInverse.inverse();
     public readonly var viewProjection is Mat4 = bind projectionMatrix * viewMatrix;
     public readonly var viewProjectionInverse is Mat4 = bind viewProjection.inverse();
@@ -79,7 +79,7 @@ public abstract class Camera is TransformNode
 
     public readonly var needsDraw is Boolean = true;
 
-    override var worldTransform on invalidate 
+    override var sceneTransform on invalidate 
     {
         needsDraw = true;
     }
@@ -147,22 +147,22 @@ public abstract class Camera is TransformNode
 	        0,  0,  zw, ww);
     }
 
-    public function toWorld
+    public function toScene
 	from (v is Point3) 
 	to Point3
     {
-        toWorld(v.x, v.y, v.z);
+        toScene(v.x, v.y, v.z);
     }
 
-    public function toWorld
+    public function toScene
 	from (screenx is Number, 
 	      screeny is Number) 
 	to Point3
     {
-        toWorld(screenx, screeny, 0);
+        toScene(screenx, screeny, 0);
     }
 
-    public function toWorld
+    public function toScene
 	from (screenx is Number, screeny is Number, z0 is Number) 
 	to Point3 
     {
@@ -178,17 +178,17 @@ public abstract class Camera is TransformNode
         var z = -z0 * 2;
         z -= 1;
         const projv = vector(x, y, z, 1.0);
-        var worldv = viewProjectionInverse * projv;
-        worldv /= worldv.w; // convert from homogeneous coords
-        const result = worldv.xyz();
+        var scenev = viewProjectionInverse * projv;
+        scenev /= scenev.w; // convert from homogeneous coords
+        const result = scenev.xyz();
         return point(result);
     }
 
     public function toScreen
-	from (worldBounds is Bounds) 
+	from (sceneBounds is Bounds) 
 	to Bounds 
     {
-        const cs = foreach (c in worldBounds.corners()) toScreen(c);
+        const cs = foreach (c in sceneBounds.corners()) toScreen(c);
         var minX = cs[0].x;
         var minY = cs[0].y;
         var maxX = minX;
@@ -204,11 +204,11 @@ public abstract class Camera is TransformNode
     }
 
     public function toScreen
-	from (worldLocation is Point3) 
+	from (sceneLocation is Point3) 
 	to Vec3 
     {
-        const worldv = vector(worldLocation, 1.0);
-        var projv = viewProjection * worldv;
+        const scenev = vector(sceneLocation, 1.0);
+        var projv = viewProjection * scenev;
         projv /= projv.w; // convert from homogeneous coords
         // map from range -1..1 to 0..1
         var x = (projv.x + 1)/2;
@@ -235,8 +235,8 @@ public abstract class Camera is TransformNode
         if (width == 0 or height == 0) {
             return null;
         }
-        const origin = toWorld(screenx, screeny, 1.0);
-        const dir = toWorld(screenx, screeny, -1.0) - origin;
+        const origin = toScene(screenx, screeny, 1.0);
+        const dir = toScene(screenx, screeny, -1.0) - origin;
 	if (dir.lengthSquared() == 0) then null else
         Ray3 {
             origin: origin;
@@ -244,14 +244,14 @@ public abstract class Camera is TransformNode
         }
     }
 
-    public readonly var worldDirection = bind worldTransform * Vec3.Z_AXIS;
+    public readonly var sceneDirection = bind sceneTransform * Vec3.Z_AXIS;
 
     public function distanceTo
-	from (worldPoint is Point3) 
+	from (scenePoint is Point3) 
 	to Number 
     {
-	const dir = worldDirection;
-        const pos = worldTransform.getTranslation() - worldPoint;
+	const dir = sceneDirection;
+        const pos = sceneTransform.getTranslation() - scenePoint;
         (dir * Math.abs(pos.dot(dir) / dir.dot(dir))).length();
     }
 }

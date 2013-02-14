@@ -69,13 +69,13 @@ Interval.merge(bnds12,
     }
 
     override function pickChildren
-	from (worldTime is Duration, 
+	from (sceneTime is Duration, 
 	      parentTime is Duration, 
 	      add is function from TimeNode to ())
 	to ()
     {
         for (n in content) {
-            n.doPick(worldTime, parentTime, add);
+            n.doPick(sceneTime, parentTime, add);
         }
     }
 

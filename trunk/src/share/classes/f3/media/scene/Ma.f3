@@ -1405,7 +1405,7 @@ class MCGFXVector is MSpatial {
 	const vecNode = CGFXVectorNode {
 	    id: name;
 	    wvw: wvw;
-	    wv: bind n.worldTransform.getTranslation();
+	    wv: bind n.sceneTransform.getTranslation();
 	}
 	m.spatialMap.put(this, vecNode);
 	for (conn in connectionsFromThis.get("wv")) {

@@ -10,6 +10,7 @@ public abstract class AbstractNode is Node
     override var contentBounds = bind internalContent.bounds;
     override function updateParent {
 	internalContent.setParent(this);
+	update();
     }
 
     override public function foldLeft of b
