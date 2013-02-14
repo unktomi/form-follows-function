@@ -1,10 +1,15 @@
 How to run (only macosx)
 
 svn checkout https://form-follows-function.googlecode.com/svn/trunk/ form-follows-function
+
 cd form-follows-function
+
 ant
+
 cd f3_cg_jogl_awt
+
 ant
+
 ./demo.sh
 
 Then drag & drop .ma (maya ascii) files on the window. 
