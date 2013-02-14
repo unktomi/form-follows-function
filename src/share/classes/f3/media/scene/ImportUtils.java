@@ -4,7 +4,6 @@ import java.util.*;
 
 public class ImportUtils
 {
-
     //from ardor3d
 
     public static class Matrix3 {
@@ -387,6 +386,7 @@ public class ImportUtils
         return result;
     }             
 
+    // from ardor3d
 
     public static class MeshData {
 	IntBuffer indexBuffer;

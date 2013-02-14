@@ -1,0 +1,146 @@
+#define MAX_FRACTIONS 16
+#define MAX_COLORS 16
+#define FULL_TEXEL (1.0 / MAX_COLORS)
+#define HALF_TEXEL (FULL_TEXEL / 2.0)
+
+uniform float4x4 worldView : WORLDVIEW;
+uniform float4x4 projection : PROJECTION;
+uniform float4x4 objectSpaceToUnitCircle;
+uniform float4 fractions1;
+uniform float4 fractions2;
+uniform float4 fractions3;
+uniform float4 fractions4;
+uniform float4 scaleFactors1;
+uniform float4 scaleFactors2;
+uniform float4 scaleFactors3;
+uniform float4 scaleFactors4;
+uniform float3 focus;
+sampler colors;
+
+
+struct VertexShaderInput {
+  float4 position : POSITION;
+};
+
+struct PixelShaderInput {
+  float4 position : POSITION;
+  float4 objPos: TEXCOORD1;
+};
+
+
+float4 doColor(float tc) {
+    float2 tex = float2(tc, 0.0);
+    float4 result = tex2D(colors, tex);
+    return result;
+}
+
+float fraction(float dist) {
+    float relFraction = 0.0;
+    relFraction += clamp((dist - fractions1.x) * scaleFactors1.x, 0.0, 1.0);
+    relFraction += clamp((dist - fractions1.y) * scaleFactors1.y, 0.0, 1.0);
+    relFraction += clamp((dist - fractions1.z) * scaleFactors1.z, 0.0, 1.0);
+    relFraction += clamp((dist - fractions1.w) * scaleFactors1.w, 0.0, 1.0);
+    relFraction += clamp((dist - fractions2.x) * scaleFactors2.x, 0.0, 1.0);
+    relFraction += clamp((dist - fractions2.y) * scaleFactors2.y, 0.0, 1.0);
+    relFraction += clamp((dist - fractions2.z) * scaleFactors2.z, 0.0, 1.0);
+    relFraction += clamp((dist - fractions2.w) * scaleFactors2.w, 0.0, 1.0);
+    relFraction += clamp((dist - fractions3.x) * scaleFactors3.x, 0.0, 1.0);
+    relFraction += clamp((dist - fractions3.y) * scaleFactors3.y, 0.0, 1.0);
+    relFraction += clamp((dist - fractions3.z) * scaleFactors3.z, 0.0, 1.0);
+    relFraction += clamp((dist - fractions3.w) * scaleFactors3.w, 0.0, 1.0);
+    relFraction += clamp((dist - fractions4.x) * scaleFactors4.x, 0.0, 1.0);
+    relFraction += clamp((dist - fractions4.y) * scaleFactors4.y, 0.0, 1.0);
+    relFraction += clamp((dist - fractions4.z) * scaleFactors4.z, 0.0, 1.0);
+    float tc = HALF_TEXEL + (FULL_TEXEL * relFraction);
+    return tc;
+}
+
+float computeDist(float4 pos) {
+    float4 fragCoord = pos;
+    fragCoord = mul(objectSpaceToUnitCircle, fragCoord);
+    float dist = length(fragCoord.xyz - focus);
+    return dist;
+}
+
+float computeTexCoord(float dist)
+{
+    float tc;
+    tc = fraction(dist);
+    return tc;
+}
+
+float pad(float dist) {
+    return clamp(dist, 0, 1);
+}
+
+float reflect(float dist) {
+    return 1.0 - (abs(fract(dist * 0.5) - 0.5) * 2.0);
+}
+
+float repeat(float dist) {
+    return fract(dist);
+}
+
+PixelShaderInput vertexShaderFunction(VertexShaderInput input) {
+  PixelShaderInput output;
+  output.position = mul(projection, mul(worldView, input.position));
+  output.objPos = input.position;
+  return output;
+}
+
+PixelShaderInput vertexShaderFunction2d(VertexShaderInput input) {
+  PixelShaderInput output;
+  output.position = mul(projection, round(mul(worldView, input.position)));
+  output.objPos = input.position;
+  return output;
+}
+
+
+float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
+    return doColor(computeTexCoord(pad(computeDist(input.objPos))));
+}
+
+float4 pixelShaderFunctionReflect(PixelShaderInput input) : COLOR {
+    return doColor(computeTexCoord(reflect(computeDist(input.objPos))));
+}
+
+float4 pixelShaderFunctionRepeat(PixelShaderInput input) : COLOR {
+    return doColor(computeTexCoord(repeat(computeDist(input.objPos))));
+}
+
+technique Opaque {
+    pass P0 {
+	DepthTestEnable = false;
+        DepthFunc = Less;
+        DepthMask = true;
+        CullFaceEnable  = false; 
+        BlendEnable = true;
+        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
+        VertexShader = compile latest vertexShaderFunction();
+        PixelShader  = compile latest pixelShaderFunction();
+    }
+}
+
+technique Transparent {
+    pass P1 {
+	DepthTestEnable = false;
+        DepthMask = true;
+        CullFaceEnable  = false; 
+        BlendEnable = true;
+        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
+        VertexShader = compile latest vertexShaderFunction();
+        PixelShader  = compile latest pixelShaderFunction();
+    }
+}
+
+technique Camera2D {
+    pass P2 {
+	DepthTestEnable = false;
+        DepthMask = false;
+        CullFaceEnable  = false; 
+        BlendEnable = true;
+        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
+        VertexShader = compile latest vertexShaderFunction2d();
+        PixelShader  = compile latest pixelShaderFunction();
+    }
+}

@@ -234,7 +234,7 @@ public class SequencesBase {
 
     /** Factory for simple sequence generation */
     public static<T> Sequence<T> make(TypeInfo<T> ti, T... values) {
-	System.err.println("MAKE "+values+": "+values.length);
+	//System.err.println("MAKE "+values+": "+values.length);
         if (values == null || values.length == 0)
             return ti.emptySequence; 
         else
@@ -921,14 +921,14 @@ public class SequencesBase {
      *          should be used.
      * @return The sorted sequence.
      */
-    public static <T> Sequence<? extends T> sort (Sequence<T> seq, Comparator<? super T> c) {
+    public static <T> Sequence<? extends T> sort (Sequence<? extends T> seq, Comparator<? super T> c) {
         if (seq.isEmpty())
             return seq.getEmptySequence();
         final int length = seq.size();
         T[] array = Util.<T>newObjectArray(length);
         seq.toArray(0, length, array, 0);
         Arrays.sort(array, c);
-        return Sequences.<T>make(seq.getElementType(), array);
+        return Sequences.<T>make(TypeInfo.<T>getTypeInfo(), array);
     }
 
     /** Returns a new sequence containing the randomly shuffled

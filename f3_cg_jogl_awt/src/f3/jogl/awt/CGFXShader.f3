@@ -1,0 +1,410 @@
+package f3.jogl.awt;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import f3.media.scene.*;
+import f3.lang.Ref;
+
+const DEBUG = false;
+
+public abstract class Parameter of a is f3.media.scene.Shader.Parameter of a
+{
+    public readonly var value is a;
+    var ref is Ref of a;
+    public const semantic is String;
+    public function apply
+	from (effect is CGFX.Effect, 
+	      world is Mat4, 
+	      view is Mat4, 
+	      projection is Mat4)
+	to () 
+    {
+        apply(effect);
+    }
+    public function apply from (effect is CGFX.Effect) to () {}
+    protected var parameter is CGFX.Parameter;
+    public var shader is CGFXShader;
+    override public function get to a { 
+	if (ref <> null) then ref.get() else value;
+    }
+    override public function set from (value is a) to () { 
+	if (ref <> null) then ref.set(value) else this.value = value;
+    }
+    public override function bindTo from (ref is Ref of a) to () 
+    {
+	this.ref = ref;
+    }
+}
+
+public class BoolParameter is Parameter of Boolean {
+    override public function apply from (effect is CGFX.Effect) to ()
+    { 
+        if (DEBUG) {
+            println("setting {name} {get()}");
+        }
+        parameter.set(if (get()) then 1 else 0);
+    }
+}
+
+public class FloatParameter is Parameter of Number {
+    override public function apply from (effect is CGFX.Effect) to ()
+    { 
+        if (DEBUG) {
+            println("setting {name} {get()}");
+        }
+        parameter.set(get())
+    }
+}
+
+public class Float2Parameter is Parameter of Tuple2 {
+    override public function apply from (effect is CGFX.Effect) to ()
+    { 
+        if (DEBUG) {
+            println("setting {name} {get()}");
+        }
+	const v = get();
+        parameter.set(v.x, v.y);
+    }
+}
+
+public class Float3Parameter is Parameter of Tuple3 {
+    override public function apply from (effect is CGFX.Effect) to ()
+    { 
+        if (DEBUG) {
+            println("setting {name} {get()}");
+        }
+	const v = get();
+        parameter.set(v.x, v.y, v.z)
+    }
+}
+
+public class Float4Parameter is Parameter of Tuple4 {
+    override public function apply from (effect is CGFX.Effect) to ()
+    { 
+        if (DEBUG) {
+            println("setting {name} {get()}");
+        }
+	const v = get();
+        parameter.set(v.x, v.y, v.z, v.w);
+    }
+}
+
+public class FloatArrayParameter is Parameter of Number[] {
+    override public function apply from (effect is CGFX.Effect) to () 
+    { 
+        if (DEBUG) {
+            println("setting {name} {get()}");
+        }
+        if (buffer == null or buffer.limit() <> value.size()) {
+            buffer = BufferUtils.createFloatBuffer(sizeof value);
+        }
+        buffer.clear();
+        for (i in get()) {
+            buffer.put(i);
+        }
+        buffer.rewind();
+        parameter.set(buffer);
+    }
+    var buffer is java.nio.FloatBuffer;
+}
+
+public class Float4x4Parameter is Parameter of Mat4 
+{
+    override public function apply
+	from (effect is CGFX.Effect, 
+	      world is Mat4, 
+	      view is Mat4, 
+	      projection is Mat4)
+	to ()
+    {
+	if (DEBUG) {
+	    println("world=\n{world}");
+	    println("view=\n{view}");
+	    println("projection=\n{projection}");
+	}
+        var mat is Mat4 = get();
+        if (value == null) {
+            mat = Mat4.<<1>>;
+        }
+        if (semantic == "WORLD") {
+            mat = world;
+        } else if (semantic == "VIEW") {
+            mat = view;
+        } else if (semantic == "PROJECTION") {
+            mat = projection;
+        } else if (semantic == "WORLDVIEW") {
+            mat = view * world;
+        } else if (semantic == "WORLDVIEWPROJECTION" or semantic == "WORLDVIEWPROJ") {
+            mat = projection * view * world;
+        } else if (semantic == "WORLDVIEWINVERSE") {
+            mat = (view * world).inverse();
+        } else if (semantic == "VIEWINVERSE") {
+            mat = view.inverse();
+        } else if (semantic == "WORLDINVERSE") {
+            mat = world.inverse();
+        } else if (semantic == "WORLDINVERSETRANSPOSE") {
+	    mat = world.inverseTranspose();
+        } else if (semantic != null) {
+            println("unhandled semantic { semantic}");
+        } else {
+	    //println("parameter with no semantic {name}");
+	    //return;
+	}
+	if (mat == null) {
+	    println("param={name} sem={semantic} world={world}");
+	    return;
+	}
+	try {
+	    shader.array = mat.getRows(shader.array);
+	    for (i in shader.array) {
+		if (java.lang.Float.isNaN(i)) {
+		    println("nan {name} {indexof i}");
+		    println("world={world}");
+		    println("view={view}");
+		    println("proj={projection}");
+		}
+	    }
+	    if (DEBUG) {
+		println("setting {name} {semantic} \n{mat}");
+	    }
+	    parameter.setr(shader.array);
+	} catch (e is java.lang.RuntimeException) {
+	    if (not errored) {
+		println("param={name} sem={semantic} world={world}");
+		e.printStackTrace();
+		errored = true;
+	    }
+	}
+    }
+    override var value = Mat4.<<1>>;
+    var errored = false;
+}
+
+public class SamplerParameter is Parameter of AbstractTexture
+{
+    override public function apply(effect is CGFX.Effect, 
+                                   world is Mat4, 
+                                   view is Mat4, 
+                                   projection is Mat4)
+    to ()
+    {
+	const value = get();
+        const id = value.getTextureId();
+        //if (value instanceof MeshNode) {
+        //    //(value as MeshNode).needsDraw = false;
+	    // }
+	//println("setup sampler {value} {name} {id}");
+        effect.setupSampler(name, id);
+    }
+}
+
+const CG = CGFX {};
+
+
+function createParameter
+    from (shader is CGFXShader, p is CGFX.Parameter) 
+    to Parameter
+{
+    const name = p.getName();
+    const ptype = p.getType();
+    const sem = p.getSemantic().toUpperCase();
+    //println("creating parameter {name} {ptype} {sem} in {shader}");
+    if (ptype == "bool") {
+        BoolParameter {
+            parameter: p;
+            name: name;
+            semantic: sem;
+	    shader: shader;
+        }
+    } else if (ptype == "float" or ptype =="half") {
+        FloatParameter {
+            parameter: p;
+            name: name;
+            semantic: sem;
+	    shader: shader;
+        }
+    } else if (ptype == "float2") {
+        Float2Parameter {
+            parameter: p;
+            name: name;
+            semantic: sem;
+	    shader: shader;
+        }
+    } else if (ptype == "float3") {
+        Float3Parameter {
+            parameter: p;
+            name: name;
+            semantic: sem;
+	    shader: shader;
+        }
+    } else if (ptype == "float4") {
+        Float4Parameter {
+            parameter: p;
+            name: name;
+            semantic: sem;
+	    shader: shader;
+        }
+    } else if (ptype == "float4x4") {
+        Float4x4Parameter {
+            parameter: p;
+            semantic: sem;
+            name: name;
+	    shader: shader;
+        }
+    } else if (ptype == "sampler2D") {
+        SamplerParameter {
+            parameter: p;
+            name: name;
+        }
+	/*
+    } else if (ptype == "samplerCUBE") {
+        SamplerCubeParameter {
+            parameter: p;
+            semantic: sem;
+            name: name;
+        } 
+	*/
+    } else if (ptype == "float[]") {
+        FloatArrayParameter {
+            parameter: p;
+            name: {name};
+	    shader: shader;
+        }
+    } else {
+        println("unhandled type: {ptype} semantic {sem}");
+        null;
+    }
+}
+
+public class CGFXShader is Shader {
+
+    var array is nativearray of Number; // temporary for matrix conversion
+
+    public var url is String;
+    public var technique is String;
+    var paramMap is java.util.Map;
+
+    public override function setParameter from (name is String, value0 is Object) to ()
+    {   
+	var value = value0;
+	if (value instanceof Color) {
+	    const c = value as Color;
+	    value = tuple(c.red, c.blue, c.green, c.opacity);
+	}
+	const p0 = getParameter(name);
+	if (p0 is Float4Parameter) {
+	    if (value instanceof Vec3) {
+		const v = value as Vec3;
+		value = tuple(v.x, v.y, v.z, 0);
+	    }
+	}
+	const p = p0 as Parameter of Object;
+	p.set(value);
+    }
+
+    var shaderVersion is Integer;
+
+    function markDirty to () {
+        shaderVersion++;
+    }
+
+    var drawVersion is Integer;
+
+    function isDirty to Boolean 
+    {
+        drawVersion != shaderVersion;
+    }
+    
+    function validate to () 
+    {
+        drawVersion = shaderVersion;
+    }
+
+    override function toString to String {
+        "CGFXShader {url} {technique}";
+    }
+
+    function isTransparent to Boolean {
+        false // tbd
+    }
+
+    protected var effect is CGFX.Effect = bind createEffect(url, technique);
+
+    function createEffect from (url is String, technique is String) to CGFX.Effect 
+    {
+        if (url == null or url.length() == 0) {
+            return null;
+        }
+        try { 
+            const effect = CG.createEffect(new java.net.URL(url));
+	    //	    println("created EFFECT {url} {technique}");
+            return effect;
+        } catch (e is java.lang.Exception) {
+            if (true) {
+                throw new java.lang.RuntimeException("Error compiling: {url} {technique}", e);
+            }
+        }
+        return null;
+    }        
+
+    public var parameters is Parameter[] = bind getParameters(effect);
+
+    override public function getParameters to Parameter[] {
+	parameters
+    }
+
+    override public function getParameter from (name is String) to Parameter {
+	for (p in parameters) {
+	    if (p.name == name) {
+		return p
+	    }
+	}
+	return null;
+    }
+
+    function getParameters 
+	from (effect is CGFX.Effect) 
+	to Parameter[] 
+    {
+	const shader = this;
+	//java.lang.Thread.currentThread().dumpStack();
+	if (effect == null) 
+	    then [] 
+	    else {
+		var result is Parameter[];
+		for (p in effect.getParameters()) {
+		    insert createParameter(shader, p) into result;
+		}
+		result;
+	    }
+    }
+
+
+    public override function apply
+	from (mesh is AbstractMesh,
+	      worldTransform is Mat4,
+	      viewMatrix is Mat4,
+	      projectionMatrix is Mat4)
+	to ()
+   {
+        if (technique == null) {
+            effect.setFirstTechnique();
+        } else {
+            effect.setTechnique(technique);
+        }
+        var texUnit = 0;
+        for (p in parameters) {
+	    try {
+		p.apply(effect, worldTransform, viewMatrix, projectionMatrix);
+	    } catch (e is java.lang.Exception) {
+		println("parameter {p.name}");
+		e.printStackTrace();
+	    }
+        }
+        effect.setPass();
+	if (DEBUG) println("applied {this} {effect}");
+    }
+
+    override public function reset to () {
+       effect.resetPass();
+    }
+}

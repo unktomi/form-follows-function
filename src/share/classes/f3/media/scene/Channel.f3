@@ -28,6 +28,7 @@ public class Channel of a is TimeNode
 {
     public const targets is (Ref of a)[];
     public const keys is (Key of a)[];
+
     readonly var sortedKeys = bind KeyFrame.sortKeys(keys);
 
     override var contentBounds = bind getKeyBounds(sortedKeys);

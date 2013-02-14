@@ -237,6 +237,7 @@ public abstract class Camera is TransformNode
         }
         const origin = toWorld(screenx, screeny, 1.0);
         const dir = toWorld(screenx, screeny, -1.0) - origin;
+	if (dir.lengthSquared() == 0) then null else
         Ray3 {
             origin: origin;
             direction: dir.normalize();

@@ -53,6 +53,8 @@ class MaModel
 		then MFile {name: name}
 	    else if (nodeType == "shadingEngine") 
 		then MShadingEngine {name: name}
+	    else if (nodeType == "pointLight") 
+		then MLight { name: name, parent: findNode(parent), type: nodeType }
 	    else if (nodeType.startsWith("animCurve")) 
 		then MAnimCurve__ {name: name, parent: findNode(parent)}
 	    else if (nodeType == "character") 
@@ -1501,6 +1503,21 @@ class MFile is MNode {
 	if (n == "ftn") {
 	    ftn = cmd.getString();
 	}
+    }
+}
+
+class MLight is MSpatial {
+    const type is String;
+    public function toNode from (m is MaModel) to Node 
+    {
+	if (this.type == "pointLight") {
+	    const tn = PointLight {}
+	    m.spatialMap.put(this, tn);
+	    const p = m.toParentNode(parent as MSpatial);
+	    insert tn into p.content;
+	    return tn;
+	}
+	return null;
     }
 }
 
