@@ -436,7 +436,7 @@ public abstract class F3TranslationSupport {
 	    Type ctor = syms.f3_TypeConsErasure[tcons.args.size()];
 	    if (tcons.ctor == null) {
 		if (!expandTypeCons) {
-		    System.err.println("expanding'0: "+ types.toF3String(t));
+		    //System.err.println("expanding'0: "+ types.toF3String(t));
 		    //t = types.erasure(ctor);
 		}
 		t = new TypeVar(t.tsym, types.erasure(ctor), syms.botType);
@@ -446,7 +446,7 @@ public abstract class F3TranslationSupport {
 		    t = types.erasure(tcons.args.head);
 		} else {
 		    if (!expandTypeCons) {
-			System.err.println("expanding'1: "+ types.toF3String(t));
+			//System.err.println("expanding'1: "+ types.toF3String(t));
 			TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
 			t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
 		    } else {
@@ -456,13 +456,13 @@ public abstract class F3TranslationSupport {
 		}
 		//System.err.println("t="+t);
 	    }
-	    System.err.println("expanding' "+orig+" => "+ t);
+	    //System.err.println("expanding' "+orig+" => "+ t);
 	} else if (expandTypeCons) {
 	    int i = types.isTypeConsType(t);
 	    if (i >= 0) {
 		Type site = t;
-		System.err.println("expanding'': "+ t);
-		Thread.currentThread().dumpStack();
+		//System.err.println("expanding'': "+ t);
+		//Thread.currentThread().dumpStack();
 		List<Type> targs = site.getTypeArguments();
 		if (ERASE_BACK_END) {
 		    site = targs.head;
@@ -508,7 +508,7 @@ public abstract class F3TranslationSupport {
 		    //System.err.println("acc="+texp);
                 } else {
 		    if (isMixin) {
-			Thread.currentThread().dumpStack();
+			//Thread.currentThread().dumpStack();
 		    }
                     if (t.isCompound()) {
                         t = types.supertype(t);
@@ -521,7 +521,7 @@ public abstract class F3TranslationSupport {
 			//System.err.println("ta="+ta);
                         targs = targs.append(makeTypeTreeInner01(diagPos, ta, makeIntf, expandTypeCons));
                    }
-		    System.err.println(t.getTypeArguments()+" => "+targs);
+		    //System.err.println(t.getTypeArguments()+" => "+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
 		    //System.err.println("final exp: "+ texp);
                 }

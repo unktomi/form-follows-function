@@ -757,7 +757,7 @@ public class F3Resolve {
                         if (checkArgs) {
 			    Type origin = e.getOrigin().owner.type;
 			    if (origin == null) {
-				System.err.println("origin is null: "+e.getOrigin() +": "+e.getOrigin().owner + " for "+sym);
+				//System.err.println("origin is null: "+e.getOrigin() +": "+e.getOrigin().owner + " for "+sym);
 				sym = checkArgs(sym, mtype);
 			    } else {
 				sym = selectBest(env, origin, mtype,
@@ -1298,6 +1298,8 @@ public class F3Resolve {
 		    }
                 }
                 else if (e.sym.kind == MTH) {                    
+		    //System.err.println("sym="+e.sym);
+		    //System.err.println("owner="+e.sym.owner);
 		    //System.err.println("type="+e.sym.type);
 		    //System.err.println("mtype="+mtype);
                     bestSoFar = selectBest(env, site, mtype,
@@ -1442,7 +1444,7 @@ public class F3Resolve {
 		if (bestSoFar.type != syms.unknownType) {
 		    bestSoFar = bestSoFar.type.tsym;
 		}
-		System.err.println(name + " => "+types.toF3String(bestSoFar.type));
+		//System.err.println(name + " => "+types.toF3String(bestSoFar.type));
 	    }
 	}
 	return bestSoFar;
@@ -1572,7 +1574,7 @@ public class F3Resolve {
 		if (bestSoFar.type != syms.unknownType) {
 		    bestSoFar = bestSoFar.type.tsym;
 		}
-		System.err.println(name + " => "+types.toF3String(bestSoFar.type));
+		//System.err.println(name + " => "+types.toF3String(bestSoFar.type));
 	    }
 	}
 	return bestSoFar;

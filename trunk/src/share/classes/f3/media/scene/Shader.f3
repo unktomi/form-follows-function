@@ -5,8 +5,8 @@ import f3.lang.Ref;
 public abstract class Parameter of a is Ref of a
 {
     const name is String;
-    public abstract function get to a;
-    public abstract function set from (x is a) to ();
+    public override abstract function get to a;
+    public override abstract function set from (x is a) to ();
     public abstract function bindTo from (ref is Ref of a) to ();
 }
 

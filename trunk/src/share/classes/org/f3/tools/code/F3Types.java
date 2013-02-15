@@ -122,7 +122,7 @@ public class F3Types extends Types {
 	    }
 	}
 	//list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
-	System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
+	//System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
 	int n = args.size();
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
@@ -221,7 +221,7 @@ public class F3Types extends Types {
 	    targs = targs.tail;
 	    if (targs.size() > 0) {
 		result = applySimpleGenericType(result, targs.toArray(new Type[targs.size()]));
-		System.err.println(type+" => "+result);
+		//System.err.println(type+" => "+result);
 	    }
 	    //System.err.println("result="+result);
 	    return result;
@@ -1174,6 +1174,9 @@ public class F3Types extends Types {
 	    a = new ForAll(List.of(a), a);
 	    b = new ForAll(List.of(b), b);
 	}
+	if (a == syms.unknownType) {
+	    return false;
+	}
 	try {
 	    boolean result = super.isSameType(a, b);
 	    return result;
@@ -1649,7 +1652,7 @@ public class F3Types extends Types {
 		//System.err.println("clazz: "+ t0 + " => "+ t);
 		if (isTypeConsType(t) >= 0) {
 		    Type r = applyTypeCons(t);
-		    System.err.println("APPLY TCONS "+t+" => "+r);
+		    //System.err.println("APPLY TCONS "+t+" => "+r);
 		    return r;
 		}
                 return t;
@@ -2050,9 +2053,9 @@ public class F3Types extends Types {
 			TypeCons tc2 = (TypeCons)from.head;
 			if (tc1.ctor == tc2) {
 			    Type res = makeTypeCons(to.head, tc1.getTypeArguments());
-			    System.err.println("res="+res);
+			    //System.err.println("res="+res);
 			    res = subst2(res, from, to);
-			    System.err.println("res'="+res);
+			    //System.err.println("res'="+res);
 			    return res;
 			}
 		    }

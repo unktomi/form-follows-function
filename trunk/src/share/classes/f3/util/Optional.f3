@@ -23,7 +23,7 @@ public abstract class Optional of a is Monad of (Optional, a), F3Value, ConstRef
 	from (f is function from a to Optional of b) 
 	to Optional of b;
 
-    abstract public function get to a;
+    override abstract public function get to a;
 
     public function isAbsent from () to Boolean 
     {

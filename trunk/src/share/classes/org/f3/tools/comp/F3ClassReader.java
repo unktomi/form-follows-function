@@ -366,6 +366,10 @@ public class F3ClassReader extends ClassReader {
                     }
                     if (tsym.name.endsWith(defs.mixinClassSuffixName)) {
                         t = enterClass((ClassSymbol) tsym).type;
+			List<Type> tparams = translateTypes(ctype.typarams_field);
+			if (tparams.size() > 0) {
+			    t = new ClassType(t.getEnclosingType(), tparams, t.tsym);
+			}
                         break;
                     }
                     if (ctype.isCompound()) {
@@ -433,7 +437,7 @@ public class F3ClassReader extends ClassReader {
 	    ClassSymbol csym = (ClassSymbol) tsym; // FIXME
 	    return enterClass(csym);
 	} else {
-	    System.err.println("sym="+tsym.getClass()+": "+tsym);
+	    //System.err.println("sym="+tsym.getClass()+": "+tsym);
 	}
 	return tsym;
     }
@@ -452,7 +456,7 @@ public class F3ClassReader extends ClassReader {
 	    try {
 		ClassSymbol ownerSym = (ClassSymbol)owner;
 		if (ownerSym.members_field == null) {
-		    System.err.println("members_field is null: "+ ownerSym);
+		    //System.err.println("members_field is null: "+ ownerSym);
 		} else {
 		    ownerSym.members_field.enter(m);
 		}
@@ -519,7 +523,7 @@ public class F3ClassReader extends ClassReader {
 	    argtypes = mt.argtypes.tail;
 	}
 	if (argtypes == null) {
-	    System.err.println("fucked up: "+name+": "+type);
+	    //System.err.println("fucked up: "+name+": "+type);
 	    return type;
 	}
         mt = new MethodType(argtypes,
@@ -527,7 +531,7 @@ public class F3ClassReader extends ClassReader {
 			    mt.getThrownTypes(),
 			    syms.methodClass);
 	if (forAll != null) {
-	    System.err.println("forall="+forAll);
+	    //System.err.println("forall="+forAll);
 	    int count = owner.getTypeArguments().size();
 	    List<Type> targs = forAll.getTypeArguments();
 	    for (int i = 0; i < count; i++) {
@@ -546,7 +550,6 @@ public class F3ClassReader extends ClassReader {
         Name name = sym.name;
         Type mtype = sym.type;
         String nameString = name.toString();
-        
         int boundStringIndex = nameString.indexOf(F3Defs.boundFunctionDollarSuffix);
         if (boundStringIndex != -1) {
             // this is a bound function

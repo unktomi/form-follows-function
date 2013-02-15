@@ -65,8 +65,8 @@ public class Main {
                 mclassname = mclassname.substring(mclassname.indexOf('=')+1);
 	    }
             // load the user's F3 class but do *not* initialize!
-            mainClass = Class.forName(mclassname, false,
-                    Thread.currentThread().getContextClassLoader());
+            mainClass = Class.forName(mclassname);// false,
+				      //Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException cnfe) {
             errorExit(getErrorMessage("notfound", mclassname), cnfe);
         } catch (IOException ioe) {
