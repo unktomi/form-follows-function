@@ -1966,11 +1966,30 @@ public abstract class F3AbstractTranslation
 	    if (isInstanceFunctionAsStaticMethod) {
 		targsBuf.appendList(sym.owner.type.getTypeArguments());
 	    }
-	    targsBuf.appendList(sym.type.getTypeArguments());
+	    MethodSymbol methSym = this.sym;
+	    Type type = methSym.type;
+	    if (false && !methSym.isStatic() && (type instanceof Type.ForAll)) {
+		Type.ForAll fa = (Type.ForAll)type;
+		List<Type> tas = type.getTypeArguments();
+		List<Type> converted = List.<Type>nil();
+		for (Type t: tas) {
+		    Type.TypeVar src = (Type.TypeVar)t;
+		    Type.TypeVar dst = new Type.TypeVar(names.fromString(src.tsym.name+"$"), src.tsym.owner, src.lower);
+		    dst.bound = syms.objectType; // ?
+		    converted = converted.append(dst);
+		}
+		Type convertedType = types.subst(fa.qtype, tas, converted);
+		convertedType = new Type.ForAll(converted, convertedType);
+		//System.err.println("CONVERTED "+type+" => "+convertedType);
+		methSym = new MethodSymbol(methSym.flags(), methSym.name, 
+					   convertedType, methSym.owner);
+	    }
+	    targsBuf.appendList(methSym.type.getTypeArguments());
 	    List<Type> targs = targsBuf.toList();
-	    //System.err.println("sym="+sym);
-	    //System.err.println("sym.owner="+sym.owner);
+	    //System.err.println("sym="+methSym);
+	    //System.err.println("sym.owner="+methSym.owner);
 	    //System.err.println("targs="+targs);
+	    //System.err.println("tree.type="+tree.type);
             JCMethodDecl meth = m().MethodDef(
                     addAccessAnnotationModifiers(diagPos, tree.mods.flags, m().Modifiers(flags)),
                     functionName(sym, isInstanceFunctionAsStaticMethod, isBound),
@@ -1980,8 +1999,8 @@ public abstract class F3AbstractTranslation
                     m().Types(mtype.getThrownTypes()), // makeThrows(diagPos), //
                     body,
                     null);
-            meth.sym = sym;
-            meth.type = tree.type;
+            meth.sym = methSym;
+            meth.type = methSym.type;
             if (isBound) {
                 meth.mods.annotations = meth.mods.annotations.append(methodSignature());
             }
@@ -4500,7 +4519,7 @@ public abstract class F3AbstractTranslation
         //processedInParent();
 	//Thread.currentThread().dumpStack();
 	//result = new StatementsResult(that, makeType(that));
-	System.err.println(that);
+	//System.err.println(that);
 	result = new StatementsResult(that, List.<JCStatement>nil());
     }
 

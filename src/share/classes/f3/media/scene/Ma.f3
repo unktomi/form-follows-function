@@ -431,7 +431,7 @@ abstract class MSpatial is MNode {
 	} else super.resolveInput(m, p);
     }
 
-    function getPointer 
+    override function getPointer 
 	from (path is String, target is Object) 
 	to Ref of ?
     {
@@ -1455,7 +1455,7 @@ class MShader is MAbstractShader
 
     var shader is Shader;
 
-    function toShader from (m is MaModel) to Shader 
+    override function toShader from (m is MaModel) to Shader 
     {
 	if (shader == null) {
 	    const alpha = 1.0 - it.x;
@@ -1508,7 +1508,7 @@ class MFile is MNode {
 
 class MLight is MSpatial {
     const type is String;
-    public function toNode from (m is MaModel) to Node 
+    override public function toNode from (m is MaModel) to Node 
     {
 	if (this.type == "pointLight") {
 	    const tn = PointLight {}

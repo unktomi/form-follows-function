@@ -504,7 +504,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		    }
 		};
 	    env1.info.scope.enter(ta.tsym);
-	    System.err.println(env1.info.scope);
+	    //System.err.println(env1.info.scope);
 	}
     }    
 

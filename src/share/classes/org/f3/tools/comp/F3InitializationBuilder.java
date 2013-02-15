@@ -4657,11 +4657,13 @@ however this is what we need */
         // Make a method from a MethodSymbol and an optional method body.
         // Make a bound version if "isBound" is set.
         //
-        private void appendMethodClones(final MethodSymbol methSym, final int bodyType) {
+        private void appendMethodClones(MethodSymbol methSym, final int bodyType) {
+
             final boolean isBound = (methSym.flags() & F3Flags.BOUND) != 0;
             final boolean isStatic = methSym.isStatic();
             final Name functionName = functionName(methSym, false, isBound);
-            
+	    //System.err.println("methSym="+methSym);
+	    //System.err.println("methSym.type="+methSym.type);
             List<VarSymbol> parameters = methSym.getParameters();
             ListBuffer<JCStatement> stmts = null;
             ListBuffer<JCVariableDecl> params = ListBuffer.lb();
@@ -4710,14 +4712,18 @@ however this is what we need */
                 mods = addInheritedAnnotationModifiers(diagPos, methSym.flags(), mods);
                 
             Type returnType = isBound? syms.f3_PointerTypeErasure : methSym.getReturnType();
-            
-            addDefinition(Method(
-                          mods,
-                          returnType,
-                          functionName,
-                          params.toList(),
-                          bodyType != BODY_NONE ? stmts.toList() : null,
-                          makeMethodSymbol(mods.flags, typeArgs, returnType, functionName, methSym.owner, argTypes.toList())));
+
+
+	    //System.err.println("RETURN TYPE="+returnType);
+            JCMethodDecl method = Method(
+					 mods,
+					 returnType,
+					 functionName,
+					 params.toList(),
+					 bodyType != BODY_NONE ? stmts.toList() : null,
+					 makeMethodSymbol(mods.flags, typeArgs, returnType, functionName, methSym.owner, argTypes.toList()));
+	    //System.err.println("generated: "+ method);
+	    addDefinition(method);
                           
             if (bodyType != BODY_NONE) {
                 optStat.recordProxyMethod();

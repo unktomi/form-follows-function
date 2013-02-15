@@ -689,8 +689,8 @@ public class F3Attr implements F3Visitor {
     private void checkTypeCycle(F3Tree tree, Symbol sym) {
         if (sym.type == null) {
             F3Var var = varSymToTree.get(sym);
-	    System.err.println("tree="+tree);
-	    System.err.println("sym="+sym);
+	    //System.err.println("tree="+tree);
+	    //System.err.println("sym="+sym);
             if (var != null) {
 		JavaFileObject prevSource = log.currentSource();
 		try {
@@ -1096,7 +1096,7 @@ public class F3Attr implements F3Visitor {
                 sym = (site.getUpperBound() != null)
                     ? selectSym(tree, capture(site.getUpperBound()), env, pt, pkind)
                     : null;
-		System.err.println("sym="+sym);
+		//System.err.println("sym="+sym);
                 if (sym == null || isType(sym)) {
                     log.error(pos, MsgSym.MESSAGE_TYPE_VAR_CANNOT_BE_DEREF);
                     return syms.errSymbol;
@@ -1711,8 +1711,9 @@ public class F3Attr implements F3Visitor {
 			    monadType = types.lub(monadType, exprType);
 			}
 			elemtype = types.monadElementType(exprType);
-			System.err.println("exprType="+exprType);
-			System.err.println("theMonad="+theOne);
+			//System.err.println("exprType="+exprType);
+			//System.err.println("theMonad="+theOne);
+			//System.err.println("monadType="+monadType);
 			if (theOne != null) {
 			    Type tcons = types.asSuper(exprType, syms.f3_TypeCons[1].tsym);
 			    if (tcons != null) {
@@ -1722,12 +1723,12 @@ public class F3Attr implements F3Visitor {
 				if (elemtype == null) {
 				    elemtype = altElemType;
 				}
-				System.err.println("ELEM TYPE="+altElemType);
+				//System.err.println("ELEM TYPE="+altElemType);
 			    }
 			}
 		    } else {
-			System.err.println("exprType="+exprType);
-			System.err.println("theFunctor="+theOne);
+			//System.err.println("exprType="+exprType);
+			//System.err.println("theFunctor="+theOne);
 			functorType = exprType;
 			elemtype = types.functorElementType(exprType);
 			if (theOne != null) {
@@ -1737,7 +1738,7 @@ public class F3Attr implements F3Visitor {
 			    if (elemtype == null) {
 				elemtype = altElemType;
 			    }
-			    System.err.println("ELEM TYPE="+altElemType);
+			    //System.err.println("ELEM TYPE="+altElemType);
 			}
 		    }
 		}
@@ -1848,6 +1849,7 @@ public class F3Attr implements F3Visitor {
             if (map != null) {
 		//System.err.println("map="+map);
                 owntype = attribExpr(map, env);
+		//System.err.println("owntype="+owntype);
             }
         }
         while (forClauses.size() > forClausesOldSize)
@@ -2391,7 +2393,7 @@ public class F3Attr implements F3Visitor {
 	    env.info.scope.enter(tsym);
 	    tv.args = makeTypeVars(cons.getArgs(), tsym);
 	    tv.bound = types.makeTypeCons(tv, tv.args);
-	    System.err.println("typeCons: "+tv);
+	    //System.err.println("typeCons: "+tv);
 	    return tv;
 	} else if (exp instanceof F3Ident) {
 	    F3Ident ident = (F3Ident)exp;
@@ -3220,7 +3222,7 @@ public class F3Attr implements F3Visitor {
     Symbol findTheUnchecked(F3Env<F3AttrContext> env,
 			    Type expectedType) {
 	Symbol sym = rs.findVar(env, syms.the, (MTH|VAR), expectedType, true, false);
-	System.err.println("searching for the "+expectedType+ " => "+sym);
+	//System.err.println("searching for the "+expectedType+ " => "+sym);
 	if (sym.kind >= AMBIGUOUS) {
 	    if (sym.kind != AMBIGUOUS) {
 		if (true) {
@@ -3235,7 +3237,7 @@ public class F3Attr implements F3Visitor {
 						expectedType,
 						true, false,
 						false);
-			    System.err.println("searched "+expectedType+": "+sym);
+			    //System.err.println("searched "+expectedType+": "+sym);
 			    if (sym.kind <= AMBIGUOUS) {
 				return sym;
 			    }
@@ -3257,7 +3259,7 @@ public class F3Attr implements F3Visitor {
 					    searchType,
 					    true, false,
 					    false);
-			System.err.println("searching' for the "+searchType+ " => "+sym);
+			//System.err.println("searching' for the "+searchType+ " => "+sym);
 			break;
 		    }
 		}
@@ -3331,7 +3333,7 @@ public class F3Attr implements F3Visitor {
 		List<Type> xs = argtypes.tail;
 		Symbol sym = rs.findMethod(env, x, methName, xs, typeargtypes, true, false, false);
 		if (sym.kind < AMBIGUOUS) {
-		    System.err.println("found: "+sym);
+		    //System.err.println("found: "+sym);
 		    int pos = tree.meth.pos;
 		    tree.meth = f3make.Select(tree.args.head, methName, false);
 		    tree.meth.pos = pos;
@@ -3558,7 +3560,7 @@ public class F3Attr implements F3Visitor {
 				    Symbol sym = findThe(env, tree, expectedType);
 				    if (sym == null || sym.kind >= AMBIGUOUS) {
 				    } else {
-					System.err.println("found: "+sym);
+					//					System.err.println("found: "+sym);
 					resolvedImplicits = resolvedImplicits.append(sym);
 					F3Expression exp = f3make.QualIdent(sym);
 					if (!types.isSubtype(sym.type, expectedType)) {
@@ -3616,6 +3618,8 @@ public class F3Attr implements F3Visitor {
 	    tree.args = tree.args.append(exp);
 	}
 	if (msym != null) {
+	    //System.err.println("msym="+msym);
+	    //System.err.println("msym.type="+msym.type);
             List<F3Expression> params = tree.getArguments();
 	    List<Type> pts = msym.type.getParameterTypes();
 	    //System.err.println("msym.type="+msym.type);
@@ -3694,6 +3698,8 @@ public class F3Attr implements F3Visitor {
             }
         }
 	result = tree.type;
+	//System.err.println("tree="+tree);
+	//System.err.println("result="+result);
         chk.validate(tree.typeargs);
 	// hack...
     }
@@ -3862,7 +3868,7 @@ public class F3Attr implements F3Visitor {
             }
         } else {
 	    tree.operator = sym;
-	    System.err.println("tree.name="+tree.methodName);
+	    //System.err.println("tree.name="+tree.methodName);
             owntype = sym.type.getReturnType();
         }
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
@@ -4368,17 +4374,17 @@ public class F3Attr implements F3Visitor {
 		List<Type> bounds = List.nil();
 		for (Type iface : types.supertypesClosure(c.type)) {
 		    if (types.isTypeConsType(iface) == 0) {
-			System.err.println("found: "+ iface);
+			//System.err.println("found: "+ iface);
 			bounds = bounds.append(iface.getTypeArguments().head);
 		    }
 		}
-		if (bounds.size() == 0) {
+		if (bounds.size() == 0 && false) {
 		    Type tc = types.makeTypeCons(thisType, tree.typeArgTypes);
 		    ClassType ct = (ClassType)c.type;
-		    System.err.println("adding "+tc);
+		    //System.err.println("adding "+tc);
 		    ct.interfaces_field = ct.interfaces_field.append(tc);
 		    ct.allparams_field = null;
-		    System.err.println("interfaces => "+ct.interfaces_field);
+		    //System.err.println("interfaces => "+ct.interfaces_field);
 		    if (false) {
 			F3Expression exp = f3make.at(tree.pos).Type(tc);
 			exp.type = tc;
@@ -4642,8 +4648,8 @@ public class F3Attr implements F3Visitor {
 				localEnv,
 				TYP,
 				Type.noType);
-	    System.err.println("t="+t);
-	    System.err.println("targs="+targs);
+	    //System.err.println("t="+t);
+	    //System.err.println("targs="+targs);
 	    if (ta.typeArgs != null) {
 		if (t instanceof FunctionType) {
 		    t = new ForAll(targs, t.asMethodType());
@@ -4661,8 +4667,8 @@ public class F3Attr implements F3Visitor {
 		    }
 		}
 	    }
-	    System.err.println("t="+t.getClass());
-	    System.err.println("t'="+types.toF3String(t));
+	    //System.err.println("t="+t.getClass());
+	    //System.err.println("t'="+types.toF3String(t));
 	    ta.tsym.type = t;
 	    result = t;
 	    tree.type = result;
@@ -4672,7 +4678,7 @@ public class F3Attr implements F3Visitor {
 	    Type t = attribTree(theType.theType, env, TYP, Type.noType);
 	    //System.err.println("\"the\" type is "+t);
 	    ///System.err.println("env="+env);
-	    System.err.println("searching for the "+t+ " in env1="+env);
+	    //	    System.err.println("searching for the "+t+ " in env1="+env);
 	    Symbol sym = findThe(env, tree, t);		
 	    F3FunctionDefinition fun = env.enclFunction;
 	    if (sym == null) {
@@ -4684,7 +4690,7 @@ public class F3Attr implements F3Visitor {
 					names.fromString("the$"+fun.implicitArgs.size()),
 					t, 
 					env.enclFunction.sym);
-		    System.err.println("not found: creating :"+t);
+		    //		    System.err.println("not found: creating :"+t);
 		    theType.resolvedSymbol = idSym1;
 		    env.info.scope.enter(idSym1);
 		    fun.implicitArgs = fun.implicitArgs.append(idSym1);
@@ -4697,7 +4703,7 @@ public class F3Attr implements F3Visitor {
 					names.fromString("the$"+env.implicitArgs.size()),
 					t, 
 					env.enclVar.sym);
-		    System.err.println("not found: creating :"+t);
+		    //System.err.println("not found: creating :"+t);
 		    //theType.resolvedSymbol = idSym1;
 		    env.info.scope.enter(idSym1);
 		    env.implicitArgs = env.implicitArgs.append(idSym1);
@@ -4912,7 +4918,7 @@ public class F3Attr implements F3Visitor {
 			owntype = newClassType(owntype.getEnclosingType(),
 					       typeargtypes, owntype.tsym);
 		    } else {
-			System.err.println("owntype.enclosing=null: "+sym);
+			//System.err.println("owntype.enclosing=null: "+sym);
 		    }
 		}
 		//System.err.println("typ: "+ sym+": "+owntype);

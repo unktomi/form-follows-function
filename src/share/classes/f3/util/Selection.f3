@@ -14,6 +14,9 @@ public abstract class Selection of a is Monad of (Selection, a) {
 	    {
 		f(self.select(k * f))
 	    }
+	    override function toString to String {
+	    	"map {self} {f}";
+	    }		  
 	}
     }
 
@@ -25,6 +28,9 @@ public abstract class Selection of a is Monad of (Selection, a) {
 	    {
 		f(self.select(f)).select(k)
 	    }
+	    override function toString to String {
+	    	"flatmap {self} {f}";
+	    }		  
 	}
     }
 
@@ -38,23 +44,22 @@ public abstract class Selection of a is Monad of (Selection, a) {
     }
 }
 
-public function select1 of a from (x is a) to Selection of a {
+public function selected of a from (x is a) to Selection of a {
     Selection of a {
 	override function select of r from (f is function from a to r) to a {
 	    x
 	}
 	override function toString to String {
-	    "select {x}"
+	    "selected {x}"
 	}
     }
 }
 
 public function run {
-    const j = foreach (x in select1("hello"), y in select1("world")) {
+    const j = foreach (x in selected("hello"), y in selected("world")) {
 	x.concat(" ").concat(y);
     }
     println(j);
     println(j.toDoubleNegation());
-
-    println(select1(100).select(id of Integer));
+    println(selected(100).select(id of Integer));
 }
