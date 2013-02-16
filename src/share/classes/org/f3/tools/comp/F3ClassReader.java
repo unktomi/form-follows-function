@@ -523,7 +523,7 @@ public class F3ClassReader extends ClassReader {
 	    argtypes = mt.argtypes.tail;
 	}
 	if (argtypes == null) {
-	    //System.err.println("fucked up: "+name+": "+type);
+	    System.err.println("fucked up: "+name+": "+type);
 	    return type;
 	}
         mt = new MethodType(argtypes,
@@ -531,13 +531,14 @@ public class F3ClassReader extends ClassReader {
 			    mt.getThrownTypes(),
 			    syms.methodClass);
 	if (forAll != null) {
-	    //System.err.println("forall="+forAll);
 	    int count = owner.getTypeArguments().size();
 	    List<Type> targs = forAll.getTypeArguments();
 	    for (int i = 0; i < count; i++) {
 		targs = targs.tail;
 	    }
-	    return new ForAll(targs, mt);
+	    ForAll forAll1 = new ForAll(targs, mt);
+	    //System.err.println("forall="+name+": "+forAll + " => "+forAll1);
+	    return forAll1;
 	}
 	//System.err.println("created: "+ name+" "+mt);
 	return mt;
@@ -585,6 +586,7 @@ public class F3ClassReader extends ClassReader {
             }
             if (convertToStatic) {
                 flags &= ~Flags.STATIC;
+		//System.err.println("owner="+owner);
                 type = popMethodTypeArg(type, name, owner.type);
             }
         }
@@ -808,6 +810,9 @@ public class F3ClassReader extends ClassReader {
                 }
                 if (memsym instanceof MethodSymbol) {
                     MethodSymbol m = translateMethodSymbol(flags, memsym, csym);     
+		    //if (memsym.name.toString().endsWith(F3Defs.implFunctionSuffix)) {
+		    //System.err.println(csym + " entering: "+ m);
+		    //}
                     csym.members_field.enter(m);
                 }
                 else if (memsym instanceof VarSymbol) {

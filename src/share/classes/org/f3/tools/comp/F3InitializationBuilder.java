@@ -196,10 +196,13 @@ public class F3InitializationBuilder extends F3TranslationSupport {
         ClassSymbol outerTypeSym = outerTypeSymbol(cDecl.sym); // null unless inner class with outer reference
         boolean isLibrary = toJava.getAttrEnv().toplevel.isLibrary;
         boolean isRunnable = toJava.getAttrEnv().toplevel.isRunnable;
-
+	//System.err.println("creating analysis: "+ System.identityHashCode(cDecl.sym) + ": "+cDecl.sym);
         F3AnalyzeClass analysis = new F3AnalyzeClass(this, diagPos,
                 cDecl.sym, translatedAttrInfo, translatedOverrideAttrInfo, translatedFuncInfo,
                 names, types, defs, syms, reader);
+
+	//System.err.println("created analysis: "+ System.identityHashCode(cDecl.sym) + ": "+cDecl.sym);
+	//Thread.currentThread().dumpStack();
                 
         List<VarInfo> classVarInfos = analysis.classVarInfos();
         List<VarInfo> scriptVarInfos = analysis.scriptVarInfos();
@@ -211,6 +214,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
         int classVarCount = analysis.getClassVarCount();
         int scriptVarCount = analysis.getScriptVarCount();
         List<MethodSymbol> needDispatch = analysis.needDispatch();
+	//System.err.println("need dispatch "+ cDecl.sym + " = " + needDispatch);
         ClassSymbol f3SuperClassSym = analysis.getF3SuperClassSym();
         List<ClassSymbol> superClasses = analysis.getSuperClasses();
         List<ClassSymbol> immediateMixinClasses = analysis.getImmediateMixins();
