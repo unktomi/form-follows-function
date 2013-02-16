@@ -374,6 +374,7 @@ public class F3ToJava extends F3AbstractTranslation {
             prependToStatements = prevPrependToStatements;
             // WARNING: translate can't be called directly or indirectly after this point in the method, or the prepends won't be included
 
+	    //System.err.println("has been translated: "+tree.sym+" "+tree.hasBeenTranslated);
             F3ClassModel model = initBuilder.createF3ClassModel(tree, 
 								attrInfo.toList(),
 								overrideInfo.toList(),
@@ -387,6 +388,7 @@ public class F3ToJava extends F3AbstractTranslation {
             List<JCExpression> implementing = model.interfaces;
             // include the interface only once
             if (!tree.hasBeenTranslated) {
+                tree.hasBeenTranslated = true;
                 if (isMixinClass) {
                     JCModifiers mods = m().Modifiers(Flags.PUBLIC | Flags.INTERFACE);
                     mods = addAccessAnnotationModifiers(diagPos, tree.mods.flags, mods);
@@ -408,7 +410,6 @@ public class F3ToJava extends F3AbstractTranslation {
                     //System.err.println("generated: "+ cInterface);
                     prependToDefinitions.append(cInterface); // prepend to the enclosing class or top-level
                 }
-                tree.hasBeenTranslated = true;
             }
 
             // Class must be visible for reflection.
@@ -1071,6 +1072,9 @@ public class F3ToJava extends F3AbstractTranslation {
 
     @Override
     public void visitClassDeclaration(F3ClassDeclaration tree) {
+	if (tree.hasBeenTranslated) { // hack?
+	    return;
+	}
         F3ClassDeclaration prevClass = currentClass();
         setCurrentClass(tree);
 

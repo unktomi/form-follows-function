@@ -1384,21 +1384,31 @@ class F3AnalyzeClass {
             visitedAttributes.put(initBuilder.attributeValueName(tai.getSymbol()), tai);
         }
 
+	List<String> toRemove = List.nil(); // hack...
         // Map the current methods so they are filtered out of the results.
         for (TranslatedFuncInfo func : translatedFuncInfo) {
             //visitedMethods.put(methodSignature(func.getSymbol()), func);
 	    String key = methodSignature(currentClassSym, func.getSymbol());
 	    //System.err.println("current: "+ currentClassSym);
-	    //System.err.println(key+": "+func);
+	    //System.err.println("Key='"+key+"'");
             visitedMethods.put(key, func);
+	    needDispatchMethods.remove(key);
+	    toRemove = toRemove.prepend(key); // hack...
         }
 
+	//System.err.println("current visited methods: "+visitedMethods.keySet());
+	//Thread.currentThread().dumpStack();
         // Lastly, insert any mixin vars and methods from the interfaces.
         for (F3Expression supertype : currentClassDecl.getSupertypes()) {
             // This will technically only analyze mixin classes.
             // We also want to clone all mixin vars amnd methods.
 	    typeMap.put(supertype.type.tsym, supertype.type);
             analyzeClass(supertype.type.tsym, true, true);
+        }
+
+        for (String key: toRemove) { // hack...
+	    //System.err.println("removing: "+ key + " from "+currentClassSym);
+            needDispatchMethods.remove(key);
         }
 
         // Track the override vars to the instance attribute results.
@@ -1441,6 +1451,7 @@ class F3AnalyzeClass {
                 classFuncInfos.append(tfi);
             }
         }
+	//System.err.println("finished: "+ currentClassSym);
     }
 
     public Type getType(Symbol sym) {
@@ -1634,58 +1645,55 @@ class F3AnalyzeClass {
     private void processMethod(MethodSymbol sym, boolean needsCloning, ClassSymbol cSym, HashMap<Name, MixinClassVarInfo> mixinVarMap) {
         long flags = sym.flags();
         // Only look at real instance methods.
+	cSym.complete();
 	Type memberType = types.memberType(currentClassSym.type, sym);
 	MethodSymbol origSym = sym;
 	if (memberType != sym.type) {
 	    MethodSymbol memberSym = 
 		new MethodSymbol(sym.flags_field, sym.name, memberType, currentClassSym);
-	    //System.err.println("CREATED MEMBER SYM: "+memberSym+": "+memberType);
+	    //System.err.println("CREATED MEMBER SYM: "+memberSym+": "+memberType + " from " +sym.type);
 	    sym = memberSym;
 	}
-	//System.err.println("processMethod: "+ sym);
         if ((flags & (Flags.ABSTRACT | Flags.SYNTHETIC)) == 0) {
             // Generate a name/signature string for uniqueness.
 	    String nameSig0 = methodSignature(cSym, sym);
-            String nameSig =  methodSignature(currentClassSym, sym);
+            String nameSig =  methodSignature(currentClassSym, origSym);
             // Look to see if we've seen a method like this before.
             FuncInfo oldMethod = visitedMethods.get(nameSig0);
+	    if (false && needsCloning && !nameSig.contains("$")) {
+		System.err.println("processMethod: "+ sym);
+		System.err.println("owner="+sym.owner);
+		System.err.println("csym="+cSym);
+		System.err.println("currentClass="+currentClassSym);
+		System.err.println("nameSig="+nameSig);
+		System.err.println("nameSig0='"+nameSig0+"'");
+		System.err.println("oldMethod="+oldMethod);
+		System.err.println("visitedMethods="+visitedMethods.keySet());
+	    }
             // See if the current method is a mixin.
             boolean newIsMixin = isMixinClass(sym.owner);
             // See if the previous methods is a mixin.
             boolean oldIsMixin = oldMethod != null && isMixinClass(oldMethod.getSymbol().owner);
             // Create new info.
             FuncInfo newMethod = newIsMixin ? new MixinFuncInfo(sym) :  new SuperClassFuncInfo(sym);
-
-	    if (false && !nameSig.contains("$")) {
-		System.err.println("csym="+cSym);
-		System.err.println("sym.owner="+sym.owner);
-		System.err.println("current="+currentClassSym);
-		System.err.println("nameSig="+nameSig);
-		System.err.println("old="+oldMethod);
-		System.err.println("new="+newMethod);
-		System.err.println("needsCloning: "+ needsCloning);
-		System.err.println("private: "+ (sym.flags() & Flags.PRIVATE));
-	    }
-
             // Are we are still cloning this far up the hierarchy?
             if (needsCloning && (sym.flags() & Flags.PRIVATE) == 0) {
                 // If the method didn't occur before or is a real method overshadowing a prior mixin.
-                if (((oldMethod == null || sym.owner != cSym) || (oldIsMixin && !newIsMixin)) && (oldMethod == null || sym.owner == cSym)) {
-                      
-                      Name varName = getAccessorVarName(sym.name);
-                      if (varName != null) {
-                          // Associate the accessor with the var.
-                          MixinClassVarInfo varInfo = mixinVarMap.get(varName);
-                          if (varInfo != null) {
-                              varInfo.addAccessor(newMethod);
-                          }
-                      } else {
-                          // Add to the methods needing $impl dispatch.
-			  //System.err.println("needs dispatch: "+newMethod);
-			  sym.owner = origSym.owner;
-                          needDispatchMethods.put(nameSig, newMethod);
-                      }
-                  }
+		if (oldMethod == null && origSym.owner == cSym) {
+		    Name varName = getAccessorVarName(sym.name);
+		    if (varName != null) {
+			// Associate the accessor with the var.
+			MixinClassVarInfo varInfo = mixinVarMap.get(varName);
+			if (varInfo != null) {
+			    varInfo.addAccessor(newMethod);
+			}
+		    } else {
+			// Add to the methods needing $impl dispatch.
+			//System.err.println("needs dispatch: "+nameSig+": "+newMethod);
+			sym.owner = origSym.owner;
+			needDispatchMethods.put(nameSig, newMethod);
+		    }
+		}
             }
 
             // Map the fact we've seen this name/signature.
@@ -1759,7 +1767,7 @@ class F3AnalyzeClass {
 	Type memberType = types.memberType(site.type, meth);
         nameSigBld.append(meth.name.toString());
 	nameSigBld.append(memberType);
-        return nameSigBld.toString();
+        return nameSigBld.toString().replaceAll("<>", "");
     }
 
     private String methodSignature(MethodSymbol meth) {
@@ -1781,7 +1789,7 @@ class F3AnalyzeClass {
     // F3InitializationBuilder.
     //
     private void printAnalysis(boolean before) {
-        System.err.println("Analyzed : " + currentClassSym);
+       System.err.println("Analyzed : " + currentClassSym);
 
         if (before) {
             System.err.println("  translatedAttrInfo");
