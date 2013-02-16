@@ -4171,6 +4171,8 @@ public class F3Attr implements F3Visitor {
             attribSupertypes(tree, c);
         }
 
+	addTypeCons(tree, c);
+
         // The previous operations might have attributed the current class
         // if there was a cycle. So we test first whether the class is still
         // UNATTRIBUTED.
@@ -4204,6 +4206,46 @@ public class F3Attr implements F3Visitor {
             }
         }
 	//tree.mods.flags |= c.flags();
+    }
+
+    void addTypeCons(F3ClassDeclaration tree, ClassSymbol c) {
+	if (true) {
+	    return;
+	}
+	if (tree.typeArgTypes != null) {
+	    int count = tree.typeArgTypes.size();
+	    if (count > 0) {
+		//System.err.println("TC="+tc);
+		Type thisType = types.erasure(c.type);
+		boolean found = false;
+		List<Type> bounds = List.nil();
+		System.err.println("type="+System.identityHashCode(c.type) + ": "+c.type);
+		for (Type iface : types.supertypesClosure(c.type, false, false)) {
+		    iface = iface.tsym.type;
+		    System.err.println("supers="+types.supertypesClosure(iface));
+		    if (types.isTypeConsType(iface) == 0) {
+			System.err.println("found: "+ iface);
+			bounds = bounds.append(iface.getTypeArguments().head);
+		    }
+		}
+		if (bounds.size() == 0) {
+		    Type tc = types.makeTypeCons(thisType, tree.typeArgTypes);
+		    ClassType ct = (ClassType)c.type;
+		    System.err.println("adding "+tc);
+		    ct.interfaces_field = ct.interfaces_field.append(tc);
+		    ct.allparams_field = null;
+		    System.err.println("interfaces => "+ct.interfaces_field);
+		    if (true) {
+			F3Expression exp = f3make.at(tree.pos).Type(tc);
+			exp.type = tc;
+			if (!types.isMixin(c)) {
+			    tree.addImplementing(exp);
+			}
+		    }
+		    System.err.println("supertypes="+types.supertypesClosure(ct));
+		}
+	    }
+	}
     }
 
     /** Clones a type without copiyng constant values
@@ -4266,6 +4308,7 @@ public class F3Attr implements F3Visitor {
 // Begin F3 trees
     //@Override
     public void visitClassDeclaration(F3ClassDeclaration tree) {
+	//Thread.currentThread().dumpStack();
         // Local classes have not been entered yet, so we need to do it now:
         if ((env.info.scope.owner.kind & (VAR | MTH)) != 0) {
             enter.classEnter(tree, env);
@@ -4275,19 +4318,21 @@ public class F3Attr implements F3Visitor {
         if (c == null) {
             // exit in case something drastic went wrong during enter.
             result = null;
+	    System.err.println("class symbol is null: "+ tree);
         } else {
 
             // make sure class has been completed:
-
+	    //System.err.println("visiting: "+ c);
             c.complete();
 
-            attribSupertypes(tree, c);
+            //attribSupertypes(tree, c);
 
             attribClass(tree.pos(), tree, c);
 	    
 	    result = tree.type = c.type;
 
             types.addF3Class(c, tree);
+	    //System.err.println("finished class "+ c+ ": "+System.identityHashCode(c.type) + ": "+c.type);
         }
         result = syms.voidType;
     }
@@ -4365,36 +4410,6 @@ public class F3Attr implements F3Visitor {
             }
         }
 
-	if (tree.typeArgTypes != null) {
-	    int count = tree.typeArgTypes.size();
-	    if (count > 0) {
-		//System.err.println("TC="+tc);
-		Type thisType = types.erasure(c.type);
-		boolean found = false;
-		List<Type> bounds = List.nil();
-		for (Type iface : types.supertypesClosure(c.type)) {
-		    if (types.isTypeConsType(iface) == 0) {
-			//System.err.println("found: "+ iface);
-			bounds = bounds.append(iface.getTypeArguments().head);
-		    }
-		}
-		if (bounds.size() == 0 && false) {
-		    Type tc = types.makeTypeCons(thisType, tree.typeArgTypes);
-		    ClassType ct = (ClassType)c.type;
-		    //System.err.println("adding "+tc);
-		    ct.interfaces_field = ct.interfaces_field.append(tc);
-		    ct.allparams_field = null;
-		    //System.err.println("interfaces => "+ct.interfaces_field);
-		    if (false) {
-			F3Expression exp = f3make.at(tree.pos).Type(tc);
-			exp.type = tc;
-			if (!types.isMixin(c)) {
-			    tree.addImplementing(exp);
-			}
-		    }
-		}
-	    }
-	}
     }
 
     //@Override
@@ -5333,6 +5348,7 @@ public class F3Attr implements F3Visitor {
         F3ClassDeclaration tree = (F3ClassDeclaration)env.tree;
         assert c == tree.sym;
 
+
         // Validate annotations
         //chk.validateAnnotations(tree.mods.annotations, c);
 
@@ -5789,6 +5805,8 @@ public class F3Attr implements F3Visitor {
 	if (enclosing == null) {
 	    throw new NullPointerException("enclosing");
 	}
+	//System.err.println("NEW CLASS TYPE: "+ tsym + ": " +targs);
+	//System.err.println("ORIG CLASS TYPE: "+ tsym + ": " +tsym.type);
 	ClassType ct = new ClassType(enclosing, targs, tsym);
 	return ct;
     }

@@ -1456,8 +1456,8 @@ public function run from (args is String[]) to ()
         id: "free";
 	ty: 3.0;
 	tz: 13.7;
-	near: .0001;
-	far: 1000;
+	near: .001;
+	far: 100;
 	content: PointLight {}
     }
 

@@ -593,6 +593,7 @@ public class F3ClassReader extends ClassReader {
         MethodSymbol res = new MethodSymbol(flags, name, type, owner);
 	//System.err.println("TRANSLATED: "+System.identityHashCode(origSym)+": "+origSym);
 	//System.err.println("TRANSLATED TO: "+System.identityHashCode(res)+": "+origSym);
+	//System.err.println("translated: "+res+": "+res.type);
 	cloneMethodParams(origSym, res);
 	return res;
     }

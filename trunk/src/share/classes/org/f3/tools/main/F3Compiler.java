@@ -963,7 +963,7 @@ public class F3Compiler implements ClassReader.SourceCompleter {
                                   env.toplevel.sourcefile);
         try {
             attr.attribClass(env.tree.pos(), env.tree instanceof F3ClassDeclaration ? (F3ClassDeclaration)env.tree : null,
-                env.enclClass.sym);
+			     env.enclClass.sym);
             printF3Source("dumpattr", env.toplevel, null);
         }
         finally {

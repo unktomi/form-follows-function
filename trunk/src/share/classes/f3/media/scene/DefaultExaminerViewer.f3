@@ -51,6 +51,7 @@ public class DefaultExaminerViewer extends ExaminerViewer {
         const radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
         // Now figure out how far to move
         const minAngle = if (camera.heightAngle < camera.widthAngle) camera.heightAngle else camera.widthAngle;
+	println("minAngle ={minAngle} for {bounds} camera={camera.bounds}");
         if (minAngle == 0.0) {
             return null;
         }
@@ -60,6 +61,8 @@ public class DefaultExaminerViewer extends ExaminerViewer {
         var backoff = Vec3.Z_AXIS;
         backoff = getCameraOrientation() * backoff;
         backoff *= dist;
-        return backoff + bounds.center;
+        const result = backoff + bounds.center;
+	println("view all for {bounds} => {result}");
+	return result;
     }
 }
