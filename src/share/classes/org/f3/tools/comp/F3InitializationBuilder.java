@@ -4396,11 +4396,11 @@ however this is what we need */
 
                 // Construct lazy accessor method.
                 JCMethodDecl method = Method(Flags.PUBLIC | Flags.STATIC,
-                                                 syms.f3_ShortArray,
-                                                 varGetMapName(cSym),
-                                                 List.<JCVariableDecl>nil(),
-                                                 stmts.toList(), 
-                                                 methSym);
+					     syms.f3_ShortArray,
+					     varGetMapName(cSym),
+					     List.<JCVariableDecl>nil(),
+					     stmts.toList(), 
+					     methSym);
                                                  
                 // Add method.
                 addDefinition(method);

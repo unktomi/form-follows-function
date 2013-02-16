@@ -488,7 +488,7 @@ public class F3Types extends Types {
         return sequenceType(elemType, true);
     }
 
-    boolean isWildcard(Type t) {
+    public boolean isWildcard(Type t) {
 	if (t instanceof WildcardType) {
 	    return true;
 	}
@@ -2057,6 +2057,8 @@ public class F3Types extends Types {
 			    res = subst2(res, from, to);
 			    //System.err.println("res'="+res);
 			    return res;
+			} else {
+			    System.err.println("no match "+tc1.ctor+" "+tc2);
 			}
 		    }
 		}
@@ -2091,8 +2093,9 @@ public class F3Types extends Types {
         @Override
         public Type visitWildcardType(WildcardType t, Void ignored) {
             Type bound = t.type;
-            if (t.kind != BoundKind.UNBOUND)
+            if (t.kind != BoundKind.UNBOUND) {
                 bound = subst(bound);
+	    } 
             if (bound == t.type) {
                 return t;
             } else {

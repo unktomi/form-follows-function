@@ -2160,6 +2160,9 @@ public class F3Check {
 	    //System.err.println("interfaces: "+l);
 	    for ( ; l.nonEmpty(); l = l.tail) {
 		Type it = l.head;
+		if (types.isTypeConsType(it) >= 0) {
+		    it = types.erasure(it);
+		}
 		Type oldit = seensofar.put(it.tsym, it);
 		if (oldit != null) {
 		    List<Type> oldparams = oldit.allparams();

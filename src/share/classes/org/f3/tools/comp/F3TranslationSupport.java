@@ -448,7 +448,8 @@ public abstract class F3TranslationSupport {
 		    if (!expandTypeCons) {
 			//System.err.println("expanding'1: "+ types.toF3String(t));
 			TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
-			t = types.applySimpleGenericType(ctor, tcons.args.prepend(tv));
+			Type wc = new WildcardType(tv, BoundKind.EXTENDS, syms.boundClass);
+			t = types.applySimpleGenericType(ctor, tcons.args.prepend(wc));
 		    } else {
 			//t = tv;
 			t = new TypeVar(t.tsym, null, syms.botType);
@@ -478,11 +479,19 @@ public abstract class F3TranslationSupport {
 		}
 	    }
 	} else {
-	    if (t.isParameterized()) {
-		Type base = t.tsym.type;
-		if (base.getTypeArguments().size() > t.getTypeArguments().size()) {
-		    System.err.println("wrong # of type args: "+ t + " <> "+ base);
-		    t = types.makeTypeCons(types.erasure(t), t.getTypeArguments());
+	    int i = types.isTypeConsType(t);
+	    if (i >= 0) {
+		if (!(t instanceof WildcardType)) {
+		    //System.err.println("erasing: "+ t);
+		    //t = types.erasure(t);
+		}
+	    } else {
+		if (t.isParameterized()) {
+		    Type base = t.tsym.type;
+		    if (base.getTypeArguments().size() > t.getTypeArguments().size()) {
+			System.err.println("wrong # of type args: "+ t + " <> "+ base);
+			t = types.makeTypeCons(types.erasure(t), t.getTypeArguments());
+		    }
 		}
 	    }
 	}

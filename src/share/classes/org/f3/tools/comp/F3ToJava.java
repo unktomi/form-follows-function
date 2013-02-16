@@ -375,14 +375,13 @@ public class F3ToJava extends F3AbstractTranslation {
             // WARNING: translate can't be called directly or indirectly after this point in the method, or the prepends won't be included
 
             F3ClassModel model = initBuilder.createF3ClassModel(tree, 
-                    attrInfo.toList(),
-                    overrideInfo.toList(),
-                    funcInfo.toList(),
-                    getLiteralInitClassMap(),
-                    translatedInitBlocks,
-                    translatedPostInitBlocks);
+								attrInfo.toList(),
+								overrideInfo.toList(),
+								funcInfo.toList(),
+								getLiteralInitClassMap(),
+								translatedInitBlocks,
+								translatedPostInitBlocks);
             additionalImports.appendList(model.additionalImports);
-
             translatedDefs.appendList(model.additionalClassMembers);
             // build the list of implemented interfaces
             List<JCExpression> implementing = model.interfaces;
