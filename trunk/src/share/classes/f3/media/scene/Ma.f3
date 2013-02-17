@@ -1023,9 +1023,9 @@ class MMesh is MSpatial
 		const next = edgeEnd(faceEdge);
 		const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
 		const v0 = vertex(edge);
-		    const v1 = vertex(next);
-		    const v2 = vertex(prev);
-   		    norm += (v1 - v0).cross(v2 - v0);
+		const v1 = vertex(next);
+		const v2 = vertex(prev);
+		norm += (v1 - v0).cross(v2 - v0);
 	    }
 	    norm = norm.normalize();
 	    insert norm into faceNormals;
@@ -1092,46 +1092,58 @@ class MMesh is MSpatial
 	}
     }
 
-    function getMesh to AbstractMesh
+    function getMesh to AbstractMesh[]
     {
-	const startIndex = 0;
-	const endIndex = polyfaces.size();
-	for (i in [startIndex..<endIndex]) {
-	    const f = polyfaces[i];
-	    const mu = f.mu;
-	    const edge0 = edgeStart(f.faceEdges[0]);
-	    const norm0 = i;
-	    const uv0 = f.getUV(0);
-	    var edge1 = edgeStart(f.faceEdges[1]);
-	    var norm1 = i;
-	    var uv1 = f.getUV(1);
-	    for (j in [2..<f.faceEdges.size()]) {
-		insertVertex(edge0, norm0, mu.uvSet, uv0);
-		insertVertex(edge1, norm1, mu.uvSet, uv1);
-		const edge2 = edgeStart(f.faceEdges[j]);
-		const norm2 = i;
-		const uv2 = f.getUV(j);
-		insertVertex(edge2, norm2, mu.uvSet, uv2);
-		edge1 = edge2;
-		norm1 = norm2;
-		uv1 = uv2;
-	    }
+	if (components == []) {
+	    components = [ComponentList {
+		    faceStart: 0;
+		    faceEnd: polyfaces.size();
+		}];
 	}
-	const ib = this.ib.getBuffer();
-	const vb = this.vb.getBuffer();
-	const nb = this.nb.getBuffer();
-	const uvb = this.uvb.getBuffer();
-        const tanb = BufferUtils.createVector3Buffer(ib.limit());
-        const binb = BufferUtils.createVector3Buffer(ib.limit());
-	ImportUtils.addTangentBinormalStreams(ib, vb, uvb,nb, tanb, binb);
-	MeshBuffer {
-            indexBuffer: ib;
-	    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
-	    normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb };
-	    textureBuffers: [MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb },
-			     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
-			     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
-	}.toMesh()
+	foreach (comp in components) {
+	    this.ib.clear();
+	    this.vb.clear();
+	    this.nb.clear();
+	    this.uvb.clear();
+	    const startIndex = comp.faceStart;
+	    const endIndex = comp.faceEnd;
+	    for (i in [startIndex..<endIndex]) {
+		const f = polyfaces[i];
+		const mu = f.mu;
+		const edge0 = edgeStart(f.faceEdges[0]);
+		const norm0 = i;
+		const uv0 = f.getUV(0);
+		var edge1 = edgeStart(f.faceEdges[1]);
+		var norm1 = i;
+		var uv1 = f.getUV(1);
+		for (j in [2..<f.faceEdges.size()]) {
+		    insertVertex(edge0, norm0, mu.uvSet, uv0);
+		    insertVertex(edge1, norm1, mu.uvSet, uv1);
+		    const edge2 = edgeStart(f.faceEdges[j]);
+		    const norm2 = i;
+		    const uv2 = f.getUV(j);
+		    insertVertex(edge2, norm2, mu.uvSet, uv2);
+		    edge1 = edge2;
+		    norm1 = norm2;
+		    uv1 = uv2;
+		}
+	    }
+	    const ib = this.ib.getBuffer();
+	    const vb = this.vb.getBuffer();
+	    const nb = this.nb.getBuffer();
+	    const uvb = this.uvb.getBuffer();
+	    const tanb = BufferUtils.createVector3Buffer(ib.limit());
+	    const binb = BufferUtils.createVector3Buffer(ib.limit());
+	    ImportUtils.addTangentBinormalStreams(ib, vb, uvb,nb, tanb, binb);
+	    MeshBuffer {
+		indexBuffer: ib;
+		vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
+		normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb };
+		textureBuffers: [MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb },
+				 MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
+				 MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
+	    }.toMesh();
+	}
     }
 
     const ib = new IntBufferBuilder();
@@ -1269,30 +1281,36 @@ class MMesh is MSpatial
 	}
     }
 
-    override function toNode from (m is MaModel) to Node {
+    override function toNode from (m is MaModel) to Node 
+    {
 	buildMesh();
-	const mesh = getMesh();
-	const shaderConn = connectionsFromThis.get("iog");
-	const mshaderNode = 
-	    if (shaderConn <> null) {
-		println("shaderConn={shaderConn}");
-		println("shaderConn={shaderConn[0].targetNode}");
-		println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
-		println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
-		shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
-	    } else null;
-	println("shaderNode={mshaderNode}");
-	const shader = mshaderNode.toShader(m);
 	const p = m.toParentNode(parent as MSpatial);
-	const r = MeshNode {
-	    //visible: visible;
-	    id: name;
-	    mesh: mesh;
-	    shader: shader;
+	var id = "";
+	var r0 is Node;
+	for (mesh in getMesh()) {
+	    const shaderConn = connectionsFromThis.get("iog");
+	    const mshaderNode = 
+		if (shaderConn <> null) {
+		    println("shaderConn={shaderConn}");
+		    println("shaderConn={shaderConn[0].targetNode}");
+		    println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+		    println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
+		    shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
+		} else null;
+	    println("shaderNode={mshaderNode}");
+	    const shader = mshaderNode.toShader(m);
+	    const r = MeshNode {
+		//visible: visible;
+		id: "{name}{id}";
+		mesh: mesh;
+		shader: shader;
+	    }
+	    id = "#{indexof mesh +1}";
+	    insert r into p.content;
+	    r0 = r;
+	    m.spatialMap.put(this, r);
 	}
-	m.spatialMap.put(this, r);
-	insert r into p.content;
-	return r;
+	return r0;
     }
 }
 
