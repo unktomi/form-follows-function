@@ -5557,6 +5557,9 @@ public class F3Attr implements F3Visitor {
 			System.err.println("derived arg="+x.head);
 			System.err.println("derived arg'="+x1);
 			*/
+			List<Type> targs = x1.getTypeArguments();
+			targs.head = new WildcardType(targs.head, BoundKind.EXTENDS, syms.boundClass); // hack
+			//System.err.println("setting base type: "+ y.head +" => "+x1);
 			vars.head.baseType = x1;
 		    }
 		}

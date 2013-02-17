@@ -54,7 +54,7 @@ class DefaultPhongShader is CGFXShader
 	      projectionMatrix is Mat4)
 	to ()
     {
-        setParameter("lightScenePos", lightScenePos);
+        setParameter("lightWorldPos", lightScenePos);
         super.apply(mesh, sceneTransform, viewMatrix, projectionMatrix);
     }
 }
@@ -73,10 +73,10 @@ class DefaultPhongShader4 is CGFXShader
 	      projectionMatrix is Mat4)
 	to ()
     {
-        setParameter("lightScenePos1", lightScenePos1);
-        setParameter("lightScenePos2", lightScenePos2);
-        setParameter("lightScenePos3", lightScenePos3);
-        setParameter("lightScenePos4", lightScenePos4);
+        setParameter("lightWorldPos1", lightScenePos1);
+        setParameter("lightWorldPos2", lightScenePos2);
+        setParameter("lightWorldPos3", lightScenePos3);
+        setParameter("lightWorldPos4", lightScenePos4);
         setParameter("lightMask", lightMask);
         super.apply(mesh, sceneTransform, viewMatrix, projectionMatrix);
     }
@@ -662,7 +662,7 @@ class SceneRenderer {
         var dirty = dirty0;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
-        scene.root.foldLeft((), function from (_ is (), n is Node) to () {
+        const vf = function from (_ is (), n is Node) to () {
 		//		println("n={n} {n.id} p={n.parent} vis={n.sceneVisible} wt={n.sceneTransform}");
 		if (n.sceneTransform == null) {
 		    println("no scene transform: {n.id} => {n.sceneTransform} parent={n.parent.id}");
@@ -705,7 +705,8 @@ class SceneRenderer {
                         }
                     }
                 }
-            });
+            };
+	scene.root.foldLeft((), vf);
         for (i in offscreenToRender) {
             renderStageNode(gl, i as StageNode);
         }
@@ -718,6 +719,7 @@ class SceneRenderer {
         lastDrawn.addAll(opaqueToDraw);
         lastDrawn.addAll(transparentToDraw);
         var positions is Point3[] = foreach (light in lights) light.location;
+	//println("light positions = {positions}");
         if (positions <> lightPositions) {
             lightPositions = positions;
             dirty = true;

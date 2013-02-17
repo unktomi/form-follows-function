@@ -66,6 +66,7 @@ class MaModel
 	    else null;
 	if (current <> null) {
 	    nodeMap.put(current.name, current);
+	    nodeMap.put(current.getFullName(), current);
 	}
     }
 
@@ -328,6 +329,10 @@ class MNode {
 	new java.util.HashMap of (String, MAttr);
     const name is String;
     const parent is MNode;
+    function getFullName to String {
+	"{if (parent == null) then "" else parent.getFullName()}|{name}";
+    }
+
 
     function getPointer 
 	from (path is String, target is Object) 
@@ -931,8 +936,14 @@ class UVSet {
     }
 }
 
+class ComponentList {
+    const faceStart is Integer;
+    const faceEnd is Integer;
+}
+
 class MMesh is MSpatial 
 {
+    var components is ComponentList[];
     var verts is Number[];
     var pointTweaks is Number[];
     var normals is Number[];
@@ -1217,7 +1228,21 @@ class MMesh is MSpatial
 			if (compPath.path[0] is Field) {
 			    const f = compPath.path[0] as Field;
 			    if (f.name == "f") {
-				//const fr = compPath.path[1] as Range;
+				const compList is ComponentList = 
+				    if (compPath.path[1] instanceof Range) {
+					const fr = compPath.path[1] as Range;
+					ComponentList {
+					    faceStart: fr.startIndex;
+					    faceEnd: fr.endIndex;
+					} 
+				    } else {
+					const fi = compPath.path[1] as Index;
+					ComponentList {
+					    faceStart: fi.index;
+					    faceEnd: fi.index;
+					} 
+				    };
+				insert compList into components;
 			    }
 			}
 		    }
@@ -1250,12 +1275,13 @@ class MMesh is MSpatial
 	const shaderConn = connectionsFromThis.get("iog");
 	const mshaderNode = 
 	    if (shaderConn <> null) {
-		//println("shaderConn={shaderConn}");
-		//println("shaderConn={shaderConn[0].targetNode}");
-		//println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
-		//println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
+		println("shaderConn={shaderConn}");
+		println("shaderConn={shaderConn[0].targetNode}");
+		println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+		println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
 		shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
 	    } else null;
+	println("shaderNode={mshaderNode}");
 	const shader = mshaderNode.toShader(m);
 	const p = m.toParentNode(parent as MSpatial);
 	const r = MeshNode {
