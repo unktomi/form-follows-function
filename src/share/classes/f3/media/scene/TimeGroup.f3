@@ -83,14 +83,24 @@ Interval.merge(bnds12,
 	from (z is b, f is function from (b, TimeNode) to b) 
 	to b 
     {
-	content.foldLeft(z, f)
+	content.foldLeft(f(z, this), 
+			 function from (z is b, n is TimeNode) to b 
+			 {
+			     n.foldLeft(f(z, n), f); 
+			 })
     }
 
     override function foldRight of b
 	from (z is b, f is function from (TimeNode, b) to b) 
 	to b 
     {
-	content.foldRight(z, f)
+	const r = 
+	    content.foldRight(z,
+			      function from (n is TimeNode, z is b) to b 
+			      {
+				  f(n, n.foldRight(z, f))
+			      });
+	f(this, r);
     }
 
     override protected function updateParent to () {
@@ -98,6 +108,7 @@ Interval.merge(bnds12,
 	    contentInvalid = false;
 	    for (n in content) {
 		n.parent = this;
+		n.updateParent();
 	    }
 	}
     }

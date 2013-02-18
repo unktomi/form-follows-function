@@ -59,6 +59,10 @@ class MaModel
 		then MAnimCurve__ {name: name, parent: findNode(parent)}
 	    else if (nodeType == "character") 
 		then MCharacter {name: name}
+	    else if (nodeType == "animClip") 
+		then MAnimClip {name: name}
+	    else if (nodeType == "clipLibrary") 
+		then MClipLibrary {name: name}
 	    else if (nodeType == "addDoubleLinear") 
 		then MAddDoubleLinear {name: name}
 	    else if (nodeType == "multiplyDivide") 
@@ -143,11 +147,15 @@ class MaModel
     const shaderMap is java.util.Map of (MNode, Shader) = 
 	new java.util.HashMap of (MNode, Shader) ();
 
+    const clipLibMap is java.util.Map of (MNode, TimeNode) = 
+	new java.util.HashMap of (MNode, TimeNode) ();
+
     public var url is String;
 
     public var spatialRoot is Group;
     public var temporalRoot is TimeGroup;
     var channels is TimeNode[];
+    var clipLibs is TimeNode[];
 
     function getCameras to Camera[] {
 	var result is Camera[];
@@ -276,6 +284,47 @@ class MaModel
 	    }
     }
 
+    function toClipLibrary from (n is MClipLibrary) to TimeNode {
+	const r is TimeNode = clipLibMap.get(n);
+	if (r == null) {
+	    println("converting clip library {n.name}");
+	    var clips is TimeGroup[];
+	    println("connections={n.connectionsToThis.get("sc")}");
+	    for (conn in n.connectionsToThis.get("sc")) {
+		const path = parsePath(conn.targetPath).path;
+		const i = (path[1] as Index).index;
+		const sourceClip = conn.sourceNode as MAnimClip;
+		const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode as MAnimClip;
+		const start = 1s/24 * (sourceClip.ss-1);
+		const end = 1s/24 * (sourceClip.se);
+		insert TimeGroup {
+		    id: clip.name;
+		    playRange: Interval { start: start, end: end }
+		} into clips;
+	    }
+	    for (conn in n.connectionsToThis.get("cel")) {
+		const path = parsePath(conn.targetPath).path;
+		const celIndex = (path[1] as Index).index;
+		const clip = clips[celIndex];
+		//const cevIndex = (path[3] as Index).index;
+		const animCurve = conn.sourceNode as MAnimCurve;
+		const ch = toChannel(animCurve);
+		insert ch into clip.content;
+		delete ch from channels;
+	    }
+	    for (clip in clips) {
+		println("created clip: {clip.id} with {clip.content.size()} channels");
+	    }
+	    r = TimeGroup {
+		id: n.name;
+		content: clips;
+	    }
+	    clipLibMap.put(n, r);
+	    insert r into clipLibs;
+	}
+	return r;
+    }
+
     function generateScene 
     {
 	spatialRoot = Group {id: url};
@@ -286,7 +335,9 @@ class MaModel
 		    toNode(n as MSpatial)
 		} else if (n is MAnimCurve) {
 		    toChannel(n as MAnimCurve);
-		} else null;
+		} else if (n instanceof MClipLibrary) {
+		    toClipLibrary(n as MClipLibrary);
+		} else null
 	}
 	var j = 0;
 	var g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
@@ -302,10 +353,12 @@ class MaModel
 				     {
 					 if (y == "") then "{x.id}" else "{y} -> {x.id}";
 				     }));
+	/*
 	println(temporalRoot.foldLeft("", function from (y is String, x is TimeNode) to String 
 				      {
-					  if (y == "") then "{x.id}" else "{y} -> {x.id}";
+					  if (y == "") then "{x.id}" else "{y} => {x.id}";
 				      }));
+	*/
     }
 }
 
@@ -348,14 +401,16 @@ class MNode {
 
     function addConnectionTo from (c is Connection) to () 
     {
-	const conns = connectionsToThis.get(c.targetPath);
-	connectionsToThis.put(c.targetPath, [c, conns])
+	const field = parsePath(c.targetPath).path[0] as Field;
+	const conns = connectionsToThis.get(field.name);
+	connectionsToThis.put(field.name, [c, conns])
     }
 
     function addConnectionFrom from (c is Connection) to () 
     {
-	const conns = connectionsFromThis.get(c.sourcePath);
-	connectionsFromThis.put(c.sourcePath, [c, conns])
+	const field = parsePath(c.sourcePath).path[0] as Field;
+	const conns = connectionsFromThis.get(field.name);
+	connectionsFromThis.put(field.name, [c, conns])
     }
 
     function addAttr from (cmd is Command) to () 
@@ -1579,6 +1634,23 @@ class MLight is MSpatial {
     }
 }
 
+class MAnimClip is MNode {
+    var ss is Integer;
+    var se is Integer;
+    override function setAttr from (cmd is Command) to () 
+    {
+	const n = cmd.getAttr();
+	if (n == "ss") {
+	    ss = cmd.getInt();
+	} else if (n == "se") {
+	    se = cmd.getInt();
+	} else super.setAttr(cmd);
+    }
+}
+
+class MClipLibrary is MNode {
+}
+
 // http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/animCurve.html
 abstract class MAnimCurve of a is MTemporal 
 {
@@ -1591,7 +1663,6 @@ abstract class MAnimCurve of a is MTemporal
 
     override function setAttr from (cmd is Command) to () 
     {
-	super.setAttr(cmd);
 	const n = cmd.getAttr();
 	if (n == "kix") {
 	    kix = cmd.getFloatArray();
@@ -1605,7 +1676,7 @@ abstract class MAnimCurve of a is MTemporal
 	    kit = cmd.getIntArray();
 	} else if (n == "kot") {
 	    kot = cmd.getIntArray();
-	}
+	} else super.setAttr(cmd);
     }
 
     abstract function toChannel from (m is MaModel) to Channel of a;
@@ -2118,6 +2189,7 @@ function dumpScene (spatialRoot is Node)
 class ModelContent {
     public var spatial is Node;
     public var temporal is TimeNode;
+    public var clipLibraries is TimeNode[];
     public var cameras is Camera[];
 }
 
@@ -2126,6 +2198,11 @@ public class Model {
     public var url is String;
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
+
+    public bound function getClipLibraries to TimeNode[] 
+    {
+	modelContent.clipLibraries;
+    }
 
     public bound function getCameras to Camera[]
     {
@@ -2153,6 +2230,7 @@ public class Model {
 	    spatial: m.spatialRoot;
 	    temporal: m.temporalRoot;
 	    cameras: m.getCameras();
+	    clipLibraries: m.clipLibs;
 	}
 	return r;
     }
