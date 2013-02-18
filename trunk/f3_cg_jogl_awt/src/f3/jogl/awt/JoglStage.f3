@@ -41,7 +41,7 @@ function pot from (n is Integer) to Integer
 }
 
 const NUM_SAMPLES = java.lang.Integer.getInteger("numSamples", 8);
-const SAMPLE_BUFFERS = NUM_SAMPLES != 0;
+const SAMPLE_BUFFERS = NUM_SAMPLES <> 0;
 const DEPTH_BITS = java.lang.Integer.getInteger("depthBits", 32);
 
 class DefaultPhongShader is CGFXShader 
@@ -136,7 +136,7 @@ class JoglCGEffectLoader is CGEffectLoader
 }
 
 
-def ENABLE_VBOS = java.lang.Boolean.getBoolean("enable.vbos");
+const ENABLE_VBOS = java.lang.Boolean.getBoolean("enable.vbos");
 
 class MeshVBO {
     var gl is GL2;
@@ -179,10 +179,14 @@ function bufferData
     return id;
 }
 
-function bufferData(gl:GL2, buffer:java.nio.IntBuffer):Integer {
-    var ibuf = BufferUtils.createIntBuffer(1);
+function bufferData
+    from (gl is GL2, 
+	  buffer is java.nio.IntBuffer)
+    to Integer 
+{
+    const ibuf = BufferUtils.createIntBuffer(1);
     gl.glGenBuffers(1, ibuf);
-    var id = ibuf.get(0);
+    const id = ibuf.get(0);
     buffer.rewind();
     gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, id);
     gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, buffer.limit() * 4,  buffer, GL.GL_STATIC_DRAW);
@@ -211,7 +215,7 @@ function getVBO
     return vb;
 }
 
-var DEBUG_USE_DEFAULT_SHADER = 
+const DEBUG_USE_DEFAULT_SHADER = 
     java.lang.Boolean.getBoolean("debug.use.default.shader");
 
 const SHADER_DEBUG = java.lang.Boolean.getBoolean("debug.cgfx");
@@ -247,16 +251,16 @@ function genTexture
 
 class OffscreenSurface is JoglTexture 
 {
-    var sceneRenderer: SceneRenderer;
+    var sceneRenderer is SceneRenderer;
     override var tex = bind genTexture(gl, pot_width, pot_height);
-    const _backgroundColor:Color;
+    const _backgroundColor is Color;
     var _width is Integer = bind (width+0.5) as Integer;
     var _height is Integer = bind (height+0.5) as Integer;
     var pot_width = bind pot(_width);
     var pot_height = bind pot(_height);
-    const _samples:Integer = 0;
-    const _depthBits:Integer = 24;
-    const _stencilBits:Integer = 8;
+    const _samples is Integer = 0;
+    const _depthBits is Integer = 24;
+    const _stencilBits is Integer = 8;
     var _fboID is Integer;
     var _depthRBID is Integer;
     var _msfboID is Integer;
@@ -299,7 +303,7 @@ class OffscreenSurface is JoglTexture
             // release
             gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
             // add multisample framebuffer + renderbuffers
-            if (_samples != 0) {
+            if (_samples <> 0) {
                 // create ms framebuffer object
                 gl.glGenFramebuffers(1, buffer);
                 _msfboID = buffer.get(0);
@@ -395,14 +399,14 @@ class OffscreenSurface is JoglTexture
 
     function cleanup to () 
     {
-        if (_fboID != 0) {
+        if (_fboID <> 0) {
             const id = BufferUtils.createIntBuffer(1);
             id.put(_fboID);
             id.rewind();
             gl.glDeleteFramebuffers(id.limit(), id);
         }
 
-        if (_msdepthRBID != 0) {
+        if (_msdepthRBID <> 0) {
             const id = BufferUtils.createIntBuffer(1);
             id.put(_depthRBID);
             id.rewind();
@@ -413,7 +417,7 @@ class OffscreenSurface is JoglTexture
     function setupForDraw to ()
     {
         const textureId = tex.getTextureObject(gl);
-        if (lastTextureId != 0 and lastTextureId != textureId) {
+        if (lastTextureId <> 0 and lastTextureId <> textureId) {
             var ibuf = BufferUtils.createIntBuffer(1);
             ibuf.clear();
             ibuf.put(lastTextureId);
@@ -509,7 +513,7 @@ class JoglImageLoader is ImageLoader {
             var result = loadTexture2D0(url);
 	    println("LOAD IMAGE {url} => {result}");
 	    return result;
-        } catch (t:java.lang.Throwable) {
+        } catch (t is java.lang.Throwable) {
             t.printStackTrace();
         }
         return null;
@@ -539,7 +543,7 @@ class JoglImageLoader is ImageLoader {
                                    PNGDecoder.TextureFormat.RGBA);
                     w = pot(tWidth);
                     h = pot(tHeight);
-                    if (w != tWidth or h != tHeight) {
+                    if (w <> tWidth or h <> tHeight) {
                         var glu = new GLUgl2();
                         var potBuffer = BufferUtils.createByteBuffer(4*w*h);
                         buffer.rewind();
@@ -644,15 +648,17 @@ class SceneRenderer {
 
     var offscreenToRender = new java.util.HashSet of StageNode;
     var lastDrawn = new java.util.HashSet of MeshNode;
-    var lightPositions: Point3[]; // hack
-    var lastCamera: Camera;
+    var lightPositions is Point3[]; // hack
+    var lastCamera is Camera;
 
-    function renderScene(gl is GL2, scene:Scene, width:Number, height:Number, dirty0:Boolean):Boolean {
-
-        //if (scene.clip != []) {
-            // @todo render to stencil buffer
-        //}
-	//println("render scene");
+    function renderScene
+	from (gl is GL2, 
+	      scene is Scene, 
+	      width is Number, 
+	      height is Number, 
+	      dirty0 is Boolean)
+	to Boolean
+    {
         opaqueToDraw.clear();
         transparentToDraw.clear();
         offscreenToRender.clear();
@@ -663,49 +669,48 @@ class SceneRenderer {
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
         const vf = function from (_ is (), n is Node) to () {
-		//		println("n={n} {n.id} p={n.parent} vis={n.sceneVisible} wt={n.sceneTransform}");
-		if (n.sceneTransform == null) {
-		    println("no scene transform: {n.id} => {n.sceneTransform} parent={n.parent.id}");
-		    return;
+	    if (n.sceneTransform == null) {
+		println("no scene transform: {n.id} => {n.sceneTransform} parent={n.parent.id}");
+		return;
+	    }
+	    if (n.sceneVisible) {
+		if (n is PointLight) {
+		    insert (n as PointLight) into lights;
 		}
-                if (n.sceneVisible) {
-		    if (n is PointLight) {
-			insert (n as PointLight) into lights;
+		if (n is MeshNode) {
+		    if (scene.camera.contains(n.sceneBounds)) {
+			var mn = n as MeshNode;
+			var shader = mn.shader;
+			if (mn.shader <> null) {
+			    for (p in (mn.shader as CGFXShader).parameters) {
+				var value = (p as CGFXShader.Parameter of Object).get();
+				if (value is StageNode) {
+				    const stageNode = value as StageNode;
+				    offscreenToRender.add(stageNode);
+				}
+			    }
+			} 
+			if (not dirty) {
+			    dirty = true; //mn.shader.isDirty() or mn.needsDraw;
+			}
+			var tris = mn.mesh.getIndexBuffer().limit() / 3;
+			if (false) { //shader.isTransparent()) {
+			    transparentToDraw.add(mn);
+			    transparentTris += tris;
+			} else {
+			    opaqueToDraw.add(mn);
+			    opaqueTris += tris;
+			}
+			lastDrawn.remove(n);
+		    } else {
+			//  println("culled {n.id} {n.sceneBounds}");
+			if (lastDrawn.remove(n)) {
+			    dirty = true;
+			}
 		    }
-                    if (n is MeshNode) {
-                        if (scene.camera.contains(n.sceneBounds)) {
-                            var mn = n as MeshNode;
-                            var shader = mn.shader;
-                            if (mn.shader != null) {
-                                for (p in (mn.shader as CGFXShader).parameters) {
-                                    var value = (p as CGFXShader.Parameter of Object).get();
-                                    if (value is StageNode) {
-                                        const stageNode = value as StageNode;
-                                        offscreenToRender.add(stageNode);
-                                    }
-                                }
-                            } 
-                            if (not dirty) {
-                                dirty = true; //mn.shader.isDirty() or mn.needsDraw;
-                            }
-                            var tris = mn.mesh.getIndexBuffer().limit() / 3;
-                            if (false) { //shader.isTransparent()) {
-                                transparentToDraw.add(mn);
-                                transparentTris += tris;
-                            } else {
-                                opaqueToDraw.add(mn);
-                                opaqueTris += tris;
-                            }
-                            lastDrawn.remove(n);
-                        } else {
-			    //  println("culled {n.id} {n.sceneBounds}");
-                            if (lastDrawn.remove(n)) {
-                                dirty = true;
-                            }
-                        }
-                    }
-                }
-            };
+		}
+	    }
+	};
 	scene.root.foldLeft((), vf);
         for (i in offscreenToRender) {
             renderStageNode(gl, i as StageNode);
@@ -714,7 +719,7 @@ class SceneRenderer {
         scene.updateCamera();
         var camera = scene.camera;
         dirty = dirty or camera.needsDraw;
-        dirty = dirty or lastDrawn.size() != 0;
+        dirty = dirty or lastDrawn.size() <> 0;
         lastDrawn.clear();
         lastDrawn.addAll(opaqueToDraw);
         lastDrawn.addAll(transparentToDraw);
@@ -732,11 +737,8 @@ class SceneRenderer {
         if (not dirty) {
             return false;
         }
-	//println("gl ={gl}");
         gl.glViewport(0, 0, width, height);
-	//println("scene={scene} bg={scene.background} {width} {height}");
-	//println("toDraw={opaqueToDraw}");
-        if (scene.background != null) {
+        if (scene.background <> null) {
             var bg = scene.background;
 	    //  println("clearing {bg} {java.lang.Thread.currentThread()}");
             gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
@@ -771,15 +773,6 @@ class SceneRenderer {
                     });
             }
         }
-        /*
-        gl.glEnable(GL.GL_DEPTH_TEST);
-        gl.glDepthFunc(GL.GL_LESS);
-        gl.glDepthMask(true);
-        gl.glDisable(gl.GL_CULL_FACE);
-        gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
-        gl.glPolygonOffset(10, 10);
-        gl.glEnable(GL.GL_TEXTURE_2D);
-        */
         onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
         draw(gl, camera, opaqueToDraw, lightPositions);
         opaqueToDraw.clear();
@@ -832,7 +825,7 @@ class SceneRenderer {
             var vbo = getVBO(gl, mesh);
             vertexBuffer.rewind();
             gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-            if (vbo != null) {
+            if (vbo <> null) {
                 gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.vertexBuffer);
                 gl.glVertexPointer(mesh.vertices.getCoordsPerVertex(), 
                                    GL.GL_FLOAT, 0, 0);
@@ -845,7 +838,7 @@ class SceneRenderer {
                 gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
             } else {
                 gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
-                if (vbo != null) {
+                if (vbo <> null) {
                     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo.normalBuffer);
                     gl.glNormalPointer(GL.GL_FLOAT, 0, 0);
                 } else {
@@ -858,9 +851,9 @@ class SceneRenderer {
 	    for (unit in [0..<texUnits]) {
 		var textureBuffer = mesh.getTextureBuffers()[shader.uvMap[unit]];
 		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
-		if (textureBuffer != null) {
+		if (textureBuffer <> null) {
 		    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
-		    if (vbo != null) {
+		    if (vbo <> null) {
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.textureBuffers[unit]);
 			gl.glTexCoordPointer(coords[unit].getCoordsPerVertex(), 
 					     GL.GL_FLOAT, 0, 0);
@@ -923,12 +916,12 @@ class SceneRenderer {
                                              camera.projectionMatrix);
 
             }
-            if (mesh.polygonMode != polygonMode) {
+            if (mesh.polygonMode <> polygonMode) {
                 polygonMode = mesh.polygonMode;
                 gl.glPolygonMode(GL.GL_FRONT_AND_BACK, if (mesh.polygonMode == PolygonMode.Line) GL2.GL_LINE else if (mesh.polygonMode == PolygonMode.Point) GL2.GL_POINT else GL2.GL_FILL);
             }
             const mode = if (mesh.indexMode == IndexMode.Lines) GL.GL_LINES else if (mesh.indexMode == IndexMode.Points) GL.GL_POINTS else GL.GL_TRIANGLES;
-            if (vbo != null) {
+            if (vbo <> null) {
                 gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vbo.indexBuffer);
                 gl.glDrawElements(mode,
                                   indexBuffer.limit(),
@@ -1047,39 +1040,39 @@ public class Listener extends GLEventListener, DropTargetListener {
     }
 
     function mouseDown
-	from (button:Integer, 
-	      controlDown:Boolean, 
-	      altDown:Boolean, 
-	      metaDown:Boolean, 
-	      shiftDown:Boolean, 
-	      clickCount:Integer)
+	from (button is Integer, 
+	      controlDown is Boolean, 
+	      altDown is Boolean, 
+	      metaDown is Boolean, 
+	      shiftDown is Boolean, 
+	      clickCount is Integer)
 	to ()
     {
-        var e:MouseEvent;
+        var e is MouseEvent;
         stage.injectMouseDown(e=MouseEvent {
-                screenx: screenx;
-                screeny: screeny;
-                altKey: altDown;
-                ctrlKey: controlDown;
-                metaKey: metaDown;
-                buttons: button;
-                clickCount: clickCount;
+                screenx:  screenx;
+                screeny:  screeny;
+                altKey:  altDown;
+                ctrlKey:  controlDown;
+                metaKey:  metaDown;
+                buttons:  button;
+                clickCount:  clickCount;
             });
     }
 
-    function mouseUp(button:Integer, controlDown:Boolean, altDown:Boolean, metaDown:Boolean, shiftDown:Boolean):Void {
-        var e:MouseEvent;
+    function mouseUp(button is Integer, controlDown is Boolean, altDown is Boolean, metaDown is Boolean, shiftDown is Boolean):Void {
+        var e is MouseEvent;
         stage.injectMouseUp(e=MouseEvent {
-                screenx: screenx;
-                screeny: screeny;
-                ctrlKey: controlDown;
-                altKey: altDown;
-                metaKey: metaDown;
-                buttons: button;
+                screenx:  screenx;
+                screeny:  screeny;
+                ctrlKey:  controlDown;
+                altKey:  altDown;
+                metaKey:  metaDown;
+                buttons:  button;
             });
     }
 
-    override function dragEnter(e:DropTargetDragEvent):Void {
+    override function dragEnter(e is DropTargetDragEvent):Void {
         try {
             ctx.makeCurrent();
             stage.injectDragEnter(makeDragEvent(e));
@@ -1088,7 +1081,7 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    override function dragOver(e:DropTargetDragEvent):Void {
+    override function dragOver(e is DropTargetDragEvent):Void {
         try {
             ctx.makeCurrent();
             stage.injectDragOver(makeDragEvent(e));
@@ -1097,7 +1090,7 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    override function dragExit(e:DropTargetEvent):Void {
+    override function dragExit(e is DropTargetEvent):Void {
         try {
             ctx.makeCurrent();
             stage.injectDragLeave(makeDragEvent(e));
@@ -1106,10 +1099,10 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    override function dropActionChanged(e:DropTargetDragEvent):Void {
+    override function dropActionChanged(e is DropTargetDragEvent):Void {
     }
 
-    override function drop(e:DropTargetDropEvent):Void {
+    override function drop(e is DropTargetDropEvent):Void {
         try {
             ctx.makeCurrent();
             stage.injectDrop(makeDropEvent(e));
@@ -1118,52 +1111,46 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    function setup(gl:GL2, width:Integer, height:Integer):Void {
+    function setup(gl is GL2, width:Integer, height is Integer):Void {
         ctx = GLContext.getCurrent();
-        //Shape2D.PATH2D_FACTORY = JoglPath2DFactory {};
-        //Text.TEXT_FACTORY = JoglTextFactory {};
-        //CGEffectLoader.INSTANCE = JoglCGEffectLoader{};
-        //ImageLoader.INSTANCE = JoglImageLoader {gl:gl};
 	ImageLoader_INSTANCE.gl = gl; // hack
         gl.setSwapInterval(1);
-	println("SETUP {width} {height}");
 	stage.resize(width, height);
     }
 
-    var mouseX: Number;
-    var mouseY: Number;
-    var setTitle: function(str:String):Void;
-    var setCursor: function(cursor: Cursor):Void;
-    var mainSceneRenderer:SceneRenderer;
+    var mouseX is Number;
+    var mouseY is Number;
+    var setTitle is function from String to ();
+    var setCursor is function from Cursor to ();
+    var mainSceneRenderer is SceneRenderer;
 
     var opaque = 0;
     var transp = 0;
 
     var opaqueTris = 0;
     var transpTris = 0;
-    var startTime: Long;
+    var startTime is Long;
 
-    var stageTitle: String;
+    var stageTitle is String;
 
-    function render(gl:GL2, width:Integer, height:Integer):Void {
-        if (stageTitle != stage.title) {
+    function render from (gl is GL2, width is Integer, height is Integer) to () {
+
+        if (stageTitle <> stage.title) {
             setTitle(stageTitle = stage.title);
         }
 
-        var now = java.lang.System.currentTimeMillis();
+        const now = java.lang.System.currentTimeMillis();
         if (startTime == 0) startTime = now;
-        var currentTime = 1ms *(now - startTime);
+        const currentTime = 1ms *(now - startTime);
 	MasterTimeline.setPlayhead(currentTime);
         stage.flush();
-        //stage.updateStage(currentTime);
-        //stage.postupdateStage(currentTime);
         setCursor(stage.currentCursor);
-        if (mainSceneRenderer == null and gl != null) {
+        if (mainSceneRenderer == null and gl <> null) {
             mainSceneRenderer = SceneRenderer {
-                activate: function() {
+                activate: function from () to () {
                     gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
                 }
-                override function onDraw(t:Integer, tt:Integer, o:Integer, ot:Integer) {
+                override function onDraw from (t is Integer, tt is Integer, o is Integer, ot is Integer) to () {
                     opaque += o;
                     transp += t;
                     transp_tris += tt;
@@ -1171,7 +1158,6 @@ public class Listener extends GLEventListener, DropTargetListener {
                 }
             }
         }
-
         opaque = 0;
         transp = 0;
         transp_tris = 0;
@@ -1185,48 +1171,60 @@ public class Listener extends GLEventListener, DropTargetListener {
                 dirty = true;
             }
         }
-        if (lastOpaque != opaque or lastTransp != transp) {
+        if (lastOpaque <> opaque or lastTransp <> transp) {
             lastTransp = transp;
             lastOpaque = opaque;
-            //setTitle("{title} opaque {opaque} ({opaque_tris}) transp {transp} ({transp_tris})");
         }
     }
-    var title: String;
+
+    var title is String;
     var opaque_tris = 0;
     var transp_tris = 0;
     var lastTransp = 0;
     var lastOpaque = 0;
-    override function dispose(drawable:GLAutoDrawable):Void {}
-    override function display(drawable:GLAutoDrawable):Void {
+    override function dispose from (drawable is GLAutoDrawable) to () {}
+    override function display from (drawable is GLAutoDrawable) to () {
         render(drawable.getGL().getGL2(), drawable.getWidth(), drawable.getHeight());
     }
-    var animator:com.jogamp.opengl.util.Animator;
-    override function init(drawable:GLAutoDrawable):Void {
+
+    var animator is com.jogamp.opengl.util.Animator;
+
+    override function init from (drawable is GLAutoDrawable) to () {
         animator = new com.jogamp.opengl.util.Animator(drawable);
         //animator.setRunAsFastAsPossible(true);
         animator.start();
     }
-    override function reshape(drawable:GLAutoDrawable, x:Integer, y:Integer, w:Integer, h:Integer):Void {
+
+    override function reshape 
+	from (drawable is GLAutoDrawable, 
+	      x is Integer, 
+	      y is Integer, 
+	      w is Integer, 
+	      h is Integer)
+	to () 
+    {
         setup(drawable.getGL().getGL2(), w, h);
     }
 }
 
-var keyMap = new java.util.TreeMap of (Integer, Integer);
+const keyMap = new java.util.TreeMap of (Integer, Integer);
 
-function map(inkey:Integer, outkey:Integer):Void {
+function map from (inkey is Integer, outkey is Integer) to () 
+{
     keyMap.put(inkey, outkey);
 }
 
-function mapKeyCode(k:Integer):Integer {
-    var k0 = keyMap.get(k); 
-    println("keymap {k} => {k0}");
+function mapKeyCode from (k is Integer) to Integer 
+{
+    const k0 = keyMap.get(k); 
     if (k0 == null) {
         return 0;
     }
-    return k0 as Integer;
+    return k0;
 }
 
-function buildKeyMap() {
+function buildKeyMap 
+{
     map(KeyEvent.VK_BACK_SPACE, Keys.Backspace);
     map(KeyEvent.VK_SPACE, Keys.Spacebar);
     map(KeyEvent.VK_TAB, Keys.Tab);
@@ -1306,8 +1304,10 @@ function buildKeyMap() {
     map(KeyEvent.VK_SCROLL_LOCK, Keys.ScrollLock);
 }
 
-var lastKey: Integer;
-function makeKeyEvent(e:java.awt.event.KeyEvent):KeyboardEvent {
+
+var lastKey is Integer;
+
+function makeKeyEvent from (e is java.awt.event.KeyEvent) to KeyboardEvent {
     var keyCode = e.getKeyCode();
     if (keyCode == 0) {
         keyCode = lastKey;
@@ -1354,14 +1354,14 @@ public class JoglStage is Stage
     // override var height: Integer = 480;
 
     function setup {
-        var glp = GLProfile.get("GL2");
-        var caps = new GLCapabilities(glp);
+        const glp = GLProfile.get("GL2");
+        const caps = new GLCapabilities(glp);
         println("samples={SAMPLE_BUFFERS} numSamples={NUM_SAMPLES} depthBits={DEPTH_BITS}");
         caps.setDepthBits(DEPTH_BITS);
         caps.setSampleBuffers(SAMPLE_BUFFERS);
         caps.setNumSamples(NUM_SAMPLES);
-        var canvas = new GLCanvas(caps);
-        var frame = new Frame();
+        const canvas = new GLCanvas(caps);
+        const frame = new Frame();
         frame.setSize(width, height);
         frame.add(canvas);
         frame.addWindowListener(java.awt.event.WindowAdapter {
@@ -1369,18 +1369,12 @@ public class JoglStage is Stage
                     java.lang.System.exit(0);
                 }
             });
-	/*
-	Font.FONT_FACTORY = JoglFontFactory {};
-        TextLayout.newInstance = function() {
-            JoglTextLayout {};
-        }
-	*/
         buildKeyMap();
         listener = Listener { stage: this }
-        listener.setTitle = function(title:String) {
+        listener.setTitle = function from (title is String) to () {
             frame.setTitle(title);
         }
-        listener.setCursor = function(cursor:Cursor) {
+        listener.setCursor = function from (cursor is Cursor) to () {
             if (cursor.type == CursorType.POINTER) {
                 frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
             } else if (cursor.type == CursorType.HAND) {
@@ -1391,32 +1385,30 @@ public class JoglStage is Stage
                 frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
             }
         }
-        //Shape2D.PATH2D_FACTORY = JoglPath2DFactory {};
-        //Text.TEXT_FACTORY = JoglTextFactory {};
         canvas.addMouseListener(java.awt.event.MouseAdapter {
-                override function mousePressed(e:java.awt.event.MouseEvent):Void {
+                override function mousePressed from (e is java.awt.event.MouseEvent) to () {
                     listener.mouseDown(e.getButton(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown(), e.getClickCount());
                 }
-                override function mouseReleased(e:java.awt.event.MouseEvent):Void {
+                override function mouseReleased from (e is java.awt.event.MouseEvent) to () {
                     listener.mouseUp(e.getButton(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
                 }
             });
         canvas.addMouseMotionListener(java.awt.event.MouseMotionAdapter {
-                override function mouseMoved(e:java.awt.event.MouseEvent):Void {
+                override function mouseMoved from (e is java.awt.event.MouseEvent) to () {
                     listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
                 }
-                override function mouseDragged(e:java.awt.event.MouseEvent):Void {
+                override function mouseDragged from (e is java.awt.event.MouseEvent) to () {
                     listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
                 }
             });
         canvas.addKeyListener(java.awt.event.KeyAdapter {
-                override function keyPressed(e:java.awt.event.KeyEvent):Void {
+                override function keyPressed from (e is java.awt.event.KeyEvent) to () {
                     injectKeyDown(makeKeyEvent(e));
                 }
-                override function keyReleased(e:java.awt.event.KeyEvent):Void {
+                override function keyReleased from (e is java.awt.event.KeyEvent) to () {
                     injectKeyUp(makeKeyEvent(e));
                 }
-                override function keyTyped(e:java.awt.event.KeyEvent):Void {
+                override function keyTyped from (e is java.awt.event.KeyEvent) to () {
                     injectKeyInput(makeKeyEvent(e));
                 }
             });
@@ -1494,9 +1486,6 @@ public function run from (args is String[]) to ()
 	    currentCamera = camera;
 	} else {
 	    const cam = model.getCameras()[i-1];
-	    println("i={i}");
-	    println("cam={cam}");
-	    println("cameras={model.getCameras()}");
 	    if (cam <> null) {
 		currentCamera = cam;
 	    }
