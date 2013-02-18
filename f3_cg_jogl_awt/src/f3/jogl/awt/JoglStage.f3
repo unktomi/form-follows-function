@@ -98,7 +98,7 @@ class JoglCGEffectLoader is CGEffectLoader
                 url: "{__DIR__}phong4.cgfx";
                 technique: if (diffuse.opacity == 1) "Opaque" else "Transparent";
                 override function isTransparent():Boolean {
-                    return diffuse.opacity != 1;
+                    return diffuse.opacity <> 1;
                 }
             }
         } else {

@@ -1297,8 +1297,8 @@ class MMesh is MSpatial
 		    println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
 		    shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
 		} else null;
-	    println("shaderNode={mshaderNode}");
-	    const shader = mshaderNode.toShader(m);
+	    const shader = m.toShader(mshaderNode);
+	    println("shaderNode={mshaderNode} for {name} => {shader}");
 	    const r = MeshNode {
 		//visible: visible;
 		id: "{name}{id}";
@@ -1469,7 +1469,7 @@ class MShader is MAbstractShader
     public const type is String;
 
     var c is Tuple3 = tuple(0.5, 0.5, 0.5);
-    var ambc is Tuple3 =Tuple3.<<0>>;;
+    var ambc is Tuple3 =Tuple3.<<0>>;
     var ic is Tuple3 = Tuple3.<<0>>;
     var sc is Tuple3 = Tuple3.<<0>>;
     var dc is Number = 0.8;
@@ -1497,37 +1497,45 @@ class MShader is MAbstractShader
 	} else super.setAttr(cmd);
     }
 
-    var shader is Shader;
+    function toColor 
+	from (r is Number,
+	      g is Number,
+	      b is Number,
+	      a is Number) 
+	to Color {
+	Color {
+	    red: r, green: g, blue: b, opacity: a 
+	}
+    }
 
     override function toShader from (m is MaModel) to Shader 
     {
-	if (shader == null) {
-	    const alpha = 1.0 - it.x;
-	    const diffuse = Color.color(c.x * dc, c.y * dc, c.z * dc, alpha);
-	    const ambient = Color.color(ambc.x, ambc.y, ambc.z, alpha);
-	    const emissive = Color.color(ic.x, ic.y, ic.z, alpha);
-	    const specular = Color.color(sc.x, sc.y, sc.z, alpha);
-	    const shininess = if (this.type == "phong") then cp else 100 - 99 * Math.sqrt(ec);
-	    var image is AbstractTexture;
-	    var uvMap is Integer[] = [];
-	    for (conn in connectionsToThis.get("c")) {
-		if (conn.sourceNode instanceof MFile) {
-		    const file = conn.sourceNode as MFile;
-		    const paramName = conn.targetPath;
-		    const baseURL = new java.net.URL(m.url);
-		    image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
-		    uvMap = [0];
-		    break;
-		}
+	const alpha = 1.0 - it.x;
+	const diffuse = toColor(c.x * dc, c.y * dc, c.z * dc, alpha);
+	const ambient = toColor(ambc.x, ambc.y, ambc.z, alpha);
+	const emissive = toColor(ic.x, ic.y, ic.z, alpha);
+	const specular = toColor(sc.x, sc.y, sc.z, alpha);
+	const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100 - 99 * Math.sqrt(ec) else 1;
+	var image is AbstractTexture;
+	var uvMap is Integer[] = [];
+	for (conn in connectionsToThis.get("c")) {
+	    if (conn.sourceNode instanceof MFile) {
+		const file = conn.sourceNode as MFile;
+		const paramName = conn.targetPath;
+		const baseURL = new java.net.URL(m.url);
+		image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
+		uvMap = [0];
+		break;
 	    }
-	    shader = m.effectLoader.loadDefaultShader(image,
+	}
+	var shader = m.effectLoader.loadDefaultShader(image,
 						      diffuse,
 						      ambient,
 						      emissive,
 						      specular,
 						      shininess);
-	    shader.uvMap = uvMap;
-	}
+	m.shaderMap.put(this, shader);
+	shader.uvMap = uvMap;
 	return shader;
     }
 }

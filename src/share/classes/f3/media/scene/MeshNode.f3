@@ -1,6 +1,7 @@
 package f3.media.scene;
 
-public class MeshNode is Node {
+public class MeshNode is Node 
+{
     public var mesh is AbstractMesh;
     public var shader is Shader;
     override var blocksPointer = true;

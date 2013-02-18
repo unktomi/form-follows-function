@@ -386,11 +386,9 @@ public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(BLACK);
 // internal static variables
 
 def DF = ThreadLocal of DecimalFormat {
-/*
     override function initialValue():DecimalFormat {
         return new DecimalFormat("#");
     }
-*/
 }
 
 /**
