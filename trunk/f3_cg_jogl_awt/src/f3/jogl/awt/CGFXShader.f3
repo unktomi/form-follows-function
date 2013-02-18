@@ -288,7 +288,7 @@ public class CGFXShader is Shader {
 	var value = value0;
 	if (value instanceof Color) {
 	    const c = value as Color;
-	    value = tuple(c.red, c.blue, c.green, c.opacity);
+	    value = tuple(c.red, c.green, c.blue, c.opacity);
 	}
 	const p0 = getParameter(name);
 	if (p0 is Float4Parameter) {
