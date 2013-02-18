@@ -1,0 +1,13 @@
+package f3.media.scene;
+import f3.math.*;
+import java.lang.Math;
+
+/** A 2D camera where (0, 0) is at the lower left and (width, height)
+    is at the upper right. Its primary characteristic being that world space and
+    screen space are identical */
+
+public class Camera2D extends Camera {
+    override var near = -1;
+    override var far = 1;
+    override var projectionMatrix = bind ortho(near, far, 0, width, 0, height);
+}

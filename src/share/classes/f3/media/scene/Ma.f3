@@ -749,7 +749,7 @@ class MCamera is MSpatial
     {
 	const attr = cmd.getAttr();
 	if (attr == "o") {
-	    ortho = true;
+	    ortho = cmd.getBoolean();
 	} else if (attr == "cap") {
 	    const v = cmd.getVec3();
 	    vfa = v.x;
@@ -775,9 +775,15 @@ class MCamera is MSpatial
 
     override function toNode from (m is MaModel) to Node 
     {
-	const n = 
+	const n is Camera = 
 	    if (ortho) {
-		null
+		const ow = this.ow;
+		OrthographicCamera {
+		    far: fcp; 
+		    near: ncp;
+		    id: name
+                    override var viewHeight = bind ow / aspectRatio;
+		}
 	    } else {
 		if (ff == 1) {
 		    const horizontalAngle = Math.toDegrees(2.0*Math.atan(25.4 * hfa*lsr / 2.0 / fl));

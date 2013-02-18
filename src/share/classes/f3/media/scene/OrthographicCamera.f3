@@ -1,0 +1,25 @@
+package f3.media.scene;
+import f3.math.*;
+import java.lang.Math;
+
+/** A 3D orthographic camera where the origin is at the center of the
+    screen, the positive X axis goes to the right, and the positive Y
+    axis goes up. */
+
+public class OrthographicCamera extends Camera {
+    /** The height of the view volume this camera is viewing. Note
+        that this is different than the height of the window the
+        camera is associated with. By default an OrthographicCamera
+        has a view volume of height 2 (i.e., [-1..+1].) */
+    public var viewHeight = 2.0;
+    override var near = -1.0;
+    override var far = 1.0;
+    override var projectionMatrix = bind {
+        var halfheight = 0.5 * viewHeight;
+        var halfwidth = halfheight * aspectRatio;
+        ortho(near, far, -halfwidth, halfwidth, -halfheight, halfheight);
+    }
+    override function toString():String {
+        "{super.toString()} viewHeight {viewHeight} near {near} far {far}";
+    }
+}
