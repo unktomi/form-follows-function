@@ -19,6 +19,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public var playCount is Number = 1.0;
 
     public var blendWeight is Number = 1.0;
+
     public readonly var sceneBlendWeight is Number =
 	bind if parent == null then blendWeight else parent.sceneBlendWeight * blendWeight;
 
@@ -28,19 +29,21 @@ public abstract class TimeNode is Foldable of TimeNode
     public readonly var sceneTransform is TimeMat = 
 	bind if (parent == null) then transform else parent.sceneTransform * transform;
 
-    public readonly var bounds is Interval = bind computeBounds(transform, loopedPlayRange);
-    function computeBounds from (m is TimeMat, b is Interval) to Interval {
-	m * b;
-    }
+    public readonly var bounds is Interval = bind transform * loopedPlayRange;
     public readonly var sceneBounds is Interval = bind parent.sceneTransform * bounds;
+
     public readonly var loopedPlayRange = 
-	bind if (contentPlayRange == null) then null else contentPlayRange * (if (playCount < 0) then Number.MAX_VALUE else playCount);
+	bind if (contentPlayRange == null) 
+	then null 
+	else contentPlayRange * { if (playCount < 0) then Number.MAX_VALUE else playCount };
+
     public readonly var contentPlayRange is Interval = 
         bind if (playRange == null) then contentBounds else Interval.intersect(contentBounds, playRange);
 
     public readonly var contentBounds is Interval;
     
-    protected function setContentBounds from (bounds is Interval) to () {
+    protected function setContentBounds from (bounds is Interval) to () 
+    {
 	contentBounds = bounds;
     }
 
@@ -84,7 +87,6 @@ public abstract class TimeNode is Foldable of TimeNode
         var picked = false;
         if (scenePickable) {
             picked = bounds.intersects(parentTime);
-	    //	    println("{id} bounds {bounds} parentTime {parentTime} => {picked}");
             if (picked) {
                 add(this);
             }
@@ -98,8 +100,7 @@ public abstract class TimeNode is Foldable of TimeNode
 	    now = now mod dur;
 	}
         localTime = Duration.valueOf(now);
-	//	println("{id} now={localTime} of {1ms*dur}");
-	const f = (if (picked) then add else null) as function from TimeNode to ();
+	const f =  { if (picked) then add else null } as function from TimeNode to ();
         pickChildren(sceneTime, 
 		     localTime, 
 		     f);
@@ -109,12 +110,19 @@ public abstract class TimeNode is Foldable of TimeNode
 	from (sceneTime is Duration, 
 	      parentTime is Duration, 
 	      add is function from TimeNode to ())
-	to () {}
-
-    protected function update from (sceneTime is Duration) to () {
+	to () 
+    {
     }
 
-    protected function updateParent to () {
+    protected function update 
+	from (sceneTime is Duration) 
+	to () 
+    {
+    }
+
+
+    protected function updateParent to () 
+    {
     }
 
     public function play to ()
@@ -126,7 +134,8 @@ public abstract class TimeNode is Foldable of TimeNode
         }
     }
 
-    public function advanceToPlayhead to () {
+    public function advanceToPlayhead to () 
+    {
         const cur = currentTime / playRate;
         if (playTime > cur or cur - playTime > bounds.end) { // must advance to playhead
             playFromStart();
@@ -135,7 +144,8 @@ public abstract class TimeNode is Foldable of TimeNode
         }
     }
 
-    public function playFromStart to () {
+    public function playFromStart to () 
+    {
         paused = false;
         playTime = currentTime / playRate; // advance to playhead
     }

@@ -13,7 +13,6 @@ public class Timeline
     function interpolateChannels from (channels is (Channel of (?))[],
 				       sceneTime is Duration) to () 
     {
-
 	const map is java.util.Map of (Ref of Object, (Channel of Object)[]) = 
 	    new java.util.HashMap of (Ref of Object, (Channel of Object)[])();
 	for (ch in channels where ch.sceneBlendWeight > 0.0) 
@@ -36,7 +35,6 @@ public class Timeline
 	    for (ch in chs) {
 		const w = ch.blendWeight / weight;
 		r = interpolateChannel(ch, sceneTime, r, w);
-
 	    }
 	    target.set(r);
 	}

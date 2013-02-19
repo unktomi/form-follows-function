@@ -279,7 +279,7 @@ public class F3Types extends Types {
 	try {
 	    t = erasure(type);
 	} catch (Exception exc) {
-	    exc.printStackTrace();
+	    //exc.printStackTrace();
 	    System.err.println("doh! type was: "+type.getClass()+": "+ toF3String(type));
 	    return -1;
 	}
@@ -1320,7 +1320,10 @@ public class F3Types extends Types {
 		    }
 		}
 		buffer.append("..");
-		visit(t.type, buffer);
+		try {
+		    visit(t.type, buffer);
+		} catch (NullPointerException exc) {
+		}
 	    } else if (t.kind == BoundKind.SUPER) {
 		if (t.bound == null) {
 		} else {

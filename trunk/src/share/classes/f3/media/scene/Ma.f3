@@ -3,6 +3,7 @@ import f3.math.*;
 import f3.math.LinearMath.*;
 import f3.media.scene.*;
 import f3.lang.Ref;
+import f3.lang.ConstRef;
 import java.lang.Math;
 
 class MAttr {
@@ -65,8 +66,14 @@ class MaModel
 		then MClipLibrary {name: name}
 	    else if (nodeType == "addDoubleLinear") 
 		then MAddDoubleLinear {name: name}
+	    else if (nodeType == "plusMinusAverage") 
+		then MPlusMinusAverage {name: name}
 	    else if (nodeType == "multiplyDivide") 
 		then MMultiplyDivide {name: name}
+	    else if (nodeType == "clamp") 
+		then MClamp {name: name}
+	    else if (nodeType == "reverse") 
+		then MReverse {name: name}
 	    else null;
 	if (current <> null) {
 	    nodeMap.put(current.name, current);
@@ -150,6 +157,9 @@ class MaModel
     const clipLibMap is java.util.Map of (MNode, TimeNode) = 
 	new java.util.HashMap of (MNode, TimeNode) ();
 
+    const linkMap is java.util.Map of (MNode, Link of ?) = 
+	new java.util.HashMap of (MNode, Link of ?) ();
+
     public var url is String;
 
     public var spatialRoot is Group;
@@ -172,53 +182,64 @@ class MaModel
     function resolveInput 
 	from (n is MNode, 
 	      attr is String, 
+	      i is Integer,
 	      value is Number) 
-	to function from () to Number 
+	to ConstRef of Number
     {
-	var result is function from () to Number;
-	for (c in n.connectionsToThis.get(attr)) {
-	    if (c.sourceNode is MUtility of Number) {
+	var result is ConstRef of Number;
+	const key = if (n.connectionsToThis.containsKey(attr)) then attr else {
+		const xyz = "xyz";
+		const rgb = "rgb";
+		const abc = "012";
+		const k1 = "{attr}{xyz.charAt(i)}";
+		if (n.connectionsToThis.containsKey(k1)) then k1 else {
+			const k2 = "{attr}{rgb.charAt(i)}";
+			if (n.connectionsToThis.containsKey(k2)) then k2 else "{attr}[{abc.charAt(i)}]";
+		    }
+	    }
+	println("key={key}");
+	for (c in n.connectionsToThis.get(key)) {
+	    if (c.sourceNode is MUtilityOfNumber) {
 		const src = c.sourceNode as MUtilityOfNumber;
 		result = src.getOutput(this, c.sourcePath);
-		break;
 	    } else {
-		const ptr = resolveSourcePointer(c) as Ref of Number;
-		if (ptr <> null) {
-		    result = function from () to Number { ptr.get() }
-		    break;
-		}
+		result = resolveSourcePointer(c) as Ref of Number;
 	    }
 	}
-	if (result == null) {
-	    result = function from () to Number { value }
-	}
-	result as function from() to Number;
+	return result;
     }
 
-    function resolveInput from (n is MUtility, attr is String, value is Tuple3) to function from () to Tuple3 {
-	var result is function from () to Tuple3;
+    function resolveInput 
+	from (n is MNode, 
+	      attr is String, 
+	      value is Number) 
+	to ConstRef of Number
+    {
+	resolveInput(n, attr, 0, value);
+    }
+
+    function resolveInput from (n is MUtility, attr is String, value is Tuple3) to ConstRef of Tuple3
+    {
+	var result is ConstRef of Tuple3;
 	for (c in n.connectionsToThis.get(attr)) {
 	    if (c.sourceNode is MUtility of Tuple3) {
 		const src = c.sourceNode as MUtilityOfTuple3;
 		result = src.getOutput(this, c.sourcePath);
-		break;
 	    } else {
-		const ptr = resolveSourcePointer(c) as Ref of Tuple3;
-		if (ptr <> null) {
-		    result = function from () to Tuple3 { ptr.get() }
-		    break;
-		}
+		result = resolveSourcePointer(c) as ConstRef of Tuple3;
 	    }
 	}
 	if (result == null) {
-	    const fx = resolveInput(n, "{attr}x", value.x);
-	    const fy = resolveInput(n, "{attr}y", value.y);
-	    const fz = resolveInput(n, "{attr}z", value.z);
-	    result = function from () to Tuple3 {
-		tuple(fx(), fy(), fz());
+	    const fx = resolveInput(n, "{attr}", 0, value.x);
+	    const fy = resolveInput(n, "{attr}", 1, value.y);
+	    const fz = resolveInput(n, "{attr}", 2, value.z);
+	    result = ConstRef of Tuple3 {
+		override function get to Tuple3 {
+		    tuple(fx.get(), fy.get(), fz.get());
+		}
 	    }
 	}
-	result as function from () to Tuple3;
+	return result; 
     }
 
     function resolveTargetPointer
@@ -233,6 +254,9 @@ class MaModel
 	} else if (target instanceof MAbstractShader) {
 	    const resolved = toShader(target as MAbstractShader);
 	    target.getPointer(c.targetPath, resolved);
+	} else if (target instanceof MAnimCurve) {
+	    const ch = toChannel(target as MAnimCurve) as Channel of ?;
+	    ch.targets[0];
 	} else null
     }
 
@@ -254,8 +278,14 @@ class MaModel
     function getNumberTargets 
 	from (n is MNode, sourcePath is String) to (Ref of Number)[]
     {
+	println("attempting to resolve {n.name} {sourcePath}");
 	foreach (c in n.connectionsFromThis.get(sourcePath)) {
+	    println(c);
 	    const ptr = resolveTargetPointer(c) as Ref of Number;
+	    if (ptr == null) {
+		ptr = makeNumberStorage();
+	    }
+	    println("resolved {n.name} {sourcePath} to {ptr}");
 	    ptr;
 	}
     }
@@ -270,7 +300,7 @@ class MaModel
     {
 	if (temporalMap.containsKey(n)) then temporalMap.get(n) else {
 		const ch = n.toChannel(this);
-		//		println("{this} => {ch}");
+		println("{this} => {ch}");
 		insert ch into channels;
 		temporalMap.put(n, ch);
 	    }
@@ -281,6 +311,14 @@ class MaModel
 	if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
 		const shader = n.toShader(this);
 		shaderMap.put(n, shader);
+	    }
+    }
+
+    function toLink from (n is MUtility) to Link of ?
+    {
+	if (linkMap.containsKey(n)) then linkMap.get(n) else {
+		const link = n.toLink(this);
+		linkMap.put(n, link);
 	    }
     }
 
@@ -328,7 +366,6 @@ class MaModel
     function generateScene 
     {
 	spatialRoot = Group {id: url};
-	temporalRoot = TimeGroup {id: url};
 	for (n in nodeMap.values()) {
 	    const r = 
 		if (n is MSpatial) {
@@ -337,8 +374,18 @@ class MaModel
 		    toChannel(n as MAnimCurve);
 		} else if (n instanceof MClipLibrary) {
 		    toClipLibrary(n as MClipLibrary);
+		} else if (n instanceof MUtility) {
+		    toLink(n as MUtility);
 		} else null
 	}
+	const links = foreach (link in linkMap.values()) link;
+	temporalRoot = TimeGroup {
+	    id: url
+	    override function update from (sceneTime is Duration) to () {
+		super.update(sceneTime);
+		for (link in links) link.apply();
+	    }
+	};
 	var j = 0;
 	var g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
 	for (ch in channels) {
@@ -361,6 +408,67 @@ class MaModel
 	*/
     }
 }
+
+class Storage {
+    var num is Number;
+}
+
+function makeNumberStorage to Ref of Number {
+    const storage = Storage {
+    }
+    return &storage.num;
+}
+
+function makeRefX from (ref is Ref of Number) to Ref of Tuple3 {
+    Ref of Tuple3 {
+	public function get to Tuple3 {
+	    tuple(ref.get(), 0, 0);
+	}
+	public function set from(tuple is Tuple3) to () {
+	    ref.set(tuple.x);
+	}
+    }
+}
+
+function makeRefY from (ref is Ref of Number) to Ref of Tuple3 {
+    Ref of Tuple3 {
+	public function get to Tuple3 {
+	    tuple(0, ref.get(), 0);
+	}
+	public function set from(tuple is Tuple3) to () {
+	    ref.set(tuple.y);
+	}
+    }
+}
+
+function makeRefZ from (ref is Ref of Number) to Ref of Tuple3 {
+    Ref of Tuple3 {
+	public function get to Tuple3 {
+	    tuple(0, 0, ref.get());
+	}
+	public function set from(tuple is Tuple3) to () {
+	    ref.set(tuple.z);
+	}
+    }
+}
+
+function makeRef of a from (name is String, ptr is String, result is Ref of a) to Ref of a {
+    return Ref of a {
+	override function toString to String 
+	{
+	    "{name}.{ptr} = {get()}";
+	}
+	override function get to a
+	{
+	    result.get();
+	}
+	override function set from (x is a) to () 
+	{
+	    result.set(x);
+	}
+    }
+}
+
 
 class Connection {
     const sourceNode is MNode;
@@ -394,7 +502,7 @@ class MNode {
 	null
     }
 
-    function resolveInput from (m is MaModel, p is String) to function from () to Object {
+    function resolveInput from (m is MaModel, p is String) to ConstRef of ? {
 	println("{name} can't resolve: {p}");
 	null;
     }
@@ -482,13 +590,10 @@ abstract class MSpatial is MNode {
 	}
     }
 
-    override function resolveInput from (m is MaModel, p is String) to function from () to Object {
+    override function resolveInput from (m is MaModel, p is String) to ConstRef of ? 
+    {
 	const ptr = getPointer(p, m.toNode(this));
-	if (ptr <> null) {
-	    function from () to Object {
-		ptr.get();
-	    }
-	} else super.resolveInput(m, p);
+	if (ptr <> null) then ptr else super.resolveInput(m, p);
     }
 
     override function getPointer 
@@ -504,91 +609,293 @@ abstract class MSpatial is MNode {
 
 abstract class MUtility is MNode
 {
+    public function toLink from (m is MaModel) to Link of ? {
+	null
+    }
 }
 
 abstract class MUtilityOfNumber is MUtility {
-    abstract function getOutput from (m is MaModel, attr is String) to function from () to Number;
+    abstract function getOutput from (m is MaModel, attr is String) to ConstRef of Number;
 }
 
 abstract class MUtilityOfTuple3 is MUtility {
-    abstract function getOutput from (m is MaModel, attr is String) to function from () to Tuple3;
+    abstract function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3;
+}
+
+public class Link of a 
+{
+    public const input is ConstRef of a;
+    public const output is (Ref of a)[];
+    public function apply from () to () 
+    {
+	//println("applying input {input}");
+	for (o in output) {
+	    //println("applying {input} to {o}");
+	    o.set(input.get());
+	}
+    }
+}
+
+
+class MPlusMinusAverage is MUtilityOfTuple3 {
+
+    var op is Integer = 1;
+
+    override function toLink from (m is MaModel) to Link of ? {
+	const f = getOutput(m, "o3");
+	const name = this.name;
+	Link of Tuple3 {
+	    input: ConstRef of Tuple3 { 
+		override function toString to String {
+		    "{name}.op {f.get()}"
+		}
+		override function get to Tuple3 { f.get() } 
+	    }
+	    output: foreach (conn in connectionsFromThis.get("o3")) {
+		const ptr = m.resolveTargetPointer(conn);
+		println("{conn} ==> {ptr}");
+		ptr as Ref of Tuple3;
+	    }
+	}
+    }
+
+    override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
+    {
+	//const conns1 = connectionsToThis.get("i1");
+	//const conns2 = connectionsToThis.get("i2");
+	const conns3 = connectionsToThis.get("i3");
+	println("conns3={conns3}");
+	if (attr == "o1") {
+	    if (op == 0) {
+		// select first
+		null
+	    } else if (op == 1) {
+		// sum
+		null
+	    } else if (op == 2) {
+		// subtract
+		null
+	    } else if (op == 3) {
+		// avg
+		null
+	    } else null
+	} else if (attr == "o2") {
+	    if (op == 0) {
+		// select first
+		null
+	    } else if (op == 1) {
+		// sum
+		null
+	    } else if (op == 2) {
+		// subtract
+		null
+	    } else if (op == 3) {
+		// avg
+		null
+	    } else null
+	} else if (attr == "o3") {
+	    const funs = 
+		foreach (c in conns3) 
+		{
+		    const g = c.sourceNode.resolveInput(m, c.sourcePath);
+		    g as ConstRef of Tuple3;
+		}
+	    if (op == 0) {
+		// select first
+		null
+	    } else if (op == 1) {
+		// sum
+		ConstRef of Tuple3 {
+		    override function get to Tuple3 {
+			var x = 0.0;
+			var y = 0.0;
+			var z = 0.0;
+			for (f in funs) { const t = f.get(); x += t.x; y += t.y; z += t.z }
+			tuple(x, y, z);
+		    }
+		}
+	    } else if (op == 2) {
+		// subtract
+		ConstRef of Tuple3 {
+		    override function get to Tuple3 {
+			const t0 = funs[0].get();
+			var x = t0.x;
+			var y = t0.y;
+			var z = t0.z;
+			for (f in funs[1..]) { 
+			    const t = f.get(); x -= t.x; y -= t.y; z -= t.z; 
+			}
+			tuple(x, y, z);
+		    }
+		}
+	    } else if (op == 3) {
+		// avg
+		ConstRef of Tuple3 {
+		    override function get to Tuple3 {
+			var x = 0.0;
+			var y = 0.0;
+			var z = 0.0;
+			for (f in funs) { 
+			    const t = f.get(); 
+			    x += t.x; 
+			    y += t.y; 
+			    z += t.z; 
+			}
+			x /= funs.size();
+			y /= funs.size();
+			z /= funs.size();
+			tuple(x, y, z);
+		    }
+		}
+	    } else null
+	} else null
+    }
+
+    override function setAttr from (cmd is Command) to () {
+	const n = cmd.getAttr();
+	if (n == "op") {
+	    op = cmd.getInt();
+	} else super.setAttr(cmd);
+    }
+      
 }
 
 class MMultiplyDivide is MUtilityOfTuple3
 {
     var i1 is Tuple3;
     var i2 is Tuple3;
-    var op is Integer;
+    var op is Integer = 1;
 
-    override function resolveInput from (m is MaModel, p is String) to function from () to Object {
-	
+    override function getPointer from (path is String, _ is Object) to Ref of ?
+    {
+	null;
+    }
+
+
+    override function toLink from (m is MaModel) to Link of ? 
+    {
+	const f = getOutput(m, "o");
+	const name = this.name;
+	Link of Tuple3 {
+	    input: ConstRef of Tuple3 { 
+		override function toString to String {
+		    "{name}.o3 {f.get()}"
+		}
+		override function get to Tuple3 { f.get() } 
+	    }
+	    output: 
+	    [foreach (conn in connectionsFromThis.get("ox")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefX(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("oy")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefY(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("oz")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefZ(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("o")) 
+	     {
+		const ptr = m.resolveTargetPointer(conn);
+		println("{conn} ==> {ptr}");
+		ptr as Ref of Tuple3;
+	    }]
+	}
+    }
+
+    override function resolveInput from (m is MaModel, p is String) to ConstRef of ? 
+    {
 	if (p.startsWith("i1")) {
 	    const t = m.resolveInput(this, "i1", i1);
 	    if (p == "i1x") {
-		function from () to Number {
-		    t().x
+		ConstRef of Number {
+		    override function get to Number {
+			t.get().x;
+		    }
 		}
 	    } else if (p == "i1y") {
-		function from () to Number {
-		    t().y
+		ConstRef of Number {
+		    override function get to Number {
+			t.get().y;
+		    }
 		}
 	    } else if (p == "i1z") {
-		function from () to Number {
-		    t().z
+		ConstRef of Number {
+		    override function get to Number {
+			t.get().z;
+		    }
 		}
 	    } else null
 	} else if (p.startsWith("i2")) {
 	    const t = m.resolveInput(this, "i2", i2);
 	    if (p == "i2x") {
-		function from () to Number {
-		    t().x
+		ConstRef of Number {
+		    override function get to Number {
+			t.get().x;
+		    }
 		}
 	    } else if (p == "i2y") {
-		function from () to Number {
-		    t().y
+		ConstRef of Number {
+		    override function get to Number {
+			t.get().y;
+		    }
 		}
 	    } else if (p == "i2z") {
-		function from () to Number {
-		    t().z
+		ConstRef of Number {
+		    override function get to Number {
+			t.get().z;
+		    }
 		}
 	    } else null
 	} else null;
     }
 
-    override function getOutput from (m is MaModel, attr is String) to function from () to Tuple3
+    override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
     {
 	if (attr == "o") {
-	    const input1 is function from () to Tuple3 = m.resolveInput(this, "i1", i1);
-	    const input2 is function from () to Tuple3 = m.resolveInput(this, "i2", i2);
+	    const input1 = m.resolveInput(this, "i1", i1) as ConstRef of Tuple3;
+	    const input2 = m.resolveInput(this, "i2", i2) as ConstRef of Tuple3;
 	    if (op == 0) {
 		// select first
-		input1 as function from () to Tuple3;
+		input1
 	    } else if (op == 1) {
 		// multiply
-		function from () to Tuple3 {
-		    const t1 is Tuple3 = input1();
-		    const t2 is Tuple3 = input2();
-		    tuple(t1.x*t2.x, 
-			  t1.y*t2.y,
-			  t1.z*t2.z);
+		ConstRef of Tuple3 {
+		    override function get to Tuple3 {
+			const t1 is Tuple3 = input1.get();
+			const t2 is Tuple3 = input2.get();
+			//println("multiply {input1} {input2} {t1} {t2}");
+			tuple(t1.x*t2.x, 
+			      t1.y*t2.y,
+			      t1.z*t2.z);
+		    }
 		}
 	    } else if (op == 2) {
 		// divide
-		function from () to Tuple3 {
-		    const t1 is Tuple3 = input1();
-		    const t2 is Tuple3 = input2();
-		    tuple(t1.x/t2.x, 
-			  t1.y/t2.y,
-			  t1.z/t2.z);
+		ConstRef of Tuple3 {
+		    override function get to Tuple3 {
+			const t1 is Tuple3 = input1.get();
+			const t2 is Tuple3 = input2.get();
+			tuple(t1.x/t2.x, 
+			      t1.y/t2.y,
+			      t1.z/t2.z);
+		    }
 		}
 	    } else if (op == 3) {
 		// pow
-		function from () to Tuple3 {
-		    const t1 is Tuple3 = input1();
-		    const t2 is Tuple3 = input2();
-		    tuple(Math.pow(t1.x,t2.x), 
-			  Math.pow(t1.y,t2.y),
-			  Math.pow(t1.z,t2.z));
+		ConstRef of Tuple3 {
+		    override function get to Tuple3 {
+			const t1 is Tuple3 = input1.get();
+			const t2 is Tuple3 = input2.get();
+			tuple(Math.pow(t1.x,t2.x), 
+			      Math.pow(t1.y,t2.y),
+			      Math.pow(t1.z,t2.z));
+		    }
 		}
 	    } else null
 	} else null
@@ -607,29 +914,160 @@ class MMultiplyDivide is MUtilityOfTuple3
     }
 }
 
+class MClamp is MUtilityOfTuple3 {
+
+    var mn is Tuple3;
+    var mx is Tuple3;
+    var ip is Tuple3;
+
+    override function getPointer from (path is String, _ is Object) to Ref of ?
+    {
+	null
+    }
+
+    override function toLink from (m is MaModel) to Link of ? 
+    {
+	const name = this.name;
+	Link of Tuple3 {
+	    input: getOutput(m, "op");
+	    output: 
+	    [foreach (conn in connectionsFromThis.get("opr")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefX(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("opg")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefY(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("opb")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefZ(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("op")) 
+	     {
+		 m.resolveTargetPointer(conn) as Ref of Tuple3;
+	     }]
+	}
+    }
+
+    override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
+    {
+	if (attr == "op") {
+	    const mnp = m.resolveInput(this, "mn", mn);
+	    const mxp = m.resolveInput(this, "mx", mx);
+	    const ipp = m.resolveInput(this, "ip", ip);
+	    ConstRef of Tuple3 {
+		override function get to Tuple3 {
+		    const minv = mnp.get();
+		    const maxv = mxp.get();
+		    const iv = ipp.get();
+		    println("clamp {minv} {maxv} {iv}");
+		    tuple(Math.min(maxv.x, Math.max(minv.x, iv.x)),
+			  Math.min(maxv.y, Math.max(minv.y, iv.y)),
+			  Math.min(maxv.z, Math.max(minv.z, iv.z)));
+		}
+	    }
+	} else null
+    }
+
+
+    override function setAttr from (cmd is Command) to () {
+	const n = cmd.getAttr();
+	if (n == "mn") {
+	    mn = cmd.getVec3();
+	} else if (n == "mx") {
+	    mx = cmd.getVec3();
+	} else if (n == "ip") {
+	    ip = cmd.getVec3();
+	} else super.setAttr(cmd);
+    }
+}
+
+class MReverse is MUtilityOfTuple3 {
+
+    var i is Tuple3;
+
+    override function toLink from (m is MaModel) to Link of ? 
+    {
+	const name = this.name;
+	Link of Tuple3 {
+	    input: getOutput(m, "o");
+	    output: 
+	    [foreach (conn in connectionsFromThis.get("ox")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefX(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("oy")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefY(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("oz")) 
+	     {
+		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+		 makeRefZ(ptr)
+	     },
+	     foreach (conn in connectionsFromThis.get("o")) 
+	     {
+		 m.resolveTargetPointer(conn) as Ref of Tuple3;
+	     }]
+	}
+    }
+
+    override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
+    {
+	if (attr == "o") {
+	    const ip = m.resolveInput(this, "i", i);
+	    //println("ip={ip}");
+	    ConstRef of Tuple3 {
+		override function get to Tuple3 {
+		    const iv = ip.get();
+		    //println("reverse {iv}");
+		    tuple(1.0-iv.x, 1.0-iv.y, 1.0-iv.z);
+		}
+	    }
+	} else null
+    }
+
+    override function setAttr from (cmd is Command) to () {
+	const n = cmd.getAttr();
+	if (n == "i") {
+	    i = cmd.getVec3();
+	} else super.setAttr(cmd);
+    }
+}
+
+
 class MAddDoubleLinear is MUtilityOfNumber
 {
     var i1 is Number;
     var i2 is Number;
 
-    override function getOutput from (m is MaModel, attr is String) to function from () to Number
+    override function getOutput from (m is MaModel, attr is String) to ConstRef of Number
     {
 
 	if (attr == "o") {
 	    const input1 = m.resolveInput(this, "i1", i1);
 	    const input2 = m.resolveInput(this, "i2", i2);
-	    function from () to Number { input1() + input2() }
+	    ConstRef of Number {
+		override function get to Number {
+		    input1.get() + input2.get();
+		}
+	    }
 	} else null
     }
 
     override function setAttr from (cmd is Command) to () {
-	super.setAttr(cmd);
 	const n = cmd.getAttr();
 	if (n == "i1") {
 	    i1 = cmd.getFloat();
 	} else if (n == "i2") {
 	    i2 = cmd.getFloat();
-	}
+	} else super.setAttr(cmd);
     }
 }
 
@@ -677,67 +1115,112 @@ class MTransform is MSpatial {
 	from (ptr is String, target is Object) 
 	to Ref of ?
     {
-	//	println("get pointer {name} attr={ptr} target={target}");
+	println("get pointer {name} attr={ptr} target={target}");
 
 	const n = target as MaTransform;
 
+	if (ptr == "t") {
+	    return Ref of Tuple3 {
+		override function toString to String {
+		    "{n.id}.t = {n.t}";
+		}
+		override public function get to Tuple3 {
+		    tuple(n.tx, n.ty, n.tz);
+		}
+		override public function set from (t is Tuple3) to () {
+		    n.tx = t.x; n.ty = t.y; n.tz = t.z;
+		}
+	    }
+	}
+
+	if (ptr == "s") {
+	    return Ref of Tuple3 {
+		override function toString to String {
+		    "{n.id}.s = {n.s}";
+		}
+		override public function get to Tuple3 {
+		    tuple(n.sx, n.sy, n.sz);
+		}
+		override public function set from (t is Tuple3) to () {
+		    n.sx = t.x; n.sy = t.y; n.sz = t.z;
+		}
+	    }
+	}
+
+	if (ptr == "r") {
+	    return Ref of Tuple3 {
+		override function toString to String {
+		    "{n.id}.r = {n.r}";
+		}
+		override public function get to Tuple3 {
+		    tuple(n.rx, n.ry, n.rz);
+		}
+		override public function set from (t is Tuple3) to () {
+		    n.rx = t.x; n.ry = t.y; n.rz = t.z;
+		}
+	    }
+	}
+
+	const rptr =
 	if ptr == "tx" 
-        then &n.tx as Ref of ?
+        then &n.tx 
 	else if ptr == "ty"
-        then &n.ty as Ref of ?
+        then &n.ty 
 	else if ptr == "tz"
-        then &n.tz as Ref of ?
+        then &n.tz 
 
         else if ptr == "sx" 
-        then &n.sx as Ref of ?
+        then &n.sx 
 	else if ptr == "sy"
-        then &n.sy as Ref of ?
+        then &n.sy 
 	else if ptr == "sz"
-        then &n.sz as Ref of ?
+        then &n.sz 
 
         else if ptr == "rx" 
-        then &n.rx as Ref of ?
+        then &n.rx 
 	else if ptr == "ry"
-        then &n.ry as Ref of ?
+        then &n.ry 
 	else if ptr == "rz"
-        then &n.rz as Ref of ?
+        then &n.rz 
 
         else if ptr == "rpx" 
-        then &n.rpx as Ref of ?
+        then &n.rpx 
 	else if ptr == "rpy"
-        then &n.rpy as Ref of ?
+        then &n.rpy 
 	else if ptr == "rpz"
-        then &n.rpz as Ref of ?
+        then &n.rpz 
 
         else if ptr == "spx" 
-        then &n.spx as Ref of ?
+        then &n.spx 
 	else if ptr == "spy"
-        then &n.spy as Ref of ?
+        then &n.spy 
 	else if ptr == "spz"
-        then &n.spz as Ref of ?
+        then &n.spz 
 
         else if ptr == "rptx" 
-        then &n.rptx as Ref of ?
+        then &n.rptx 
 	else if ptr == "rpty"
-        then &n.rpty as Ref of ?
+        then &n.rpty 
 	else if ptr == "rptz"
-        then &n.rptz as Ref of ?
+        then &n.rptz 
 
         else if ptr == "sptx" 
-        then &n.sptx as Ref of ?
+        then &n.sptx 
 	else if ptr == "spty"
-        then &n.spty as Ref of ?
+        then &n.spty 
 	else if ptr == "sptz"
-        then &n.sptz as Ref of ?
+        then &n.sptz 
 
         else if ptr == "tmrpx" 
-        then &n.tmrpx as Ref of ?
+        then &n.tmrpx 
 	else if ptr == "tmrpy"
-        then &n.tmrpy as Ref of ?
+        then &n.tmrpy 
 	else if ptr == "tmprz"
-        then &n.tmrpz as Ref of ?
-        else super.getPointer(ptr, target)
+        then &n.tmrpz 
+        else null as Ref of Number;
+	if (rptr == null) then super.getPointer(ptr, target) as Ref of Number else makeRef(n.id, ptr, rptr as Ref of Number);
     }
+
 
     override function toNode from (m is MaModel) to Node 
     {
@@ -1074,7 +1557,7 @@ class MMesh is MSpatial
     function buildMesh
     {
 	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
-	println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()} uvSets {uvSets.size()}");
+	//println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()} uvSets {uvSets.size()}");
 	for (polyface in polyfaces) {
 	    var norm = Vec3.<<0>>;
 	    const faceEdges = polyface.faceEdges;
