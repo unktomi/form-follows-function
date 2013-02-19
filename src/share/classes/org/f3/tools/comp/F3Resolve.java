@@ -915,7 +915,7 @@ public class F3Resolve {
         if (!((mt instanceof MethodType) || (mt instanceof ForAll)) ||
                 !argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
                 true, false, Warner.noWarnings)) {
-	    System.err.println("check args failed: "+ sym + ": "+types.toF3String(mtype) + " mt="+mt.getClass()+" "+types.toF3String(mt));
+	    //System.err.println("check args failed: "+ sym + ": "+types.toF3String(mtype) + " mt="+mt.getClass()+" "+types.toF3String(mt));
             return wrongMethod.setWrongSym(sym);
         }
         return sym;
@@ -2758,10 +2758,10 @@ public class F3Resolve {
                         wrongSymStr =
                                 types.toF3String((MethodSymbol) wrongSym.asMemberOf(site, types),
                                     ((MethodSymbol) wrongSym).params);
-                    else
+		    else
                         wrongSymStr = wrongSym.toString();
-		    System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
-		    Thread.currentThread().dumpStack();
+		    //System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
+		    //Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,
@@ -2886,7 +2886,7 @@ public class F3Resolve {
 
         AmbiguityError(Symbol sym1, Symbol sym2) {
             super(AMBIGUOUS, sym1, "ambiguity error");
-	    Thread.currentThread().dumpStack();
+	    //Thread.currentThread().dumpStack();
             this.sym1 = sym1;
             this.sym2 = sym2;
         }

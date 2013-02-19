@@ -101,6 +101,10 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
             this.listener = listener;
         }
 
+	public void set(a value) {
+	    srcPtr.set(value);
+	}
+
         /**
          * Uubind the current Pointer from the srcPtr. Repeated calls are fine
          * but subsequent calls are just no-ops. After unbind call, the BoundPointer
@@ -142,7 +146,7 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
             }
         };
         // initial update from "srcPtr"
-        this.set(thisVarNum, (a)srcPtr.get());
+        this.obj.set$(thisVarNum, (a)srcPtr.get());
 
         // add dependency so that we will get notified with update$ calls
         srcPtr.addDependency(listener);
