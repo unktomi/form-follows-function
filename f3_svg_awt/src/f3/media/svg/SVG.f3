@@ -1,0 +1,396 @@
+package f3.media.svg;
+import f3.media.scene.*;
+import f3.media.scene.Shape2D.Path2DFactory;
+import f3.media.scene.Shape2D.Path2D;
+import f3.media.scene.Shape2D.Paint;
+import f3.media.scene.Shape2D.ColorPaint;
+import java.awt.geom.PathIterator;
+import java.awt.geom.AffineTransform;
+import f3.util.Bits;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import f3.media.svg.impl.Canvas;
+import f3.media.svg.impl.Picture;
+import f3.media.svg.impl.SVGParser;
+import f3.media.svg.impl.Paint.Style;
+import f3.media.svg.impl.Paint.Cap;
+import f3.media.svg.impl.Paint.Join;
+import f3.media.svg.impl.Matrix;
+
+public class SVG 
+{
+    public var url is String;
+    public var root is Node = bind load(url);
+    public const factory is Path2DFactory;
+    function load from (url is String) to Node 
+    {
+        if (url == null) return null;
+	println("loading {url}");
+        const loader = Loader {
+	    url: url
+	    fac: factory;
+	};
+        loader.load();
+        return loader.rootNode;
+    }
+}
+
+function convertTransform from (t is java.awt.geom.AffineTransform) to Mat4 
+{
+    if (t.isIdentity()) Mat4.<<1>> else {
+	    matrix(t.getScaleX(), t.getShearX(), 0, t.getTranslateX(),
+		   t.getShearY(), t.getScaleY(), 0, t.getTranslateY(),
+		   0, 0, 1, 0,
+		   0, 0, 0, 1);
+        }
+}
+
+function convertPath from (fac is Path2DFactory,
+			   worldMatrix is java.awt.geom.AffineTransform,
+			   shape is java.awt.Shape) to Path2D 
+{
+    //    println("converting path {shape}");
+    if (shape == null) {
+       return null;
+    }
+    const iter = shape.getPathIterator(worldMatrix);
+    const coords = 
+        java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 6) as nativearray of Number;
+    const p = fac.createPath();
+    //    println("created path {p}");
+    while (not iter.isDone()) {
+        const t = iter.currentSegment(coords);
+	//	println("t={t} isDone={iter.isDone()}");
+        if (t == PathIterator.SEG_MOVETO) {
+            p.moveTo(coords[0], -coords[1]);
+        } else if (t == PathIterator.SEG_LINETO) {
+            p.lineTo(coords[0], -coords[1]);
+        } else if (t == PathIterator.SEG_QUADTO) {
+            p.quadTo(coords[0], -coords[1], coords[2], -coords[3]);
+        } else if (t == PathIterator.SEG_CUBICTO) {
+            p.cubicTo(coords[0], -coords[1], coords[2], -coords[3], coords[4], -coords[5]);
+        } else if (t == PathIterator.SEG_CLOSE) {
+            p.closePath();
+        }
+        iter.next();
+    }
+    return p;
+}
+
+
+function convertPaint
+    from (paint is f3.media.svg.impl.Paint) to Paint 
+{
+    const shader = paint.getShader();
+    if (shader == null) {
+        return convertColor(paint);
+    }
+    if (shader instanceof f3.media.svg.impl.LinearGradient) {
+        const grad = shader as f3.media.svg.impl.LinearGradient;
+        const a = paint.getAlpha()/255.0;
+        if (a <> 1.0) {
+            println("gradient with opacity {a}");
+        }
+        const t = Mat4.<<1>> * convertTransform(grad.matrix.at);
+	var colors is Color[];
+	var stops is Number[];
+	for (i in grad.colors) {
+	    insert convertColor(removeAlpha(i), (extractAlpha(i)*a) as Integer) into colors;
+	}
+	for (i in grad.offsets) {
+	    insert i into stops;
+	}
+        return Shape2D.LinearGradient {
+            x1: grad.x1;
+            y1: grad.y1;
+            x2: grad.x2;
+            y2: grad.y2;
+            transform: scale(1, -1, 1) * t;
+            proportional: not grad.userSpace;
+	    colors: colors;
+	    stops: stops;
+        }
+    } else if (shader instanceof f3.media.svg.impl.RadialGradient) {
+        const grad = shader as f3.media.svg.impl.RadialGradient;
+        const a = paint.getAlpha()/255.0;
+        if (a <> 1.0) {
+            println("gradient with opacity {a}");
+        }
+        println("radial gradient {grad.x} {grad.y} {grad.radius} {grad.userSpace}");
+        const t = Mat4.<<1>> * convertTransform(grad.matrix.at);
+	var colors is Color[];
+	var stops is Number[];
+	for (i in grad.colors) {
+	    insert convertColor(removeAlpha(i), (extractAlpha(i)*a) as Integer) into colors;
+	}
+	for (i in grad.offsets) {
+	    insert i into stops;
+	}
+        return Shape2D.RadialGradient {
+            focusX: grad.x;
+            focusY: grad.y;
+            radius: grad.radius;
+            transform: t;
+            proportional: not grad.userSpace;
+            colors: colors;
+            stops: stops;
+        }
+    }
+    return null;
+}
+
+function extractAlpha from (color is Integer) to Integer 
+{
+    const result = Bits.bitAnd(Bits.unsignedShiftRight(Bits.bitAnd(color, 0xff000000), 24), 0xff);
+    println("extract alpha {%x color} => {%x result}");
+    return result;
+}
+
+function removeAlpha from (color is Integer) to Integer 
+{
+    Bits.bitAnd(color, 0x00ffffff);
+}
+
+function convertColor from (paint is f3.media.svg.impl.Paint) to Paint 
+{
+    ColorPaint {color: convertColor(removeAlpha(paint.getColor()), paint.getAlpha())};
+}
+
+function convertColor from (color is Integer, alpha is Integer) to Color 
+{
+    const rgb = Color.valueOf(color, false);
+    const result = Color.color(rgb.red, rgb.green, rgb.blue, alpha / 255.0);
+    println("converted {%x color} {%x alpha} to {result}");
+    return result;
+}
+
+function convertStroke from (paint is f3.media.svg.impl.Paint) to Stroke 
+{
+    if (paint.getStyle() <> Style.STROKE) {
+        return null;
+    }
+    const cap = paint.getStrokeCap();
+    const join = paint.getStrokeJoin();
+    Stroke {
+        cap: if (cap == Cap.BUTT) Stroke.Cap.BUTT else if (cap == Cap.SQUARE) Stroke.Cap.SQUARE else Stroke.Cap.ROUND;
+        join: if (join == Join.BEVEL) Stroke.Join.BEVEL else if (join == Join.ROUND) Stroke.Join.ROUND else Stroke.Join.MITER;        
+        width: paint.getStrokeWidth();
+    }
+}
+
+class RootNode extends TransformNode {
+    public function updateRoot to () 
+    {
+        updateParent();
+    }
+}
+
+public class NodeInfo {
+    public var transform: java.awt.geom.AffineTransform;
+    public var path: java.awt.Shape;
+    public var paint: Paint;
+    public var stroke: Stroke;
+}
+
+def A_ID = new AffineTransform();
+
+class CanvasImpl is Canvas {
+    function transformShape 
+	from (shape is java.awt.Shape,
+	      transform is java.awt.geom.AffineTransform) 
+	to java.awt.geom.GeneralPath 
+    {				
+        if (transform == null or transform.isIdentity()) {
+            return shape;
+        }
+        var gp = new java.awt.geom.GeneralPath();
+        gp.append(shape.getPathIterator(transform), false);
+        return gp;
+    }
+    public var canvasStack is java.util.Stack of Canvas;
+    public var content is NodeInfo[];
+    public var clipContent is NodeInfo[];
+    public var w is Number;
+    public var h is Number;
+    public var inClip = false;
+    public var clipShape is java.awt.geom.Area;
+    override function addShape
+	from (worldMatrix is java.awt.geom.AffineTransform,
+	      shape0 is java.awt.Shape,
+	      svgPaint is f3.media.svg.impl.Paint) 
+	to ()    
+    {
+        //var shape2d = convertPath(w, h, worldMatrix, shape);
+        //bounds = Bounds.merge(bounds, shape2d.getBounds());
+        const paint = convertPaint(svgPaint);
+        println("paint {paint}");
+        const stroke = convertStroke(svgPaint);
+        var shape = shape0;
+	println("add shape {shape}");
+        if (clipShape != null) {
+            const a = new java.awt.geom.Area(transformShape(shape, worldMatrix));
+            a.intersect(clipShape);
+            shape = a;
+        }
+        // insert Shape2D.createMeshNode(shape2d, stroke, paint) into content;
+        const n = NodeInfo {
+            transform: if (worldMatrix == null) then A_ID else worldMatrix;
+            path: shape,
+            paint: paint;
+            stroke: stroke;
+        }
+        if (inClip) {
+            insert n into clipContent;
+        } else {
+            insert n into content;
+        }
+    }
+
+    override function beginClip to () {
+        inClip = true;
+        clipShape = null;
+    }
+
+    override function endClip() to () {
+        inClip = false;
+        if (false) for (x in clipContent) {
+            var a = new java.awt.geom.Area(transformShape(x.path, x.transform));
+            if (clipShape == null) {
+                clipShape = a;
+            } else {
+                clipShape.add(a);
+            }
+        }
+        clipContent = [];
+    }
+    override function beginSymbol to () {
+        canvasStack.push(this);
+    }
+    override function endSymbol to () {
+        canvasStack.pop();
+    }
+    override function use from (x is Number, y is Number, mat is Matrix) to () {
+        var target = canvasStack.peek() as CanvasImpl;
+        var t = new AffineTransform(mat.<<at>>);
+        var mat4 = convertTransform(mat.at) * translate(x, y);
+        t.concatenate(AffineTransform.getTranslateInstance(x,y));
+        println("using {this} {t} into {target}");
+        for (i in content) {
+            var it = new AffineTransform(t);
+            it.concatenate(i.transform);
+            var paint = i.paint;
+            /*
+            if (paint instanceof Shape2D.LinearGradient) {
+                var grad = i.paint as Shape2D.LinearGradient;
+                paint = Shape2D.LinearGradient {
+                    x1: grad.x1;
+                    y1: grad.y1;
+                    x2: grad.x2;
+                    y2: grad.y2;
+                    proportional: grad.proportional;
+                    transform: mat4 * grad.transform;
+                    colors: grad.colors;
+                    stops: grad.stops;
+                }
+            }
+            if (paint instanceof Shape2D.RadialGradient) {
+                var grad = i.paint as Shape2D.RadialGradient;
+                paint = Shape2D.RadialGradient {
+                    focusX: grad.focusX;
+                    focusY: grad.focusX;
+                    proportional: grad.proportional;
+                    transform: mat4 * grad.transform;
+                    colors: grad.colors;
+                    stops: grad.stops;
+                }
+            }
+            */
+            insert NodeInfo {
+                path: i.path;
+                transform: it;
+                paint: paint;
+                stroke: i.stroke;
+            } into target.content;
+        }
+    }
+}
+
+function flipPaint from (paint is Shape2D.Paint) to Shape2D.Paint 
+{
+    if (false and (paint instanceof Shape2D.LinearGradient)) {
+        var grad = paint as Shape2D.LinearGradient;
+        var t = Mat4.<<1>> * grad.transform;
+        var p1 = vector(grad.x1, grad.y1, 0);
+        var p2 = vector(grad.x2, grad.y2, 0);
+        p1 = t * p1;
+        p2 = t * p2;
+        grad.x1 = p1.x;
+        grad.y1 = -p1.y;
+        grad.x2 = p2.x;
+        grad.y2 = -p2.y;
+        grad.transform = Mat4.<<1>>;
+    }
+    return paint;
+}
+
+class Loader {
+    public var fac is Path2DFactory;
+    public var url is String;
+    public var rootNode = RootNode {};
+    public var contentNode is  Group = Group {};
+    function load {
+        insert contentNode into rootNode.content;
+        var width = 0.0;
+        var height = 0.0;
+        var bounds: Bounds;
+	var canvasStack = new java.util.Stack of Canvas;
+        SVGParser.getSVGFromInputStream(Picture {
+                var count = 0;
+                override function beginRecording from (w is Integer, h is Integer) to Canvas {
+                    width = w;
+                    height = h;
+                    var canvas = CanvasImpl {
+                        canvasStack: canvasStack;
+                        w: w, h: h;
+                    }
+                    if (canvasStack.size() == 0) {
+                        canvasStack.push(canvas);
+                    }
+                    canvas;
+                }
+                override function endRecording():Void {
+                    //canvasStack.pop();
+                }
+            }, 
+            new java.io.BufferedInputStream(new java.net.URL(url).openStream()));
+        println("CANVAS STACK {canvasStack.size()} {canvasStack}");
+        var content = (canvasStack.peek() as CanvasImpl).content;
+        for (i in content) {
+            if (i.stroke != null) {
+                println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
+            }
+	    //	    println("converting path with factory: {fac}");
+            var paint = flipPaint(i.paint);
+            var shape = Shape2D.MeshNode2D {
+                mesh: Shape2D.createMesh(convertPath(fac, i.transform, i.path), i.stroke);
+                paint: paint;
+            }
+            //println("adding shape {shape.bounds} flipped paint {i.paint}");
+            if (sizeof contentNode.content == 50) {
+                contentNode = Group {}
+                insert contentNode into rootNode.content;
+            }
+            insert shape into contentNode.content;
+        }
+        println("root bounds={rootNode.bounds}");
+        if (height <= 0 or width <= 0) {
+            height = bounds.height();
+            width = bounds.width();
+        }
+        println("height={height} width={width}");
+    }
+}
+
+
+
+

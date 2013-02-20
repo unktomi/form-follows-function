@@ -13,7 +13,6 @@
     <mkdir dir="build/classes"/>
     <copy todir="lib">
       <fileset dir="../dist/lib/shared" includes="*.jar"/>
-      <fileset dir="../f3_svg_awt/build/" includes="*.jar"/>
     </copy>
   <taskdef name="f3c" classname="org.f3.tools.ant.F3AntTask" >
     <classpath>
@@ -27,9 +26,8 @@
     </copy>
   </target>
   <target name="copy.resources" depends="init">
-    <copy todir="${build.classes.dir}">
-      <fileset dir="src" includes="**/*.cgfx"/>
-    </copy>
+    <!--copy todir="${build.classes.dir}">
+    </copy-->
   </target>
   <target name="compile" depends="init">
     <javac debug="yes" deprecation="no"
@@ -38,11 +36,7 @@
              includes="**/*.java" source="${javac.source}" sourcepath=""
              srcdir="${src.classes.dir}" target="${javac.target}">
             <classpath>
-                <path path="lib/jogl.all.jar"/>
-                <path path="lib/gluegen-rt.jar"/>
-                <path path="lib/jogl.cg.jar"/>
                 <path path="lib/f3rt.jar"/>
-		<path path="lib/f3.svg.awt.jar"/>
             </classpath>
     </javac>
     <f3c debug="yes" deprecation="no"
@@ -53,31 +47,12 @@
              compilerclasspath="${javac.classpath}">
 	  <!--compilerarg value="-XDdumpjava"/-->
             <classpath>
-                <path path="lib/jogl.all.jar"/>
-                <path path="lib/gluegen-rt.jar"/>
-                <path path="lib/jogl.cg.jar"/>
-		<path path="lib/f3.svg.awt.jar"/>
             </classpath>
     </f3c>
   </target>
   <target name="jar" depends="service,copy.resources,compile">
-    <jar compress="true" destfile="build/f3.cg.jogl.awt.jar">
+    <jar compress="true" destfile="build/f3.svg.awt.jar">
       <fileset dir="build/classes"/>
     </jar>
-  </target>
-  <target name="run" depends="jar">
-    <java fork="true" classname="org.f3.runtime.Main"> 
-      <classpath>
-        <path path="lib/jogl.all.jar"/>
-        <path path="lib/gluegen-rt.jar"/>
-        <path path="lib/jogl.cg.jar"/>
-        <path path="lib/f3rt.jar"/>
-        <path path="build/f3.cg.jogl.awt.jar"/>
-	<path path="lib/f3.svg.awt.jar"/>
-      </classpath>
-      <jvmarg value="-d32"/>
-      <jvmarg value="-Djava.library.path=lib/macosxuniversal"/>
-      <arg value="f3.jogl.awt.JoglStage"/>
-    </java>
   </target>
 </project>
