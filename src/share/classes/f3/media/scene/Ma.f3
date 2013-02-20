@@ -167,8 +167,8 @@ class MaModel
     var channels is TimeNode[];
     var clipLibs is TimeNode[];
 
-    function getCameras to Camera[] {
-	var result is Camera[];
+    function getCameras to Camera[] 
+    {
 	foreach (n in spatialMap.values() where n is Camera) n as Camera;
     }
 
@@ -242,22 +242,94 @@ class MaModel
 	return result; 
     }
 
-    function resolveTargetPointer
-	from (c is Connection) to Ref of ?
+    function resolveTargetPointer from (c is Connection) to Ref of ?
     {
 	const target = c.targetNode;
+	var key = c.targetPath;
+	const attr = target.attrs.get(key); 
+	const attrType is String;
+	const parentAttrType is String;
+	if (attr <> null) {
+	    attrType = attr.type;
+	    if (attr.parent <> null) {
+		parentAttrType = attr.parent.type;
+		key = attr.parent.shortName;
+	    }
+	}
+	var ptr = 
 	if (target instanceof MCharacter) {
 	    (target as MCharacter).resolveTargetPointer(this, c)
 	} else if (target instanceof MSpatial) {
 	    const resolved = toNode(target as MSpatial);
-	    target.getPointer(c.targetPath, resolved);
+	    target.getPointer(key, resolved);
 	} else if (target instanceof MAbstractShader) {
 	    const resolved = toShader(target as MAbstractShader);
-	    target.getPointer(c.targetPath, resolved);
+	    println("resolved shader {target.name} to {resolved}");
+	    target.getPointer(key, resolved);
 	} else if (target instanceof MAnimCurve) {
 	    const ch = toChannel(target as MAnimCurve) as Channel of ?;
 	    ch.targets[0];
-	} else null
+	} else null;
+	if (ptr == null and attr <> null) { // hack: assume user defined attr
+	    if (attr.parent <> null) {
+		ptr = &attr.parent.value as Ref of ?;
+	    } else {
+		ptr = &attr.value as Ref of ?;
+	    }
+	}
+	if (attr.parent <> null) {
+	    const v is Object = ptr.get();
+	    const t = parentAttrType; // can be wrong...
+	    if (v is Tuple4) {
+		t = "float4";
+	    }
+	    if (t == "float4") { // these hacks needed at least for cgfx shaders
+		const name = attr.shortName.toUpperCase();
+		const ptrv = ptr as Ref of Tuple4;
+		if (name.endsWith("X")) {
+		    ptr = Ref of Number {
+			override function get to Number {
+			    ptrv.get().x;
+			}
+			override function set from (n is Number) to () {
+			    const t = ptrv.get();
+			    ptrv.set(tuple(n, t.y, t.z, t.w));
+			}
+		    } as Ref of ?;
+		} else if (name.endsWith("Y")) {
+		    ptr = Ref of Number {
+			override function get to Number {
+			    ptrv.get().y;
+			}
+			override function set from (n is Number) to () {
+			    const t = ptrv.get();
+			    ptrv.set(tuple(t.x, n, t.z, t.w));
+			}
+		    } as Ref of ?;
+		} else if (name.endsWith("Z")) {
+		    ptr = Ref of Number {
+			override function get to Number {
+			    ptrv.get().z;
+			}
+			override function set from (n is Number) to () {
+			    const t = ptrv.get();
+			    ptrv.set(tuple(t.x, t.y, n, t.w));
+			}
+		    } as Ref of ?;
+		} else if (name.endsWith("W")) {
+		    ptr = Ref of Number {
+			override function get to Number {
+			    ptrv.get().w;
+			}
+			override function set from (n is Number) to () {
+			    const t = ptrv.get();
+			    ptrv.set(tuple(t.x, t.y, t.z, n));
+			}
+		    } as Ref of ?;
+		}
+	    }
+	}
+	return ptr;
     }
 
     function resolveSourcePointer
@@ -282,9 +354,6 @@ class MaModel
 	foreach (c in n.connectionsFromThis.get(sourcePath)) {
 	    println(c);
 	    const ptr = resolveTargetPointer(c) as Ref of Number;
-	    if (ptr == null) {
-		ptr = makeNumberStorage();
-	    }
 	    println("resolved {n.name} {sourcePath} to {ptr}");
 	    ptr;
 	}
@@ -322,7 +391,8 @@ class MaModel
 	    }
     }
 
-    function toClipLibrary from (n is MClipLibrary) to TimeNode {
+    function toClipLibrary from (n is MClipLibrary) to TimeNode 
+    {
 	const r is TimeNode = clipLibMap.get(n);
 	if (r == null) {
 	    println("converting clip library {n.name}");
@@ -409,51 +479,45 @@ class MaModel
     }
 }
 
-class Storage {
-    var num is Number;
-}
-
-function makeNumberStorage to Ref of Number {
-    const storage = Storage {
-    }
-    return &storage.num;
-}
-
-function makeRefX from (ref is Ref of Number) to Ref of Tuple3 {
+function makeRefX from (ref is Ref of Number) to Ref of Tuple3 
+{
     Ref of Tuple3 {
 	public function get to Tuple3 {
 	    tuple(ref.get(), 0, 0);
 	}
-	public function set from(tuple is Tuple3) to () {
+	public function set from (tuple is Tuple3) to () {
 	    ref.set(tuple.x);
 	}
     }
 }
 
-function makeRefY from (ref is Ref of Number) to Ref of Tuple3 {
+function makeRefY from (ref is Ref of Number) to Ref of Tuple3 
+{
     Ref of Tuple3 {
 	public function get to Tuple3 {
 	    tuple(0, ref.get(), 0);
 	}
-	public function set from(tuple is Tuple3) to () {
+	public function set from (tuple is Tuple3) to () {
 	    ref.set(tuple.y);
 	}
     }
 }
 
-function makeRefZ from (ref is Ref of Number) to Ref of Tuple3 {
+function makeRefZ from (ref is Ref of Number) to Ref of Tuple3 
+{
     Ref of Tuple3 {
 	public function get to Tuple3 {
 	    tuple(0, 0, ref.get());
 	}
-	public function set from(tuple is Tuple3) to () {
+	public function set from (tuple is Tuple3) to () {
 	    ref.set(tuple.z);
 	}
     }
 }
 
-function makeRef of a from (name is String, ptr is String, result is Ref of a) to Ref of a {
-    return Ref of a {
+function makeRef of a from (name is String, ptr is String, result is Ref of a) to Ref of a 
+{
+    Ref of a {
 	override function toString to String 
 	{
 	    "{name}.{ptr} = {get()}";
@@ -901,7 +965,8 @@ class MMultiplyDivide is MUtilityOfTuple3
 	} else null
     }
 
-    override function setAttr from (cmd is Command) to () {
+    override function setAttr from (cmd is Command) to () 
+    {
 	super.setAttr(cmd);
 	const n = cmd.getAttr();
 	if (n == "i1") {
@@ -973,8 +1038,8 @@ class MClamp is MUtilityOfTuple3 {
 	} else null
     }
 
-
-    override function setAttr from (cmd is Command) to () {
+    override function setAttr from (cmd is Command) to () 
+    {
 	const n = cmd.getAttr();
 	if (n == "mn") {
 	    mn = cmd.getVec3();
@@ -1033,7 +1098,8 @@ class MReverse is MUtilityOfTuple3 {
 	} else null
     }
 
-    override function setAttr from (cmd is Command) to () {
+    override function setAttr from (cmd is Command) to () 
+    {
 	const n = cmd.getAttr();
 	if (n == "i") {
 	    i = cmd.getVec3();
@@ -1678,7 +1744,7 @@ class MMesh is MSpatial
 	    const uvb = this.uvb.getBuffer();
 	    const tanb = BufferUtils.createVector3Buffer(ib.limit());
 	    const binb = BufferUtils.createVector3Buffer(ib.limit());
-	    ImportUtils.addTangentBinormalStreams(ib, vb, uvb,nb, tanb, binb);
+	    ImportUtils.addTangentBinormalStreams(ib, vb, uvb, nb, tanb, binb);
 	    MeshBuffer {
 		indexBuffer: ib;
 		vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
@@ -1874,7 +1940,9 @@ class MCGFXShader is MAbstractShader
 	to Ref of ?
     {
 	const shader = target as Shader;
-	return shader.getParameter(ptr);
+	var result = shader.getParameter(ptr);
+	println("result in {name} for {ptr} = {result}");
+	return result;
     }
 
     override function setAttr from (cmd is Command) to () 
@@ -2717,11 +2785,5 @@ public class Model {
 	}
 	return r;
     }
-}
-
-public function run from (args is String[]) to () 
-{
-    const p = MaParser {};
-    const m = p.parse(new java.net.URL(args[0]));
 }
 
