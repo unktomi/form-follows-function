@@ -1,0 +1,16 @@
+package f3.media.scene;
+
+public class Stroke is AbstractStroke 
+{
+    public const cap is Cap = Cap.BUTT;
+    public const join is Join = Join.MITER;
+    public const width is Number = 1.0;
+
+    override public function equals from (obj is Object) to Boolean 
+    {
+        (obj instanceof Stroke) and {
+            const other = obj as Stroke;
+	    cap == other.cap and join == other.join and width == other.width;
+        }
+    }
+}

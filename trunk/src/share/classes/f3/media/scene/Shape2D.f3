@@ -1,0 +1,246 @@
+package f3.media.scene;
+import java.lang.Math.sqrt;
+import f3.math.*;
+
+public interface Path2DFactory {
+    public abstract function createPath to Path2D;
+}
+
+// @TODO
+public static const WIND_NON_ZERO = 0;
+public static const WIND_EVEN_ODD = 1; 
+
+public interface Path2D {
+    abstract public function moveTo from (x0 is Number, y0 is Number) to ();
+    abstract public function lineTo from (x1 is Number, y1 is Number) to ();
+    abstract public function quadTo from (cx1 is Number, cy1 is Number, 
+					  x2 is Number, y2 is Number) to ();
+    abstract public function cubicTo from (cx1 is Number, cy1 is Number, 
+					   cx2 is Number, cy2 is Number,
+					   x2 is Number, y2 is Number) to ();
+    abstract public function closePath to ();
+    abstract public function reset to ();
+    abstract public function createMesh to AbstractMesh;
+    abstract public function getBounds to Bounds;
+    abstract public function createStrokedShape from (stroke is Stroke) to Path2D;
+    abstract public function apply from (output is Path2D) to ();
+    abstract public function contains from (x is Number, y is Number) to Boolean;
+}
+
+
+public function rect
+    from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number) to Path2D
+{
+    const path = fac.createPath();
+    path.moveTo(x, y);
+    path.lineTo(x+width, y);
+    path.lineTo(x+width, y+height);
+    path.lineTo(x, y+height);
+    path.closePath();
+    return path;
+}
+
+const u = 2.0 / 3.0 * (sqrt(2.0) - 1.0);
+const points = 
+[1.0, 0.5 + u, 0.5 + u, 1.0, 0.5, 1.0 ,
+ 0.5 - u, 1.0, 0.0, 0.5 + u, 0.0, 0.5 ,
+ 0.0, 0.5 - u, 0.5 - u, 0.0, 0.5, 0.0 ,
+ 0.5 + u, 0.0, 1.0, 0.5 - u, 1.0, 0.5];
+
+public function ellipse
+    from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number) to Path2D
+{
+    const path = fac.createPath();
+    var p = 6 * 3;
+    path.moveTo(x+points[p+4]*width,
+                y+points[p+5]*height);
+    for (i in [0..3]) {
+        p = 6 * i;
+        path.cubicTo(x+points[p]*width,
+                     y+points[p+1]*height,
+                     x+points[p+2]*width,
+                     y+points[p+3]*height,
+                     x+points[p+4]*width,
+                     y+points[p+5]*height);
+    }
+    path.closePath();
+    return path;
+}
+
+public function createMesh 
+    from (path is Path2D, 
+	  stroke is Stroke)
+    to AbstractMesh 
+{
+    if (stroke != null) {
+        createMesh(path.createStrokedShape(stroke), null);
+    } else {
+        path.createMesh();
+    }
+}
+
+public interface Paint {
+}
+
+public class ColorPaint extends Paint {
+    public var color is Color = Color.WHITE;
+}
+
+public function ColorPaint from (color is Color) to ColorPaint 
+{
+    ColorPaint { color: color }
+}
+
+public class TexturePaint is ColorPaint 
+{
+    override var color = Color.WHITE;
+    public var texture is AbstractTexture;
+    public var x is Number;
+    public var y is Number;
+    public var width is Number;
+    public var height is Number;
+}
+
+public function TexturePaint
+    from (texture is AbstractTexture)
+    to TexturePaint 
+{
+     TexturePaint { texture: texture };
+}
+
+public abstract class GradientPaint is Paint 
+{
+    public var colors is Color[];
+    public var stops is Number[];
+    public var transform is Mat4 = Mat4.<<1>>;
+    public var proportional is Boolean = true;
+    public var spreadMethod is SpreadMethod;
+    override public function toString to String 
+    {
+        "{super.toString()} {foreach (i in colors) "{i} "}, {foreach (i in stops) "{i} "}";
+    }
+}
+
+public class LinearGradient is GradientPaint 
+{
+    public var x1 is Number = 0;
+    public var y1 is Number = 0;
+    public var x2 is Number = 0;
+    public var y2 is Number = 1.0;
+    override public function toString to String {
+        "{super.toString()} ({x1}, {y1}, {x2}, {y2})";
+    }
+}
+
+public class RadialGradient extends GradientPaint 
+{
+    public var focusX is Number = 0.0;
+    public var focusY is Number = 0.0;
+    public var radius is Number = 1.0;
+    override public function toString to String 
+    {
+        "{super.toString()}, radius {radius}, focus ({focusX}, {focusY})";
+    }
+}
+
+public static const DEFAULT_STROKE = Stroke {};
+
+function getStroke from (stroke is Stroke) to Stroke 
+{
+    if (stroke == null) then DEFAULT_STROKE else stroke;
+}
+
+public function createMeshNode
+    from (path is Path2D, 
+	  stroke is Stroke, 
+	  paint is Paint)
+    to MeshNode2D 
+{
+    if (paint == null) then null else {
+            if (stroke == null) {
+                MeshNode2D {
+                    paint: paint;
+                    mesh: createMesh(path, null);
+                }
+            } else {
+                MeshNode2D {
+                    paint: paint;
+                    mesh: createMesh(path, stroke);
+                }
+            }
+        }
+}
+
+public abstract class Shape2D is Node 
+{
+    public const factory is Path2DFactory = the Path2DFactory;
+    public var stroke is Stroke;
+    public var strokePaint is Paint;
+    public var fillPaint is Paint;
+    public var centerX is Number;
+    public var centerY is Number;
+    public readonly var path is Path2D;
+
+    var fillMesh is MeshNode = bind createMeshNode(path, 
+						   null, 
+						   fillPaint);
+    var strokeMesh is MeshNode = bind createMeshNode(path, 
+						     getStroke(stroke), 
+						     strokePaint);
+
+    override var contentBounds = bind Bounds.merge(fillMesh.bounds, 
+						   strokeMesh.bounds);
+
+    override public function of b foldLeft 
+	from (z is b,
+	      f is function from (b, Node) to b) 
+	to b
+    { 
+        var r = f(z, this);
+        if (fillMesh <> null) r = fillMesh.foldLeft(r, f);
+        if (strokeMesh <> null) r = strokeMesh.foldLeft(r, f);
+	return r
+    }
+
+    override public function of b foldRight
+	from (z is b,
+	      f is function from (Node, b) to b) 
+	to b
+    { 
+        var r = z;
+        if (fillMesh <> null) r = fillMesh.foldRight(r, f);
+	if (strokeMesh <> null) r = strokeMesh.foldRight(r, f);
+        f(this, r);
+    }
+
+    override function updateParent to () 
+    {
+        fillMesh.setParent(this);
+        fillMesh.updateParent();
+        strokeMesh.setParent(this);
+        strokeMesh.updateParent();
+    }
+}
+
+public class MeshNode2D is MeshNode {
+    public var paint is Paint;
+}
+
+public class Circle is Shape2D {
+    public var radius: Number = 1; 
+    override var path = bind ellipse(factory, centerX-radius, centerY-radius, radius*2, radius*2);
+}
+
+public class Ellipse is Shape2D {
+    public var radiusX: Number = 1;
+    public var radiusY: Number = 1;
+    override var path = bind ellipse(factory, centerY-radiusX, centerX-radiusY, radiusX*2, radiusY*2);
+}
+
+public class Rectangle is Shape2D {
+    public var width: Number = 1;
+    public var height: Number = 1;
+    override var path = bind rect(factory, centerX-width/2, centerY-height/2, width, height);
+}
+
+
