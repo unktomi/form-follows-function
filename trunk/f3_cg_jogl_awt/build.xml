@@ -13,6 +13,7 @@
     <mkdir dir="build/classes"/>
     <copy todir="lib">
       <fileset dir="../dist/lib/shared" includes="*.jar"/>
+      <fileset dir="../f3_svg_awt/build/" includes="*.jar"/>
     </copy>
   <taskdef name="f3c" classname="org.f3.tools.ant.F3AntTask" >
     <classpath>
@@ -41,6 +42,7 @@
                 <path path="lib/gluegen-rt.jar"/>
                 <path path="lib/jogl.cg.jar"/>
                 <path path="lib/f3rt.jar"/>
+		<path path="lib/f3.svg.awt.jar"/>
             </classpath>
     </javac>
     <f3c debug="yes" deprecation="no"
@@ -54,6 +56,7 @@
                 <path path="lib/jogl.all.jar"/>
                 <path path="lib/gluegen-rt.jar"/>
                 <path path="lib/jogl.cg.jar"/>
+		<path path="lib/f3.svg.awt.jar"/>
             </classpath>
     </f3c>
   </target>
@@ -70,6 +73,7 @@
         <path path="lib/jogl.cg.jar"/>
         <path path="lib/f3rt.jar"/>
         <path path="build/f3.cg.jogl.awt.jar"/>
+	<path path="lib/f3.svg.awt.jar"/>
       </classpath>
       <jvmarg value="-d32"/>
       <jvmarg value="-Djava.library.path=lib/macosxuniversal"/>

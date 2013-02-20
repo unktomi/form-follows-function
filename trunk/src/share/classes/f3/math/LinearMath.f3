@@ -140,12 +140,6 @@ public function vector
     }
 }
 
-public function translate 
-    from (x is Number, y is Number) 
-    to Mat4 
-{
-    translate(x, y, 0);
-}
 
 // row major
 public function matrix 
@@ -201,6 +195,20 @@ public function scale
 		       0, y, 0, 0,
 		       0, 0, z, 0,
 		       0, 0, 0, 1);
+}
+
+public function translate from (x is Number, y is Number) to Mat4 {
+    translate(x, y, 0);
+}
+
+public function scale from (sx is Number, sy is Number) to Mat4 {
+    scale(sx, sy, 1.0)
+}
+
+public function rotate 
+    from (rz is Number) to Mat4 
+{
+    rotate(rz, Vec3.Z_AXIS);
 }
 
 public function rotate 

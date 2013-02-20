@@ -30,6 +30,418 @@ import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
 import java.lang.IllegalStateException;
 import java.nio.*;
+import f3.media.scene.Shape2D;
+import f3.media.scene.Shape2D.*;
+import f3.media.scene.Shape2D.Path2D;
+import f3.media.scene.Shape2D.Path2DFactory;
+import f3.media.scene.MeshBuffer.*;
+import f3.media.svg.SVG;
+
+class JoglPath2D is Path2D {
+    var path is GeneralPath = new GeneralPath();
+    override public function apply from (output is Path2D) to () 
+    {
+        const pi = path.getPathIterator(null);
+        const coords = java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 6) as nativearray of Number;
+        while (not pi.isDone()) {
+            var seg = pi.currentSegment(coords);
+            if (seg == java.awt.geom.PathIterator.SEG_MOVETO) {
+                output.moveTo(coords[0], coords[1]);
+            } else if (seg == java.awt.geom.PathIterator.SEG_LINETO) {
+                output.lineTo(coords[0], coords[1]);
+            } else if (seg == java.awt.geom.PathIterator.SEG_CUBICTO) {
+                output.cubicTo(coords[0], coords[1], coords[2],coords[3], coords[4], coords[5]);
+            } else if (seg == java.awt.geom.PathIterator.SEG_QUADTO) {
+                output.quadTo(coords[0], coords[1], coords[2],coords[3]);
+            } else if (seg == java.awt.geom.PathIterator.SEG_CLOSE) {
+                output.closePath();
+            }
+        }
+    }
+    override public function moveTo from (x0 is Number, y0 is Number) to () {
+        path.moveTo(x0, y0);
+    }
+    override public function lineTo from (x1 is Number, y1 is Number) to () {
+        path.lineTo(x1, y1);
+    }
+    override public function quadTo from (cx1 is Number, cy1 is Number, x2 is Number, y2 is Number) to () 
+    {
+        path.quadTo(cx1, cy1, x2, y2);
+    }
+    override public function cubicTo 
+	from (cx1 is Number, cy1 is Number, 
+	      cx2 is Number, cy2 is Number,
+	      x2 is Number, y2 is Number) 
+	to () 
+    {
+        path.curveTo(cx1, cy1, cx2, cy2, x2, y2);
+    }
+    override public function closePath {
+        path.closePath();
+    }
+    override public function reset {
+        path = new GeneralPath();
+    }
+    override public function getBounds to Bounds {
+        const bnds = path.getBounds2D();
+        Bounds {
+            center: point(bnds.getX()-bnds.getWidth()/2,
+                             bnds.getY()-bnds.getHeight()/2,
+                             0);
+            extent: tuple(bnds.getWidth()/2, bnds.getHeight()/2, 0);
+        }
+    }
+    override public function createStrokedShape from (stroke is Stroke) to Path2D 
+    {
+        var cap is Integer;
+        var join is Integer;
+        cap = 
+            if (stroke.cap == Stroke.Cap.BUTT) then BasicStroke.CAP_BUTT 
+                else if (stroke.cap == Stroke.Cap.SQUARE) then BasicStroke.CAP_SQUARE
+                    else BasicStroke.CAP_ROUND;
+        join = 
+            if (stroke.join == Stroke.Join.BEVEL) then BasicStroke.JOIN_BEVEL 
+                else if (stroke.join == Stroke.Join.MITER) then BasicStroke.JOIN_MITER
+                    else BasicStroke.JOIN_ROUND;
+        var bs = new BasicStroke(stroke.width, cap, join);
+        var ss = bs.createStrokedShape(path);
+        var gp is GeneralPath;
+        if (ss instanceof GeneralPath){
+            gp = ss as GeneralPath;
+        } else {
+            gp = new GeneralPath(ss);
+        }
+        JoglPath2D {
+            path: gp;
+        }
+    }
+    override public function contains from (x is Number, y is Number) to Boolean 
+    {
+        path.contains(x, y);
+    }
+    override public function createMesh to AbstractMesh 
+    {
+        const extrusion = new Jogl2DExtruder.Extrusion(path, false, 0);
+        const md = extrusion.createMeshData();
+        const mb = MeshBuffer {
+            indexBuffer: md.getIndexBuffer();
+            vertexBuffer: VertexAttributeBuffer { coordsPerVertex: 3, buffer: md.getVertexBuffer() }
+            textureBuffers: VertexAttributeBuffer { coordsPerVertex: 2, buffer: md.getTextureBuffer(0) }
+            normalBuffer: VertexAttributeBuffer { coordsPerVertex: 3, buffer: md.getNormalBuffer() }
+        }
+        return mb.toMesh();
+    }
+}
+
+class JoglPath2DFactory extends Shape2D.Path2DFactory 
+{
+    override public function createPath to Path2D 
+    {
+        JoglPath2D {}
+    }
+}
+
+const ThePath2DFactory = JoglPath2DFactory {};
+
+
+
+function makeGradientShader(gl:GL2, grad:Shape2D.GradientPaint) {
+    if (grad instanceof Shape2D.LinearGradient) {
+        JoglLinearGradientShader {
+            gl: gl;
+            grad: grad;
+        }
+    } else{
+        JoglRadialGradientShader {
+            gl: gl;
+            grad: grad;
+        }
+    }
+}
+
+abstract class JoglGradientShader extends CGFXShader {
+    public var gl is GL2;
+    public var tex is Texture;
+    public var grad is Shape2D.GradientPaint;
+    public var transparent is Boolean = false;
+    override function isTransparent() {transparent}
+    override var technique = bind if (transparent) "Transparent" else "Opaque";
+    var texture = JoglTexture {
+        gl: bind gl;
+        tex: bind tex;
+    };
+    var buf is ByteBuffer;
+    var textureDirty = true;
+    function toByte from (color is Number) to Byte {
+        return Bits.bitAnd((color * 255) as Integer, 0xff);
+    }
+
+    function toInt from (color is Number) to Integer {
+        return Bits.bitAnd((color * 255) as Integer, 0xff);
+    }
+
+    function updateTexture {
+        if (tex == null) {
+            tex = genTexture(gl, 16, 1);
+            tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
+            tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
+        }
+        if (buf == null) {
+            buf = BufferUtils.createByteBuffer(16*4);
+        }
+        var hasTransparency = false;
+        for (i in [0..<16]) {
+            var color = grad.colors[i];
+            if (color == null) {
+                color = Color.BLACK;
+            }
+            var j = i * 4;
+            var r = buf.get(j);
+            var g = buf.get(j+1);
+            var b = buf.get(j+2);
+            var a = buf.get(j+3);
+            var x = toByte(color.red);
+            var y = toByte(color.green);
+            var z = toByte(color.blue);
+            var w = toByte(color.opacity);
+            if (r != x or
+                g != y or 
+                b != z or 
+                a != w) {
+                textureDirty = true;
+                buf.put(j, x);
+                buf.put(j+1, y);
+                buf.put(j+2, z);
+                buf.put(j+3, w);
+            }
+            if (color.opacity != 1.0) {
+                hasTransparency = true;
+            }
+        }
+        if (textureDirty) {
+            transparent = hasTransparency;
+            textureDirty = false;
+            var glp = GLProfile.get("GL2");
+            println("updating gradient colors");
+            tex.updateImage(gl, 
+                            new TextureData(glp, 
+                                            GL.GL_RGBA8, 
+                                            16, 1,
+                                            0,
+                                            GL2.GL_RGBA,
+                                            GL2.GL_UNSIGNED_BYTE,
+                                            false, 
+                                            false, 
+                                            true, 
+                                            buf, 
+                                            null));
+        }
+        setParameter("colors", texture);
+    }
+
+    function updateParams from (mesh is AbstractMesh) to () {
+        var x is Number;
+        var y is Number;
+        var w is Number;
+        var h is Number;
+        if (grad.proportional) {
+            var bounds = mesh.bounds;
+            x = bounds.center.x - bounds.extent.x;
+            y = bounds.center.y - bounds.extent.y;
+            w = bounds.extent.x * 2;
+            h = bounds.extent.y * 2;
+            if (w == 0 or h == 0)  {
+                //                println("bounds={bounds}");
+                w = h = 1;
+            }
+        } else {
+            x = 0; y = 0; w = 1; h = 1
+        }
+        updateParams(x, y, w, h);
+        for (i in [0..<4]) {
+            var v = vector(grad.stops[i*4],
+			   grad.stops[i*4+1],
+			   grad.stops[i*4+2],
+			   grad.stops[i*4+3]);
+            setParameter("fractions{i+1}", v);
+        }
+        var scaleFactors = foreach (i in [0..<16]) 0.0;
+        for (i in [0..<sizeof grad.stops-1]) {
+            scaleFactors[i] = 1.0 / (grad.stops[i+1]-grad.stops[i]);
+        }
+        for (i in [0..<4]) {
+            var v = vector(scaleFactors[i*4],
+			   scaleFactors[i*4+1],
+			   scaleFactors[i*4+2],
+			   scaleFactors[i*4+3]);
+            setParameter("scaleFactors{i+1}", v);
+        }
+    }
+
+    protected abstract function updateParams(x is Number, y is Number, w is Number, h is Number) to ();
+
+    override function apply from (mesh is AbstractMesh, 
+				  worldTransform is  Mat4,
+				  viewMatrix is  Mat4,
+				  projectionMatrix is  Mat4) to ()
+    {
+
+        updateTexture();
+        updateParams(mesh);
+        super.apply(mesh, worldTransform, viewMatrix, projectionMatrix);
+    }
+
+}
+
+class JoglRadialGradientShader extends JoglGradientShader {
+    override var url = "{__DIR__}radialgradient.cgfx";
+    override function updateParams(rx is Number, ry is Number, rw is Number, rh is Number) to () {
+        var grad = this.grad as Shape2D.RadialGradient;
+        var fx = grad.focusX;
+        var fy = grad.focusY;
+        var cx = fx;
+        var cy = fy;
+        var tcx = rx + cx * rw;
+        var tcy = ry + cy * rh;
+        var tfx = rx + fx * rw;
+        var tfy = ry + fy * rh;
+        var r = grad.radius;
+        var tr  = r * Math.max(rw, rh);
+        var focus = vector(tfx, tfy, 0);
+        var gradientTransform = Mat4.<<1>> * grad.transform;
+        focus = gradientTransform * focus;
+        var t = 
+            (gradientTransform * 
+             translate(tcx, tcy) * 
+             rotate(Math.toDegrees(Math.atan2(tfy-tcy, tfx-tcx))) *
+             scale(tr, tr));
+        try {
+            t = t.inverse(); // t now maps from object space to unit circle
+        } catch (e) {
+            t = Mat4.<<1>>;
+        }
+        focus = t * focus;
+        setParameter("objectSpaceToUnitCircle", t);
+        setParameter("focus", focus);
+    }
+}
+
+class JoglLinearGradientShader extends JoglGradientShader {
+
+    override var url = "{__DIR__}lineargradient.cgfx";
+
+    override function updateParams(rx is Number, ry is Number, rw is Number, rh is Number) to () 
+    {
+        var grad = this.grad as Shape2D.LinearGradient;
+        var gradientTransform = grad.transform;
+        var t = Mat4.<<1>> * grad.transform;
+
+        var x1 = grad.x1;
+        var y1 = grad.y1;
+        var x2 = grad.x2;
+        var y2 = grad.y2;
+
+        var tx1 = rx + x1 * rw;
+        var ty1 = ry + y1 * rh;
+        var tx2 = rx + x2 * rw;
+        var ty2 = ry + y2 * rh;
+
+        // calculate plane equation constants
+        var x = tx1;
+        var y = ty1;
+        t *= translate(x, y);
+
+        // now gradient point 1 is at the origin
+        x = tx2 - x;
+        y = ty2 - y;
+
+        t *= rotate(Math.toDegrees(Math.atan2(y, x)));
+
+        var len = Math.sqrt(x*x + y*y) as Number;
+
+        // now gradient point 2 is on the positive x-axis
+        t *= scale(len, 1);
+
+        // now gradient point 1 is at (0.0, 0), point 2 is at (1.0, 0)
+
+        try {
+            t = t.inverse();
+        } catch (e) {
+            t = Mat4.<<1>>
+        }
+        setParameter("toUnitX", t);
+    }
+}
+
+
+class ColorPaintShader extends CGFXShader 
+{
+    public var colorPaint is ColorPaint;
+    public readonly var color = bind colorPaint.color;
+    override var url =  "{__DIR__}flat.cgfx";
+    override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
+    override function apply from 
+	(mesh is AbstractMesh,
+	 worldTransform is Mat4,
+	 viewMatrix is Mat4,
+	 projectionMatrix is Mat4) to () 
+    {
+        setParameter("diffuse", color);
+        super.apply(mesh,
+		    worldTransform,
+                    viewMatrix,
+                    projectionMatrix);
+    }
+}
+
+class TexturePaintShader is CGFXShader 
+{
+    public var colorPaint is ColorPaint;
+    public var tex is  AbstractTexture;
+    public readonly var color = bind colorPaint.color;
+    override var url =  "{__DIR__}flat-textured.cgfx";
+    override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
+    override function apply from (mesh is AbstractMesh,
+				  worldTransform is  Mat4,
+				  viewMatrix is  Mat4,
+				  projectionMatrix is  Mat4) to () 
+    {
+        setParameter("diffuse", color);
+        setParameter("texSampler0", tex);
+        super.apply(mesh,
+		    worldTransform,
+                    viewMatrix,
+                    projectionMatrix);
+    }
+}
+
+function flatShader from (color is Color, tex is AbstractTexture) to () {
+    var shader is CGFXShader;
+    if (tex == null) {
+        shader = CGFXShader {
+            url: "{__DIR__}flat.cgfx";
+            technique: bind if (color.opacity == 1) "Opaque" else "Transparent";
+        }
+    } else {
+        shader = CGFXShader {
+            url: "{__DIR__}flat-textured.cgfx";
+            //technique: bind if (color.opacity == 1) "Opaque" else "Transparent";
+            override function apply from (mesh is AbstractMesh,
+					  worldTransform is Mat4,
+					  viewMatrix is Mat4,
+					  projectionMatrix is Mat4) to () 
+	    {
+                var xywh = vector(0, 0, tex.getWidth(), tex.getHeight());
+                shader.setParameter("xywh", xywh);
+                super.apply(mesh, worldTransform, viewMatrix, projectionMatrix);
+            }
+        }
+        shader.setParameter("texSampler0", tex);
+
+    }
+    shader.setParameter("diffuse", color);
+    return shader;
+}
 
 function pot from (n is Integer) to Integer 
 {
@@ -499,6 +911,12 @@ class JoglTexture is AbstractTexture {
     override function toString to String {
         "Texture {id}";
     }
+    override function getWidth to Integer {
+	tex.getWidth()
+    }
+    override function getHeight to Integer {
+	tex.getHeight()
+    }
 }
 
 class JoglImageLoader is ImageLoader {
@@ -677,8 +1095,33 @@ class SceneRenderer {
 		if (n is PointLight) {
 		    insert (n as PointLight) into lights;
 		}
+		if (n is Shape2D.MeshNode2D){
+		    var shape = n as Shape2D.MeshNode2D;
+		    if (shape.shader == null) {
+			if (shape.paint is Shape2D.ColorPaint) {
+			    var paint = bind shape.paint as Shape2D.ColorPaint;
+			    if (paint is Shape2D.TexturePaint) {
+				var tex = 
+				    bind (paint as Shape2D.TexturePaint).texture;
+				shape.shader = TexturePaintShader {
+				    color: bind paint.color;
+				    tex: bind tex;
+				}
+			    } else {
+				shape.shader = ColorPaintShader {
+				    color: bind paint.color;
+				}
+			    }
+			} else if (shape.paint is Shape2D.GradientPaint) {
+			    const gradient = shape.paint as Shape2D.GradientPaint;
+			    shape.shader = makeGradientShader(gl, gradient);
+			}
+			println("creating shader for {shape} => {shape.shader}");
+			dirty = true;
+		    }
+		} 
 		if (n is MeshNode) {
-		    if (scene.camera.contains(n.sceneBounds)) {
+		    if (true or scene.camera.contains(n.sceneBounds)) {
 			var mn = n as MeshNode;
 			var shader = mn.shader;
 			if (mn.shader <> null) {
@@ -703,7 +1146,7 @@ class SceneRenderer {
 			}
 			lastDrawn.remove(n);
 		    } else {
-			//  println("culled {n.id} {n.sceneBounds}");
+		    //			println("culled {n} {n.id} {n.sceneBounds}");
 			if (lastDrawn.remove(n)) {
 			    dirty = true;
 			}
@@ -1060,7 +1503,7 @@ public class Listener extends GLEventListener, DropTargetListener {
             });
     }
 
-    function mouseUp(button is Integer, controlDown is Boolean, altDown is Boolean, metaDown is Boolean, shiftDown is Boolean):Void {
+    function mouseUp from (button is Integer, controlDown is Boolean, altDown is Boolean, metaDown is Boolean, shiftDown is Boolean) to () {
         var e is MouseEvent;
         stage.injectMouseUp(e=MouseEvent {
                 screenx:  screenx;
@@ -1072,7 +1515,7 @@ public class Listener extends GLEventListener, DropTargetListener {
             });
     }
 
-    override function dragEnter(e is DropTargetDragEvent):Void {
+    override function dragEnter from (e is DropTargetDragEvent) to () {
         try {
             ctx.makeCurrent();
             stage.injectDragEnter(makeDragEvent(e));
@@ -1081,7 +1524,7 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    override function dragOver(e is DropTargetDragEvent):Void {
+    override function dragOver from (e is DropTargetDragEvent) to () {
         try {
             ctx.makeCurrent();
             stage.injectDragOver(makeDragEvent(e));
@@ -1090,7 +1533,7 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    override function dragExit(e is DropTargetEvent):Void {
+    override function dragExit from (e is DropTargetEvent) to () {
         try {
             ctx.makeCurrent();
             stage.injectDragLeave(makeDragEvent(e));
@@ -1099,10 +1542,10 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    override function dropActionChanged(e is DropTargetDragEvent):Void {
+    override function dropActionChanged from (e is DropTargetDragEvent) to () {
     }
 
-    override function drop(e is DropTargetDropEvent):Void {
+    override function drop from (e is DropTargetDropEvent) to () {
         try {
             ctx.makeCurrent();
             stage.injectDrop(makeDropEvent(e));
@@ -1111,7 +1554,7 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    function setup(gl is GL2, width:Integer, height is Integer):Void {
+    function setup from (gl is GL2, width:Integer, height is Integer) to () {
         ctx = GLContext.getCurrent();
 	ImageLoader_INSTANCE.gl = gl; // hack
         gl.setSwapInterval(1);
@@ -1433,7 +1876,7 @@ public function run from (args is String[]) to ()
 
     var playerUrl is String;
 
-    var model is Ma.Model = bind if (playerUrl == "") then null else Ma.Model {
+    var model is Ma.Model = bind if (not playerUrl.endsWith(".ma")) then null else Ma.Model {
 		effectLoader: the CGEffectLoader;
 		imageLoader: the ImageLoader;
 		url: playerUrl;
@@ -1459,13 +1902,19 @@ public function run from (args is String[]) to ()
 	camera: camera;
     }
 
+    var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
+		url: playerUrl;
+		factory: ThePath2DFactory
+	    };
+
     const doDrop = function from (url is String) to () {
 	stage.title = url;
+	playerUrl = url;
 	if (url.endsWith(".ma")) {
-	    playerUrl = url;
-	} 
-	setCamera(0);
-	viewer.focusCamera(model.getSpatialRoot());
+	    viewer.focusCamera(model.getSpatialRoot());
+	} else if (url.endsWith(".svg")) {
+	    viewer.focusCamera(svgModel.root)
+	}
     }
     
     currentCamera = camera;
@@ -1476,7 +1925,7 @@ public function run from (args is String[]) to ()
 		println("scene camera invalidated {currentCamera}");
 	    }
 	    background: Color.BLACK;
-	    content: bind [model.getSpatialRoot()];
+	    content: bind [model.getSpatialRoot(), svgModel.root];
 	}
     }
 

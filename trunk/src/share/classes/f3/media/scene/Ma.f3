@@ -700,7 +700,6 @@ public class Link of a
     }
 }
 
-
 class MPlusMinusAverage is MUtilityOfTuple3 {
 
     var op is Integer = 1;
