@@ -19,7 +19,6 @@ class Blender {
 
 public class TimeLayer is TimeGroup, Player 
 {
-
     public var fadeDuration is Duration = 0.3s;
 
     var blendIn is TimeNode = null;
@@ -39,7 +38,8 @@ public class TimeLayer is TimeGroup, Player
         }
     }
 
-    override function update from (_ is Duration) to () {
+    override function update from (_ is Duration) to () 
+    {
 	update();
     }
 
@@ -61,7 +61,7 @@ public class TimeLayer is TimeGroup, Player
                 b.update(currentTime);
                 totalWeight += b.w;
             }
-            var inv_t = 1.0 - t;
+            const inv_t = 1.0 - t;
             for (b in blendOut) {
                 b.target.blendWeight = inv_t * (b.w / totalWeight);
             }
