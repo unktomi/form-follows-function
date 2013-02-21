@@ -563,7 +563,7 @@ public abstract class F3TranslationSupport {
             default: {
 		if (t instanceof TypeVar) {
 		    if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
-			System.err.println(t.tsym.name);
+			//System.err.println(t.tsym.name);
 			return makeTypeTreeInner01(diagPos, ((TypeVar)t).getUpperBound(), makeIntf, expandTypeCons);
 		    }
 		    TypeVar tv = (TypeVar)t;

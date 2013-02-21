@@ -523,7 +523,7 @@ public class F3ClassReader extends ClassReader {
 	    argtypes = mt.argtypes.tail;
 	}
 	if (argtypes == null) {
-	    System.err.println("fucked up: "+name+": "+type);
+	    //System.err.println("fucked up: "+name+": "+type);
 	    return type;
 	}
         mt = new MethodType(argtypes,

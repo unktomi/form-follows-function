@@ -1131,7 +1131,7 @@ patternMatch
 
     : MATCH expression WITH
 
-        (PIPE expression SUCHTHAT expression) (SEMI PIPE expression SUCHTHAT expression)*
+        (PIPE expression SUCHTHAT expression) (SEMI PIPE)=>(SEMI PIPE expression SUCHTHAT expression)*
     
 ;
 

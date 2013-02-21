@@ -783,7 +783,11 @@ public class F3Lower implements F3Visitor {
 	    pointerMakeSym.flags_field |= F3Flags.FUNC_POINTER_MAKE;
 	    F3Select pointerMake = (F3Select)m.at(that.pos).Select(pointerType, pointerMakeSym, false);
 	    pointerMake.sym = pointerMakeSym;
-	    F3Expression pointerCall = m.at(that.pos).Apply(List.<F3Expression>of(m.Type(vsym.owner.type), 
+	    Type ownerType = vsym.owner.type;
+	    if (vsym.isStatic()) {
+		ownerType = m.ScriptSymbol(vsym.owner).type;
+	    }
+	    F3Expression pointerCall = m.at(that.pos).Apply(List.<F3Expression>of(m.Type(ownerType), 
 										  m.Type(vsym.type)),
 							    pointerMake,
 							    List.of(arg1, arg2)).setType(pointerMakeSym.type.getReturnType());

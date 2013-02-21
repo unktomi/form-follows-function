@@ -482,10 +482,10 @@ class MaModel
 function makeRefX from (ref is Ref of Number) to Ref of Tuple3 
 {
     Ref of Tuple3 {
-	public function get to Tuple3 {
+	override public function get to Tuple3 {
 	    tuple(ref.get(), 0, 0);
 	}
-	public function set from (tuple is Tuple3) to () {
+	override public function set from (tuple is Tuple3) to () {
 	    ref.set(tuple.x);
 	}
     }
@@ -494,10 +494,10 @@ function makeRefX from (ref is Ref of Number) to Ref of Tuple3
 function makeRefY from (ref is Ref of Number) to Ref of Tuple3 
 {
     Ref of Tuple3 {
-	public function get to Tuple3 {
+	override public function get to Tuple3 {
 	    tuple(0, ref.get(), 0);
 	}
-	public function set from (tuple is Tuple3) to () {
+	override public function set from (tuple is Tuple3) to () {
 	    ref.set(tuple.y);
 	}
     }
@@ -506,10 +506,10 @@ function makeRefY from (ref is Ref of Number) to Ref of Tuple3
 function makeRefZ from (ref is Ref of Number) to Ref of Tuple3 
 {
     Ref of Tuple3 {
-	public function get to Tuple3 {
+	override public function get to Tuple3 {
 	    tuple(0, 0, ref.get());
 	}
-	public function set from (tuple is Tuple3) to () {
+	override public function set from (tuple is Tuple3) to () {
 	    ref.set(tuple.z);
 	}
     }
