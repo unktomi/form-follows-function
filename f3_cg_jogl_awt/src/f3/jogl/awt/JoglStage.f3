@@ -1361,6 +1361,16 @@ class SceneRenderer {
             var indexBuffer = mesh.getIndexBuffer();
             var vertexBuffer = mesh.getVertexBuffer();
             var normalBuffer = mesh.getNormalBuffer();
+	    var badtex = false;
+	    for (texb in mesh.getTextureBuffers()) {
+	    	if (texb.limit() == 0) {
+		    badtex = true;
+		    println("bad texture coordinates in {mn}");
+		}
+	    }
+	    if (badtex) {
+		continue;
+	    }
             var shader = mn.shader;
 	    //println("shader={shader}");
             var texParams = 
@@ -1409,11 +1419,12 @@ class SceneRenderer {
 		    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 		    if (vbo <> null) {
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.textureBuffers[unit]);
-			gl.glTexCoordPointer(coords[unit].getCoordsPerVertex(), 
+			gl.glTexCoordPointer(mesh.textureCoordinates[shader.uvMap[unit]].getCoordsPerVertex(),
 					     GL.GL_FLOAT, 0, 0);
 		    } else {
 			textureBuffer.rewind();
-			gl.glTexCoordPointer(coords[unit].getCoordsPerVertex(), 
+			const coord = coords[unit];
+			gl.glTexCoordPointer(coord.getCoordsPerVertex(), 
 					     GL.GL_FLOAT, 0, textureBuffer);
 		    }
 		} else {
