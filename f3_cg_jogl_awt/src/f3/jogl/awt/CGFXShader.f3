@@ -191,7 +191,7 @@ public class SamplerParameter is Parameter of AbstractTexture
         const id = value.getTextureId();
         //if (value instanceof MeshNode) {
         //    //(value as MeshNode).needsDraw = false;
-	    // }
+	// }
 	//println("setup sampler {value} {name} {id}");
         effect.setupSampler(name, id);
     }
@@ -323,7 +323,7 @@ public class CGFXShader is Shader {
         "CGFXShader {url} {technique}";
     }
 
-    function isTransparent to Boolean {
+    override function isTransparent to Boolean {
         false // tbd
     }
 

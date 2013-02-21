@@ -27,9 +27,9 @@ public interface Path2D {
     abstract public function contains from (x is Number, y is Number) to Boolean;
 }
 
-
 public function rect
-    from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number) to Path2D
+    from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number) 
+    to Path2D
 {
     const path = fac.createPath();
     path.moveTo(x, y);
@@ -157,16 +157,9 @@ public function createMeshNode
     to MeshNode2D 
 {
     if (paint == null) then null else {
-            if (stroke == null) {
-                MeshNode2D {
-                    paint: paint;
-                    mesh: createMesh(path, null);
-                }
-            } else {
-                MeshNode2D {
-                    paint: paint;
-                    mesh: createMesh(path, stroke);
-                }
+	    MeshNode2D {
+		paint: paint;
+		path: if (stroke == null) then path else path.createStrokedShape(stroke);
             }
         }
 }
@@ -184,6 +177,7 @@ public abstract class Shape2D is Node
     var fillMesh is MeshNode = bind createMeshNode(path, 
 						   null, 
 						   fillPaint);
+
     var strokeMesh is MeshNode = bind createMeshNode(path, 
 						     getStroke(stroke), 
 						     strokePaint);
@@ -223,7 +217,9 @@ public abstract class Shape2D is Node
 }
 
 public class MeshNode2D is MeshNode {
-    public var paint is Paint;
+    public readonly var paint is Paint;
+    public readonly var path is Path2D;
+    override var mesh = bind path.createMesh();
 }
 
 public class Circle is Shape2D {
