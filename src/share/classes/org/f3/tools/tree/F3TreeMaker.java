@@ -1301,8 +1301,8 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3Expression TupleType(F3Expression first, F3Expression second) {
 	// hack...
-	System.err.println(first.getClass());
-	System.err.println(second.getClass());
+	//System.err.println(first.getClass());
+	//System.err.println(second.getClass());
 	if (first instanceof F3Type) {
 	    ((F3Type)first).boundKind = BoundKind.EXTENDS;
 	}

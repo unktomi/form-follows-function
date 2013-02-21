@@ -4634,7 +4634,7 @@ public class F3Attr implements F3Visitor {
 				Type.noType);
 	    List<Type> targs = makeTypeVars(app.args, env.info.scope.owner, env);
 	    TypeCons cons = (TypeCons)t;
-	    System.err.println("t="+t.getClass() + ": "+t);
+	    //System.err.println("t="+t.getClass() + ": "+t);
 	    TypeCons ap = new TypeCons(cons.tsym.name,
 				       cons.tsym,
 				       cons.bound,
