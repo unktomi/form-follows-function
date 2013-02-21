@@ -36,9 +36,10 @@ import f3.media.scene.Shape2D.Path2D;
 import f3.media.scene.Shape2D.Path2DFactory;
 import f3.media.scene.MeshBuffer.*;
 import f3.media.svg.SVG;
+import com.jogamp.opengl.util.awt.TextureRenderer;
 
 class JoglPath2D is Path2D {
-    var path is GeneralPath = new GeneralPath();
+    public var path is GeneralPath = new GeneralPath();
     override public function apply from (output is Path2D) to () 
     {
         const pi = path.getPathIterator(null);
@@ -157,6 +158,87 @@ function makeGradientShader(gl:GL2, grad:Shape2D.GradientPaint) {
             grad: grad;
         }
     }
+}
+
+class SceneRenderer2D 
+{
+    public var gl is GL2;
+    public var glp is GLProfile;
+    const tx = new java.awt.geom.AffineTransform();
+    public var tex is JoglTexture;
+    public var meshNode is MeshNode;
+    var target is TextureRenderer;
+
+    function applyTransform from (mat is Mat4) to () {
+	tx.setTransform(mat.xx, mat.yx, mat.xy,
+			mat.yy, mat.xz, mat.yz+target.getHeight());
+    }
+
+    function applyPaint from (g is java.awt.Graphics2D, paint is Shape2D.Paint) to () 
+    {
+	if (paint is Shape2D.ColorPaint) {
+	    const cp = paint as Shape2D.ColorPaint;
+	    var r = new java.awt.Color(cp.color.red,
+				       cp.color.green,
+				       cp.color.blue,
+				       cp.color.opacity);
+	    g.setPaint(r);
+	}
+    }
+
+    function render2d from (camera is Camera2D, scene is Scene) to () 
+    {
+	const w = pot(scene.stage.width);
+	const h = pot(scene.stage.height);
+	if (target.getWidth() <> w or target.getHeight() <> h) {
+	    target = new TextureRenderer(w, h, true);
+	    tex == null;
+	    meshNode = null;
+	}
+	const g = target.createGraphics();
+	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+	g.setBackground(new java.awt.Color(scene.background.red,
+					   scene.background.green,
+					   scene.background.blue,
+					   scene.background.opacity));
+	g.clearRect(0, 0, w, h);
+	scene.root.foldLeft((), 
+			    function from (_ is (), n is Node) to () 
+			    {
+				if (n is Shape2D.MeshNode2D) {
+				    const shape = n as Shape2D.MeshNode2D;
+				    const p = shape.path as JoglPath2D;
+				    applyTransform(n.sceneTransform);
+				    const saved = g.getTransform();
+				    g.setTransform(tx);
+				    applyPaint(g, shape.paint);
+				    g.fill(p.path);
+				    g.setTransform(saved);
+				}
+			    });
+	target.markDirty(0, 0, w, h);
+	target.getTexture();
+	if (tex == null or meshNode == null) {
+	    println("target texture {target.getTexture()}");
+	    const texture = JoglTexture {
+		gl: this.gl;
+		tex: target.getTexture();
+		id: scene.id;
+	    }
+	    tex = texture;
+	    meshNode = MeshNode {
+	       id: scene.id;
+	       mesh: MeshBuffer.quad(w, h);
+	       shader: TexturePaintShader 
+	       {
+		   color: Color.WHITE;
+		   tex: texture;
+	       }
+	       override var transform = translate(w / 2.0, h / 2.0, 0);
+	   }
+	}
+    }     
 }
 
 abstract class JoglGradientShader extends CGFXShader {
@@ -294,6 +376,7 @@ abstract class JoglGradientShader extends CGFXShader {
 }
 
 class JoglRadialGradientShader extends JoglGradientShader {
+    override var uvMap = [0];
     override var url = "{__DIR__}radialgradient.cgfx";
     override function updateParams(rx is Number, ry is Number, rw is Number, rh is Number) to () {
         var grad = this.grad as Shape2D.RadialGradient;
@@ -329,6 +412,7 @@ class JoglRadialGradientShader extends JoglGradientShader {
 class JoglLinearGradientShader extends JoglGradientShader {
 
     override var url = "{__DIR__}lineargradient.cgfx";
+
 
     override function updateParams(rx is Number, ry is Number, rw is Number, rh is Number) to () 
     {
@@ -401,6 +485,7 @@ class TexturePaintShader is CGFXShader
     public readonly var color = bind colorPaint.color;
     override var url =  "{__DIR__}flat-textured.cgfx";
     override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
+    override var uvMap = [0];
     override function apply from (mesh is AbstractMesh,
 				  worldTransform is  Mat4,
 				  viewMatrix is  Mat4,
@@ -415,7 +500,7 @@ class TexturePaintShader is CGFXShader
     }
 }
 
-function flatShader from (color is Color, tex is AbstractTexture) to () {
+function flatShader from (color is Color, tex is AbstractTexture) to Shader {
     var shader is CGFXShader;
     if (tex == null) {
         shader = CGFXShader {
@@ -424,6 +509,7 @@ function flatShader from (color is Color, tex is AbstractTexture) to () {
         }
     } else {
         shader = CGFXShader {
+	    override var uvMap = [0];
             url: "{__DIR__}flat-textured.cgfx";
             //technique: bind if (color.opacity == 1) "Opaque" else "Transparent";
             override function apply from (mesh is AbstractMesh,
@@ -437,7 +523,6 @@ function flatShader from (color is Color, tex is AbstractTexture) to () {
             }
         }
         shader.setParameter("texSampler0", tex);
-
     }
     shader.setParameter("diffuse", color);
     return shader;
@@ -899,22 +984,27 @@ class OffscreenSurface is JoglTexture
 
 }
 
-class JoglTexture is AbstractTexture {
-    const tex is Texture;
-    const gl is GL2;
-    const id is String;
+class JoglTexture is AbstractTexture 
+{
+    public const tex is Texture;
+    public const gl is GL2;
+    public const id is String;
     public var width = bind tex.getWidth();
     public var height = bind tex.getHeight();
-    override function getTextureId to Integer {
+    override function getTextureId to Integer 
+    {
         tex.getTextureObject(gl);
     }
-    override function toString to String {
+    override function toString to String 
+    {
         "Texture {id}";
     }
-    override function getWidth to Integer {
+    override function getWidth to Integer 
+    {
 	tex.getWidth()
     }
-    override function getHeight to Integer {
+    override function getHeight to Integer 
+    {
 	tex.getHeight()
     }
 }
@@ -1069,6 +1159,20 @@ class SceneRenderer {
     var lightPositions is Point3[]; // hack
     var lastCamera is Camera;
 
+    var renderer2D is java.util.Map of (Scene, SceneRenderer2D) = new java.util.WeakHashMap of (Scene, SceneRenderer2D) ;
+    function getRenderer2D from (scene is Scene, gl is GL2) to SceneRenderer2D 
+    {
+	var r = renderer2D.get(scene);
+	if (r == null) {
+	    r = SceneRenderer2D {
+		gl: gl;
+		glp: GLProfile.get("GL2");
+	    }
+	    renderer2D.put(scene, r);
+	}
+	return r;
+    }
+
     function renderScene
 	from (gl is GL2, 
 	      scene is Scene, 
@@ -1122,11 +1226,11 @@ class SceneRenderer {
 		} 
 		if (n is MeshNode) {
 		    if (true or scene.camera.contains(n.sceneBounds)) {
-			var mn = n as MeshNode;
-			var shader = mn.shader;
+			const mn = n as MeshNode;
+			const shader = mn.shader;
 			if (mn.shader <> null) {
 			    for (p in (mn.shader as CGFXShader).parameters) {
-				var value = (p as CGFXShader.Parameter of Object).get();
+				const value = (p as CGFXShader.Parameter of Object).get();
 				if (value is StageNode) {
 				    const stageNode = value as StageNode;
 				    offscreenToRender.add(stageNode);
@@ -1136,8 +1240,8 @@ class SceneRenderer {
 			if (not dirty) {
 			    dirty = true; //mn.shader.isDirty() or mn.needsDraw;
 			}
-			var tris = mn.mesh.getIndexBuffer().limit() / 3;
-			if (false) { //shader.isTransparent()) {
+			const tris = mn.mesh.getIndexBuffer().limit() / 3;
+			if (shader.isTransparent()) {
 			    transparentToDraw.add(mn);
 			    transparentTris += tris;
 			} else {
@@ -1154,12 +1258,19 @@ class SceneRenderer {
 		}
 	    }
 	};
-	scene.root.foldLeft((), vf);
-        for (i in offscreenToRender) {
-            renderStageNode(gl, i as StageNode);
-        }
-        offscreenToRender.clear();
         scene.updateCamera();
+        offscreenToRender.clear();
+	if (scene.camera instanceof Camera2D) {
+	    const cam = scene.camera as Camera2D;
+	    const r = getRenderer2D(scene, gl);
+	    r.render2d(cam, scene);
+	    opaqueToDraw.add(r.meshNode);
+	} else {
+	    scene.root.foldLeft((), vf);
+	    for (i in offscreenToRender) {
+		renderStageNode(gl, i as StageNode);
+	    }
+	}
         var camera = scene.camera;
         dirty = dirty or camera.needsDraw;
         dirty = dirty or lastDrawn.size() <> 0;
@@ -1187,7 +1298,7 @@ class SceneRenderer {
             gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
             gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
         } else {
-	    if (true) {
+	    if (false) {
 		gl.glClearColor(1, 1, 1, 1);
 		gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
 	    } else {
@@ -1343,7 +1454,7 @@ class SceneRenderer {
 					 if (sizeof allLights > 3) 1 else 0);
                 }
 		if (mn.sceneTransform == null or camera.viewMatrix == null or camera.projectionMatrix == null) {
-		    println("bad transform {mn.id} or {camera.id}");
+		    println("bad transform {mn} {mn.id} or {camera} {camera.id}");
 		    continue;
 		}
 		///println("applying shader {shader} to {mn.id}");
@@ -1907,6 +2018,16 @@ public function run from (args is String[]) to ()
 		factory: ThePath2DFactory
 	    };
 
+    var imageModel = bind if (playerUrl.endsWith(".jpg") or 
+			      playerUrl.endsWith(".png") or
+			      playerUrl.endsWith(".tiff") or
+			      playerUrl.endsWith(".tga")) 
+	Image { 
+	    imageLoader: ImageLoader_INSTANCE; 
+	    url: playerUrl;
+	    pathFactory: ThePath2DFactory
+	} else null;
+
     const doDrop = function from (url is String) to () {
 	stage.title = url;
 	playerUrl = url;
@@ -1914,6 +2035,8 @@ public function run from (args is String[]) to ()
 	    viewer.focusCamera(model.getSpatialRoot());
 	} else if (url.endsWith(".svg")) {
 	    viewer.focusCamera(svgModel.root)
+	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith("tiff") or url.endsWith(".tga")) {
+	    viewer.focusCamera(imageModel)
 	}
     }
     
@@ -1921,11 +2044,11 @@ public function run from (args is String[]) to ()
     const stage = JoglStage {
 	title: new java.io.File(args[0]).getName();
 	content: Scene {
+	    background: Color.GRAY;
 	    override var camera = bind currentCamera on invalidate {
 		println("scene camera invalidated {currentCamera}");
 	    }
-	    background: Color.BLACK;
-	    content: bind [model.getSpatialRoot(), svgModel.root];
+	    content: bind [model.getSpatialRoot(), svgModel.root, imageModel];
 	}
     }
 
@@ -1933,6 +2056,8 @@ public function run from (args is String[]) to ()
     {
 	if (i == 0) {
 	    currentCamera = camera;
+	} else if (i == 9) {
+	    currentCamera = Camera2D {};
 	} else {
 	    const cam = model.getCameras()[i-1];
 	    if (cam <> null) {

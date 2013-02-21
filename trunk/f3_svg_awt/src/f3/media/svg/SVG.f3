@@ -370,11 +370,7 @@ class Loader {
                 println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
             }
 	    //	    println("converting path with factory: {fac}");
-            var paint = flipPaint(i.paint);
-            var shape = Shape2D.MeshNode2D {
-                mesh: Shape2D.createMesh(convertPath(fac, i.transform, i.path), i.stroke);
-                paint: paint;
-            }
+            var shape = Shape2D.createMeshNode(convertPath(fac, i.transform, i.path), i.stroke, i.paint);
             //println("adding shape {shape.bounds} flipped paint {i.paint}");
             if (sizeof contentNode.content == 50) {
                 contentNode = Group {}
