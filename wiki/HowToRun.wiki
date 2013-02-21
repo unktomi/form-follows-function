@@ -8,8 +8,6 @@ ant
 
 cd f3_cg_jogl_awt
 
-ant
-
 ./demo.sh
 
-Then drag & drop .ma (maya ascii) files on the window. 
+Then drag & drop .svg or .ma (maya ascii)  or .png files on the window.  Switch cameras with the number keys (camera 0 is the free camera). Camera 9 is a 2d camera (cpu rasterizer).
