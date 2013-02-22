@@ -10,9 +10,13 @@ ant
 
 (Optionally)
    Download and install Awesomium http://awesomium.com/download/ in /Library/Frameworks
+
    cd f3_awesomium_jogl
+
    ant
+
    cd ..
+
 (End Optionally)
 
 cd f3_cg_jogl_awt
