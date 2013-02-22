@@ -37,7 +37,7 @@ import f3.media.scene.Shape2D.Path2DFactory;
 import f3.media.scene.MeshBuffer.*;
 import f3.media.svg.SVG;
 import com.jogamp.opengl.util.awt.TextureRenderer;
-import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
+//import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
 class JoglPath2D is Path2D {
     public var path is GeneralPath = new GeneralPath();
