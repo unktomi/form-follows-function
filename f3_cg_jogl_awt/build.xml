@@ -14,10 +14,10 @@
     <copy todir="lib">
       <fileset dir="../dist/lib/shared" includes="*.jar"/>
       <fileset dir="../f3_svg_awt/build/" includes="*.jar"/>
-      <fileset dir="../f3_awesomium_jogl/build/" includes="*.jar"/>
+      <fileset  erroronmissingdir="false" dir="../f3_awesomium_jogl/build/" includes="*.jar"/>
     </copy>
     <copy todir="lib/macosxuniversal">
-            <fileset dir="../f3_awesomium_jogl/build/native" includes="*.dylib"/>
+      <fileset erroronmissingdir="false" dir="../f3_awesomium_jogl/build/native" includes="*.dylib"/>
     </copy>
   <taskdef name="f3c" classname="org.f3.tools.ant.F3AntTask" >
     <classpath>
