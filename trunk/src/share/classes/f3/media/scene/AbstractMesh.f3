@@ -44,7 +44,7 @@ public abstract class AbstractMesh
 	bounds = computeBounds();
     }
 
-    public function intersect from (ray is Ray3) to Tuple4[] 
+    public function intersect from (ray is Ray3) to Tuple4[]  // encodes (t, weight_y, weight_z, triIndex) 
     {
         const count = vertices.getVertexCount();
         if (count < 3 or 
@@ -64,7 +64,9 @@ public abstract class AbstractMesh
 		const pointC = point(vertices.getX(i+2), 
 				     vertices.getY(i+2), 
 				     vertices.getZ(i+2));
-		insert tuple(ray.intersect(pointA, pointB, pointC), i / 3) into result;
+		for (weights in ray.intersect(pointA, pointB, pointC)) {
+		    insert tuple(weights, i / 3) into result;
+		}
 	    }
 	return result;
     }

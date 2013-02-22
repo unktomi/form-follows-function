@@ -151,7 +151,19 @@ public interface Stage
         }
     }
 
-    public readonly var currentCursor is Cursor;
+    public readonly var cursor is Cursor;
+
+    protected function updateCursor to () 
+    {
+	var sceneCursor is Cursor;
+	for (scene in content.reverse()) {
+	    sceneCursor = scene.cursor;
+	    if (sceneCursor <> null) {
+		break;
+	    }
+	}
+	cursor = sceneCursor;
+    }
 
     protected var keyboardHandlers is  KeyboardInputHandler[];
 

@@ -37,8 +37,8 @@ public class ObjectArraySequence<T> extends ArraySequence<T> implements Sequence
 
     T[] array;
 
-    public ObjectArraySequence(int initialSize, TypeInfo<T> ti) {
-        super(ti);
+    public ObjectArraySequence(int initialSize, TypeInfo<? extends T> ti) {
+        super((TypeInfo<T>)ti);
         this.array =  Util.<T>newObjectArray(initialSize);
         gapStart = 0;
         gapEnd = initialSize;

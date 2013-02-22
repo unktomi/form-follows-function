@@ -11,10 +11,12 @@ public class Scene
     public var visible is Boolean = true;
     public readonly var width is Number = bind getStageWidth();
     public readonly var height is Number = bind getStageHeight();
-    bound function getStageWidth to Number {
+    bound function getStageWidth to Number 
+    {
 	stage.width;
     }
-    bound function getStageHeight to Number {
+    bound function getStageHeight to Number 
+    {
 	stage.height;
     }
     public var camera is Camera = PerspectiveCamera {};
@@ -28,7 +30,8 @@ public class Scene
 	    override var sceneVisible = bind visible and scene.visible;
 	    override var id = bind "{scene.id}#root";
 	    override var parentSceneTransform = Mat4.<<1>>;
-	    content: bind [scene.content];
+	    override var scenePickable = true;
+	    content: bind scene.content;
 	}
     }
 
@@ -119,10 +122,11 @@ public class Scene
 					  v0 * w.x + 
 					  v1 * w.y + 
 					  v2 * w.z;
+				      const worldPoint = n.sceneTransform * (Point3.<<0>> + point);
 				      insert Pick 
 				      {
 					  node: n;
-					  scenePoint: n.sceneTransform * (Point3.<<0>> + point);
+					  scenePoint: worldPoint;
 					  t: pt.x;
 					  mesh: mesh;
 					  tri: tri;
@@ -149,6 +153,7 @@ public class Scene
     public function update to () 
     {
 	updateCamera();
+	updateMouse(mouseX, this.height-mouseY);
 	root.updateParent();
     }
 
@@ -187,7 +192,7 @@ public class Scene
                     for (p in mn.shader.parameters) {
 			const value = p.get() as Object;
 			if (value is StageNode) {
-			    var picked:Pick; 
+			    var picked is Pick; 
 			    for (x in nowUnderMouse) {
 				if (x.node == n) {
 				    picked = x;
@@ -232,26 +237,29 @@ public class Scene
             screeny: mouseY;
             screenDrag: tuple(mouseX - oldMouseX, mouseY - oldMouseY);
         }
-        for (x in underMouse) oldUnderMouse.put(x.node, x);
+        for (x in underMouse) 
+	    oldUnderMouse.put(x.node, x);
         underMouse = nowUnderMouse;
         for (i in nowUnderMouse) {
-            const old = oldUnderMouse.remove(i.node) as Pick;
+            const old = oldUnderMouse.remove(i.node);
             if (old == null) {
                 doMouseEnter(i, event);
             }
         }
         for (x in oldUnderMouse.keySet()) {
-            var pr = oldUnderMouse.get(x) as Pick;
-            doMouseLeave(pr, event);
+            var picked = oldUnderMouse.get(x); 
+            doMouseLeave(picked, event);
         }
         oldUnderMouse.clear();
-        for (i in underMouse) {
+        for (i in underMouse) 
             doMouseMove(i, event);
-        }
-        for (i in pressed) {
+        for (i in pressed) 
             doMouseDrag(i, event);
-        }
+	const cursorPick = underMouse[p | p.node.cursor <> null];
+	cursor = cursorPick[0].node.cursor;
     }
+
+    public readonly var cursor is Cursor;
 
     public function injectKeyDown from (event is KeyboardEvent) to () {
         focus.getKeyboardInputHandler().onKeyDown(event);
@@ -271,9 +279,9 @@ public class Scene
 
     public function injectMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
+	println("inject mouse down => {underMouse}");
         var focusSet = false;
         for (p in underMouse) {
-            println("n={p.node}");
             if (not focusSet and (p.node instanceof Focusable)) {
                 const f = p.node as Focusable;
                 if (f == focus or f.acceptFocus()) {
@@ -284,7 +292,6 @@ public class Scene
                     }
                     focusSet = true;
                 }
-                println("f={f} focus={focus} focusSet {focusSet}");
             }
             doMouseDown(p, event);
         }
@@ -294,7 +301,8 @@ public class Scene
         }
     }
 
-    public function injectMouseUp(event:MouseEvent):Void {
+    public function injectMouseUp from (event is MouseEvent) to ()
+    {   
         var dragged = pressed;
         pressed = [];
         for (x in dragged) {
@@ -302,31 +310,36 @@ public class Scene
         }
     }
 
-    public function injectDragEnter(event:DragEvent):Void {
+    public function injectDragEnter from (event is DragEvent) to ()
+    {
     }
 
-    public function injectDragLeave(event:DragEvent):Void {
+    public function injectDragLeave from (event is DragEvent) to ()
+    {
     }
 
-    public function injectDragOver(event:DragEvent):Void {
+    public function injectDragOver from (event is DragEvent) to ()
+    {
     }
 
-    public function injectDrop(event:DropEvent):Void {
+    public function injectDrop from (event is DropEvent) to () 
+    {
     }
 
     var oldUnderMouse = new java.util.HashMap of (Node, Pick);
 
-    function getMouseInputHandlers from (p:Pick) to MouseInputHandler[] 
+    function getMouseInputHandlers from (p is Pick) to MouseInputHandler[] 
     {
-        //return p.node.getMouseInputHandlers();
-	null
+        if (p.node is MouseInputHandler) then p.node as MouseInputHandler else null;
     }
 
-    function doMouseEnter(p:Pick, sceneEvent:MouseEvent):Void {
+    function doMouseEnter from (p is Pick, sceneEvent is MouseEvent) to ()
+    {   
         p.node.setContainsPointer(true);
-        var hs = getMouseInputHandlers(p);
-        if (hs != []) {
-            var e = makeMouseEvent(null, p, sceneEvent);
+        const hs = getMouseInputHandlers(p);
+        if (hs <> []) {
+	println("entering {p.node}");
+            const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseEnter(e);
                 if (not e.propagate) {
@@ -336,11 +349,12 @@ public class Scene
         }
     }
 
-    function doMouseLeave(p:Pick, sceneEvent:MouseEvent):Void {
+    function doMouseLeave from (p is Pick, sceneEvent is MouseEvent) to ()
+    {
         p.node.setContainsPointer(false);
-        var hs = getMouseInputHandlers(p);
-        if (hs != []) {
-            var e = makeMouseEvent(null, p, sceneEvent);
+        const hs = getMouseInputHandlers(p);
+        if (hs <> []) {
+            const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseLeave(e);
                 if (not e.propagate) {
@@ -349,11 +363,13 @@ public class Scene
             }
         }
     }
-    function doMouseUp(p:Pick, sceneEvent:MouseEvent):Void {
-        var hs = getMouseInputHandlers(p);
+
+    function doMouseUp from (p is Pick, sceneEvent is MouseEvent) to ()
+    {
+        const hs = getMouseInputHandlers(p);
         if (hs != []) {
             sceneEvent.stopPropagation();
-            var e = makeMouseEvent(null, p, sceneEvent);
+            const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseUp(e);
                 if (not e.propagate) {
@@ -362,11 +378,13 @@ public class Scene
             }
         }
     }
-    function doMouseDown(p:Pick, sceneEvent:MouseEvent):Void {
-        var hs = getMouseInputHandlers(p);
-        if (hs != []) {
+
+    function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to ()
+    {
+	const hs = getMouseInputHandlers(p);
+        if (hs <> []) {
             sceneEvent.stopPropagation();
-            var e = makeMouseEvent(null, p, sceneEvent);
+            const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseDown(e);
                 if (not e.propagate) {
@@ -376,7 +394,8 @@ public class Scene
         }
     }
 
-    function getDrag(p:Pick):Pick {
+    function getDrag from (p is Pick) to Pick 
+    {
         for (d in underMouse) {
             if (d.node == p.node) {
                 return d;
@@ -385,11 +404,12 @@ public class Scene
         return null;
     }
 
-    function doMouseMove(p:Pick, sceneEvent:MouseEvent):Void {
-        var hs = getMouseInputHandlers(p);
+    function doMouseMove from (p is Pick, sceneEvent is MouseEvent) to () 
+    {
+        const hs = getMouseInputHandlers(p);
         if (hs != []) {
             sceneEvent.stopPropagation();
-            var e = makeMouseEvent(null, p, sceneEvent);
+            const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseMove(makeMouseEvent(null, p, sceneEvent));
                 if (not e.propagate) {
@@ -399,7 +419,8 @@ public class Scene
         }
     }
 
-    function doMouseDrag(p:Pick, event:MouseEvent):Void {
+    function doMouseDrag from (p is Pick, event is MouseEvent) to () 
+    {   
         const hs = getMouseInputHandlers(p);
         if (hs <> []) {
             const translation = p.node.sceneTransform.getTranslation();
@@ -418,7 +439,6 @@ public class Scene
         }
     }
 
-
     function makeMouseEvent
 	from (dragStart is Pick, p is Pick, sceneEvent is MouseEvent) 
 	to MouseEvent 
@@ -435,7 +455,7 @@ public class Scene
             screenx: e.screenx;
             screeny: e.screeny;
             screenDrag: e.screenDrag;
-            sceneLocation: e.sceneLocation;
+            sceneLocation: p.scenePoint;
             buttons: e.buttons;
             picked: p;
         }
