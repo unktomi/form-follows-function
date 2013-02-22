@@ -1,0 +1,67 @@
+<project name="jni-project" default="jar">
+
+  <target name="jni.properties.load.user">
+    <property name="macosx32" value="true"/>
+    <property name="macosx64" value="false"/>
+  </target>
+
+  <import file="jni-cpptasks.xml"/>
+
+  <target name="init" depends="jni.cpptasks.detect.os,jni.cpptasks.setup.compiler">
+    <mkdir dir="lib"/>
+    <copy todir="lib">
+      <fileset dir="../dist/lib/shared" includes="*.jar"/>
+      <fileset dir="../f3_cg_jogl_awt/lib/" includes="jogl.all.jar"/>
+    </copy>
+    <mkdir dir="build/native/include"/>
+    <mkdir dir="build/native/obj"/>
+    <mkdir dir="build/classes"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete dir="lib"/>
+  </target>
+
+  <target name="java-compile" depends="init">
+    <javac includeantruntime="false" fork="true" debug="true" srcdir="src/share/classes" destdir="build/classes">
+      <classpath>
+        <pathelement location="lib/f3rt.jar"/>
+        <pathelement location="lib/jogl.all.jar"/>
+        </classpath>
+      <src path="src/share/classes"/>
+    </javac>
+  </target>
+
+  <target name="native-headers" depends="java-compile">
+    <javah destdir="build/native/include" classpath="build/classes">
+      <class name="org.f3.media.web.awesomium.Browser"/>
+    </javah>
+  </target>  
+
+  <target name="native-library" depends="native-headers">
+    <echo message="java home ${java.home}"/>
+    <cc outtype="shared" subsystem="console" outfile="build/native/org.f3.media.web.awesomium" objdir="build/native/obj">
+      <compiler extends="${compiler.cfg.id.base}">
+        <compilerarg value="-F."/>
+        <includepath path="build/native/include"/>
+        <includepath path="stub_includes/jni"/>
+        <includepath path="stub_includes/jni/macosx"/>
+        <includepath path="/Library/Frameworks/Awesomium.framework/Headers"/>
+        <includepath path="."/>
+        <fileset dir="src/share/native" includes="**.cxx"/>
+      </compiler>
+      <linker extends="${linker.cfg.id.base}">
+        <linkerarg value="-framework"/>
+        <linkerarg value="Awesomium"/>
+      </linker>
+    </cc>
+  </target>
+  <target name="jar" depends="native-library">
+    <jar compress="true" destfile="build/f3.awesomium.jogl.jar">
+      <fileset dir="build/classes"/>
+    </jar>
+  </target>
+
+
+</project>

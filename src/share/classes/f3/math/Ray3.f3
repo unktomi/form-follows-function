@@ -28,7 +28,7 @@ public class Ray3 is Mat4.Transformable of Ray3 {
         } 
     }
 
-    public function intersectLine from (start is Point3, end is Point3) to Point3 
+    public function intersectLine from (start is Point3, end is Point3) to Point3[]
     {
         const startA = origin;
         var lineADir = direction;
@@ -63,7 +63,7 @@ public class Ray3 is Mat4.Transformable of Ray3 {
 	from (pointA is Point3, 
 	      pointB is Point3, 
 	      pointC is Point3)
-	to Tuple3 
+	to Tuple3[] 
     {
         const direction = this.direction.normalize();
         const diff = origin - pointA;
@@ -94,7 +94,7 @@ public class Ray3 is Mat4.Transformable of Ray3 {
                         const w1 = dirDotDiffxEdge2 * inv;
                         const w2 = dirDotEdge1xDiff * inv;
                         // w0 = 1.0-(w1+w2);
-                        return Tuple3 { x: t y: w1 z: w2 };
+                        return [Tuple3 { x: t y: w1 z: w2 }];
                     } else {
                         //println("diffDotNorm={diffDotNorm}");
                     }

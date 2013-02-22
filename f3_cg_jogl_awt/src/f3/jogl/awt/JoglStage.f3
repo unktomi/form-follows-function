@@ -37,6 +37,7 @@ import f3.media.scene.Shape2D.Path2DFactory;
 import f3.media.scene.MeshBuffer.*;
 import f3.media.svg.SVG;
 import com.jogamp.opengl.util.awt.TextureRenderer;
+import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
 class JoglPath2D is Path2D {
     public var path is GeneralPath = new GeneralPath();
@@ -601,6 +602,7 @@ class JoglCGEffectLoader is CGEffectLoader
         } else {
             shader = DefaultPhongShader4 { 
                 url: "{__DIR__}phong4-textured.cgfx"
+		uvMap: [0];
             }
             println("loading shader with texture {diffuseTexture}");
             shader.setParameter("texSampler0", diffuseTexture);
@@ -1709,7 +1711,7 @@ public class Listener extends GLEventListener, DropTargetListener {
         const currentTime = 1ms *(now - startTime);
 	MasterTimeline.setPlayhead(currentTime);
         stage.flush();
-        setCursor(stage.currentCursor);
+        setCursor(stage.cursor);
         if (mainSceneRenderer == null and gl <> null) {
             mainSceneRenderer = SceneRenderer {
                 activate: function from () to () {
@@ -1904,10 +1906,10 @@ public class JoglStage is Stage
         var funs = todo;
         todo = [];
         for (fun in funs) fun();
+	doUpdate();
     }
 
     postinit {
-        //        java.lang.Thread.sleep(java.lang.Integer.MAX_VALUE);
 	println("setup");
 	setup();
 	for (scene in content) {
@@ -1917,6 +1919,9 @@ public class JoglStage is Stage
 
     //override var width: Integer = 640;
     // override var height: Integer = 480;
+    function doUpdate to () {
+	updateCursor();
+    }
 
     function setup {
         const glp = GLProfile.get("GL2");
@@ -1992,8 +1997,20 @@ var currentCamera is Camera on replace {
     println("currentCamera=>{currentCamera}");
 }
 
+public var TheWebBrowserFactory is AbstractWebBrowserFactory;
+
 public function run from (args is String[]) to ()
 {
+
+    try {
+	const clazz = 
+	    java.lang.Class.forName("f3.media.web.awesomium.AwesomiumWebBrowserFactory") as java.lang.Class of AbstractWebBrowserFactory;
+	TheWebBrowserFactory = clazz.newInstance();
+	    
+    } catch (e is java.lang.Exception) {
+	println("NOTE: couldn't load awesomium web browser factory");
+    }
+
     println("args={args}");
 
     var playerUrl is String;
@@ -2024,6 +2041,14 @@ public function run from (args is String[]) to ()
 	camera: camera;
     }
 
+    const browser = if TheWebBrowserFactory == null then null else WebBrowser {
+	factory: TheWebBrowserFactory;
+	effectLoader: CGEffectLoader_INSTANCE;
+	pathFactory: ThePath2DFactory;
+    }
+
+    var currentModel is Node;
+
     var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
 		url: playerUrl;
 		factory: ThePath2DFactory
@@ -2043,11 +2068,17 @@ public function run from (args is String[]) to ()
 	stage.title = url;
 	playerUrl = url;
 	if (url.endsWith(".ma")) {
-	    viewer.focusCamera(model.getSpatialRoot());
+	    viewer.focusCamera(currentModel = model.getSpatialRoot());
 	} else if (url.endsWith(".svg")) {
-	    viewer.focusCamera(svgModel.root)
+	    viewer.focusCamera(currentModel = svgModel.root)
 	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith("tiff") or url.endsWith(".tga")) {
-	    viewer.focusCamera(imageModel)
+	    viewer.focusCamera(currentModel = imageModel)
+	} else {
+	    if (browser <> null) {
+		browser.url = url;
+		currentModel = browser;
+		viewer.focusCamera(currentModel = browser);
+	    }
 	}
     }
     
@@ -2059,7 +2090,7 @@ public function run from (args is String[]) to ()
 	    override var camera = bind currentCamera on invalidate {
 		println("scene camera invalidated {currentCamera}");
 	    }
-	    content: bind [model.getSpatialRoot(), svgModel.root, imageModel];
+	    content: bind currentModel;
 	}
     }
 

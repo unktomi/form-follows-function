@@ -10,7 +10,7 @@ public abstract class Node is Foldable of Node
 	"{super.toString()} {id}"
     }
     public var id is String;
-    public var cursor is Cursor = Cursor.Default;
+    public var cursor is Cursor;
     public readonly var parent is Node;
     public var visible is Boolean = true;
     public readonly var sceneVisible is Boolean =  
