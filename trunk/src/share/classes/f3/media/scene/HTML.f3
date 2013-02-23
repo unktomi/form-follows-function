@@ -10,10 +10,11 @@ public class HTML is WebBrowserNode
     }
 
     override function update {
+	super.update();
 	if (contentDirty) {
 	    contentDirty = false;
 	    tex.setContent(content);
+	    super.update();
 	}
-	super.update();
     }
 }

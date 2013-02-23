@@ -64,7 +64,8 @@ public abstract class AbstractMesh
 		const pointC = point(vertices.getX(i+2), 
 				     vertices.getY(i+2), 
 				     vertices.getZ(i+2));
-		for (weights in ray.intersect(pointA, pointB, pointC)) {
+		for (weights in ray.intersect(pointA, pointB, pointC)) 
+		{
 		    insert tuple(weights, i / 3) into result;
 		}
 	    }

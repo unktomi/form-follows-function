@@ -2031,9 +2031,9 @@ public function run from (args is String[]) to ()
     const camera = PerspectiveCamera {
         id: "free";
 	ty: 3.0;
-	tz: 13.7;
+	tz: 13;
 	near: .001;
-	far: 100;
+	far: 10000;
 	content: PointLight {}
     }
 
@@ -2047,12 +2047,12 @@ public function run from (args is String[]) to ()
 	pathFactory: ThePath2DFactory;
     }
 
-    var currentModel is Node = HTML {
+    var currentModel is Node; /* = HTML {
     	content: "<html><body><h1>Welcome to F3</h1></body></html>";
 	factory: TheWebBrowserFactory;
 	effectLoader: CGEffectLoader_INSTANCE;
 	pathFactory: ThePath2DFactory;
-    }
+    }*/
 
     var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
 		url: playerUrl;
@@ -2117,7 +2117,7 @@ public function run from (args is String[]) to ()
 	    override function onKeyDown from (event is KeyboardEvent) to () {
 		if (event.propagate) {
 		    if (event.keyCode == Keys.F) {
-			viewer.focusCamera(stage.content[0]);
+			viewer.focusCamera(currentModel);
 		    } else if (event.keyCode >= Keys._0 and event.keyCode <= Keys._9) {
 			var index = event.keyCode - Keys._0;
 			setCamera(index);
