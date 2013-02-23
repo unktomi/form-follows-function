@@ -2,12 +2,17 @@ package f3.media.scene;
 
 public class WebBrowser is WebBrowserNode 
 {
-    public var url is String;
+    var urlInvalid = true;
+    public var url is String on invalidate {
+	urlInvalid = true;
+    }
 
     override function update {
-	if (tex.getURL() <> url) {
-	    tex.setURL(url);
-	}
 	super.update();
+	if (urlInvalid) {
+	    urlInvalid = false;
+	    tex.setURL(url);
+	    super.update();
+	}
     }
 }
