@@ -2047,7 +2047,12 @@ public function run from (args is String[]) to ()
 	pathFactory: ThePath2DFactory;
     }
 
-    var currentModel is Node;
+    var currentModel is Node = HTML {
+    	content: "<html><body><h1>Welcome to F3</h1></body></html>";
+	factory: TheWebBrowserFactory;
+	effectLoader: CGEffectLoader_INSTANCE;
+	pathFactory: ThePath2DFactory;
+    }
 
     var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
 		url: playerUrl;

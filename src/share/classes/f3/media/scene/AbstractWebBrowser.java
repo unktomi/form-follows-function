@@ -3,6 +3,8 @@ package f3.media.scene;
 public interface AbstractWebBrowser {
     public void setURL(String url);
     public String getURL();
+    public void setContent(String content);
+    public String getContent();
     public void resize(int width, int height);
     public boolean update();
     public int getTextureId();
