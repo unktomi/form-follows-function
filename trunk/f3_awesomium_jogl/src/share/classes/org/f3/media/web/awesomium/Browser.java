@@ -621,6 +621,7 @@ public class Browser implements AbstractWebBrowser {
     static native void injectKeyInput(long handle, int mods, int code, char ch);
     static native void setURL(long handle, String string);
     static native String getURL(long handle);
+    static native void setContent(long handle, String string);
     static native void focus(long handle);
     static native void unfocus(long handle);
     static native void setZoom(long handle, int percent);
@@ -710,6 +711,16 @@ public class Browser implements AbstractWebBrowser {
 
     public void setURL(String url) {
         setURL(handle, url);
+    }
+
+    String currentContent = null;
+
+    public void setContent(String content) {
+        setContent(handle, content);
+    }
+
+    public String getContent() {
+	return currentContent;
     }
 
     public int getWidth() {

@@ -12,7 +12,6 @@
 
 static Awesomium::WebCore *webCore = 0;
 
-
 static void ensureWebCore() {
   if (webCore == 0) {
     Awesomium::WebCoreConfig config;
@@ -29,10 +28,9 @@ static void updateAll() {
 class MyWebViewListener : public Awesomium::WebViewListener
 {
 
-
 public:
 
-  Awesomium::WebView* webView;
+  Awesomium::WebView *webView;
   std::string currentURL;
   //  std::wstring currentFrameName;
   std::string currentTitle;
@@ -495,6 +493,21 @@ extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_setURL
   p->webView->loadURL(chs);
   env->ReleaseStringChars(url, (const jchar*)chs);
 }
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    setURL
+ * Signature: (ILjava/lang/String;)V
+ */
+extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_setContent
+(JNIEnv *env, jclass clazz, jlong handle, jstring url) {
+  jboolean iscopy;
+  const char *chs = env->GetStringUTFChars(url, &iscopy);
+  MyWebViewListener *p = (MyWebViewListener*)handle;
+  p->webView->loadHTML(chs);
+  env->ReleaseStringChars(url, (const jchar*)chs);
+}
+
 
 /*
  * Class:     org_f3_media_web_awesomium_Browser

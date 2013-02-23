@@ -1455,11 +1455,12 @@ class UVData {
 class PolyfaceData {
     public var faceEdges is Integer[];
     public var holes is Integer[];
-    public var mu is UVData;
+    public var mu is UVData[];
 
-    function getUV from (uvIndex is Integer) to Integer {
-	if (mu == null) return 0;
-	return mu.uvIndices[uvIndex];
+    function getUV from (uvIndex is Integer) to Integer[] {
+	foreach (m in mu) {
+	    m.uvIndices[uvIndex];
+	}
     }
 
     override function toString to String {
@@ -1623,6 +1624,12 @@ class MMesh is MSpatial
     {
 	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
 	//println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()} uvSets {uvSets.size()}");
+	for (v in normals) {
+	    if (v > 1e10) { // bogus normals
+		normals = [];
+		break;
+	    }
+	}
 	for (polyface in polyfaces) {
 	    var norm = Vec3.<<0>>;
 	    const faceEdges = polyface.faceEdges;
@@ -1704,21 +1711,21 @@ class MMesh is MSpatial
     function getMesh to AbstractMesh[]
     {
 	if (components == []) {
-	    components = [ComponentList {
-		    faceStart: 0;
-		    faceEnd: polyfaces.size();
-		}];
+	    components = [ComponentList 
+			  {
+			      faceStart: 0;
+			      faceEnd: polyfaces.size();
+			  }];
 	}
 	foreach (comp in components) {
 	    this.ib.clear();
 	    this.vb.clear();
 	    this.nb.clear();
-	    this.uvb.clear();
+	    this.uvbs = [];
 	    const startIndex = comp.faceStart;
 	    const endIndex = comp.faceEnd;
 	    for (i in [startIndex..<endIndex]) {
 		const f = polyfaces[i];
-		const mu = f.mu;
 		const edge0 = edgeStart(f.faceEdges[0]);
 		const norm0 = i;
 		const uv0 = f.getUV(0);
@@ -1726,12 +1733,12 @@ class MMesh is MSpatial
 		var norm1 = i;
 		var uv1 = f.getUV(1);
 		for (j in [2..<f.faceEdges.size()]) {
-		    insertVertex(edge0, norm0, mu.uvSet, uv0);
-		    insertVertex(edge1, norm1, mu.uvSet, uv1);
+		    insertVertex(edge0, norm0, uv0);
+		    insertVertex(edge1, norm1, uv1);
 		    const edge2 = edgeStart(f.faceEdges[j]);
 		    const norm2 = i;
 		    const uv2 = f.getUV(j);
-		    insertVertex(edge2, norm2, mu.uvSet, uv2);
+		    insertVertex(edge2, norm2, uv2);
 		    edge1 = edge2;
 		    norm1 = norm2;
 		    uv1 = uv2;
@@ -1740,28 +1747,30 @@ class MMesh is MSpatial
 	    const ib = this.ib.getBuffer();
 	    const vb = this.vb.getBuffer();
 	    const nb = this.nb.getBuffer();
-	    const uvb = this.uvb.getBuffer();
-	    const tanb = BufferUtils.createVector3Buffer(ib.limit());
-	    const binb = BufferUtils.createVector3Buffer(ib.limit());
-	    ImportUtils.addTangentBinormalStreams(ib, vb, uvb, nb, tanb, binb);
-	    MeshBuffer {
-		indexBuffer: ib;
-		vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
-		normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb };
-		textureBuffers: [MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb },
-				 MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
-				 MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
-	    }.toMesh();
+	    if (uvbs <> []) {
+		const tanb = BufferUtils.createVector3Buffer(ib.limit());
+		const binb = BufferUtils.createVector3Buffer(ib.limit());
+		const uvbb = foreach (uvb in uvbs) uvb.getBuffer();
+		ImportUtils.addTangentBinormalStreams(ib, vb, uvbb[0], nb, tanb, binb);
+		MeshBuffer {
+		    indexBuffer: ib;
+		    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
+		    normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb };
+		    textureBuffers: [foreach (uvb in uvbb) MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb },
+				     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
+				     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
+		}.toMesh();
+	    } else null
 	}
     }
 
     const ib = new IntBufferBuilder();
     const vb = new FloatBufferBuilder();
     const nb = new FloatBufferBuilder();
-    const uvb = new FloatBufferBuilder();
+    var uvbs is FloatBufferBuilder[];
 
     function insertVertex
-	from (edge is Integer, face is Integer, uvSet is Integer, uvIndex is Integer) 
+	from (edge is Integer, face is Integer, uvIndex is Integer[]) 
 	to ()
     {
 	const v = this.vertex(edge);
@@ -1771,11 +1780,17 @@ class MMesh is MSpatial
 		else if (edgeToNormal.containsKey(edge)) 
 		    then edgeToNormal.get(edge) 
 		    else faceNormals[face];
-	const uv = this.uv(uvSet, uvIndex);
 	ib.add(ib.getBufferSize());
 	vb.add(v.x, v.y, v.z);
 	nb.add(n.x, n.y, n.z);
-	uvb.add(uv.x, uv.y);
+	while (uvIndex.size() > uvbs.size()) {
+	    insert new FloatBufferBuilder into uvbs;
+	}
+	for (i in uvIndex) {
+	    const uvSet = indexof i;
+	    const uv = this.uv(uvSet, i);
+	    uvbs[uvSet].add(uv.x, uv.y);
+	}
     }
 
     override function setAttr from (cmd is Command) to () 
@@ -1804,12 +1819,6 @@ class MMesh is MSpatial
 	    const path = cmd.getPath();
 	    println("NORMAL PATH={path.path[1]}");
 	    const values = cmd.getFlatFloat3Array();
-	    for (v in values) {
-		if (v > 1e10) { // bogus normals
-		    normals = [];
-		    return;
-		}
-	    }
 	    if (path.path[1] instanceof Range) {
 		const r = path.path[1] as Range;
 		normals[r.startIndex*3..r.endIndex*3] = values;
@@ -2382,7 +2391,7 @@ class Command
 	while (i < len) {
 	    var cmd = getString(i++);
 	    var faceEdges is Integer[];
-	    var mu is UVData;
+	    var mu is UVData[];
 	    var holes is Integer[];
 	    var vals is Integer[];
 	    if (cmd == "f") {
@@ -2391,24 +2400,27 @@ class Command
 		    insert getInt(i++) into faceEdges;
 		}
 	    }
-	    cmd = getString(i++);
-	    if (cmd == "mu") {
+	    cmd = getString(i);
+	    while (cmd == "mu") {
+		i++;
 		const uvSet = getInt(i++);
 		var uvs is Integer[];
 		const count = getInt(i++);
 		for (j in [0..<count]) {
 		    insert getInt(i++) into uvs;
 		}
-		mu = UVData {
+		insert UVData {
 		    uvSet: uvSet;
 		    uvIndices: uvs;
-		}
+		} into mu;
+		cmd = getString(i);
 	    }
 	    insert PolyfaceData {
 		faceEdges: faceEdges;
 		mu: mu;
 	    } into faceData;
 	}
+	println("faceData={faceData}");
 	return faceData;
     }
 

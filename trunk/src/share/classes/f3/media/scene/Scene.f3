@@ -133,7 +133,7 @@ public class Scene
 					  w: w;
 				      } into result;
 				  } else {
-				      println("no intersection {n} {n.sceneBounds}");
+				     // println("no intersection {n} {n.sceneBounds}");
 				  }
 			      }
 		      });
