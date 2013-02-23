@@ -7,51 +7,60 @@ public class DefaultExaminerViewer extends ExaminerViewer {
 
     public var camera is PerspectiveCamera;
     
-    override function getCameraOrientation to Quat {
-        return quat(camera.rx, camera.ry, camera.rz);
+    override function getCameraOrientation to Quat 
+    {
+	quat(camera.rx, camera.ry, camera.rz);
     }
 
-    override function getCameraPosition to Point3 {
-        return point(camera.tx, camera.ty, camera.tz);
+    override function getCameraPosition to Point3 
+    {
+	point(camera.tx, camera.ty, camera.tz);
     }
 
-    override function setCameraOrientation from (ori is Quat) to () {
+    override function setCameraOrientation from (ori is Quat) to () 
+    {
         const angles = ori.toAngles();
         camera.rx = angles.x;
         camera.ry = angles.y;
         camera.rz = angles.z;
     }
 
-    override function setCameraPosition from (pos is Point3) to () {
+    override function setCameraPosition from (pos is Point3) to () 
+    {
         camera.tx = pos.x;
         camera.ty = pos.y;
         camera.tz = pos.z;
     }
 
-    override function getCameraNearDistance to Number {
-        return camera.near;
+    override function getCameraNearDistance to Number 
+    {
+        camera.near;
     }
 
-    override function getCameraFarDistance to Number {
-        return camera.far;
+    override function getCameraFarDistance to Number 
+    {
+        camera.far;
     }
 
-    override function setCameraNearDistance from (n is Number) to () {
+    override function setCameraNearDistance from (n is Number) to () 
+    {
         camera.near = n;
     }
 
-    override function setCameraFarDistance from (n is Number) to () {
+    override function setCameraFarDistance from (n is Number) to () 
+    {
         camera.far = n;
     }
 
-    override function getCameraViewAllPosition from (bounds is Bounds) to Point3 {
+    override function getCameraViewAllPosition from (bounds is Bounds) to Point3 
+    {
         const halfWidth = bounds.extent.x;
         const halfHeight = bounds.extent.y;
         const halfDepth = bounds.extent.z;
         const radius = Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight + halfDepth * halfDepth);
         // Now figure out how far to move
-        const minAngle = if (camera.heightAngle < camera.widthAngle) camera.heightAngle else camera.widthAngle;
-	println("minAngle ={minAngle} for {bounds} camera={camera.bounds}");
+        const minAngle = 
+	    if (camera.heightAngle < camera.widthAngle) camera.heightAngle else camera.widthAngle;
         if (minAngle == 0.0) {
             return null;
         }
@@ -62,7 +71,6 @@ public class DefaultExaminerViewer extends ExaminerViewer {
         backoff = getCameraOrientation() * backoff;
         backoff *= dist;
         const result = backoff + bounds.center;
-	println("view all for {bounds} => {result}");
 	return result;
     }
 }

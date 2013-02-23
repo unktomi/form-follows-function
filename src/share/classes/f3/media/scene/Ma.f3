@@ -350,11 +350,11 @@ class MaModel
     function getNumberTargets 
 	from (n is MNode, sourcePath is String) to (Ref of Number)[]
     {
-	println("attempting to resolve {n.name} {sourcePath}");
+	//println("attempting to resolve {n.name} {sourcePath}");
 	foreach (c in n.connectionsFromThis.get(sourcePath)) {
 	    println(c);
 	    const ptr = resolveTargetPointer(c) as Ref of Number;
-	    println("resolved {n.name} {sourcePath} to {ptr}");
+	    //  println("resolved {n.name} {sourcePath} to {ptr}");
 	    ptr;
 	}
     }
@@ -1424,7 +1424,9 @@ class MCharacter is MNode {
     function resolveTargetPointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
 	// toThis connects to one of my inputs; forward to the corresponding connection 
-	for (conn in connectionsFromThis.get(toThis.targetPath)) {
+	//println("{name} trying to resolve {toThis} in {connectionsFromThis}");
+	const path = parsePath(toThis.targetPath).path[0] as Field;
+	for (conn in connectionsFromThis.get(path.name)) {
 	    const ptr = m.resolveTargetPointer(conn);
 	    if (ptr <> null) return ptr;
 	    println("failed to resolve target {toThis.targetPath} using {conn}");
@@ -1435,7 +1437,8 @@ class MCharacter is MNode {
     function resolveSourcePointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
 	// toThis connects to one of my inputs; forward to the corresponding connection 
-	for (conn in connectionsToThis.get(toThis.targetPath)) {
+	const path = parsePath(toThis.targetPath).path[0] as Field;
+	for (conn in connectionsToThis.get(path.name)) {
 	    const ptr = m.resolveSourcePointer(conn);
 	    if (ptr <> null) return ptr;
 	    println("failed to resolve source {toThis.targetPath} using {conn}");
@@ -1817,7 +1820,7 @@ class MMesh is MSpatial
 	    }
 	} else if (n == "n") {
 	    const path = cmd.getPath();
-	    println("NORMAL PATH={path.path[1]}");
+	    //println("NORMAL PATH={path.path[1]}");
 	    const values = cmd.getFlatFloat3Array();
 	    if (path.path[1] instanceof Range) {
 		const r = path.path[1] as Range;
@@ -1854,7 +1857,7 @@ class MMesh is MSpatial
 		    const componentList = cmd.getStringArray();
 		    for (comp in componentList) {
 			const compPath = parsePath(comp);
-			println("compPath={compPath}");
+			//println("compPath={compPath}");
 			if (compPath.path[0] is Field) {
 			    const f = compPath.path[0] as Field;
 			    if (f.name == "f") {
@@ -1909,14 +1912,22 @@ class MMesh is MSpatial
 	    const shaderConn = connectionsFromThis.get("iog");
 	    const mshaderNode = 
 		if (shaderConn <> null) {
-		    println("shaderConn={shaderConn}");
-		    println("shaderConn={shaderConn[0].targetNode}");
-		    println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
-		    println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
+		    //println("shaderConn={shaderConn}");
+		    //println("shaderConn={shaderConn[0].targetNode}");
+		    //println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+		    //println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
 		    shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
 		} else null;
 	    const shader = m.toShader(mshaderNode);
-	    println("shaderNode={mshaderNode} for {name} => {shader}");
+	    //println("shaderNode={mshaderNode} for {name} => {shader}");
+	    for (i in [0..<shader.uvMap.size()]) {
+		const unit = shader.uvMap[i];
+		if (unit == -2) { // tangent
+		    shader.uvMap[i] = mesh.textureCoordinates.size()-2;
+		} else if (unit == -1) {// binormal 
+		    shader.uvMap[i] = mesh.textureCoordinates.size()-1;
+		}
+	    }
 	    const r = MeshNode {
 		//visible: visible;
 		id: "{name}{id}";
@@ -1949,7 +1960,7 @@ class MCGFXShader is MAbstractShader
     {
 	const shader = target as Shader;
 	var result = shader.getParameter(ptr);
-	println("result in {name} for {ptr} = {result}");
+	//println("result in {name} for {ptr} = {result}");
 	return result;
     }
 
@@ -1998,9 +2009,9 @@ class MCGFXShader is MAbstractShader
 		    const uvIndex = Integer.parseInt(name.substring(6))-1;
 		    uvs[unit] = uvIndex;
 		} else if (name.startsWith("binormal:map")) {
-		    uvs[unit] = 1;
+		    uvs[unit] = -1;
 		} else if (name.startsWith("tangent:map")) {
-		    uvs[unit] = 2;
+		    uvs[unit] = -2;
 		}
 	    }
 	}
@@ -2420,7 +2431,7 @@ class Command
 		mu: mu;
 	    } into faceData;
 	}
-	println("faceData={faceData}");
+	//println("faceData={faceData}");
 	return faceData;
     }
 

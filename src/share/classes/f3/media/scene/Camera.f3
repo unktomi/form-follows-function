@@ -237,11 +237,17 @@ public abstract class Camera is TransformNode
         }
         const origin = toScene(screenx, screeny, 1.0);
         const dir = toScene(screenx, screeny, -1.0) - origin;
-	if (dir.lengthSquared() == 0) then null else
-        Ray3 {
-            origin: origin;
-            direction: dir.normalize();
-        }
+	if (dir == null) {
+	    return null;
+	}
+	try { // hack
+	    return Ray3 {
+		origin: origin;
+		direction: dir.normalize();
+	    }
+	} catch (e) { 
+	}
+	return null;
     }
 
     public readonly var sceneDirection = bind sceneTransform * Vec3.Z_AXIS;

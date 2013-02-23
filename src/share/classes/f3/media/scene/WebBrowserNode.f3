@@ -2,7 +2,8 @@ package f3.media.scene;
 import f3.media.input.*;
 import f3.util.Bits;
 
-public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture, MouseInputHandler, KeyboardInputHandler, Focusable 
+public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture, 
+       MouseInputHandler, KeyboardInputHandler, Focusable 
 {
     public var width is Integer = 1024;
     public var height is Integer = 512;
