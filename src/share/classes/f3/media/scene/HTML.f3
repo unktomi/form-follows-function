@@ -1,0 +1,19 @@
+package f3.media.scene;
+
+public class HTML is WebBrowserNode 
+{
+    var contentDirty = true;
+
+    public var content is String on invalidate 
+    {
+	contentDirty = true;
+    }
+
+    override function update {
+	if (contentDirty) {
+	    contentDirty = false;
+	    tex.setContent(content);
+	}
+	super.update();
+    }
+}

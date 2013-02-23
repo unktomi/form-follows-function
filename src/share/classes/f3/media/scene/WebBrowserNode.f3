@@ -1,0 +1,148 @@
+package f3.media.scene;
+import f3.media.input.*;
+import f3.util.Bits;
+
+public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture, MouseInputHandler, KeyboardInputHandler, Focusable 
+{
+    public var width is Integer = 1024;
+    public var height is Integer = 512;
+
+    override function getWidth to Integer 
+    {
+	width;
+    }
+
+    override function getHeight to Integer 
+    {
+	height;
+    }
+
+    public const factory is AbstractWebBrowserFactory = the AbstractWebBrowserFactory;
+    public const effectLoader is CGEffectLoader = the CGEffectLoader;
+    public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
+
+    protected var tex is AbstractWebBrowser;
+
+    override function getTextureId to Integer 
+    {
+        return tex.getTextureId();
+    }
+
+    override function update {
+        if (tex == null) {
+            tex = factory.newInstance();
+            tex.resize(width, height);
+        }
+        if (tex.getWidth() <> width or tex.getHeight() <> height) {
+            tex.resize(width, height);
+        }
+        if (tex.update()) {
+            //needsDraw = true;
+        }
+        var ctype = tex.getCursorType();
+        if (cursor.type <> ctype) {
+            println("setting cursor to {ctype}");
+            cursor = Cursor { type: ctype };
+        }
+    }
+
+    override var path = bind Shape2D.rect(pathFactory, -width/2, -height/2, width, height);
+
+    function getSelf to WebBrowserNode { this } // workaround for compiler bug
+
+    override var paint = bind Shape2D.TexturePaint 
+    {
+	texture: getSelf();
+    }
+
+    function getMods from (event is KeyboardEvent) to Integer {
+        var result = 0;
+        if (event.altKey) {
+            result = Bits.add(result, AbstractWebBrowser.MOD_ALT_KEY);
+        }
+        if (event.ctrlKey) {
+            result = Bits.add(result, AbstractWebBrowser.MOD_CONTROL_KEY);
+        }
+        if (event.metaKey) {
+            result = Bits.add(result, AbstractWebBrowser.MOD_META_KEY);
+        }
+        if (event.shiftKey) {
+            result = Bits.add(result, AbstractWebBrowser.MOD_SHIFT_KEY);
+        }
+        return result;
+    }
+    
+    override function acceptFocus to Boolean 
+    {
+        tex.focus();
+        return true;
+    }
+
+    override function loseFocus to Boolean 
+    {
+        tex.unfocus();
+	return true;
+    }
+
+    override public function onKeyDown from (event is KeyboardEvent) to () 
+    {
+        tex.injectKeyDown(event.keyCode, getMods(event));
+        event.stopPropagation();
+    }
+
+    override public function onKeyUp from (event is KeyboardEvent) to () 
+    {
+        tex.injectKeyUp(event.keyCode, getMods(event));
+        event.stopPropagation();
+    }
+
+    override public function onKeyInput from (event is KeyboardEvent) to () 
+    {
+        tex.injectKeyInput(event.keyCode, getMods(event), event.keyChar.charAt(0));
+        event.stopPropagation();
+    }
+
+    override public function onMouseUp from (event is MouseEvent) to () 
+    {
+    //	println("mouse up event={event}");
+        for (button in event.buttons) {
+            tex.injectMouseUp(button);
+        }
+    }
+
+    override public function onMouseDown from (event is MouseEvent) to ()  
+    {
+	println("mouse down event={event}");
+        for (button in event.buttons) {
+            tex.injectMouseDown(button);
+        }
+        event.stopPropagation();
+    }
+
+    override public function onMouseMove from (event is MouseEvent) to () 
+    {
+        var picked = event.picked;
+        var localPoint = event.location;
+//	println("mouse move event={event}");
+        tex.injectMouseMove(localPoint.x, localPoint.y);
+        event.stopPropagation();
+    }
+
+    override public function onMouseDrag from (event is MouseEvent) to () 
+    {
+/*
+        var picked = event.picked;
+        var localPoint = sceneTransform.invert() * picked.worldPoint;
+        tex.injectMouseMove(localPoint.x, localPoint.y);
+*/
+        event.stopPropagation();
+    }
+
+    override public function onMouseEnter from (event is MouseEvent) to ()
+    {
+    }
+
+    override public function onMouseLeave from (event is MouseEvent) to ()
+    {
+    }
+}
