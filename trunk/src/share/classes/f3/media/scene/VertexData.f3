@@ -1,6 +1,7 @@
 package f3.media.scene;
 
 public abstract class VertexData {
+    public const id is String;
     public abstract function getVertexCount to Integer;
     public abstract function getCoordsPerVertex to Integer;
     public abstract function getX from (i is Integer) to Number;

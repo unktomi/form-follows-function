@@ -78,14 +78,17 @@ public function cube
     const result = MeshBuffer {
         indexBuffer: ibuf;
         vertexBuffer: VertexAttributeBuffer {
+	    id: "POSITION";
             coordsPerVertex: 3;
             buffer: vb;
         }
         textureBuffers: VertexAttributeBuffer {
+	    id: "TEXCOORD0";
             coordsPerVertex: 2;
             buffer: tb;
         }
         normalBuffer: VertexAttributeBuffer {
+	    id: "NORMAL";
             coordsPerVertex: 3;
             buffer: nb;
         }
@@ -117,14 +120,17 @@ public function quad
     var result = MeshBuffer {
         indexBuffer: ibuf;
         vertexBuffer: VertexAttributeBuffer {
+	    id: "POSITION";
             coordsPerVertex: 3;
             buffer: vb;
         }
         textureBuffers: VertexAttributeBuffer {
+	    id: "TEXCOORD0";
             coordsPerVertex: 2;
             buffer: tb;
         }
         normalBuffer: VertexAttributeBuffer {
+	    id: "NORMAL";
             coordsPerVertex: 3;
             buffer: nb;
         }
@@ -132,6 +138,7 @@ public function quad
 }
 
 public class VertexAttributeBuffer {
+    public const id is String;
     public const coordsPerVertex is Integer;
     public const buffer is java.nio.FloatBuffer;
 }
@@ -172,6 +179,7 @@ public class MeshBuffer
 		    const coordsPerVertex = self.vertexBuffer.coordsPerVertex;
 		    const vertexBuffer = self.vertexBuffer.buffer;
 		    VertexData {
+			id: self.vertexBuffer.id;
 			function idx from (i is Integer) to Integer {
 			    indexBuffer.get(i);
 			}
@@ -191,6 +199,7 @@ public class MeshBuffer
 			const coordsPerVertex = i.coordsPerVertex;
 			const count = indexBuffer.limit();
 			VertexData {
+			    id: i.id;
 			    function idx from (i is Integer) to Integer {
 				indexBuffer.get(i);
 			    }

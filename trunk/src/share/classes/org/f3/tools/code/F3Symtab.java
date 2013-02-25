@@ -32,6 +32,7 @@ import static com.sun.tools.mjavac.jvm.ByteCodes.*;
 import com.sun.tools.mjavac.util.*;
 import com.sun.tools.mjavac.code.Symbol.TypeSymbol;
 import com.sun.tools.mjavac.code.TypeTags;
+import com.sun.tools.mjavac.code.BoundKind;
 import org.f3.tools.comp.F3Defs;
 import com.sun.tools.mjavac.code.Flags;
 
@@ -462,7 +463,10 @@ public class F3Symtab extends Symtab {
 	if (restype instanceof MethodType) {
 	    restype = syms.makeFunctionType((MethodType)restype);
 	}
-	return new MethodType(argtypes, restype, typeargtypes, methodClass);
+	MethodType result = 
+	    new MethodType(argtypes, restype, typeargtypes, methodClass);
+	//System.err.println("created method: "+ result);
+	return result;
     }
 
     public FunctionType makeFunctionType(List<Type> typarams, MethodType mtype) {
@@ -475,13 +479,23 @@ public class F3Symtab extends Symtab {
         assert (nargs <= MAX_FIXED_PARAM_LENGTH);
         Type funtype = f3_FunctionTypes[nargs];
 	List<Type> boxedArgs = List.<Type>nil();
+	int i = 0;
 	for (Type arg: typarams) {
-	    boxedArgs = boxedArgs.append(types.boxedTypeOrType(arg));
+	    Type boxed = types.boxedTypeOrType(arg);
+	    if (!(boxed instanceof TypeVar)) { // hack
+		if (!(boxed instanceof WildcardType)) { // hack
+		    boxed = new WildcardType(boxed, i == 0 ? BoundKind.EXTENDS : 
+					     BoundKind.SUPER, boundClass);
+		}
+	    }
+	    boxedArgs = boxedArgs.append(boxed);
+	    i++;
 	}
 	typarams = boxedArgs;
         FunctionType ftype = 
 	    new FunctionType(funtype.getEnclosingType(), typarams, funtype.tsym, mtype);
 	ftype.typeArgs = mtype.getTypeArguments();
+	//System.err.println("make fun "+mtype+" => "+ftype);
 	return ftype;
     }
 
@@ -501,18 +515,42 @@ public class F3Symtab extends Symtab {
 	return ft;
     }
 
+    Type retType(Type rtype) {
+	if (rtype instanceof WildcardType) {
+	    Thread.currentThread().dumpStack();
+	    return rtype;
+	}
+	Type t = rtype;
+	t = boxedTypeOrType(t);
+	if (rtype == voidType) return t;
+	return new WildcardType(t, BoundKind.EXTENDS, boundClass);
+    }
+
+    Type argType(Type rtype) {
+	if (rtype instanceof WildcardType) {
+	    Thread.currentThread().dumpStack();
+	    return rtype;
+	}
+	Type t = rtype;
+	t = boxedTypeOrType(t);
+	if (rtype == voidType) return t;
+	return new WildcardType(t, BoundKind.SUPER, boundClass);
+    }
+
     /** Given a MethodType, create the corresponding FunctionType.
      */
     public FunctionType makeFunctionType(MethodType mtype) {
         Type rtype = mtype.restype;
         ListBuffer<Type> typarams = new ListBuffer<Type>();
-        typarams.append(boxedTypeOrType(rtype));
+        typarams.append(retType(rtype));
         for (List<Type> l = mtype.argtypes; l.nonEmpty(); l = l.tail) {
-            typarams.append(boxedTypeOrType(l.head));
+            typarams.append(argType(l.head));
         }
         int nargs = typarams.size()-1;
 	if (nargs < 0) nargs = 0;
-        return makeFunctionType(nargs, typarams.toList(), mtype);
+        FunctionType ftype = makeFunctionType(nargs, typarams.toList(), mtype);
+	//System.err.println("make function type" +mtype+" => "+ftype);
+	return ftype;
     }
 
     /** Make public. */

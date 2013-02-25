@@ -1011,6 +1011,12 @@ public abstract class F3AbstractTranslation
                 throw new AssertionError("Should have been converted");
             }
             // Just translate to literal value
+	    //System.err.println("translating literal "+tree.type + ": "+tree);
+	    if (tree.typetag == TypeTags.BOT) {
+		if (isValueType(tree.type)) {
+		    return toResult(makeDefaultValue(tree, tree.type), tree.type);
+		}
+	    }
             return toResult(m().Literal(tree.typetag, tree.value), tree.type);
         }
     }
@@ -3083,19 +3089,31 @@ public abstract class F3AbstractTranslation
 
         JCExpression doitExpr() {
             boolean isScriptContext = receiverContext() == ReceiverContext.ScriptAsStatic;
-            
-            int nargs = mtype.argtypes.size();
-            Type functionType = syms.f3_FunctionTypes[nargs];
-            JCExpression functionTypeExpr = QualifiedTree(functionType.tsym.getQualifiedName().toString());
-            
-            ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
-            Type resType = types.boxedTypeOrType(mtype.restype);
-            typeArgs.append(makeType(resType));
-            for (Type argType : mtype.argtypes) {
-                Type paramType = types.boxedTypeOrType(argType);
-                typeArgs.append(makeType(paramType));
-            }
-            JCExpression funcClassType = m().TypeApply(functionTypeExpr, typeArgs.toList());
+	    JCExpression funcClassType;
+	    int nargs = mtype.argtypes.size();
+	    Type functionType = syms.f3_FunctionTypes[nargs];
+	    JCExpression functionTypeExpr = QualifiedTree(functionType.tsym.getQualifiedName().toString());
+	    ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+	    if (false) {
+		Type resType = types.boxedTypeOrType(mtype.restype);
+		typeArgs.append(makeType(resType));
+		for (Type argType : mtype.argtypes) {
+		    Type paramType = types.boxedTypeOrType(argType);
+		    typeArgs.append(makeType(paramType));
+		}
+		System.err.println("typeargs="+typeArgs.toList());
+		funcClassType = m().TypeApply(functionTypeExpr, typeArgs.toList());
+	    } else {
+		Type ftype = syms.asFunctionType(mtype);
+		//System.err.println("FTYPE="+ftype);
+		for (Type t : ftype.getTypeArguments()) {
+		    if (t instanceof WildcardType) {
+			t = ((WildcardType)t).type;
+		    }
+		    typeArgs.append(makeType(t));
+		}
+		funcClassType = m().TypeApply(functionTypeExpr, typeArgs.toList());
+	    }
             
             JCExpression receiverExpr = getReceiverOrThis(isScriptContext);
             int number = currentClass().addInvokeCase(translateInvokeCase(), isScriptContext);
@@ -4400,7 +4418,7 @@ public abstract class F3AbstractTranslation
     }
 
     public void visitLiteral(F3Literal tree) {
-         result = new LiteralTranslator(tree).doit();
+	result = new LiteralTranslator(tree).doit();
     }
 
    public void visitModifiers(F3Modifiers tree) {
