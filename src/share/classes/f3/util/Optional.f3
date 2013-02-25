@@ -142,10 +142,10 @@ public function present of a
 
 public function absent of a to Absent of a
 {
-    Nothing as Absent of a;
+    Absence as Absent of a;
 }
 
-static def Nothing = Absent of null {};
+static def Absence = Absent of null {};
 
-public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Nothing);
+public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Absence);
 

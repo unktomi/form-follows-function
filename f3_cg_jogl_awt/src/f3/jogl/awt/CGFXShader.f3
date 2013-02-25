@@ -4,7 +4,7 @@ import f3.math.LinearMath.*;
 import f3.media.scene.*;
 import f3.lang.Ref;
 
-const DEBUG = false;
+public static var DEBUG = false;
 
 public abstract class Parameter of a is f3.media.scene.Shader.Parameter of a
 {

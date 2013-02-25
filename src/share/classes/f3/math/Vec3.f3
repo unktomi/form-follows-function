@@ -9,6 +9,48 @@ public static const X_AXIS = Vec3 {x: 1.0, y: 0.0, z: 0.0};
 public static const Y_AXIS = Vec3 {x: 0.0, y: 1.0, z: 0.0};
 public static const Z_AXIS = Vec3 {x: 0.0, y: 0.0, z: 1.0};
 
+public class Buffer 
+{
+    var x is Number;
+    var y is Number;
+    var z is Number;
+
+    public function toVec3 to Vec3 
+    {
+	Vec3 {
+	    x: x;
+	    y: y;
+	    z: z;
+	}
+    }
+
+    public function dot from (b is Buffer) to Number {
+	x * b.x + y * b.y + z * b.z;
+    }
+
+    public function add from (b is Buffer) to Buffer {
+	x += b.x;  y += b.y;   z +=  b.z;
+	return this
+    }
+
+    public function dot from (b is Vec3) to Number 
+    {
+	x * b.x + y * b.y + z * b.z;
+    }
+
+    public function add from (b is Vec3) to Buffer 
+    {
+	x += b.x;  y += b.y;   z +=  b.z;
+	return this
+    }
+
+    public function mul from (n is Number) to Buffer 
+    {
+	x *= n;  y *= n;   z * n;
+	return this
+    }
+}
+
 public class Vec3 is Tuple3
 {
     public function +

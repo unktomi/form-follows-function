@@ -53,6 +53,14 @@ public class FunctionType extends Type.ClassType {
 			TypeSymbol tsym,
 			MethodType mtype) {
         super(outer, typarams, tsym);
+	if (false) {
+	    for (Type t:  typarams) {
+		if (!(t instanceof WildcardType)) {
+		    System.err.println("not a wildcard: "+ t + " in "+ mtype);
+		    Thread.currentThread().dumpStack();
+		}
+	    }
+	}
         this.mtype = mtype;
     }
 

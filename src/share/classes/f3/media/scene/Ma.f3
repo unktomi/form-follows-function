@@ -402,7 +402,7 @@ class MaModel
 		const path = parsePath(conn.targetPath).path;
 		const i = (path[1] as Index).index;
 		const sourceClip = conn.sourceNode as MAnimClip;
-		const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode as MAnimClip;
+		const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode;
 		const start = 1s/24 * (sourceClip.ss-1);
 		const end = 1s/24 * (sourceClip.se);
 		insert TimeGroup {
@@ -619,7 +619,7 @@ class MNode {
 		    cmd.getInt()
 		} else if (t == "long") {
 		    cmd.getInt()
-		} else if (t == "fltMatrix") {
+		} else if (t == "fltMatrix" or t == "matrix") {
 		    cmd.getMatrix();
 		} else null;
 	    //println("setAttr {attr.shortName} {attr.type} = {value}");
@@ -1757,11 +1757,11 @@ class MMesh is MSpatial
 		ImportUtils.addTangentBinormalStreams(ib, vb, uvbb[0], nb, tanb, binb);
 		MeshBuffer {
 		    indexBuffer: ib;
-		    vertexBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: vb };
-		    normalBuffer: MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: nb };
-		    textureBuffers: [foreach (uvb in uvbb) MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 2, buffer: uvb },
-				     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: tanb },
-				     MeshBuffer.VertexAttributeBuffer { coordsPerVertex: 3, buffer: binb }];
+		    vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
+		    normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
+		    textureBuffers: [foreach (uvb in uvbb) MeshBuffer.VertexAttributeBuffer {id: "TEXCOORD{indexof uvb}", coordsPerVertex: 2, buffer: uvb },
+				     MeshBuffer.VertexAttributeBuffer {id: "TANGENT", coordsPerVertex: 3, buffer: tanb },
+				     MeshBuffer.VertexAttributeBuffer {id: "BINORMAL", coordsPerVertex: 3, buffer: binb }];
 		}.toMesh();
 	    } else null
 	}
@@ -1887,7 +1887,16 @@ class MMesh is MSpatial
 	    const index = path.path[1] as Index;
 	    const field = path.path[2] as Field;
 	    if (field.name == "uvsp") {
-		const range = path.path[3] as Range;
+		var startIndex is Integer;
+		var endIndex is Integer;
+		if (path.path[3] is Range) {
+		    const range = path.path[3] as Range;
+		    startIndex = range.startIndex;
+		    endIndex = range.endIndex;
+		} else {
+		    const ind = path.path[3] as Index;
+		    startIndex = endIndex = ind.index;
+		}
 		const uvIndex = index.index;
 		const values = cmd.getFlatFloat2Array();
 		if (uvSets[uvIndex] == null) {
@@ -1896,7 +1905,7 @@ class MMesh is MSpatial
 			uvs: values;
 		    } into uvSets;
 		} else {
-		    uvSets[uvIndex].uvs[range.startIndex*2..range.endIndex*2] = values;
+		    uvSets[uvIndex].uvs[startIndex*2..endIndex*2] = values;
 		}
 	    }
 	}
@@ -1995,6 +2004,7 @@ class MCGFXShader is MAbstractShader
 	    }
 	}
 	var uvs is Integer[];
+	println("vals={vals}");
 	for (i in [0..<vals.size() step 4]) {
 	    const n = vals[i];
 	    const t = vals[i+1];
@@ -2005,6 +2015,7 @@ class MCGFXShader is MAbstractShader
 		    insert 0 into uvs;
 		}
 		const name = vas[1+(i-1) / 4];
+		println("unit={unit} ame={name}");
 		if (name.startsWith("uv:map")) {
 		    const uvIndex = Integer.parseInt(name.substring(6))-1;
 		    uvs[unit] = uvIndex;
@@ -2146,25 +2157,24 @@ class MShader is MAbstractShader
 	const ambient = toColor(ambc.x, ambc.y, ambc.z, alpha);
 	const emissive = toColor(ic.x, ic.y, ic.z, alpha);
 	const specular = toColor(sc.x, sc.y, sc.z, alpha);
-	const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100 - 99 * Math.sqrt(ec) else 1;
+	const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100 - 99 * Math.sqrt(ec) else 0;
 	var image is AbstractTexture;
 	var uvMap is Integer[] = [];
 	for (conn in connectionsToThis.get("c")) {
 	    if (conn.sourceNode instanceof MFile) {
 		const file = conn.sourceNode as MFile;
-		const paramName = conn.targetPath;
 		const baseURL = new java.net.URL(m.url);
 		image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
 		uvMap = [0];
 		break;
 	    }
 	}
-	var shader = m.effectLoader.loadDefaultShader(image,
-						      diffuse,
-						      ambient,
-						      emissive,
-						      specular,
-						      shininess);
+	const shader = m.effectLoader.loadDefaultShader(image,
+							diffuse,
+							ambient,
+							emissive,
+							specular,
+							shininess);
 	m.shaderMap.put(this, shader);
 	shader.uvMap = uvMap;
 	return shader;
@@ -2185,7 +2195,7 @@ class MFile is MNode {
 	const n = cmd.getAttr();
 	if (n == "ftn") {
 	    ftn = cmd.getString();
-	}
+	} else super.setAttr(cmd);
     }
 }
 
@@ -2261,11 +2271,11 @@ class MAnimCurve__ is MAnimCurve of Number
 
     override function setAttr from (cmd is Command) to () 
     {
-	super.setAttr(cmd);
+
 	const n = cmd.getAttr();
 	if (n == "ktv") {
 	    ktv = cmd.getFloat2Array();
-	}
+	} else super.setAttr(cmd);
     }
 
     function getInterpolator from (i is Integer) to KeyFrame.NumberInterpolator 
@@ -2460,7 +2470,8 @@ class Command
 	return true;
     }
 
-    public function getMatrix to Mat4 {
+    public function getMatrix to Mat4 
+    {
 	Mat4.fromColumns(getFloatArray());
     }
 
@@ -2799,13 +2810,12 @@ public class Model {
 	const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader};
 	const m = p.parse(new java.net.URL(url));
 	m.spatialRoot.updateParent();
-	const r = ModelContent {
+	ModelContent {
 	    spatial: m.spatialRoot;
 	    temporal: m.temporalRoot;
 	    cameras: m.getCameras();
 	    clipLibraries: m.clipLibs;
 	}
-	return r;
     }
 }
 

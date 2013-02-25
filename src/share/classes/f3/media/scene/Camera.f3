@@ -30,7 +30,7 @@ public function getFrustumPlanes
         const z = z3 + sign*t.get(row, 2);
         const w = w3 + sign*t.get(row, 3);
         sign = -sign;
-        const norm = 1.0/(Math.sqrt(x*x+x*x+z*z) as Number);
+        const norm = 1.0/(Math.sqrt(x*x+y*y+z*z) as Number);
         const xyz = Vec3 { x: x*norm, y: y*norm, z: z*norm };
         Plane {
             normal: xyz;

@@ -1227,7 +1227,7 @@ class SceneRenderer {
 		    }
 		} 
 		if (n is MeshNode) {
-		    if (true or scene.camera.contains(n.sceneBounds)) {
+		    if (scene.camera.contains(n.sceneBounds)) {
 			const mn = n as MeshNode;
 			const shader = mn.shader;
 			if (mn.shader <> null) {
@@ -1413,19 +1413,23 @@ class SceneRenderer {
                 }
             }
 	    const texUnits = shader.uvMap.size();
+	    //println("mesh={mn.id}");
+	    //println("shader={shader.id} uvMap={shader.uvMap.size()}");
+	    //println("coords={mesh.textureCoordinates.size()}");
 	    const coords = foreach (i in shader.uvMap) mesh.textureCoordinates[i];
 	    for (unit in [0..<texUnits]) {
-		var textureBuffer = mesh.getTextureBuffers()[shader.uvMap[unit]];
+		const textureBuffer = mesh.getTextureBuffers()[shader.uvMap[unit]];
+		const coord = mesh.textureCoordinates[shader.uvMap[unit]];
+		//		println("unit={unit} coord={coord.id}");
 		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
 		if (textureBuffer <> null) {
 		    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 		    if (vbo <> null) {
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.textureBuffers[unit]);
-			gl.glTexCoordPointer(mesh.textureCoordinates[shader.uvMap[unit]].getCoordsPerVertex(),
+			gl.glTexCoordPointer(coord.getCoordsPerVertex(),
 					     GL.GL_FLOAT, 0, 0);
 		    } else {
 			textureBuffer.rewind();
-			const coord = coords[unit];
 			gl.glTexCoordPointer(coord.getCoordsPerVertex(), 
 					     GL.GL_FLOAT, 0, textureBuffer);
 		    }
@@ -1701,11 +1705,16 @@ public class Listener extends GLEventListener, DropTargetListener {
     var stageTitle is String;
 
     function render from (gl is GL2, width is Integer, height is Integer) to () {
-
-        if (stageTitle <> stage.title) {
-            setTitle(stageTitle = stage.title);
-        }
-
+	if (false) {
+	    const rt = java.lang.Runtime.getRuntime();
+	    const mem = rt.totalMemory();
+	    const free = rt.freeMemory();
+	    setTitle("mem({%,d mem-free}/{%,d mem}) {stage.title}");
+	} else {
+	    if (stageTitle <> stage.title) {
+		setTitle(stageTitle = stage.title);
+	    }
+	}
         const now = java.lang.System.currentTimeMillis();
         if (startTime == 0) startTime = now;
         const currentTime = 1ms *(now - startTime);
@@ -2015,7 +2024,7 @@ public function run from (args is String[]) to ()
 
     var playerUrl is String;
 
-    var model is Ma.Model = bind if (not playerUrl.endsWith(".ma")) then null else Ma.Model {
+    readonly var model is Ma.Model = bind if (not playerUrl.endsWith(".ma")) then null else Ma.Model {
 		effectLoader: the CGEffectLoader;
 		imageLoader: the ImageLoader;
 		url: playerUrl;
@@ -2054,12 +2063,12 @@ public function run from (args is String[]) to ()
 	pathFactory: ThePath2DFactory;
     }*/
 
-    var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
+    readonly var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
 		url: playerUrl;
 		factory: ThePath2DFactory
 	    };
 
-    var imageModel = bind if (playerUrl.endsWith(".jpg") or 
+    readonly var imageModel = bind if (playerUrl.endsWith(".jpg") or 
 			      playerUrl.endsWith(".png") or
 			      playerUrl.endsWith(".tiff") or
 			      playerUrl.endsWith(".tga")) 
@@ -2119,17 +2128,21 @@ public function run from (args is String[]) to ()
 		    if (event.keyCode == Keys.F) {
 			viewer.focusCamera(currentModel);
 		    } else if (event.keyCode >= Keys._0 and event.keyCode <= Keys._9) {
-			var index = event.keyCode - Keys._0;
+			const index = event.keyCode - Keys._0;
 			setCamera(index);
+		    } else if (event.keyCode == Keys.G) {
+			java.lang.System.gc();
+			//showMemory = not showMemory;
 		    } else if (event.keyCode == Keys.D) {
-			DEBUG_USE_DEFAULT_SHADER = not DEBUG_USE_DEFAULT_SHADER;
+			//DEBUG_USE_DEFAULT_SHADER = not DEBUG_USE_DEFAULT_SHADER;
+			CGFXShader.DEBUG = not CGFXShader.DEBUG;
 		    }
 		}
 	    }
 	});
     stage.addDnDInputHandler(DnDInputHandler {
 	    override function onDrop from (event is DropEvent) to () {
-		var url = event.url;
+		const url = event.url;
 		event.accept();
 		try {
 		    const checkProtocol = new java.net.URL(url);
