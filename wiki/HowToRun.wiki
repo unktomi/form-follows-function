@@ -21,6 +21,8 @@ ant
 
 cd f3_cg_jogl_awt
 
+ant
+
 ./demo.sh
 
 Then drag & drop .svg or .ma (maya ascii)  or .png files on the window - or if you installed Awesomium as described above, you can drop in any file that can be displayed by a web browser.  Switch cameras with the number keys (camera 0 is the free camera). Camera 9 is a 2d camera (cpu rasterizer).
