@@ -210,7 +210,7 @@ class SceneRenderer2D
 				if (n is Shape2D.MeshNode2D) {
 				    const shape = n as Shape2D.MeshNode2D;
 				    const p = shape.path as JoglPath2D;
-				    applyTransform(n.sceneTransform);
+				    applyTransform(n.toSceneTransform);
 				    const saved = g.getTransform();
 				    g.setTransform(tx);
 				    applyPaint(g, shape.paint);
@@ -1193,11 +1193,11 @@ class SceneRenderer {
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
         const vf = function from (_ is (), n is Node) to () {
-	    if (n.sceneTransform == null) {
-		println("no scene transform: {n.id} => {n.sceneTransform} parent={n.parent.id}");
+	    if (n.toSceneTransform == null) {
+		println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
 		return;
 	    }
-	    if (n.sceneVisible) {
+	    if (n.visibleInScene) {
 		if (n is PointLight) {
 		    insert (n as PointLight) into lights;
 		}
@@ -1227,7 +1227,7 @@ class SceneRenderer {
 		    }
 		} 
 		if (n is MeshNode) {
-		    if (scene.camera.contains(n.sceneBounds)) {
+		    if (scene.camera.contains(n.boundsInScene)) {
 			const mn = n as MeshNode;
 			const shader = mn.shader;
 			if (mn.shader <> null) {
@@ -1312,8 +1312,8 @@ class SceneRenderer {
                 // sort opaque front to back      
                 java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
                         override public function compare(x is MeshNode, y is MeshNode):Integer {
-                            var xz = camera.distanceTo(x.sceneTransform.getTranslation());
-                            var yz = camera.distanceTo(y.sceneTransform.getTranslation());
+                            var xz = camera.distanceTo(x.toSceneTransform.getTranslation());
+                            var yz = camera.distanceTo(y.toSceneTransform.getTranslation());
                             var cmp = xz - yz;
                             return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
                         }
@@ -1321,8 +1321,8 @@ class SceneRenderer {
                 //sort transparent back to front
                 java.util.Collections.sort(transparentToDraw, java.util.Comparator of MeshNode {
                         override public function compare(x is MeshNode, y is MeshNode):Integer {
-                            var xz = camera.distanceTo(x.sceneTransform.getTranslation());
-                            var yz = camera.distanceTo(y.sceneTransform.getTranslation());
+                            var xz = camera.distanceTo(x.toSceneTransform.getTranslation());
+                            var yz = camera.distanceTo(y.toSceneTransform.getTranslation());
                             var cmp = -(xz - yz);
                             return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
                         }
@@ -1356,13 +1356,13 @@ class SceneRenderer {
 	      lights is Point3[])
 	to ()
     {
-        var cameraLight = camera.sceneTransform.getTranslation();
+        const cameraLight = camera.toSceneTransform.getTranslation();
         for (n in toDraw) {
-            var mn = n as MeshNode;
-            var mesh = mn.mesh;
-            var indexBuffer = mesh.getIndexBuffer();
-            var vertexBuffer = mesh.getVertexBuffer();
-            var normalBuffer = mesh.getNormalBuffer();
+            const mn = n as MeshNode;
+            const mesh = mn.mesh;
+            const indexBuffer = mesh.getIndexBuffer();
+            const vertexBuffer = mesh.getVertexBuffer();
+            const normalBuffer = mesh.getNormalBuffer();
 	    var badtex = false;
 	    for (texb in mesh.getTextureBuffers()) {
 	    	if (texb.limit() == 0) {
@@ -1375,7 +1375,7 @@ class SceneRenderer {
 	    }
             var shader = mn.shader;
 	    //println("shader={shader}");
-            var texParams = 
+            const texParams = 
 		foreach (p in shader.getParameters() where p instanceof CGFXShader.SamplerParameter) p as CGFXShader.SamplerParameter;
             if (DEBUG_USE_DEFAULT_SHADER or shader == null) {
                 if (phongShader == null) {
@@ -1420,7 +1420,7 @@ class SceneRenderer {
 	    for (unit in [0..<texUnits]) {
 		const textureBuffer = mesh.getTextureBuffers()[shader.uvMap[unit]];
 		const coord = mesh.textureCoordinates[shader.uvMap[unit]];
-		//		println("unit={unit} coord={coord.id}");
+		//println("unit={unit} coord={coord.id}");
 		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
 		if (textureBuffer <> null) {
 		    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
@@ -1444,7 +1444,7 @@ class SceneRenderer {
                 gl.glDisable(GL.GL_TEXTURE_2D);
             }
             var allLights = if lights == [] then [cameraLight] else lights;
-            const bnds = mn.sceneBounds;
+            const bnds = mn.boundsInScene;
             allLights = f3.util.Sequences.sort(allLights, java.util.Comparator of Point3 {
                     override function compare from (x is Point3, y is Point3) to Integer {
                         const p0 = x;
@@ -1470,19 +1470,19 @@ class SceneRenderer {
 					 if (sizeof allLights > 2) 1 else 0,
 					 if (sizeof allLights > 3) 1 else 0);
                 }
-		if (mn.sceneTransform == null or camera.viewMatrix == null or camera.projectionMatrix == null) {
+		if (mn.toSceneTransform == null or camera.viewMatrix == null or camera.projectionMatrix == null) {
 		    println("bad transform {mn} {mn.id} or {camera} {camera.id}");
 		    continue;
 		}
 		///println("applying shader {shader} to {mn.id}");
 		shader.apply(mesh,
-                             mn.sceneTransform,
+                             mn.toSceneTransform,
                              camera.viewMatrix,
                              camera.projectionMatrix);
             } catch (e is java.lang.Exception) {
                 e.printStackTrace();
                 (shader = phongShader).apply(mesh,
-                                             mn.sceneTransform,
+                                             mn.toSceneTransform,
                                              camera.viewMatrix,
                                              camera.projectionMatrix);
 

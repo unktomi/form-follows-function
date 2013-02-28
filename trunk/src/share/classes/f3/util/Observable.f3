@@ -1,0 +1,486 @@
+package f3.util;
+import f3.util.Observer.DefaultObserver;
+
+public interface Observable of a is org.f3.runtime.Monad of (Observable, a) 
+{
+    public abstract function subscribe from (observer is Observer of a) to Disposable;
+
+    override public function map of b from (f is function from a to b) to Observable of b 
+    {
+	const self = this;
+	DefaultObservable of b 
+	{
+	    override function subscribe from (observer is Observer of b) to Disposable 
+	    {
+		self.subscribe(DefaultObserver of a {
+			override public function onNext from (x is a) to () 
+			{
+			    observer.onNext(f(x));
+			}
+			override public function onError from (e is java.lang.Exception) to () 
+			{
+			    observer.onError(e);
+			}
+			override public function onCompleted from () to () 
+			{
+			    observer.onCompleted();
+			}
+		    });
+	    }
+	}
+    }
+
+    public function flatmap of b from (f is function from a to Observable of b) to Observable of b 
+    {
+	const self = this;
+	DefaultObservable of b 
+	{
+	    override function subscribe from (observer is Observer of b) to Disposable 
+	    {
+		var toDispose is Disposable[];
+		const d = self.subscribe(DefaultObserver of a {
+			override public function onNext from (x is a) to () 
+			{
+			    const observable = f(x);
+			    insert observable.subscribe(observer) into toDispose; // !!
+			}
+			override public function onError from (e is java.lang.Exception) to () 
+			{
+			    observer.onError(e);
+			}
+			override public function onCompleted from () to () 
+			{
+			    observer.onCompleted();
+			}
+		    });
+		insert d into toDispose;
+		Disposable {
+		    override function dispose to () 
+		    {
+			for (x in toDispose) x.dispose()
+		    }
+		}
+	    }
+	}
+    }
+
+    public function take from (n is Integer) to Observable of a 
+    {
+	const self = this;
+	DefaultObservable of a {
+	    override function subscribe from (observer is Observer of a) to Disposable {
+		self.subscribe(Observer of a {
+			var taken = 0;
+			var completed = false;
+			override function onNext from (x is a) to () {
+			    if (++taken <= n) {
+				observer.onNext(x);
+			    }
+			    if (not completed) {
+				if (completed = taken > n) {
+				    observer.onCompleted();
+				}
+			    }
+			}
+			override function onError from (e is java.lang.Exception) to ()
+			{
+			    observer.onError(e);
+			}
+			override function onCompleted from () to ()
+			{
+			    if (not completed) {
+				completed = true;
+				observer.onCompleted();
+			    }
+			}
+		    });
+	    }
+	}
+    }
+
+    public function drop from (n is Integer) to Observable of a 
+    {
+	const self = this;
+	DefaultObservable of a {
+	    override function subscribe from (observer is Observer of a) to Disposable {
+		self.subscribe(Observer of a {
+			var taken = 0;
+			override function onNext from (x is a) to () {
+			    if (++taken > n) {
+				observer.onNext(x);
+			    }
+			}
+			override function onError from (e is java.lang.Exception) to ()
+			{
+			    observer.onError(e);
+			}
+			override function onCompleted from () to ()
+			{
+			    observer.onCompleted();
+			}
+		    });
+	    }
+	}
+    }
+
+    public function concat from (xs is Observable of a) to Observable of a {
+	const self = this;
+	DefaultObservable of a {
+	    override function subscribe from (observer is Observer of a) to Disposable {
+		var d2 is Disposable;
+		const d1 = self.subscribe (Observer of a {
+			override function onNext from (x is a) to () {
+			    observer.onNext(x);
+			}
+			override function onError from (e is java.lang.Exception) to ()
+			{
+			    observer.onError(e);
+			}
+			override function onCompleted from () to ()
+			{
+			    d2 = xs.subscribe(observer);
+			}
+		    });
+		Disposable {
+		    override function dispose {
+			d1.dispose();
+			d2.dispose();
+		    }
+		}
+	    }
+	}
+    }
+
+    public function merge from (xs is Observable of a) to Observable of a 
+    {
+	const self = this;
+	DefaultObservable of a {
+	    override function subscribe from (observer is Observer of a) to Disposable {
+		const ob = Observer of a {
+		    var completed is Integer = 0;
+		    override function onNext from (x is a) to () {
+			if (completed < 2) {
+			    observer.onNext(x);
+			}
+		    }
+		    override function onError from (e is java.lang.Exception) to ()
+		    {
+			completed = 2;
+			observer.onError(e);
+		    }
+		    override function onCompleted from () to ()
+		    {
+			if (++completed == 2) {
+			    observer.onCompleted();
+			}
+		    }
+		}
+		const d1 = self.subscribe(ob);
+		const d2 = xs.subscribe (ob);
+		Disposable {
+		    override function dispose {
+			d1.dispose();
+			d2.dispose();
+		    }
+		}
+	    }
+	}
+    }
+
+    public function buffer from (duration is Duration) to Observable of a 
+    {
+	buffer(Integer.MAX_VALUE, duration);
+    }
+
+    public function buffer from (count is Integer) to Observable of a 
+    {
+	buffer(count, Duration.INDEFINITE);
+    }
+
+    public function buffer from (count is Integer, duration is Duration) to Observable of a 
+    {
+	const self = this;
+	DefaultObservable of a {
+	    override function subscribe from (observer is Observer of a) to Disposable 
+	    {
+		var xs is (..a)[];
+		var expiry is Duration = 1ms * java.lang.System.currentTimeMillis() + duration;
+		const flush = function from (force is Boolean) to () 
+		{
+		    if (not force) {
+			const now = 1ms * java.lang.System.currentTimeMillis();
+			if (expiry < now and not force) {
+			    return;
+			}
+			expiry = now + duration;
+		    }
+		    const j = if (force) then xs.size() else count;
+		    const batch = xs[0..<j];
+		    xs[0..<j] = [];
+		    for (x in batch) {
+			observer.onNext(x);
+		    }
+		}
+		self.subscribe(Observer of a {
+			override function onNext from (x is a) to () {
+			    insert x into xs;
+			    flush(false);
+			}
+			override function onError from (e is java.lang.Exception) to ()
+			{
+			    flush(true);
+			    observer.onError(e);
+			}
+			override function onCompleted from () to ()
+			{
+			    flush(true);
+			    observer.onCompleted();
+			}
+		    });
+	    }
+	}
+    }
+
+    public function zip of (b, c) 
+	from (xs is Observable of b, 
+	      f is function from (a, b) to c) 
+	to Observable of c 
+    {
+	const self = this;
+	DefaultObservable of c {
+	    var ys is (..a)[];
+	    var zs is (..b)[];
+	    var completed = false;
+	    override function subscribe from (observer is Observer of c) to Disposable {
+		const flush = function from () to () {
+		    if (not completed) {
+			const j = java.lang.Math.min(ys.size(), zs.size());
+			const left = ys[0..<j];
+			const right = zs[0..<j];
+			ys[0..<j] = [];
+			zs[0..<j] = [];
+			for (i in [0..<j]) {
+			    observer.onNext(f(left[i], right[i]));
+			}
+		    }
+		}
+		const err = function from (e is java.lang.Exception) to () {
+		    completed = true;
+		    observer.onError(e);
+		}
+		const complete = function from () to () {
+		    completed = true;
+		    observer.onCompleted();
+		}
+		const d1 = self.subscribe(DefaultObserver of a {
+			override function onNext from (x is a) to () {
+			    if (not completed) {
+				insert x into ys;
+				flush();
+			    }
+			}
+			override function onError from (e is java.lang.Exception) to ()
+			{
+			    if (not completed) {
+				err(e);
+			    }
+			}
+			override function onCompleted from () to ()
+			{
+			    if (not completed) {
+				complete();
+			    }
+			}
+		    });
+		const d2 = xs.subscribe(DefaultObserver of b {
+			override function onNext from (x is b) to () {
+			    if (not completed) {
+				insert x into zs;
+				flush();
+			    }
+			}
+			override function onError from (e is java.lang.Exception) to ()
+			{
+			    if (not completed) {
+				err(e);
+			    }
+			}
+			override function onCompleted from () to ()
+			{
+			    if (not completed) {
+				complete();
+			    }
+			}
+		    });
+		Disposable {
+		    override function dispose {
+			d1.dispose();
+			d2.dispose();
+		    }
+		}
+	    }
+	}
+    }
+
+    public function of b fold from (z is b, f is function from (b, a) to b) to Observable of b 
+    {
+	const self = this;
+	DefaultObservable of b {
+	    override function subscribe from (observer is Observer of b) to Disposable {
+		self.subscribe(Observer of a {
+			var r = z;
+			override function onNext from (x is a) to () {
+			    observer.onNext(r = f(r, x));
+			}
+			override function onError from (e is java.lang.Exception) to ()
+			{
+			    observer.onError(e);
+			}
+			override function onCompleted from () to ()
+			{
+			    observer.onCompleted();
+			}
+		    });
+	    }
+	}
+    }
+}
+
+
+abstract class DefaultObservable of a is Observable of a, org.f3.runtime.Monad of (Observable, a) 
+{
+}
+
+public function observe of a
+    from (xs is (..a)[]) 
+    to Observable of a 
+{
+    DefaultObservable of a {
+	override public function subscribe from (observer is Observer of a) to Disposable 
+	{
+	    foreach (x in xs) {
+		observer.onNext(x);
+	    }
+	    observer.onCompleted();
+	    Disposable.empty();
+	}
+    }
+}
+
+public function observe of (f is org.f3.runtime.Functor, a) 
+    from (xs is org.f3.runtime.Functor of (f, a)) 
+    to Observable of a 
+{
+    DefaultObservable of a {
+	override public function subscribe from (observer is Observer of a) to Disposable 
+	{
+	    foreach (x in xs) {
+		observer.onNext(x);
+	    }
+	    observer.onCompleted();
+	    Disposable.empty();
+	}
+    }
+}
+
+public function return of a from (x is a) to Observable of a 
+{
+    DefaultObservable of a {
+	override public function subscribe from (observer is Observer of a) to Disposable 
+	{
+	    observer.onNext(x);
+	    observer.onCompleted();
+	    Disposable.empty();
+	}
+    }
+}
+
+public function error of a 
+       from (e is java.lang.Exception) 
+       to Observable of a 
+{
+    DefaultObservable of a {
+	override public function subscribe from (observer is Observer of a) to Disposable 
+	{
+	    observer.onError(e);
+	    Disposable.empty();
+	}
+    }
+}
+
+public function never of a to Observable of a {
+    DefaultObservable of a {
+	override public function subscribe from (observer is Observer of a) to Disposable 
+	{
+	    Disposable.empty();
+	}
+    }
+}
+
+public function empty of a to Observable of a 
+{
+    DefaultObservable of a {
+	override public function subscribe from (observer is Observer of a) to Disposable 
+	{
+	    observer.onCompleted();
+	    Disposable.empty();
+	}
+    }
+}
+
+public function every from (dur is Duration) to Observable of Integer {
+    DefaultObservable of Integer {
+	public override function subscribe from (observer is Observer of Integer) to Disposable {
+	    var nextTime is Duration;
+	    var counter = 0;
+	    const timeline = f3.media.scene.Timeline {
+		override function setPlayhead from (t is Duration) to () {
+		    if (nextTime == 0s) nextTime = t;
+		    if (not paused) {
+			if (nextTime <= t) {
+			    nextTime += dur;
+			    observer.onNext(counter++);
+			}
+		    }
+		}
+	    }
+	    Disposable {
+		override function dispose {
+		    timeline.paused = true;
+		}
+	    }
+	}
+    }
+}
+
+class Println of a is DefaultObserver of a
+{
+    override function onNext from (x is a) to () {
+	println(x);
+    }
+}
+
+function Println of a to Println of a {
+    Println of  a {
+    }
+}
+
+public function run 
+{
+    const j =
+	foreach (x in Observable.return(1), y in Observable.return(2)) x + y;
+    j.subscribe(Println of Integer());
+    
+    const k = observe([1..10]);
+    k.take(6).subscribe(Println of Integer());
+
+    const l = foreach (x in observe(List.asList([1..10]))) "#{x}";
+    l.drop(3).subscribe(Println of String());
+
+    const e = every(1s);
+    e.subscribe(Println of Integer());
+    for (i in [1..100]) {
+	f3.media.scene.MasterTimeline.setPlayhead(0.5s * i);
+    }
+}
+

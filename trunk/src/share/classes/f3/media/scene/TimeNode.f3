@@ -11,8 +11,8 @@ public abstract class TimeNode is Foldable of TimeNode
     public var parent is TimeNode;
 
     public readonly var pickable is Boolean = true;
-    public readonly var scenePickable is Boolean = 
-	bind if parent == null then pickable else pickable and parent.scenePickable;
+    public readonly var pickableInScene is Boolean = 
+	bind if parent == null then pickable else pickable and parent.pickableInScene;
 
     public var playTime is Duration = 0s;
     public var playRate is Number = 1.0;
@@ -26,11 +26,11 @@ public abstract class TimeNode is Foldable of TimeNode
     public readonly var transform is TimeMat =
 	bind TimeMat { time: playTime, rate: playRate }
 
-    public readonly var sceneTransform is TimeMat = 
-	bind if (parent == null) then transform else parent.sceneTransform * transform;
+    public readonly var toSceneTransform is TimeMat = 
+	bind if (parent == null) then transform else parent.toSceneTransform * transform;
 
     public readonly var bounds is Interval = bind transform * loopedPlayRange;
-    public readonly var sceneBounds is Interval = bind parent.sceneTransform * bounds;
+    public readonly var boundsInScene is Interval = bind parent.toSceneTransform * bounds;
 
     public readonly var loopedPlayRange = 
 	bind if (contentPlayRange == null) 
@@ -50,7 +50,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public var playRange is Interval;
 
     public var paused is Boolean;
-    public readonly var scenePaused is Boolean = bind paused or parent.scenePaused;
+    public readonly var pausedInScene is Boolean = bind paused or parent.pausedInScene;
 
     public readonly var currentTime is Duration; // "now" in parent space
     public readonly var localTime is Duration; // "now" in content space
@@ -85,7 +85,7 @@ public abstract class TimeNode is Foldable of TimeNode
 	to ()
     {
         var picked = false;
-        if (scenePickable) {
+        if (pickableInScene) {
             picked = bounds.intersects(parentTime);
             if (picked) {
                 add(this);

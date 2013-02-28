@@ -1,0 +1,40 @@
+package f3.util;
+
+public class Subject of a is Observable of a, Observer of a {
+
+    var observers is java.util.Map of (Observer of a, null);
+
+    public override function onNext from (x is a) to ()
+    {
+	if (observers <> null) 
+	    for (ob in observers.keySet()) 
+		ob.onNext(x)
+    }
+
+    public override function onError from (x is java.lang.Exception) to ()
+    {
+	if (observers <> null) 
+	    for (ob in observers.keySet()) 
+		ob.onError(x);
+    }
+
+    public override function onCompleted from () to ()
+    {
+	if (observers <> null) 
+	    for (ob in observers.keySet()) 
+		ob.onCompleted();
+    }
+
+    public override function subscribe from (x is Observer of a) to Disposable 
+    {
+	if (observers == null) 
+	    observers = new java.util.WeakHashMap of (Observer of a, null);
+	observers.put(x, null);
+	Disposable {
+	    override public function dispose 
+	    {
+		observers.remove(x)
+	    }
+	}
+    }
+}

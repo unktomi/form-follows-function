@@ -197,7 +197,7 @@ public abstract class ExaminerViewer extends MouseInputHandler {
     }
 
     package function viewAll from (object is Node) to () {
-        const bounds = object.sceneBounds;
+        const bounds = object.boundsInScene;
         if (bounds == null) { return }
         const newPos = getCameraViewAllPosition(bounds);
         if (newPos == null) { return }

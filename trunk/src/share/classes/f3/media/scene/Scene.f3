@@ -27,10 +27,10 @@ public class Scene
     public readonly var root is Node = {
 	const scene = this;
 	Group {
-	    override var sceneVisible = bind visible and scene.visible;
+	    override var visibleInScene = bind visible and scene.visible;
 	    override var id = bind "{scene.id}#root";
-	    override var parentSceneTransform = Mat4.<<1>>;
-	    override var scenePickable = true;
+	    override var parentToSceneTransform = Mat4.<<1>>;
+	    override var pickableInScene = true;
 	    content: bind scene.content;
 	}
     }
@@ -85,14 +85,14 @@ public class Scene
 		      function from (_ is (), n is Node) to () 
 		      {
 			  if (n is MeshNode and 
-			      n.sceneVisible and
-			      n.scenePickable and
-			      n.sceneBounds.intersects(ray)) 
+			      n.visibleInScene and
+			      n.pickableInScene and
+			      n.boundsInScene.intersects(ray)) 
 			      {
 				  const mesh = (n as MeshNode).mesh;
-				  const localRay = n.sceneTransform.inverse() * ray;
+				  const localRay = n.toSceneTransform.inverse() * ray;
 				  const points = mesh.intersect(localRay);
-				  const nearest is Tuple4;
+				  var nearest is Tuple4;
 				  for (i in points) {
 				      if (nearest == null or i.x < nearest.x) {
 					  nearest = i;
@@ -122,7 +122,7 @@ public class Scene
 					  v0 * w.x + 
 					  v1 * w.y + 
 					  v2 * w.z;
-				      const worldPoint = n.sceneTransform * (Point3.<<0>> + point);
+				      const worldPoint = n.toSceneTransform * (Point3.<<0>> + point);
 				      insert Pick 
 				      {
 					  node: n;
@@ -138,7 +138,8 @@ public class Scene
 			      }
 		      });
 	result = f3.util.Sequences.sort(result, java.util.Comparator of Pick {
-		override function compare from (p0 is Pick , p1 is Pick) to Integer  {
+		override function compare from (p0 is Pick , p1 is Pick) to Integer 
+		{
 		    java.lang.Math.signum(p0.t - p1.t) as Integer;
 		}
 	});
@@ -261,25 +262,31 @@ public class Scene
 
     public readonly var cursor is Cursor;
 
-    public function injectKeyDown from (event is KeyboardEvent) to () {
+    public function injectKeyDown from (event is KeyboardEvent) to () 
+    {
         focus.getKeyboardInputHandler().onKeyDown(event);
+	focus.observeKeyDown().onNext(event);
     }
 
-    public function injectKeyUp from (event is KeyboardEvent) to () {
+    public function injectKeyUp from (event is KeyboardEvent) to () 
+    {
         focus.getKeyboardInputHandler().onKeyUp(event);
+	focus.observeKeyUp().onNext(event);
     }
 
-    public function injectKeyInput from (event is KeyboardEvent) to () {
+    public function injectKeyInput from (event is KeyboardEvent) to () 
+    {
         focus.getKeyboardInputHandler().onKeyInput(event);
+	focus.observeKeyInput().onNext(event);
     }
 
-    public function injectMouseMove from (event is MouseEvent) to () {
+    public function injectMouseMove from (event is MouseEvent) to () 
+    {
         updateMouse(event.screenx, event.screeny);
     }
 
     public function injectMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
-	println("inject mouse down => {underMouse}");
         var focusSet = false;
         for (p in underMouse) {
             if (not focusSet and (p.node instanceof Focusable)) {
@@ -338,7 +345,6 @@ public class Scene
         p.node.setContainsPointer(true);
         const hs = getMouseInputHandlers(p);
         if (hs <> []) {
-	println("entering {p.node}");
             const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseEnter(e);
@@ -346,7 +352,7 @@ public class Scene
                     break;
                 }
             }
-        }
+        } 
     }
 
     function doMouseLeave from (p is Pick, sceneEvent is MouseEvent) to ()
@@ -377,6 +383,10 @@ public class Scene
                 }
             }
         }
+	if (p.node.mouseUp <> null) {	
+            const e = makeMouseEvent(null, p, sceneEvent);
+	    p.node.mouseUp.onNext(e);
+	}
     }
 
     function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to ()
@@ -392,6 +402,10 @@ public class Scene
                 }
             }
         }
+	if (p.node.mouseDown <> null) {	
+            const e = makeMouseEvent(null, p, sceneEvent);
+	    p.node.mouseDown.onNext(e);
+	}
     }
 
     function getDrag from (p is Pick) to Pick 
@@ -417,13 +431,17 @@ public class Scene
                 }
             }
         }
+	if (p.node.mouseMove <> null) {	
+            const e = makeMouseEvent(null, p, sceneEvent);
+	    p.node.mouseMove.onNext(e);
+	}
     }
 
     function doMouseDrag from (p is Pick, event is MouseEvent) to () 
     {   
         const hs = getMouseInputHandlers(p);
         if (hs <> []) {
-            const translation = p.node.sceneTransform.getTranslation();
+            const translation = p.node.toSceneTransform.getTranslation();
             const ray = camera.getPickRay(event.screenx, event.screeny);
 	    const normal = ray.direction.negate();
             const plane = Plane { 

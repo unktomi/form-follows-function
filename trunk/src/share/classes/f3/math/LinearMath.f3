@@ -141,6 +141,11 @@ public function vector
 }
 
 
+public function matrix(r is Quat, t is Point3) to Mat4 
+{
+    r.toMat4(t);
+}
+
 // row major
 public function matrix 
     from (xx is Number, xy is Number, xz is Number, xw is Number,
@@ -171,7 +176,7 @@ public function translate
 }
 
 public function translate 
-    from (v is Vec3) 
+    from (v is Tuple3) 
     to Mat4 
 {
     translate(v.x, v.y, v.z);

@@ -1999,6 +1999,7 @@ class MCGFXShader is MAbstractShader
 		    const paramName = conn.targetPath;
 		    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
 		    const image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
+		    println("setting {paramName} to {file.ftn} p={p}");
 		    p.set(image);
 		}
 	    }
@@ -2030,7 +2031,7 @@ class MCGFXShader is MAbstractShader
 	    if (attr.value <> null) {
 		var name = attr.shortName;
 		var value = attr.value;
-		//println("setting {name} {attr.type} to {value}");
+		println("setting {name} {attr.type} to {value}");
 		try {
 		    shader.setParameter(name, value);
 		} catch (e is java.lang.Exception) {
@@ -2091,7 +2092,7 @@ class MCGFXVector is MSpatial {
 	const vecNode = CGFXVectorNode {
 	    id: name;
 	    wvw: wvw;
-	    wv: bind n.sceneTransform.getTranslation();
+	    wv: bind n.toSceneTransform.getTranslation();
 	}
 	m.spatialMap.put(this, vecNode);
 	for (conn in connectionsFromThis.get("wv")) {

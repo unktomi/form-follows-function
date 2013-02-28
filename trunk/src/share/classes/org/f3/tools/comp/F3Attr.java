@@ -3362,12 +3362,13 @@ public class F3Attr implements F3Visitor {
 	    localEnv.info.varArgs = false;
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
 	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth + " => "+mtype);
-	    if (false) {
-		if (!(mtype instanceof FunctionType) &&
+	    if (true) {
+		if (!(mtype instanceof ErrorType) &&
+		    !(mtype instanceof FunctionType) &&
 		    !(mtype instanceof MethodType) &&
 		    !(mtype instanceof ForAll)) {
 		    Name invoke = names.fromString("invoke");
-		    F3Expression invokeTree = f3make.Select(tree.meth, invoke, true);
+		    F3Expression invokeTree = f3make.at(tree.meth.pos).Select(tree.meth, invoke, true);
 		    mtype = attribExpr(invokeTree, localEnv, mpt);
 		    if ((mtype instanceof FunctionType) ||
 			(mtype instanceof MethodType) ||
@@ -3650,13 +3651,15 @@ public class F3Attr implements F3Visitor {
 			List<Type> inferred = t.getParameterTypes();
 			System.err.println("inferred="+inferred);
 			for (F3Var var: val.funParams) {
-			    Type ip = inferred.head;
-			    System.err.println("inferred type="+ip);
-			    //var.init = f3make.Type(ip);
-			    var.type = ip;
-			    System.err.println("inferred type exp="+var.init);
-			    //attribVar(var, env);
-			    inferred = inferred.tail;
+			    if (inferred != null) {
+				Type ip = inferred.head;
+				System.err.println("inferred type="+ip);
+				//var.init = f3make.Type(ip);
+				var.type = ip;
+				System.err.println("inferred type exp="+var.init);
+				//attribVar(var, env);
+				inferred = inferred.tail;
+			    }
 			}
 			val.type = t;
 			finishFunctionDefinition(val.definition, env);

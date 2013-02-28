@@ -30,6 +30,10 @@ public class Mat4 is F3Value
 	     })
     }
 
+    public function getRotation to Quat {
+	Quat.Quat(this);
+    }
+
     public function getTranslation to Point3 
     {
     	Point3 {

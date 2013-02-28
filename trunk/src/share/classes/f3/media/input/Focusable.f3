@@ -1,4 +1,5 @@
 package f3.media.input;
+import f3.util.*;
 
 public interface Focusable {
     public readonly var focused is Boolean;
@@ -10,5 +11,30 @@ public interface Focusable {
             return this as KeyboardInputHandler;
         }
         return null;
+    }
+
+    var keyDown is Subject of KeyboardEvent;
+    var keyUp is Subject of KeyboardEvent;
+    var keyInput is Subject of KeyboardEvent;
+
+    public function observeKeyDown to Subject of KeyboardEvent 
+    {
+	if (keyDown == null) 
+	    then keyDown = Subject of KeyboardEvent {}
+	else keyDown;
+	
+    }
+    public function observeKeyUp to Subject of KeyboardEvent 
+    {
+	if (keyUp == null) 
+	    then keyUp = Subject of KeyboardEvent {}
+	else keyUp;
+    }
+
+    public function observeKeyInput to Subject of KeyboardEvent 
+    {
+	if (keyInput == null) 
+	    then keyInput = Subject of KeyboardEvent {}
+	else keyInput;
     }
 }
