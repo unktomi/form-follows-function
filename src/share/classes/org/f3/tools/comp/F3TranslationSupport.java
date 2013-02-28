@@ -525,10 +525,14 @@ public abstract class F3TranslationSupport {
                     texp = makeAccessExpression(diagPos, t.tsym, false);
                 }
                 if (!t.getTypeArguments().isEmpty()) {
+		    //if (!makeIntf) {
+			//System.err.println("type="+t);
+			//Thread.currentThread().dumpStack();
+		    //}
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {
 			//System.err.println("ta="+ta);
-                        targs = targs.append(makeTypeTreeInner01(diagPos, ta, makeIntf, expandTypeCons));
+                        targs = targs.append(makeTypeTreeInner01(diagPos, ta, /*makeIntf*/ true, expandTypeCons));
                    }
 		    //System.err.println(t.getTypeArguments()+" => "+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);

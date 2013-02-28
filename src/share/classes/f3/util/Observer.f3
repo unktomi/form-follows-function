@@ -1,0 +1,37 @@
+package f3.util;
+
+public interface Observer of a 
+{
+    public function onNext from (x is a) to () {}
+    public function onError from (e is java.lang.Exception) to () {}
+    public function onCompleted from () to () {}
+/*
+    // contravariant map
+    public function contramap of b from (f is function from b to a) to Observer of b 
+    {
+	const self = this;
+	DefaultObserver of b 
+	{
+	    public override function onNext from (x is b) to () 
+	    {
+		self.onNext(f(x))
+	    }
+	    public override function onError from (e is java.lang.Exception) to () 
+	    {
+		self.onError(e);
+	    }
+	    public override function onCompleted from () to () 
+	    {
+		self.onCompleted();
+	    }
+	}
+    }
+*/
+}
+
+public abstract class DefaultObserver of a is Observer of a 
+{
+}
+
+
+

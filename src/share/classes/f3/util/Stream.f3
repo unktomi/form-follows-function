@@ -9,10 +9,16 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
     public readonly var now is a;
     public readonly var later is Stream of a;
 
-    public bound function of b foldRight from (z is b, f is function from (a, b) to b) to b 
+    public bound function of b fold
+	from (z is b, f is function from (b, a) to b) 
+	to Stream of b 
     {
-        var xs = later.foldRight(z, f);
-	var workaround = f(now, xs)
+	const self = this;
+	readonly var now = bind f(z, self.now);
+	Stream of b {
+	    now: bind now;
+	    later: bind later.fold(now, f);
+	}
     }
 
     // zip lifts a binary operator to one over Streams

@@ -59,10 +59,10 @@ public abstract class Camera is TransformNode
     public readonly var aspectRatio is Number = bind if (height == 0) then 0.0 else width / height;
     public readonly var projectionMatrix is Mat4 = Mat4.<<1>> on invalidate 
     {
-        needsDraw = true;
+	redraw();
     }
     public readonly var projectionInverse is Mat4 = bind projectionMatrix.inverse();
-    public readonly var viewInverse is Mat4 = bind sceneTransform;
+    public readonly var viewInverse is Mat4 = bind toSceneTransform;
     public readonly var viewMatrix is Mat4 = bind viewInverse.inverse();
     public readonly var viewProjection is Mat4 = bind projectionMatrix * viewMatrix;
     public readonly var viewProjectionInverse is Mat4 = bind viewProjection.inverse();
@@ -77,11 +77,15 @@ public abstract class Camera is TransformNode
         Bounds.transformBounds(mat, Bounds.UNIT);
     }
 
+    override var toSceneTransform on invalidate 
+    {
+	redraw();
+    }
+
     public readonly var needsDraw is Boolean = true;
 
-    override var sceneTransform on invalidate 
-    {
-        needsDraw = true;
+    function redraw {
+	needsDraw = true;
     }
 
     public function contains 
@@ -250,14 +254,14 @@ public abstract class Camera is TransformNode
 	return null;
     }
 
-    public readonly var sceneDirection = bind sceneTransform * Vec3.Z_AXIS;
+    public readonly var directionInScene = bind toSceneTransform * Vec3.Z_AXIS;
 
     public function distanceTo
 	from (scenePoint is Point3) 
 	to Number 
     {
-	const dir = sceneDirection;
-        const pos = sceneTransform.getTranslation() - scenePoint;
+	const dir = directionInScene;
+        const pos = toSceneTransform.getTranslation() - scenePoint;
         (dir * Math.abs(pos.dot(dir) / dir.dot(dir))).length();
     }
 }

@@ -517,7 +517,7 @@ public class F3Symtab extends Symtab {
 
     Type retType(Type rtype) {
 	if (rtype instanceof WildcardType) {
-	    Thread.currentThread().dumpStack();
+	    //Thread.currentThread().dumpStack();
 	    return rtype;
 	}
 	Type t = rtype;
@@ -528,7 +528,7 @@ public class F3Symtab extends Symtab {
 
     Type argType(Type rtype) {
 	if (rtype instanceof WildcardType) {
-	    Thread.currentThread().dumpStack();
+	    //Thread.currentThread().dumpStack();
 	    return rtype;
 	}
 	Type t = rtype;

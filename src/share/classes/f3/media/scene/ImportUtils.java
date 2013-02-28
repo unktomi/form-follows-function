@@ -344,11 +344,12 @@ public class ImportUtils
 
 
     static void addTangentFrame(Map<String, Matrix3> map,
-                         Matrix3 tmp,
-                         Vector3 position,
-                         Vector3 normal,
-                         Vector3 tangent,
-                         Vector3 binormal) {
+				Matrix3 tmp,
+				Vector3 position,
+				Vector3 normal,
+				Vector3 tangent,
+				Vector3 binormal) 
+    {
         String key = tangentFrameKey(position, normal);
         Matrix3 mat = map.get(key);
         if (mat == null) {

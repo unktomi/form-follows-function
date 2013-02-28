@@ -1,6 +1,8 @@
 package f3.media.scene;
 import f3.math.*;
 import org.f3.runtime.*;
+import f3.util.*;
+import f3.media.input.*;
 
 // A Node in the 3d spatial affine transform hierarchy
 
@@ -13,25 +15,25 @@ public abstract class Node is Foldable of Node
     public var cursor is Cursor;
     public readonly var parent is Node;
     public var visible is Boolean = true;
-    public readonly var sceneVisible is Boolean =  
-	bind visible and parent.sceneVisible;
+    public readonly var visibleInScene is Boolean =  
+	bind visible and parent.visibleInScene;
 
-    public readonly var parentSceneTransform is Mat4 = 
-	bind if parent == null then Mat4.<<1>> else parent.sceneTransform;
+    public readonly var parentToSceneTransform is Mat4 = 
+	bind if parent == null then Mat4.<<1>> else parent.toSceneTransform;
     public readonly var transform is Mat4 = Mat4.<<1>>;
-    public readonly var sceneTransform is Mat4 = 
-	bind parentSceneTransform * transform;
+    public readonly var toSceneTransform is Mat4 = 
+	bind parentToSceneTransform * transform;
 
     public readonly var bounds is Bounds = bind transform * contentBounds;
-    public readonly var sceneBounds is Bounds = bind parentSceneTransform * bounds;
+    public readonly var boundsInScene is Bounds = bind parentToSceneTransform * bounds;
     public readonly var contentBounds is Bounds;
 
     public readonly var blocksPointer is Boolean = false;
     public readonly var containsPointer is Boolean;
     protected function setContainsPointer from (value is Boolean) to () { containsPointer = value; }
     public readonly var pickable is Boolean = true;
-    public readonly var scenePickable is Boolean = 
-	bind pickable and parent.scenePickable;
+    public readonly var pickableInScene is Boolean = 
+	bind pickable and parent.pickableInScene;
 
     override public function foldLeft of b
 	from (z is b, f is function from (b, Node) to b) 
@@ -50,6 +52,31 @@ public abstract class Node is Foldable of Node
     public function updateParent from () to () { update() }
     protected function setParent from (n is Node) to () { parent = n }
     public function update from () to () {}
+
+    protected var mouseDown is Subject of MouseEvent;
+    protected var mouseUp is Subject of MouseEvent;
+    protected var mouseMove is Subject of MouseEvent;
+
+    public function observeMouseDown to Observable of MouseEvent 
+    {
+	if (mouseDown == null) 
+	    then mouseDown = Subject of MouseEvent {}
+	else mouseDown;
+	
+    }
+    public function observeMouseUp to Observable of MouseEvent 
+    {
+	if (mouseUp == null) 
+	    then mouseUp = Subject of MouseEvent {}
+	else mouseUp;
+    }
+
+    public function observeMouseMove to Observable of MouseEvent 
+    {
+	if (mouseMove == null) 
+	    then mouseMove = Subject of MouseEvent {}
+	else mouseMove;
+    }
 }
 
 

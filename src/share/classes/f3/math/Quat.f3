@@ -196,6 +196,11 @@ public class Quat is Tuple4
 
     public function toMat4 to Mat4 
     {
+	toMat4(Point3.<<0>>);
+    }   
+
+    public function toMat4 from (t is Tuple3) to Mat4 
+    {
 	const norm = lengthSquared();
         const s = if (norm > 0.0) then 2.0 / norm else 0.0;
 
@@ -215,9 +220,9 @@ public class Quat is Tuple4
         const zw = w * zs;
 
         // using s=2/norm (instead of 1/norm) saves 9 multiplications by 2 here                    
-	LinearMath.matrix(1.0 - (yy + zz), xy - zw, xz + yw, 0,
-			  xy + zw, 1.0 - (xx + zz), yz - xw, 0,
-			  xz - yw, yz + xw, 1.0 - (xx + yy), 0,
+	LinearMath.matrix(1.0 - (yy + zz), xy - zw, xz + yw, t.x,
+			  xy + zw, 1.0 - (xx + zz), yz - xw, t.y,
+			  xz - yw, yz + xw, 1.0 - (xx + yy), t.z,
 			  0, 0, 0, 1);
     }
 }
