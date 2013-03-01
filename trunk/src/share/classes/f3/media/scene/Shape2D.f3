@@ -79,10 +79,12 @@ public function createMesh
     }
 }
 
-public interface Paint {
+public interface Paint 
+{
 }
 
-public class ColorPaint extends Paint {
+public class ColorPaint is Paint 
+{
     public var color is Color = Color.WHITE;
 }
 
@@ -132,7 +134,7 @@ public class LinearGradient is GradientPaint
     }
 }
 
-public class RadialGradient extends GradientPaint 
+public class RadialGradient is GradientPaint 
 {
     public var focusX is Number = 0.0;
     public var focusY is Number = 0.0;
@@ -216,24 +218,28 @@ public abstract class Shape2D is Node
     }
 }
 
-public class MeshNode2D is MeshNode {
+public class MeshNode2D is MeshNode 
+{
     public readonly var paint is Paint;
     public readonly var path is Path2D;
     override var mesh = bind path.createMesh();
 }
 
-public class Circle is Shape2D {
+public class Circle is Shape2D 
+{
     public var radius: Number = 1; 
     override var path = bind ellipse(factory, centerX-radius, centerY-radius, radius*2, radius*2);
 }
 
-public class Ellipse is Shape2D {
+public class Ellipse is Shape2D 
+{
     public var radiusX: Number = 1;
     public var radiusY: Number = 1;
     override var path = bind ellipse(factory, centerY-radiusX, centerX-radiusY, radiusX*2, radiusY*2);
 }
 
-public class Rectangle is Shape2D {
+public class Rectangle is Shape2D 
+{
     public var width: Number = 1;
     public var height: Number = 1;
     override var path = bind rect(factory, centerX-width/2, centerY-height/2, width, height);

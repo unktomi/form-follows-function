@@ -1,9 +1,28 @@
 package f3.util;
 import f3.util.Observer.DefaultObserver;
+import f3.lang.Ref;
 
 public interface Observable of a is org.f3.runtime.Monad of (Observable, a) 
 {
     public abstract function subscribe from (observer is Observer of a) to Disposable;
+
+    public function bind from (p is Ref of a) to Disposable 
+    {
+	subscribe(Observer of a {
+		override function onNext from (x is a) to () 
+		{
+		    p.set(x);
+		}
+		override function onError from (e is java.lang.Exception) to () 
+		{
+		    //
+		}
+		override function onCompleted from () to () 
+		{
+		    //
+		}
+	    });
+    }
 
     override public function map of b from (f is function from a to b) to Observable of b 
     {
@@ -64,6 +83,63 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
+    public function takeUntil of b (sig is Observable of b) to Observable of a 
+    {
+	until(sig, true);
+    }
+
+    public function dropUntil of b (sig is Observable of b) to Observable of a 
+    {
+	until(sig, false);
+    }
+
+    function until of b (sig is Observable of b, taking is Boolean) to Observable of a 
+    {
+	DefaultObservable of a {
+	    override function subscribe from (ob is Observer of a) to Disposable {
+		var enabled is Boolean = taking;
+		const sub1 = subscribe(Observer of a {
+			override public function onNext from (x is a) to () {
+			    if (enabled) {
+				ob.onNext(x)
+			    }
+			}
+			override public function onError from (e is java.lang.Exception) to () {
+			    ob.onError(e);
+			}
+			override public function onCompleted from () to () {
+			    ob.onCompleted();
+			}
+		    });
+		var sub2 is Disposable;
+		const unSub2 = function from () to () {
+		    if (sub2 <> null) {
+			sub2.dispose();
+		    }
+		    sub2 = null;
+		}
+		sub2 = sig.subscribe(Observer of b {
+			override public function onNext from (x is b) to () {
+			    enabled = not taking;
+			    unSub2();
+			}
+			override public function onError from (e is java.lang.Exception) to () {
+			    unSub2();
+			}
+			override public function onCompleted from () to () {
+			    unSub2();
+			}
+		    });
+		Disposable {
+		    override function dispose {
+			sub1.dispose();
+			unSub2();
+		    }
+		}
+	    }
+	}
+    }
+
     public function take from (n is Integer) to Observable of a 
     {
 	const self = this;
@@ -98,6 +174,7 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
+
     public function drop from (n is Integer) to Observable of a 
     {
 	const self = this;
@@ -121,6 +198,11 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 		    });
 	    }
 	}
+    }
+
+    public function followedBy(xs is Observable of a) to Observable of a 
+    {
+	take(1).concat(xs);
     }
 
     public function concat from (xs is Observable of a) to Observable of a {

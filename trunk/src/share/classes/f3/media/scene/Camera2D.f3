@@ -6,7 +6,8 @@ import java.lang.Math;
     is at the upper right. Its primary characteristic being that world space and
     screen space are identical */
 
-public class Camera2D extends Camera {
+public class Camera2D is Camera 
+{
     override var near = -1;
     override var far = 1;
     override var projectionMatrix = bind ortho(near, far, 0, width, 0, height);

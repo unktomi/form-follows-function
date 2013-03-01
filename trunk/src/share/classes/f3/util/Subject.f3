@@ -27,8 +27,9 @@ public class Subject of a is Observable of a, Observer of a {
 
     public override function subscribe from (x is Observer of a) to Disposable 
     {
-	if (observers == null) 
+	if (observers == null) {
 	    observers = new java.util.WeakHashMap of (Observer of a, null);
+	}
 	observers.put(x, null);
 	Disposable {
 	    override public function dispose 
