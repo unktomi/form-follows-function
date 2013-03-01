@@ -6,7 +6,8 @@ import java.lang.Math;
     screen, the positive X axis goes to the right, and the positive Y
     axis goes up. */
 
-public class OrthographicCamera extends Camera {
+public class OrthographicCamera is Camera 
+{
     /** The height of the view volume this camera is viewing. Note
         that this is different than the height of the window the
         camera is associated with. By default an OrthographicCamera

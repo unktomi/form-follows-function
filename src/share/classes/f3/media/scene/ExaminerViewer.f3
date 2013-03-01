@@ -7,7 +7,7 @@ import java.lang.Math;
 /** Implements interactive camera control in the same style as Maya
     and similar style as Open Inventor. */
 
-public abstract class ExaminerViewer extends MouseInputHandler {
+public abstract class ExaminerViewer is MouseInputHandler {
 
     public abstract function getCameraOrientation to Quat;
     public abstract function getCameraPosition to Point3;

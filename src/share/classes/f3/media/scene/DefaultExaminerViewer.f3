@@ -3,7 +3,7 @@ import f3.math.*;
 import f3.math.LinearMath.*;
 import java.lang.Math;
 
-public class DefaultExaminerViewer extends ExaminerViewer {
+public class DefaultExaminerViewer is ExaminerViewer {
 
     public var camera is PerspectiveCamera;
     
