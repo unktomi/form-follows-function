@@ -1,0 +1,12 @@
+package f3.util;
+
+public interface Disposable {
+    public abstract function dispose to ();
+}
+
+
+const Empty = Disposable { override function dispose to () {} }
+
+public function empty() {
+    Empty;
+}
