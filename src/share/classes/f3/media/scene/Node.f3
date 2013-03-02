@@ -56,6 +56,7 @@ public abstract class Node is Foldable of Node
     protected var mouseDown is Subject of MouseEvent;
     protected var mouseUp is Subject of MouseEvent;
     protected var mouseMove is Subject of MouseEvent;
+    protected var mouseWheel is Subject of MouseEvent;
 
     public function observeMouseDown to Observable of MouseEvent 
     {
@@ -77,6 +78,14 @@ public abstract class Node is Foldable of Node
 	if (mouseMove == null) 
 	    then mouseMove = Subject of MouseEvent {}
 	else mouseMove;
+    }
+
+    public function observeMouseWheel to Observable of MouseEvent 
+    {
+	if (mouseWheel == null) 
+	    then mouseWheel = Subject of MouseEvent {}
+	else mouseWheel;
+	
     }
 
     public function observeMouseDrag to Observable of MouseEvent 

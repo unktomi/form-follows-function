@@ -1,0 +1,6 @@
+package f3.media.input;
+import f3.math.Tuple2;
+
+public class MouseWheelEvent is MouseEvent {
+    public const scroll is Tuple2;
+}

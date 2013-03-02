@@ -8,4 +8,5 @@ public interface MouseInputHandler
     public function onMouseDrag from (event is MouseEvent) to () {}
     public function onMouseEnter from (event is MouseEvent) to () {}
     public function onMouseLeave from (event is MouseEvent) to () {}
+    public function onMouseWheel from (event is MouseWheelEvent) to () {}
 }

@@ -56,6 +56,18 @@ public abstract class ExaminerViewer is MouseInputHandler {
     public var mouseX is Number;
     public var mouseY is Number;
 
+    override function onMouseWheel from (event is MouseWheelEvent) to () 
+    {
+	const ori = getCameraOrientation();
+	const diff = dollySpeed * (-1.0 * event.scroll.y) / 100.0;
+	var newCenterDistance = centerDistance + diff;
+	if (newCenterDistance < minCenterDistance) {
+	    newCenterDistance = minCenterDistance;
+	}
+	centerDistance = newCenterDistance;
+	updateCameraPosition(ori);
+    }
+
     override function onMouseDown from (event is MouseEvent) to () {
         for (b in event.buttons) {
             mouseDown(b, event.ctrlKey, event.altKey);

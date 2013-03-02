@@ -390,6 +390,7 @@ extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_injectMouseDown
   p->webView->injectMouseDown(mb);
 }
 
+
 /*
  * Class:     org_f3_media_web_awesomium_Browser
  * Method:    injectMouseUp
@@ -412,6 +413,12 @@ extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_injectMouseMove
 (JNIEnv *, jclass, jlong handle, jint x, jint y) {
   MyWebViewListener *p = (MyWebViewListener*)handle;
   p->webView->injectMouseMove(x, y);
+}
+
+extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_injectMouseWheel
+(JNIEnv *, jclass, jlong handle, jint x, jint y) {
+  MyWebViewListener *p = (MyWebViewListener*)handle;
+  p->webView->injectMouseWheel(x, y);
 }
 
 /*
