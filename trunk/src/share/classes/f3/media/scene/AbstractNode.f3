@@ -8,8 +8,10 @@ public abstract class AbstractNode is Node
 {
     protected var internalContent is Node;
     override var contentBounds = bind internalContent.bounds;
+
     override function updateParent {
 	internalContent.setParent(this);
+	internalContent.updateParent();
 	update();
     }
 

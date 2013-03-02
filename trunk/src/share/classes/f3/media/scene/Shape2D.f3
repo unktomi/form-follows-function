@@ -227,21 +227,21 @@ public class MeshNode2D is MeshNode
 
 public class Circle is Shape2D 
 {
-    public var radius: Number = 1; 
+    public var radius is Number = 1; 
     override var path = bind ellipse(factory, centerX-radius, centerY-radius, radius*2, radius*2);
 }
 
 public class Ellipse is Shape2D 
 {
-    public var radiusX: Number = 1;
-    public var radiusY: Number = 1;
+    public var radiusX is Number = 1;
+    public var radiusY is Number = 1;
     override var path = bind ellipse(factory, centerY-radiusX, centerX-radiusY, radiusX*2, radiusY*2);
 }
 
 public class Rectangle is Shape2D 
 {
-    public var width: Number = 1;
-    public var height: Number = 1;
+    public var width is Number = 1;
+    public var height is Number = 1;
     override var path = bind rect(factory, centerX-width/2, centerY-height/2, width, height);
 }
 
