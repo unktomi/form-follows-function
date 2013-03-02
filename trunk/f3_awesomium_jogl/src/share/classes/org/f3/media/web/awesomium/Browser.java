@@ -616,6 +616,7 @@ public class Browser implements AbstractWebBrowser {
     static native void injectMouseDown(long handle, int button);
     static native void injectMouseUp(long handle, int button);
     static native void injectMouseMove(long handle, int x, int y);
+    static native void injectMouseWheel(long handle, int x, int y);
     static native void injectKeyDown(long handle, int mods, int code);
     static native void injectKeyUp(long handle, int mods, int code);
     static native void injectKeyInput(long handle, int mods, int code, char ch);
@@ -821,6 +822,10 @@ public class Browser implements AbstractWebBrowser {
 
     public void injectMouseUp(int button) {
         injectMouseUp(handle, button);
+    }
+
+    public void injectMouseWheel(int x, int y) {
+	injectMouseWheel(handle, y, x);
     }
 
     public void injectMouseMove(int x, int y) {

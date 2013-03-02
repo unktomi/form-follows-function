@@ -129,6 +129,12 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
         event.stopPropagation();
     }
 
+    override public function onMouseWheel from (event is MouseWheelEvent) to () 
+    {
+        tex.injectMouseWheel(0, event.scroll.y);
+        event.stopPropagation();
+    }
+
     override public function onMouseDrag from (event is MouseEvent) to () 
     {
 /*

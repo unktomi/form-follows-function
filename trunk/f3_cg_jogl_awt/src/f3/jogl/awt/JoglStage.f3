@@ -1643,6 +1643,29 @@ public class Listener extends GLEventListener, DropTargetListener {
             });
     }
 
+    function mouseWheel
+	from (x is Number, y is Number, 
+	      controlDown is Boolean, 
+	      altDown is Boolean, 
+	      metaDown is Boolean, 
+	      shiftDown is Boolean,
+	      rot is Integer,
+	      amount is Integer)
+	to ()
+    {
+	println("mouse wheel {rot} {amount}");
+        stage.injectMouseWheel(MouseWheelEvent {
+                screenx: screenx = x;
+                screeny: screeny = y;
+                altKey: altDown;
+                ctrlKey: controlDown;
+                metaKey: metaDown;
+                shiftKey: shiftDown;
+		scroll: tuple(0, rot);
+            });
+    }
+
+
     override function dragEnter from (e is DropTargetDragEvent) to () {
         try {
             ctx.makeCurrent();
@@ -1972,6 +1995,11 @@ public class JoglStage is Stage
                     listener.mouseUp(e.getButton(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
                 }
             });
+        canvas.addMouseWheelListener(java.awt.event.MouseWheelListener {
+		override function mouseWheelMoved from (e is java.awt.event.MouseWheelEvent) to () {
+                    listener.mouseWheel(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown(), e.getWheelRotation(), e.getScrollAmount());
+                }
+	    });
         canvas.addMouseMotionListener(java.awt.event.MouseMotionAdapter {
                 override function mouseMoved from (e is java.awt.event.MouseEvent) to () {
                     listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());

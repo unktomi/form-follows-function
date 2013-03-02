@@ -1,0 +1,14 @@
+package f3.media.input;
+import f3.math.*;
+
+public class TouchPoint 
+{
+    public const radius is Tuple2;
+    public const angle is Number;
+    public const force is Number;
+}
+
+public class TouchEvent is PointerEvent 
+{
+    public const touches is TouchPoint[];
+}

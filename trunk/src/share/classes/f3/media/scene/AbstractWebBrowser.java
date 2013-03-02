@@ -13,6 +13,7 @@ public interface AbstractWebBrowser {
     public void injectMouseDown(int button);
     public void injectMouseUp(int button);
     public void injectMouseMove(int x, int y);
+    public void injectMouseWheel(int x, int y);
     public void focus();
     public void unfocus();
 

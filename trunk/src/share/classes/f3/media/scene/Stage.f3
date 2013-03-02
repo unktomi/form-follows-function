@@ -48,6 +48,16 @@ public interface Stage
 	return result;
     }
 
+    public function injectMouseWheel from (event is MouseWheelEvent) to ()
+    {
+        for (h in mouseHandlers) {
+            h.onMouseWheel(event);
+        }
+        for (c in content.reverse()) {
+            c.injectMouseWheel(event);
+        }
+    } 
+
     public function injectMouseDown from (event is MouseEvent) to () 
     {
 	println("mouse down: {event}");

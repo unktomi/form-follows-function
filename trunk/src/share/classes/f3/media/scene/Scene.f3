@@ -317,6 +317,13 @@ public class Scene
         }
     }
 
+    public function injectMouseWheel from (event is MouseWheelEvent) to ()
+    {   
+        for (x in underMouse) {
+            doMouseWheel(x, event);
+        }
+    }
+
     public function injectDragEnter from (event is DragEvent) to ()
     {
     }
@@ -388,6 +395,42 @@ public class Scene
 	    p.node.mouseUp.onNext(e);
 	}
     }
+
+    function doMouseWheel from (p is Pick, sceneEvent is MouseWheelEvent) to ()
+    {
+        const hs = getMouseInputHandlers(p);
+        if (hs != []) {
+            sceneEvent.stopPropagation();
+            const e = makeMouseEvent(null, p, sceneEvent);
+	    const we = MouseWheelEvent { // this sucks
+		clickCount: e.clickCount;
+		stage: e.stage;
+		scene: this;
+		altKey: e.altKey;
+		ctrlKey: e.ctrlKey;
+		shiftKey: e.shiftKey;
+		metaKey: e.metaKey;
+		screenx: e.screenx;
+		screeny: e.screeny;
+		screenDrag: e.screenDrag;
+		sceneLocation: p.scenePoint;
+		buttons: e.buttons;
+		picked: p;
+		scroll: sceneEvent.scroll;
+	    }
+            for (h in hs) {
+                h.onMouseWheel(we);
+                if (not we.propagate) {
+                    break;
+                }
+            }
+        }
+	if (p.node.mouseWheel <> null) {	
+            const e = makeMouseEvent(null, p, sceneEvent);
+	    p.node.mouseWheel.onNext(e);
+	}
+    }
+
 
     function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to ()
     {

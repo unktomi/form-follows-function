@@ -1,0 +1,8 @@
+package f3.media.input;
+
+public interface TouchInputHandler {
+    public abstract function onTouchStart from (e is TouchEvent) to ();
+    public abstract function onTouchMove from (e is TouchEvent) to ();
+    public abstract function onTouchEnd from (e is TouchEvent) to ();
+    public abstract function onTouchCancel from (e is TouchEvent) to ();
+}
