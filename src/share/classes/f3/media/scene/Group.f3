@@ -2,13 +2,7 @@ package f3.media.scene;
 
 public class Group is Node 
 {
-    var contentInvalid = true;
-
-    public var content is Node[] 
-    on invalidate 
-    {
-        contentInvalid = true;
-    }
+    public var content is Node[];
 
     override var contentBounds = bind 
        Bounds.merge(bnds0, 
