@@ -67,7 +67,7 @@ public interface Stage
         var focusSet = false;
         for (c in content.reverse()) {
             c.injectMouseDown(event);
-            if (not focusSet and c.focus != null) {
+            if (not focusSet and c.focus <> null) {
                 focusSet = true;
                 focusedScene = c;
             }

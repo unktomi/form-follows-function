@@ -86,7 +86,7 @@ class MaModel
     {
 	const c = lastSetAttr;
 	lastSetAttr = null;
-	if (c != null) {
+	if (c <> null) {
 	    next.namedArgs.putAll(c.namedArgs);
 	}
     }
@@ -604,7 +604,7 @@ class MNode {
     function setAttr from (cmd is Command) to () 
     {
 	const attr = attrs.get(cmd.getAttr());
-	if (attr != null) {
+	if (attr <> null) {
 	    const t = attr.type;
 	    const value = 
 		if (t == "bool") {
@@ -1590,7 +1590,7 @@ class MMesh is MSpatial
     function isSmooth from (faceEdge is Integer) to Boolean 
     {
 	const i = faceEdgeIndex(faceEdge);
-	edges[i*3+2] != 0
+	edges[i*3+2] <> 0
     }
 
     function uv from (uvSet is Integer, uvIndex is Integer) to Point2

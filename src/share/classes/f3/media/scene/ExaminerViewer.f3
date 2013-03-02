@@ -152,7 +152,7 @@ public abstract class ExaminerViewer is MouseInputHandler {
                 
                 // If we have an up vector specified, attempt to
                 // orient the camera's up vector to point to it
-                if (upVector != null) {
+                if (upVector <> null) {
                     var cameraUp = Vec3.Y_AXIS;
                     cameraUp = ori.normalize() * cameraUp;
                     const dotp = cameraUp.dot(upVector);

@@ -50,7 +50,7 @@ public class Scene
         for (p in pickedMeshes) {
             var par = p.node.parent;
             var toAdd is Pick[];
-            while (par != null) {
+            while (par <> null) {
                 if (picked.contains(par)) {
                     break;
                 }
@@ -98,7 +98,7 @@ public class Scene
 					  nearest = i;
 				      }
 				  }
-				  if (nearest != null) {
+				  if (nearest <> null) {
 				      const pt = nearest;
 				      const verts = mesh.vertices;
 				      const tri = pt.w as Integer;
@@ -201,11 +201,11 @@ public class Scene
 				}
 			    }
 			    var stageNode = value as StageNode;
-			    if (stageNode.width != 0 
-				and stageNode.height != 0) {
+			    if (stageNode.width <> 0 
+				and stageNode.height <> 0) {
 				var mx: Number;
 				var my: Number;
-				if (picked != null) {
+				if (picked <> null) {
 				    var tri = picked.tri;
 				    var w = picked.w;
 				    var st = texCoords[texUnit];
@@ -292,7 +292,7 @@ public class Scene
             if (not focusSet and (p.node instanceof Focusable)) {
                 const f = p.node as Focusable;
                 if (f == focus or f.acceptFocus()) {
-                    if (f != focus) {
+                    if (f <> focus) {
                         focus.loseFocus();
                         focus = f;
 
@@ -380,7 +380,7 @@ public class Scene
     function doMouseUp from (p is Pick, sceneEvent is MouseEvent) to ()
     {
         const hs = getMouseInputHandlers(p);
-        if (hs != []) {
+        if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
@@ -399,7 +399,7 @@ public class Scene
     function doMouseWheel from (p is Pick, sceneEvent is MouseWheelEvent) to ()
     {
         const hs = getMouseInputHandlers(p);
-        if (hs != []) {
+        if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
 	    const we = MouseWheelEvent { // this sucks
@@ -451,20 +451,10 @@ public class Scene
 	}
     }
 
-    function getDrag from (p is Pick) to Pick 
-    {
-        for (d in underMouse) {
-            if (d.node == p.node) {
-                return d;
-            }
-        }
-        return null;
-    }
-
     function doMouseMove from (p is Pick, sceneEvent is MouseEvent) to () 
     {
         const hs = getMouseInputHandlers(p);
-        if (hs != []) {
+        if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {

@@ -72,7 +72,7 @@ public function createMesh
 	  stroke is Stroke)
     to AbstractMesh 
 {
-    if (stroke != null) {
+    if (stroke <> null) {
         createMesh(path.createStrokedShape(stroke), null);
     } else {
         path.createMesh();
