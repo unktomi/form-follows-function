@@ -813,6 +813,13 @@ public class F3ClassReader extends ClassReader {
 		    //if (memsym.name.toString().endsWith(F3Defs.implFunctionSuffix)) {
 		    //System.err.println(csym + " entering: "+ m);
 		    //}
+		    Scope.Entry e = csym.members_field.lookup(m.name);
+		    if (e != null && e.scope != null) {
+			if (types.isSameType(e.sym.type, m.type)) {
+			    //System.err.println("duplicate method: "+e.sym + " = "+m);
+			    continue;
+			}
+		    }
                     csym.members_field.enter(m);
                 }
                 else if (memsym instanceof VarSymbol) {

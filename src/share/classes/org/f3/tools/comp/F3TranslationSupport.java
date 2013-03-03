@@ -491,6 +491,7 @@ public abstract class F3TranslationSupport {
 		    if (base.getTypeArguments().size() > t.getTypeArguments().size()) {
 			System.err.println("wrong # of type args: "+ t + " <> "+ base);
 			t = types.makeTypeCons(types.erasure(t), t.getTypeArguments());
+			System.err.println("translated to: "+t);
 		    }
 		}
 	    }
