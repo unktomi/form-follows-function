@@ -542,7 +542,8 @@ class Println of a is DefaultObserver of a
     }
 }
 
-function Println of a to Println of a {
+function Println of a to Println of a 
+{
     Println of  a {
     }
 }

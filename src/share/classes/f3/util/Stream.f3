@@ -9,7 +9,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
     public readonly var now is a;
     public readonly var later is Stream of a;
 
-    public bound function of b fold
+    public bound function fold of b
 	from (z is b, f is function from (b, a) to b) 
 	to Stream of b 
     {
@@ -237,10 +237,10 @@ public function take of a
 	  xs is Stream of a) 
     to a[] 
 {
-    var ys = xs;
+    var later = xs;
     foreach (i in [0..<n]) { 
-	const now = ys.now;
-	ys = ys.later;
+	const now = later.now;
+	later = later.later;
 	now
     }
 }
@@ -366,6 +366,8 @@ function run
     println(take(10, mul(mul(mul(X, X), X), X)));
     println(take(10, sum(repeat(1.0))));
     println(take(1000, <<every other>>(sum(repeat(1.0)))));
+
+    println(take(10, repeat("a").interleave(repeat("b"))));
 }
 
 

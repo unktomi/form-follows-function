@@ -1660,14 +1660,19 @@ public class F3Attr implements F3Visitor {
 		    chk.typeError(clause, MsgSym.MESSAGE_INCOMPATIBLE_TYPES, exprType, syms.f3_ComonadType);
 		    elemtype = exprType;
 		} else {
-		    comonadType = exprType;
-		    elemtype = types.comonadElementType(exprType);
+		    elemtype = comonadType = exprType;
+		    //elemtype = types.comonadElementType(exprType);
 		}
 	    } else      // if exprtype is T[], T is the element type of the for-each
 		if (types.isSequence(exprType)) {
 		    elemtype = types.elementType(exprType);
 		    //elemtype = exprType.getTypeArguments().head;
 		    isSeq = true;
+		    if (last) {
+			functorType = exprType;
+		    } else {
+			monadType = exprType;
+		    }
 		}
             // if exprtype implements Iterable<T>, T is the element type of the for-each
             else if (types.asSuper(exprType, syms.iterableType.tsym) != null) {
@@ -1699,6 +1704,7 @@ public class F3Attr implements F3Visitor {
 		    theOne = findThe(env, clause.getSequenceExpression(), functorTypeClass);
 		    typeClasses[idx] = accessThe(theOne, functorTypeClass);
 		}
+
 		if (theOne == null && ( (last && !types.isFunctor(exprType)) || (!last && !types.isMonad(exprType)) )) {
 		    log.warning(expr, MsgSym.MESSAGE_F3_ITERATING_NON_SEQUENCE);
 		    elemtype = exprType;
@@ -1709,8 +1715,10 @@ public class F3Attr implements F3Visitor {
 			    monadType = exprType;
 			} else {
 			    monadType = types.lub(monadType, exprType);
+			    //monadType = exprType;
 			}
 			elemtype = types.monadElementType(exprType);
+			System.err.println("monadType="+exprType);
 			//System.err.println("exprType="+exprType);
 			//System.err.println("theMonad="+theOne);
 			//System.err.println("monadType="+monadType);
@@ -1731,6 +1739,7 @@ public class F3Attr implements F3Visitor {
 			//System.err.println("theFunctor="+theOne);
 			functorType = exprType;
 			elemtype = types.functorElementType(exprType);
+			System.err.println("functorType="+exprType);
 			if (theOne != null) {
 			    Type superType = types.asSuper(exprType, syms.f3_TypeCons[1].tsym);
 			    if (superType != null) {
@@ -1775,7 +1784,7 @@ public class F3Attr implements F3Visitor {
 	    } else {
 		clause1Type = types.lub(clause1Type, elemtype);
 	    }
-	    //System.err.println("clause1Type="+clause1Type);
+	    System.err.println("clause1Type="+clause1Type);
             if (clause.getWhereExpression() != null) {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
@@ -1828,31 +1837,28 @@ public class F3Attr implements F3Visitor {
 				  types.isSequence(bodyType) ? types.elementType(bodyType) : bodyType);
 	    } else {
 		if (comonadType != null) {
-		    /*
 		    Type comonadElementType = clause1Type;
-		    map = tree.getComonadMap(f3make, names, types, syms,
-					     comonadType,
-					     types.makeComonadType(comonadType, comonadElementType),
-					     bodyType,
+		    map = tree.getComonadMap(f3make, 
+					     names, 
+					     types, 
+					     clauseTypes,
+					     typeClasses,
 					     tree.isBound());
-		    */
+		    System.err.println(map);
 		} else {
 		    Type monadElementType = clause1Type;
-		    //System.err.println("monadType="+monadType);
-		    //System.err.println("functorType="+functorType);		    
 		    Type typeCons = monadType == null ? functorType: monadType;
 		    if (tree.isBound() || !isIter) {
 			map = tree.getMonadMap(f3make, names, types, clauseTypes, typeClasses,
 					       typeCons,
 					       bodyType,
 					       tree.isBound());
+			System.err.println(map);
 		    }
 		}
 	    }
             if (map != null) {
-		//System.err.println("map="+map);
                 owntype = attribExpr(map, env);
-		//System.err.println("owntype="+owntype);
             }
         }
         while (forClauses.size() > forClausesOldSize)
@@ -4688,7 +4694,7 @@ public class F3Attr implements F3Visitor {
 	} else if (tree instanceof F3Type.TheType) {
 	    F3Type.TheType theType = (F3Type.TheType)tree;
 	    Type t = attribTree(theType.theType, env, TYP, Type.noType);
-	    //System.err.println("\"the\" type is "+t);
+	    System.err.println("\"the\" type is "+t);
 	    ///System.err.println("env="+env);
 	    //	    System.err.println("searching for the "+t+ " in env1="+env);
 	    Symbol sym = findThe(env, tree, t);		
@@ -4721,6 +4727,7 @@ public class F3Attr implements F3Visitor {
 		    env.implicitArgs = env.implicitArgs.append(idSym1);
 		}
 	    } else {
+		System.err.println("found: "+sym + ": "+sym.type);
 		theType.resolvedSymbol = sym;
 	    }
 	    result = t;
@@ -5069,9 +5076,9 @@ public class F3Attr implements F3Visitor {
 			if (inst != null) { // hack
 			    owntype = inst;
 			} else {
-			owntype = pt;
-			System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
-			Thread.currentThread().dumpStack();
+			    owntype = pt;
+			    System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
+			    Thread.currentThread().dumpStack();
 			}
 			if (owntype instanceof MethodType) {
 			    try {
@@ -5221,13 +5228,35 @@ public class F3Attr implements F3Visitor {
         // found the identifier in the first place.
         if (owntype == null) {
             if (!pt.isErroneous()) { 
-		if (true) { 
+		if (argtypes != null) {
+		    List<Type> list = argtypes;
+		    while (list.nonEmpty()) {
+			Type arg = list.head;
+			if (arg instanceof MethodType) {
+			    arg = syms.makeFunctionType((MethodType)arg);
+			} else {
+			    arg = types.boxedTypeOrType(arg);
+			}
+			list.head = arg;
+			list = list.tail;
+		    }
+		}
+		owntype = rs.instantiate(env,
+					 site,
+					 sym,
+					 argtypes,
+					 typeargtypes,
+					 true,
+					 useVarargs,
+					 noteWarner);
+		
+		if (owntype == null) { 
 		    log.error(env.tree.pos(),
 			      MsgSym.MESSAGE_INTERNAL_ERROR_CANNOT_INSTANTIATE,
 			      sym, site,
 			      Type.toString(pt.getParameterTypes()));
 		}
-		return null; // hack
+		return owntype; // hack
 	    } else {
 		owntype = syms.errType;
 	    }

@@ -559,18 +559,17 @@ public class F3ClassReader extends ClassReader {
             flags |= F3Flags.BOUND;
         }
         F3Symtab f3Syms = (F3Symtab) this.syms;
-
-        for (Attribute.Compound ann : sym.getAnnotationMirrors()) {
-            if (ann.type.tsym.flatName() == f3Syms.f3_signatureAnnotationType.tsym.flatName()) {
-                String sig = (String)ann.values.head.snd.getValue();
-                signatureBuffer = new byte[sig.length()];
-                try {
-                    mtype = sigToType(names.fromString(sig));
+	for (Attribute.Compound ann : sym.getAnnotationMirrors()) {
+	    if (ann.type.tsym.flatName() == f3Syms.f3_signatureAnnotationType.tsym.flatName()) {
+		String sig = (String)ann.values.head.snd.getValue();
+		signatureBuffer = new byte[sig.length()*3];
+		try {
+		    mtype = sigToType(names.fromString(sig));
                 }
                 catch (Exception e) {
-		    System.err.println("sig="+sig);
-		    e.printStackTrace();
-                    throw new AssertionError("Bad F3 signature");
+		    System.err.println("bad sig="+sig);
+		    //e.printStackTrace();
+                    //throw new AssertionError("Bad F3 signature");
                 }
             }
         }
