@@ -2039,6 +2039,12 @@ class MCGFXShader is MAbstractShader
 		}
 	    }
 	}
+	const transparent = attrs.get("transparent");
+	if (transparent <> null) {
+	   if (transparent.value is Boolean) {
+	       shader.isTransparent = transparent.value as Boolean;
+	   }
+	}
 	shader.uvMap = uvs;
 	return shader;
     }

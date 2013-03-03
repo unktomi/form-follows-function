@@ -22,5 +22,5 @@ public abstract class Shader {
     public abstract function getParameter from (name is String) to Parameter;
     public abstract function getParameters to Parameter[];
     public abstract function setParameter from (name is String, value is Object) to ();
-    public abstract function isTransparent to Boolean;
+    public var isTransparent is Boolean;
 }

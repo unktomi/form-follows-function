@@ -246,9 +246,7 @@ abstract class JoglGradientShader extends CGFXShader {
     public var gl is GL2;
     public var tex is Texture;
     public var grad is Shape2D.GradientPaint;
-    public var transparent is Boolean = false;
-    override function isTransparent() {transparent}
-    override var technique = bind if (transparent) "Transparent" else "Opaque";
+    override var technique = bind if (isTransparent) "Transparent" else "Opaque";
     var texture = JoglTexture {
         gl: bind gl;
         tex: bind tex;
@@ -302,7 +300,7 @@ abstract class JoglGradientShader extends CGFXShader {
             }
         }
         if (textureDirty) {
-            transparent = hasTransparency;
+            isTransparent = hasTransparency;
             textureDirty = false;
             var glp = GLProfile.get("GL2");
             println("updating gradient colors");
@@ -595,9 +593,7 @@ class JoglCGEffectLoader is CGEffectLoader
             shader = DefaultPhongShader4 { 
                 url: "{__DIR__}phong4.cgfx";
                 technique: if (diffuse.opacity == 1) "Opaque" else "Transparent";
-                override function isTransparent():Boolean {
-                    return diffuse.opacity <> 1;
-                }
+		isTransparent: diffuse.opacity <> 1.0;
             }
         } else {
             shader = DefaultPhongShader4 { 
@@ -1243,7 +1239,7 @@ class SceneRenderer {
 			    dirty = true; //mn.shader.isDirty() or mn.needsDraw;
 			}
 			const tris = mn.mesh.getIndexBuffer().limit() / 3;
-			if (shader.isTransparent()) {
+			if (shader.isTransparent) {
 			    transparentToDraw.add(mn);
 			    transparentTris += tris;
 			} else {
@@ -1307,28 +1303,26 @@ class SceneRenderer {
 		gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 	    }
         }
-        if (true) {
-            if (true) {//not (camera instanceof Camera2D)) {
-                // sort opaque front to back      
-                java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
-                        override public function compare(x is MeshNode, y is MeshNode):Integer {
-                            var xz = camera.distanceTo(x.toSceneTransform.getTranslation());
-                            var yz = camera.distanceTo(y.toSceneTransform.getTranslation());
-                            var cmp = xz - yz;
-                            return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
-                        }
-                    });
-                //sort transparent back to front
-                java.util.Collections.sort(transparentToDraw, java.util.Comparator of MeshNode {
-                        override public function compare(x is MeshNode, y is MeshNode):Integer {
-                            var xz = camera.distanceTo(x.toSceneTransform.getTranslation());
-                            var yz = camera.distanceTo(y.toSceneTransform.getTranslation());
-                            var cmp = -(xz - yz);
-                            return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
-                        }
-                    });
-            }
-        }
+	if (not (camera is Camera2D)) {
+	    // sort opaque front to back      
+	    java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
+		    override public function compare(x is MeshNode, y is MeshNode):Integer {
+			const xz = camera.distanceTo(x.toSceneTransform.getTranslation());
+			const yz = camera.distanceTo(y.toSceneTransform.getTranslation());
+			const cmp = xz - yz;
+			return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
+		    }
+		});
+	    //sort transparent back to front
+	    java.util.Collections.sort(transparentToDraw, java.util.Comparator of MeshNode {
+		    override public function compare(x is MeshNode, y is MeshNode):Integer {
+			const xz = camera.distanceTo(x.toSceneTransform.getTranslation());
+			const yz = camera.distanceTo(y.toSceneTransform.getTranslation());
+			const cmp = -(xz - yz);
+			return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
+		    }
+		});
+	}
         onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
         draw(gl, camera, opaqueToDraw, lightPositions);
         opaqueToDraw.clear();

@@ -323,10 +323,6 @@ public class CGFXShader is Shader {
         "CGFXShader {url} {technique}";
     }
 
-    override function isTransparent to Boolean {
-        false // tbd
-    }
-
     protected var effect is CGFX.Effect = bind createEffect(url, technique);
 
     function createEffect from (url is String, technique is String) to CGFX.Effect 
