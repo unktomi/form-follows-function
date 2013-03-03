@@ -60,10 +60,12 @@ class JoglPath2D is Path2D {
             }
         }
     }
-    override public function moveTo from (x0 is Number, y0 is Number) to () {
+    override public function moveTo from (x0 is Number, y0 is Number) to () 
+    {
         path.moveTo(x0, y0);
     }
-    override public function lineTo from (x1 is Number, y1 is Number) to () {
+    override public function lineTo from (x1 is Number, y1 is Number) to () 
+    {
         path.lineTo(x1, y1);
     }
     override public function quadTo from (cx1 is Number, cy1 is Number, x2 is Number, y2 is Number) to () 
@@ -78,13 +80,16 @@ class JoglPath2D is Path2D {
     {
         path.curveTo(cx1, cy1, cx2, cy2, x2, y2);
     }
-    override public function closePath {
+    override public function closePath 
+    {
         path.closePath();
     }
-    override public function reset {
+    override public function reset 
+    {
         path = new GeneralPath();
     }
-    override public function getBounds to Bounds {
+    override public function getBounds to Bounds 
+    {
         const bnds = path.getBounds2D();
         Bounds {
             center: point(bnds.getX()-bnds.getWidth()/2,
@@ -145,9 +150,8 @@ class JoglPath2DFactory extends Shape2D.Path2DFactory
 
 const ThePath2DFactory = JoglPath2DFactory {};
 
-
-
-function makeGradientShader(gl:GL2, grad:Shape2D.GradientPaint) {
+function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to Shader 
+{
     if (grad instanceof Shape2D.LinearGradient) {
         JoglLinearGradientShader {
             gl: gl;
@@ -246,7 +250,7 @@ abstract class JoglGradientShader extends CGFXShader {
     public var gl is GL2;
     public var tex is Texture;
     public var grad is Shape2D.GradientPaint;
-    override var technique = bind if (isTransparent) "Transparent" else "Opaque";
+    override var technique = bind if (isTransparent) then "Transparent" else "Opaque";
     var texture = JoglTexture {
         gl: bind gl;
         tex: bind tex;
@@ -285,17 +289,17 @@ abstract class JoglGradientShader extends CGFXShader {
             var y = toByte(color.green);
             var z = toByte(color.blue);
             var w = toByte(color.opacity);
-            if (r != x or
-                g != y or 
-                b != z or 
-                a != w) {
+            if (r <> x or
+                g <> y or 
+                b <> z or 
+                a <> w) {
                 textureDirty = true;
                 buf.put(j, x);
                 buf.put(j+1, y);
                 buf.put(j+2, z);
                 buf.put(j+3, w);
             }
-            if (color.opacity != 1.0) {
+            if (color.opacity <> 1.0) {
                 hasTransparency = true;
             }
         }
@@ -359,7 +363,8 @@ abstract class JoglGradientShader extends CGFXShader {
         }
     }
 
-    protected abstract function updateParams(x is Number, y is Number, w is Number, h is Number) to ();
+    protected abstract function updateParams
+	from (x is Number, y is Number, w is Number, h is Number) to ();
 
     override function apply from (mesh is AbstractMesh, 
 				  worldTransform is  Mat4,
@@ -377,7 +382,10 @@ abstract class JoglGradientShader extends CGFXShader {
 class JoglRadialGradientShader extends JoglGradientShader {
     override var uvMap = [0];
     override var url = "{__DIR__}radialgradient.cgfx";
-    override function updateParams(rx is Number, ry is Number, rw is Number, rh is Number) to () {
+    override function updateParams
+	from (rx is Number, ry is Number, rw is Number, rh is Number) 
+	to () 
+    {
         var grad = this.grad as Shape2D.RadialGradient;
         var fx = grad.focusX;
         var fy = grad.focusY;
@@ -413,7 +421,9 @@ class JoglLinearGradientShader extends JoglGradientShader {
     override var url = "{__DIR__}lineargradient.cgfx";
 
 
-    override function updateParams(rx is Number, ry is Number, rw is Number, rh is Number) to () 
+    override function updateParams
+	from (rx is Number, ry is Number, rw is Number, rh is Number) 
+	to () 
     {
         var grad = this.grad as Shape2D.LinearGradient;
         var gradientTransform = grad.transform;
@@ -462,7 +472,7 @@ class ColorPaintShader extends CGFXShader
     public var colorPaint is ColorPaint;
     public readonly var color = bind colorPaint.color;
     override var url =  "{__DIR__}flat.cgfx";
-    override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
+    override var technique =  bind if (color.opacity == 1) then "Opaque" else "Transparent";
     override function apply from 
 	(mesh is AbstractMesh,
 	 worldTransform is Mat4,
@@ -641,7 +651,7 @@ class MeshVBO {
     var textureBuffers is Integer[];
     override function finalize() {
         org.f3.runtime.Entry.deferAction(java.lang.Runnable {
-                override function run() {
+                override function run {
                     var count = sizeof textureBuffers + 3;
                     var ids = BufferUtils.createIntBuffer(count);
                     ids.put(indexBuffer);
@@ -1526,7 +1536,7 @@ public class Listener extends GLEventListener, DropTargetListener {
 		e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
 		var t = e.getTransferable();
 		var flavors = [DataFlavor.stringFlavor, DataFlavor.javaFileListFlavor];
-		var dataList: String[];
+		var dataList is String[];
 		for (i in t.getTransferDataFlavors()) {
 		    for (j in flavors) {
 			if (j == i) {
@@ -1699,7 +1709,7 @@ public class Listener extends GLEventListener, DropTargetListener {
         }
     }
 
-    function setup from (gl is GL2, width:Integer, height is Integer) to () {
+    function setup from (gl is GL2, width is Integer, height is Integer) to () {
         ctx = GLContext.getCurrent();
 	ImageLoader_INSTANCE.gl = gl; // hack
         gl.setSwapInterval(1);
@@ -1945,7 +1955,7 @@ public class JoglStage is Stage
 
     //override var width: Integer = 640;
     // override var height: Integer = 480;
-    function doUpdate to () {
+    function doUpdate {
 	updateCursor();
     }
 
@@ -1961,7 +1971,7 @@ public class JoglStage is Stage
         frame.setSize(width, height);
         frame.add(canvas);
         frame.addWindowListener(java.awt.event.WindowAdapter {
-                override public function windowClosing(e:java.awt.event.WindowEvent) {
+                override public function windowClosing from (e is java.awt.event.WindowEvent) to () {
                     java.lang.System.exit(0);
                 }
             });
