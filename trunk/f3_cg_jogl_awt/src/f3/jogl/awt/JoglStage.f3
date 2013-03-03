@@ -2046,15 +2046,27 @@ public function run from (args is String[]) to ()
 
     var playerUrl is String;
 
+
     readonly var model is Ma.Model = bind if (not playerUrl.endsWith(".ma")) then null else Ma.Model {
 		effectLoader: the CGEffectLoader;
 		imageLoader: the ImageLoader;
 		url: playerUrl;
 	    };
 
+    var clipIndex is Integer;
+
+    const getClips = function(libs is TimeGroup[]) to TimeNode[] {
+	foreach (lib in libs) lib.content;
+    }
+
+    var allClips = bind getClips(model.getClipLibraries());
+    var clips is TimeNode[] = bind [model.getTemporalRoot(), allClips];
+
+    var currentClip is TimeNode = bind clips[clipIndex];
+
     const player = Timeline {
 	content: TimeLayer {
-	    content: bind model.getTemporalRoot();
+	    content: bind currentClip;
 	    playCount: -1;
 	}
     }
@@ -2143,6 +2155,13 @@ public function run from (args is String[]) to ()
 	    }
 	}
     }
+
+    const setClip = function from (i is Integer) to ()
+    {
+	clipIndex = Math.min(clips.size()-1, i);
+	println("clip={clips[clipIndex]}");
+    }
+
     stage.addMouseInputHandler(viewer);
     stage.addKeyboardInputHandler(KeyboardInputHandler {
 	    override function onKeyDown from (event is KeyboardEvent) to () {
@@ -2151,7 +2170,11 @@ public function run from (args is String[]) to ()
 			viewer.focusCamera(currentModel);
 		    } else if (event.keyCode >= Keys._0 and event.keyCode <= Keys._9) {
 			const index = event.keyCode - Keys._0;
-			setCamera(index);
+			if (event.metaKey) {
+			    setClip(index);
+			} else {
+			    setCamera(index);
+			}
 		    } else if (event.keyCode == Keys.G) {
 			java.lang.System.gc();
 			//showMemory = not showMemory;

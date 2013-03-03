@@ -154,8 +154,8 @@ class MaModel
     const shaderMap is java.util.Map of (MNode, Shader) = 
 	new java.util.HashMap of (MNode, Shader) ();
 
-    const clipLibMap is java.util.Map of (MNode, TimeNode) = 
-	new java.util.HashMap of (MNode, TimeNode) ();
+    const clipLibMap is java.util.Map of (MNode, TimeGroup) = 
+	new java.util.HashMap of (MNode, TimeGroup) ();
 
     const linkMap is java.util.Map of (MNode, Link of ?) = 
 	new java.util.HashMap of (MNode, Link of ?) ();
@@ -165,7 +165,7 @@ class MaModel
     public var spatialRoot is Group;
     public var temporalRoot is TimeGroup;
     var channels is TimeNode[];
-    var clipLibs is TimeNode[];
+    var clipLibs is TimeGroup[];
 
     function getCameras to Camera[] 
     {
@@ -350,11 +350,11 @@ class MaModel
     function getNumberTargets 
 	from (n is MNode, sourcePath is String) to (Ref of Number)[]
     {
-	//println("attempting to resolve {n.name} {sourcePath}");
+	println("attempting to resolve {n.name} {sourcePath} in {n.connectionsFromThis}");
 	foreach (c in n.connectionsFromThis.get(sourcePath)) {
 	    println(c);
 	    const ptr = resolveTargetPointer(c) as Ref of Number;
-	    //  println("resolved {n.name} {sourcePath} to {ptr}");
+	    println("resolved {n.name} {sourcePath} to {ptr}");
 	    ptr;
 	}
     }
@@ -393,7 +393,7 @@ class MaModel
 
     function toClipLibrary from (n is MClipLibrary) to TimeNode 
     {
-	const r is TimeNode = clipLibMap.get(n);
+	const r is TimeGroup = clipLibMap.get(n);
 	if (r == null) {
 	    println("converting clip library {n.name}");
 	    var clips is TimeGroup[];
@@ -435,6 +435,9 @@ class MaModel
 
     function generateScene 
     {
+	for (n in nodeMap.values() where n instanceof MCharacter) {
+	    (n as MCharacter).applyAlias(this);
+	}
 	spatialRoot = Group {id: url};
 	for (n in nodeMap.values()) {
 	    const r = 
@@ -664,9 +667,16 @@ abstract class MSpatial is MNode {
 	from (path is String, target is Object) 
 	to Ref of ?
     {
-	if (false and path == "v") {
-	    const n = target as Node;
-	    &n.visible;
+	if (path == "v") {
+	    const tn = target as Node;
+	    Ref of Number {
+		override public function set from (n is Number) to () {
+		    tn.visible = n <> 0.0;
+		}
+		override public function get to Number {
+		    if tn.visible then 1.0 else 0.0
+		}
+	    }
 	} else super.getPointer(path, target);
     }
 }
@@ -1153,7 +1163,6 @@ class MTransform is MSpatial {
     
     override function setAttr from (cmd is Command) to () 
     {
-	super.setAttr(cmd);
 	const n = cmd.getAttr();
 	if (n == "t") {
 	    t = cmd.getVec3();
@@ -1173,7 +1182,7 @@ class MTransform is MSpatial {
 	    tmrp = cmd.getVec3();
 	} else if (n == "ro") {
 	    ro = cmd.getInt();
-	}
+	} else super.setAttr(cmd);
     }
 
     override public function getPointer
@@ -1421,15 +1430,20 @@ class MJoint is MTransform {
 
 class MCharacter is MNode {
 
+    var aal is java.util.Map of (String, String);
+
     function resolveTargetPointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
 	// toThis connects to one of my inputs; forward to the corresponding connection 
-	//println("{name} trying to resolve {toThis} in {connectionsFromThis}");
+	println("{name} trying to resolve {toThis} in {connectionsFromThis}");
 	const path = parsePath(toThis.targetPath).path[0] as Field;
 	for (conn in connectionsFromThis.get(path.name)) {
-	    const ptr = m.resolveTargetPointer(conn);
-	    if (ptr <> null) return ptr;
-	    println("failed to resolve target {toThis.targetPath} using {conn}");
+	    if (conn.sourcePath == toThis.targetPath) {
+		const ptr = m.resolveTargetPointer(conn);
+		println("conn={conn} ptr={ptr}");
+		if (ptr <> null) return ptr;
+		println("failed to resolve target {toThis.targetPath} using {conn}");
+	    }
 	}
 	return null;
     }
@@ -1444,6 +1458,32 @@ class MCharacter is MNode {
 	    println("failed to resolve source {toThis.targetPath} using {conn}");
 	}
 	return null;
+    }
+
+    function applyAlias from (m is MaModel) to () 
+    {
+	for (ent in aal.entrySet()) {
+	    const k = ent.getKey();
+	    const v = ent.getValue();
+	    const animCurve = m.findNode(k);
+	    println("{name} applying alias {k} {v} => {animCurve}");
+	    animCurve.connectionsFromThis.put("o", 
+					      Connection { 
+						  sourceNode: animCurve;
+						  sourcePath: "o";
+						  targetNode: this;
+						  targetPath: v;
+					      });
+	}
+    }
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	const n = cmd.getAttr();
+	if (n == "aal") {
+	    println("cmd={cmd}");
+	    aal = cmd.getAttributeAlias();
+	} else super.setAttr(cmd);
     }
 }
 
@@ -2050,7 +2090,6 @@ class MCGFXShader is MAbstractShader
     }
 }
 
-
 class CGFXVectorNode is Node {
     public var wv is Tuple3;
     public var wvw is Number;
@@ -2477,6 +2516,31 @@ class Command
 	return true;
     }
 
+    const longNames = ["unitlessValues", "angularValues", "linearValues"];
+    const shortNames = ["uv", "av", "lv"];
+    public function getAttributeAlias to java.util.Map of (String, String) {
+	const map = new java.util.HashMap of (String, String);
+	var i = 2; // skip aal {
+	while (i < args.size()) {
+	    const k = trim(args[i++]); 
+	    i++; // skip ,
+	    var v = trim(args[i++]);
+	    i++; // skip ,
+	    println("k={k} v={v} next={args[i]}");
+	    const p = parsePath(v);
+	    const f = p.path[0] as Field;
+	    const fi = p.path[1] as Index;
+	    for (j in longNames) {
+		if (j == f.name) {
+		    v = "{shortNames[indexof j]}[{fi.index}]";
+		    break;
+		}
+	    }
+	    map.put(k, v);
+	}
+	return map;
+    }
+
     public function getMatrix to Mat4 
     {
 	Mat4.fromColumns(getFloatArray());
@@ -2780,7 +2844,7 @@ function dumpScene (spatialRoot is Node)
 class ModelContent {
     public var spatial is Node;
     public var temporal is TimeNode;
-    public var clipLibraries is TimeNode[];
+    public var clipLibraries is TimeGroup[];
     public var cameras is Camera[];
 }
 
@@ -2790,7 +2854,7 @@ public class Model {
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
 
-    public bound function getClipLibraries to TimeNode[] 
+    public bound function getClipLibraries to TimeGroup[] 
     {
 	modelContent.clipLibraries;
     }

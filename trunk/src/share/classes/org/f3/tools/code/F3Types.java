@@ -508,6 +508,9 @@ public class F3Types extends Types {
     }
 
     public Type sequenceType(Type elemType, boolean withExtends) {
+	if (isSequence(elemType)) {
+	    return elemType;
+	}
         elemType = boxedTypeOrType(elemType);
         if (withExtends) {
 	    //Thread.currentThread().dumpStack();

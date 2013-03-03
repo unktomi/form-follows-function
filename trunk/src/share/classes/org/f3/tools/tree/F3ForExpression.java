@@ -133,29 +133,29 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 				    boolean isBound) {
 
         if (apply == null) {
-	    //System.err.println("resultType="+resultType);
             List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
             apply = this.bodyExpr;
 	    int i = 0;
+	    int j = inClauses.size()-1;
+	    System.err.println("monadType="+monadType);
+	    System.err.println("resultType="+resultType);
             for (List<F3ForExpressionInClause> x = clauses; 
                  x.nonEmpty(); x = x.tail) {
                 F3ForExpressionInClause clause = x.head;
 		boolean first = i == 0;
 		boolean isMap = first;
-                Type argType = argTypes[i];
-		F3Expression typeClass = typeClasses[i];
+                Type argType = argTypes[j];
+		F3Expression typeClass = typeClasses[j];
 		if (types.isMonad(resultType) && types.isSameType(types.erasure(resultType), types.erasure(monadType))) {
-		    //System.err.println("argType="+argType);
-		    //System.err.println("resultType="+resultType);
-		    //System.err.println("monadType="+monadType);
-		    isMap = false;
+		    if (!types.isSequence(resultType)) {
+			isMap = false;
+		    }
 		}
 		Name select =
 		    isMap ? names.fromString("map") : names.fromString("flatmap");
 		Type type = argType;
 		if (!first) {
 		    type = monadType;
-		    //System.err.println("monad type: " + type);
 		}
 		boolean second = i == 1;
 		if (false && !first) {
@@ -166,10 +166,9 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 		    apply = F.TypeCast(F.Type(monadType), apply);
 		}
 		i++;
+		j--;
             }
-	    //System.err.println("apply="+apply);
         }
-	//System.err.println("apply="+apply);
         return apply;
     }
 
@@ -183,13 +182,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
 			     F3ForExpressionInClause clause,
 			     F3Expression bodyExpr,
 			     boolean isBound) {
-	//System.err.println(this);
-	//System.err.println("argType="+argType);
-	//System.err.println("monadType="+monadType);
-	//System.err.println("resultType="+resultType);
-
         // we want to turn 
-        // bind for (x in xs, y in ys) f(x, y)
+        // bind foreach (x in xs, y in ys) f(x, y)
         // into
         // xs.flatmap(function(x) { ys.map(function(y) { f(x, y)}) })
         F3Modifiers mods = F.Modifiers(F3Flags.BOUND);
@@ -229,6 +223,100 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
         F3Expression apply = F.at(bodyExpr.pos).Apply(null, 
                                                       sel,
                                                       argsBuffer.toList());
+	//apply = F.at(apply.pos).TypeCast(F.Type(resultType), apply);	
+	//System.err.println(apply);
+	return apply;
+    }
+
+    public F3Expression getComonadMap(F3TreeMaker F, 
+				      Name.Table names,
+				      F3Types types,
+				      Type[] comonadType,
+				      F3Expression[] typeClasses,
+				      boolean isBound) {
+
+        if (apply == null) {
+            List<F3ForExpressionInClause> clauses = inClauses.reverse(); 
+            apply = this.bodyExpr;
+	    boolean last = true;
+	    int i = 0;
+	    int j = clauses.size()-1;
+            for (List<F3ForExpressionInClause> x = clauses; 
+                 x.nonEmpty(); x = x.tail) {
+                F3ForExpressionInClause clause = x.head;
+                Type argType = comonadType[j];
+		Type resultType = types.comonadElementType(argType);
+		F3Expression typeClass = typeClasses[j];
+                apply = getComonadMap(F, names, types, typeClass, argType, resultType, clause, apply, isBound, j == 0);		
+		i++;
+		j--;
+            }
+        }
+        return apply;
+    }
+
+    F3Expression getComonadMap(F3TreeMaker F, 
+			       Name.Table names,
+			       F3Types types,
+			       F3Expression typeClass,
+			       Type argType,
+			       Type resultType,
+			       F3ForExpressionInClause clause,
+			       F3Expression bodyExpr,
+			       boolean isBound,
+			       boolean last) {
+        // we want to turn 
+        // bind foreach ([1, 2, 3] into xs, [4, 5, 6] into ys) f(xs, ys)
+        // into
+        // xs.coflatmap(function(xs) { ys.coflatmap(function(ys) { f(xs, ys)}) })
+	System.err.println("argType="+argType);
+	System.err.println("resultType="+resultType);
+	Name map = names.fromString("coflatmap");
+        F3Modifiers mods = F.Modifiers(F3Flags.BOUND);
+        F3Var var = clause.intoVar;
+        // this tmp var is a hack to work around existing bind gen bugs
+        Name tmpName = names.fromString(var.name+"0$");
+	Cardinality card = Cardinality.SINGLETON;
+	if (types.isSequence(argType)) {
+	    card = Cardinality.ANY;
+	    argType = types.elementType(argType);
+	}
+        F3Var tmpVar = F.at(var.pos).Var(var.name,
+					 F.at(var.pos).TypeClass(F.at(var.pos).Type(argType), card),
+					 var.mods,
+					 F.at(var.pos).Ident(tmpName),
+					 isBound ? F3BindStatus.UNIDIBIND: F3BindStatus.UNBOUND,
+					 null, null);
+	
+        ListBuffer<F3Expression> blockBuffer = ListBuffer.lb();
+        blockBuffer.append(tmpVar);
+        F3Block body = F.at(bodyExpr.pos).Block(0L, blockBuffer.toList(), bodyExpr);
+        ListBuffer<F3Var> parmsBuffer = ListBuffer.lb();
+        parmsBuffer.append(F.at(var.pos).Param(tmpName, F.at(var.pos).TypeClass(F.at(var.pos).Type(argType), card)));
+        List<F3Var> params = parmsBuffer.toList();
+        F3FunctionValue fun = 
+            F.FunctionValue(mods,
+			    F.at(bodyExpr.pos).TypeUnknown(),
+			    //F.at(bodyExpr.pos).TypeClass(F.at(bodyExpr.pos).Type(resultType), Cardinality.SINGLETON),
+                            params,
+                            body);
+        F3Ident id = F.at(bodyExpr.pos).Ident(var.name);
+        F3Select sel = typeClass == null ?
+            F.at(bodyExpr.pos).Select(clause.getSequenceExpression(), map, false) :
+            F.at(bodyExpr.pos).Select(typeClass, map, false);
+	
+        ListBuffer<F3Expression> argsBuffer = ListBuffer.lb();
+	if (typeClass != null) {
+	    argsBuffer.append(clause.getSequenceExpression());
+	}
+	argsBuffer.append(fun);
+        F3Expression apply = F.at(bodyExpr.pos).Apply(null, 
+                                                      sel,
+                                                      argsBuffer.toList());
+	if (!last) {
+	    apply = F.at(bodyExpr.pos).Apply(null, F.at(bodyExpr.pos).Select(apply, names.fromString("extract"), false), 
+					     List.<F3Expression>nil());
+	}
 	//apply = F.at(apply.pos).TypeCast(F.Type(resultType), apply);	
 	//System.err.println(apply);
 	return apply;
