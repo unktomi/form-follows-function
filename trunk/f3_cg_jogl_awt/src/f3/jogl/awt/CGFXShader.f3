@@ -35,7 +35,8 @@ public abstract class Parameter of a is f3.media.scene.Shader.Parameter of a
     }
 }
 
-public class BoolParameter is Parameter of Boolean {
+public class BoolParameter is Parameter of Boolean 
+{
     override public function apply from (effect is CGFX.Effect) to ()
     { 
         if (DEBUG) {
@@ -45,7 +46,8 @@ public class BoolParameter is Parameter of Boolean {
     }
 }
 
-public class FloatParameter is Parameter of Number {
+public class FloatParameter is Parameter of Number 
+{
     override public function apply from (effect is CGFX.Effect) to ()
     { 
         if (DEBUG) {
@@ -55,7 +57,8 @@ public class FloatParameter is Parameter of Number {
     }
 }
 
-public class Float2Parameter is Parameter of Tuple2 {
+public class Float2Parameter is Parameter of Tuple2 
+{
     override public function apply from (effect is CGFX.Effect) to ()
     { 
         if (DEBUG) {
@@ -66,7 +69,8 @@ public class Float2Parameter is Parameter of Tuple2 {
     }
 }
 
-public class Float3Parameter is Parameter of Tuple3 {
+public class Float3Parameter is Parameter of Tuple3 
+{
     override public function apply from (effect is CGFX.Effect) to ()
     { 
         if (DEBUG) {
@@ -77,7 +81,8 @@ public class Float3Parameter is Parameter of Tuple3 {
     }
 }
 
-public class Float4Parameter is Parameter of Tuple4 {
+public class Float4Parameter is Parameter of Tuple4 
+{
     override public function apply from (effect is CGFX.Effect) to ()
     { 
         if (DEBUG) {
@@ -88,7 +93,8 @@ public class Float4Parameter is Parameter of Tuple4 {
     }
 }
 
-public class FloatArrayParameter is Parameter of Number[] {
+public class FloatArrayParameter is Parameter of Number[] 
+{
     override public function apply from (effect is CGFX.Effect) to () 
     { 
         if (DEBUG) {
@@ -143,7 +149,7 @@ public class Float4x4Parameter is Parameter of Mat4
             mat = world.inverse();
         } else if (semantic == "WORLDINVERSETRANSPOSE") {
 	    mat = world.inverseTranspose();
-        } else if (semantic != null) {
+        } else if (semantic <> null) {
             println("unhandled semantic { semantic}");
         } else {
 	    //println("parameter with no semantic {name}");
@@ -198,7 +204,6 @@ public class SamplerParameter is Parameter of AbstractTexture
 }
 
 const CG = CGFX {};
-
 
 function createParameter
     from (shader is CGFXShader, p is CGFX.Parameter) 
@@ -275,8 +280,8 @@ function createParameter
     }
 }
 
-public class CGFXShader is Shader {
-
+public class CGFXShader is Shader 
+{
     var array is nativearray of Number; // temporary for matrix conversion
 
     public var url is String;
@@ -303,7 +308,8 @@ public class CGFXShader is Shader {
 
     var shaderVersion is Integer;
 
-    function markDirty to () {
+    function markDirty to () 
+    {
         shaderVersion++;
     }
 
@@ -311,7 +317,7 @@ public class CGFXShader is Shader {
 
     function isDirty to Boolean 
     {
-        drawVersion != shaderVersion;
+        drawVersion <> shaderVersion;
     }
     
     function validate to () 
@@ -323,7 +329,7 @@ public class CGFXShader is Shader {
         "CGFXShader {url} {technique}";
     }
 
-    protected var effect is CGFX.Effect = bind createEffect(url, technique);
+    protected readonly var effect is CGFX.Effect = bind createEffect(url, technique);
 
     function createEffect from (url is String, technique is String) to CGFX.Effect 
     {
@@ -332,7 +338,6 @@ public class CGFXShader is Shader {
         }
         try { 
             const effect = CG.createEffect(new java.net.URL(url));
-	    //	    println("created EFFECT {url} {technique}");
             return effect;
         } catch (e is java.lang.Exception) {
             if (true) {
@@ -342,7 +347,7 @@ public class CGFXShader is Shader {
         return null;
     }        
 
-    public var parameters is Parameter[] = bind getParameters(effect);
+    public readonly var parameters is Parameter[] = bind getParameters(effect);
 
     override public function getParameters to Parameter[] {
 	parameters
@@ -387,7 +392,6 @@ public class CGFXShader is Shader {
         } else {
             effect.setTechnique(technique);
         }
-        var texUnit = 0;
         for (p in parameters) {
 	    try {
 		p.apply(effect, worldTransform, viewMatrix, projectionMatrix);
@@ -400,7 +404,8 @@ public class CGFXShader is Shader {
 	if (DEBUG) println("applied {this} {effect}");
     }
 
-    override public function reset to () {
+    override public function reset to () 
+    {
        effect.resetPass();
     }
 }

@@ -45,6 +45,14 @@ public class Tuple4 is F3Value
 	"\{ x: {x}, y: {y}, z: {z}, w: {w} \}"
     }
 
+    public function xyz to Tuple3 {
+	Tuple3 {
+	    x: x;
+	    y: y;
+	    z: z;
+	}
+    }
+
 }
 
 public static def TYPE_INFO is TypeInfo of ..Tuple4 = 
