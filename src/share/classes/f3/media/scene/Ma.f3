@@ -2165,6 +2165,65 @@ class MShader is MAbstractShader
     var cp is Number = 20.0;
     var it is Tuple3 = Tuple3.<<0>>;
 
+    override public function getPointer
+	from (ptr is String, target is Object) 
+	to Ref of ?
+    {
+	const shader = target as Shader;
+	if (ptr == "c" or ptr == "cb" or ptr == "cg" or ptr == "cr") {
+	    const result = shader.getParameter("diffuse") as Shader.Parameter of Tuple4;
+	    if (ptr == "cb") {
+		Ref of Number {
+		    override public function get to Number 
+		    {
+			result.get().z
+		    }
+		    override public function set from (b is Number) to () 
+		    {
+			const t = result.get();
+			result.set(tuple(t.x, t.y, b, t.w));
+		    }
+		}
+	    } else if (ptr == "cg") {
+		Ref of Number {
+		    override public function get to Number 
+		    {
+			result.get().y
+		    }
+		    override public function set from (g is Number) to () 
+		    {
+			const t = result.get();
+			result.set(tuple(t.x, g, t.z, t.w));
+		    }
+		}
+	    } else if (ptr == "cr") {
+		Ref of Number {
+		    override public function get to Number 
+		    {
+			result.get().x
+		    }
+		    override public function set from (r is Number) to () 
+		    {
+			const t = result.get();
+			result.set(tuple(r, t.y, t.z, t.w));
+		    }
+		}
+	    } else {
+		Ref of Tuple3 {
+		    override public function get to Tuple3
+		    {
+			result.get().xyz();
+		    }
+		    override public function set from (c is Tuple3) to () 
+		    {
+			const t = result.get();
+			result.set(tuple(c.x, c.y, c.z, t.w));
+		    }
+		}
+	    }
+	} else null
+    }
+
     override function setAttr from (cmd is Command) to () 
     {
 	const n = cmd.getAttr();

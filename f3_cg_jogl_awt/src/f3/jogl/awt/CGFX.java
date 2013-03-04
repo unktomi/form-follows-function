@@ -64,8 +64,7 @@ public class CGFX {
             url = u;
             _context = context;
         }
-        
-        
+
         public CGeffect getEffect() {
             if (_effect == null) {
                 load();
