@@ -183,7 +183,7 @@ public function translate
 }
 
 public function scale 
-    from (v is Vec3) 
+    from (v is Tuple3) 
     to Mat4 
 {
     scale(v.x, v.y, v.z);

@@ -45,11 +45,13 @@ public class DefaultExaminerViewer is ExaminerViewer {
     override function setCameraNearDistance from (n is Number) to () 
     {
         camera.near = n;
+	println("camera {this}.near={n}");
     }
 
     override function setCameraFarDistance from (n is Number) to () 
     {
         camera.far = n;
+	println("camera {this}.far={n}");
     }
 
     override function getCameraViewAllPosition from (bounds is Bounds) to Point3 

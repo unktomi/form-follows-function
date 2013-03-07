@@ -218,7 +218,11 @@ class MaModel
 	resolveInput(n, attr, 0, value);
     }
 
-    function resolveInput from (n is MUtility, attr is String, value is Tuple3) to ConstRef of Tuple3
+    function resolveInput 
+	from (n is MUtility, 
+	      attr is String, 
+	      value is Tuple3) 
+	to ConstRef of Tuple3
     {
 	var result is ConstRef of Tuple3;
 	for (c in n.connectionsToThis.get(attr)) {
@@ -1173,7 +1177,7 @@ class MTransform is MSpatial {
 	} else if (n == "rp") {
 	    rp = cmd.getVec3();
 	} else if (n == "rpt") {
-	    rp = cmd.getVec3();
+	    rpt = cmd.getVec3();
 	} else if (n == "sp") {
 	    sp = cmd.getVec3();
 	} else if (n == "spt") {
@@ -1425,7 +1429,91 @@ class MCamera is MSpatial
 }
 
 class MJoint is MTransform {
-    // TBD
+
+    var jox is Number;
+    var joy is Number;
+    var joz is Number;
+    var jo is Integer;
+    var ssc is Boolean;
+
+    override function setAttr from (cmd is Command) to () 
+    {
+	const attr = cmd.getAttr();
+	if (attr == "jox") {
+	    jox = cmd.getFloat();
+	} else if (attr == "joy") {
+	    joy = cmd.getFloat();
+	} else if (attr == "joz") {
+	    joz = cmd.getFloat();
+	} else if (attr == "jor") {
+	    const jor = cmd.getFloat3();
+	    jox = jor.x;
+	    joy = jor.y;
+	    joz = jor.z;
+	} else if (attr == "jot") {
+	    const jot = cmd.getString();
+	    for (s in RotateOrders) {
+		if (s == "jot") {
+		    jo = indexof s;
+		    break;
+		}
+	    }
+	} else if (attr == "ssc") {
+	    ssc = cmd.getBoolean();
+	} else super.setAttr(cmd);
+    }
+
+    override function toNode from (m is MaModel) to Node 
+    {
+	const tn = Joint {
+	    visible: visible;
+	    id: name
+
+	    ssc: ssc;
+	    jox: jox;
+	    joy: joy;
+	    joz: joz;
+	    jo: jo;
+
+	    tx: t.x;
+	    ty: t.y;
+	    tz: t.z;
+
+	    sx: s.x;
+	    sy: s.y;
+	    sz: s.z;
+
+	    rx: r.x;
+	    ry: r.y;
+	    rz: r.z;
+
+	    ro: ro;
+
+	    rpx: rp.x;
+	    rpy: rp.y;
+	    rpz: rp.z;
+
+	    spx: sp.x;
+	    spy: sp.y;
+	    spz: sp.z;
+
+	    rptx: rpt.x;
+	    rpty: rpt.y;
+	    rptz: rpt.z;
+
+	    sptx: spt.x;
+	    spty: spt.y;
+	    sptz: spt.z;
+
+	    tmrpx: tmrp.x;
+	    tmrpy: tmrp.y;
+	    tmrpz: tmrp.z;
+	}
+	m.spatialMap.put(this, tn);
+	const p = m.toParentNode(parent as MSpatial);
+	insert tn into p.content;
+	return tn;
+    }
 }
 
 class MCharacter is MNode {
@@ -2036,9 +2124,14 @@ class MCGFXShader is MAbstractShader
 	    for (conn in conns) {
 		if (conn.sourceNode instanceof MFile) {
 		    const file = conn.sourceNode as MFile;
+		    var fname = file.ftn;
+		    const slashslash = fname.indexOf("//");
+		    if (slashslash > 0) {
+			fname = "..{fname.substring(slashslash+1)}";
+		    }
 		    const paramName = conn.targetPath;
 		    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
-		    const image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
+		    const image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
 		    println("setting {paramName} to {file.ftn} p={p}");
 		    p.set(image);
 		}
@@ -2269,7 +2362,12 @@ class MShader is MAbstractShader
 	    if (conn.sourceNode instanceof MFile) {
 		const file = conn.sourceNode as MFile;
 		const baseURL = new java.net.URL(m.url);
-		image = m.imageLoader.loadImage(new java.net.URL(baseURL, file.ftn).toString());
+		var fname = file.ftn;
+		const slashslash = fname.indexOf("//");
+		if (slashslash > 0) {
+		    fname = "..{fname.substring(slashslash+1)}";
+		}
+		image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
 		uvMap = [0];
 		break;
 	    }
@@ -2491,6 +2589,12 @@ class Command
 	foreach (k in [1..count*2]) getFloat(k);
     }
 
+    public function getFloat3 to Vec3 {
+	vector(getFloat(1),
+	       getFloat(2),
+	       getFloat(3));
+    }
+
     public function getFloat3Array to Vec3[] 
     {
 	const count = getCount("s", 3);
@@ -2635,7 +2739,7 @@ class Command
     public function getFloat from (key is String) to Number 
     {
 	try {
-	    return java.lang.Float.parseFloat(getString(key));
+	    return java.lang.Double.parseDouble(getString(key)) as Number;
 	} catch (e) {
 	    println("error {this}, key={key}");
 	    return 0.0;
@@ -2649,7 +2753,7 @@ class Command
 	    if (str == "nan") {
 		return 0;
 	    }
-	    return java.lang.Float.parseFloat(str);
+	    return java.lang.Double.parseDouble(str) as Number;
 	} catch (e) {
 	    println("error {this}, index={i}");
 	    return 0.0;
@@ -2805,6 +2909,7 @@ class MaParser
     }
 }
 
+const RotateOrders = ["xyz", "yzx", "zxy", "xzy", "yxz", "zyx"];
 const RotateOrder =   
    [0, 1, 2,  // 0=xyz
     1, 2, 0,  // 1=yzx
@@ -2867,11 +2972,11 @@ public class MaTransform is Group
     }
 
     // translation
-    public readonly var t is Vec3 = bind vector(tx, ty, tz);
+    public readonly var t is Tuple3 = bind tuple(tx, ty, tz);
     // rotation
     public readonly var r is Mat4 = bind rotate(rx, ry, rz, ro);
     // scale
-    public readonly var s is Vec3 = bind vector(sx, sy, sz);
+    public readonly var s is Tuple3 = bind tuple(sx, sy, sz);
     
     override var transform = 
         bind 
@@ -2886,6 +2991,53 @@ public class MaTransform is Group
 	translate(-spx, 
 		  -spy, 
 		  -spz);
+}
+
+public class Joint is MaTransform {
+    public var jox is Number;
+    public var joy is Number;
+    public var joz is Number;
+    public var jo is Integer; // jot mapped to RO_INDEX
+    public var ssc is Boolean = true; // segment scale compensate
+    public readonly var jor = bind rotate(jox, joy, joz, jo);
+
+    var parentTransform is MaTransform = bind parent as MaTransform;
+    var parentInverseScale is Tuple3 = bind if (not ssc) then Tuple3.<<1>> else { var a = Tuple3.<<1>> / parentTransform.s; if (a == null) then Tuple3.<<1>> else a }
+
+    var ikEffector is MaTransform;
+
+    var t0 = bind if (ikEffector != null) then ikEffector.t else t;
+
+    var ikr is Mat4 = Mat4.<<1>>;
+
+    postinit {
+	ikr = jor;
+    }
+
+    var r0 = bind ikr;
+
+    override var transform = bind translate(t0) * scale(parentInverseScale) * jor * r0 * scale(sx, sy, sz);
+
+    var preferredRotation is Quat;
+
+    function getPreferredRotation to Quat {
+        if (preferredRotation == null) {
+            preferredRotation = jor.getRotation();
+        }
+        return preferredRotation;
+    }
+
+    function resetPreferredRotation {
+        ikr = getPreferredRotation().toMat4();
+    }
+
+    function setPreferredRotation
+	from (x is Number, y is Number, z is Number, w is Number) 
+	to ()
+    {
+        const q = Quat { x: x, y: y, z: z, w: w };
+        ikr = (Quat.Quat(toSceneTransform.inverse()) * q  * getPreferredRotation()).toMat4();
+    }
 }
 
 // http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/joint.html

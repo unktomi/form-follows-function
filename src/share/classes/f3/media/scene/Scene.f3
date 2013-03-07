@@ -470,12 +470,12 @@ public class Scene
 	}
     }
 
-    function doMouseDrag from (p is Pick, event is MouseEvent) to () 
+    function doMouseDrag from (p is Pick, sceneEvent is MouseEvent) to () 
     {   
         const hs = getMouseInputHandlers(p);
         if (hs <> []) {
             const translation = p.node.toSceneTransform.getTranslation();
-            const ray = camera.getPickRay(event.screenx, event.screeny);
+            const ray = camera.getPickRay(sceneEvent.screenx, sceneEvent.screeny);
 	    const normal = ray.direction.negate();
             const plane = Plane { 
                 normal: normal;
@@ -485,9 +485,13 @@ public class Scene
             p.dragPoint0 = p.dragPoint1;
             p.dragPoint1 = hit.point;
             for (h in hs) {
-                h.onMouseDrag(makeMouseEvent(null, p, event));
+                h.onMouseDrag(makeMouseEvent(null, p, sceneEvent));
             }
         }
+	if (p.node.mouseDrag <> null) {	
+            const e = makeMouseEvent(null, p, sceneEvent);
+	    p.node.mouseDrag.onNext(e);
+	}
     }
 
     function makeMouseEvent
