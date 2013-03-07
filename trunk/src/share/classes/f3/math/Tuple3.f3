@@ -21,6 +21,42 @@ public class Tuple3 is F3Value
 	}
     }
 
+    public function + from (n is Tuple3) to Tuple3 
+    {
+	Tuple3 {
+	    x: x + n.x;
+	    y: y + n.y;
+	    z: z + n.z;
+	}
+    }
+
+    public function - from (n is Tuple3) to Tuple3 
+    {
+	Tuple3 {
+	    x: x - n.x;
+	    y: y - n.y;
+	    z: z - n.z;
+	}
+    }
+
+    public function * from (n is Tuple3) to Tuple3 
+    {
+	Tuple3 {
+	    x: x * n.x;
+	    y: y * n.y;
+	    z: z * n.z;
+	}
+    }
+
+    public function / from (n is Tuple3) to Tuple3 
+    {
+	Tuple3 {
+	    x: x / n.x;
+	    y: y / n.y;
+	    z: z / n.z;
+	}
+    }
+
     public function * from (n is Number) to Tuple3 
     {   
     	if n == 0 then <<0>> else if n == 1 then this else
