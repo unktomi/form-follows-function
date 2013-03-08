@@ -1723,7 +1723,7 @@ class MMesh is MSpatial
 
     function uv from (uvSet is Integer, uvIndex is Integer) to Point2
     {
-	const uvs = uvSets[uvSet].uvs;
+	const uvs = uvSets[u | u.uvIndex == uvSet][0].uvs;
 	const i0 = uvIndex * 2;
 	const i1 = i0+1;
 	point(uvs[i0], uvs[i1]);
@@ -1744,9 +1744,11 @@ class MMesh is MSpatial
 	const i0 = 3*i;
 	const i1 = i0+1;
 	const i2 = i1+1;
-	vector(normals[i0],
-	       normals[i1],
-	       normals[i2])
+	const x = normals[i0];
+	const y = normals[i1];
+	const z = normals[i2];
+	const imag = 1.0/Math.sqrt(x*x+y*y+z*z);
+	vector(imag * x, imag * y, imag * z);
     }
 
     const edgeToNormal = new java.util.TreeMap of (Integer, Vec3);
@@ -1760,6 +1762,9 @@ class MMesh is MSpatial
 		normals = [];
 		break;
 	    }
+	}
+	if (normals <> []) {
+	   return;
 	}
 	for (polyface in polyfaces) {
 	    var norm = Vec3.<<0>>;
@@ -1891,7 +1896,11 @@ class MMesh is MSpatial
 				     MeshBuffer.VertexAttributeBuffer {id: "TANGENT", coordsPerVertex: 3, buffer: tanb },
 				     MeshBuffer.VertexAttributeBuffer {id: "BINORMAL", coordsPerVertex: 3, buffer: binb }];
 		}.toMesh();
-	    } else null
+	    } else MeshBuffer {
+		    indexBuffer: ib;
+		    vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
+		    normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
+		}.toMesh()
 	}
     }
 
@@ -1899,6 +1908,7 @@ class MMesh is MSpatial
     const vb = new FloatBufferBuilder();
     const nb = new FloatBufferBuilder();
     var uvbs is FloatBufferBuilder[];
+    var normalIndex = 0;
 
     function insertVertex
 	from (edge is Integer, face is Integer, uvIndex is Integer[]) 
@@ -1906,8 +1916,8 @@ class MMesh is MSpatial
     {
 	const v = this.vertex(edge);
 	const n = 
-	    if (normals <> []) 
-		then this.normal(edge) 
+	    if (this.normals <> []) 
+		then (if this.normals.size() <> this.verts.size() then this.normal(normalIndex++) else this.normal(edge))
 		else if (edgeToNormal.containsKey(edge)) 
 		    then edgeToNormal.get(edge) 
 		    else faceNormals[face];

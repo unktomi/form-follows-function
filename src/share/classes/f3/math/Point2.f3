@@ -65,5 +65,5 @@ public class Point2 is Tuple2
 
 }
 
-public var <<0>> = Point2 {x: 0.0, y: 0.0};
-public var <<1>> = Point2 {x: 1.0, y: 1.0};
+public static const <<0>> = Point2 {x: 0.0, y: 0.0};
+public static const <<1>> = Point2 {x: 1.0, y: 1.0};
