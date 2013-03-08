@@ -2,11 +2,11 @@ package f3.media.scene;
 import f3.math.*;
 import f3.lang.Ref;
 
-public abstract class Parameter of a is Ref of a
+public interface Parameter of a is Ref of a
 {
     const name is String;
-    public override abstract function get to a;
-    public override abstract function set from (x is a) to ();
+    //public override abstract function get to a;
+    //public override abstract function set from (x is a) to ();
     public abstract function bindTo from (ref is Ref of a) to ();
 }
 
@@ -19,8 +19,8 @@ public abstract class Shader {
 					 projectionMatrix is Mat4) to ();
     abstract public function reset to ();
 
-    public abstract function getParameter from (name is String) to Parameter;
-    public abstract function getParameters to Parameter[];
+    public abstract function getParameter from (name is String) to Parameter of ?;
+    public abstract function getParameters to (Parameter of ?)[];
     public abstract function setParameter from (name is String, value is Object) to ();
     public var isTransparent is Boolean;
 }

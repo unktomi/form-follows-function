@@ -3,12 +3,16 @@ import f3.math.*;
 import f3.math.LinearMath.*;
 import f3.media.scene.*;
 import f3.lang.Ref;
+import f3.lang.ConstRef;
+import f3.lang.AbstractConstRef;
+import f3.lang.AbstractRef;
+
 
 public static var DEBUG = false;
 
-public abstract class Parameter of a is f3.media.scene.Shader.Parameter of a
+public abstract class Parameter of a is AbstractRef of a, f3.media.scene.Shader.Parameter of a
 {
-    public readonly var value is a;
+   public readonly var value is a;
     var ref is Ref of a;
     public const semantic is String;
     public function apply
@@ -349,11 +353,11 @@ public class CGFXShader is Shader
 
     public readonly var parameters is Parameter[] = bind getParameters(effect);
 
-    override public function getParameters to Parameter[] {
+    override public function getParameters to (Parameter of ?)[] {
 	parameters
     }
 
-    override public function getParameter from (name is String) to Parameter {
+    override public function getParameter from (name is String) to Parameter  of ? {
 	for (p in parameters) {
 	    if (p.name == name) {
 		return p

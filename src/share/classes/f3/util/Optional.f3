@@ -13,7 +13,7 @@ import f3.lang.ConstRef;
  * a 'foreach' loop.
  */    
 
-public abstract class Optional of a is Monad of (Optional, a), F3Value, ConstRef of a
+public abstract class Optional of a is Monad of (Optional, a), F3Value
 {
     abstract override function map of b 
 	from (f is function from a to b) 
@@ -23,7 +23,7 @@ public abstract class Optional of a is Monad of (Optional, a), F3Value, ConstRef
 	from (f is function from a to Optional of b) 
 	to Optional of b;
 
-    override abstract public function get to a;
+    abstract public function get to a;
 
     public function isAbsent from () to Boolean 
     {

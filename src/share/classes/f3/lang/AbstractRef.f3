@@ -1,0 +1,5 @@
+package f3.lang;
+
+public abstract class AbstractRef of a is AbstractConstRef of a, Ref of a {
+}
+
