@@ -1,0 +1,44 @@
+package f3.lang;
+
+public abstract class AbstractConstRef of a is ConstRef of a {
+
+    public override function map of b 
+	from (f is function from a to b) 
+	to ConstRef of b 
+    {
+	const self = this;
+	AbstractConstRef of b {
+	    override function get to b {
+		f(self.get())
+	    }
+	}
+    }
+
+    public function flatmap of b 
+	from (f is function from a to ConstRef of b) 
+	to ConstRef of b 
+    {
+	const self = this;
+	AbstractConstRef of b {
+	    override function get to b {
+		f(self.get()).get()
+	    }
+	}
+    }
+
+    public function coflatmap of b 
+	from (f is function from ConstRef of a to b) 
+	to ConstRef of b 
+    {
+	const self = this;
+	AbstractConstRef of b {
+	    override function get to b {
+		f(self)
+	    }
+	}
+    }
+
+    public function extract to a {
+	get()
+    }
+}

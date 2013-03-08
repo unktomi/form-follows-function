@@ -4,6 +4,8 @@ import f3.math.LinearMath.*;
 import f3.media.scene.*;
 import f3.lang.Ref;
 import f3.lang.ConstRef;
+import f3.lang.AbstractRef;
+import f3.lang.AbstractConstRef;
 import java.lang.Math;
 
 class MAttr {
@@ -237,7 +239,7 @@ class MaModel
 	    const fx = resolveInput(n, "{attr}", 0, value.x);
 	    const fy = resolveInput(n, "{attr}", 1, value.y);
 	    const fz = resolveInput(n, "{attr}", 2, value.z);
-	    result = ConstRef of Tuple3 {
+	    result = AbstractConstRef of Tuple3 {
 		override function get to Tuple3 {
 		    tuple(fx.get(), fy.get(), fz.get());
 		}
@@ -291,7 +293,7 @@ class MaModel
 		const name = attr.shortName.toUpperCase();
 		const ptrv = ptr as Ref of Tuple4;
 		if (name.endsWith("X")) {
-		    ptr = Ref of Number {
+		    ptr = AbstractRef of Number {
 			override function get to Number {
 			    ptrv.get().x;
 			}
@@ -301,7 +303,7 @@ class MaModel
 			}
 		    } as Ref of ?;
 		} else if (name.endsWith("Y")) {
-		    ptr = Ref of Number {
+		    ptr = AbstractRef of Number {
 			override function get to Number {
 			    ptrv.get().y;
 			}
@@ -311,7 +313,7 @@ class MaModel
 			}
 		    } as Ref of ?;
 		} else if (name.endsWith("Z")) {
-		    ptr = Ref of Number {
+		    ptr = AbstractRef of Number {
 			override function get to Number {
 			    ptrv.get().z;
 			}
@@ -321,7 +323,7 @@ class MaModel
 			}
 		    } as Ref of ?;
 		} else if (name.endsWith("W")) {
-		    ptr = Ref of Number {
+		    ptr = AbstractRef of Number {
 			override function get to Number {
 			    ptrv.get().w;
 			}
@@ -488,7 +490,7 @@ class MaModel
 
 function makeRefX from (ref is Ref of Number) to Ref of Tuple3 
 {
-    Ref of Tuple3 {
+    AbstractRef of Tuple3 {
 	override public function get to Tuple3 {
 	    tuple(ref.get(), 0, 0);
 	}
@@ -500,7 +502,7 @@ function makeRefX from (ref is Ref of Number) to Ref of Tuple3
 
 function makeRefY from (ref is Ref of Number) to Ref of Tuple3 
 {
-    Ref of Tuple3 {
+    AbstractRef of Tuple3 {
 	override public function get to Tuple3 {
 	    tuple(0, ref.get(), 0);
 	}
@@ -512,7 +514,7 @@ function makeRefY from (ref is Ref of Number) to Ref of Tuple3
 
 function makeRefZ from (ref is Ref of Number) to Ref of Tuple3 
 {
-    Ref of Tuple3 {
+    AbstractRef of Tuple3 {
 	override public function get to Tuple3 {
 	    tuple(0, 0, ref.get());
 	}
@@ -524,7 +526,7 @@ function makeRefZ from (ref is Ref of Number) to Ref of Tuple3
 
 function makeRef of a from (name is String, ptr is String, result is Ref of a) to Ref of a 
 {
-    Ref of a {
+    AbstractRef of a {
 	override function toString to String 
 	{
 	    "{name}.{ptr} = {get()}";
@@ -673,7 +675,7 @@ abstract class MSpatial is MNode {
     {
 	if (path == "v") {
 	    const tn = target as Node;
-	    Ref of Number {
+	    AbstractRef of Number {
 		override public function set from (n is Number) to () {
 		    tn.visible = n <> 0.0;
 		}
@@ -722,7 +724,7 @@ class MPlusMinusAverage is MUtilityOfTuple3 {
 	const f = getOutput(m, "o3");
 	const name = this.name;
 	Link of Tuple3 {
-	    input: ConstRef of Tuple3 { 
+	    input: AbstractConstRef of Tuple3 { 
 		override function toString to String {
 		    "{name}.op {f.get()}"
 		}
@@ -782,7 +784,7 @@ class MPlusMinusAverage is MUtilityOfTuple3 {
 		null
 	    } else if (op == 1) {
 		// sum
-		ConstRef of Tuple3 {
+		AbstractConstRef of Tuple3 {
 		    override function get to Tuple3 {
 			var x = 0.0;
 			var y = 0.0;
@@ -793,7 +795,7 @@ class MPlusMinusAverage is MUtilityOfTuple3 {
 		}
 	    } else if (op == 2) {
 		// subtract
-		ConstRef of Tuple3 {
+		AbstractConstRef of Tuple3 {
 		    override function get to Tuple3 {
 			const t0 = funs[0].get();
 			var x = t0.x;
@@ -807,7 +809,7 @@ class MPlusMinusAverage is MUtilityOfTuple3 {
 		}
 	    } else if (op == 3) {
 		// avg
-		ConstRef of Tuple3 {
+		AbstractConstRef of Tuple3 {
 		    override function get to Tuple3 {
 			var x = 0.0;
 			var y = 0.0;
@@ -854,7 +856,7 @@ class MMultiplyDivide is MUtilityOfTuple3
 	const f = getOutput(m, "o");
 	const name = this.name;
 	Link of Tuple3 {
-	    input: ConstRef of Tuple3 { 
+	    input: AbstractConstRef of Tuple3 { 
 		override function toString to String {
 		    "{name}.o3 {f.get()}"
 		}
@@ -890,19 +892,19 @@ class MMultiplyDivide is MUtilityOfTuple3
 	if (p.startsWith("i1")) {
 	    const t = m.resolveInput(this, "i1", i1);
 	    if (p == "i1x") {
-		ConstRef of Number {
+		AbstractConstRef of Number {
 		    override function get to Number {
 			t.get().x;
 		    }
 		}
 	    } else if (p == "i1y") {
-		ConstRef of Number {
+		AbstractConstRef of Number {
 		    override function get to Number {
 			t.get().y;
 		    }
 		}
 	    } else if (p == "i1z") {
-		ConstRef of Number {
+		AbstractConstRef of Number {
 		    override function get to Number {
 			t.get().z;
 		    }
@@ -911,19 +913,19 @@ class MMultiplyDivide is MUtilityOfTuple3
 	} else if (p.startsWith("i2")) {
 	    const t = m.resolveInput(this, "i2", i2);
 	    if (p == "i2x") {
-		ConstRef of Number {
+		AbstractConstRef of Number {
 		    override function get to Number {
 			t.get().x;
 		    }
 		}
 	    } else if (p == "i2y") {
-		ConstRef of Number {
+		AbstractConstRef of Number {
 		    override function get to Number {
 			t.get().y;
 		    }
 		}
 	    } else if (p == "i2z") {
-		ConstRef of Number {
+		AbstractConstRef of Number {
 		    override function get to Number {
 			t.get().z;
 		    }
@@ -942,7 +944,7 @@ class MMultiplyDivide is MUtilityOfTuple3
 		input1
 	    } else if (op == 1) {
 		// multiply
-		ConstRef of Tuple3 {
+		AbstractConstRef of Tuple3 {
 		    override function get to Tuple3 {
 			const t1 is Tuple3 = input1.get();
 			const t2 is Tuple3 = input2.get();
@@ -954,7 +956,7 @@ class MMultiplyDivide is MUtilityOfTuple3
 		}
 	    } else if (op == 2) {
 		// divide
-		ConstRef of Tuple3 {
+		AbstractConstRef of Tuple3 {
 		    override function get to Tuple3 {
 			const t1 is Tuple3 = input1.get();
 			const t2 is Tuple3 = input2.get();
@@ -965,7 +967,7 @@ class MMultiplyDivide is MUtilityOfTuple3
 		}
 	    } else if (op == 3) {
 		// pow
-		ConstRef of Tuple3 {
+		AbstractConstRef of Tuple3 {
 		    override function get to Tuple3 {
 			const t1 is Tuple3 = input1.get();
 			const t2 is Tuple3 = input2.get();
@@ -1037,7 +1039,7 @@ class MClamp is MUtilityOfTuple3 {
 	    const mnp = m.resolveInput(this, "mn", mn);
 	    const mxp = m.resolveInput(this, "mx", mx);
 	    const ipp = m.resolveInput(this, "ip", ip);
-	    ConstRef of Tuple3 {
+	    AbstractConstRef of Tuple3 {
 		override function get to Tuple3 {
 		    const minv = mnp.get();
 		    const maxv = mxp.get();
@@ -1101,7 +1103,7 @@ class MReverse is MUtilityOfTuple3 {
 	if (attr == "o") {
 	    const ip = m.resolveInput(this, "i", i);
 	    //println("ip={ip}");
-	    ConstRef of Tuple3 {
+	    AbstractConstRef of Tuple3 {
 		override function get to Tuple3 {
 		    const iv = ip.get();
 		    //println("reverse {iv}");
@@ -1132,7 +1134,7 @@ class MAddDoubleLinear is MUtilityOfNumber
 	if (attr == "o") {
 	    const input1 = m.resolveInput(this, "i1", i1);
 	    const input2 = m.resolveInput(this, "i2", i2);
-	    ConstRef of Number {
+	    AbstractConstRef of Number {
 		override function get to Number {
 		    input1.get() + input2.get();
 		}
@@ -1198,7 +1200,7 @@ class MTransform is MSpatial {
 	const n = target as MaTransform;
 
 	if (ptr == "t") {
-	    return Ref of Tuple3 {
+	    return AbstractRef of Tuple3 {
 		override function toString to String {
 		    "{n.id}.t = {n.t}";
 		}
@@ -1212,7 +1214,7 @@ class MTransform is MSpatial {
 	}
 
 	if (ptr == "s") {
-	    return Ref of Tuple3 {
+	    return AbstractRef of Tuple3 {
 		override function toString to String {
 		    "{n.id}.s = {n.s}";
 		}
@@ -1226,7 +1228,7 @@ class MTransform is MSpatial {
 	}
 
 	if (ptr == "r") {
-	    return Ref of Tuple3 {
+	    return AbstractRef of Tuple3 {
 		override function toString to String {
 		    "{n.id}.r = {n.r}";
 		}
@@ -1857,6 +1859,7 @@ class MMesh is MSpatial
 	    this.ib.clear();
 	    this.vb.clear();
 	    this.nb.clear();
+	    this.normalIndex = 0;
 	    this.uvbs = [];
 	    const startIndex = comp.faceStart;
 	    const endIndex = comp.faceEnd;
@@ -2148,7 +2151,6 @@ class MCGFXShader is MAbstractShader
 	    }
 	}
 	var uvs is Integer[];
-	println("vals={vals}");
 	for (i in [0..<vals.size() step 4]) {
 	    const n = vals[i];
 	    const t = vals[i+1];
@@ -2246,7 +2248,7 @@ class MCGFXVector is MSpatial {
 	for (conn in connectionsFromThis.get("wv")) {
 	    if (conn.targetNode instanceof MCGFXShader) {
 		var shader = m.toShader(conn.targetNode as MCGFXShader);
-		const p = shader.getParameter(conn.targetPath);
+		const p = shader.getParameter(conn.targetPath) as Shader.Parameter of Tuple3;
 		p.bindTo(&vecNode.wv);
 	    }
 	}
@@ -2260,7 +2262,7 @@ class MShader is MAbstractShader
     public const type is String;
 
     var c is Tuple3 = tuple(0.5, 0.5, 0.5);
-    var ambc is Tuple3 =Tuple3.<<0>>;
+    var ambc is Tuple3 = Tuple3.<<0>>;
     var ic is Tuple3 = Tuple3.<<0>>;
     var sc is Tuple3 = Tuple3.<<0>>;
     var dc is Number = 0.8;
@@ -2276,7 +2278,7 @@ class MShader is MAbstractShader
 	if (ptr == "c" or ptr == "cb" or ptr == "cg" or ptr == "cr") {
 	    const result = shader.getParameter("diffuse") as Shader.Parameter of Tuple4;
 	    if (ptr == "cb") {
-		Ref of Number {
+		AbstractRef of Number {
 		    override public function get to Number 
 		    {
 			result.get().z
@@ -2288,7 +2290,7 @@ class MShader is MAbstractShader
 		    }
 		}
 	    } else if (ptr == "cg") {
-		Ref of Number {
+		AbstractRef of Number {
 		    override public function get to Number 
 		    {
 			result.get().y
@@ -2300,7 +2302,7 @@ class MShader is MAbstractShader
 		    }
 		}
 	    } else if (ptr == "cr") {
-		Ref of Number {
+		AbstractRef of Number {
 		    override public function get to Number 
 		    {
 			result.get().x
@@ -2312,7 +2314,7 @@ class MShader is MAbstractShader
 		    }
 		}
 	    } else {
-		Ref of Tuple3 {
+		AbstractRef of Tuple3 {
 		    override public function get to Tuple3
 		    {
 			result.get().xyz();

@@ -1980,13 +1980,13 @@ public abstract class F3AbstractTranslation
 		List<Type> converted = List.<Type>nil();
 		for (Type t: tas) {
 		    Type.TypeVar src = (Type.TypeVar)t;
-		    Type.TypeVar dst = new Type.TypeVar(names.fromString(src.tsym.name+"$"), src.tsym.owner, src.lower);
+		    Type.TypeVar dst = new Type.TypeVar(names.fromString(src.tsym.name+"$impl"), src.tsym.owner, src.lower);
 		    dst.bound = syms.objectType; // ?
 		    converted = converted.append(dst);
 		}
 		Type convertedType = types.subst(fa.qtype, tas, converted);
 		convertedType = new Type.ForAll(converted, convertedType);
-		//System.err.println("CONVERTED "+type+" => "+convertedType);
+		System.err.println("CONVERTED "+type+" => "+convertedType);
 		methSym = new MethodSymbol(methSym.flags(), methSym.name, 
 					   convertedType, methSym.owner);
 	    }
