@@ -1377,6 +1377,9 @@ class SceneRenderer {
 	    if (badtex) {
 		continue;
 	    }
+	    for (deformer in mn.deformers) {
+	    	deformer.apply();
+	    }
             var shader = mn.shader;
 	    //println("shader={shader}");
             const texParams = 

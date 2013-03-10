@@ -1,4 +1,5 @@
 package f3.media.scene;
+import f3.media.scene.meshdeform.MeshDeformer;
 
 public class MeshNode is Node 
 {
@@ -6,4 +7,5 @@ public class MeshNode is Node
     public var shader is Shader;
     override var blocksPointer = true;
     override var contentBounds = bind mesh.bounds;
+    public var deformers is MeshDeformer[];
 }

@@ -1,0 +1,5 @@
+package f3.media.scene.meshdeform;
+
+public interface MeshDeformer {
+    public abstract function apply from () to ();
+}

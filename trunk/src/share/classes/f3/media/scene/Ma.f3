@@ -7,6 +7,7 @@ import f3.lang.ConstRef;
 import f3.lang.AbstractRef;
 import f3.lang.AbstractConstRef;
 import java.lang.Math;
+import f3.media.scene.meshdeform.BlendShape;
 
 class MAttr {
     const longName is String;
@@ -76,6 +77,12 @@ class MaModel
 		then MClamp {name: name}
 	    else if (nodeType == "reverse") 
 		then MReverse {name: name}
+	    else if (nodeType == "blendShape") 
+		then MBlendShape {name: name}
+	    else if (nodeType == "groupParts") 
+		then MGroupParts {name: name}
+	    else if (nodeType == "tweak") 
+		then MTweak {name: name}
 	    else null;
 	if (current <> null) {
 	    nodeMap.put(current.name, current);
@@ -161,6 +168,9 @@ class MaModel
 
     const linkMap is java.util.Map of (MNode, Link of ?) = 
 	new java.util.HashMap of (MNode, Link of ?) ();
+
+    const blendShapeMap is java.util.Map of (MNode, BlendShape) = 
+	new java.util.HashMap of (MNode, BlendShape) ();
 
     public var url is String;
 
@@ -265,6 +275,8 @@ class MaModel
 	var ptr = 
 	if (target instanceof MCharacter) {
 	    (target as MCharacter).resolveTargetPointer(this, c)
+	} else if (target instanceof MBlendShape) {
+	    (target as MBlendShape).resolveTargetPointer(this, c)
 	} else if (target instanceof MSpatial) {
 	    const resolved = toNode(target as MSpatial);
 	    target.getPointer(key, resolved);
@@ -389,6 +401,13 @@ class MaModel
 	    }
     }
 
+    function toBlendShape from (n is MBlendShape) to BlendShape {
+	if (blendShapeMap.containsKey(n)) then blendShapeMap.get(n) else {
+		const blendShape = n.toBlendShape(this);
+		blendShapeMap.put(n, blendShape);
+	    }
+    }
+
     function toLink from (n is MUtility) to Link of ?
     {
 	if (linkMap.containsKey(n)) then linkMap.get(n) else {
@@ -455,6 +474,8 @@ class MaModel
 		    toClipLibrary(n as MClipLibrary);
 		} else if (n instanceof MUtility) {
 		    toLink(n as MUtility);
+		} else if (n instanceof MBlendShape) {
+		    toBlendShape(n as MBlendShape);
 		} else null
 	}
 	const links = foreach (link in linkMap.values()) link;
@@ -1430,6 +1451,129 @@ class MCamera is MSpatial
     }
 }
 
+class MGroupParts is MNode {
+}
+
+class MTweak is MNode {
+}
+
+class MBlendShape is MNode {
+
+    public override function setAttr from (cmd is Command) to ()
+    {
+	super.setAttr(cmd);
+    }
+
+   function getGroupParts to MGroupParts {
+	for (c in connectionsToThis.get("ip")) {
+	    const path = parsePath(c.targetPath).path;
+	    if (path[1] is Index) {
+		const i = path[1] as Index;
+		if (i.index == 0) {
+		    if (path[2] is Field) {
+			const f = path[2] as Field;
+			if (f.name == "ig") {
+			    if (c.sourceNode is MGroupParts) {
+				return c.sourceNode as MGroupParts;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	return null;
+    }
+
+    function getTweak from (gp is MGroupParts) to MTweak {
+	for (c in gp.connectionsToThis.get("ig")) {
+	    if (c.sourceNode is MTweak) {
+		return c.sourceNode as MTweak;
+	    }
+	}
+	return null;
+    }
+
+    public function resolveTargetPointer 
+	from (m is MaModel, 
+	      c is Connection) 
+	to Ref of Number 
+    {
+	const p = parsePath(c.targetPath).path;
+	var resolved = m.toBlendShape(this);
+	if (p[0] is Field) {
+	    const f = p[0] as Field;
+	    if (f.name == "w") {
+		if (p[1] is Index) {
+		    const p1 = p[1] as Index;
+		    const i = p1.index;
+		    return AbstractRef of Number {
+			public override function get to Number {
+			    resolved.weights[i];
+			}
+			public override function set from (n is Number) to () {
+			    resolved.weights[i] = n;
+			}
+		    }
+		}
+	    }
+	}
+	return null;
+    }
+
+    public function toBlendShape from (m is MaModel) to BlendShape 
+    {
+	const gp = getGroupParts();
+	var sourceMesh is MMesh;
+	const tweak = getTweak(gp);
+	for (c in tweak.connectionsToThis.get("ip")) {
+	    if (c.sourceNode instanceof MGroupParts and c.targetPath == "ip[0].ig") {
+	       gp = c.sourceNode as MGroupParts;
+	       break;
+	    }	    
+	}
+	for (c in gp.connectionsToThis.get("ig")) {
+	    if (c.sourceNode is MMesh and c.sourcePath == "w") {
+		sourceMesh = c.sourceNode as MMesh;
+	    }
+	}
+	var targetMesh is MMesh;
+	for (c in connectionsFromThis.get("og")) {
+	    if (c.targetNode is MMesh and c.targetPath == "i") {
+		targetMesh = c.targetNode as MMesh;
+	    }
+	}
+	const blendMeshes = 
+	    foreach (c in connectionsToThis.get("it")) 
+	    {
+		if (c.sourceNode is MMesh) {
+		    c.sourceNode as MMesh;
+		} else null;
+	    };
+	const resolvedSource = m.toNode(sourceMesh) as MeshNode;
+	const resolvedTarget = m.toNode(targetMesh) as MeshNode;
+	const resolvedBlendShapes = foreach (mesh in blendMeshes) {
+	    m.toNode(mesh) as MeshNode;
+	}
+	const weights = foreach (x in resolvedBlendShapes) 1.0;
+	var sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
+	var sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
+	resolvedTarget.mesh = resolvedSource.mesh;
+	resolvedTarget.shader = resolvedBlendShapes[0].shader; // hack?
+	resolvedSource.visible = false;
+	var result = BlendShape {
+	    sourceVertices: sourceVertices;
+	    sourceNormals: sourceNormals;
+	    targetVertices: resolvedTarget.mesh.getVertexBuffer();
+	    targetNormals: resolvedTarget.mesh.getNormalBuffer();
+	    weights: weights;
+	    blendTargetVertices: foreach (n in resolvedBlendShapes) n.mesh.getVertexBuffer();
+	    blendTargetNormals: foreach (n in resolvedBlendShapes) n.mesh.getNormalBuffer();
+	}
+	insert result into resolvedTarget.deformers;
+	return result;
+    }
+}
+
 class MJoint is MTransform {
 
     var jox is Number;
@@ -2079,7 +2223,7 @@ class MMesh is MSpatial
 		}
 	    }
 	    const r = MeshNode {
-		//visible: visible;
+		visible: visible;
 		id: "{name}{id}";
 		mesh: mesh;
 		shader: shader;

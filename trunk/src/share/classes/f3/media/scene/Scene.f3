@@ -122,6 +122,7 @@ public class Scene
 					  v0 * w.x + 
 					  v1 * w.y + 
 					  v2 * w.z;
+				      //				      println("picked {n}");
 				      const worldPoint = n.toSceneTransform * (Point3.<<0>> + point);
 				      insert Pick 
 				      {

@@ -2,6 +2,14 @@ package f3.media.scene;
 import java.nio.*;
 
 public class BufferUtils {
+
+    static public FloatBuffer clone(FloatBuffer src) {
+	src.rewind();
+	FloatBuffer copy = createFloatBuffer(src.limit());
+	copy.put(src);
+	return copy;
+    }
+
     static public ByteBuffer createByteBuffer(int limit) {
         ByteBuffer buf = ByteBuffer.allocateDirect(limit).order(ByteOrder.nativeOrder());
         buf.clear();
