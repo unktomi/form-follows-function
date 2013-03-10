@@ -383,7 +383,6 @@ public class CGFXShader is Shader
 	    }
     }
 
-
     public override function apply
 	from (mesh is AbstractMesh,
 	      worldTransform is Mat4,

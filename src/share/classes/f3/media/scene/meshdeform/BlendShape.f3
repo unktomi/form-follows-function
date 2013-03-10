@@ -1,0 +1,61 @@
+package f3.media.scene.meshdeform;
+import java.nio.*;
+
+public class BlendShape is MeshDeformer {
+    public var sourceVertices is FloatBuffer;
+    public var sourceNormals is FloatBuffer;
+    public var targetVertices is FloatBuffer;
+    public var targetNormals is FloatBuffer;
+    public var blendTargetVertices is FloatBuffer[];
+    public var blendTargetNormals is FloatBuffer[];
+    public var weights is Number[];
+
+    public override function apply from () to () 
+    {
+    //	println("applying blend shape {weights.size()} => {weights}");
+        const origPos is FloatBuffer = sourceVertices;
+        const origNorm is FloatBuffer = sourceNormals;
+        const positionData = targetVertices;
+        const normalData = targetNormals;
+        positionData.rewind();
+        normalData.rewind();
+        const count = positionData.limit();
+        var baseWeight = 1.0;
+        for (w in weights) {
+            baseWeight -= w;
+        }
+        for (i in [0..<count step 3]) {
+            var x = baseWeight * origPos.get(i);
+            var y = baseWeight * origPos.get(i+1);
+            var z = baseWeight * origPos.get(i+2);
+            var nx = baseWeight * origNorm.get(i);
+            var ny = baseWeight * origNorm.get(i+1);
+            var nz = baseWeight * origNorm.get(i+2);
+            for (weight in weights) {
+		const j = indexof weight;
+                const targetPos = blendTargetVertices[j];
+                const targetNormals = blendTargetNormals[j];
+                const tx = targetPos.get(i);
+                const ty = targetPos.get(i+1);
+                const tz = targetPos.get(i+2);
+                const tnx = targetNormals.get(i);
+                const tny = targetNormals.get(i+1);
+                const tnz = targetNormals.get(i+2);
+                x += tx * weight;
+                y += ty * weight;
+                z += tz * weight;
+                nx += tnx * weight;
+                ny += tny * weight;
+                nz += tnz * weight;
+            }
+            positionData.put(x);
+            positionData.put(y);
+            positionData.put(z);
+            normalData.put(nx);
+            normalData.put(ny);
+            normalData.put(nz);
+        }
+        positionData.rewind();
+        normalData.rewind();
+    }
+}
