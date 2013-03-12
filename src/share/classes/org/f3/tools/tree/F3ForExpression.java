@@ -137,8 +137,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
             apply = this.bodyExpr;
 	    int i = 0;
 	    int j = inClauses.size()-1;
-	    System.err.println("monadType="+monadType);
-	    System.err.println("resultType="+resultType);
+	    //System.err.println("monadType="+monadType);
+	    //System.err.println("resultType="+resultType);
             for (List<F3ForExpressionInClause> x = clauses; 
                  x.nonEmpty(); x = x.tail) {
                 F3ForExpressionInClause clause = x.head;

@@ -8,6 +8,7 @@ import f3.lang.AbstractRef;
 import f3.lang.AbstractConstRef;
 import java.lang.Math;
 import f3.media.scene.meshdeform.BlendShape;
+import f3.util.Bits;
 
 class MAttr {
     const longName is String;
@@ -116,6 +117,14 @@ class MaModel
 	    addAttr(cmd);
 	} else if (n == "connectAttr") {
 	    connectAttr(cmd)
+	} else if (n == "parent") {
+	    const src = cmd.getString("add");
+	    const target = cmd.getString(0);
+	    const srcNode = findNode(src);
+	    const targetNode = findNode(target);
+	    if (srcNode instanceof MMesh) {
+		insert targetNode into (srcNode as MMesh).parents;
+	    }
 	}
     }
 
@@ -574,7 +583,6 @@ class Connection {
     }
 }
 
-
 class MNode {
     const connectionsFromThis is java.util.Map of (String, Connection[]) =
 	new java.util.HashMap of (String, Connection[]);
@@ -587,7 +595,6 @@ class MNode {
     function getFullName to String {
 	"{if (parent == null) then "" else parent.getFullName()}|{name}";
     }
-
 
     function getPointer 
 	from (path is String, target is Object) 
@@ -1791,11 +1798,12 @@ function parsePath from (path is String) to Path
 	    var i2 is String = null;
 	    if (t == ":") { 
 		i2 = izer.nextToken();
-		izer.nextToken(); // ignore "]"
 		pnode = Range {
 		    startIndex: Integer.parseInt(i1);
 		    endIndex: Integer.parseInt(i2);
 		}
+	    } else if (i1 == "*") {
+		continue;
 	    } else {
 		pnode = Index {
 		    index: Integer.parseInt(i1);
@@ -1828,8 +1836,21 @@ class ComponentList {
     const faceEnd is Integer;
 }
 
+class FaceVertex is java.lang.Comparable of FaceVertex {
+    const face is Integer;
+    const vertex is Integer;
+    override function compareTo from (other is FaceVertex) to Integer {
+	var cmp = face - other.face;
+	if (cmp == 0) {
+	    cmp = vertex - other.vertex;
+	}
+	return cmp
+    }
+}
+
 class MMesh is MSpatial 
 {
+    public var parents is MNode[];
     var components is ComponentList[];
     var verts is Number[];
     var pointTweaks is Number[];
@@ -1901,8 +1922,6 @@ class MMesh is MSpatial
 
     function buildMesh
     {
-	//	println("buildMesh {name}: normals: {normals} polyfaces = {polyfaces}");
-	//println("buildMesh {name}: verts {verts.size()} norms {normals.size()} polyfaces {polyfaces.size()} uvSets {uvSets.size()}");
 	for (v in normals) {
 	    if (v > 1e10) { // bogus normals
 		normals = [];
@@ -2003,7 +2022,6 @@ class MMesh is MSpatial
 	    this.ib.clear();
 	    this.vb.clear();
 	    this.nb.clear();
-	    this.normalIndex = 0;
 	    this.uvbs = [];
 	    const startIndex = comp.faceStart;
 	    const endIndex = comp.faceEnd;
@@ -2050,12 +2068,26 @@ class MMesh is MSpatial
 		}.toMesh()
 	}
     }
-
     const ib = new IntBufferBuilder();
     const vb = new FloatBufferBuilder();
     const nb = new FloatBufferBuilder();
     var uvbs is FloatBufferBuilder[];
     var normalIndex = 0;
+    const faceVertexToNormal is java.util.Map of (FaceVertex, Vec3) = 
+	new java.util.TreeMap of (FaceVertex, Vec3);
+
+    function getFaceVertexNormal 
+        from (face is Integer, vertex is Integer) 
+	to Vec3
+	{  
+	    const key = FaceVertex { face: face, vertex: vertex };
+	    var v = faceVertexToNormal.get(key);
+	    if ((v as Object) == null) {
+		v = this.normal(normalIndex++);
+		faceVertexToNormal.put(key, v);
+	    }
+	    return v;
+	}
 
     function insertVertex
 	from (edge is Integer, face is Integer, uvIndex is Integer[]) 
@@ -2064,7 +2096,7 @@ class MMesh is MSpatial
 	const v = this.vertex(edge);
 	const n = 
 	    if (this.normals <> []) 
-		then (if this.normals.size() <> this.verts.size() then this.normal(normalIndex++) else this.normal(edge))
+		then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
 		else if (edgeToNormal.containsKey(edge)) 
 		    then edgeToNormal.get(edge) 
 		    else faceNormals[face];
@@ -2105,7 +2137,6 @@ class MMesh is MSpatial
 	    }
 	} else if (n == "n") {
 	    const path = cmd.getPath();
-	    //println("NORMAL PATH={path.path[1]}");
 	    const values = cmd.getFlatFloat3Array();
 	    if (path.path[1] instanceof Range) {
 		const r = path.path[1] as Range;
@@ -2142,7 +2173,6 @@ class MMesh is MSpatial
 		    const componentList = cmd.getStringArray();
 		    for (comp in componentList) {
 			const compPath = parsePath(comp);
-			//println("compPath={compPath}");
 			if (compPath.path[0] is Field) {
 			    const f = compPath.path[0] as Field;
 			    if (f.name == "f") {
@@ -2199,7 +2229,6 @@ class MMesh is MSpatial
     override function toNode from (m is MaModel) to Node 
     {
 	buildMesh();
-	const p = m.toParentNode(parent as MSpatial);
 	var id = "";
 	var r0 is Node;
 	for (mesh in getMesh()) {
@@ -2222,16 +2251,19 @@ class MMesh is MSpatial
 		    shader.uvMap[i] = mesh.textureCoordinates.size()-1;
 		}
 	    }
-	    const r = MeshNode {
-		visible: visible;
-		id: "{name}{id}";
-		mesh: mesh;
-		shader: shader;
+	    for (pn in [parent, parents]) {
+		const p = m.toParentNode(pn as MSpatial);
+		const r = MeshNode {
+		    visible: visible;
+		    id: "{name}{id}";
+		    mesh: mesh;
+		    shader: shader;
+		}
+		id = "#{indexof mesh +1}";
+		insert r into p.content;
+		r0 = r;
+		m.spatialMap.put(this, r);
 	    }
-	    id = "#{indexof mesh +1}";
-	    insert r into p.content;
-	    r0 = r;
-	    m.spatialMap.put(this, r);
 	}
 	return r0;
     }
@@ -2289,7 +2321,7 @@ class MCGFXShader is MAbstractShader
 		    const paramName = conn.targetPath;
 		    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
 		    const image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
-		    println("setting {paramName} to {file.ftn} p={p}");
+		    //println("setting {paramName} to {file.ftn} p={p}");
 		    p.set(image);
 		}
 	    }
@@ -2305,7 +2337,6 @@ class MCGFXShader is MAbstractShader
 		    insert 0 into uvs;
 		}
 		const name = vas[1+(i-1) / 4];
-		println("unit={unit} ame={name}");
 		if (name.startsWith("uv:map")) {
 		    const uvIndex = Integer.parseInt(name.substring(6))-1;
 		    uvs[unit] = uvIndex;
@@ -2320,7 +2351,7 @@ class MCGFXShader is MAbstractShader
 	    if (attr.value <> null) {
 		var name = attr.shortName;
 		var value = attr.value;
-		println("setting {name} {attr.type} to {value}");
+		//println("setting {name} {attr.type} to {value}");
 		try {
 		    shader.setParameter(name, value);
 		} catch (e is java.lang.Exception) {
@@ -2845,7 +2876,7 @@ class Command
 	    i++; // skip ,
 	    var v = trim(args[i++]);
 	    i++; // skip ,
-	    println("k={k} v={v} next={args[i]}");
+	    //println("k={k} v={v} next={args[i]}");
 	    const p = parsePath(v);
 	    const f = p.path[0] as Field;
 	    const fi = p.path[1] as Index;
@@ -3048,7 +3079,7 @@ class MaParser
 	const len = cmds.size();
 	while (i < len) {
 	    const s = cmds.get(i++);
-	    if (s.startsWith("-") and not java.lang.Character.isDigit(s.charAt(1))) {
+	    if (s.length() > 1 and s.startsWith("-") and not java.lang.Character.isDigit(s.charAt(1))) {
 		var j = i;
 		var v is String = if (i < len) then cmds.get(j++) else "";
 		if (v.startsWith("-") and not java.lang.Character.isDigit(v.charAt(1))) {

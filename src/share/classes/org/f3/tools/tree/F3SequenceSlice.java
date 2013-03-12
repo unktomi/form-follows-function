@@ -36,6 +36,8 @@ public class F3SequenceSlice extends F3Expression implements SequenceSliceTree {
     private final F3Expression lastIndex;
     private final int endKind;
 
+    public F3Expression slice;
+
     public F3SequenceSlice(F3Expression sequence, F3Expression firstIndex,
             F3Expression lastIndex, int endKind) {
         this.sequence = sequence;

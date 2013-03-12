@@ -552,8 +552,19 @@ public class F3Compiler implements ClassReader.SourceCompleter {
         String dump = options.get("dumpjava");
         if (dump != null) {
             try {
-                String fn = env.toplevel.sourcefile.toString().replace(".f3", ".javadump");
-                File outFile = new File(dump, (new File(fn)).getName());
+                String fn = env.toplevel.sourcefile.toString().replace(".f3", ".java");
+		String dirName = env.toplevel.packge.toString().replace(".", "/");
+		fn = new File(fn).getName();
+		File dir = new File(dump);
+                File outFile; 
+		if (!dirName.equals("unnamed package")) {
+		    outFile = new File(dir, new File(dirName, fn).toString());
+		} else {
+		    outFile = new File(dir, fn);
+		}
+		System.err.println("dirName="+dirName);
+		System.err.println("outFile="+outFile);
+		outFile.getParentFile().mkdirs();
                 FileWriter fw = new FileWriter(outFile);
                 BufferedWriter out = new BufferedWriter(fw);
                 try {

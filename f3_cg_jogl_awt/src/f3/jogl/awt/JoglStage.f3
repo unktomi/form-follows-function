@@ -140,7 +140,7 @@ class JoglPath2D is Path2D {
     }
 }
 
-class JoglPath2DFactory extends Shape2D.Path2DFactory 
+class JoglPath2DFactory is Shape2D.Path2DFactory 
 {
     override public function createPath to Path2D 
     {
@@ -246,7 +246,8 @@ class SceneRenderer2D
     }     
 }
 
-abstract class JoglGradientShader extends CGFXShader {
+abstract class JoglGradientShader is CGFXShader 
+{
     public var gl is GL2;
     public var tex is Texture;
     public var grad is Shape2D.GradientPaint;
@@ -280,15 +281,15 @@ abstract class JoglGradientShader extends CGFXShader {
             if (color == null) {
                 color = Color.BLACK;
             }
-            var j = i * 4;
-            var r = buf.get(j);
-            var g = buf.get(j+1);
-            var b = buf.get(j+2);
-            var a = buf.get(j+3);
-            var x = toByte(color.red);
-            var y = toByte(color.green);
-            var z = toByte(color.blue);
-            var w = toByte(color.opacity);
+            const j = i * 4;
+            const r = buf.get(j);
+            const g = buf.get(j+1);
+            const b = buf.get(j+2);
+            const a = buf.get(j+3);
+            const x = toByte(color.red);
+            const y = toByte(color.green);
+            const z = toByte(color.blue);
+            const w = toByte(color.opacity);
             if (r <> x or
                 g <> y or 
                 b <> z or 
@@ -306,7 +307,7 @@ abstract class JoglGradientShader extends CGFXShader {
         if (textureDirty) {
             isTransparent = hasTransparency;
             textureDirty = false;
-            var glp = GLProfile.get("GL2");
+            const glp = GLProfile.get("GL2");
             println("updating gradient colors");
             tex.updateImage(gl, 
                             new TextureData(glp, 
@@ -379,7 +380,8 @@ abstract class JoglGradientShader extends CGFXShader {
 
 }
 
-class JoglRadialGradientShader extends JoglGradientShader {
+class JoglRadialGradientShader is JoglGradientShader 
+{
     override var uvMap = [0];
     override var url = "{__DIR__}radialgradient.cgfx";
     override function updateParams
@@ -416,7 +418,8 @@ class JoglRadialGradientShader extends JoglGradientShader {
     }
 }
 
-class JoglLinearGradientShader extends JoglGradientShader {
+class JoglLinearGradientShader is JoglGradientShader 
+{
 
     override var url = "{__DIR__}lineargradient.cgfx";
 
@@ -467,7 +470,7 @@ class JoglLinearGradientShader extends JoglGradientShader {
 }
 
 
-class ColorPaintShader extends CGFXShader 
+class ColorPaintShader is CGFXShader 
 {
     public var colorPaint is ColorPaint;
     public readonly var color = bind colorPaint.color;
@@ -509,7 +512,8 @@ class TexturePaintShader is CGFXShader
     }
 }
 
-function flatShader from (color is Color, tex is AbstractTexture) to Shader {
+function flatShader from (color is Color, tex is AbstractTexture) to Shader 
+{
     var shader is CGFXShader;
     if (tex == null) {
         shader = CGFXShader {
@@ -1316,7 +1320,10 @@ class SceneRenderer {
 	if (not (camera is Camera2D)) {
 	    // sort opaque front to back      
 	    java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
-		    override public function compare(x is MeshNode, y is MeshNode):Integer {
+		    override public function compare
+			from (x is MeshNode, y is MeshNode)
+			to Integer 
+		    {
 			const xz = camera.distanceTo(x.toSceneTransform.getTranslation());
 			const yz = camera.distanceTo(y.toSceneTransform.getTranslation());
 			const cmp = xz - yz;
@@ -1325,7 +1332,10 @@ class SceneRenderer {
 		});
 	    //sort transparent back to front
 	    java.util.Collections.sort(transparentToDraw, java.util.Comparator of MeshNode {
-		    override public function compare(x is MeshNode, y is MeshNode):Integer {
+		    override public function compare
+			from (x is MeshNode, y is MeshNode)
+			to Integer 
+		    {
 			const xz = camera.distanceTo(x.toSceneTransform.getTranslation());
 			const yz = camera.distanceTo(y.toSceneTransform.getTranslation());
 			const cmp = -(xz - yz);
@@ -1523,7 +1533,7 @@ class SceneRenderer {
     }
 }
 
-public class Listener extends GLEventListener, DropTargetListener {
+public class Listener is GLEventListener, DropTargetListener {
 
     var screenx is Number;
     var screeny is Number;
@@ -1749,7 +1759,6 @@ public class Listener extends GLEventListener, DropTargetListener {
         if (startTime == 0) startTime = now;
         const currentTime = 1ms *(now - startTime);
 	MasterTimeline.setPlayhead(currentTime);
-        stage.flush();
         setCursor(stage.cursor);
         if (mainSceneRenderer == null and gl <> null) {
             mainSceneRenderer = SceneRenderer {
@@ -1781,6 +1790,7 @@ public class Listener extends GLEventListener, DropTargetListener {
             lastTransp = transp;
             lastOpaque = opaque;
         }
+        stage.flush();
     }
 
     var title is String;
@@ -2103,12 +2113,12 @@ public function run from (args is String[]) to ()
 	pathFactory: ThePath2DFactory;
     }
 
-    var currentModel is Node; /* = HTML {
+    var currentModel is Node = HTML {
     	content: "<html><body><h1>Welcome to F3</h1></body></html>";
 	factory: TheWebBrowserFactory;
 	effectLoader: CGEffectLoader_INSTANCE;
 	pathFactory: ThePath2DFactory;
-    }*/
+    }
 
     readonly var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
 		url: playerUrl;
@@ -2209,6 +2219,10 @@ public function run from (args is String[]) to ()
 		    exception.printStackTrace();
 		}
 	    }
+	});
+
+    stage.invoke(function () {
+	    viewer.focusCamera(currentModel);
 	});
 
 }
