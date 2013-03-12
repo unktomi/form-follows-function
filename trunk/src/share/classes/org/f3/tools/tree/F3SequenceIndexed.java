@@ -34,6 +34,8 @@ public class F3SequenceIndexed extends F3Expression implements SequenceIndexedTr
     private final F3Expression sequence;
     private final F3Expression index;
 
+    public F3Expression get;
+
     public F3SequenceIndexed(F3Expression sequence, F3Expression index) {
         this.sequence = sequence;
         this.index = index;

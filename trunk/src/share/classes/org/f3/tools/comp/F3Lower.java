@@ -258,16 +258,20 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitAssign(F3Assign tree) {
-        if (tree.lhs.getF3Tag() == F3Tag.SEQUENCE_INDEXED &&
+	if (tree.set != null) {
+	    result = lowerExpr(tree.set);
+	} else {
+	    if (tree.lhs.getF3Tag() == F3Tag.SEQUENCE_INDEXED &&
                 types.isSequence(((F3SequenceIndexed)tree.lhs).getSequence().type) &&
                 (types.isSequence(tree.rhs.type) || types.isSameType(tree.rhs.type, syms.objectType))) {
-            result = lowerSequenceIndexedAssign(tree.pos(), (F3SequenceIndexed)tree.lhs, tree.rhs);
-        }
-        else {
-            F3Expression lhs = lowerExpr(tree.lhs);
-            F3Expression rhs = lowerExpr(tree.rhs, tree.lhs.type);
-            result = m.at(tree.pos).Assign(lhs, rhs).setType(tree.type);
-        }
+		result = lowerSequenceIndexedAssign(tree.pos(), (F3SequenceIndexed)tree.lhs, tree.rhs);
+	    }
+	    else {
+		F3Expression lhs = lowerExpr(tree.lhs);
+		F3Expression rhs = lowerExpr(tree.rhs, tree.lhs.type);
+		result = m.at(tree.pos).Assign(lhs, rhs).setType(tree.type);
+	    }
+	}
     }
 
     F3Expression lowerSequenceIndexedAssign(DiagnosticPosition pos, F3SequenceIndexed indexed, F3Expression val) {
@@ -534,9 +538,23 @@ public class F3Lower implements F3Visitor {
 		throw new RuntimeException(tree + " => type: "+tree.meth.type, exc);
 	    }
         }
-         
         result = m.Apply(tree.typeargs, meth, args);
-        result.type = tree.type;
+	result.type = tree.type;
+	Type retType = tree.meth.type.getReturnType();
+	int i = types.isTypeConsType(retType);
+	if (i >= 0) {
+	    System.err.println("retType="+retType);
+	    List<Type> targs = retType.getTypeArguments();
+	    Type ctor = targs.head;
+	    if (ctor instanceof WildcardType) {
+		ctor = ((WildcardType)ctor).type;
+	    }
+	    if (!(ctor instanceof TypeVar)) {
+		result = preTrans.makeCast((F3Expression)result, 
+					   types.applySimpleGenericType(ctor, targs.tail));
+		System.err.println("result="+result);
+	    }
+	} 
     }
     //where
     private F3Expression lowerFunctionName(F3Expression meth) {
@@ -730,9 +748,13 @@ public class F3Lower implements F3Visitor {
         }
     }
     public void visitSequenceIndexed(F3SequenceIndexed that) {
-        F3Expression index = lowerExpr(that.getIndex(), syms.intType);
-        F3Expression seq = lowerExpr(that.getSequence());
-        result = m.at(that.pos).SequenceIndexed(seq, index).setType(that.type);
+	if (that.get != null) {
+	    result = lowerExpr(that.get);
+	} else {
+	    F3Expression index = lowerExpr(that.getIndex(), syms.intType);
+	    F3Expression seq = lowerExpr(that.getSequence());
+	    result = m.at(that.pos).SequenceIndexed(seq, index).setType(that.type);
+	}
     }
 
     public void visitSequenceInsert(F3SequenceInsert that) {
@@ -755,10 +777,14 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitSequenceSlice(F3SequenceSlice that) {
-        F3Expression seq = lowerExpr(that.getSequence());
-        F3Expression start = lowerExpr(that.getFirstIndex(), syms.intType);
-        F3Expression end = lowerExpr(that.getLastIndex(), syms.intType);
-        result = m.at(that.pos).SequenceSlice(seq, start, end, that.getEndKind()).setType(that.type);
+	if (that.slice != null) {
+	    result = lowerExpr(that.slice);
+	} else {
+	    F3Expression seq = lowerExpr(that.getSequence());
+	    F3Expression start = lowerExpr(that.getFirstIndex(), syms.intType);
+	    F3Expression end = lowerExpr(that.getLastIndex(), syms.intType);
+	    result = m.at(that.pos).SequenceSlice(seq, start, end, that.getEndKind()).setType(that.type);
+	}
     }
 
     public void visitStringExpression(F3StringExpression tree) {

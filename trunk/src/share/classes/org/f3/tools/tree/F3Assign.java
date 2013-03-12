@@ -34,6 +34,8 @@ public class F3Assign extends F3Expression implements AssignmentTree {
     public F3Expression lhs;
     public F3Expression rhs;
 
+    public F3Expression set;
+
     protected F3Assign(F3Expression lhs, F3Expression rhs) {
         this.lhs = lhs;
         this.rhs = rhs;

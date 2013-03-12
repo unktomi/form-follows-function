@@ -43,8 +43,8 @@ public class F3IfExpression extends F3Expression implements ConditionalExpressio
     public boolean isThen;
 
     protected F3IfExpression(F3Expression cond,
-            F3Expression truepart,
-            F3Expression falsepart) {
+			     F3Expression truepart,
+			     F3Expression falsepart) {
         this.cond = cond;
         this.truepart = truepart;
         this.falsepart = falsepart;

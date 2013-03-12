@@ -49,6 +49,30 @@ public class Buffer
 	x *= n;  y *= n;   z * n;
 	return this
     }
+    
+    public function cross from (v is Buffer) to Buffer {
+	const x = this.x;
+	const y = this.y;
+	const z = this.z;
+	this.x = y*v.z - z*v.y;
+	this.y = z*v.x - x*v.z;
+	this.z = x*v.y - y*v.x;
+	return this;
+    }
+
+    public function cross from (v is Vec3) to Buffer {
+	const x = this.x;
+	const y = this.y;
+	const z = this.z;
+	this.x = y*v.z - z*v.y;
+	this.y = z*v.x - x*v.z;
+	this.z = x*v.y - y*v.x;
+	return this;
+    }
+
+    public function length to Number {
+	Math.sqrt(x*x+y*y+z*z);
+    }
 }
 
 public class Vec3 is Tuple3
@@ -215,6 +239,60 @@ public class Vec3 is Tuple3
     public function rotate(degrees is Number) to Mat4 
     {
 	LinearMath.rotateNormalAxis(degrees, this);
+    }
+
+    public function rotationTo 
+	from (v is Vec3)
+	to Quat 
+    {
+	rotationTo(v, null);
+    }
+
+    public function rotationTo 
+	from (v is Vec3, preferredAxis is Vec3) 
+	to Quat 
+    {
+	const s = normalize();
+	const t = v.normalize();
+	const factor = s.length() * t.length();
+	if (Math.abs(factor) > LinearMath.EPSILON) {
+	    const dot = s.dot(t) / factor;
+	    const theta = Math.acos(Math.max(-1, Math.min(dot, 1.0)));
+	    const pivot = s.cross(t);
+	    if (pivot.length() > LinearMath.EPSILON) {
+		if (dot < 0.0) {
+                    // Vectors parallel and opposite direction, therefore a rotation
+                    // of 180 degrees about any vector perpendicular to this vector
+                    // will rotate vector a onto vector b.
+		    if (preferredAxis == null) {
+			// The following guarantees the dot-product will be 0.0.
+                        var dominantIndex is Integer;
+                        if (Math.abs(s.x) > Math.abs(s.y)) {
+                            if (Math.abs(s.x) > Math.abs(s.z)) {
+                                dominantIndex = 0;
+                            } else {
+                                dominantIndex = 2;
+                            }
+                        } else {
+                            if (Math.abs(s.y) > Math.abs(s.z)) {
+                                dominantIndex = 1;
+                            } else {
+                                dominantIndex = 2;
+                            }
+                        }
+                        const p = [0.0, 0.0, 0.0];
+                        p[dominantIndex] = -s.get((dominantIndex+1) mod 3);
+                        p[(dominantIndex+1) mod 3] = s.get(dominantIndex);
+                        p[(dominantIndex+2) mod 3] = 0;
+                        pivot = Vec3 { x: p[0], y: p[1], z: p[2] };
+                    } else {
+                        // Use the preferred axis
+                        pivot = preferredAxis;
+                    }
+		    Quat.Quat(Math.toDegrees(theta), pivot);
+		} else Quat.<<1>>;
+	    } else Quat.<<1>>;
+	} else Quat.<<1>>;
     }
 }
 

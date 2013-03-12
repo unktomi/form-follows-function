@@ -1154,13 +1154,28 @@ public class F3Attr implements F3Visitor {
             log.error(tree, MsgSym.MESSAGE_F3_INVALID_ASSIGNMENT);
             return;
         }
-
+	if (tree.lhs.getF3Tag() == F3Tag.SEQUENCE_INDEXED) {
+	    F3SequenceIndexed ind = (F3SequenceIndexed)tree.lhs;
+	    if (ind.get != null) {
+		Name set = names.fromString("set");
+		F3Expression setTree = f3make.at(tree.pos).Select(ind.getSequence(), set, true);
+		List<F3Expression> args = List.of(ind.getIndex());
+		args = args.append(tree.lhs);
+		F3Expression invokeTree = f3make.at(tree.pos).Apply(List.<F3Expression>nil(),
+								    setTree,
+								    args);
+		tree.set = invokeTree;
+		result = attribExpr(invokeTree, dupEnv);
+		return;
+	    }
+	}
         if (hasLhsType) {
             attribExpr(tree.rhs, dupEnv, owntype);
-            if (types.isSequence(tree.rhs.type) &&
-                tree.lhs.getF3Tag() == F3Tag.SEQUENCE_INDEXED) {
-                owntype = types.sequenceType(types.elementTypeOrType(owntype));
-            }
+	    if (tree.lhs.getF3Tag() == F3Tag.SEQUENCE_INDEXED) {
+		if (types.isSequence(tree.rhs.type)) {
+		    owntype = types.sequenceType(types.elementTypeOrType(owntype));
+		} 
+	    }
         }
         else {
             if (tree.lhs.getF3Tag() == F3Tag.SELECT) {
@@ -1171,28 +1186,28 @@ public class F3Attr implements F3Visitor {
                 F3Ident id = (F3Ident)tree.lhs;
                 id.type = owntype;
             }
-
+	    
             attribTree(tree.lhs, dupEnv, VAR, owntype);
             lhsSym.type = owntype;
         }
         result = check(tree, capture(owntype), VAL, pkind, pt, pSequenceness);
-
+	
         if (tree.rhs != null && tree.lhs.getF3Tag() == F3Tag.IDENT) {
             F3Var lhsVar = varSymToTree.get(lhsSym);
             if (lhsVar != null && (lhsVar.getF3Type() instanceof F3TypeUnknown)) {
                 if (lhsVar.type == null ||
-                        lhsVar.type == syms.f3_AnyType ||
-                        lhsVar.type == syms.f3_UnspecifiedType) {
+		    lhsVar.type == syms.f3_AnyType ||
+		    lhsVar.type == syms.f3_UnspecifiedType) {
                     if (tree.rhs.type != syms.botType &&
-                            tree.rhs.type != null &&
-                            lhsVar.type != tree.rhs.type) {
+			tree.rhs.type != null &&
+			lhsVar.type != tree.rhs.type) {
                         tree.type = tree.lhs.type = lhsVar.type = lhsSym.type = types.normalize(tree.rhs.type);
                         lhsVar.setF3Type(f3make.at(tree.pos()).TypeClass(f3make.Type(lhsSym.type), lhsVar.getF3Type().getCardinality()));
 			//attribExpr(lhsVar);
 		    }
-            }
-        }
-    }
+		}
+	    }
+	}
     }
 
     public void finishVar(F3Var tree, F3Env<F3AttrContext> env) {
@@ -1718,7 +1733,7 @@ public class F3Attr implements F3Visitor {
 			    //monadType = exprType;
 			}
 			elemtype = types.monadElementType(exprType);
-			System.err.println("monadType="+exprType);
+			//System.err.println("monadType="+exprType);
 			//System.err.println("exprType="+exprType);
 			//System.err.println("theMonad="+theOne);
 			//System.err.println("monadType="+monadType);
@@ -1739,7 +1754,7 @@ public class F3Attr implements F3Visitor {
 			//System.err.println("theFunctor="+theOne);
 			functorType = exprType;
 			elemtype = types.functorElementType(exprType);
-			System.err.println("functorType="+exprType);
+			//System.err.println("functorType="+exprType);
 			if (theOne != null) {
 			    Type superType = types.asSuper(exprType, syms.f3_TypeCons[1].tsym);
 			    if (superType != null) {
@@ -1759,7 +1774,7 @@ public class F3Attr implements F3Visitor {
 		System.err.println("elem type is null "+exprType.getClass());
 		System.err.println("isFunctor: "+ types.isFunctor(exprType));
 		System.err.println("Functor element: "+ types.functorElementType(exprType));
-		System.err.println("functor="+types.getFunctor(exprType));
+		//System.err.println("functor="+types.getFunctor(exprType));
 		elemtype = syms.objectType;
 	    }
             if (elemtype == syms.errType) {
@@ -1784,7 +1799,7 @@ public class F3Attr implements F3Visitor {
 	    } else {
 		clause1Type = types.lub(clause1Type, elemtype);
 	    }
-	    System.err.println("clause1Type="+clause1Type);
+	    //System.err.println("clause1Type="+clause1Type);
             if (clause.getWhereExpression() != null) {
                 attribExpr(clause.getWhereExpression(), env, syms.booleanType);
             }
@@ -1844,7 +1859,7 @@ public class F3Attr implements F3Visitor {
 					     clauseTypes,
 					     typeClasses,
 					     tree.isBound());
-		    System.err.println(map);
+		    //System.err.println(map);
 		} else {
 		    Type monadElementType = clause1Type;
 		    Type typeCons = monadType == null ? functorType: monadType;
@@ -1853,7 +1868,7 @@ public class F3Attr implements F3Visitor {
 					       typeCons,
 					       bodyType,
 					       tree.isBound());
-			System.err.println(map);
+			//System.err.println(map);
 		    }
 		}
 	    }
@@ -4527,12 +4542,26 @@ public class F3Attr implements F3Visitor {
          // Attribute as a tree so we can check that target is assignable
          // when pkind is VAR
          //
-	Type seqType = attribTree(seq, env, pkind, Type.noType, Sequenceness.REQUIRED);
-        attribExpr(tree.getFirstIndex(), env, syms.f3_IntegerType);
-        if (tree.getLastIndex() != null) {
-            attribExpr(tree.getLastIndex(), env, syms.f3_IntegerType);
-        }
-        result = check(tree, seqType, VAR, pkind, pt, pSequenceness);
+	Type seqType = attribTree(seq, env, pkind, Type.noType, Sequenceness.PERMITTED);
+	if (types.isSequence(seqType)) {
+	    attribExpr(tree.getFirstIndex(), env, syms.f3_IntegerType);
+	    if (tree.getLastIndex() != null) {
+		attribExpr(tree.getLastIndex(), env, syms.f3_IntegerType);
+	    }
+	    result = check(tree, seqType, VAR, pkind, pt, pSequenceness);
+	} else {
+	    Name get = names.fromString("slice");
+	    F3Expression getTree = f3make.at(tree.pos).Select(seq, get, true);
+	    List<F3Expression> args = List.of(tree.getFirstIndex());
+	    if (tree.getLastIndex() != null) {
+		args = args.append(tree.getLastIndex());
+	    }
+	    F3Expression invokeTree = f3make.at(tree.pos).Apply(List.<F3Expression>nil(),
+								getTree,
+								args);
+	    tree.slice = invokeTree;
+	    result = attribExpr(invokeTree, env);
+	}
     }
 
     //@Override
@@ -4544,14 +4573,22 @@ public class F3Attr implements F3Visitor {
         // when pkind is VAR
         //
         Type seqType = attribTree(seq, env, pkind, Type.noType, Sequenceness.PERMITTED);
-
-	attribExpr(tree.getIndex(), env, syms.f3_IntegerType);
-	chk.checkSequenceOrArrayType(seq.pos(), seqType);
-	Type owntype = seqType.tag == ARRAY ?
-	    types.elemtype(seqType) :
-	    types.elementType(seqType);
-	
-	result = check(tree, owntype, VAR, pkind, pt, pSequenceness);
+	if (types.isSequence(seqType) || types.isArray(seqType)) {
+	    attribExpr(tree.getIndex(), env, syms.f3_IntegerType);
+	    chk.checkSequenceOrArrayType(seq.pos(), seqType);
+	    Type owntype = seqType.tag == ARRAY ?
+		types.elemtype(seqType) :
+		types.elementType(seqType);
+	    result = check(tree, owntype, VAR, pkind, pt, pSequenceness);
+	} else {
+	    Name get = names.fromString("get");
+	    F3Expression getTree = f3make.at(tree.pos).Select(seq, get, true);
+	    F3Expression invokeTree = f3make.at(tree.pos).Apply(List.<F3Expression>nil(),
+								getTree,
+								List.of(tree.getIndex()));
+	    tree.get = invokeTree;
+	    result = attribExpr(invokeTree, env);
+	}
     }
 
     //@Override

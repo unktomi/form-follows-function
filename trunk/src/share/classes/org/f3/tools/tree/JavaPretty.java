@@ -31,7 +31,7 @@ import java.util.HashSet;
 import com.sun.tools.mjavac.tree.JCTree;
 import com.sun.tools.mjavac.tree.JCTree.JCAnnotation;
 import com.sun.tools.mjavac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.mjavac.tree.JCTree.JCImport;
+import com.sun.tools.mjavac.tree.JCTree.*;
 import com.sun.tools.mjavac.tree.Pretty;
 import com.sun.tools.mjavac.tree.TreeInfo;
 import com.sun.tools.mjavac.util.Context;
@@ -40,6 +40,7 @@ import org.f3.tools.comp.F3Defs;
 import com.sun.tools.mjavac.tree.JCTree.JCClassDecl;
 import com.sun.tools.mjavac.tree.JCTree.JCIdent;
 import com.sun.tools.mjavac.util.Options;
+import static com.sun.tools.javac.code.Flags.*;
 
 /** Prints out a tree as an indented Java source program.
  *
@@ -51,8 +52,8 @@ import com.sun.tools.mjavac.util.Options;
  * @author Robert Field
  */
 public class JavaPretty extends Pretty {
-	private HashSet<Name> importedPackages = new HashSet<Name>();
-	private HashSet<Name> importedClasses = new HashSet<Name>();
+    private HashSet<Name> importedPackages = new HashSet<Name>();
+    private HashSet<Name> importedClasses = new HashSet<Name>();
     private boolean seenImport;
 
     public final boolean verbose;
@@ -90,10 +91,15 @@ public class JavaPretty extends Pretty {
     }
 
     public void visitBlockExpression(BlockExprJCBlockExpression tree) {
-        visitBlockExpression(this, tree);
+        visitBlockExpression(this, tree, null);
     }
 
     public static void visitBlockExpression(Pretty pretty, BlockExprJCBlockExpression tree) {
+	visitBlockExpression(pretty, tree, null);
+    }
+
+    public static void visitBlockExpression(Pretty pretty, BlockExprJCBlockExpression tree,
+					    JCTree assign) {
         try {
             pretty.printFlags(tree.flags);
             pretty.print("{");
@@ -101,9 +107,19 @@ public class JavaPretty extends Pretty {
             pretty.indent();
             pretty.printStats(tree.stats);
             if (tree.value != null) {
-                pretty.align();
-                pretty.printExpr(tree.value);
-                pretty.print(";");
+		if (assign != null) {
+		    pretty.align();
+		    if (assign instanceof JCAssign) {
+			JCAssign bin = (JCAssign)assign;
+			pretty.printExpr(bin.lhs);
+		    } else if (assign instanceof JCVariableDecl) {
+			JCVariableDecl var = (JCVariableDecl)assign;
+			pretty.print(var.name);
+		    }
+		    pretty.print(" = ");
+		} 
+		pretty.printExpr(tree.value);
+		pretty.print(";");
             }
             pretty.undent();
             pretty.println();
@@ -160,6 +176,57 @@ public class JavaPretty extends Pretty {
         }
     }
 
+    public void visitAssign(JCAssign tree) {
+	if (tree.rhs instanceof BlockExprJCBlockExpression) {
+	    visitBlockExpression(this, (BlockExprJCBlockExpression)tree.rhs, tree);
+	} else {
+	    super.visitAssign(tree);
+	}
+    }
+
+    public void visitVarDef(JCVariableDecl tree) {
+        try {
+	    /*
+            if (docComments != null && docComments.get(tree) != null) {
+                println(); align();
+            }
+            printDocComment(tree);
+	    */
+            if ((tree.mods.flags & ENUM) != 0) {
+                print("/*public static final*/ ");
+                print(tree.name);
+                if (tree.init != null) {
+                    print(" /* = ");
+                    printExpr(tree.init);
+                    print(" */");
+                }
+            } else {
+                printExpr(tree.mods);
+                if ((tree.mods.flags & VARARGS) != 0) {
+                    printExpr(((JCArrayTypeTree) tree.vartype).elemtype);
+                    print("... " + tree.name);
+                } else {
+                    printExpr(tree.vartype);
+                    print(" " + tree.name);
+                }
+                if (tree.init != null) {
+		    print("; ");
+		    if (tree.init instanceof BlockExprJCBlockExpression) {
+			visitBlockExpression(this, (BlockExprJCBlockExpression)tree.init,
+					     tree);
+		    } else { 
+			print(" = ");
+			printExpr(tree.init);
+		    }
+                }
+                if (prec == TreeInfo.notExpression) print(";");
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+
     private void printRuntimeImports() {
         if (! seenImport) {
             for (Name pkg : importedPackages) {
@@ -175,4 +242,39 @@ public class JavaPretty extends Pretty {
         }
         seenImport = true;
     }
+
+    public String operatorName(int tag) {
+        switch(tag) {
+            case JCTree.POS:     return "+";
+            case JCTree.NEG:     return "-";
+            case JCTree.NOT:     return "!";
+            case JCTree.COMPL:   return "~";
+            case JCTree.PREINC:  return "++";
+            case JCTree.PREDEC:  return "--";
+            case JCTree.POSTINC: return "++";
+            case JCTree.POSTDEC: return "--";
+            case JCTree.NULLCHK: return "<*nullchk*>";
+            case JCTree.OR:      return "||";
+            case JCTree.AND:     return "&&";
+            case JCTree.EQ:      return "==";
+            case JCTree.NE:      return "!=";
+            case JCTree.LT:      return "<";
+            case JCTree.GT:      return ">";
+            case JCTree.LE:      return "<=";
+            case JCTree.GE:      return ">=";
+            case JCTree.BITOR:   return "|";
+            case JCTree.BITXOR:  return "^";
+            case JCTree.BITAND:  return "&";
+            case JCTree.SL:      return "<<";
+            case JCTree.SR:      return ">>";
+            case JCTree.USR:     return ">>>";
+            case JCTree.PLUS:    return "+";
+            case JCTree.MINUS:   return "-";
+            case JCTree.MUL:     return "*";
+            case JCTree.DIV:     return "/";
+            case JCTree.MOD:     return "%";
+            default: throw new Error();
+        }
+    }
+
 }

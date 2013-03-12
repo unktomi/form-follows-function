@@ -84,6 +84,10 @@ public class Tuple3 is F3Value
 	"\{ x: {x}, y: {y}, z: {z} \}"
     }
 
+    public function get from (i is Integer) to Number 
+    {
+	if (i == 0) then x else if i == 1 then y else if i == 2 then z else 0.0;
+    }
 }
 
 public static def TYPE_INFO is TypeInfo of ..Tuple3 = 

@@ -5836,7 +5836,7 @@ bracketExpression
                                     errNodes.append($e2.value);
                                 }
                           )*
-                          COMMA?
+    (COMMA)? (DOTDOT)?
 
                         
                         {
