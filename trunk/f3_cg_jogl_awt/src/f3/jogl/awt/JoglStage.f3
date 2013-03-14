@@ -39,6 +39,8 @@ import f3.media.svg.SVG;
 import com.jogamp.opengl.util.awt.TextureRenderer;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
+const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
+
 class JoglPath2D is Path2D {
     public var path is GeneralPath = new GeneralPath();
     override public function apply from (output is Path2D) to () 
@@ -1373,6 +1375,7 @@ class SceneRenderer {
         const cameraLight = camera.toSceneTransform.getTranslation();
         for (n in toDraw) {
             const mn = n as MeshNode;
+	    if (DEBUG_MESHES) println("drawing {mn.id}");
             const mesh = mn.mesh;
             const indexBuffer = mesh.getIndexBuffer();
             const vertexBuffer = mesh.getVertexBuffer();
@@ -2098,7 +2101,7 @@ public function run from (args is String[]) to ()
         id: "free";
 	ty: 3.0;
 	tz: 13;
-	near: .1;
+	near: 1;
 	far: 100;
 	content: PointLight {}
     }
@@ -2128,6 +2131,7 @@ public function run from (args is String[]) to ()
     readonly var imageModel = bind if (playerUrl.endsWith(".jpg") or 
 			      playerUrl.endsWith(".png") or
 			      playerUrl.endsWith(".tiff") or
+			      playerUrl.endsWith(".tif") or 
 			      playerUrl.endsWith(".tga")) 
 	Image { 
 	    imageLoader: ImageLoader_INSTANCE; 
@@ -2142,7 +2146,7 @@ public function run from (args is String[]) to ()
 	    viewer.focusCamera(currentModel = model.getSpatialRoot());
 	} else if (url.endsWith(".svg")) {
 	    viewer.focusCamera(currentModel = svgModel.root)
-	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith("tiff") or url.endsWith(".tga")) {
+	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith(".tif") or url.endsWith(".tiff") or url.endsWith(".tga")) {
 	    viewer.focusCamera(currentModel = imageModel)
 	} else {
 	    if (browser <> null) {
