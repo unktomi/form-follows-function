@@ -22,8 +22,8 @@ public abstract class AbstractNode is Node
 	internalContent.foldLeft(f(z, this), 
 				 function from (z is b, n is Node) to b 
 				 {
-				     n.foldLeft(f(z, n), f); 
-				 })
+				     n.foldLeft(z, f); 
+				 });
     }
 
     override public function foldRight of b
@@ -34,7 +34,7 @@ public abstract class AbstractNode is Node
 	    internalContent.foldRight(z,
 				      function from (n is Node, z is b) to b 
 				      {
-					  f(n, n.foldRight(z, f))
+					  n.foldRight(z, f)
 				      });
 	f(this, r);
     }

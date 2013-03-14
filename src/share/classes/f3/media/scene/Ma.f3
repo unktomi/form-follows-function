@@ -2018,15 +2018,23 @@ class MMesh is MSpatial
 			      faceEnd: polyfaces.size();
 			  }];
 	}
+	// for now we merge these
+
+/*
 	foreach (comp in components) {
 	    this.ib.clear();
 	    this.vb.clear();
 	    this.nb.clear();
 	    this.uvbs = [];
+*/
+	for (comp in components) {
 	    const startIndex = comp.faceStart;
 	    const endIndex = comp.faceEnd;
 	    for (i in [startIndex..<endIndex]) {
 		const f = polyfaces[i];
+		if (f == null) {
+		   continue;
+		}
 		const edge0 = edgeStart(f.faceEdges[0]);
 		const norm0 = i;
 		const uv0 = f.getUV(0);
@@ -2045,6 +2053,7 @@ class MMesh is MSpatial
 		    uv1 = uv2;
 		}
 	    }
+	}
 	    const ib = this.ib.getBuffer();
 	    const vb = this.vb.getBuffer();
 	    const nb = this.nb.getBuffer();
@@ -2066,7 +2075,7 @@ class MMesh is MSpatial
 		    vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
 		    normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
 		}.toMesh()
-	}
+	//}
     }
     const ib = new IntBufferBuilder();
     const vb = new FloatBufferBuilder();
@@ -2320,9 +2329,13 @@ class MCGFXShader is MAbstractShader
 		    }
 		    const paramName = conn.targetPath;
 		    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
-		    const image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
-		    //println("setting {paramName} to {file.ftn} p={p}");
-		    p.set(image);
+		    try {
+			const image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
+			//println("setting {paramName} to {file.ftn} p={p}");
+			p.set(image);
+		    } catch (e is java.lang.Exception) {
+			e.printStackTrace();
+		    }
 		}
 	    }
 	}
@@ -2436,7 +2449,7 @@ class MShader is MAbstractShader
 {
     public const type is String;
 
-    var c is Tuple3 = tuple(0.5, 0.5, 0.5);
+    var c is Tuple3 = tuple(0.8, 0.8, 0.8);
     var ambc is Tuple3 = Tuple3.<<0>>;
     var ic is Tuple3 = Tuple3.<<0>>;
     var sc is Tuple3 = Tuple3.<<0>>;
@@ -2529,7 +2542,8 @@ class MShader is MAbstractShader
 	      g is Number,
 	      b is Number,
 	      a is Number) 
-	to Color {
+	to Color 
+    {
 	Color {
 	    red: r, green: g, blue: b, opacity: a 
 	}
@@ -2542,7 +2556,7 @@ class MShader is MAbstractShader
 	const ambient = toColor(ambc.x, ambc.y, ambc.z, alpha);
 	const emissive = toColor(ic.x, ic.y, ic.z, alpha);
 	const specular = toColor(sc.x, sc.y, sc.z, alpha);
-	const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100 - 99 * Math.sqrt(ec) else 0;
+	const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100.0 - 99.0 * Math.sqrt(ec) else 0.0;
 	var image is AbstractTexture;
 	var uvMap is Integer[] = [];
 	for (conn in connectionsToThis.get("c")) {
@@ -2554,8 +2568,12 @@ class MShader is MAbstractShader
 		if (slashslash > 0) {
 		    fname = "..{fname.substring(slashslash+1)}";
 		}
-		image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
-		uvMap = [0];
+		try {
+		    image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
+		    uvMap = [0];
+		} catch (e is java.lang.Exception) {
+		    e.printStackTrace();
+		}
 		break;
 	    }
 	}
