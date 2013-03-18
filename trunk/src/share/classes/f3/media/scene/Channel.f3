@@ -81,7 +81,7 @@ public class Channel of a is TimeNode
 	// v + k.interpolate(t) * weight
 	const result = k.add(if (v == null) then k.zero() else v, k.scale(k.interpolate(t), weight));
 	if (DEBUG) {
-	    println("{id} interpolated {pos} to {result}");
+	    println("{id} interpolated {k.interpolator} {pos} to {result}");
 	}
 	return result;
     }

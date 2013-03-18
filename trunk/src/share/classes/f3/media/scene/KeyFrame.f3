@@ -61,16 +61,21 @@ const FPS = 24.0;
 
 public class Tangent is NumberInterpolator 
 {
-    public const kix is Number;
-    public const kiy is Number;
     public const kox is Number;
     public const koy is Number;
+    public const kix is Number;
+    public const kiy is Number;
 
     override function interpolate from (k is Key of Number, t is Number) to Number 
     {
-	doInterpolate(k.prev.value, k.value, 
-		      k.position - k.prev.position,
-		      t);
+    	const result = doInterpolate(k.prev.value, k.value, 
+				     k.position - k.prev.position,
+				     t);
+	if (java.lang.Float.isNaN(result)) {
+	    println("bad tangent: {kox},{koy}, {kix},{kiy}");
+	    return k.value;
+	}
+	return result;
     }
 
     function doInterpolate 
@@ -80,9 +85,8 @@ public class Tangent is NumberInterpolator
 	      t is Number)
 	to Number 
     {
-
-	const outTangent = koy / (kox * FPS);
-	const inTangent = kiy / (kix * FPS);
+	const outTangent = koy / kox; //(kox * FPS);
+	const inTangent = kiy / kix; //(kix * FPS);
 	const oneThirdDelta = duration / 3.0s;
 	const p1Delta = outTangent * oneThirdDelta;
 	const p2Delta = inTangent * oneThirdDelta;
@@ -92,7 +96,7 @@ public class Tangent is NumberInterpolator
 	const p0 = startValue;
 	const p3 = endValue;
 	const p1 = p0 + p1Delta;
-	const p2 = p3 + p2Delta;
+	const p2 = p3 - p2Delta;
 	((oneMinusTSquared * oneMinusT * p0) +
 	 (3 * oneMinusTSquared * t * p1) +
 	 (3 * oneMinusT * tSquared * p2) +

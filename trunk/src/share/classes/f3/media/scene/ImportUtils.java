@@ -230,12 +230,27 @@ public class ImportUtils
     
     // from o3d
 
-    public static void addTangentBinormalStreams(IntBuffer ib,
-						 FloatBuffer vb,
-						 FloatBuffer tb,
-						 FloatBuffer nb,
-						 FloatBuffer tanb,
-						 FloatBuffer binb) 
+    public static boolean addTangentBinormalStreams(IntBuffer ib,
+						    FloatBuffer vb,
+						    FloatBuffer tb,
+						    FloatBuffer nb,
+						    FloatBuffer tanb,
+						    FloatBuffer binb) 
+    {
+	try {
+	    addTangentBinormalStreams0(ib, vb, tb, nb, tanb, binb);
+	} catch (RuntimeException exc) {
+	    return false;
+	}
+	return true;
+    }
+
+    static void addTangentBinormalStreams0(IntBuffer ib,
+					   FloatBuffer vb,
+					   FloatBuffer tb,
+					   FloatBuffer nb,
+					   FloatBuffer tanb,
+					   FloatBuffer binb) 
     {
         // Generates a key for the tangentFrames map from a position and normal
         // vector. Rounds position and normal to allow some tolerance.

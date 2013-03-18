@@ -8,6 +8,8 @@ import f3.lang.AbstractRef;
 import f3.lang.AbstractConstRef;
 import java.lang.Math;
 import f3.media.scene.meshdeform.BlendShape;
+import f3.media.scene.meshdeform.SkinCluster;
+import f3.media.scene.meshdeform.MeshDeformer;
 import f3.util.Bits;
 
 class MAttr {
@@ -61,7 +63,7 @@ class MaModel
 	    else if (nodeType == "pointLight") 
 		then MLight { name: name, parent: findNode(parent), type: nodeType }
 	    else if (nodeType.startsWith("animCurve")) 
-		then MAnimCurve__ {name: name, parent: findNode(parent)}
+		then MAnimCurve__ {type: nodeType, name: name, parent: findNode(parent)}
 	    else if (nodeType == "character") 
 		then MCharacter {name: name}
 	    else if (nodeType == "animClip") 
@@ -80,10 +82,15 @@ class MaModel
 		then MReverse {name: name}
 	    else if (nodeType == "blendShape") 
 		then MBlendShape {name: name}
+	    else if (nodeType == "skinCluster") 
+		then MSkinCluster {name: name}
 	    else if (nodeType == "groupParts") 
 		then MGroupParts {name: name}
 	    else if (nodeType == "tweak") 
 		then MTweak {name: name}
+	    else if (nodeType == "script") {
+		if (name == "sceneConfigurationScriptNode") then MSceneConfig {model: this} else null
+	    }
 	    else null;
 	if (current <> null) {
 	    nodeMap.put(current.name, current);
@@ -178,13 +185,15 @@ class MaModel
     const linkMap is java.util.Map of (MNode, Link of ?) = 
 	new java.util.HashMap of (MNode, Link of ?) ();
 
-    const blendShapeMap is java.util.Map of (MNode, BlendShape) = 
-	new java.util.HashMap of (MNode, BlendShape) ();
+    const deformerMap is java.util.Map of (MNode, MeshDeformer) = 
+	new java.util.HashMap of (MNode, MeshDeformer) ();
 
     public var url is String;
 
     public var spatialRoot is Group;
     public var temporalRoot is TimeGroup;
+    public var startFrame is Integer;
+    public var endFrame is Integer;
     var channels is TimeNode[];
     var clipLibs is TimeGroup[];
 
@@ -411,9 +420,16 @@ class MaModel
     }
 
     function toBlendShape from (n is MBlendShape) to BlendShape {
-	if (blendShapeMap.containsKey(n)) then blendShapeMap.get(n) else {
+	if (deformerMap.containsKey(n)) then deformerMap.get(n) as BlendShape else {
 		const blendShape = n.toBlendShape(this);
-		blendShapeMap.put(n, blendShape);
+		deformerMap.put(n, blendShape) as BlendShape;
+	    }
+    }
+
+    function toSkinCluster from (n is MSkinCluster) to SkinCluster {
+	if (deformerMap.containsKey(n)) then deformerMap.get(n) as SkinCluster else {
+		const skinCluster = n.toSkinCluster(this);
+		deformerMap.put(n, skinCluster) as SkinCluster;
 	    }
     }
 
@@ -485,11 +501,16 @@ class MaModel
 		    toLink(n as MUtility);
 		} else if (n instanceof MBlendShape) {
 		    toBlendShape(n as MBlendShape);
+		} else if (n instanceof MSkinCluster) {
+		    const skinCluster = toSkinCluster(n as MSkinCluster);
+		    skinCluster.root = spatialRoot;
+		    skinCluster;
 		} else null
 	}
 	const links = foreach (link in linkMap.values()) link;
 	temporalRoot = TimeGroup {
 	    id: url
+	    playRange: Interval { start: FPS * startFrame, end: FPS * endFrame }
 	    override function update from (sceneTime is Duration) to () {
 		super.update(sceneTime);
 		for (link in links) link.apply();
@@ -680,15 +701,34 @@ class MNode {
     }
 }
 
+class MSceneConfig is MNode {
+    var min is Integer;
+    var max is Integer;
+    public var model is MaModel;
+    override function setAttr from (cmd is Command) to () {
+	const n = cmd.getAttr();
+	if (n == "b") {
+	    const script = cmd.getString();
+	    const parser = MaParser {};
+	    for (c in parser.parseString(script)) {
+		min = c.getInt("min");
+		max = c.getInt("max");
+		model.startFrame = min-1;
+		model.endFrame = max-1;
+	    }
+	} else super.setAttr(cmd);
+    }
+}
+
 abstract class MSpatial is MNode {
     public var visible is Boolean = true;
     abstract function toNode from (m is MaModel) to Node;
     override function setAttr from (cmd is Command) to () {
-	super.setAttr(cmd);
 	const n = cmd.getAttr();
 	if (n == "v") {
 	    visible = cmd.getBoolean();
 	}
+	else super.setAttr(cmd);
     }
 
     override function resolveInput from (m is MaModel, p is String) to ConstRef of ? 
@@ -1464,14 +1504,8 @@ class MGroupParts is MNode {
 class MTweak is MNode {
 }
 
-class MBlendShape is MNode {
-
-    public override function setAttr from (cmd is Command) to ()
-    {
-	super.setAttr(cmd);
-    }
-
-   function getGroupParts to MGroupParts {
+abstract class MMeshDeformer is MNode {
+    protected function getGroupParts to MGroupParts {
 	for (c in connectionsToThis.get("ip")) {
 	    const path = parsePath(c.targetPath).path;
 	    if (path[1] is Index) {
@@ -1491,13 +1525,173 @@ class MBlendShape is MNode {
 	return null;
     }
 
-    function getTweak from (gp is MGroupParts) to MTweak {
+    protected function getTweak from (gp is MGroupParts) to MTweak {
 	for (c in gp.connectionsToThis.get("ig")) {
 	    if (c.sourceNode is MTweak) {
 		return c.sourceNode as MTweak;
 	    }
 	}
 	return null;
+    }
+    
+    protected var sourceMesh is MMesh;
+    protected var targetMesh is MMesh;
+
+    protected function resolveMeshes {
+	const gp = getGroupParts();
+	println("group parts {name} => {gp}");
+	const tweak = getTweak(gp);
+	println("tweak {name} => {tweak}");
+	for (c in tweak.connectionsToThis.get("ip")) {
+	    if (c.sourceNode instanceof MGroupParts and c.targetPath == "ip[0].ig") {
+	       gp = c.sourceNode as MGroupParts;
+	       break;
+	    }	    
+	}
+	println("gp {name} => {gp}");
+	var done = false;
+	while (not done) {
+	    for (c in gp.connectionsToThis.get("ig")) {
+		println(c);
+		if (c.sourceNode is MMesh and c.sourcePath == "w") {
+		    sourceMesh = c.sourceNode as MMesh;
+		    done = true;
+		} else if (c.sourceNode is MGroupParts and c.sourcePath == "og") {
+		    gp = c.sourceNode as MGroupParts;
+		    break;
+		} else {
+		    done = true;
+		}
+	    }
+	}
+	for (c in connectionsFromThis.get("og")) {
+	    if (c.targetNode is MMesh and c.targetPath == "i") {
+		targetMesh = c.targetNode as MMesh;
+	    }
+	}
+    }
+}
+
+class WeightList {
+    var w is Number[];
+}
+
+class MSkinCluster is MMeshDeformer {
+    var wl is WeightList[];
+    var pm is Mat4[];
+    var gm is Mat4;
+    public override function setAttr from (cmd is Command) to ()
+    {
+	const attr = cmd.getAttr();
+	if (attr == "wl") {
+	    const path = cmd.getPath();
+	    const values = cmd.getFloatArray();
+	    const i = (path.path[1] as Index).index;
+	    while (this.wl.size() <= i) {
+		insert WeightList {} into this.wl;
+	    }
+	    var wl = this.wl[i];
+	    const wi = path.path[3];
+	    if (wi instanceof Range) {
+		const r = wi as Range;
+		for (_ in [wl.w.size()..r.startIndex]) {
+		    insert 0.0 into wl.w;
+		}
+		wl.w[r.startIndex..r.endIndex] = values;
+	    } else if (wi instanceof Index) {
+		const j = (wi as Index).index;
+		for (_ in [wl.w.size()..j]) {
+		    insert 0.0 into wl.w;
+		}
+		wl.w[j] = values[0];
+	    }
+	    println("weight list {i} = {wl.w}");
+	} else if (attr == "pm") {
+	    const path = cmd.getPath();
+	    const i = (path.path[1] as Index).index;
+	    while (pm.size() < i) {
+		insert Mat4.<<1>> into pm;
+	    }
+	    pm[i..i] = cmd.getMatrix();
+	} else if (attr == "gm") {
+	    gm = cmd.getMatrix();
+	} else super.setAttr(cmd);
+    }
+
+    public function toSkinCluster from (m is MaModel) to SkinCluster {
+	resolveMeshes();
+	println("pm={pm.size()}");
+	println("gm={gm}");
+	println("Source Mesh={sourceMesh}");
+	println("Target Mesh={targetMesh}");
+
+	const resolvedSource = m.toNode(sourceMesh) as MeshNode;
+	const resolvedTarget = m.toNode(targetMesh) as MeshNode;
+	println("Source Mesh={resolvedSource}");
+	println("Target Mesh={resolvedTarget}");
+
+	var joints is Node[];
+	for (j in connectionsToThis.get("ma")) {
+	    println(j);
+	    if (j.sourcePath == "wm" and j.sourceNode instanceof MJoint) {
+		const jn = m.toNode(j.sourceNode as MSpatial);
+		const p = parsePath(j.targetPath).path;
+		const i = (p[1] as Index).index;
+		while (joints.size() < i) {
+		    insert jn into joints;
+		}
+		joints[i] = jn;
+	    }
+	}
+	println("joints={joints.size()}");
+	const vertIndices = sourceMesh.vertIndices;
+	var weights is Number[];
+	for (vertIndex in vertIndices) {
+	    const list = wl[vertIndex];
+	    //println("vert={vertIndex} wl={foreach (x in list.w) "{x},"}");
+	    if (list.w.size() > 0) {
+		var influences is Number[];
+		for (w in list.w) {
+		    if (w <> 0) {
+			insert indexof w into influences;
+			insert w into influences;
+		    }
+		}
+		if (influences.size() > 0) {
+		    const vert = indexof vertIndex;
+		    insert vert into weights;
+		    insert influences.size() / 2 into weights;
+		    insert influences into weights;
+		}
+	    }
+	}
+	const sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
+	const sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
+	resolvedTarget.mesh = resolvedSource.mesh;
+	if (resolvedTarget.shader == null) {
+	    resolvedTarget.shader = resolvedSource.shader; // hack?
+	}
+	resolvedTarget.visible = true;
+	const result = SkinCluster {
+	    sourceVertices: sourceVertices;
+	    sourceNormals: sourceNormals;
+	    targetVertices: resolvedTarget.mesh.getVertexBuffer();
+	    targetNormals: resolvedTarget.mesh.getNormalBuffer();
+	    joints: joints;          
+	    weights: weights;
+	    bindPreMatrices: pm;
+	    geomMatrix: gm;
+	}
+	insert result into resolvedTarget.deformers;
+	return result;
+    }
+}
+
+class MBlendShape is MMeshDeformer {
+
+    public override function setAttr from (cmd is Command) to ()
+    {
+	super.setAttr(cmd);
     }
 
     public function resolveTargetPointer 
@@ -1529,26 +1723,7 @@ class MBlendShape is MNode {
 
     public function toBlendShape from (m is MaModel) to BlendShape 
     {
-	const gp = getGroupParts();
-	var sourceMesh is MMesh;
-	const tweak = getTweak(gp);
-	for (c in tweak.connectionsToThis.get("ip")) {
-	    if (c.sourceNode instanceof MGroupParts and c.targetPath == "ip[0].ig") {
-	       gp = c.sourceNode as MGroupParts;
-	       break;
-	    }	    
-	}
-	for (c in gp.connectionsToThis.get("ig")) {
-	    if (c.sourceNode is MMesh and c.sourcePath == "w") {
-		sourceMesh = c.sourceNode as MMesh;
-	    }
-	}
-	var targetMesh is MMesh;
-	for (c in connectionsFromThis.get("og")) {
-	    if (c.targetNode is MMesh and c.targetPath == "i") {
-		targetMesh = c.targetNode as MMesh;
-	    }
-	}
+	resolveMeshes();
 	const blendMeshes = 
 	    foreach (c in connectionsToThis.get("it")) 
 	    {
@@ -1598,16 +1773,17 @@ class MJoint is MTransform {
 	    joy = cmd.getFloat();
 	} else if (attr == "joz") {
 	    joz = cmd.getFloat();
-	} else if (attr == "jor") {
-	    const jor = cmd.getFloat3();
-	    jox = jor.x;
-	    joy = jor.y;
-	    joz = jor.z;
+	} else if (attr == "jo") {
+	    const jo = cmd.getFloat3();
+	    jox = jo.x;
+	    joy = jo.y;
+	    joz = jo.z;
 	} else if (attr == "jot") {
 	    const jot = cmd.getString();
 	    for (s in RotateOrders) {
-		if (s == "jot") {
+		if (s == jot) {
 		    jo = indexof s;
+		    println("jot={jot} jo={jo}");
 		    break;
 		}
 	    }
@@ -1676,12 +1852,12 @@ class MCharacter is MNode {
     function resolveTargetPointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
 	// toThis connects to one of my inputs; forward to the corresponding connection 
-	println("{name} trying to resolve {toThis} in {connectionsFromThis}");
+	//println("{name} trying to resolve {toThis} in {connectionsFromThis}");
 	const path = parsePath(toThis.targetPath).path[0] as Field;
 	for (conn in connectionsFromThis.get(path.name)) {
 	    if (conn.sourcePath == toThis.targetPath) {
 		const ptr = m.resolveTargetPointer(conn);
-		println("conn={conn} ptr={ptr}");
+		//println("conn={conn} ptr={ptr}");
 		if (ptr <> null) return ptr;
 		println("failed to resolve target {toThis.targetPath} using {conn}");
 	    }
@@ -2061,14 +2237,18 @@ class MMesh is MSpatial
 		const tanb = BufferUtils.createVector3Buffer(ib.limit());
 		const binb = BufferUtils.createVector3Buffer(ib.limit());
 		const uvbb = foreach (uvb in uvbs) uvb.getBuffer();
-		ImportUtils.addTangentBinormalStreams(ib, vb, uvbb[0], nb, tanb, binb);
+		var additional is MeshBuffer.VertexAttributeBuffer[];
+		if (ImportUtils.addTangentBinormalStreams(ib, vb, uvbb[0], nb, tanb, binb)) {
+		    additional =
+			[MeshBuffer.VertexAttributeBuffer {id: "TANGENT", coordsPerVertex: 3, buffer: tanb },
+			 MeshBuffer.VertexAttributeBuffer {id: "BINORMAL", coordsPerVertex: 3, buffer: binb }];
+		}
 		MeshBuffer {
 		    indexBuffer: ib;
 		    vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
 		    normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
 		    textureBuffers: [foreach (uvb in uvbb) MeshBuffer.VertexAttributeBuffer {id: "TEXCOORD{indexof uvb}", coordsPerVertex: 2, buffer: uvb },
-				     MeshBuffer.VertexAttributeBuffer {id: "TANGENT", coordsPerVertex: 3, buffer: tanb },
-				     MeshBuffer.VertexAttributeBuffer {id: "BINORMAL", coordsPerVertex: 3, buffer: binb }];
+				     additional];
 		}.toMesh();
 	    } else MeshBuffer {
 		    indexBuffer: ib;
@@ -2098,11 +2278,16 @@ class MMesh is MSpatial
 	    return v;
 	}
 
+    public var vertIndices is Integer[];
+
+    var insertedVertices = new java.util.TreeMap of (FaceVertex, Integer);
+
     function insertVertex
 	from (edge is Integer, face is Integer, uvIndex is Integer[]) 
 	to ()
     {
 	const v = this.vertex(edge);
+	insert edge into vertIndices;
 	const n = 
 	    if (this.normals <> []) 
 		then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
@@ -2639,6 +2824,14 @@ class MAnimClip is MNode {
 class MClipLibrary is MNode {
 }
 
+const FIXED  = 1;
+const LINEAR  = 2;
+const FLAT    = 3;
+const STEPPED = 5;
+const SPLINE  = 9;
+const CLAMPED = 10;
+const PLATEAU = 16;
+
 // http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/animCurve.html
 abstract class MAnimCurve of a is MTemporal 
 {
@@ -2646,24 +2839,91 @@ abstract class MAnimCurve of a is MTemporal
     var kiy is Number[];
     var kox is Number[];
     var koy is Number[];
+    var tan is Integer;
     var kit is Integer[];
     var kot is Integer[];
 
     override function setAttr from (cmd is Command) to () 
     {
 	const n = cmd.getAttr();
-	if (n == "kix") {
-	    kix = cmd.getFloatArray();
+	if (n == "tan") {
+	    tan = cmd.getInt();
+	} else if (n == "kix") {
+	    const p = cmd.getPath().path;
+	    const values = cmd.getFloatArray();
+	    if (p[1] instanceof Range) {
+		const r = p[1] as Range;
+		while (kix.size() < r.startIndex) {
+		    insert 1.0 into kix;
+		}
+		kix[r.startIndex..r.endIndex] = values;
+	    } else {
+		kix = values;
+	    }
+	    println("kix={kix}");
 	} else if (n == "kiy") {
-	    kiy = cmd.getFloatArray();
+	    const p = cmd.getPath().path;
+	    const values = cmd.getFloatArray();
+	    if (p[1] instanceof Range) {
+		const r = p[1] as Range;
+		while (kiy.size() < r.startIndex) {
+		    insert 0.0 into kiy;
+		}
+		kiy[r.startIndex..r.endIndex] = values;
+	    } else {
+		kiy = values;
+	    }
+	    println("kiy={kiy}");
 	} else if (n == "kox") {
-	    kox = cmd.getFloatArray();
+	    const p = cmd.getPath().path;
+	    const values = cmd.getFloatArray();
+	    if (p[1] instanceof Range) {
+		const r = p[1] as Range;
+		while (kox.size() < r.startIndex) {
+		    insert 1.0 into kox;
+		}
+		kox[r.startIndex..r.endIndex] = values;
+	    } else {
+		kox = values;
+	    }
+	    println("kox={kox}");
 	} else if (n == "koy") {
-	    koy = cmd.getFloatArray();
+	    const p = cmd.getPath().path;
+	    const values = cmd.getFloatArray();
+	    if (p[1] instanceof Range) {
+		const r = p[1] as Range;
+		while (koy.size() < r.startIndex) {
+		    insert 0.0 into koy;
+		}
+		koy[r.startIndex..r.endIndex] = values;
+	    } else {
+		koy = values;
+	    }
+	    println("koy={koy}");
 	} else if (n == "kit") {
-	    kit = cmd.getIntArray();
+	    const p = cmd.getPath().path;
+	    const values = cmd.getIntArray();
+	    if (p[1] instanceof Range) {
+		const r = p[1] as Range;
+		while (kit.size() < r.startIndex) {
+		    insert 0 into kit;
+		}
+		kit[r.startIndex..r.endIndex] = values;
+	    } else {
+		kit = values;
+	    }
 	} else if (n == "kot") {
-	    kot = cmd.getIntArray();
+	    const p = cmd.getPath().path;
+	    const values = cmd.getIntArray();
+	    if (p[1] instanceof Range) {
+		const r = p[1] as Range;
+		while (kot.size() < r.startIndex) {
+		    insert 0 into kot;
+		}
+		kot[r.startIndex..r.endIndex] = values;
+	    } else {
+		kot = values;
+	    }
 	} else super.setAttr(cmd);
     }
 
@@ -2675,6 +2935,7 @@ const FPS = 1s/24.0;
 
 class MAnimCurve__ is MAnimCurve of Number 
 {
+    const type is String;
     var ktv is Vec2[];
 
     override function setAttr from (cmd is Command) to () 
@@ -2686,31 +2947,76 @@ class MAnimCurve__ is MAnimCurve of Number
 	} else super.setAttr(cmd);
     }
 
-    function getInterpolator from (i is Integer) to KeyFrame.NumberInterpolator 
+    function getInterpolator from (i1 is Integer) to KeyFrame.NumberInterpolator 
     {
-	if (i >= kix.size()) {
+	var tan0 = tan;
+	var tan1 = tan;
+	const i0 = i1-1;
+	if (i0 > 0 and i0 < kot.size()) {
+	    const t = kot[i0];
+	    if (t <> 0) {
+		tan0 = t;
+	    }
+	}
+	if (i1 < kit.size()) {
+	    const t = kit[i1];
+	    if (t <> 0) {
+		tan1 = t;
+	    }
+	}
+	if (tan0 == STEPPED or i1 > kix.size()) {
 	    return KeyFrame.Linear;
 	}
+	var x0 is Number;
+	var y0 is Number;
+	var x1 is Number;
+	var y1 is Number;
+	if (i0 < 0) {
+	    x0 = 1.0;
+	    y0 = 0.0;
+	} else {
+	    x0 = kox[i0];
+	    x1 = koy[i0]
+	} 
+	if (i1 == kix.size()) {
+	    x1 = 1.0;
+	    y1 = 0.0;
+	} else {
+	    x1 = kix[i1];
+	    y1 = kiy[i1];
+	}
+	if (x0 == 0 or x1 == 0) {
+	    println("bad tangent interpolator {name} {x0},{y0} {x1},{y1}");
+	    if (x0 == 0) x0 = 1.0;
+	    if (x1 == 0) x1 = 1.0;
+	}
+	println("created interpolator {name} {x0},{y0} {x1},{y1}");
 	KeyFrame.Tangent {
-	    kix: kix[i];
-	    kiy: kiy[i];
-	    kox: kox[i];
-	    koy: koy[i];
+	    kix: x1;
+	    kiy: y1;
+	    kox: x0;
+	    koy: y0;
 	}
     }
 
     override function toChannel from (m is MaModel) to Channel of Number 
     {
+	const keyTimesInSeconds = (this.type == "animCurveUA" or
+				   this.type == "animCurveUL" or
+				   this.type == "animCurveUT" or
+				   this.type == "animCurveUU"); 
+	const rate = if (keyTimesInSeconds) then 1s else FPS;
+	const targets = m.getNumberTargets(this, "o");
 	Channel of Number 
 	{
 	    id: name;
-	    targets: m.getNumberTargets(this, "o");
-	    keys:
-	    foreach (x in ktv) {
+	    targets: targets;
+	    keys: foreach (kt in ktv) {
+		const adjustment = if (not keyTimesInSeconds and kt.x <> 0.0) then -1 else 0;
 		KeyFrame.Key of Number {
-		    position: FPS * (x.x - 1)
-		    value: x.y;
-		    interpolator: getInterpolator(indexof x);
+		    position: rate * (kt.x + adjustment);
+		    value: kt.y;
+		    interpolator: getInterpolator(indexof kt);
 		}
 	    }
 	}
@@ -2911,7 +3217,11 @@ class Command
 
     public function getMatrix to Mat4 
     {
-	Mat4.fromColumns(getFloatArray());
+	const arr = getFloatArray();
+	if (arr.size() <> 16) {
+	    return Mat4.<<1>>;
+	}
+	Mat4.fromColumns(arr);
     }
 
     public function getVec3 to Vec3 
@@ -2990,14 +3300,14 @@ class MaParser
     var tokens = new java.util.ArrayList of String;
     const cmds = new java.util.ArrayList of Command;
 
-    function flush() {
+    function flush {
 	if (buf.length() > 0) {
 	    tokens.add(buf.toString());
 	    buf.setLength(0);
 	}
     }
 
-    function consumeUntil(input is String, end is Character) {
+    function consumeUntil from (input is String, end is Character) to () {
 	const len = input.length();
 	const backslash = "\\";
 	const escapes = "ntr";
@@ -3088,6 +3398,11 @@ class MaParser
 	return model;
     }
 
+    public function parseString from (input is String) to Command[] {
+	tokenize(input);
+	foreach (cmd in cmds) cmd;
+    }
+
     function parseCommand from (cmds is java.util.List of String) to Command 
     {
 	const cmd = Command {
@@ -3114,14 +3429,14 @@ class MaParser
     }
 }
 
-const RotateOrders = ["xyz", "yzx", "zxy", "xzy", "yxz", "zyx"];
+const RotateOrders = ["xyz", "yzx", "zxy", "xzy", "yxz", "zyx"].reverse();
 const RotateOrder =   
    [0, 1, 2,  // 0=xyz
     1, 2, 0,  // 1=yzx
     2, 0, 1,  // 2=zxy
     0, 2, 1,  // 3=xzy
     1, 0, 2,  // 4=yxz
-    2, 1, 0]; // 5=zyx
+    2, 1, 0].reverse(); // 5=zyx
 
 const axes = [Vec3.X_AXIS, Vec3.Y_AXIS, Vec3.Z_AXIS];
 
@@ -3168,12 +3483,15 @@ public class MaTransform is Group
 	to Mat4 
     {
 	const angles = [rx, ry, rz];
-	var result = Mat4.<<1>>;
-	for (i in [0..<3]) { 
-	    const j = RotateOrder[i*3+ro]; 
-	    result *= axes[j].rotate(angles[j]);
+	var q = Quat.<<1>>;
+	const rots = foreach (i in [0..2]) { 
+	    const j = RotateOrder[ro*3+i]; 
+	    Quat.Quat(angles[j], axes[j]);
 	}
-	return result;
+	for (r in rots.reverse()) {
+	    q *= r;
+	}
+	return q.toMat4();
     }
 
     // translation
@@ -3202,32 +3520,57 @@ public class Joint is MaTransform {
     public var jox is Number;
     public var joy is Number;
     public var joz is Number;
-    public var jo is Integer; // jot mapped to RO_INDEX
+    public var jo is Integer = 0; // jot mapped to RotateOrder
     public var ssc is Boolean = true; // segment scale compensate
     public readonly var jor = bind rotate(jox, joy, joz, jo);
 
     var parentTransform is MaTransform = bind parent as MaTransform;
-    var parentInverseScale is Tuple3 = bind if (not ssc) then Tuple3.<<1>> else { var a = Tuple3.<<1>> / parentTransform.s; if (a == null) then Tuple3.<<1>> else a }
+    var parentInverseScale is Tuple3 = bind if (not ssc) then Tuple3.<<1>> else { var i_s = Tuple3.<<1>> / parentTransform.s; if (i_s == null) then Tuple3.<<1>> else i_s }
 
     var ikEffector is MaTransform;
 
     var t0 = bind if (ikEffector != null) then ikEffector.t else t;
 
     var ikr is Mat4 = Mat4.<<1>>;
+    var is_ik is Boolean = false;
 
     postinit {
 	ikr = jor;
     }
 
-    var r0 = bind ikr;
+    var r0 = bind if (is_ik) then ikr else r;
 
-    override var transform = bind translate(t0) * scale(parentInverseScale) * jor * r0 * scale(sx, sy, sz);
+    override var transform = 
+	bind translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
+    //bind computeTransform(tx, ty, tz, parentInverseScale, jor, r0, sx, sy, sz);
+
+    function computeTransform
+	from (tx is Number,
+	      ty is Number,
+	      tz is Number,
+	      parentInverseScale is Tuple3,
+	      jor is Mat4,
+	      r0 is Mat4,
+	      sx is Number,
+	      sy is Number,
+	      sz is Number)
+	to Mat4 
+    {
+	
+	println("this={this.id}: tx={tx} this.tx={this.tx} ty={ty} this.ty={this.ty} tz={tz} parentInverseScale ={parentInverseScale} \njor={jor} \nr0={r0} \nsx={sx} sy={sy} sz={sz}");
+	translate(tx, ty, tz) * scale(parentInverseScale) * jor * r0 * scale(sx, sy, sz);
+    }
 
     var preferredRotation is Quat;
 
+    var pax is Number;
+    var pay is Number;
+    var paz is Number;
+    readonly var pa = bind rotate(pax, pay, paz, ro);
+
     function getPreferredRotation to Quat {
         if (preferredRotation == null) {
-            preferredRotation = jor.getRotation();
+            preferredRotation = pa.getRotation();
         }
         return preferredRotation;
     }

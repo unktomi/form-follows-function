@@ -238,7 +238,7 @@ public class Vec3 is Tuple3
 
     public function rotate(degrees is Number) to Mat4 
     {
-	LinearMath.rotateNormalAxis(degrees, this);
+	LinearMath.rotate(degrees, this);
     }
 
     public function rotationTo 

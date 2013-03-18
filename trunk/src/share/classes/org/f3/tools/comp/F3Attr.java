@@ -4411,7 +4411,7 @@ public class F3Attr implements F3Visitor {
 			bounds = bounds.append(iface.getTypeArguments().head);
 		    }
 		}
-		if (bounds.size() == 0 && false) {
+		if (bounds.size() == 0) {
 		    Type tc = types.makeTypeCons(thisType, tree.typeArgTypes);
 		    ClassType ct = (ClassType)c.type;
 		    //System.err.println("adding "+tc);

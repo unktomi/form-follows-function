@@ -6080,10 +6080,10 @@ type
                 $rtype = F.at(rPos).TypeClass($typeName.value, $cardinality.ary);
             }
             endPos($rtype);
-        }
+        } )
     | LBRACKET RBRACKET { $rtype = F.at(pos($LBRACKET)).RawSequenceType(); }
     | typeFunction  { $rtype = $typeFunction.rtype; } 
-    | typePrefixed  { $rtype = $typePrefixed.rtype; }) 
+    | typePrefixed  { $rtype = $typePrefixed.rtype; } 
     | q=QUES {$rtype = F.at($q.pos).TypeExists();}
     ;
 
