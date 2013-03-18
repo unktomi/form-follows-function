@@ -7,6 +7,9 @@ import org.f3.runtime.Foldable;
 
 public abstract class TimeNode is Foldable of TimeNode
 {
+    override function toString to String {
+	"{super.toString()} {id} {bounds}"
+    }
     public const id is String;
     public var parent is TimeNode;
 

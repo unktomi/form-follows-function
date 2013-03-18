@@ -1239,8 +1239,14 @@ class SceneRenderer {
 		    }
 		} 
 		if (n is MeshNode) {
+		    const mn = n as MeshNode;
+		    for (deformer in mn.deformers) {
+			//println("applying deformer {deformer} to {mn}");
+			deformer.apply(mn);
+			mn.mesh.updateBounds();
+			//println("bounds is now {mn.mesh.bounds}");
+		    }
 		    if (scene.camera.contains(n.boundsInScene)) {
-			const mn = n as MeshNode;
 			const shader = mn.shader;
 			if (mn.shader <> null) {
 			    for (p in (mn.shader as CGFXShader).parameters) {
@@ -1389,9 +1395,6 @@ class SceneRenderer {
 	    }
 	    if (badtex) {
 		continue;
-	    }
-	    for (deformer in mn.deformers) {
-	    	deformer.apply();
 	    }
             var shader = mn.shader;
 	    //println("shader={shader}");

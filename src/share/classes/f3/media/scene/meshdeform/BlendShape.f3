@@ -1,5 +1,6 @@
 package f3.media.scene.meshdeform;
 import java.nio.*;
+import f3.media.scene.MeshNode;
 
 public class BlendShape is MeshDeformer {
     public var sourceVertices is FloatBuffer;
@@ -10,7 +11,7 @@ public class BlendShape is MeshDeformer {
     public var blendTargetNormals is FloatBuffer[];
     public var weights is Number[];
 
-    public override function apply from () to () 
+    public override function apply from (_ is MeshNode) to () 
     {
     //	println("applying blend shape {weights.size()} => {weights}");
         const origPos is FloatBuffer = sourceVertices;
