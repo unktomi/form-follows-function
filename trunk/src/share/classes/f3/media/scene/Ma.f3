@@ -192,8 +192,8 @@ class MaModel
 
     public var spatialRoot is Group;
     public var temporalRoot is TimeGroup;
-    public var startFrame is Integer;
-    public var endFrame is Integer;
+    public var startFrame is Number;
+    public var endFrame is Number;
     var channels is TimeNode[];
     var clipLibs is TimeGroup[];
 
@@ -702,8 +702,8 @@ class MNode {
 }
 
 class MSceneConfig is MNode {
-    var min is Integer;
-    var max is Integer;
+    var min is Number;
+    var max is Number;
     public var model is MaModel;
     override function setAttr from (cmd is Command) to () {
 	const n = cmd.getAttr();
@@ -711,8 +711,8 @@ class MSceneConfig is MNode {
 	    const script = cmd.getString();
 	    const parser = MaParser {};
 	    for (c in parser.parseString(script)) {
-		min = c.getInt("min");
-		max = c.getInt("max");
+		min = c.getFloat("min");
+		max = c.getFloat("max");
 		model.startFrame = min-1;
 		model.endFrame = max-1;
 	    }
@@ -1605,7 +1605,7 @@ class MSkinCluster is MMeshDeformer {
 		}
 		wl.w[j] = values[0];
 	    }
-	    println("weight list {i} = {wl.w}");
+	    //println("weight list {i} = {wl.w}");
 	} else if (attr == "pm") {
 	    const path = cmd.getPath();
 	    const i = (path.path[1] as Index).index;
@@ -1629,12 +1629,14 @@ class MSkinCluster is MMeshDeformer {
 	const resolvedTarget = m.toNode(targetMesh) as MeshNode;
 	println("Source Mesh={resolvedSource}");
 	println("Target Mesh={resolvedTarget}");
-
 	var joints is Node[];
+	var bps is Mat4[];
 	for (j in connectionsToThis.get("ma")) {
 	    println(j);
 	    if (j.sourcePath == "wm" and j.sourceNode instanceof MJoint) {
-		const jn = m.toNode(j.sourceNode as MSpatial);
+		const mj = j.sourceNode as MJoint;
+		insert mj.bps.inverse() into bps;
+		const jn = m.toNode(mj);
 		const p = parsePath(j.targetPath).path;
 		const i = (p[1] as Index).index;
 		while (joints.size() < i) {
@@ -1644,6 +1646,12 @@ class MSkinCluster is MMeshDeformer {
 	    }
 	}
 	println("joints={joints.size()}");
+	for (m1 in pm) {
+	    const m2 = bps[indexof m1];
+	    if (m2 <> m1) {
+		println("differ {indexof m1} {m1} - {m2}");
+	    }
+	}
 	const vertIndices = sourceMesh.vertIndices;
 	var weights is Number[];
 	for (vertIndex in vertIndices) {
@@ -1679,7 +1687,7 @@ class MSkinCluster is MMeshDeformer {
 	    targetNormals: resolvedTarget.mesh.getNormalBuffer();
 	    joints: joints;          
 	    weights: weights;
-	    bindPreMatrices: pm;
+	    bindPreMatrices: pm[0..<joints.size()];
 	    geomMatrix: gm;
 	}
 	insert result into resolvedTarget.deformers;
@@ -1764,6 +1772,8 @@ class MJoint is MTransform {
     var jo is Integer;
     var ssc is Boolean;
 
+    var bps is Mat4;
+
     override function setAttr from (cmd is Command) to () 
     {
 	const attr = cmd.getAttr();
@@ -1773,6 +1783,8 @@ class MJoint is MTransform {
 	    joy = cmd.getFloat();
 	} else if (attr == "joz") {
 	    joz = cmd.getFloat();
+	} else if (attr == "bps") {
+	    bps = cmd.getMatrix();
 	} else if (attr == "jo") {
 	    const jo = cmd.getFloat3();
 	    jox = jo.x;
@@ -2976,7 +2988,7 @@ class MAnimCurve__ is MAnimCurve of Number
 	    y0 = 0.0;
 	} else {
 	    x0 = kox[i0];
-	    x1 = koy[i0]
+	    y0 = koy[i0]
 	} 
 	if (i1 == kix.size()) {
 	    x1 = 1.0;

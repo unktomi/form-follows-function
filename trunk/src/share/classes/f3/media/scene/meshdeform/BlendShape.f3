@@ -11,7 +11,7 @@ public class BlendShape is MeshDeformer {
     public var blendTargetNormals is FloatBuffer[];
     public var weights is Number[];
 
-    public override function apply from (_ is MeshNode) to () 
+    public override function apply from (_ is MeshNode) to function from () to ()
     {
     //	println("applying blend shape {weights.size()} => {weights}");
         const origPos is FloatBuffer = sourceVertices;
@@ -58,5 +58,6 @@ public class BlendShape is MeshDeformer {
         }
         positionData.rewind();
         normalData.rewind();
+	return function () {}
     }
 }
