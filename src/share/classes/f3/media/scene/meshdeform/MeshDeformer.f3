@@ -1,6 +1,10 @@
 package f3.media.scene.meshdeform;
 import f3.media.scene.MeshNode;
+import java.util.concurrent.*;
+
+package const pool is AbstractExecutorService = new ForkJoinPool();
 
 public interface MeshDeformer {
-    public abstract function apply from (m is MeshNode) to ();
+    public var enabled is Boolean = true;
+    public abstract function apply from (m is MeshNode) to function from () to ();
 }

@@ -41,6 +41,8 @@ import com.jogamp.opengl.util.awt.TextureRenderer;
 
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 
+var DISABLE_DEFORMERS = false;
+
 class JoglPath2D is Path2D {
     public var path is GeneralPath = new GeneralPath();
     override public function apply from (output is Path2D) to () 
@@ -1240,11 +1242,13 @@ class SceneRenderer {
 		} 
 		if (n is MeshNode) {
 		    const mn = n as MeshNode;
-		    for (deformer in mn.deformers) {
-			//println("applying deformer {deformer} to {mn}");
-			deformer.apply(mn);
-			mn.mesh.updateBounds();
-			//println("bounds is now {mn.mesh.bounds}");
+		    if (not DISABLE_DEFORMERS) {
+			for (deformer in mn.deformers) {
+			    //println("applying deformer {deformer} to {mn}");
+			    deformer.apply(mn)(); // fix me: opt
+			    mn.mesh.updateBounds();
+			    //println("bounds is now {mn.mesh.bounds}");
+			}
 		    }
 		    if (scene.camera.contains(n.boundsInScene)) {
 			const shader = mn.shader;
@@ -1953,6 +1957,8 @@ public class JoglStage is Stage
     public var title is String;
     var todo is (function from () to ())[];
 
+
+
     public function invoke from (fun is function from () to ()) to () {
         insert fun into todo;
     }
@@ -2184,6 +2190,7 @@ public function run from (args is String[]) to ()
 		currentCamera = cam;
 	    }
 	}
+	println("camera={camera.tx}, {camera.ty}, {camera.tz}");
     }
 
     const setClip = function from (i is Integer) to ()
@@ -2208,6 +2215,8 @@ public function run from (args is String[]) to ()
 		    } else if (event.keyCode == Keys.G) {
 			java.lang.System.gc();
 			//showMemory = not showMemory;
+		    } else if (event.keyCode == Keys.B) {
+			DISABLE_DEFORMERS = not DISABLE_DEFORMERS;
 		    } else if (event.keyCode == Keys.D) {
 			//DEBUG_USE_DEFAULT_SHADER = not DEBUG_USE_DEFAULT_SHADER;
 			CGFXShader.DEBUG = not CGFXShader.DEBUG;

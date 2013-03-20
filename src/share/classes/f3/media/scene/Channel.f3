@@ -76,7 +76,12 @@ public class Channel of a is TimeNode
 	    t = 0.0;
 	    k = k1;
 	} else {
-	    t = (pos - k1.position) / (k2.position - k1.position);
+	    const dur = (k2.position - k1.position);
+	    if (dur == 0s) {
+		t = 0.0;
+	    } else {
+		t = (pos - k1.position) / dur;
+	    }
 	}
 	// v + k.interpolate(t) * weight
 	const result = k.add(if (v == null) then k.zero() else v, k.scale(k.interpolate(t), weight));
