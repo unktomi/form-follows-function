@@ -125,11 +125,12 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
 
     override public function createLayout
 	from (text0 is String, 
-	      font is Text.Font, 
+	      font0 is Text.Font, 
 	      wrapWidth is Integer, 
 	      clipHeight is Integer)
 	to Text.Layout 
     {
+	const font = if (font0 <> null) then font0 else createFont("");
         const text = "{text0} ";
         const width = wrapWidth;
         const height = clipHeight;
@@ -145,12 +146,12 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
             const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
             const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline;
             const layout = measurer.nextLayout(wrapWidth, limit, false);
-            if (layout != null) {
-                y += layout.getAscent();
-                if (y > clipHeight) {
-                    break;
-                }
-                var dx = 
+	    y += layout.getAscent();
+	    if (y > clipHeight) {
+		break;
+	    }
+	    if (layout <> null) {
+		var dx = 
 		    if (not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
                 dx -= wrapWidth / 2.0;
                 y += layout.getDescent() + layout.getLeading();
@@ -430,6 +431,7 @@ class JoglPath2DFactory is Shape2D.Path2DFactory
 }
 
 const ThePath2DFactory = JoglPath2DFactory {};
+const TheLayoutEngine = JoglTextLayoutEngine {};
 
 function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to Shader 
 {
@@ -2342,6 +2344,21 @@ var currentCamera is Camera on replace {
 
 public var TheWebBrowserFactory is AbstractWebBrowserFactory;
 
+function readTextFile from (url is String) to (String, Integer)
+{
+    const u = new java.net.URL(url);
+    const reader = new java.io.BufferedReader(new java.io.InputStreamReader(u.openStream()));
+    var line is Object;
+    var buf = new java.lang.StringBuffer;
+    var lineCount = 0;
+    while ((line = reader.readLine()) <> null) {
+	buf.append(line);
+	buf.append("\n");
+	lineCount++;
+    }
+    return (buf.toString(), lineCount);
+}
+
 public function run from (args is String[]) to ()
 {
 
@@ -2425,6 +2442,15 @@ public function run from (args is String[]) to ()
 	    pathFactory: ThePath2DFactory
 	} else null;
 
+    readonly var textModel = bind if (playerUrl.endsWith(".txt")) {
+	Text.Area {
+	    layoutEngine: TheLayoutEngine;
+	    var d = bind readTextFile(playerUrl)
+	    override var height = bind font.height() * 80
+	    text: bind d.first;
+	} 
+    } else null;
+
     const doDrop = function from (url is String) to () {
 	stage.title = url;
 	playerUrl = url;
@@ -2434,6 +2460,8 @@ public function run from (args is String[]) to ()
 	    viewer.focusCamera(currentModel = svgModel.root)
 	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith(".tif") or url.endsWith(".tiff") or url.endsWith(".tga")) {
 	    viewer.focusCamera(currentModel = imageModel)
+	} else if (url.endsWith(".txt")) {
+	    viewer.focusCamera(currentModel = textModel);
 	} else {
 	    if (browser <> null) {
 		browser.url = url;
