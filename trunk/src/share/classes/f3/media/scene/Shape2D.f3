@@ -244,5 +244,3 @@ public class Rectangle is Shape2D
     public var height is Number = 1;
     override var path = bind rect(factory, centerX-width/2, centerY-height/2, width, height);
 }
-
-

@@ -289,6 +289,13 @@ class MaModel
 		parentAttrType = attr.parent.type;
 		key = attr.parent.shortName;
 	    }
+	    for (c1 in target.connectionsFromThis.get(key)) {
+		const p = resolveTargetPointer(c1);
+		if (p <> null) {
+		    println("resolved {c} via {c1} to {p}");
+		    return p;
+		}
+	    }
 	}
 	var ptr = 
 	if (target instanceof MCharacter) {
@@ -457,7 +464,7 @@ class MaModel
 		const end = 1s/24 * (sourceClip.se);
 		insert TimeGroup {
 		    id: clip.name;
-		    playRange: Interval { start: start, end: end }
+		    //playRange: Interval { start: start, end: end }
 		} into clips;
 	    }
 	    for (conn in n.connectionsToThis.get("cel")) {
@@ -508,9 +515,10 @@ class MaModel
 		} else null
 	}
 	const links = foreach (link in linkMap.values()) link;
+	const playRange = Interval { start: FPS * startFrame, end: FPS * endFrame };
 	temporalRoot = TimeGroup {
 	    id: url
-	    playRange: Interval { start: FPS * startFrame, end: FPS * endFrame }
+	    // playRange: if (playRange.duration <> 0s) playRange else null;
 	    override function update from (sceneTime is Duration) to () {
 		super.update(sceneTime);
 		for (link in links) link.apply();
@@ -904,7 +912,6 @@ class MPlusMinusAverage is MUtilityOfTuple3 {
 	    op = cmd.getInt();
 	} else super.setAttr(cmd);
     }
-      
 }
 
 class MMultiplyDivide is MUtilityOfTuple3
@@ -1537,38 +1544,58 @@ abstract class MMeshDeformer is MNode {
     protected var sourceMesh is MMesh;
     protected var targetMesh is MMesh;
 
-    protected function resolveMeshes {
+    protected function resolveSourceMesh from () to MMesh {
 	const gp = getGroupParts();
-	println("group parts {name} => {gp}");
+	println("group parts {name} => {gp.name}");
 	const tweak = getTweak(gp);
-	println("tweak {name} => {tweak}");
-	for (c in tweak.connectionsToThis.get("ip")) {
-	    if (c.sourceNode instanceof MGroupParts and c.targetPath == "ip[0].ig") {
-	       gp = c.sourceNode as MGroupParts;
-	       break;
-	    }	    
+	if (tweak <> null) {
+	    println("tweak {name} => {tweak}");
+	    for (c in tweak.connectionsToThis.get("ip")) {
+		if (c.sourceNode instanceof MGroupParts and c.targetPath == "ip[0].ig") {
+		    gp = c.sourceNode as MGroupParts;
+		    break;
+		}	    
+	    }
 	}
-	println("gp {name} => {gp}");
+	println("gp {name} => {gp.name}");
 	var done = false;
 	while (not done) {
 	    for (c in gp.connectionsToThis.get("ig")) {
 		println(c);
+		const sp = parsePath(c.sourcePath).path;
+		const name = (sp[0] as Field).name;
 		if (c.sourceNode is MMesh and c.sourcePath == "w") {
 		    sourceMesh = c.sourceNode as MMesh;
 		    done = true;
 		} else if (c.sourceNode is MGroupParts and c.sourcePath == "og") {
 		    gp = c.sourceNode as MGroupParts;
+		    done = true;
+		    break;
+		} else if (c.sourceNode is MMeshDeformer and name == "og") {
+		    const d = c.sourceNode as MMeshDeformer;
+		    sourceMesh = d.resolveSourceMesh();
+		    done = true;
 		    break;
 		} else {
 		    done = true;
 		}
 	    }
 	}
+	return sourceMesh;
+    }
+
+    protected function resolveTargetMesh from () to MMesh {
 	for (c in connectionsFromThis.get("og")) {
 	    if (c.targetNode is MMesh and c.targetPath == "i") {
 		targetMesh = c.targetNode as MMesh;
 	    }
 	}
+	return targetMesh;
+    }
+
+    function resolveMeshes {
+	resolveSourceMesh();
+	resolveTargetMesh();
     }
 }
 
@@ -1622,8 +1649,8 @@ class MSkinCluster is MMeshDeformer {
 	resolveMeshes();
 	println("pm={pm.size()}");
 	println("gm={gm}");
-	println("Source Mesh={sourceMesh}");
-	println("Target Mesh={targetMesh}");
+	println("Source Mesh={sourceMesh.name}");
+	println("Target Mesh={targetMesh.name}");
 
 	const resolvedSource = m.toNode(sourceMesh) as MeshNode;
 	const resolvedTarget = m.toNode(targetMesh) as MeshNode;
@@ -1716,10 +1743,14 @@ class MBlendShape is MMeshDeformer {
 		    const p1 = p[1] as Index;
 		    const i = p1.index;
 		    return AbstractRef of Number {
+			override function toString to String {
+			    "{name}.w[{i}]";
+			}
 			public override function get to Number {
 			    resolved.weights[i];
 			}
 			public override function set from (n is Number) to () {
+			    //println("setting {this} => {n}");
 			    resolved.weights[i] = n;
 			}
 		    }
@@ -2976,7 +3007,7 @@ class MAnimCurve__ is MAnimCurve of Number
 		tan1 = t;
 	    }
 	}
-	if (tan0 == STEPPED or i1 > kix.size()) {
+	if (tan0 == STEPPED or i1 >= kix.size()) {
 	    return KeyFrame.Linear;
 	}
 	var x0 is Number;
@@ -3019,6 +3050,9 @@ class MAnimCurve__ is MAnimCurve of Number
 				   this.type == "animCurveUU"); 
 	const rate = if (keyTimesInSeconds) then 1s else FPS;
 	const targets = m.getNumberTargets(this, "o");
+	if (targets == []) {
+	    println("no targets { name }");
+	}
 	Channel of Number 
 	{
 	    id: name;

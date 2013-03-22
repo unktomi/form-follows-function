@@ -1,0 +1,44 @@
+package f3.media.scene;
+import f3.media.scene.Shape2D.*;
+
+public class Pick {
+    public const charIndex is Integer;
+    public const insertionIndex is Integer;
+    public const isLeadingEdge is Boolean;
+    public const row is Integer;
+    public const column is Integer;
+    override function toString to String {
+        "Pick ({row}, {column}) char {charIndex}, insert {insertionIndex} isLeadingEdge {isLeadingEdge}";
+    }
+}
+
+public interface Layout {
+    public abstract function getShape to Path2D;
+    public abstract function getCaretShape from (caret is Integer) to Path2D;
+    public abstract function getSelectionShape 
+	from (selectionStart is Integer, 
+	      selectionEnd is Integer) 
+	to Path2D;
+    public abstract function pick from (x is Number, y is Number) to Pick;
+    public abstract function pickCell from (row is Integer, column is Integer) to Pick;
+    public abstract function pick from (charIndex is Integer) to Pick;
+}
+
+public interface Font {
+    public const name is String;
+    public const ascent is Number;
+    public const descent is Number;
+    public const leading is Number;
+    public function height to Number { ascent+descent+leading }
+}
+
+public interface LayoutEngine {
+    public abstract function createFont from (spec is String) to Font;
+    public abstract function createLayout
+	(text is String, 
+	 font is Font, 
+	 wrapWidth is Integer, 
+	 clipHeight is Integer) 
+	to Layout;
+       
+}

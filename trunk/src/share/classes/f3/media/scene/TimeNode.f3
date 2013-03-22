@@ -94,14 +94,16 @@ public abstract class TimeNode is Foldable of TimeNode
                 add(this);
             }
         }
+	if (Channel.DEBUG) {
+	    println("parentTime {parentTime}, bounds {bounds}, pickable {pickableInScene}, picked {picked} {this}");
+	}
         currentTime = parentTime; 
 	// hack: avoid boxing
-        var now = (((parentTime.toMillis() - playTime.toMillis()) * playRate) - 
-		   contentPlayRange.start.toMillis());
-        var dur = contentPlayRange.duration.toMillis();
-	if (dur <> 0) {
-	    now = now mod dur;
-	}
+        var now = ((parentTime.toMillis() - playTime.toMillis()) * playRate) ;
+	now -= contentPlayRange.start.toMillis();
+	const dur = contentPlayRange.duration.toMillis();
+	now = now mod dur;
+	now += contentPlayRange.start.toMillis();
         localTime = Duration.valueOf(now);
 	const f =  { if (picked) then add else null } as function from TimeNode to ();
         pickChildren(sceneTime, 

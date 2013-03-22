@@ -6,7 +6,7 @@ import java.lang.Math;
 //import org.f3.runtime.*;
 import f3.media.scene.KeyFrame.Key;
 
-const DEBUG = java.lang.Boolean.getBoolean("f3.debug.anim");
+package var DEBUG = java.lang.Boolean.getBoolean("f3.debug.anim");
 
 function binarySearch of a from (keys is (Key of a)[], t is Duration) to Integer 
 {
