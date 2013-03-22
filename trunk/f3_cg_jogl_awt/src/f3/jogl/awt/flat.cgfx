@@ -68,6 +68,7 @@ technique Opaque {
         BlendEnable = false;
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
+	PolygonOffset = float2(1.0, 1.0);
     }
 }
 

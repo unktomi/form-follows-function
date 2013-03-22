@@ -321,8 +321,10 @@ class JoglTextLayout is Text.Layout
     }
 }
 
-class JoglPath2D is Path2D {
+class JoglPath2D is Path2D 
+{
     public var path is GeneralPath = new GeneralPath();
+
     override public function apply from (output is Path2D) to () 
     {
         const pi = path.getPathIterator(null);
@@ -342,18 +344,22 @@ class JoglPath2D is Path2D {
             }
         }
     }
+
     override public function moveTo from (x0 is Number, y0 is Number) to () 
     {
         path.moveTo(x0, y0);
     }
+
     override public function lineTo from (x1 is Number, y1 is Number) to () 
     {
         path.lineTo(x1, y1);
     }
+
     override public function quadTo from (cx1 is Number, cy1 is Number, x2 is Number, y2 is Number) to () 
     {
         path.quadTo(cx1, cy1, x2, y2);
     }
+
     override public function cubicTo 
 	from (cx1 is Number, cy1 is Number, 
 	      cx2 is Number, cy2 is Number,
@@ -362,14 +368,17 @@ class JoglPath2D is Path2D {
     {
         path.curveTo(cx1, cy1, cx2, cy2, x2, y2);
     }
+
     override public function closePath 
     {
         path.closePath();
     }
+
     override public function reset 
     {
         path = new GeneralPath();
     }
+
     override public function getBounds to Bounds 
     {
         const bnds = path.getBounds2D();
@@ -380,6 +389,7 @@ class JoglPath2D is Path2D {
             extent: tuple(bnds.getWidth()/2, bnds.getHeight()/2, 0);
         }
     }
+
     override public function createStrokedShape from (stroke is Stroke) to Path2D 
     {
         var cap is Integer;
@@ -404,10 +414,12 @@ class JoglPath2D is Path2D {
             path: gp;
         }
     }
+
     override public function contains from (x is Number, y is Number) to Boolean 
     {
         path.contains(x, y);
     }
+
     override public function createMesh to AbstractMesh 
     {
         const extrusion = new Jogl2DExtruder.Extrusion(path, false, 0);
@@ -635,7 +647,7 @@ abstract class JoglGradientShader is CGFXShader
             setParameter("fractions{i+1}", v);
         }
         var scaleFactors = foreach (i in [0..<16]) 0.0;
-        for (i in [0..<sizeof grad.stops-1]) {
+        for (i in [0..<grad.stops.size()-1]) {
             scaleFactors[i] = 1.0 / (grad.stops[i+1]-grad.stops[i]);
         }
         for (i in [0..<4]) {
@@ -759,11 +771,12 @@ class ColorPaintShader is CGFXShader
     public readonly var color = bind colorPaint.color;
     override var url =  "{__DIR__}flat.cgfx";
     override var technique =  bind if (color.opacity == 1) then "Opaque" else "Transparent";
-    override function apply from 
-	(mesh is AbstractMesh,
-	 worldTransform is Mat4,
-	 viewMatrix is Mat4,
-	 projectionMatrix is Mat4) to () 
+    override function apply
+        from (mesh is AbstractMesh,
+	      worldTransform is Mat4,
+	      viewMatrix is Mat4,
+	      projectionMatrix is Mat4) 
+	to () 
     {
         setParameter("diffuse", color);
         super.apply(mesh,
@@ -918,12 +931,10 @@ class JoglCGEffectLoader is CGEffectLoader
 	      technique is String)
 	to Shader
     {
-
-        var result = CGFXShader {
+        CGFXShader {
             url: url;
             technique: technique;
         }
-        return result;
     }
 }
 
@@ -939,7 +950,7 @@ class MeshVBO {
     override function finalize() {
         org.f3.runtime.Entry.deferAction(java.lang.Runnable {
                 override function run {
-                    var count = sizeof textureBuffers + 3;
+                    var count = textureBuffers.size() + 3;
                     var ids = BufferUtils.createIntBuffer(count);
                     ids.put(indexBuffer);
                     ids.put(vertexBuffer);
@@ -2444,10 +2455,9 @@ public function run from (args is String[]) to ()
 
     readonly var textModel = bind if (playerUrl.endsWith(".txt")) {
 	Text.Area {
+	    pathFactory: ThePath2DFactory;
 	    layoutEngine: TheLayoutEngine;
-	    var d = bind readTextFile(playerUrl)
-	    override var height = bind font.height() * 80
-	    text: bind d.first;
+	    override var height = bind font.height() * 24;
 	} 
     } else null;
 
@@ -2461,6 +2471,7 @@ public function run from (args is String[]) to ()
 	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith(".tif") or url.endsWith(".tiff") or url.endsWith(".tga")) {
 	    viewer.focusCamera(currentModel = imageModel)
 	} else if (url.endsWith(".txt")) {
+	    textModel.setText(readTextFile(url).first);
 	    viewer.focusCamera(currentModel = textModel);
 	} else {
 	    if (browser <> null) {

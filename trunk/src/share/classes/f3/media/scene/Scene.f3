@@ -137,18 +137,18 @@ public class Scene
 					  point = Point3.<<0>> + v;
 					  t = pt.x;
 				      }
-				      //				      println("picked {n}");
-				      const worldPoint = n.toSceneTransform * point;
-				      insert Pick 
-				      {
-					  node: n;
-					  scenePoint: worldPoint;
-					  t: t;
-					  mesh: mesh;
-					  tri: tri;
-					  w: w;
-				      } into result;
 				  }
+				  //				      println("picked {n}");
+				  const worldPoint = n.toSceneTransform * point;
+				  insert Pick 
+				  {
+				      node: n;
+				      scenePoint: worldPoint;
+				      t: t;
+				      mesh: mesh;
+				      tri: tri;
+				      w: w;
+				  } into result;
 			      }
 		      });
 	result = f3.util.Sequences.sort(result, java.util.Comparator of Pick {
@@ -449,6 +449,7 @@ public class Scene
     function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to ()
     {
 	const hs = getMouseInputHandlers(p);
+	println("mouseDown: {p.node}: {hs}");
         if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);

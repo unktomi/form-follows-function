@@ -146,7 +146,8 @@ public class VertexAttributeBuffer {
 public function createVertexBuffer 
     from (coordsPerVertex is Integer,
 	  verts is Number[])
-    to VertexAttributeBuffer {
+    to VertexAttributeBuffer 
+{
     const vbuf = BufferUtils.createFloatBuffer(verts.size() / coordsPerVertex);
     vbuf.put(verts);
     VertexAttributeBuffer {
