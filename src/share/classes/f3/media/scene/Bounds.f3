@@ -139,18 +139,18 @@ public class Bounds is Mat4.Transformable of Bounds
         extent.z * 2;
     }
 
-    public function min	to Vec3 
+    public function min	to Point3 
     {
-        vector(center.x-extent.x,
-	       center.y-extent.y,
-	       center.z-extent.z);
+        point(center.x-extent.x,
+	      center.y-extent.y,
+	      center.z-extent.z);
     }
 
-    public function max	to Vec3 
+    public function max	to Point3
     {
-        vector(center.x+extent.x,
-	       center.y+extent.y,
-	       center.z+extent.z);
+        point(center.x+extent.x,
+	      center.y+extent.y,
+	      center.z+extent.z);
     }
 }
 

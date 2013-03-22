@@ -43,6 +43,283 @@ const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 
 var DISABLE_DEFORMERS = false;
 
+
+const frc = new java.awt.font.FontRenderContext(null, true, false);
+function getFont from (spec is String) to java.awt.Font 
+{
+    const props = spec.split(";");
+    var size = 12;
+    var style = 0;
+    var name = "Lucida Sans";
+    const families = 
+	java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    for (i in props) {
+        const prop = i.trim().split(":");
+        const attr = prop[0].trim();
+        const value = prop[1].trim();
+        if (attr == "font-size") {
+            size = java.lang.Integer.parseInt(value);
+        } else if (attr == "font-weight") {
+            if (value == "normal") {
+                style = Bits.add(style, java.awt.Font.PLAIN);
+            } else if (value == "bold") {
+                style = Bits.add(style, java.awt.Font.BOLD);
+            } else {
+		// error
+	    }
+        } else if (attr == "font-style") {
+            if (value == "italic") {
+                style = Bits.add(style, java.awt.Font.ITALIC);
+            } else if (value == "strikethrough") {
+                // @TODO
+            } else {
+		// error
+	    }
+        } else if (attr == "font-family") {
+            const fams = value.split(",");
+            for (x in fams, y in families) {
+                if (x == y) {
+                    name = x;
+                    break;
+                }
+            }
+        }
+    }
+    const k = "{name}.{style}.{size}";
+    var result = fonts.get(k) as java.awt.Font;
+    if (result == null) {
+        result = new java.awt.Font(name, style, size);
+        fonts.put(k, result);
+    }
+    return result;
+}
+
+const fonts = new java.util.HashMap of (String, java.awt.Font);
+
+class JoglFont is Text.Font {
+    public const font is java.awt.Font;
+}
+
+function flip_y from (path is GeneralPath) to GeneralPath 
+{
+    const t = AffineTransform.getScaleInstance(1, -1);
+    const p = new GeneralPath();
+    p.append(path.getPathIterator(t), false);
+    return p;
+}
+
+class JoglTextLayoutEngine is Text.LayoutEngine {
+
+    override public function createFont from (spec is String) to Text.Font 
+    {
+        const font = getFont(spec);
+        const lineMetrics = font.getLineMetrics("A", 0, 1, frc);
+        JoglFont {
+            name: font.getName();
+            ascent: lineMetrics.getAscent();
+            descent: lineMetrics.getDescent();
+            leading: lineMetrics.getLeading();
+            font: font;
+        }
+    }
+
+    override public function createLayout
+	from (text0 is String, 
+	      font is Text.Font, 
+	      wrapWidth is Integer, 
+	      clipHeight is Integer)
+	to Text.Layout 
+    {
+        const text = "{text0} ";
+        const width = wrapWidth;
+        const height = clipHeight;
+        const fontHeight = font.height();
+        var layouts is java.awt.font.TextLayout[] = [];
+        var xs is Number[] = [];
+        var ys is Number[] = [];
+        const str = new java.text.AttributedString(text);
+        str.addAttribute(java.awt.font.TextAttribute.FONT, (font as JoglFont).font); 
+        const measurer = new java.awt.font.LineBreakMeasurer(str.getIterator(), frc);
+        var y = 0.0;
+        while (measurer.getPosition() < text.length()) {
+            const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
+            const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline;
+            const layout = measurer.nextLayout(wrapWidth, limit, false);
+            if (layout != null) {
+                y += layout.getAscent();
+                if (y > clipHeight) {
+                    break;
+                }
+                var dx = 
+		    if (not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
+                dx -= wrapWidth / 2.0;
+                y += layout.getDescent() + layout.getLeading();
+                insert dx into xs;
+                insert y into ys;
+                insert layout into layouts;
+            }
+        }
+	JoglTextLayout {
+	    xs: xs;
+	    ys: ys;
+	    layouts: layouts;
+	    height: height;
+	    width: width;
+	}
+    }
+}
+
+class JoglTextLayout is Text.Layout 
+{
+    const height is Number;
+    const width is Number;
+    const fontHeight is Number;
+    const layouts is java.awt.font.TextLayout[];
+    const xs is Number[];
+    const ys is Number[];
+
+    override public function getShape to Path2D 
+    {
+        const path = new GeneralPath();
+        const t = new AffineTransform();
+        for (layout in layouts) {
+            const i = indexof layout;
+            const dx = xs[i];
+            const y = ys[i];
+            t.setToTranslation(dx, y);
+            path.append(layout.getOutline(t), false);
+        }
+        return JoglPath2D { path: flip_y(path) }
+    }
+
+    override public function getCaretShape
+	from (caret is Integer)
+	to Path2D 
+    {
+        var pos = 0;
+        for (layout in layouts) {
+            if (pos <= caret and pos + layout.getCharacterCount() > caret) {
+                const i = indexof layout;
+                const dx = xs[i];
+                const y = ys[i];
+                const path = new GeneralPath();
+                const t = AffineTransform.getTranslateInstance(dx, y);
+                const shapes = layout.getCaretShapes(caret-pos);
+                if (shapes[0].getBounds().getWidth() == 0) {
+                    shapes[0] = new java.awt.BasicStroke(1).createStrokedShape(shapes[0]);
+                }
+                path.append(shapes[0].getPathIterator(t), false);
+                return JoglPath2D { path: flip_y(path) }
+            }
+            pos += layout.getCharacterCount();
+        }
+        return null;
+    }
+
+    override public function getSelectionShape
+	from (selectionStart is Integer, 
+	      selectionEnd is Integer)
+	to Path2D 
+    {
+        var pos = 0;
+        const path = new GeneralPath();
+        const t = new AffineTransform();
+        for (layout in layouts) {
+            const count = layout.getCharacterCount();
+            if (pos + count >= selectionStart and pos <= selectionEnd) {
+                const i = indexof layout;
+                const dx = xs[i];
+                const y = ys[i];
+                const anchorStart = Math.max(selectionStart-pos, 0);
+                const anchorEnd = Math.min(selectionEnd-pos, count);
+                t.setToTranslation(dx, y);
+                const shape = layout.getLogicalHighlightShape(anchorStart, anchorEnd);
+                path.append(shape.getPathIterator(t), false);
+            }
+            pos += count;
+        }
+        return JoglPath2D { path: flip_y(path) }
+    }
+
+    override public function pick
+	from (charIndex is Integer)
+	to Text.Pick
+    {
+        var pos = 0;
+        for (layout in layouts) {
+            var count = layout.getCharacterCount();
+            if (pos <= charIndex and pos + count > charIndex) {
+                var col = charIndex - pos;
+                var info = layout.getNextLeftHit(col);
+                if (info == null) {
+                    info = layout.getNextRightHit(col);
+                }
+                return Text.Pick {
+                    charIndex: pos+info.getCharIndex();
+                    insertionIndex: pos+info.getInsertionIndex();
+                    isLeadingEdge: info.isLeadingEdge();
+                    row: indexof layout;
+                    column: info.getCharIndex();
+                }
+            }
+            pos += count;
+        }
+        return null;
+    }
+
+    override public function pickCell
+	from (row is Integer, column is Integer)
+	to Text.Pick
+    {
+        var pos = 0;
+        for (layout in layouts) {
+            if (indexof layout == row) {
+                var info = layout.getNextLeftHit(column);
+                if (info == null) {
+                    info = layout.getNextRightHit(column);
+                }
+                return Text.Pick {
+                    charIndex: pos+info.getCharIndex();
+                    insertionIndex: pos+info.getInsertionIndex();
+                    isLeadingEdge: info.isLeadingEdge();
+                    row: row;
+                    column: info.getCharIndex();
+                }
+            }
+            pos += layout.getCharacterCount();
+        }
+        return null;
+    }
+
+    override public function pick
+	from (x0 is Number, y0 is Number)
+	to Text.Pick
+    {
+        var x = x0;
+        var y = height - y0;
+        y -= height / 2;
+        var pos = 0;
+        for (layout in layouts) {
+            const i = indexof layout;
+            if (y >= ys[i-1] and y <= ys[i]) {
+                const dx = x - xs[i];
+                const dy = y - ys[i];
+                const bounds = layout.getBounds();
+                const info = layout.hitTestChar(dx, dy);
+                return Text.Pick {
+                    charIndex: pos+info.getCharIndex();
+                    insertionIndex: pos+info.getInsertionIndex();
+                    isLeadingEdge: info.isLeadingEdge();
+                    row: i;
+                    column: info.getCharIndex();
+                }
+            }
+            pos += layout.getCharacterCount();
+        }
+        return null;
+    }
+}
+
 class JoglPath2D is Path2D {
     public var path is GeneralPath = new GeneralPath();
     override public function apply from (output is Path2D) to () 

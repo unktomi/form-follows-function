@@ -15,6 +15,9 @@ public class Timeline
     {
 	const map is java.util.Map of (Ref of Object, (Channel of Object)[]) = 
 	    new java.util.HashMap of (Ref of Object, (Channel of Object)[])();
+	if (Channel.DEBUG) {
+	    println("interpolating {foreach (x in channels) "{x}, "}");
+	}
 	for (ch in channels where ch.sceneBlendWeight > 0.0) 
 	{
 	    for (target0 in ch.targets) {
@@ -61,6 +64,7 @@ public class Timeline
 	    override var pausedInScene = bind timeline.paused;
 	}
     }
+
     public readonly var underPlayhead is TimeNode[];
 
     public function setPlayhead
@@ -71,6 +75,7 @@ public class Timeline
 	root.updateParent();
         underPlayhead = pick(sceneTime);
 	if (not paused) {
+	    //println("under playhead = {underPlayhead}");
 	    const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
 	    interpolateChannels(chs, sceneTime);
 	}
