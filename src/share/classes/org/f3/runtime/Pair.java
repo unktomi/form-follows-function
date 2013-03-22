@@ -25,9 +25,7 @@ public class Pair<a, b> implements Monad<Pair, a>, Comonad<Pair, a>, TypeCons2<P
     public boolean equals(Object obj) {
 	if (obj instanceof Pair) {
 	    Pair p = (Pair)obj;
-	    return 
-		(first == p.first || (first != null && first.equals(p.first))) &&
-		(second == p.second || (second != null && second.equals(p.second)));
+	    return Checks.equals(first, p.first) && Checks.equals(second, p.second);
 	}
 	return false;
     }

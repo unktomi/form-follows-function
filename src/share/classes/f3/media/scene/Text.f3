@@ -1,5 +1,9 @@
 package f3.media.scene;
 import f3.media.scene.Shape2D.*;
+import f3.media.input.*;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import java.lang.Math;
 
 public class Pick {
     public const charIndex is Integer;
@@ -41,4 +45,40 @@ public interface LayoutEngine {
 	 clipHeight is Integer) 
 	to Layout;
        
+}
+
+public class Area is AbstractNode {
+    public var width is Number = 300;
+    public var height is Number = bind font.height();
+    public const layoutEngine is LayoutEngine = the LayoutEngine;
+    public var font is Font = layoutEngine.createFont("font-size:14;font-family:Dialog;");
+    public var background is Paint = ColorPaint { color: Color.color(.9, .9, .9, 1) };
+    public var foreground is Paint = ColorPaint { color: Color.BLACK };
+    public var selectionForeground is Paint = ColorPaint { color: Color.BLACK };
+    public var selectionBackground is Paint = ColorPaint { color: Color.WHITE };
+    public var text is String = "";
+    const buffer = new java.lang.StringBuffer;
+    var selectionStart is Integer;
+    var selectionEnd is Integer;
+    var caretPosition is Integer;
+    readonly var start = bind Math.min(selectionStart, selectionEnd);
+    readonly var end = bind Math.min(selectionStart, selectionEnd);
+    const rect = Rectangle {
+        height: bind height;
+        width: bind width;
+        fillPaint: bind background;
+    };
+    readonly var layout = bind layoutEngine.createLayout(text, font, width, height);
+    readonly var selectionShape = bind layout.getSelectionShape(start, end);
+    readonly var textShape = bind layout.getShape();
+    readonly var caretShape = bind layout.getCaretShape(caretPosition);
+    readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
+    readonly var textMesh = bind createMeshNode(textShape, null, foreground);
+    readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
+    override var internalContent = Group {
+        content: bind [rect, Group {
+                override var transform = bind translate(0, height / 2, 0);
+                content: bind [selectionMesh, textMesh, caretMesh];
+            }];
+    }
 }
