@@ -81,6 +81,13 @@ public abstract class Node is Foldable of Node
 	else mouseMove;
     }
 
+    public function observeMouseDrag to Observable of MouseEvent 
+    {
+	if (mouseDrag == null) 
+	    then mouseDrag = Subject of MouseEvent {}
+	else mouseDrag;
+    }
+
     public function observeMouseWheel to Observable of MouseEvent 
     {
 	if (mouseWheel == null) 

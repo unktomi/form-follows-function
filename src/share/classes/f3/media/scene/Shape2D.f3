@@ -153,7 +153,7 @@ function getStroke from (stroke is Stroke) to Stroke
 }
 
 public function createMeshNode
-    from (path is Path2D, 
+    from (p is Path2D, 
 	  stroke is Stroke, 
 	  paint is Paint)
     to MeshNode2D 
@@ -161,7 +161,7 @@ public function createMeshNode
     if (paint == null) then null else {
 	    MeshNode2D {
 		paint: paint;
-		path: if (stroke == null) then path else path.createStrokedShape(stroke);
+		override var path = if (stroke == null) then p else p.createStrokedShape(stroke);
             }
         }
 }

@@ -39,31 +39,34 @@ public interface Font {
 public interface LayoutEngine {
     public abstract function createFont from (spec is String) to Font;
     public abstract function createLayout
-	(text is String, 
-	 font is Font, 
-	 wrapWidth is Integer, 
-	 clipHeight is Integer) 
+	from (text is String, 
+	      font is Font, 
+	      wrapWidth is Integer, 
+	      clipHeight is Integer) 
 	to Layout;
        
 }
 
-public class Area is AbstractNode {
+public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHandler {
     public var width is Number = 300;
     public var height is Number = bind font.height();
     public const layoutEngine is LayoutEngine = the LayoutEngine;
+    public const pathFactory is Path2DFactory = the Path2DFactory;
     public var font is Font = layoutEngine.createFont("font-size:14;font-family:Dialog;");
     public var background is Paint = ColorPaint { color: Color.color(.9, .9, .9, 1) };
     public var foreground is Paint = ColorPaint { color: Color.BLACK };
     public var selectionForeground is Paint = ColorPaint { color: Color.BLACK };
     public var selectionBackground is Paint = ColorPaint { color: Color.WHITE };
-    public var text is String = "";
+    override var cursor = Cursor.IBeam;
+    public readonly var text is String = "";
     const buffer = new java.lang.StringBuffer;
     var selectionStart is Integer;
     var selectionEnd is Integer;
     var caretPosition is Integer;
     readonly var start = bind Math.min(selectionStart, selectionEnd);
-    readonly var end = bind Math.min(selectionStart, selectionEnd);
+    readonly var end = bind Math.max(selectionStart, selectionEnd);
     const rect = Rectangle {
+	factory: pathFactory;
         height: bind height;
         width: bind width;
         fillPaint: bind background;
@@ -75,10 +78,207 @@ public class Area is AbstractNode {
     readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
     readonly var textMesh = bind createMeshNode(textShape, null, foreground);
     readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
+    var column is Integer;
+    var dirty = true;
+
+    function markDirty {
+	dirty = true;
+    }
+
+    public function setText from (text is String) to () 
+    {
+	selectAll();
+	deleteSelection();
+	insertText(text);
+    }
+    
     override var internalContent = Group {
         content: bind [rect, Group {
                 override var transform = bind translate(0, height / 2, 0);
                 content: bind [selectionMesh, textMesh, caretMesh];
             }];
+    }
+
+    override function onMouseDown from (event is MouseEvent) to () {
+	println("mouse down {this} event={event}");
+	const pt = event.location;
+	const mouseHit = layout.pick(pt.x, pt.y);
+	if (mouseHit != null)  {
+	    const index = mouseHit.insertionIndex;
+	    caretPosition = index;
+	    if (event.clickCount == 3) {
+		selectAll();
+	    } else {
+		selectionStart = selectionEnd = index;
+	    }
+	} else {
+	    selectAll();
+	}
+    }
+
+    var lastTime is Long;
+
+    override function update {
+	if (dirty) {
+	    text = buffer.toString();
+	    dirty = false;
+	}
+        const now = java.lang.System.currentTimeMillis();
+        if (not focused) {
+            caretMesh.visible = false;
+        } else {
+            if (caretMesh.visible) {
+                if (now - lastTime >= 600) {
+                    lastTime = now;
+                    caretMesh.visible = false;
+                }
+            } else if (now - lastTime >= 400) {
+                caretMesh.visible = true;
+                lastTime = now;
+            }
+        }
+    }
+
+    override function onMouseDrag from (event is MouseEvent) to () {
+        const pt = event.location;
+        const mouseHit = layout.pick(pt.x, pt.y);
+        if (mouseHit <> null) {
+            const index = mouseHit.insertionIndex;
+            selectionEnd = caretPosition = index;
+        }
+    }
+
+    override function onKeyDown from (event is KeyboardEvent) to () {
+	const code = event.keyCode;
+	if (code == Keys.Left) {
+	    moveCaretLeft(event.shiftKey);
+	} else if (code == Keys.Up) {
+	    moveCaretUp(event.shiftKey);
+	} else if (code == Keys.Right) {
+	    moveCaretRight(event.shiftKey);
+	} else if (code == Keys.Down) {
+	    moveCaretDown(event.shiftKey);
+	} else if (code == Keys.Home) {
+	    moveCaret(0, event.shiftKey, true);
+	} else if (code == Keys.End) {
+	    moveCaret(buffer.length(), event.shiftKey, true);
+	} else if (code == Keys.Backspace or code == Keys.Delete) {
+	    deleteChars();
+	}
+    }
+
+    override function onKeyInput from (event is KeyboardEvent) to () 
+    {
+	const code = event.keyCode;
+	const keyChar = event.keyChar;
+	if (code == Keys.Backspace) {
+	    backspace();
+	} else {
+	    if (keyChar.length() > 0) {
+		insertText(keyChar);
+	    }
+	}
+    }
+
+    public function deleteSelection 
+    {
+        if (start < end) {
+            caretPosition = start;
+            buffer.delete(start, end);
+            clearSelection();
+            markDirty();
+        }
+    }
+
+    function deleteChars {
+        if (start < end) {
+            buffer.<<delete>>(start, end);
+            caretPosition = start;
+            selectionEnd = selectionStart = caretPosition;
+            markDirty();
+        }
+    }
+
+    function backspace {
+        if (start < end) {
+            deleteChars();
+        } else {
+            if (caretPosition > 0 and caretPosition <= buffer.length()) {
+                buffer.<<delete>>(caretPosition-1, caretPosition);
+                moveCaretLeft(false);
+                markDirty();
+            }
+        }
+    }
+
+    public function selectAll 
+    {
+        selectionStart = 0;
+        selectionEnd = buffer.length();
+    }
+
+    public function clearSelection  
+    {
+        selectionStart = selectionEnd = caretPosition;
+    }
+
+    public function insertText from (ch is String) to () 
+    {
+        deleteSelection();
+        buffer.insert(caretPosition, ch);
+        caretPosition += ch.length();
+	markDirty();
+    }
+
+    function moveCaretUp from (shift is Boolean) to () 
+    {
+        const bounds = caretShape.getBounds();
+        const x = bounds.center.x;
+        var y = bounds.center.y + height / 2;
+        y += font.height()+font.ascent;
+        var hit = layout.pick(x, y);
+        if (hit != null) {
+            moveCaret(hit.insertionIndex, shift, false);
+        }
+    }
+
+    function moveCaretDown from (shift is Boolean) to () 
+    {
+        const bounds = caretShape.getBounds();
+        const x = bounds.center.x;
+        const y = bounds.center.y + height / 2;
+        y -= font.descent + font.leading;
+        const hit = layout.pick(x, y);
+        if (hit != null) {
+            moveCaret(hit.insertionIndex, shift, false);
+        }
+    }
+
+    function moveCaretLeft from (shift is Boolean) to () 
+    {
+        moveCaret(caretPosition-1, shift, true);
+    }
+
+    function moveCaretRight(shift is Boolean) to ()
+    {
+        moveCaret(caretPosition+1, shift, true);
+    }
+
+    function moveCaret
+	from (toPos is Integer, 
+	      shift is Boolean, 
+	      setColumn is Boolean)
+	to ()
+    {
+        caretPosition = Math.max(Math.min(toPos, text.length()), 0);
+        if (shift) {
+            selectionEnd = caretPosition;
+        } else {
+            selectionStart = selectionEnd = 0;
+        }
+        if (setColumn) {
+            const hit = layout.pick(caretPosition);
+            column = hit.column;
+        }
     }
 }

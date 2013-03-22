@@ -59,7 +59,7 @@ public abstract class ExaminerViewer is MouseInputHandler {
     override function onMouseWheel from (event is MouseWheelEvent) to () 
     {
 	const ori = getCameraOrientation();
-	const diff = dollySpeed * (-1.0 * event.scroll.y) / 100.0;
+	const diff = dollySpeed * (-1.0 * event.scroll.y) / 10.0;
 	var newCenterDistance = centerDistance + diff;
 	if (newCenterDistance < minCenterDistance) {
 	    newCenterDistance = minCenterDistance;
