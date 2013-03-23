@@ -103,6 +103,7 @@ public class Jogl2DExtruder {
         public void resetShape(Shape shape) {
             glNormal = new float[] { 0, 0, 1};
             this.shape = shape;
+	    index = 0;
             normals.reset();
             vertices.reset();
             texCoords.reset();

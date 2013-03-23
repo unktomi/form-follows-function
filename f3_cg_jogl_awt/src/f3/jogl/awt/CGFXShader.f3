@@ -202,7 +202,7 @@ public class SamplerParameter is Parameter of AbstractTexture
         //if (value instanceof MeshNode) {
         //    //(value as MeshNode).needsDraw = false;
 	// }
-	//println("setup sampler {value} {name} {id}");
+	//	println("setup sampler {value} {name} {id}");
         effect.setupSampler(name, id);
     }
 }
@@ -294,12 +294,17 @@ public class CGFXShader is Shader
 
     public override function setParameter from (name is String, value0 is Object) to ()
     {   
+	//        println("set parameter {this} => {name} = {value0}");
 	var value = value0;
 	if (value instanceof Color) {
 	    const c = value as Color;
 	    value = tuple(c.red, c.green, c.blue, c.opacity);
 	}
 	const p0 = getParameter(name);
+	if (p0 == null) {
+	    println("error: parameter not found {name}");
+	    java.lang.Thread.currentThread().dumpStack();
+	}
 	if (p0 is Float4Parameter) {
 	    if (value instanceof Vec3) {
 		const v = value as Vec3;
