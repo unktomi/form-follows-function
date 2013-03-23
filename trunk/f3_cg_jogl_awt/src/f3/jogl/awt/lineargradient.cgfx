@@ -31,7 +31,6 @@ struct PixelShaderInput {
   float4 objPos: TEXCOORD1;
 };
 
-
 float4 doColor(float tc) {
     float2 tex = float2(tc, 0.0);
     float4 result = tex2D(colors, tex);

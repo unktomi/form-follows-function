@@ -37,7 +37,7 @@ public class SVG
 
 function convertTransform from (t is java.awt.geom.AffineTransform) to Mat4 
 {
-    if (t.isIdentity()) Mat4.<<1>> else {
+    if (t == null or t.isIdentity()) Mat4.<<1>> else {
 	    matrix(t.getScaleX(), t.getShearX(), 0, t.getTranslateX(),
 		   t.getShearY(), t.getScaleY(), 0, t.getTranslateY(),
 		   0, 0, 1, 0,

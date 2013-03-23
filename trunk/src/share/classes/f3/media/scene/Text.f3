@@ -36,15 +36,18 @@ public interface Font {
     public function height to Number { ascent+descent+leading }
 }
 
-public interface LayoutEngine {
-    public abstract function createFont from (spec is String) to Font;
+public interface LayoutInstance {
     public abstract function createLayout
 	from (text is String, 
 	      font is Font, 
 	      wrapWidth is Integer, 
 	      clipHeight is Integer) 
 	to Layout;
-       
+}
+
+public interface LayoutEngine {
+    public abstract function createFont from (spec is String) to Font;
+    public abstract function createLayoutInstance to LayoutInstance;
 }
 
 public class TextMeshNode is MeshNode2D {
@@ -76,16 +79,20 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         width: bind width;
         fillPaint: bind background;
     };
-    readonly var layout = bind layoutEngine.createLayout(text, font, width, height);
+    readonly var layoutInstance = bind layoutEngine.createLayoutInstance();
+    readonly var layout = bind layoutInstance.createLayout(text, font, width, height);
     readonly var selectionShape = bind layout.getSelectionShape(start, end);
     readonly var caretShape = bind layout.getCaretShape(caretPosition);
     readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
-    readonly var textMesh = bind createTextMesh(layout, foreground);
-    function createTextMesh from (layout is Layout, foreground is Paint) to TextMeshNode {
-	TextMeshNode { 
-	    override readonly var paint = foreground;
-	    textLayout: layout;
-	};
+    readonly var textMesh = bind createTextMeshNode(layout, foreground);
+    function createTextMeshNode from (layout is Layout, foreground is Paint) to TextMeshNode 
+    {
+	const t = TextMeshNode {
+	    override var paint = foreground;
+	    override var textLayout = layout;
+	}
+	t.setParent(contentGroup);
+	return t;
     }
     readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
     var column is Integer;
@@ -101,12 +108,15 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 	deleteSelection();
 	insertText(text);
     }
-    
-    override var internalContent = Group {
-        content: bind [rect, Group {
-                override var transform = bind translate(0, height / 2, 0);
-                content: bind [selectionMesh, textMesh, caretMesh];
-            }];
+
+    readonly var contentGroup is Group = Group {
+	override var transform = bind translate(0, height / 2, 0);
+	content: bind [selectionMesh, textMesh, caretMesh];
+    }
+
+    override var internalContent = Group 
+    {
+        content: bind [rect, contentGroup];
     }
 
     override function onMouseDown from (event is MouseEvent) to () {
@@ -202,7 +212,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 
     function deleteChars {
         if (start < end) {
-            buffer.<<delete>>(start, end);
+            buffer.delete(start, end);
             caretPosition = start;
             selectionEnd = selectionStart = caretPosition;
             markDirty();
@@ -284,7 +294,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         if (shift) {
             selectionEnd = caretPosition;
         } else {
-            selectionStart = selectionEnd = 0;
+            selectionStart = selectionEnd = caretPosition;
         }
         if (setColumn) {
             const hit = layout.pick(caretPosition);

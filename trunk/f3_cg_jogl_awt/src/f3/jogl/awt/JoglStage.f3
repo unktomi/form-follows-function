@@ -122,6 +122,17 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
             font: font;
         }
     }
+    override public function createLayoutInstance to Text.LayoutInstance {
+	JoglTextLayoutInstance {engine: this}
+    }
+}
+
+public class JoglTextLayoutInstance is Text.LayoutInstance {
+
+    const engine is JoglTextLayoutEngine;
+    const shapeExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
+    const caretExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
+    const selectionExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
 
     override public function createLayout
 	from (text0 is String, 
@@ -130,7 +141,7 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
 	      clipHeight is Integer)
 	to Text.Layout 
     {
-	const font = if (font0 <> null) then font0 else createFont("");
+	const font = if (font0 <> null) then font0 else engine.createFont("");
         const text = "{text0} ";
         const width = wrapWidth;
         const height = clipHeight;
@@ -161,6 +172,9 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
             }
         }
 	JoglTextLayout {
+	    shapeExtrusion: shapeExtrusion;
+	    caretExtrusion: caretExtrusion;
+	    selectionExtrusion: selectionExtrusion;
 	    xs: xs;
 	    ys: ys;
 	    layouts: layouts;
@@ -172,13 +186,15 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
 
 class JoglTextLayout is Text.Layout 
 {
+    const shapeExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
+    const caretExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
+    const selectionExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
     const height is Number;
     const width is Number;
     const fontHeight is Number;
     const layouts is java.awt.font.TextLayout[];
     const xs is Number[];
     const ys is Number[];
-
     override public function getShape to Path2D 
     {
         const path = new GeneralPath();
@@ -190,7 +206,7 @@ class JoglTextLayout is Text.Layout
             t.setToTranslation(dx, y);
             path.append(layout.getOutline(t), false);
         }
-        return JoglPath2D { path: flip_y(path) }
+        return JoglPath2D { path: flip_y(path), extrusion: shapeExtrusion }
     }
 
     override public function getCaretShape
@@ -210,7 +226,7 @@ class JoglTextLayout is Text.Layout
                     shapes[0] = new java.awt.BasicStroke(1).createStrokedShape(shapes[0]);
                 }
                 path.append(shapes[0].getPathIterator(t), false);
-                return JoglPath2D { path: flip_y(path) }
+                return JoglPath2D { path: flip_y(path), extrusion: caretExtrusion }
             }
             pos += layout.getCharacterCount();
         }
@@ -239,7 +255,7 @@ class JoglTextLayout is Text.Layout
             }
             pos += count;
         }
-        return JoglPath2D { path: flip_y(path) }
+        return JoglPath2D { path: flip_y(path), extrusion: selectionExtrusion }
     }
 
     override public function pick
@@ -324,6 +340,7 @@ class JoglTextLayout is Text.Layout
 class JoglPath2D is Path2D 
 {
     public var path is GeneralPath = new GeneralPath();
+    public const extrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
 
     override public function apply from (output is Path2D) to () 
     {
@@ -383,9 +400,9 @@ class JoglPath2D is Path2D
     {
         const bnds = path.getBounds2D();
         Bounds {
-            center: point(bnds.getX()-bnds.getWidth()/2,
-                             bnds.getY()-bnds.getHeight()/2,
-                             0);
+            center: point(bnds.getX() + bnds.getWidth()/2,
+			  bnds.getY() + bnds.getHeight()/2,
+			  0);
             extent: tuple(bnds.getWidth()/2, bnds.getHeight()/2, 0);
         }
     }
@@ -422,7 +439,7 @@ class JoglPath2D is Path2D
 
     override public function createMesh to AbstractMesh 
     {
-        const extrusion = new Jogl2DExtruder.Extrusion(path, false, 0);
+	extrusion.resetShape(path);
         const md = extrusion.createMeshData();
         const mb = MeshBuffer {
             indexBuffer: md.getIndexBuffer();
@@ -447,12 +464,12 @@ const TheLayoutEngine = JoglTextLayoutEngine {};
 
 function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to Shader 
 {
-    if (grad instanceof Shape2D.LinearGradient) {
+    if (grad is Shape2D.LinearGradient) {
         JoglLinearGradientShader {
             gl: gl;
             grad: grad;
         }
-    } else{
+    } else {
         JoglRadialGradientShader {
             gl: gl;
             grad: grad;
@@ -468,14 +485,10 @@ class SceneRenderer2D
     public var tex is JoglTexture;
     public var meshNode is MeshNode;
     var target is TextureRenderer;
-    var cx is AffineTransform;
-    var cx1 is AffineTransform;
 
     function applyTransform from (mat is Mat4) to () {
 	tx.setTransform(mat.xx, mat.yx, mat.xy,
-			mat.yy, mat.xz, mat.yz);
-	//tx.preConcatenate(cx);
-	//	tx.concatenate(cx1);
+			mat.yy, mat.xw, mat.yw);
     }
 
     function applyPaint from (g is java.awt.Graphics2D, paint is Shape2D.Paint) to () 
@@ -500,7 +513,7 @@ class SceneRenderer2D
 	    tex == null;
 	    meshNode = null;
 	}
-	println("camera={camera.bounds}");
+	//println("camera={camera.bounds}");
 	const g = target.createGraphics();
 	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
@@ -513,9 +526,9 @@ class SceneRenderer2D
 			    function from (_ is (), n is Node) to () 
 			    {
 				//println("bounds={n}: {n.boundsInScene}");
-				if (n is Shape2D.MeshNode2D /*and 
-							      visibleInScene and 
-							      camera.contains(n.boundsInScene) */) {
+				if (n is Shape2D.MeshNode2D and 
+				    n.visibleInScene and 
+				    camera.contains(n.boundsInScene)) {
 				    const shape = n as Shape2D.MeshNode2D;
 				    applyTransform(n.toSceneTransform);
 				    applyPaint(g, shape.paint);
@@ -535,7 +548,7 @@ class SceneRenderer2D
 					if (p.path <> null) {
 					    g.fill(p.path);
 					} else {
-					    println("path is null {n}");
+					    //println("path is null {n} {n.parent}");
 					}
 				    }
 				    g.setTransform(saved);
@@ -571,11 +584,9 @@ abstract class JoglGradientShader is CGFXShader
     public var gl is GL2;
     public var tex is Texture;
     public var grad is Shape2D.GradientPaint;
+    override var uvMap = [0];
     override var technique = bind if (isTransparent) then "Transparent" else "Opaque";
-    var texture = JoglTexture {
-        gl: bind gl;
-        tex: bind tex;
-    };
+    var texture is JoglTexture; 
     var buf is ByteBuffer;
     var textureDirty = true;
     function toByte from (color is Number) to Byte {
@@ -591,6 +602,10 @@ abstract class JoglGradientShader is CGFXShader
             tex = genTexture(gl, 16, 1);
             tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
             tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
+	    texture = JoglTexture {
+		gl: gl;
+		tex: tex;
+	    };
         }
         if (buf == null) {
             buf = BufferUtils.createByteBuffer(16*4);
@@ -628,7 +643,7 @@ abstract class JoglGradientShader is CGFXShader
             isTransparent = hasTransparency;
             textureDirty = false;
             const glp = GLProfile.get("GL2");
-            println("updating gradient colors");
+            println("updating gradient colors {tex}");
             tex.updateImage(gl, 
                             new TextureData(glp, 
                                             GL.GL_RGBA8, 
@@ -651,13 +666,14 @@ abstract class JoglGradientShader is CGFXShader
         var w is Number;
         var h is Number;
         if (grad.proportional) {
-            var bounds = mesh.bounds;
+            const bounds = mesh.bounds;
             x = bounds.center.x - bounds.extent.x;
             y = bounds.center.y - bounds.extent.y;
             w = bounds.extent.x * 2;
             h = bounds.extent.y * 2;
+	    println("bounds={bounds} => {x} {y} {w} {h}");
             if (w == 0 or h == 0)  {
-                //                println("bounds={bounds}");
+
                 w = h = 1;
             }
         } else {
@@ -702,7 +718,7 @@ abstract class JoglGradientShader is CGFXShader
 
 class JoglRadialGradientShader is JoglGradientShader 
 {
-    override var uvMap = [0];
+
     override var url = "{__DIR__}radialgradient.cgfx";
     override function updateParams
 	from (rx is Number, ry is Number, rw is Number, rh is Number) 
@@ -720,7 +736,7 @@ class JoglRadialGradientShader is JoglGradientShader
         var r = grad.radius;
         var tr  = r * Math.max(rw, rh);
         var focus = vector(tfx, tfy, 0);
-        var gradientTransform = Mat4.<<1>> * grad.transform;
+        var gradientTransform = grad.transform;
         focus = gradientTransform * focus;
         var t = 
             (gradientTransform * 
@@ -730,6 +746,7 @@ class JoglRadialGradientShader is JoglGradientShader
         try {
             t = t.inverse(); // t now maps from object space to unit circle
         } catch (e) {
+	    e.printStackTrace();
             t = Mat4.<<1>>;
         }
         focus = t * focus;
@@ -742,7 +759,6 @@ class JoglLinearGradientShader is JoglGradientShader
 {
 
     override var url = "{__DIR__}lineargradient.cgfx";
-
 
     override function updateParams
 	from (rx is Number, ry is Number, rw is Number, rh is Number) 
@@ -824,7 +840,7 @@ class TexturePaintShader is CGFXShader
 				  viewMatrix is  Mat4,
 				  projectionMatrix is  Mat4) to () 
     {
-        setParameter("diffuse", color);
+        //setParameter("diffuse", color);
         setParameter("texSampler0", tex);
         super.apply(mesh,
 		    worldTransform,
@@ -1520,7 +1536,7 @@ class SceneRenderer {
         var lights is PointLight[];
         var dirty = dirty0;
 	//println("scene.root={scene.root} => {scene.content}");
-	scene.update();
+
         const vf = function from (_ is (), n is Node) to () {
 	    if (n.toSceneTransform == null) {
 		println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
@@ -1531,10 +1547,10 @@ class SceneRenderer {
 		    insert (n as PointLight) into lights;
 		}
 		if (n is Shape2D.MeshNode2D){
-		    var shape = n as Shape2D.MeshNode2D;
+		    const shape = n as Shape2D.MeshNode2D;
 		    if (shape.shader == null) {
 			if (shape.paint is Shape2D.ColorPaint) {
-			    var paint = bind shape.paint as Shape2D.ColorPaint;
+			    const paint = bind shape.paint as Shape2D.ColorPaint;
 			    if (paint is Shape2D.TexturePaint) {
 				var tex = 
 				    bind (paint as Shape2D.TexturePaint).texture;
@@ -1599,6 +1615,7 @@ class SceneRenderer {
 	};
         scene.updateCamera();
         offscreenToRender.clear();
+	scene.update();
 	if (scene.camera instanceof Camera2D) {
 	    const cam = scene.camera as Camera2D;
 	    const r = getRenderer2D(scene, gl);
@@ -1762,7 +1779,6 @@ class SceneRenderer {
 	    for (unit in [0..<texUnits]) {
 		const textureBuffer = mesh.getTextureBuffers()[shader.uvMap[unit]];
 		const coord = mesh.textureCoordinates[shader.uvMap[unit]];
-		//println("unit={unit} coord={coord.id}");
 		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
 		if (textureBuffer <> null) {
 		    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
@@ -2497,7 +2513,11 @@ public function run from (args is String[]) to ()
 	    viewer.focusCamera(currentModel = imageModel)
 	} else if (url.endsWith(".txt")) {
 	    textModel.setText(readTextFile(url).first);
-	    viewer.focusCamera(currentModel = textModel);
+	    viewer.focusCamera(currentModel = TransformNode {
+		    tx: 150;
+		    ty: 150;
+		    content: textModel;
+		});
 	} else {
 	    if (browser <> null) {
 		browser.url = url;
