@@ -258,6 +258,17 @@ class JoglTextLayout is Text.Layout
         return JoglPath2D { path: flip_y(path), extrusion: selectionExtrusion }
     }
 
+    function getPos from (i is Integer,
+			  hit is java.awt.font.TextHitInfo) to Point2 {
+	const layout = layouts[i];
+	const y = ys[i];
+	if (hit == null) then null else {
+		const shape = layout.getCaretShape(hit).getBounds2D();
+		point(-width / 2.0 + shape.getX() + shape.getWidth() / 2, 
+		      height / 2.0 -y-shape.getY()-shape.getHeight() / 2);
+	    }
+    }
+
     override public function pick
 	from (charIndex is Integer)
 	to Text.Pick
@@ -271,12 +282,16 @@ class JoglTextLayout is Text.Layout
                 if (info == null) {
                     info = layout.getNextRightHit(col);
                 }
+		const pt = getPos(indexof layout, info);
                 return Text.Pick {
                     charIndex: pos+info.getCharIndex();
                     insertionIndex: pos+info.getInsertionIndex();
                     isLeadingEdge: info.isLeadingEdge();
                     row: indexof layout;
-                    column: info.getCharIndex();
+		    column: 
+		    if info.isLeadingEdge() then info.getInsertionIndex() + 1 else info.getInsertionIndex();
+		    x: pt.x;
+		    y: pt.y;
                 }
             }
             pos += count;
@@ -291,16 +306,21 @@ class JoglTextLayout is Text.Layout
         var pos = 0;
         for (layout in layouts) {
             if (indexof layout == row) {
-                var info = layout.getNextLeftHit(column);
+		var col = Math.min(column, layout.getCharacterCount());
+                var info = layout.getNextLeftHit(col);
                 if (info == null) {
-                    info = layout.getNextRightHit(column);
+                    info = layout.getNextRightHit(col);
                 }
+		const pt = getPos(row, info);
                 return Text.Pick {
                     charIndex: pos+info.getCharIndex();
                     insertionIndex: pos+info.getInsertionIndex();
                     isLeadingEdge: info.isLeadingEdge();
                     row: row;
-                    column: info.getCharIndex();
+		    column:
+		    if info.isLeadingEdge() then info.getInsertionIndex() + 1 else info.getInsertionIndex();
+		    x: pt.x;
+		    y: pt.y;
                 }
             }
             pos += layout.getCharacterCount();
@@ -323,12 +343,15 @@ class JoglTextLayout is Text.Layout
                 const dy = y - ys[i];
                 const bounds = layout.getBounds();
                 const info = layout.hitTestChar(dx, dy);
+		const pt = getPos(i, info);
                 return Text.Pick {
                     charIndex: pos+info.getCharIndex();
                     insertionIndex: pos+info.getInsertionIndex();
                     isLeadingEdge: info.isLeadingEdge();
                     row: i;
-                    column: info.getCharIndex();
+                    column: if info.isLeadingEdge() then info.getInsertionIndex() + 1 else info.getInsertionIndex();
+		    x: pt.x;
+		    y: pt.y;
                 }
             }
             pos += layout.getCharacterCount();

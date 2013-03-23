@@ -11,8 +11,10 @@ public class Pick {
     public const isLeadingEdge is Boolean;
     public const row is Integer;
     public const column is Integer;
+    public const x is Number;
+    public const y is Number;
     override function toString to String {
-        "Pick ({row}, {column}) char {charIndex}, insert {insertionIndex} isLeadingEdge {isLeadingEdge}";
+        "Pick ({row}, {column}) @({x}, {y}) char {charIndex}, insert {insertionIndex} isLeadingEdge {isLeadingEdge}";
     }
 }
 
@@ -95,7 +97,8 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 	return t;
     }
     readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
-    var column is Integer;
+    var column is Number;
+    var isLeading is Boolean;
     var dirty = true;
 
     function markDirty {
@@ -120,7 +123,6 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
     }
 
     override function onMouseDown from (event is MouseEvent) to () {
-	println("mouse down {this} event={event}");
 	const pt = event.location;
 	const mouseHit = layout.pick(pt.x, pt.y);
 	if (mouseHit <> null)  {
@@ -134,6 +136,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 	} else {
 	    selectAll();
 	}
+	updateColumn();
     }
 
     var lastTime is Long;
@@ -166,6 +169,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
             const index = mouseHit.insertionIndex;
             selectionEnd = caretPosition = index;
         }
+	updateColumn();
     }
 
     override function onKeyDown from (event is KeyboardEvent) to () {
@@ -252,26 +256,34 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 
     function moveCaretUp from (shift is Boolean) to () 
     {
-        const bounds = caretShape.getBounds();
-        const x = bounds.center.x;
-        var y = bounds.center.y + height / 2;
-        y += font.height()+font.ascent;
-        var hit = layout.pick(x, y);
-        if (hit <> null) {
-            moveCaret(hit.insertionIndex, shift, false);
-        }
+	const hit = layout.pick(caretPosition);
+	if (hit.row > 0) {
+	    var up = layout.pickCell(hit.row-1, 0);
+	    println("up={up}");
+	    if (up <> null) {
+		const y = up.y;
+		up = layout.pick(column, y);
+		println("up'={up}");
+		if (up <> null) {
+		    moveCaret(up.insertionIndex, shift, false);
+		}
+	    }
+	}
     }
 
     function moveCaretDown from (shift is Boolean) to () 
     {
-        const bounds = caretShape.getBounds();
-        const x = bounds.center.x;
-        const y = bounds.center.y + height / 2;
-        y -= font.descent + font.leading;
-        const hit = layout.pick(x, y);
-        if (hit <> null) {
-            moveCaret(hit.insertionIndex, shift, false);
-        }
+	const hit = layout.pick(caretPosition);
+	var down = layout.pickCell(hit.row+1, 0);
+	if (down <> null) {
+	    println("down={down}");
+	    const y = down.y;
+	    down = layout.pick(column, y);
+	    println("down'={down}");
+	    if (down <> null) {
+		moveCaret(down.insertionIndex, shift, false);
+	    }
+	}
     }
 
     function moveCaretLeft from (shift is Boolean) to () 
@@ -297,8 +309,15 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
             selectionStart = selectionEnd = caretPosition;
         }
         if (setColumn) {
-            const hit = layout.pick(caretPosition);
-            column = hit.column;
+	    updateColumn();
         }
     }
+
+    function updateColumn {
+	const hit = layout.pick(caretPosition);
+	column = hit.x;
+	isLeading = hit.isLeadingEdge;
+	println("column = {column} for {hit}");
+    }
+
 }
