@@ -47,6 +47,11 @@ public interface LayoutEngine {
        
 }
 
+public class TextMeshNode is MeshNode2D {
+    public readonly var textLayout is Layout;
+    override var path = bind textLayout.getShape();
+}
+
 public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHandler {
     public var width is Number = 300;
     public var height is Number = bind font.height();
@@ -73,10 +78,15 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
     };
     readonly var layout = bind layoutEngine.createLayout(text, font, width, height);
     readonly var selectionShape = bind layout.getSelectionShape(start, end);
-    readonly var textShape = bind layout.getShape();
     readonly var caretShape = bind layout.getCaretShape(caretPosition);
     readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
-    readonly var textMesh = bind createMeshNode(textShape, null, foreground);
+    readonly var textMesh = bind createTextMesh(layout, foreground);
+    function createTextMesh from (layout is Layout, foreground is Paint) to TextMeshNode {
+	TextMeshNode { 
+	    override readonly var paint = foreground;
+	    textLayout: layout;
+	};
+    }
     readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
     var column is Integer;
     var dirty = true;
@@ -103,7 +113,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 	println("mouse down {this} event={event}");
 	const pt = event.location;
 	const mouseHit = layout.pick(pt.x, pt.y);
-	if (mouseHit != null)  {
+	if (mouseHit <> null)  {
 	    const index = mouseHit.insertionIndex;
 	    caretPosition = index;
 	    if (event.clickCount == 3) {
@@ -237,7 +247,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         var y = bounds.center.y + height / 2;
         y += font.height()+font.ascent;
         var hit = layout.pick(x, y);
-        if (hit != null) {
+        if (hit <> null) {
             moveCaret(hit.insertionIndex, shift, false);
         }
     }
@@ -249,7 +259,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         const y = bounds.center.y + height / 2;
         y -= font.descent + font.leading;
         const hit = layout.pick(x, y);
-        if (hit != null) {
+        if (hit <> null) {
             moveCaret(hit.insertionIndex, shift, false);
         }
     }

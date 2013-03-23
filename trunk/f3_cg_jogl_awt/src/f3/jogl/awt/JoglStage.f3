@@ -468,10 +468,14 @@ class SceneRenderer2D
     public var tex is JoglTexture;
     public var meshNode is MeshNode;
     var target is TextureRenderer;
+    var cx is AffineTransform;
+    var cx1 is AffineTransform;
 
     function applyTransform from (mat is Mat4) to () {
 	tx.setTransform(mat.xx, mat.yx, mat.xy,
-			mat.yy, mat.xz, mat.yz+target.getHeight());
+			mat.yy, mat.xz, mat.yz);
+	//tx.preConcatenate(cx);
+	//	tx.concatenate(cx1);
     }
 
     function applyPaint from (g is java.awt.Graphics2D, paint is Shape2D.Paint) to () 
@@ -490,11 +494,13 @@ class SceneRenderer2D
     {
 	const w = pot(scene.stage.width);
 	const h = pot(scene.stage.height);
+	//cx = AffineTransform.getTranslateInstance(0, scene.stage.height);
 	if (target.getWidth() <> w or target.getHeight() <> h) {
 	    target = new TextureRenderer(w, h, true);
 	    tex == null;
 	    meshNode = null;
 	}
+	println("camera={camera.bounds}");
 	const g = target.createGraphics();
 	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
@@ -506,14 +512,32 @@ class SceneRenderer2D
 	scene.root.foldLeft((), 
 			    function from (_ is (), n is Node) to () 
 			    {
-				if (n is Shape2D.MeshNode2D) {
+				//println("bounds={n}: {n.boundsInScene}");
+				if (n is Shape2D.MeshNode2D /*and 
+							      visibleInScene and 
+							      camera.contains(n.boundsInScene) */) {
 				    const shape = n as Shape2D.MeshNode2D;
-				    const p = shape.path as JoglPath2D;
 				    applyTransform(n.toSceneTransform);
-				    const saved = g.getTransform();
-				    g.setTransform(tx);
 				    applyPaint(g, shape.paint);
-				    g.fill(p.path);
+				    const saved = g.getTransform();
+				    if (shape instanceof Text.TextMeshNode) {
+					const t = (shape as Text.TextMeshNode).textLayout as JoglTextLayout;
+					const s = AffineTransform.getScaleInstance(1, -1);
+					tx.concatenate(s);
+					g.setTransform(tx);
+					for (layout in t.layouts) {
+					    const i = indexof layout;
+					    layout.draw(g, t.xs[i], t.ys[i]);
+					}
+				    } else {
+					g.setTransform(tx);
+					const p = shape.path as JoglPath2D;
+					if (p.path <> null) {
+					    g.fill(p.path);
+					} else {
+					    println("path is null {n}");
+					}
+				    }
 				    g.setTransform(saved);
 				}
 			    });
@@ -535,8 +559,9 @@ class SceneRenderer2D
 		   color: Color.WHITE;
 		   tex: texture;
 	       }
-	       override var transform = translate(w / 2.0, h / 2.0, 0);
+	       override var transform = translate(w / 2.0, h / 2.0);
 	   }
+	   println("bounds={meshNode.bounds}");
 	}
     }     
 }

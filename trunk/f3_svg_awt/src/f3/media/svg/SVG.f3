@@ -46,6 +46,7 @@ function convertTransform from (t is java.awt.geom.AffineTransform) to Mat4
 }
 
 function convertPath from (fac is Path2DFactory,
+	 	     	   h is Number,
 			   worldMatrix is java.awt.geom.AffineTransform,
 			   shape is java.awt.Shape) to Path2D 
 {
@@ -62,13 +63,13 @@ function convertPath from (fac is Path2DFactory,
         const t = iter.currentSegment(coords);
 	//	println("t={t} isDone={iter.isDone()}");
         if (t == PathIterator.SEG_MOVETO) {
-            p.moveTo(coords[0], -coords[1]);
+            p.moveTo(coords[0], h-coords[1]);
         } else if (t == PathIterator.SEG_LINETO) {
-            p.lineTo(coords[0], -coords[1]);
+            p.lineTo(coords[0], h-coords[1]);
         } else if (t == PathIterator.SEG_QUADTO) {
-            p.quadTo(coords[0], -coords[1], coords[2], -coords[3]);
+            p.quadTo(coords[0], h-coords[1], coords[2], h-coords[3]);
         } else if (t == PathIterator.SEG_CUBICTO) {
-            p.cubicTo(coords[0], -coords[1], coords[2], -coords[3], coords[4], -coords[5]);
+            p.cubicTo(coords[0], h-coords[1], coords[2], h-coords[3], coords[4], h-coords[5]);
         } else if (t == PathIterator.SEG_CLOSE) {
             p.closePath();
         }
@@ -363,15 +364,20 @@ class Loader {
                 }
             }, 
             new java.io.BufferedInputStream(new java.net.URL(url).openStream()));
-        println("CANVAS STACK {canvasStack.size()} {canvasStack}");
-        var content = (canvasStack.peek() as CanvasImpl).content;
-        for (i in content) {
+	const top = (canvasStack.peek() as CanvasImpl);
+	if (height < 0) {
+	    var b0 is java.awt.geom.Rectangle2D;
+	    for (i in top.content) {
+		const b = i.transform.createTransformedShape(i.path.getBounds2D()).getBounds2D();
+		if (b0 == null) b0 = b else b0 = b0.createUnion(b);
+	    }
+	    height = b0.getY() + b0.getHeight();
+	}
+        for (i in top.content) {
             if (i.stroke != null) {
                 println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
             }
-	    //	    println("converting path with factory: {fac}");
-            var shape = Shape2D.createMeshNode(convertPath(fac, i.transform, i.path), i.stroke, i.paint);
-            //println("adding shape {shape.bounds} flipped paint {i.paint}");
+            var shape = Shape2D.createMeshNode(convertPath(fac, height, i.transform, i.path), i.stroke, i.paint);
             if (sizeof contentNode.content == 50) {
                 contentNode = Group {}
                 insert contentNode into rootNode.content;
