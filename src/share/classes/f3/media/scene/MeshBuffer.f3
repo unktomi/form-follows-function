@@ -100,12 +100,12 @@ public function quad
          height is Number) 
     to AbstractMesh
 {
-    var indices = [0, 1, 2, 0, 2, 3];
-    var ibuf = BufferUtils.createIntBuffer(sizeof indices);
+    const indices = [0, 1, 2, 0, 2, 3];
+    const ibuf = BufferUtils.createIntBuffer(sizeof indices);
     for (i in indices) ibuf.put(i);
-    var vb =  BufferUtils.createVector3Buffer(4);
-    var nb =  BufferUtils.createVector3Buffer(4);
-    var tb =  BufferUtils.createVector2Buffer(4);
+    const vb =  BufferUtils.createVector3Buffer(4);
+    const nb =  BufferUtils.createVector3Buffer(4);
+    const tb =  BufferUtils.createVector2Buffer(4);
     vb.put(-width/2).put(height/2).put(0);
     vb.put(-width/2).put(-height/2).put(0);
     vb.put(width/2).put(-height/2).put(0);
@@ -117,7 +117,7 @@ public function quad
     tb.put(0).put(0);
     tb.put(1).put(0);
     tb.put(1).put(1);
-    var result = MeshBuffer {
+    MeshBuffer {
         indexBuffer: ibuf;
         vertexBuffer: VertexAttributeBuffer {
 	    id: "POSITION";
