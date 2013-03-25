@@ -50,7 +50,7 @@ public abstract class Camera is TransformNode
 	if (width <> this.width or height <> this.height) {
 	    this.width = width;
 	    this.height = height;
-	    println("resized to {this.width} {this.height}");
+	    //println("resized to {this.width} {this.height}");
 	}
     }
 
@@ -125,7 +125,7 @@ public abstract class Camera is TransformNode
 	      aspect is Number) 
 	to Mat4 
     {
-	println("PERSP {near} {far} {fovY} {aspect}");
+    //	println("PERSP {near} {far} {fovY} {aspect}");
         if (aspect == 0) { return Mat4.<<1>> }
         const h = Math.tan(Math.toRadians(fovY) * 0.5) * near;
         const w = h * aspect;

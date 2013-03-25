@@ -852,4 +852,32 @@ public class Browser implements AbstractWebBrowser {
     public void injectKeyInput(int keyCode, int mods, char keyChar) {
         injectKeyInput(handle, mods, mapKeyCode(keyCode), keyChar);
     }
+
+    static native long create_js_array();
+    static native long create_js_object();
+    static native void destroy_js_array(long h);
+    static native void destroy_js_object(long h);
+    static native Object invoke(long handle, String method, long args);
+    static native long getPropertyNames(long object);
+    static native long getMethodNames(long object);
+    static native boolean has(long object, String property);
+    static native boolean hasMethod(long object, String property);
+    static native void put_null(long object, String property);
+    static native void put_boolean(long object, String property, boolean value);
+    static native void put_int(long object, String property, int value);
+    static native void put_double(long object, String property, double value);
+    static native void put_string(long object, String property, String value);
+    static native void put_object(long object, String property, long handle);
+    static native void put_array(long object, String property, long handle);
+    static native Object get(long object, String property);
+    static native Object get_element(long array, int index);
+    static native void put_null_element(long object, int index);
+    static native void put_boolean_element(long object, int index, boolean value);
+    static native void put_int_element(long object, int index, int value);
+    static native void put_double_element(long object, int index, double value);
+    static native void put_string_element(long object, int index, String value);
+    static native void put_object_element(long object, int index, long handle);
+    static native void put_array_element(long object, int index, long handle);
+    static native int getSize(long array);
+
 }

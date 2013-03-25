@@ -3,6 +3,9 @@ import f3.math.*;
 import f3.math.LinearMath.*;
 import f3.media.input.*;
 
+public class RootNode {
+}
+
 public class Scene 
 {
     public var stage is Stage;
@@ -19,7 +22,9 @@ public class Scene
     {
 	stage.height;
     }
+
     public var camera is Camera = PerspectiveCamera {};
+
     public var content is Node[];
 
     public readonly var focus is Focusable;
@@ -27,11 +32,10 @@ public class Scene
     public readonly var root is Node = {
 	const scene = this;
 	Group {
-	    override var visibleInScene = bind visible and scene.visible;
-	    override var id = bind "{scene.id}#root";
+	    override var visibleInScene = true;
 	    override var parentToSceneTransform = Mat4.<<1>>;
 	    override var pickableInScene = true;
-	    content: bind scene.content;
+	    override var content = bind scene.content;
 	}
     }
 
@@ -179,6 +183,7 @@ public class Scene
 	if (camera.parent == null) {
 	    camera.setParent(root);
 	}
+	//println("stage={stage} dim={width} {height}");
 	camera.resize(width, height);
 	if (camera <> lastCamera) {
 	    lastCamera = camera;

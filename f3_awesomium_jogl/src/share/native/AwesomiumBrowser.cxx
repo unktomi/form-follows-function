@@ -1,6 +1,7 @@
 #if !defined(__WIN32__) && !defined(_WIN32)
 #include "org_f3_media_web_awesomium_Browser.h"
 #include "Awesomium/WebCore.h"
+#include "Awesomium/JSValue.h"
 #include <iostream>
 #include <fstream>
 #include <string.h>
@@ -9,6 +10,8 @@
 #elif defined(__APPLE__)
 #include <unistd.h>
 #endif
+
+using namespace Awesomium;
 
 static Awesomium::WebCore *webCore = 0;
 
@@ -572,5 +575,428 @@ extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_resetZoom
   MyWebViewListener *p = (MyWebViewListener*)handle;
   p->webView->resetZoom();
 }
+
+static jclass Integer = 0;
+static jclass Double = 0;
+static jclass Boolean = 0;
+static jclass JSArrayClazz = 0;
+static jclass JSObjectClazz = 0;
+static jmethodID NewInteger = 0;
+static jmethodID NewDouble = 0;
+static jmethodID NewBoolean = 0;
+static jmethodID NewJSObject = 0;
+static jmethodID NewJSArray = 0;
+
+void initMethodIds(JNIEnv *env) {
+  jclass cls = env->FindClass("java/lang/Integer");
+  jmethodID methodId = env->GetMethodID(cls, "<init>", "(I)V");
+  Integer = cls;
+  NewInteger = methodId;
+  cls = env->FindClass("java/lang/Double");
+  methodId = env->GetMethodID(cls, "<init>", "(D)V");
+  NewDouble = methodId;
+  Double = cls;
+  cls = env->FindClass("java/lang/Boolean");
+  methodId = env->GetMethodID(cls, "<init>", "(Z)V");
+  NewBoolean =  methodId;
+  Boolean = cls;
+  cls = env->FindClass("org/f3/media/web/awesomium/JSArray");
+  methodId = env->GetMethodID(cls, "<init>", "(J)V");
+  NewJSArray =  methodId;
+  JSArrayClazz = cls;
+  cls = env->FindClass("org/f3/media/web/awesomium/JSObject");
+  methodId = env->GetMethodID(cls, "<init>", "(J)V");
+  NewJSObject =  methodId;
+  JSObjectClazz = cls;
+}
+
+static jobject newInteger(JNIEnv *env, jint value) {
+  return env->NewObject(Integer, NewInteger, value);
+}
+
+static jobject newDouble(JNIEnv *env, jdouble value) {
+  return env->NewObject(Double, NewDouble, value);
+}
+
+static jobject newBoolean(JNIEnv *env, jboolean value) {
+  return env->NewObject(Boolean, NewBoolean, value);
+}
+
+#if 0
+
+static jobject newJSArray(JNIEnv *env, JSArray *value) {
+  return env->NewObject(JSArrayClazz, NewJSArray, (long)value);
+}
+
+static jobject newJSObject(JNIEnv *env, JSObject *value) {
+  return env->NewObject(JSObjectClazz, NewJSObject, (long)value);
+}
+
+static jobject newString(JNIEnv *env, WebString *str) {
+  int size = str->toUTF8(null, 0);
+  char *chs = new char[size+1];
+  chs[size] = 0;
+  str->toUTF8(chs, size);
+  jobject result = env->NewStringUTF(chs);
+  delete chs;
+  return result;
+}  
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    create_js_array
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_org_f3_media_web_awesomium_Browser_create_1js_1array
+  (JNIEnv *, jclass)
+{
+  return (long)new JSArray();
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    create_js_object
+ * Signature: ()J
+ */
+JNIEXPORT jlong JNICALL Java_org_f3_media_web_awesomium_Browser_create_1js_1object
+(JNIEnv *, jclass) {
+  return (long) new JSObject();
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    destroy_js_array
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_destroy_1js_1array
+  (JNIEnv *, jclass, jlong h)
+{
+  delete (JSArray*)h;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    destroy_js_object
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_destroy_1js_1object
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    invoke
+ * Signature: (Ljava/lang/String;J)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_org_f3_media_web_awesomium_Browser_invoke
+(JNIEnv *env, jclass, jlong h, jstring method, jlong a)
+{
+  JSObject *obj = (JSObject)*h;
+  JSArray *arr = (JSArray*)a;
+  WebString m = toWebString(method);
+  JSValue value = obj->Invoke(m, *arr);
+  return fromJSValue(env, value);
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    getPropertyNames
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_org_f3_media_web_awesomium_Browser_getPropertyNames
+  (JNIEnv *env, jclass cls, jlong h)
+{
+  JSObject *obj = (JSObject)*h;
+  return (long)(new JSArray(h.getPropertyNames()));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    getMethodNames
+ * Signature: (J)J
+ */
+JNIEXPORT jlong JNICALL Java_org_f3_media_web_awesomium_Browser_getMethodNames
+  (JNIEnv *env, jclass cls, jlong h)
+{
+  JSObject *obj = (JSObject)*h;
+  return (long)(new JSArray(h.getMethodNames()));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    has
+ * Signature: (JLjava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_has
+  (JNIEnv *, jclass, jlong, jstring)
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  return obj->HasProperty(str);
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    hasMethod
+ * Signature: (JLjava/lang/String;)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_hasMethod
+  (JNIEnv *env, jclass cls, jlong h, jstring index)
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  return obj->HasMethod(str);
+}
+
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_null
+ * Signature: (JLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1null
+(JNIEnv *env, jclass cls, jlong h, jstring index) 
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  obj->SetProperty(str, JSValue());
+}
+
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_boolean
+ * Signature: (JLjava/lang/String;Z)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1boolean
+(JNIEnv *env, jclass cls, jlong h, jstring index, jboolean value) 
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  obj->SetProperty(str, JSValue(value));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_int
+ * Signature: (JLjava/lang/String;I)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1int
+(JNIEnv *env, jclass cls, jlong h, jstring index, jint value) 
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  obj->SetProperty(str, JSValue(value));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_double
+ * Signature: (JLjava/lang/String;D)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1double
+(JNIEnv *env, jclass cls, jlong h, jstring index, jdouble value) 
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  obj->SetProperty(str, JSValue(value));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_string
+ * Signature: (JLjava/lang/String;Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1string
+  (JNIEnv *env, jclass cls, jlong h, jstring index, jstring value)
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  obj->SetProperty(str, JSValue(value));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_object
+ * Signature: (JLjava/lang/String;J)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1object
+  (JNIEnv *env, jclass cls, jlong h, jstring index, jlong value)
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  obj->SetProperty(str, JSValue(*(JSObject*)value));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_array
+ * Signature: (JLjava/lang/String;J)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1array
+  (JNIEnv *env, jclass cls, jlong h, jstring index, jlong value)
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, index);
+  obj->SetProperty(str, JSValue(*(JSArray*)value));
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    get
+ * Signature: (JLjava/lang/String;)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_org_f3_media_web_awesomium_Browser_get
+  (JNIEnv *env, jclass cls, jlong h, jstring value)
+{
+  JSObject *obj = (JSObject*)obj;
+  WebString str = toWebString(env, value);
+  const JSValue &v = obj->GetProperty(str);
+  return fromJSValue(env, v);
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    get_element
+ * Signature: (JI)Ljava/lang/Object;
+ */
+JNIEXPORT jobject JNICALL Java_org_f3_media_web_awesomium_Browser_get_1element
+  (JNIEnv *env, jclass cls, jlong h, jint index)
+{
+  JSArray *arr = (JSArray*)h;
+  const JSValue &v = (*arr)[index];
+  return fromJSValue(env, v);
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_null_element
+ * Signature: (JI)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1null_1element
+(JNIEnv *env, jclass cls, jlong h,  jint index)
+{
+  JSArray *arr = (JSArray*)h;
+  JSValue val = JSValue();
+  (*arr)[index] = val;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_boolean_element
+ * Signature: (JIZ)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1boolean_1element
+  (JNIEnv *env, jclass cls, jlong h, jint index, jboolean value)
+{
+  JSArray *arr = (JSArray*)h;
+  JSValue val = JSValue((bool)value);
+  (*arr)[index] = val;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_int_element
+ * Signature: (JII)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1int_1element
+  (JNIEnv *env, jclass cls, jlong h, jint index, jint value)
+{
+  JSArray *arr = (JSArray*)h;
+  JSValue val = JSValue(value);
+  (*arr)[index] = val;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_double_element
+ * Signature: (JID)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1double_1element
+  (JNIEnv *env, jclass cls, jlong h, jint index, jdouble value)
+{
+  JSArray *arr = (JSArray*)h;
+  JSValue val = JSValue(value);
+  (*arr)[index] = val;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_string_element
+ * Signature: (JILjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1string_1element
+  (JNIEnv *env, jclass cls, jlong h, jint index, jstring value)
+{
+  WebString v = toWebString(env, value);
+  JSArray *arr = (JSArray*)h;
+  JSValue val = JSValue(v);
+  (*arr)[index] = val;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_object_element
+ * Signature: (JIJ)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1object_1element
+  (JNIEnv *env, jclass cls, jlong h, jint index, jlong value)
+{
+  JSArray *arr = (JSArray*)h;
+  JSObject *v = (JSObject)*value;
+  JSValue val = JSValue(*v);
+  (*arr)[index] = val;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    put_array_element
+ * Signature: (JIJ)V
+ */
+JNIEXPORT void JNICALL Java_org_f3_media_web_awesomium_Browser_put_1array_1element
+  (JNIEnv *env, jclass cls, jlong h, jint index, jlong value)
+{
+  JSArray *arr = (JSArray*)h;
+  JSArray *v = (JSArray)*value;
+  JSValue val = JSValue(*v);
+  (*arr)[index] = val;
+}
+
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    getSize
+ * Signature: (J)I
+ */
+JNIEXPORT jint JNICALL Java_org_f3_media_web_awesomium_Browser_getSize
+  (JNIEnv *env, jclass cls, jlong h)
+{
+  JSArray *arr = (JSArray*)h;
+  return arr.getSize();
+}
+
+static WebString toWebString(JNIEnv *env, jstring str) {
+  const char *chs = env->GetStringUTFChars(value, &iscopy);
+  WebString v = WebString::CreateFromUTF8(chs, strlen(chs));
+  env->ReleaseStringChars(url, (const jchar*)chs);
+  return v;
+}
+
+static jobject fromJSValue(JNIEnv env, const JSValue &v) {
+  if (v.isBoolean()) {
+    return newBoolean(env, v.ToBoolean());
+  } else if (v.isInteger()) {
+    return newInteger(env, v.ToInteger());
+  } else if (v.isDouble()) {
+    return newDouble(env, v.ToDouble());
+  } else if (v.isArray()) {
+    return newJSArray(env, &v.ToArray());
+  } else if (v.isString()) {
+    return newString(env, &v.ToString());
+  } else if (v.isObject()) {
+    return newJSObject(env, &v.ToObject());
+  } //else if (v.isNull()) {
+  return 0;
+}
+
+#endif
 
 #endif

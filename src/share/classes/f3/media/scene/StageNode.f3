@@ -1,8 +1,15 @@
 package f3.media.scene;
 
-public class StageNode is MeshNode, Stage, AbstractTexture {
+public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture {
     public var drawingSurface is AbstractTexture;
-    override var mesh = bind MeshBuffer.quad(width, height);
+    public var factory is Shape2D.Path2DFactory;
+    override var path = bind Shape2D.rect(factory, 0, 0, width, height);
+    override var paint = {
+	const self = this;
+	Shape2D.TexturePaint {
+	    texture:self;
+	}
+    }
     override function getTextureId to Integer {
         drawingSurface.getTextureId();
     }

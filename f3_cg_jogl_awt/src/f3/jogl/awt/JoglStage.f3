@@ -652,12 +652,12 @@ abstract class JoglGradientShader is CGFXShader
                 g <> y or 
                 b <> z or 
                 a <> w) {
-                textureDirty = true;
-                buf.put(j, x);
-                buf.put(j+1, y);
-                buf.put(j+2, z);
-                buf.put(j+3, w);
-            }
+		textureDirty = true;
+		buf.put(j, x);
+		buf.put(j+1, y);
+		buf.put(j+2, z);
+		buf.put(j+3, w);
+	    }
             if (color.opacity <> 1.0) {
                 hasTransparency = true;
             }
@@ -1100,17 +1100,23 @@ function genTexture
 				     width, height,
 				     width, height,
 				     false);
-    tex.updateImage(gl, new TextureData(glp, 
-                                        GL.GL_RGBA8, 
-                                        width, height, 
-                                        0,
-                                        GL2.GL_RGBA,
-                                        GL2.GL_UNSIGNED_BYTE,
-                                        false, 
-                                        false, 
-                                        true, 
-                                        null, 
-                                        null));
+    tex.bind(gl);
+    tex.updateImage(gl, 
+		    new TextureData(glp, 
+				    GL.GL_RGBA8, 
+				    width, height, 
+				    0,
+				    GL2.GL_RGBA,
+				    GL2.GL_UNSIGNED_BYTE,
+				    false, 
+				    false, 
+				    true, 
+				    null, 
+				    null));
+    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
+    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
+    tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+    tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
     return tex;
 }
 
@@ -1125,7 +1131,7 @@ class OffscreenSurface is JoglTexture
     var _height is Integer = bind (height+0.5) as Integer;
     var pot_width = bind pot(_width);
     var pot_height = bind pot(_height);
-    const _samples is Integer = 0;
+    const _samples is Integer = 24;
     const _depthBits is Integer = 24;
     const _stencilBits is Integer = 8;
     var _fboID is Integer;
@@ -1171,6 +1177,7 @@ class OffscreenSurface is JoglTexture
             gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
             // add multisample framebuffer + renderbuffers
             if (_samples <> 0) {
+		gl.glEnable(GL.GL_MULTISAMPLE);
                 // create ms framebuffer object
                 gl.glGenFramebuffers(1, buffer);
                 _msfboID = buffer.get(0);
@@ -1214,13 +1221,14 @@ class OffscreenSurface is JoglTexture
             gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
         }
         gl.glViewport(0, 0, _width, _height);
+	//println("bound frame buffer {_fboID} {_msfboID}, viewport {_width} {_height}");
     }
 
     function checkFBOComplete from (fboID is Integer) to ()
     {
         var status = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER);
         if (status == GL.GL_FRAMEBUFFER_COMPLETE) {
-            
+	    //println("frame buffer complete");
         } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
             throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT exception");
         } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
@@ -1253,7 +1261,7 @@ class OffscreenSurface is JoglTexture
                                  0, 0, pot_width, pot_height, 
                                  bits, GL.GL_LINEAR);
 
-            println("blitting framebuffer {_msfboID} {_fboID} {_width} {_height} {pot_width} {pot_height}");
+            //println("blitting framebuffer {_msfboID} {_fboID} {_width} {_height} {pot_width} {pot_height}");
         }
         if (false) {
             tex.bind(gl);
@@ -1284,6 +1292,7 @@ class OffscreenSurface is JoglTexture
     function setupForDraw to ()
     {
         const textureId = tex.getTextureObject(gl);
+	//println("textureId={textureId} gl={gl}");
         if (lastTextureId <> 0 and lastTextureId <> textureId) {
             var ibuf = BufferUtils.createIntBuffer(1);
             ibuf.clear();
@@ -1508,20 +1517,25 @@ class SceneRenderer {
 	from (gl is GL2, stageNode is StageNode)
 	to ()
     {
+	//println("rendering stage node {gl} {stageNode}");
         var surface = stageNode.drawingSurface as OffscreenSurface;
         if (surface == null) {
             surface = OffscreenSurface {
                 gl: gl;
-                sceneRenderer: SceneRenderer {
-                }
                 override var width = bind stageNode.width;
                 override var height = bind stageNode.height;
             }
+	    surface.sceneRenderer = SceneRenderer {};
             surface.sceneRenderer.activate = surface.activate;
             stageNode.drawingSurface = surface;
         }
+	//println("scene renderer = {surface.sceneRenderer}");
         surface.sceneRenderer.parent = this;
+	for (scene in stageNode.content) {
+	    scene.stage = stageNode;
+	}
         surface.renderScenes(gl, stageNode.content);
+	//println("done rendering stage node");
     }
 
     var offscreenToRender = new java.util.HashSet of StageNode;
@@ -1559,7 +1573,7 @@ class SceneRenderer {
         var lights is PointLight[];
         var dirty = dirty0;
 	//println("scene.root={scene.root} => {scene.content}");
-
+        scene.updateCamera();
         const vf = function from (_ is (), n is Node) to () {
 	    if (n.toSceneTransform == null) {
 		println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
@@ -1569,7 +1583,7 @@ class SceneRenderer {
 		if (n is PointLight) {
 		    insert (n as PointLight) into lights;
 		}
-		if (n is Shape2D.MeshNode2D){
+		if (n is Shape2D.MeshNode2D) {
 		    const shape = n as Shape2D.MeshNode2D;
 		    if (shape.shader == null) {
 			if (shape.paint is Shape2D.ColorPaint) {
@@ -1628,7 +1642,7 @@ class SceneRenderer {
 			}
 			lastDrawn.remove(n);
 		    } else {
-		    //			println("culled {n} {n.id} {n.sceneBounds}");
+		    			println("culled {n} {n.id} {n.boundsInScene}");
 			if (lastDrawn.remove(n)) {
 			    dirty = true;
 			}
@@ -1636,10 +1650,9 @@ class SceneRenderer {
 		}
 	    }
 	};
-        scene.updateCamera();
         offscreenToRender.clear();
 	scene.update();
-	if (scene.camera instanceof Camera2D) {
+	if (false and scene.camera instanceof Camera2D) {
 	    const cam = scene.camera as Camera2D;
 	    const r = getRenderer2D(scene, gl);
 	    r.render2d(cam, scene);
@@ -1671,18 +1684,14 @@ class SceneRenderer {
             return false;
         }
         gl.glViewport(0, 0, width, height);
-        if (scene.background <> null) {
-            var bg = scene.background;
-	    //  println("clearing {bg} {java.lang.Thread.currentThread()}");
+        if (scene.background.opacity <> 0) {
+            const bg = scene.background;
+	    //println("clearing {bg}");
             gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
             gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
         } else {
-	    if (false) {
-		gl.glClearColor(1, 1, 1, 1);
-		gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
-	    } else {
-		gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
-	    }
+	    //println("clearing depth");
+	    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
         }
 	if (not (camera is Camera2D)) {
 	    // sort opaque front to back      
@@ -1711,9 +1720,9 @@ class SceneRenderer {
 		});
 	}
         onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
-        draw(gl, camera, opaqueToDraw, lightPositions);
+        draw(gl, scene.root.parent, camera, opaqueToDraw, lightPositions);
         opaqueToDraw.clear();
-        draw(gl, camera, transparentToDraw, lightPositions);
+        draw(gl, scene.root.parent, camera, transparentToDraw, lightPositions);
         transparentToDraw.clear();
         //camera.needsDraw = false;
         return true;
@@ -1732,14 +1741,18 @@ class SceneRenderer {
 
     function draw
 	from (gl is GL2,
+	      sceneParent is Node,
 	      camera is Camera, 
 	      toDraw is java.util.List of MeshNode, 
 	      lights is Point3[])
 	to ()
     {
         const cameraLight = camera.toSceneTransform.getTranslation();
+	const sceneParentInverse = if (sceneParent == null) Mat4.<<1>> else sceneParent.toSceneTransform.inverse();
         for (n in toDraw) {
             const mn = n as MeshNode;
+	    //println("drawing {n}");
+	    const toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
 	    if (DEBUG_MESHES) println("drawing {mn.id}");
             const mesh = mn.mesh;
             const indexBuffer = mesh.getIndexBuffer();
@@ -1857,7 +1870,7 @@ class SceneRenderer {
 		}
 		///println("applying shader {shader} to {mn.id}");
 		shader.apply(mesh,
-                             mn.toSceneTransform,
+			     toSceneTransform,
                              camera.viewMatrix,
                              camera.projectionMatrix);
             } catch (e is java.lang.Exception) {
@@ -2551,15 +2564,37 @@ public function run from (args is String[]) to ()
     }
     
     currentCamera = camera;
+    const mainScene = Scene {
+	background: Color.GRAY;
+	override var camera = bind currentCamera on invalidate {
+	    println("scene camera invalidated {currentCamera}");
+	}
+	content: bind currentModel;
+    }
+
     const stage = JoglStage {
 	title: new java.io.File(args[0]).getName();
-	content: Scene {
-	    background: Color.GRAY;
-	    override var camera = bind currentCamera on invalidate {
-		println("scene camera invalidated {currentCamera}");
-	    }
-	    content: bind currentModel;
-	}
+	content: [mainScene,
+		  Scene {
+                    background: null;
+                    camera: Camera2D {}; 
+		    content: StageNode {
+                        factory: ThePath2DFactory;
+			height: 80;
+			width: 100;
+                        override var transform = translate(50, 60);
+			content: Scene {
+			    camera: camera;
+			    content: AbstractNode {
+				override var internalContent = bind mainScene.root;
+				override function updateParent {
+				    internalContent.updateParent();
+				    update();
+				}
+			    }
+			}
+		    }
+		    }]
     }
 
     const setCamera = function from (i is Integer) to ()
