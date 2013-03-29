@@ -156,7 +156,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
         while (measurer.getPosition() < text.length()) {
             const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
             const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline;
-            const layout = measurer.nextLayout(wrapWidth, limit, false);
+            const layout = measurer.nextLayout(wrapWidth, limit+1, false);
 	    y += layout.getAscent();
 	    if (y > clipHeight) {
 		break;
@@ -259,7 +259,8 @@ class JoglTextLayout is Text.Layout
     }
 
     function getPos from (i is Integer,
-			  hit is java.awt.font.TextHitInfo) to Point2 {
+			  hit is java.awt.font.TextHitInfo) to Point2 
+    {
 	const layout = layouts[i];
 	const y = ys[i];
 	if (hit == null) then null else {
@@ -341,18 +342,21 @@ class JoglTextLayout is Text.Layout
             if (y >= ys[i-1] and y <= ys[i]) {
                 const dx = x - xs[i];
                 const dy = y - ys[i];
-                const bounds = layout.getBounds();
-                const info = layout.hitTestChar(dx, dy);
-		const pt = getPos(i, info);
-                return Text.Pick {
-                    charIndex: pos+info.getCharIndex();
-                    insertionIndex: pos+info.getInsertionIndex();
-                    isLeadingEdge: info.isLeadingEdge();
-                    row: i;
-                    column: if info.isLeadingEdge() then info.getInsertionIndex() + 1 else info.getInsertionIndex();
-		    x: pt.x;
-		    y: pt.y;
-                }
+		const bounds = layout.getBounds();
+		const x1 = Math.min(Math.max(dx, bounds.getX()), bounds.getX() + bounds.getWidth());
+                const info = layout.hitTestChar(x1, dy);
+		return if (info == null) then null else {
+			const pt = getPos(i, info);
+			Text.Pick {
+			    charIndex: pos+info.getCharIndex();
+			    insertionIndex: pos+info.getInsertionIndex();
+			    isLeadingEdge: info.isLeadingEdge();
+			    row: i;
+			    column: if info.isLeadingEdge() then info.getInsertionIndex() + 1 else info.getInsertionIndex();
+			    x: pt.x;
+			    y: pt.y;
+			}
+		    };
             }
             pos += layout.getCharacterCount();
         }
@@ -747,20 +751,19 @@ class JoglRadialGradientShader is JoglGradientShader
 	from (rx is Number, ry is Number, rw is Number, rh is Number) 
 	to () 
     {
-        var grad = this.grad as Shape2D.RadialGradient;
-        var fx = grad.focusX;
-        var fy = grad.focusY;
-        var cx = fx;
-        var cy = fy;
-        var tcx = rx + cx * rw;
-        var tcy = ry + cy * rh;
-        var tfx = rx + fx * rw;
-        var tfy = ry + fy * rh;
-        var r = grad.radius;
-        var tr  = r * Math.max(rw, rh);
-        var focus = vector(tfx, tfy, 0);
-        var gradientTransform = grad.transform;
-        focus = gradientTransform * focus;
+        const grad = this.grad as Shape2D.RadialGradient;
+        const fx = grad.focusX;
+        const fy = grad.focusY;
+        const cx = fx;
+        const cy = fy;
+        const tcx = rx + cx * rw;
+        const tcy = ry + cy * rh;
+        const tfx = rx + fx * rw;
+        const tfy = ry + fy * rh;
+        const r = grad.radius;
+        const tr  = r * Math.max(rw, rh);
+        const gradientTransform = grad.transform;
+        var focus = gradientTransform * vector(tfx, tfy, 0);
         var t = 
             (gradientTransform * 
              translate(tcx, tcy) * 
@@ -1125,13 +1128,12 @@ function genTexture
 class OffscreenSurface is JoglTexture 
 {
     var sceneRenderer is SceneRenderer;
-    override var tex = bind genTexture(gl, pot_width, pot_height);
     const _backgroundColor is Color;
     var _width is Integer = bind (width+0.5) as Integer;
     var _height is Integer = bind (height+0.5) as Integer;
     var pot_width = bind pot(_width);
     var pot_height = bind pot(_height);
-    const _samples is Integer = 24;
+    const _samples is Integer = 0;
     const _depthBits is Integer = 24;
     const _stencilBits is Integer = 8;
     var _fboID is Integer;
@@ -1144,19 +1146,42 @@ class OffscreenSurface is JoglTexture
 
     function activate to () 
     {
-        // Lazy init
-        if (_fboID == 0) {
+	if (tex.getWidth() <> pot_width or tex.getHeight() <> pot_height) {
+	    tex = null;
+	    cleanup();
+	}
+	if (tex == null) {
+	    tex = genTexture(gl, pot_width, pot_height);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+	    const textureId = tex.getTextureObject(gl);
+	    println("textureId={textureId} gl={gl}");
             var ibuf = BufferUtils.createIntBuffer(1);
+	    if (lastTextureId <> 0 and lastTextureId <> textureId) {
+		ibuf.clear();
+		ibuf.put(lastTextureId);
+		ibuf.rewind();
+		gl.glDeleteTextures(1, ibuf);
+	    }
+	    lastTextureId = textureId;
             gl.glGetIntegerv(gl.GL_MAX_SAMPLES, ibuf);
             var maxSamples = ibuf.get(0);
             var _samples = Math.min(this._samples, maxSamples);
             println("samples={this._samples} max={maxSamples}");
             var buffer = BufferUtils.createIntBuffer(1);
             // Create our texture binding FBO
-            gl.glGenFramebuffers(1, buffer); // generate id
+            gl.glGenFramebuffers(1, buffer); 
             _fboID = buffer.get(0);
+	    gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, _fboID);
+	    tex.bind(gl);
+	    
+	    gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, 
+				      GL.GL_COLOR_ATTACHMENT0, 
+				      GL.GL_TEXTURE_2D, textureId, 0);
+	    checkFBOComplete(_fboID);  
+	    
             // Create a depth renderbuffer to use for RTT use
-            gl.glGenRenderbuffers(1, buffer); // generate id
+            gl.glGenRenderbuffers(1, buffer);
             _depthRBID = buffer.get(0);
             gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, _depthRBID);
             var format = GL2.GL_DEPTH_COMPONENT;
@@ -1172,40 +1197,51 @@ class OffscreenSurface is JoglTexture
             gl.glRenderbufferStorage(GL.GL_RENDERBUFFER, format, pot_width, pot_height);
             // unbind...
             gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
+	    if (_depthBits > 0) {
+		gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
+					     gl.GL_DEPTH_ATTACHMENT,
+					     gl.GL_RENDERBUFFER,
+					     _depthRBID);
+	    }
             checkFBOComplete(_fboID);  
             // release
             gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
             // add multisample framebuffer + renderbuffers
-            if (_samples <> 0) {
+            if (_samples > 0) {
 		gl.glEnable(GL.GL_MULTISAMPLE);
                 // create ms framebuffer object
                 gl.glGenFramebuffers(1, buffer);
                 _msfboID = buffer.get(0);
                 // create ms renderbuffers
-                gl.glGenRenderbuffers(1, buffer); // generate id
+                gl.glGenRenderbuffers(1, buffer); 
                 _mscolorRBID = buffer.get(0);
-                gl.glGenRenderbuffers(1, buffer); // generate id
+                gl.glGenRenderbuffers(1, buffer); 
                 _msdepthRBID = buffer.get(0);
-
                 // set up renderbuffer properties
                 gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, _mscolorRBID);
                 gl.glRenderbufferStorageMultisample(GL.GL_RENDERBUFFER, 
-                                                    _samples, GL.GL_RGBA, pot_width, pot_height);
+                                                    _samples, 
+						    GL.GL_RGBA, 
+						    pot_width, pot_height);
 
                 gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, _msdepthRBID);
                 gl.glRenderbufferStorageMultisample(GL.GL_RENDERBUFFER, _samples, 
-                                                    GL.GL_DEPTH24_STENCIL8, pot_width, pot_height);
+                                                    format, pot_width, pot_height);
 
                 gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
 
                 gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, _msfboID);
+		/*
+		gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, 
+					  GL.GL_COLOR_ATTACHMENT0, 
+					  GL.GL_TEXTURE_2D, textureId, 0);
+		*/
                 gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0,
                         GL.GL_RENDERBUFFER, _mscolorRBID);
                 gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT,
                         GL.GL_RENDERBUFFER, _msdepthRBID);
                 // check for errors
                 checkFBOComplete(_msfboID);
-
                 // release
                 gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
             }
@@ -1215,12 +1251,11 @@ class OffscreenSurface is JoglTexture
 
     function bindFrameBuffer to ()
     {
-         if (_samples > 0) {
-            gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _msfboID);
-        } else {
-            gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
-        }
-        gl.glViewport(0, 0, _width, _height);
+	gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
+	if (_samples > 0) {
+            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, _msfboID);
+	} 
+	//gl.glViewport(0, 0, _width, _height);
 	//println("bound frame buffer {_fboID} {_msfboID}, viewport {_width} {_height}");
     }
 
@@ -1228,7 +1263,7 @@ class OffscreenSurface is JoglTexture
     {
         var status = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER);
         if (status == GL.GL_FRAMEBUFFER_COMPLETE) {
-	    //println("frame buffer complete");
+	    println("frame buffer complete");
         } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
             throw new IllegalStateException("FrameBuffer: {fboID} has caused a GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT exception");
         } else if (status == GL.GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT) {
@@ -1279,9 +1314,9 @@ class OffscreenSurface is JoglTexture
             id.put(_fboID);
             id.rewind();
             gl.glDeleteFramebuffers(id.limit(), id);
+	    _fboID = 0;
         }
-
-        if (_msdepthRBID <> 0) {
+        if (_depthRBID <> 0) {
             const id = BufferUtils.createIntBuffer(1);
             id.put(_depthRBID);
             id.rewind();
@@ -1291,48 +1326,13 @@ class OffscreenSurface is JoglTexture
 
     function setupForDraw to ()
     {
-        const textureId = tex.getTextureObject(gl);
-	//println("textureId={textureId} gl={gl}");
-        if (lastTextureId <> 0 and lastTextureId <> textureId) {
-            var ibuf = BufferUtils.createIntBuffer(1);
-            ibuf.clear();
-            ibuf.put(lastTextureId);
-            ibuf.rewind();
-            gl.glDeleteTextures(1, ibuf);
-        }
-        lastTextureId = textureId;
-        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
-        gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, 
-                                  GL.GL_COLOR_ATTACHMENT0, 
-                                  GL.GL_TEXTURE_2D, textureId, 0);
-        if (_depthBits > 0) {
-            gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
-                                         gl.GL_DEPTH_ATTACHMENT,
-                                         gl.GL_RENDERBUFFER,
-                                         _depthRBID);
-        }
+	gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
+
         gl.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0);
         gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0);
         if (_samples > 0) {
             gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, _msfboID);
-            gl.glFramebufferRenderbuffer(gl.GL_DRAW_FRAMEBUFFER,
-                                         gl.GL_COLOR_ATTACHMENT0,
-                                         gl.GL_RENDERBUFFER,
-                                         _mscolorRBID);
-            if (_depthBits > 0) {
-                gl.glFramebufferRenderbuffer(gl.GL_DRAW_FRAMEBUFFER,
-                                             gl.GL_DEPTH_ATTACHMENT,
-                                             gl.GL_RENDERBUFFER,
-                                             _msdepthRBID);
-                if (_stencilBits > 0) {
-                    gl.glFramebufferRenderbuffer(gl.GL_DRAW_FRAMEBUFFER,
-                                                 gl.GL_STENCIL_ATTACHMENT,
-                                                 gl.GL_RENDERBUFFER,
-                                                 _msdepthRBID);
-                }
-            }
         } 
-        checkFBOComplete(_fboID);  
     }
 
     function renderScenes 
@@ -1391,7 +1391,7 @@ class JoglTexture is AbstractTexture
 class JoglImageLoader is ImageLoader {
     const glp is GLProfile = GLProfile.get("GL2");
     var gl is GL2;
-    var loaded = new java.util.HashMap of (String, java.lang.ref.WeakReference of Texture);
+    const loaded = new java.util.HashMap of (String, java.lang.ref.WeakReference of Texture);
 
     override public function loadImage from (url is String)
 	to AbstractTexture 
@@ -1412,7 +1412,7 @@ class JoglImageLoader is ImageLoader {
         //if (url.endsWith(".mp4") or url.endsWith(".mov") or url.endsWith(".wmv")) {
         //    return Movie {url: url};
 	// }
-        var ref = loaded.get(url) as java.lang.ref.WeakReference;
+        const ref = loaded.get(url) as java.lang.ref.WeakReference;
         var texture is Texture = ref.get() as Texture;
         if (texture == null) {
             if (true) {
