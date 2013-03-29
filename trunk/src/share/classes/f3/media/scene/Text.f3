@@ -5,7 +5,8 @@ import f3.math.*;
 import f3.math.LinearMath.*;
 import java.lang.Math;
 
-public class Pick {
+public class Pick 
+{
     public const charIndex is Integer;
     public const insertionIndex is Integer;
     public const isLeadingEdge is Boolean;
@@ -18,7 +19,8 @@ public class Pick {
     }
 }
 
-public interface Layout {
+public interface Layout 
+{
     public abstract function getShape to Path2D;
     public abstract function getCaretShape from (caret is Integer) to Path2D;
     public abstract function getSelectionShape 
@@ -30,7 +32,8 @@ public interface Layout {
     public abstract function pick from (charIndex is Integer) to Pick;
 }
 
-public interface Font {
+public interface Font 
+{
     public const name is String;
     public const ascent is Number;
     public const descent is Number;
@@ -38,7 +41,8 @@ public interface Font {
     public function height to Number { ascent+descent+leading }
 }
 
-public interface LayoutInstance {
+public interface LayoutInstance 
+{
     public abstract function createLayout
 	from (text is String, 
 	      font is Font, 
@@ -47,17 +51,20 @@ public interface LayoutInstance {
 	to Layout;
 }
 
-public interface LayoutEngine {
+public interface LayoutEngine 
+{
     public abstract function createFont from (spec is String) to Font;
     public abstract function createLayoutInstance to LayoutInstance;
 }
 
-public class TextMeshNode is MeshNode2D {
+public class TextMeshNode is MeshNode2D 
+{
     public readonly var textLayout is Layout;
     override var path = bind textLayout.getShape();
 }
 
-public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHandler {
+public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHandler 
+{
     public var width is Number = 300;
     public var height is Number = bind font.height();
     public const layoutEngine is LayoutEngine = the LayoutEngine;
@@ -122,7 +129,8 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         content: bind [rect, contentGroup];
     }
 
-    override function onMouseDown from (event is MouseEvent) to () {
+    override function onMouseDown from (event is MouseEvent) to () 
+    {
 	const pt = event.location;
 	const mouseHit = layout.pick(pt.x, pt.y);
 	if (mouseHit <> null)  {
@@ -141,7 +149,8 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 
     var lastTime is Long;
 
-    override function update {
+    override function update 
+    {
 	if (dirty) {
 	    text = buffer.toString();
 	    dirty = false;
@@ -162,7 +171,8 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         }
     }
 
-    override function onMouseDrag from (event is MouseEvent) to () {
+    override function onMouseDrag from (event is MouseEvent) to () 
+    {
         const pt = event.location;
         const mouseHit = layout.pick(pt.x, pt.y);
         if (mouseHit <> null) {
@@ -172,7 +182,8 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 	updateColumn();
     }
 
-    override function onKeyDown from (event is KeyboardEvent) to () {
+    override function onKeyDown from (event is KeyboardEvent) to () 
+    {
 	const code = event.keyCode;
 	if (code == Keys.Left) {
 	    moveCaretLeft(event.shiftKey);
@@ -214,7 +225,8 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         }
     }
 
-    function deleteChars {
+    function deleteChars 
+    {
         if (start < end) {
             buffer.delete(start, end);
             caretPosition = start;
@@ -223,12 +235,13 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         }
     }
 
-    function backspace {
+    function backspace 
+    {
         if (start < end) {
             deleteChars();
         } else {
             if (caretPosition > 0 and caretPosition <= buffer.length()) {
-                buffer.<<delete>>(caretPosition-1, caretPosition);
+                buffer.delete(caretPosition-1, caretPosition);
                 moveCaretLeft(false);
                 markDirty();
             }
@@ -258,15 +271,12 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
     {
 	const hit = layout.pick(caretPosition);
 	if (hit.row > 0) {
-	    var up = layout.pickCell(hit.row-1, 0);
-	    println("up={up}");
+	    var up = layout.pickCell(hit.row-1, Integer.MAX_VALUE);
 	    if (up <> null) {
 		const y = up.y;
-		up = layout.pick(column, y);
-		println("up'={up}");
-		if (up <> null) {
-		    moveCaret(up.insertionIndex, shift, false);
-		}
+		const up1 = layout.pick(column, y);
+		if (up1 <> null) up = up1;     
+		moveCaret(up.insertionIndex, shift, false);
 	    }
 	}
     }
@@ -274,12 +284,11 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
     function moveCaretDown from (shift is Boolean) to () 
     {
 	const hit = layout.pick(caretPosition);
-	var down = layout.pickCell(hit.row+1, 0);
+	var down = layout.pickCell(hit.row+1, Integer.MAX_VALUE);
 	if (down <> null) {
-	    println("down={down}");
 	    const y = down.y;
-	    down = layout.pick(column, y);
-	    println("down'={down}");
+	    const down1 = layout.pick(column, y);
+	    if (down1 <> null) down = down1;
 	    if (down <> null) {
 		moveCaret(down.insertionIndex, shift, false);
 	    }
@@ -291,7 +300,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         moveCaret(caretPosition-1, shift, true);
     }
 
-    function moveCaretRight(shift is Boolean) to ()
+    function moveCaretRight from (shift is Boolean) to ()
     {
         moveCaret(caretPosition+1, shift, true);
     }
@@ -313,11 +322,9 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
         }
     }
 
-    function updateColumn {
-	const hit = layout.pick(caretPosition);
-	column = hit.x;
-	isLeading = hit.isLeadingEdge;
-	println("column = {column} for {hit}");
+    function updateColumn 
+    {
+	column = caretShape.getBounds().center.x;
     }
 
 }
