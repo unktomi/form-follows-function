@@ -23,7 +23,6 @@ public abstract class Node is Foldable of Node
     public readonly var transform is Mat4 = Mat4.<<1>>;
     public readonly var toSceneTransform is Mat4 = 
 	bind parentToSceneTransform * transform;
-
     public readonly var bounds is Bounds = bind transform * contentBounds;
     public readonly var boundsInScene is Bounds = bind parentToSceneTransform * bounds;
     public readonly var contentBounds is Bounds;

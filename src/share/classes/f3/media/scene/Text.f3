@@ -124,8 +124,7 @@ public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHa
 	content: bind [selectionMesh, textMesh, caretMesh];
     }
 
-    override var internalContent = Group 
-    {
+    override var internalContent = Group {
         content: bind [rect, contentGroup];
     }
 
