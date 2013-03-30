@@ -155,8 +155,8 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
         var y = 0.0;
         while (measurer.getPosition() < text.length()) {
             const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
-            const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline;
-            const layout = measurer.nextLayout(wrapWidth, limit+1, false);
+            const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline+1;
+            const layout = measurer.nextLayout(wrapWidth, limit, false);
 	    y += layout.getAscent();
 	    if (y > clipHeight) {
 		break;
@@ -1343,7 +1343,7 @@ class OffscreenSurface is JoglTexture
         setupForDraw();
         var dirty = false;
         for (scene in scenes where scene.visible) {
-            if (sceneRenderer.renderScene(gl, scene, _width, _height, dirty)) {
+            if (sceneRenderer.renderScene(gl, scene, pot_width, pot_height, dirty)) {
                 dirty = true;
             }
         }

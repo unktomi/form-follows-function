@@ -462,9 +462,10 @@ class MaModel
 		const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode;
 		const start = 1s/24 * (sourceClip.ss-1);
 		const end = 1s/24 * (sourceClip.se);
+		println("creating clip {clip.name} {start}..{end}");
 		insert TimeGroup {
 		    id: clip.name;
-		    //playRange: Interval { start: start, end: end }
+		    playRange: Interval { start: start, end: end }
 		} into clips;
 	    }
 	    for (conn in n.connectionsToThis.get("cel")) {
@@ -474,6 +475,7 @@ class MaModel
 		//const cevIndex = (path[3] as Index).index;
 		const animCurve = conn.sourceNode as MAnimCurve;
 		const ch = toChannel(animCurve);
+		println("adding channel {ch} to {clip}");
 		insert ch into clip.content;
 		delete ch from channels;
 	    }
@@ -1891,6 +1893,7 @@ class MJoint is MTransform {
 class MCharacter is MNode {
 
     var aal is java.util.Map of (String, String);
+    var am is java.util.Map of (String, String);
 
     function resolveTargetPointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
@@ -1943,6 +1946,8 @@ class MCharacter is MNode {
 	if (n == "aal") {
 	    println("cmd={cmd}");
 	    aal = cmd.getAttributeAlias();
+	} else if (n == "am") {
+	    am = cmd.getCharacterMapping();
 	} else super.setAttr(cmd);
     }
 }
@@ -3049,9 +3054,10 @@ class MAnimCurve__ is MAnimCurve of Number
 				   this.type == "animCurveUT" or
 				   this.type == "animCurveUU"); 
 	const rate = if (keyTimesInSeconds) then 1s else FPS;
-	const targets = m.getNumberTargets(this, "o");
+	var targets = m.getNumberTargets(this, "o");
 	if (targets == []) {
 	    println("no targets { name }");
+	    return null;
 	}
 	Channel of Number 
 	{
@@ -3238,6 +3244,7 @@ class Command
 
     const longNames = ["unitlessValues", "angularValues", "linearValues"];
     const shortNames = ["uv", "av", "lv"];
+
     public function getAttributeAlias to java.util.Map of (String, String) {
 	const map = new java.util.HashMap of (String, String);
 	var i = 2; // skip aal {
@@ -3257,6 +3264,20 @@ class Command
 		}
 	    }
 	    map.put(k, v);
+	}
+	return map;
+    }
+
+    public function getCharacterMapping to java.util.Map of (String, String) {
+	const map = new java.util.HashMap of (String, String);
+	var i = 1; // skip am {
+	const count = getInt(i++);
+	while (i < args.size()) {
+	    const k = trim(args[i++]); 
+	    const i1 = Integer.parseInt(args[i++]);
+	    const i2 = Integer.parseInt(args[i++]);
+	    const k1 = if (i1 == 0) then "uv" else if (i1 == 1) then "lv" else "av";
+	    map.put("{k1}[{i2}]", k);
 	}
 	return map;
     }
