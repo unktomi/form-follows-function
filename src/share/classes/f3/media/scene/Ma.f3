@@ -1928,7 +1928,10 @@ class MCharacter is MNode {
 	for (ent in aal.entrySet()) {
 	    const k = ent.getKey();
 	    const v = ent.getValue();
-	    const animCurve = m.findNode(k);
+	    var animCurve = m.findNode(k);
+	    if (animCurve == null) {
+		animCurve = m.findNode("{name}_{k}");
+	    }
 	    println("{name} applying alias {k} {v} => {animCurve}");
 	    animCurve.connectionsFromThis.put("o", 
 					      Connection { 
