@@ -2502,16 +2502,16 @@ public function run from (args is String[]) to ()
     }
 
     const browser = if TheWebBrowserFactory == null then null else WebBrowser {
-	factory: TheWebBrowserFactory;
-	effectLoader: CGEffectLoader_INSTANCE;
-	pathFactory: ThePath2DFactory;
+	//factory: TheWebBrowserFactory;
+	//effectLoader: CGEffectLoader_INSTANCE;
+	//pathFactory: ThePath2DFactory;
     }
 
     var currentModel is Node = HTML {
     	content: "<html><body><h1>Welcome to F3</h1></body></html>";
-	factory: TheWebBrowserFactory;
-	effectLoader: CGEffectLoader_INSTANCE;
-	pathFactory: ThePath2DFactory;
+	//factory: TheWebBrowserFactory;
+	//effectLoader: CGEffectLoader_INSTANCE;
+	//pathFactory: ThePath2DFactory;
     }
 
     readonly var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
