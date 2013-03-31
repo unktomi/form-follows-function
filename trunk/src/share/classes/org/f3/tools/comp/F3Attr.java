@@ -2219,6 +2219,8 @@ public class F3Attr implements F3Visitor {
 
         Scope partsScope = new Scope(clazztype.tsym);
 
+	java.util.Set<Name> seen = new java.util.HashSet<Name>();
+
         for (F3ObjectLiteralPart localPt : tree.getParts()) {
             
             // Protect against erroneous nodes
@@ -2267,42 +2269,44 @@ public class F3Attr implements F3Visitor {
                 chk.checkAssignable(part.pos(), v, part, clazz.type, localEnv, kind);
                 chk.checkBidiBind(part.getExpression(), part.getBindStatus(), localEnv, v.type);
             }
+	    seen.add(memberSym.name);
             part.type = memberType;
 	    memberSym = new F3VarSymbol(types, names, memberSym.flags(), memberSym.name, memberType, ownerSym);
             part.sym = memberSym;
         }
-	for (Scope.Entry ent = clazz.type.tsym.members().elems; ent != null && ent.scope != null; ent = ent.sibling) {
-	    if (ent.sym instanceof F3VarSymbol) {
-		F3VarSymbol varSym = (F3VarSymbol)ent.sym;
-		if ((varSym.flags() & STATIC) == 0) {
-		    varSym.complete();
-		}
-		if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
-		    System.err.println("varSym="+varSym);
-		    boolean assigned = false;
-		    for (F3ObjectLiteralPart localPt : tree.getParts()) {
-			if (localPt.sym == varSym) {
-			    assigned = true;
-			    break;
+	{
+
+	    List<F3ObjectLiteralPart> newParts = List.<F3ObjectLiteralPart>nil();
+	    for (Type clazz1: types.supertypesClosure(clazz.type)) {
+		for (Scope.Entry ent = clazz1.tsym.members().elems; ent != null && ent.scope != null; ent = ent.sibling) {
+		    if (ent.sym instanceof F3VarSymbol) {
+			F3VarSymbol varSym = (F3VarSymbol)ent.sym;
+			if (clazz.type == clazz1 && (varSym.flags() & STATIC) == 0) {
+			    varSym.complete();
 			}
-		    }
-		    if (!assigned) {
-			Type memberType = types.memberType(clazz.type, varSym);
-			Symbol toAssign = findThe(localEnv, tree, memberType, true);
-			if (toAssign != null) {
-			    F3Expression exp = f3make.QualIdent(toAssign);
-			    //F3Expression exp = accessThe(toAssign, varSym.type);
-			    attribExpr(exp, localEnv, memberType);
-			    F3ObjectLiteralPart newPart = f3make.ObjectLiteralPart(varSym.name,
-										   exp,
-										   F3BindStatus.UNBOUND);
-			    newPart.sym = varSym;
-			    newPart.type = memberType;
-			    tree.parts = tree.parts.append(newPart);
+			if (!seen.contains(varSym.name)) {
+			    seen.add(varSym.name);
+			    if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
+				System.err.println("varSym="+varSym);
+				Type memberType = types.memberType(clazz.type, varSym);
+				Symbol toAssign = findThe(localEnv, tree, memberType, true);
+				if (toAssign != null) {
+				    F3Expression exp = f3make.QualIdent(toAssign);
+				    //F3Expression exp = accessThe(toAssign, varSym.type);
+				    attribExpr(exp, localEnv, memberType);
+				    F3ObjectLiteralPart newPart = f3make.ObjectLiteralPart(varSym.name,
+											   exp,
+											   F3BindStatus.UNBOUND);
+				    newPart.sym = varSym;
+				    newPart.type = memberType;
+				    newParts = newParts.append(newPart);
+				}
+			    }
 			}
 		    }
 		}
 	    }
+	    tree.parts = tree.parts.appendList(newParts);
 	}
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
         localEnv.info.scope.leave();
@@ -4735,6 +4739,11 @@ public class F3Attr implements F3Visitor {
 	    ///System.err.println("env="+env);
 	    //	    System.err.println("searching for the "+t+ " in env1="+env);
 	    Symbol sym = findThe(env, tree, t);		
+	    if (env.enclVar != null && 
+		sym == env.enclVar.sym) {
+		sym = null;
+	    }
+	    if (sym != null) System.err.println("found: "+sym.getClass());
 	    F3FunctionDefinition fun = env.enclFunction;
 	    if (sym == null) {
 		if (fun != null && !fun.sym.name.equals(syms.runMethodName)) {

@@ -173,12 +173,12 @@ public class F3ClassReader extends ClassReader {
             ListBuffer<CompoundAnnotationProxy> proxies =
                 new ListBuffer<CompoundAnnotationProxy>();
             for (int i = 0; i<numAttributes; i++) {
-                CompoundAnnotationProxy proxy = readCompoundAnnotation();
-                if (proxy.type.tsym == syms.proprietaryType.tsym)
-                    sym.flags_field |= PROPRIETARY;
-                else {
-                        proxies.append(proxy);
-                }
+	    CompoundAnnotationProxy proxy = readCompoundAnnotation();
+	    if (proxy.type.tsym == syms.proprietaryType.tsym)
+	    sym.flags_field |= PROPRIETARY;
+	    else {
+	    proxies.append(proxy);
+	    }
             }
             annotate.later(new F3AnnotationCompleter(sym, proxies.toList(), this));
         }
@@ -786,6 +786,10 @@ public class F3ClassReader extends ClassReader {
                 F3Symtab f3Syms = (F3Symtab) this.syms;
 
                 for (Attribute.Compound a : memsym.getAnnotationMirrors()) {
+		    if (memsym instanceof VarSymbol) {
+			//System.err.println("sym="+memsym);
+			//System.err.println("a="+a.type.tsym.flatName());
+		    }
                     if (a.type.tsym.flatName() == f3Syms.f3_staticAnnotationType.tsym.flatName()) {
                         flags |=  Flags.STATIC;
                     } else if (a.type.tsym.flatName() == f3Syms.f3_defAnnotationType.tsym.flatName()) {
@@ -863,6 +867,7 @@ public class F3ClassReader extends ClassReader {
             } else if (a.type.tsym.flatName() == f3Syms.f3_scriptPrivateAnnotationType.tsym.flatName()) {
                 accessFlags = F3Flags.SCRIPT_PRIVATE;
             } else if (a.type.tsym.flatName() == f3Syms.f3_implicitAnnotationType.tsym.flatName()) {
+		System.err.println("implicit sym="+sym);
                 nonAccessFlags |= F3Flags.IMPLICIT_PARAMETER;
             }
         }
