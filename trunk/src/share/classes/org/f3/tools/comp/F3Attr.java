@@ -2287,10 +2287,10 @@ public class F3Attr implements F3Visitor {
 			if (!seen.contains(varSym.name)) {
 			    seen.add(varSym.name);
 			    if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
-				System.err.println("varSym="+varSym);
 				Type memberType = types.memberType(clazz.type, varSym);
+				System.err.println("varSym="+varSym+ ":"+memberType);
 				Symbol toAssign = findThe(localEnv, tree, memberType, true);
-				if (toAssign != null) {
+				if (toAssign.kind < AMBIGUOUS) {
 				    F3Expression exp = f3make.QualIdent(toAssign);
 				    //F3Expression exp = accessThe(toAssign, varSym.type);
 				    attribExpr(exp, localEnv, memberType);
@@ -2300,6 +2300,8 @@ public class F3Attr implements F3Visitor {
 				    newPart.sym = varSym;
 				    newPart.type = memberType;
 				    newParts = newParts.append(newPart);
+				} else {
+				    
 				}
 			    }
 			}
@@ -3241,6 +3243,9 @@ public class F3Attr implements F3Visitor {
 	Symbol sym = findTheUnchecked(env, expectedType);
 	if (sym.kind >= AMBIGUOUS) {
 	    if (sym.kind == AMBIGUOUS || instantiate) {
+		if (sym == rs.methodNotFound) {
+		    sym = rs.varNotFound;
+		}
 		return rs.access(sym, tree, env.enclClass.sym.type, syms.the, false, expectedType);
 	    }
 	    if (false && !(expectedType instanceof MethodType)) {

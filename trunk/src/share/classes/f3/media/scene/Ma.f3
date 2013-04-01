@@ -516,37 +516,48 @@ class MaModel
 		    skinCluster;
 		} else null
 	}
+        const startFrame = this.startFrame;
+        const endFrame = this.endFrame;
+        const linkMap = this.linkMap;
 	const links = foreach (link in linkMap.values()) link;
 	const playRange = Interval { start: FPS * startFrame, end: FPS * endFrame };
-	temporalRoot = TimeGroup {
-	    id: url
-	    // playRange: if (playRange.duration <> 0s) playRange else null;
-	    override function update from (sceneTime is Duration) to () {
-		super.update(sceneTime);
-		for (link in links) link.apply();
-	    }
-	};
-	var j = 0;
-	var g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
-	for (ch in channels) {
-	    if (g.content.size() > 50) { // hack
-		insert g into temporalRoot.content;
-		g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
-	    }
-	    insert ch into g.content;
-	}
-	insert g into temporalRoot.content;
-	println(spatialRoot.foldLeft("", function from (y is String, x is Node) to String 
-				     {
-					 if (y == "") then "{x.id}" else "{y} -> {x.id}";
-				     }));
-	/*
-	println(temporalRoot.foldLeft("", function from (y is String, x is TimeNode) to String 
-				      {
-					  if (y == "") then "{x.id}" else "{y} => {x.id}";
-				      }));
-	*/
+        temporalRoot = finishGenerateScene(startFrame, endFrame, links, playRange, channels, url, spatialRoot);
     }
+
+}
+
+// this is a hack to avoid a memory leak of the MaModel - due to compiler code generation design bugs
+function finishGenerateScene from (startFrame is Number, endFrame is Number, links is Link[], playRange is Interval, channels is TimeNode[], url is String, spatialRoot is Node) to TimeGroup
+{
+    const temporalRoot = TimeGroup {
+        id: url
+        // playRange: if (playRange.duration <> 0s) playRange else null;
+        override function update from (sceneTime is Duration) to () {
+            super.update(sceneTime);
+            for (link in links) link.apply();
+        }
+    };
+    var j = 0;
+    var g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
+    for (ch in channels) {
+        if (g.content.size() > 50) { // hack
+            insert g into temporalRoot.content;
+            g = TimeGroup {id: "{temporalRoot.id}#{j++}"};
+        }
+        insert ch into g.content;
+    }
+    insert g into temporalRoot.content;
+    println(spatialRoot.foldLeft("", function from (y is String, x is Node) to String 
+                                 {
+                                     if (y == "") then "{x.id}" else "{y} -> {x.id}";
+                                 }));
+    /*
+      println(temporalRoot.foldLeft("", function from (y is String, x is TimeNode) to String 
+      {
+      if (y == "") then "{x.id}" else "{y} => {x.id}";
+      }));
+    */
+    return temporalRoot;
 }
 
 function makeRefX from (ref is Ref of Number) to Ref of Tuple3 
@@ -1649,7 +1660,7 @@ class MSkinCluster is MMeshDeformer {
 
     public function toSkinCluster from (m is MaModel) to SkinCluster {
 	resolveMeshes();
-	println("pm={pm.size()}");
+	println("pm={this.pm.size()}");
 	println("gm={gm}");
 	println("Source Mesh={sourceMesh.name}");
 	println("Target Mesh={targetMesh.name}");
@@ -1658,29 +1669,29 @@ class MSkinCluster is MMeshDeformer {
 	const resolvedTarget = m.toNode(targetMesh) as MeshNode;
 	println("Source Mesh={resolvedSource}");
 	println("Target Mesh={resolvedTarget}");
-	var joints is Node[];
-	var bps is Mat4[];
+        const jointMap = new java.util.TreeMap of (Integer, Node);
+	//var bps is Mat4[];
 	for (j in connectionsToThis.get("ma")) {
 	    println(j);
 	    if (j.sourcePath == "wm" and j.sourceNode instanceof MJoint) {
 		const mj = j.sourceNode as MJoint;
-		insert mj.bps.inverse() into bps;
+		//insert mj.bps.inverse() into bps;
 		const jn = m.toNode(mj);
 		const p = parsePath(j.targetPath).path;
 		const i = (p[1] as Index).index;
-		while (joints.size() < i) {
-		    insert jn into joints;
-		}
-		joints[i] = jn;
+		jointMap.put(i, jn);
 	    }
 	}
-	println("joints={joints.size()}");
-	for (m1 in pm) {
-	    const m2 = bps[indexof m1];
-	    if (m2 <> m1) {
-		println("differ {indexof m1} {m1} - {m2}");
-	    }
-	}
+        const jointIndexMap = new java.util.TreeMap of (Integer, Integer);
+        var joints is Node[];
+        var pm is Mat4[];
+        for (ent in jointMap.entrySet()) {
+            const k = ent.getKey();
+            const v = ent.getValue();
+            insert v into joints;
+            jointIndexMap.put(k, indexof ent); 
+            insert this.pm[k] into pm;
+        }
 	const vertIndices = sourceMesh.vertIndices;
 	var weights is Number[];
 	for (vertIndex in vertIndices) {
@@ -1690,7 +1701,7 @@ class MSkinCluster is MMeshDeformer {
 		var influences is Number[];
 		for (w in list.w) {
 		    if (w <> 0) {
-			insert indexof w into influences;
+			insert jointIndexMap.get(indexof w) into influences;
 			insert w into influences;
 		    }
 		}
@@ -1702,6 +1713,9 @@ class MSkinCluster is MMeshDeformer {
 		}
 	    }
 	}
+        if (resolvedSource == null or resolvedTarget == null) {
+            return null;
+        }
 	const sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
 	const sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
 	resolvedTarget.mesh = resolvedSource.mesh;
@@ -3612,7 +3626,7 @@ public class Joint is MaTransform {
 
     override var transform = 
 	bind translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
-    //bind computeTransform(tx, ty, tz, parentInverseScale, jor, r0, sx, sy, sz);
+        //bind computeTransform(tx, ty, tz, parentInverseScale, jor, r0, sx, sy, sz);
 
     function computeTransform
 	from (tx is Number,

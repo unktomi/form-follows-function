@@ -126,10 +126,10 @@ public class F3Resolve {
 
     /** error symbols, which are returned when resolution fails
      */
-    final ResolveError varNotFound;
+    public final ResolveError varNotFound;
     final ResolveError wrongMethod;
     final ResolveError wrongMethods;
-    final ResolveError methodNotFound;
+    public final ResolveError methodNotFound;
     final ResolveError typeNotFound;
 
 /* ************************************************************************
