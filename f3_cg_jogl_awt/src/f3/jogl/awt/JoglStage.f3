@@ -1292,7 +1292,7 @@ class OffscreenSurface is JoglTexture
             if (_depthBits > 0) {
                 bits = Bits.add(bits, GL.GL_DEPTH_BUFFER_BIT);
             }
-            gl.glBlitFramebuffer(0, 0, _width, _height, 
+            gl.glBlitFramebuffer(0, 0, pot_width, pot_height, 
                                  0, 0, pot_width, pot_height, 
                                  bits, GL.GL_LINEAR);
 
@@ -2525,15 +2525,15 @@ public function run from (args is String[]) to ()
 			      playerUrl.endsWith(".tif") or 
 			      playerUrl.endsWith(".tga")) 
 	Image { 
-	    imageLoader: ImageLoader_INSTANCE; 
+	    //imageLoader: ImageLoader_INSTANCE; 
 	    url: playerUrl;
-	    pathFactory: ThePath2DFactory
+	    //pathFactory: ThePath2DFactory
 	} else null;
 
     readonly var textModel = bind if (playerUrl.endsWith(".txt")) {
 	Text.Area {
-	    pathFactory: ThePath2DFactory;
-	    layoutEngine: TheLayoutEngine;
+	    //pathFactory: ThePath2DFactory;
+	    //layoutEngine: TheLayoutEngine;
 	    override var height = bind font.height() * 24;
 	} 
     } else null;
