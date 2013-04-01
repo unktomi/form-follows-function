@@ -2835,17 +2835,25 @@ public class F3Attr implements F3Visitor {
                 else if (returnType == syms.voidType) {
                     typeToCheck = Type.noType;
                 }
-
                 Type bodyType = attribExpr(body, localEnv, typeToCheck); // Special handling for the run function. Its body is empty at this point.
+                //System.err.println("body="+body);
+                //System.err.println("bodyType="+bodyType);
+                //System.err.println("returnType="+returnType);
+                //System.err.println("returnType="+(returnType == syms.f3_VoidType));
                 if (body.value == null) {
                     if (returnType == syms.unknownType)
                         returnType = syms.f3_VoidType; //TODO: this is wrong if there is a return statement
                 } else {
-                    if (returnType == syms.unknownType)
+                    if (returnType == syms.unknownType) {
                         //returnType = bodyType == syms.unreachableType ? syms.f3_VoidType : types.normalize(bodyType);
 			returnType = bodyType == syms.unreachableType ? syms.unreachableType : types.normalize(bodyType);
-                    else if (returnType != syms.f3_VoidType && tree.getName() != defs.internalRunFunctionName)
-                        chk.checkType(tree.pos(), bodyType, returnType, Sequenceness.PERMITTED, false);
+                        //System.err.println("return type ..."+returnType);
+                    } else if (returnType != syms.f3_VoidType && tree.getName() != defs.internalRunFunctionName) {
+                        Type r = chk.checkType(tree.pos(), bodyType, returnType, Sequenceness.PERMITTED, false);
+                        //System.err.println("return type = "+r);
+                    } else {
+                        //System.err.println("unhandled case");
+                    }
                 }
                 if (tree.isBound() && returnType == syms.f3_VoidType) {
                     //log.error(tree.pos(), MsgSym.MESSAGE_F3_BOUND_FUNCTION_MUST_NOT_BE_VOID);
@@ -2874,7 +2882,7 @@ public class F3Attr implements F3Visitor {
 	    }
 
             mtype.restype = returnType;
-
+            //System.err.println("mtype="+mtype);
             result = tree.type = mtype;
             
             // If we override any other methods, check that we do so properly.
@@ -3663,10 +3671,12 @@ public class F3Attr implements F3Visitor {
             List<F3Expression> params = tree.getArguments();
 	    List<Type> pts = msym.type.getParameterTypes();
 	    //System.err.println("msym.type="+msym.type);
+            boolean inferredArg = false;
             for (List<F3Expression> l = params; l.nonEmpty(); l = l.tail) {
 		if (pts.head == null) {
 		    continue;
 		}
+                List ptt = pts;
 		Type t = reader.translateType(types.normalize(pts.head));
 		pts = pts.tail;
 		if (t instanceof FunctionType) {
@@ -3679,20 +3689,24 @@ public class F3Attr implements F3Visitor {
 		    if (val.infer) {
 			val.infer = false;
 			List<Type> inferred = t.getParameterTypes();
-			System.err.println("inferred="+inferred);
+			//System.err.println("inferred="+inferred);
 			for (F3Var var: val.funParams) {
 			    if (inferred != null) {
 				Type ip = inferred.head;
-				System.err.println("inferred type="+ip);
+				//System.err.println("inferred type="+ip);
 				//var.init = f3make.Type(ip);
 				var.type = ip;
-				System.err.println("inferred type exp="+var.init);
+				//System.err.println("inferred type exp="+var.init);
 				//attribVar(var, env);
 				inferred = inferred.tail;
 			    }
 			}
 			val.type = t;
 			finishFunctionDefinition(val.definition, env);
+                        val.type = val.definition.type;
+                        val.definition.sym.type = val.type; // hack
+                        inferredArg = true;
+                        ptt.head = val.type;
 		    }
 		}
 	    }

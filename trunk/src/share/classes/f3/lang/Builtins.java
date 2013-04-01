@@ -183,21 +183,6 @@ public class Builtins {
     {
 	return Either.latter(y);
     }
-    /*
-    public static boolean or(boolean x, boolean y) {
-	return x || y;
-    }
-
-    public static <a,b> Pair<Either<a,b>, Either<a,b>> or(a x,  b y) 
-    {
-	return either(x, y);
-    }
-
-    public static <a,b> Pair<Either<a,b>, Either<a,b>> either(a x,  b y) 
-    {
-	return Pair.<Either<a,b>,Either<a,b>>both(Builtins.<a,b>former(x), Builtins.<a,b>latter(y));
-    }
-    */
 
     public static <a,b> Pair<? extends a, ? extends b> both(a x,  b y) 
     {
@@ -245,10 +230,4 @@ public class Builtins {
     {
 	return Pair.<java.lang.Float, a>both(x, y);
     }
-    /*
-    public static Duration mul(float n, Duration d) {
-	Duration.valueOf(n * d.toMillis());
-    }
-    */
-
 }

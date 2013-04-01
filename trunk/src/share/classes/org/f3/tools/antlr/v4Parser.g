@@ -7432,7 +7432,7 @@ reservedWord
     | PUBLIC_INIT   | PUBLIC_READ | RETURN      //| REVERSE
     | SIZEOF        | STATIC    | SUPER         | THEN
     | THIS          | THROW     | TRUE          | TRY
-    | TYPEOF        | WHILE  | FOREACH | TYPE
+    | TYPEOF        | WHILE     | FOREACH       | TYPE  | MATCH
     ;
 
 

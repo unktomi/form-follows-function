@@ -1,6 +1,6 @@
 package org.f3.runtime;
 import org.f3.functions.*;
-
+import java.util.Iterator;
 /**
  * Represents a Choice between values of types 'a' and 'b' respectively
  *
@@ -14,8 +14,8 @@ import org.f3.functions.*;
 
 public abstract class Either<a, b> implements Monad<Either, b> 
 {
-    public abstract <c> c either(Function1<? extends c, ? super a> f,
-				 Function1<? extends c, ? super b> g); 
+    public abstract <c> c match(Function1<? extends c, ? super a> f,
+                                Function1<? extends c, ? super b> g); 
     public static <a, b> Either<a, b> former(a x) {
 	return new Former<a, b>(x);
     }
@@ -25,6 +25,42 @@ public abstract class Either<a, b> implements Monad<Either, b>
 
     public boolean isFormer() { return !isLatter(); }
     public boolean isLatter() { return !isFormer(); }
+
+    static class Nothing<c> implements Iterable<c> {
+        static class None<c> implements Iterator<c> {
+            public boolean hasNext() {
+                return false;
+            }
+            public c next() {
+                throw new RuntimeException("nothing");
+            }
+            public void remove() {
+                throw new RuntimeException("nothing");
+            }
+        };
+        static None NONE = new None();
+        public Iterator<c> iterator() {
+            return (Iterator<c>)NONE;
+        }
+        static Nothing NOTHING = new Nothing();
+        static <c> Iterable<c> instance() {
+            return (Iterable<c>)NOTHING;
+        }
+    }
+
+    public Iterable<a> getFormer() {
+        if (isLatter()) {
+            return Nothing.<a>instance();
+        }
+        return (Former)this;
+    }
+
+    public Iterable<b> getLatter() {
+        if (isFormer()) {
+            return Nothing.<b>instance();
+        }
+        return (Latter)this;
+    }
 
     public Either<b, a> swap() {
 	if (isFormer()) {
@@ -40,13 +76,13 @@ public abstract class Either<a, b> implements Monad<Either, b>
 	    return new Function1<c, Function1<? extends c, ? super b>> () 
 		{
 		    public c invoke(Function1<? extends c, ? super b> g) {
-			return either(f, g);
+			return match(f, g);
 		    }
 		};
 	}
 }
 
-final class Former<a, b> extends Either<a, b> 
+final class Former<a, b> extends Either<a, b> implements Iterable<a>
 {
     final a former;
     public Former(final a x) {
@@ -59,8 +95,8 @@ final class Former<a, b> extends Either<a, b>
     public <c> Either<a, c> flatmap(Function1<? extends Either<a, c>, ? super b> f) {
 	return new Former<a, c>(former);
     }
-    public <c> c either(Function1<? extends c, ? super a> f,
-			Function1<? extends c, ? super b> g) {
+    public <c> c match(Function1<? extends c, ? super a> f,
+                       Function1<? extends c, ? super b> g) {
 	return f.invoke(former);
     }
     public boolean equals(Object obj) {
@@ -70,9 +106,24 @@ final class Former<a, b> extends Either<a, b>
 	}
 	return false;
     }
+
+    public Iterator<a> iterator() {
+        return new Iterator<a>() {
+            boolean hasNext = true;
+            public boolean hasNext() {
+                return hasNext;
+            }
+            public a next() {
+                hasNext = false;
+                return former;
+            }
+            public void remove() {
+            }
+        };
+    }
 }
 
-final class Latter<a, b> extends Either<a, b> 
+final class Latter<a, b> extends Either<a, b> implements Iterable<b>
 {
     final b latter;
     public Latter(final b y) {
@@ -85,8 +136,8 @@ final class Latter<a, b> extends Either<a, b>
     public <c> Either<a, c> flatmap(Function1<? extends Either<a, c>, ? super b> f) {
 	return f.invoke(latter);
     }
-    public <c> c either(Function1<? extends c, ? super a> f,
-			Function1<? extends c, ? super b> g) {
+    public <c> c match(Function1<? extends c, ? super a> f,
+                       Function1<? extends c, ? super b> g) {
 	return g.invoke(latter);
     }
     public boolean equals(Object obj) {
@@ -95,5 +146,20 @@ final class Latter<a, b> extends Either<a, b>
 	    return latter == l.latter || (latter != null && latter.equals(l.latter));
 	}
 	return false;
+    }
+
+    public Iterator<b> iterator() {
+        return new Iterator<b>() {
+            boolean hasNext = true;
+            public boolean hasNext() {
+                return hasNext;
+            }
+            public b next() {
+                hasNext = false;
+                return latter;
+            }
+            public void remove() {
+            }
+        };
     }
 }
