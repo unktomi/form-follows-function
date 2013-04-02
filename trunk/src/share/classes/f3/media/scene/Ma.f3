@@ -310,8 +310,8 @@ class MaModel
 	    println("resolved shader {target.name} to {resolved}");
 	    target.getPointer(key, resolved);
 	} else if (target instanceof MAnimCurve) {
-	    const node = toChannel(target as MAnimCurve, false);
-	    if (node == null) then null else { const ch = node as Channel of ? ; ch.targets[0] }
+	    const ch = toChannel(target as MAnimCurve, false) as Channel of ?;
+	    ch.targets[0];
 	} else null;
 	if (ptr == null and attr <> null) { // hack: assume user defined attr
 	    if (attr.parent <> null) {
@@ -1607,20 +1607,15 @@ abstract class MMeshDeformer is MNode {
 		}
 	    }
 	}
-	println("sourceMesh={sourceMesh}");
 	return sourceMesh;
     }
 
     protected function resolveTargetMesh from () to MMesh {
-	var g is MNode = this;
-	for (c in g.connectionsFromThis.get("og")) {
-	    println(c);
+	for (c in connectionsFromThis.get("og")) {
 	    if (c.targetNode is MMesh and c.targetPath == "i") {
 		targetMesh = c.targetNode as MMesh;
-		break;
 	    }
 	}
-	println("targetMesh={targetMesh}");
 	return targetMesh;
     }
 
@@ -2258,14 +2253,13 @@ class MMesh is MSpatial
 		const edge = edgeStart(faceEdge);
 		const faces = edgeToFace2.get(edge);
 		if (faces == []) {
-		    edgeToNormal.put(edge, faceNormals[faceIndex]);
+		    //edgeToNormal.put(edge, this.normal(faceIndex));
 		} else {
 		    var norm = Vec3.<<0>>;
 		    for (j in faces) {
 			const faceNorm = faceNormals[j];
 			norm += faceNorm;
 		    }
-		    norm = norm.normalize();
 		    edgeToNormal.put(edge, norm);
 		}
 	    }
@@ -2299,16 +2293,20 @@ class MMesh is MSpatial
 		   continue;
 		}
 		const edge0 = edgeStart(f.faceEdges[0]);
+		const norm0 = i;
 		const uv0 = f.getUV(0);
 		var edge1 = edgeStart(f.faceEdges[1]);
+		var norm1 = i;
 		var uv1 = f.getUV(1);
 		for (j in [2..<f.faceEdges.size()]) {
-		    insertVertex(edge0, i, uv0);
-		    insertVertex(edge1, i, uv1);
+		    insertVertex(edge0, norm0, uv0);
+		    insertVertex(edge1, norm1, uv1);
 		    const edge2 = edgeStart(f.faceEdges[j]);
+		    const norm2 = i;
 		    const uv2 = f.getUV(j);
-		    insertVertex(edge2, i, uv2);
+		    insertVertex(edge2, norm2, uv2);
 		    edge1 = edge2;
+		    norm1 = norm2;
 		    uv1 = uv2;
 		}
 	    }
@@ -2374,15 +2372,9 @@ class MMesh is MSpatial
 	const n = 
 	    if (this.normals <> []) 
 		then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
-		else {
-		    if (edgeToNormal.containsKey(edge)) {
-			println("found edge normal {edge}");
-			edgeToNormal.get(edge) 
-		    }  else {
-			println("using face normal {face}");
-			faceNormals[face];
-		    }
-		}
+		else if (edgeToNormal.containsKey(edge)) 
+		    then edgeToNormal.get(edge) 
+		    else faceNormals[face];
 	ib.add(ib.getBufferSize());
 	vb.add(v.x, v.y, v.z);
 	nb.add(n.x, n.y, n.z);
