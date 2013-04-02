@@ -1014,7 +1014,7 @@ class MeshVBO {
     var vertexBuffer is Integer;
     var normalBuffer is Integer;
     var textureBuffers is Integer[];
-    override function finalize() {
+    override function finalize {
         org.f3.runtime.Entry.deferAction(java.lang.Runnable {
                 override function run {
                     var count = textureBuffers.size() + 3;
@@ -1307,6 +1307,14 @@ class OffscreenSurface is JoglTexture
         gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
     }
 
+    override function finalize  {
+        org.f3.runtime.Entry.deferAction(java.lang.Runnable {
+                override function run {
+		    cleanup();
+		}
+	    });
+    }
+
     function cleanup to () 
     {
         if (_fboID <> 0) {
@@ -1327,7 +1335,6 @@ class OffscreenSurface is JoglTexture
     function setupForDraw to ()
     {
 	gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
-
         gl.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0);
         gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0);
         if (_samples > 0) {
@@ -1642,7 +1649,7 @@ class SceneRenderer {
 			}
 			lastDrawn.remove(n);
 		    } else {
-		    			println("culled {n} {n.id} {n.boundsInScene}");
+		    //		    			println("culled {n} {n.id} {n.boundsInScene}");
 			if (lastDrawn.remove(n)) {
 			    dirty = true;
 			}
@@ -2575,16 +2582,18 @@ public function run from (args is String[]) to ()
     const stage = JoglStage {
 	title: new java.io.File(args[0]).getName();
 	content: [mainScene,
-		  Scene {
+		  if (true) null else Scene {
                     background: null;
                     camera: Camera2D {}; 
-		    content: StageNode {
+		    content: bind foreach (i in [0..<model.getCameras().size()]) StageNode {
+		        var cam = bind model.getCameras()[i];
                         factory: ThePath2DFactory;
 			height: 80;
 			width: 100;
-                        override var transform = translate(50, 60);
+                        override var transform = bind translate(25+125*i, 25);
 			content: Scene {
-			    camera: camera;
+			    background: Color.WHITE;
+			    camera: bind cam;
 			    content: AbstractNode {
 				override var internalContent = bind mainScene.root;
 				override function updateParent {
