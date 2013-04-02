@@ -5620,7 +5620,8 @@ public class F3Attr implements F3Visitor {
 	Type mt = types.memberType(origin.type, m);
 	Type ot = types.memberType(origin.type, other);
 	if (m.type.getReturnType() == syms.f3_UnspecifiedType) {
-	    m.type.asMethodType().restype = ot.getReturnType();
+            MethodType methodType = m.type.asMethodType();
+	    methodType.restype = ot.getReturnType();
 	}
 	// Error if overriding result type is different
 	// (or, in the case of generics mode, not a subtype) of
@@ -5630,36 +5631,41 @@ public class F3Attr implements F3Visitor {
 	List<Type> otvars = ot.getTypeArguments();
 	List<F3Var> vars = tree.operation.funParams;
 	List<Type> newArgTypes = List.<Type>nil();
-	for (List<Type> x = mt.getParameterTypes(), y = ot.getParameterTypes();
-	     x != null; x = x.tail, y = y.tail, vars = vars.tail) {
+        List<Type> x = mt.getParameterTypes();
+        List<Type> y = ot.getParameterTypes();
+        while (x != null) {
 	    if (x.head != null && y.head != null) {
 		Type x1 = types.subst2(y.head, 
 				       otvars,
 				       mtvars);
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
-		    if (tc2 >= 0 ||
-			!x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
-			/*
-			System.err.println("fix override:  base: "+ot);
-			System.err.println("fix override:  derived: "+mt);
-			System.err.println("base arg="+y.head);
-			System.err.println("derived arg="+x.head);
-			System.err.println("derived arg'="+x1);
-			*/
+		    if (tc2 >= 0 || x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
 			vars.head.baseType = x1;
 		    }
 		}
 	    }
 	    if (x.head != null && types.boxedTypeOrType(x.head) == y.head) {
-		vars.head.type = x.head = y.head;
+                x.head = y.head;
+		vars.head.type = x.head;
 	    }
 	    if (vars.head != null) {
 		newArgTypes = newArgTypes.append(vars.head.type);
 	    }
+            x = x.tail;
+            y = y.tail;
+            vars = vars.tail;
 	}
 	Type mtres = mt.getReturnType();
 	Type otres = types.subst(ot.getReturnType(), otvars, mtvars);
+        return fixOverride1(tree, m, other, mt, ot, mtres, otres, fixFlags);
+    }
+
+    boolean fixOverride1(F3FunctionDefinition tree,
+                         MethodSymbol m, MethodSymbol other,
+                         Type mt, Type ot,
+                         Type mtres, Type otres, boolean fixFlags) {
+        ClassSymbol origin = (ClassSymbol) m.owner;
 	boolean resultTypesOK = mtres != syms.f3_UnspecifiedType &&
 	    types.returnTypeSubstitutable(mt, ot, otres, noteWarner);
 	if (!resultTypesOK) {
@@ -5714,7 +5720,8 @@ public class F3Attr implements F3Visitor {
             }
             if (flags != origFlags) {
                 m.flags_field = flags;
-                tree.getModifiers().flags = flags;
+                F3Modifiers mods = tree.getModifiers();
+                mods.flags = flags;
             }
         }
         return true;

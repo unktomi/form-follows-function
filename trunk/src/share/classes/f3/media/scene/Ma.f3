@@ -310,8 +310,8 @@ class MaModel
 	    println("resolved shader {target.name} to {resolved}");
 	    target.getPointer(key, resolved);
 	} else if (target instanceof MAnimCurve) {
-	    const ch = toChannel(target as MAnimCurve) as Channel of ?;
-	    ch.targets[0];
+	    const node = toChannel(target as MAnimCurve, false);
+	    if (node == null) then null else { const ch = node as Channel of ? ; ch.targets[0] }
 	} else null;
 	if (ptr == null and attr <> null) { // hack: assume user defined attr
 	    if (attr.parent <> null) {
@@ -408,14 +408,23 @@ class MaModel
 	if (node == null) then spatialRoot else node as Group;
     }
 
-    function toChannel from (n is MAnimCurve) to TimeNode
+    function toChannel from (n is MAnimCurve, clip is Boolean) to TimeNode
     {
-	if (temporalMap.containsKey(n)) then temporalMap.get(n) else {
-		const ch = n.toChannel(this);
-		println("{this} => {ch}");
-		insert ch into channels;
-		temporalMap.put(n, ch);
-	    }
+        var ch is TimeNode;
+	if (temporalMap.containsKey(n)) {
+            ch = temporalMap.get(n);
+        } else {
+            ch = n.toChannel(this, clip);
+            if (ch <> null) {
+                if (not clip) {
+                    insert ch into channels;
+                } else {
+                    delete ch from channels;
+                }
+                temporalMap.put(n, ch);
+            }
+        }
+        return ch;
     }
 
     function toShader from (n is MAbstractShader) to Shader
@@ -465,7 +474,8 @@ class MaModel
 		println("creating clip {clip.name} {start}..{end}");
 		insert TimeGroup {
 		    id: clip.name;
-		    playRange: Interval { start: start, end: end }
+                    //playTime: -start;
+		    //playRange: Interval { start: start, end: end }
 		} into clips;
 	    }
 	    for (conn in n.connectionsToThis.get("cel")) {
@@ -474,11 +484,14 @@ class MaModel
 		const clip = clips[celIndex];
 		//const cevIndex = (path[3] as Index).index;
 		const animCurve = conn.sourceNode as MAnimCurve;
-		const ch = toChannel(animCurve);
-		println("adding channel {ch} to {clip}");
-		insert ch into clip.content;
-		delete ch from channels;
-	    }
+		const ch = toChannel(animCurve, true);
+                if (ch <> null) {
+                    println("adding channel {ch.id} {ch.bounds} to {clip.id}");
+                    insert ch into clip.content;
+                } else {
+                    println("can't create channel {animCurve.name} for {clip.id}");                    
+                }
+            }
 	    for (clip in clips) {
 		println("created clip: {clip.id} with {clip.content.size()} channels");
 	    }
@@ -503,7 +516,7 @@ class MaModel
 		if (n is MSpatial) {
 		    toNode(n as MSpatial)
 		} else if (n is MAnimCurve) {
-		    toChannel(n as MAnimCurve);
+		    toChannel(n as MAnimCurve, false);
 		} else if (n instanceof MClipLibrary) {
 		    toClipLibrary(n as MClipLibrary);
 		} else if (n instanceof MUtility) {
@@ -1594,15 +1607,20 @@ abstract class MMeshDeformer is MNode {
 		}
 	    }
 	}
+	println("sourceMesh={sourceMesh}");
 	return sourceMesh;
     }
 
     protected function resolveTargetMesh from () to MMesh {
-	for (c in connectionsFromThis.get("og")) {
+	var g is MNode = this;
+	for (c in g.connectionsFromThis.get("og")) {
+	    println(c);
 	    if (c.targetNode is MMesh and c.targetPath == "i") {
 		targetMesh = c.targetNode as MMesh;
+		break;
 	    }
 	}
+	println("targetMesh={targetMesh}");
 	return targetMesh;
     }
 
@@ -1922,6 +1940,7 @@ class MCharacter is MNode {
 		println("failed to resolve target {toThis.targetPath} using {conn}");
 	    }
 	}
+        println("failed to resolve target {toThis.targetPath}");
 	return null;
     }
 
@@ -1934,11 +1953,13 @@ class MCharacter is MNode {
 	    if (ptr <> null) return ptr;
 	    println("failed to resolve source {toThis.targetPath} using {conn}");
 	}
+        println("failed to resolve source {toThis.targetPath}");
 	return null;
     }
 
     function applyAlias from (m is MaModel) to () 
     {
+        if (true) return;
 	for (ent in aal.entrySet()) {
 	    const k = ent.getKey();
 	    const v = ent.getValue();
@@ -2237,13 +2258,14 @@ class MMesh is MSpatial
 		const edge = edgeStart(faceEdge);
 		const faces = edgeToFace2.get(edge);
 		if (faces == []) {
-		    //edgeToNormal.put(edge, this.normal(faceIndex));
+		    edgeToNormal.put(edge, faceNormals[faceIndex]);
 		} else {
 		    var norm = Vec3.<<0>>;
 		    for (j in faces) {
 			const faceNorm = faceNormals[j];
 			norm += faceNorm;
 		    }
+		    norm = norm.normalize();
 		    edgeToNormal.put(edge, norm);
 		}
 	    }
@@ -2277,20 +2299,16 @@ class MMesh is MSpatial
 		   continue;
 		}
 		const edge0 = edgeStart(f.faceEdges[0]);
-		const norm0 = i;
 		const uv0 = f.getUV(0);
 		var edge1 = edgeStart(f.faceEdges[1]);
-		var norm1 = i;
 		var uv1 = f.getUV(1);
 		for (j in [2..<f.faceEdges.size()]) {
-		    insertVertex(edge0, norm0, uv0);
-		    insertVertex(edge1, norm1, uv1);
+		    insertVertex(edge0, i, uv0);
+		    insertVertex(edge1, i, uv1);
 		    const edge2 = edgeStart(f.faceEdges[j]);
-		    const norm2 = i;
 		    const uv2 = f.getUV(j);
-		    insertVertex(edge2, norm2, uv2);
+		    insertVertex(edge2, i, uv2);
 		    edge1 = edge2;
-		    norm1 = norm2;
 		    uv1 = uv2;
 		}
 	    }
@@ -2356,9 +2374,15 @@ class MMesh is MSpatial
 	const n = 
 	    if (this.normals <> []) 
 		then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
-		else if (edgeToNormal.containsKey(edge)) 
-		    then edgeToNormal.get(edge) 
-		    else faceNormals[face];
+		else {
+		    if (edgeToNormal.containsKey(edge)) {
+			println("found edge normal {edge}");
+			edgeToNormal.get(edge) 
+		    }  else {
+			println("using face normal {face}");
+			faceNormals[face];
+		    }
+		}
 	ib.add(ib.getBufferSize());
 	vb.add(v.x, v.y, v.z);
 	nb.add(n.x, n.y, n.z);
@@ -2992,7 +3016,7 @@ abstract class MAnimCurve of a is MTemporal
 	} else super.setAttr(cmd);
     }
 
-    abstract function toChannel from (m is MaModel) to Channel of a;
+    abstract function toChannel from (m is MaModel, clip is Boolean) to Channel of a;
 
 }
 
@@ -3064,18 +3088,41 @@ class MAnimCurve__ is MAnimCurve of Number
 	}
     }
 
-    override function toChannel from (m is MaModel) to Channel of Number 
+    override function toChannel from (m is MaModel, clip is Boolean) to Channel of Number 
     {
+	var targets is (Ref of Number)[];
+        if (not clip) {
+            targets = m.getNumberTargets(this, "o");
+        } else {
+            for (conn in connectionsFromThis.get("a")) {
+                const path = parsePath(conn.targetPath).path;
+                const cev = (path[3] as Index).index;
+                const lib = conn.targetNode as MClipLibrary;
+                for (conn2 in lib.connectionsToThis.get("cd")) {
+                    if (conn2.sourceNode is MCharacter) {
+                        const char = conn2.sourceNode as MCharacter;
+                        for (conn3 in char.connectionsToThis.get("dnsm")) {
+                            const path2 = parsePath(conn3.targetPath).path;
+                            const ind = (path2[1] as Index).index;
+                            if (ind == cev) {
+                                insert m.resolveSourcePointer(conn3) as Ref of Number into targets;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if (targets == []) {
+            println("no targets { name } as clip {clip}");
+            return null;
+	}
 	const keyTimesInSeconds = (this.type == "animCurveUA" or
 				   this.type == "animCurveUL" or
 				   this.type == "animCurveUT" or
 				   this.type == "animCurveUU"); 
 	const rate = if (keyTimesInSeconds) then 1s else FPS;
-	var targets = m.getNumberTargets(this, "o");
-	if (targets == []) {
-	    println("no targets { name }");
-	    return null;
-	}
 	Channel of Number 
 	{
 	    id: name;
@@ -3391,7 +3438,8 @@ class MaParser
 	}
     }
 
-    function consumeUntil from (input is String, end is Character) to () {
+    function consumeUntil from (input is String, end is Character) to () 
+    {
 	const len = input.length();
 	const backslash = "\\";
 	const escapes = "ntr";
@@ -3454,7 +3502,7 @@ class MaParser
     public function parse from (u is java.net.URL) to MaModel 
     {
 	const r = new java.io.BufferedReader(new java.io.InputStreamReader(u.openStream()));
-	const buf = new java.lang.StringBuffer();
+	const buf = java.lang.StringBuffer {};
 	while (true) {
 	    const ch is Integer = r.read();
 	    if (ch <= 0) {
@@ -3482,7 +3530,8 @@ class MaParser
 	return model;
     }
 
-    public function parseString from (input is String) to Command[] {
+    public function parseString from (input is String) to Command[] 
+    {
 	tokenize(input);
 	foreach (cmd in cmds) cmd;
     }
@@ -3674,7 +3723,7 @@ public class Joint is MaTransform {
 
 // http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/joint.html
 
-function dumpScene (spatialRoot is Node) 
+function dumpScene from (spatialRoot is Node) to ()
 {
     println(spatialRoot.foldLeft("", function from (y is String, x is Node) to String 
 				 {

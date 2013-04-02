@@ -1,11 +1,11 @@
 package f3.media.scene;
 
 public class Image is AbstractTexture, Shape2D.MeshNode2D {
-    public var url: String;
+    public var url is String;
     public const imageLoader is ImageLoader = the ImageLoader;
     public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
-    var tex is AbstractTexture = bind imageLoader.loadImage(url);
-    override function getTextureId() {
+    readonly var tex is AbstractTexture = bind imageLoader.loadImage(url);
+    override function getTextureId to Integer {
         return tex.getTextureId();
     }
     override function getWidth to Integer { tex.getWidth() }
@@ -14,5 +14,5 @@ public class Image is AbstractTexture, Shape2D.MeshNode2D {
 					  -tex.getWidth()/2, -tex.getHeight()/2, 
 					  tex.getWidth(), tex.getHeight());
     override var paint = bind Shape2D.TexturePaint { texture: getThis() }
-    function getThis to Image { this }
+    function getThis to Image { this } // workaround for compiler bug with bound "this"
 }

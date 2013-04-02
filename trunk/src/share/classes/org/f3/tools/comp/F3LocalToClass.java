@@ -319,7 +319,8 @@ public class F3LocalToClass {
                     for (F3Expression arg : tree.args) {
                         Symbol sym = F3TreeInfo.symbol(arg);
                         if (sym != null && sym.isLocal()) {
-                            needed = true;
+                            //needed = true; // Chris O. changed - this was causing massive unnecessary "inflation" - revisit if problems turn up
+
                             break;
                         }
                     }
