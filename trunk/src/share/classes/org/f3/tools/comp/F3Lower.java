@@ -543,7 +543,7 @@ public class F3Lower implements F3Visitor {
 	Type retType = tree.meth.type.getReturnType();
 	int i = types.isTypeConsType(retType);
 	if (i >= 0) {
-	    System.err.println("retType="+retType);
+	    //System.err.println("retType="+retType);
 	    List<Type> targs = retType.getTypeArguments();
 	    Type ctor = targs.head;
 	    if (ctor instanceof WildcardType) {
@@ -552,7 +552,7 @@ public class F3Lower implements F3Visitor {
 	    if (!(ctor instanceof TypeVar)) {
 		result = preTrans.makeCast((F3Expression)result, 
 					   types.applySimpleGenericType(ctor, targs.tail));
-		System.err.println("result="+result);
+		//System.err.println("result="+result);
 	    }
 	} 
     }

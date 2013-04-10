@@ -71,13 +71,13 @@ public class SkinCluster is MeshDeformer {
 	    const cmi = combinedInverseTranspose[j];
 	    const pm = bindPreMats[j];
 	    if (bindShape <> null) {
-		tempMat.mul(bindShapeInverse, sceneToLocal);
+		tempMat.mul(sceneToLocal, bindShapeInverse);
 		cm.mul(tempMat, jm);
 		tempMat.mul(cm, pm);
 		cm.mul(tempMat, bindShape);
 	    } else {
 		tempMat.mul(sceneToLocal, jm);
-		combined[j].mul(tempMat, pm);
+		cm.mul(tempMat, pm);
 	    }
 	    cmi.set(cm); cmi.invert(); cmi.transpose();
 	}

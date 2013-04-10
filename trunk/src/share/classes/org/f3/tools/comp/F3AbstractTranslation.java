@@ -1986,7 +1986,7 @@ public abstract class F3AbstractTranslation
 		}
 		Type convertedType = types.subst(fa.qtype, tas, converted);
 		convertedType = new Type.ForAll(converted, convertedType);
-		System.err.println("CONVERTED "+type+" => "+convertedType);
+		//System.err.println("CONVERTED "+type+" => "+convertedType);
 		methSym = new MethodSymbol(methSym.flags(), methSym.name, 
 					   convertedType, methSym.owner);
 	    }

@@ -57,6 +57,14 @@ public static const Linear = NumberInterpolator
     }
 }
 
+public static const Discrete = NumberInterpolator
+{
+    override function interpolate from (k is Key of Number, t is Number) to Number 
+    {
+	if (t >= 1.0) then k.value else k.prev.value;
+    }
+}
+
 const FPS = 24.0;
 
 public class Tangent is NumberInterpolator 

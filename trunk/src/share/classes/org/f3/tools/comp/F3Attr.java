@@ -3468,6 +3468,7 @@ public class F3Attr implements F3Visitor {
 	}
 	List<F3Expression> implicitExprs = List.<F3Expression>nil();
 	tree.type = tree.meth.type = mtype;
+	//System.err.println("mtype="+mtype);
 	if (mtype instanceof ErrorType) {
 	    tree.type = mtype;
 	    result = mtype;
@@ -3557,7 +3558,7 @@ public class F3Attr implements F3Visitor {
 		    }
 		Type mtype1 = rs.newMethTemplate(formalArgs, genSym.type.getTypeArguments());
 		if (sawImplicit) {
-		    System.err.println("saw implicit: "+ tree+ ": "+msym);
+		    //System.err.println("saw implicit: "+ tree+ ": "+msym);
 		    Type inst = null;
 		    List<Type> ts = args;
 		    while (ts.nonEmpty()) {
@@ -3607,6 +3608,7 @@ public class F3Attr implements F3Visitor {
 				if (implicitExpr == null) {
 				    Symbol sym = findThe(env, tree, expectedType);
 				    if (sym == null || sym.kind >= AMBIGUOUS) {
+					System.err.println("find the: "+expectedType+": "+ sym);
 				    } else {
 					//					System.err.println("found: "+sym);
 					resolvedImplicits = resolvedImplicits.append(sym);
@@ -3615,8 +3617,8 @@ public class F3Attr implements F3Visitor {
 					    exp = f3make.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());
 					}
 					Type t = attribExpr(exp, env);
-					//System.err.println("implicit expr="+exp);
-					//System.err.println("type="+t);
+					System.err.println("implicit expr="+exp);
+					System.err.println("type="+t);
 					exp.type = t;
 					implicitExpr = exp;
 				    }
@@ -4762,7 +4764,7 @@ public class F3Attr implements F3Visitor {
 		sym == env.enclVar.sym) {
 		sym = null;
 	    }
-	    if (sym != null) System.err.println("found: "+sym.getClass());
+	    //if (sym != null) System.err.println("found: "+sym.getClass());
 	    F3FunctionDefinition fun = env.enclFunction;
 	    if (sym == null) {
 		if (fun != null && !fun.sym.name.equals(syms.runMethodName)) {
@@ -5640,7 +5642,7 @@ public class F3Attr implements F3Visitor {
 				       mtvars);
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
-		    if (tc2 >= 0 || x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
+		    if (tc2 >= 0 || !x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
 			vars.head.baseType = x1;
 		    }
 		}

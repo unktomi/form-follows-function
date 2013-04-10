@@ -2361,8 +2361,6 @@ class MMesh is MSpatial
 
     public var vertIndices is Integer[];
 
-    var insertedVertices = new java.util.TreeMap of (FaceVertex, Integer);
-
     function insertVertex
 	from (edge is Integer, face is Integer, uvIndex is Integer[]) 
 	to ()
@@ -3044,6 +3042,9 @@ class MAnimCurve__ is MAnimCurve of Number
 	    if (t <> 0) {
 		tan1 = t;
 	    }
+	}
+	if (tan0 == FIXED) {
+	    return KeyFrame.Discrete;
 	}
 	if (tan0 == STEPPED or i1 >= kix.size()) {
 	    return KeyFrame.Linear;
