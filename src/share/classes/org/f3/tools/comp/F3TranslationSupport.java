@@ -419,7 +419,8 @@ public abstract class F3TranslationSupport {
     }
 
     JCExpression makeTypeWithTypeCons(Type t) {
-	return makeTypeTreeInner01(null, t, true, false);
+	JCExpression r = makeTypeTreeInner01(null, t, true, false);
+	return r;
     }
 
     JCExpression makeTypeTreeInner01(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons) {
@@ -446,7 +447,7 @@ public abstract class F3TranslationSupport {
 		    t = types.erasure(tcons.args.head);
 		} else {
 		    if (!expandTypeCons) {
-			//System.err.println("expanding'1: "+ types.toF3String(t));
+			System.err.println("expanding'1: "+ types.toF3String(t));
 			TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
 			Type wc = new WildcardType(tv, BoundKind.EXTENDS, syms.boundClass);
 			t = types.applySimpleGenericType(ctor, tcons.args.prepend(wc));
@@ -462,7 +463,7 @@ public abstract class F3TranslationSupport {
 	    int i = types.isTypeConsType(t);
 	    if (i >= 0) {
 		Type site = t;
-		//System.err.println("expanding'': "+ t);
+		System.err.println("expanding'': "+ t);
 		//Thread.currentThread().dumpStack();
 		List<Type> targs = site.getTypeArguments();
 		if (ERASE_BACK_END) {

@@ -351,7 +351,9 @@ public class F3PreTranslationSupport {
 
     public F3Expression makeCast(F3Expression tree, Type type) {
 	//System.err.println("casting: " +tree);
+	//System.err.println("tree.type: " +tree.type);
 	//System.err.println("to type: "+ type);
+	//Thread.currentThread().dumpStack();
 	//type = types.erasure(type);
         F3Expression typeTree = makeTypeTree(type);
         F3Expression expr = f3make.at(tree.pos).TypeCast(typeTree, tree);

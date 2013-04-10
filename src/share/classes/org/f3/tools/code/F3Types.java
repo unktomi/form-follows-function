@@ -1756,12 +1756,12 @@ public class F3Types extends Types {
 		} 
 		if (bound1 != null && !preserveWildcards) {
 		    //System.err.println("wildcard: ! "+ t0 + " => "+ bound1);
-		    return bound1;
+		    return vtype;
 		}
 		if (vtype != null) {
 		    type1 = visit(vtype, preserveWildcards);
 		    if (!preserveWildcards) {
-			//System.err.println("type1="+type1);
+			System.err.println("type1="+type1);
 			return type1;
 		    }
 		} 
