@@ -421,7 +421,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
 		    if (types.isTypeConsType(iface) >= 0) {
 			JCExpression exp = makeTypeTreeInner01(diagPos, iface, true, false);
 			implementing.append(exp);
-			System.err.println("ADDING: "+iface +": "+exp);
+			System.err.println("ADDING: "+cDecl.sym.name+": "+ iface +": "+exp);
 			break;
 		    }
 		}
