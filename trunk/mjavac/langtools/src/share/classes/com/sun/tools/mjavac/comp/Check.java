@@ -23,27 +23,27 @@
  * have any questions.
  */
 
-package com.sun.tools.javac.comp;
+package com.sun.tools.mjavac.comp;
 
 import java.util.*;
 import java.util.Set;
 
-import com.sun.tools.javac.code.*;
-import com.sun.tools.javac.jvm.*;
-import com.sun.tools.javac.tree.*;
-import com.sun.tools.javac.util.*;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
-import com.sun.tools.javac.util.List;
+import com.sun.tools.mjavac.code.*;
+import com.sun.tools.mjavac.jvm.*;
+import com.sun.tools.mjavac.tree.*;
+import com.sun.tools.mjavac.util.*;
+import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
+import com.sun.tools.mjavac.util.List;
 
-import com.sun.tools.javac.tree.JCTree.*;
-import com.sun.tools.javac.code.Lint;
-import com.sun.tools.javac.code.Lint.LintCategory;
-import com.sun.tools.javac.code.Type.*;
-import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.mjavac.tree.JCTree.*;
+import com.sun.tools.mjavac.code.Lint;
+import com.sun.tools.mjavac.code.Lint.LintCategory;
+import com.sun.tools.mjavac.code.Type.*;
+import com.sun.tools.mjavac.code.Symbol.*;
 
-import static com.sun.tools.javac.code.Flags.*;
-import static com.sun.tools.javac.code.Kinds.*;
-import static com.sun.tools.javac.code.TypeTags.*;
+import static com.sun.tools.mjavac.code.Flags.*;
+import static com.sun.tools.mjavac.code.Kinds.*;
+import static com.sun.tools.mjavac.code.TypeTags.*;
 
 /** Type checking helper class for the attribution phase.
  *
@@ -1624,7 +1624,7 @@ public class Check {
                 if (oldit != null) {
                     List<Type> oldparams = oldit.allparams();
                     List<Type> newparams = it.allparams();
-                    if (!types.containsTypeEquivalent(oldparams, newparams))
+                    if (false && !types.containsTypeEquivalent(oldparams, newparams))
                         log.error(pos, "cant.inherit.diff.arg",
                                   it.tsym, Type.toString(oldparams),
                                   Type.toString(newparams));
@@ -1639,9 +1639,11 @@ public class Check {
      *  If it existed already, issue a "repeated interface" error.
      */
     void checkNotRepeated(DiagnosticPosition pos, Type it, Set<Type> its) {
-        if (its.contains(it))
-            log.error(pos, "repeated.interface");
-        else {
+        if (its.contains(it)) {
+            if (false) {
+                log.error(pos, "repeated.interface");
+            }
+        } else {
             its.add(it);
         }
     }

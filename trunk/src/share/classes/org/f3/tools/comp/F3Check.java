@@ -2167,7 +2167,7 @@ public class F3Check {
 		if (oldit != null) {
 		    List<Type> oldparams = oldit.allparams();
 		    List<Type> newparams = it.allparams();
-		    if (!types.containsTypeEquivalent(oldparams, newparams))
+		    if (false && !types.containsTypeEquivalent(oldparams, newparams))
 			{
 			    log.error(pos, MsgSym.MESSAGE_CANNOT_INHERIT_DIFF_ARG,
 				      it.tsym, Type.toString(oldparams),
@@ -2186,11 +2186,13 @@ public class F3Check {
     void checkNotRepeated(DiagnosticPosition pos, Type it, Set<Type> its) {
         // if class is already in the set.
         if (its.contains(it)) {
-            // If class is a mixin.
-            if ((it.tsym.flags_field & F3Flags.MIXIN) != 0)
-	              log.error(pos, MsgSym.MESSAGE_F3_REPEATED_MIXIN);
-            else
-	              log.error(pos, MsgSym.MESSAGE_REPEATED_INTERFACE);
+            if (false) {
+                // If class is a mixin.
+                if ((it.tsym.flags_field & F3Flags.MIXIN) != 0)
+                    log.error(pos, MsgSym.MESSAGE_F3_REPEATED_MIXIN);
+                else
+                    log.error(pos, MsgSym.MESSAGE_REPEATED_INTERFACE);
+            }
         } else {
         	  its.add(it);
         }

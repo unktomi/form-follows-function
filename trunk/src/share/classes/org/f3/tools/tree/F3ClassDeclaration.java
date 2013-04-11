@@ -119,6 +119,14 @@ public class F3ClassDeclaration extends F3Expression implements ClassDeclaration
         return name;
     }
 
+    public void addSupertype(F3Expression exp) {
+	if (supertypes == null) {
+	    supertypes = List.of(exp);
+	} else {
+	    supertypes = supertypes.append(exp);
+	}
+    }
+
     public List<F3Expression> getSupertypes() {
         return supertypes;
     }

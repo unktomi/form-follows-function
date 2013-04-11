@@ -1006,6 +1006,12 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		//		System.err.println("entering type var: "+ t);
 		typaramScope.enter(((TypeVar)t).tsym);
 	    }
+            int count = tree.typeArgs.size();
+            if (count > 0) {
+                tree.addSupertype(f3make.TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]),
+                                                   tree.typeArgs.prepend(f3make.Ident(tree.getName()))));
+                //System.err.println("tree=>"+tree);
+            }
 	}
         F3Env<F3AttrContext> outer = env.outer; // the base clause can't see members of this class
         F3Env<F3AttrContext> localEnv = outer.dup(tree, outer.info.dup(typaramScope));
