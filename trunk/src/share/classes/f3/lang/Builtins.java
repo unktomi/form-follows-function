@@ -174,12 +174,13 @@ public class Builtins {
             }
         };
     }
-    public static <a,b> Either<a, b> former(a x) 
+
+    public static <a,b> Either<? extends a, ? extends b> Former(a x) 
     {
 	return Either.former(x);
     }
 
-    public static <a,b> Either<a, b> latter(b y) 
+    public static <a,b> Either<? extends a, ? extends b> Latter(b y) 
     {
 	return Either.latter(y);
     }

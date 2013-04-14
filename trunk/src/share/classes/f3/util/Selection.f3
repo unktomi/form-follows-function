@@ -1,8 +1,29 @@
 package f3.util;
-import org.f3.runtime.Monad;
-import f3.util.DoubleNegation;
 
-public abstract class Selection of a is Monad of (Selection, a) {
+public static const monad = Monad of Selection {
+    override function map of (a, b) 
+	from (xs is Selection of a,
+	      f is function from a to b) 
+	to Selection of b 
+    {
+	xs.map(f)
+    }
+
+    override function flatmap of (a, b) 
+	from (xs is Selection of a,
+	      f is function from a to Selection of b) to Selection of b 
+    {
+	xs.flatmap(f)
+    }
+
+    override function return of a from (x is a) to Selection of a 
+    {
+	choose(x)
+    }
+}
+
+
+public abstract class Selection of a is org.f3.runtime.Monad of (Selection, a) {
 
     public abstract function select of r from (f is function from a to r) to a;
 
@@ -34,7 +55,8 @@ public abstract class Selection of a is Monad of (Selection, a) {
 	}
     }
 
-    public function toDoubleNegation to DoubleNegation of a {
+    public function toDoubleNegation to DoubleNegation of a 
+    {
 	DoubleNegation of a {
 	    override public function negate of r from (p is function from a to r) to r 
 	    {
@@ -44,7 +66,8 @@ public abstract class Selection of a is Monad of (Selection, a) {
     }
 }
 
-public function selected of a from (x is a) to Selection of a {
+public function choose of a from (x is a) to Selection of a 
+{
     Selection of a {
 	override function select of r from (f is function from a to r) to a {
 	    x
@@ -56,10 +79,10 @@ public function selected of a from (x is a) to Selection of a {
 }
 
 public function run {
-    const j = foreach (x in selected("hello"), y in selected("world")) {
+    const j = foreach (x in choose("hello"), y in choose("world")) {
 	x.concat(" ").concat(y);
     }
     println(j);
     println(j.toDoubleNegation());
-    println(selected(100).select(id of Integer));
+    println(choose(100).select(id of Integer));
 }
