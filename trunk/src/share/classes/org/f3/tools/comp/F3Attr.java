@@ -4422,37 +4422,6 @@ public class F3Attr implements F3Visitor {
                 }
             }
         }
-
-	if (tree.typeArgTypes != null) {
-	    int count = tree.typeArgTypes.size();
-	    if (count > 0) {
-		//System.err.println("TC="+tc);
-		Type thisType = types.erasure(c.type);
-		boolean found = false;
-		List<Type> bounds = List.nil();
-		for (Type iface : types.supertypesClosure(c.type)) {
-		    if (types.isTypeConsType(iface) == 0) {
-			//System.err.println("found: "+ iface);
-			bounds = bounds.append(iface.getTypeArguments().head);
-		    }
-		}
-		if (bounds.size() == 0) {
-		    Type tc = types.makeTypeCons(thisType, tree.typeArgTypes);
-		    ClassType ct = (ClassType)c.type;
-		    //System.err.println("adding "+tc);
-		    ct.interfaces_field = ct.interfaces_field.append(tc);
-		    ct.allparams_field = null;
-		    //System.err.println("interfaces => "+ct.interfaces_field);
-		    if (false) {
-			F3Expression exp = f3make.at(tree.pos).Type(tc);
-			exp.type = tc;
-			if (!types.isMixin(c)) {
-			    tree.addImplementing(exp);
-			}
-		    }
-		}
-	    }
-	}
     }
 
     //@Override

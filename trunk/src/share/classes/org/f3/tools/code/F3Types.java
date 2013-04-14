@@ -121,7 +121,7 @@ public class F3Types extends Types {
 		args = thisType.getTypeArguments().appendList(args);
 	    }
 	}
-	//list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
+	list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
 	//System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
 	int n = args.size();
 	list = list.appendList(args);
@@ -665,22 +665,22 @@ public class F3Types extends Types {
 	if (t == s) {
 	    return true;
 	}
-	/*
+
 	if (true) {
 	    int i = isTypeConsType(s);
 	    if (i >= 0) {
 		Type tt = subst(t, t.getTypeArguments(), s.getTypeArguments());
-		System.err.println("S="+s);
-		System.err.println("TT="+tt);
+		//System.err.println("S="+s);
+		//System.err.println("TT="+tt);
 		for (Type st : supertypesClosure(t)) {
-		    if (isSameType(st, s)) {
-			System.err.println("isSubtype? "+st +": "+s);
+		    if (isConvertible(st, s)) {
+			//System.err.println("isSubtype? "+st +": "+s);
 			return true;
 		    }
 		}
 	    }
 	}
-	*/
+
 	if (s == syms.f3_AnyType) {
 	    return true;
 	}
