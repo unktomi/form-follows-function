@@ -743,9 +743,9 @@ public class F3Attr implements F3Visitor {
 	    //Thread.currentThread().dumpStack();
 	    //}
 	    sym = rs.resolveIdent(tree.pos(), env, tree.getName(), pkind, req);
-	    if (sym != null) {
+	    //if (sym != null) {
 		//System.err.println("resolve ident: "+tree+" "+sym.getClass() + ": "+ sym);
-	    }
+	    //}
         }
         tree.sym = sym;
         sym.complete();

@@ -1,7 +1,4 @@
 package f3.util;
-import org.f3.runtime.Monad;
-import org.f3.runtime.Comonad;
-import java.lang.Math;
 
 //
 // Continuation Monad/Comonad - corresponds to the logical double negation of 'a'
@@ -24,8 +21,30 @@ import java.lang.Math;
 //    function of _ from (function from a to _) to _
 // 
 
+public static const monad = Monad of DoubleNegation {
+    override function map of (a, b) 
+	from (xs is DoubleNegation of a,
+	      f is function from a to b) 
+	to DoubleNegation of b 
+    {
+	xs.map(f)
+    }
+
+    override function flatmap of (a, b) 
+	from (xs is DoubleNegation of a,
+	      f is function from a to DoubleNegation of b) to DoubleNegation of b 
+    {
+	xs.flatmap(f)
+    }
+
+    override function return of a from (x is a) to DoubleNegation of a 
+    {
+	doublyNegate(x)
+    }
+}
+
 public abstract class DoubleNegation of a 
-       is Monad of (DoubleNegation, a), Comonad of (DoubleNegation, a) 
+       is org.f3.runtime.Monad of (DoubleNegation, a), org.f3.runtime.Comonad of (DoubleNegation, a) 
 {
     public abstract function negate of _ 
 	from (negate_a is function from a to _) 
@@ -91,11 +110,6 @@ public abstract class DoubleNegation of a
 	doublyNegate();
     }
 
-    public function coextract of b from (x is b) to DoubleNegation of b 
-    {
-	doublyNegate(x);
-    }
-    
     public function doublyNegate to a from ()
     {
 	this.negate(id of a);
@@ -199,15 +213,14 @@ public function callCC of (a, b)
     }
 }
 
-public function run from () to  ()
+public function run from (args is String[]) to ()
 { 
    println(foreach (x in doublyNegate(2), 
 		    y in doublyNegate(3),
 		    z in callCC(function from (k is function from Integer to String) to String
 				{
-				    //"no way";
-				    k(x+y);
+				    if (args <> []) then args[0] else k(x+y);
 				})
-		    )  "{x + y} {z}");
+		    )  "{x} + {y} = {z}");
 }
 
