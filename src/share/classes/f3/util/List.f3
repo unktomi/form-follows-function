@@ -1,9 +1,7 @@
 package f3.util;
-import org.f3.runtime.Monad;
-import org.f3.runtime.Comonad;
 import java.lang.Math;
 
-public class ListMonad is f3.util.Monad of List 
+public static const monad = f3.util.Monad of List 
 {
     override function map of (a, b) 
 	from (xs is List of a,
@@ -25,9 +23,6 @@ public class ListMonad is f3.util.Monad of List
 	List.toList(x)
     }
 }
-
-public static const listMonad = ListMonad {};
-
 
 // List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[] | Replicate List n
 
@@ -534,6 +529,6 @@ function run
 	    });
     const ys = xs.replicate(10000003).take(554545);
     println(ys.take(33));
-    
-//    println(listMonad.map(asList(["a", "b", "c"]), String.toUpperCase));
+    const m = the Monad of List;
+    println(m.map(m.return("a"), String.toUpperCase));
 }
