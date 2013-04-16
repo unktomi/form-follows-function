@@ -1555,4 +1555,29 @@
                   to="*.f3" />
         </move>
     </target>
+
+<target name="app">
+  <delete dir="demo.app"/>
+  <!-- untar dest="." src="demo.app.in.tar"/--> <!-- untar can't handle symlinks -->
+  <exec executable="tar">
+    <arg value="xvf"/>
+    <arg value="demo.app.in.tar"/>
+ </exec>
+  <copy todir="demo.app/Contents/MacOS/dist">
+    <fileset dir="dist"/>
+  </copy>
+  <copy todir="demo.app/Contents/MacOS">
+    <fileset dir="f3_cg_jogl_awt/lib" includes="*.jar"/>
+  </copy>
+  <copy todir="demo.app/Contents/MacOS">
+    <fileset dir="f3_cg_jogl_awt/lib/macosxuniversal" includes="*.*"/>
+    <fileset dir="f3_cg_jogl_awt/build" includes="*.jar"/>
+  </copy>
+  <copy file="run.sh" todir="demo.app/Contents/MacOS">
+  </copy>
+  <chmod dir="demo.app/Contents/Frameworks/" perm="+x" includes="**"/>
+  <chmod dir="demo.app/Contents/MacOS" perm="+x" includes="*.sh"/>
+  <chmod dir="demo.app/Contents/MacOS/dist/bin" perm="+x" includes="*"/>
+</target>
+
 </project>

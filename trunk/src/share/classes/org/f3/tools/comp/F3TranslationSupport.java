@@ -447,7 +447,7 @@ public abstract class F3TranslationSupport {
 		    t = types.erasure(tcons.args.head);
 		} else {
 		    if (!expandTypeCons) {
-			System.err.println("expanding'1: "+ types.toF3String(t));
+			//System.err.println("expanding'1: "+ types.toF3String(t));
 			TypeVar tv = new TypeVar(t.tsym, syms.objectType, syms.botType);
 			Type wc = new WildcardType(tv, BoundKind.EXTENDS, syms.boundClass);
 			t = types.applySimpleGenericType(ctor, tcons.args.prepend(wc));

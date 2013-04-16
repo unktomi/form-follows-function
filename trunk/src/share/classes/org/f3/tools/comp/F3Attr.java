@@ -337,7 +337,7 @@ public class F3Attr implements F3Visitor {
 		    //System.err.println("localResult="+localResult.getClass()+": "+localResult);
 		    if (localResult instanceof MethodType) {
 			/*
-			localResult = new ForAll(typeArgTypes, (MethodType)localResult);
+			localResult = newForAll(typeArgTypes, (MethodType)localResult);
 			localResult = types.subst(localResult.asMethodType(),
 						  localResult.getTypeArguments(), 
 						  typeArgTypes); 
@@ -2372,7 +2372,7 @@ public class F3Attr implements F3Visitor {
 	}
 	Type req = pt;
 	if (req.getTypeArguments().size() > 0) {
-	    req = new ForAll(req.getTypeArguments(), req);
+	    req = newForAll(req.getTypeArguments(), req);
 	}
 	result = check(tree, ftype, VAL, pkind, req, pSequenceness);
 	if (def.type instanceof ForAll) {
@@ -2761,7 +2761,7 @@ public class F3Attr implements F3Visitor {
 		    lb.appendList(tree.typeArgTypes);
 		}
 		//lb.appendList(env.info.tvars);
-		m.type = new ForAll(lb.toList(), mtype);
+		m.type = newForAll(lb.toList(), mtype);
 	    } else {
 		m.type = mtype;
 	    }
@@ -3347,6 +3347,7 @@ public class F3Attr implements F3Visitor {
 	    if (argtype instanceof MethodType) {
 		argtype = syms.makeFunctionType((MethodType)argtype);
 	    }
+	    //System.err.println("argtype:" + types.toF3String(argtype));
             argtypebuffer.append(argtype);
         }
         List<Type> argtypes = argtypebuffer.toList();
@@ -3394,11 +3395,12 @@ public class F3Attr implements F3Visitor {
 	    Type mpt = new MethodType(argtypes, pt, List.<Type>nil(), syms.methodClass);
 
 	    if (typeargtypes.nonEmpty()) {
-		mpt = new ForAll(typeargtypes, mpt);
+		mpt = newForAll(typeargtypes, mpt);
 	    }
-
+	    //System.err.println("mpt="+types.toF3String(mpt));
 	    localEnv.info.varArgs = false;
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
+	    //System.err.println("mtype="+types.toF3String(mtype));
 	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth + " => "+mtype);
 	    if (true) {
 		if (!(mtype instanceof ErrorType) &&
@@ -3548,15 +3550,32 @@ public class F3Attr implements F3Visitor {
 		if (msym instanceof F3Resolve.InstanceMethodSymbol) {
 		    genSym = ((F3Resolve.InstanceMethodSymbol)mmsym).generic;
 		}
-		if (genSym.params != null) 
-		    for (VarSymbol varSym: genSym.params) {
-			formalArgs = formalArgs.append(varSym.type);
+		//System.err.println("args="+types.toF3String(args));
+		if (genSym.params != null) {
+		    loop1: for (VarSymbol varSym: genSym.params) {
+			try {
+			    formalArgs = formalArgs.append(types.normalize(varSym.type, false));
+			} catch (StackOverflowError exc) {
+			    System.err.println("can't normalize: "+types.toF3String(varSym.type));
+			    formalArgs = formalArgs.append(varSym.type);
+			}
 			if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
+			    if (tree.explicits != null) {
+				for (F3Expression exp: tree.explicits) {
+				    if (types.isSubtypeUnchecked(varSym.type, exp.type)) {
+					args = args.append(exp.type);
+					sawImplicit = true;
+					continue loop1;
+				    }
+				}
+			    } 
 			    args = args.append(syms.botType);
 			    sawImplicit = true;
 			}
 		    }
+		}
 		Type mtype1 = rs.newMethTemplate(formalArgs, genSym.type.getTypeArguments());
+		//System.err.println("mtype1="+mtype1);
 		if (sawImplicit) {
 		    //System.err.println("saw implicit: "+ tree+ ": "+msym);
 		    Type inst = null;
@@ -3571,18 +3590,25 @@ public class F3Attr implements F3Visitor {
 						 mtype1,
 						 args, 
 						 typeargtypes, true, false, 
-						 Warner.noWarnings);
+						 noteWarner);
 		    } catch (Infer.NoInstanceException exc) {
-			exc.printStackTrace();
+			//exc.printStackTrace();
 		    }
 		    //System.err.println("inst="+inst);
 		    if (inst == null) {
-			System.err.println("couldn't instantiate: "+ mtype1 + " with "+ args);
+			//System.err.println("couldn't instantiate: "+ mtype1 + " with "+ args);
+			log.error(tree.pos(), 
+				  MsgSym.MESSAGE_INTERNAL_ERROR_CANNOT_INSTANTIATE,
+				  types.toF3String(genSym, genSym.params),
+				  types.toF3String(env.enclClass.type),
+				  types.toF3String(args));
 		    }
 		    if (inst != null) {
 			MethodType minst = inst.asMethodType();
 			tree.meth.type = minst;
+			//System.err.println("minst="+minst);
 			List<Type> ptr = minst.argtypes;
+			List<Type> ptr0 = args;
 			for (VarSymbol varSym: ((MethodSymbol)msym).params) {
 			    if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
 				Type expectedType = reader.translateType(ptr.head);
@@ -3626,8 +3652,13 @@ public class F3Attr implements F3Visitor {
 				if (implicitExpr != null) {
 				    implicitExprs = implicitExprs.append(implicitExpr);
 				}
+			    } else {
+				if (ptr0 != null) { 
+				    ptr.head = ptr0.head; // hack!!! see above "inst" has bugs
+				}
 			    }
 			    ptr = ptr.tail;
+			    if (ptr0 != null) ptr0 = ptr0.tail;
 			}
 		    }
 		}
@@ -4701,7 +4732,7 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("targs="+targs);
 	    if (ta.typeArgs != null) {
 		if (t instanceof FunctionType) {
-		    t = new ForAll(targs, t.asMethodType());
+		    t = newForAll(targs, t.asMethodType());
 		    FunctionType ft = syms.makeFunctionType(t.asMethodType());
 		    ft.typeArgs = t.getTypeArguments();
 		    t = ft;
@@ -5074,13 +5105,15 @@ public class F3Attr implements F3Visitor {
 					      typeargtypes);
 		    }
 		} else if (env.info.tvars.nonEmpty()) {
-                    Type owntype1 = new ForAll(env.info.tvars, owntype);
+		    /*
+                    Type owntype1 = newForAll(env.info.tvars, owntype);
                     for (List<Type> l = env.info.tvars; l.nonEmpty(); l = l.tail) {
                         if (!owntype.contains(l.head)) {
                             //log.error(tree.pos(), MsgSym.MESSAGE_UNDETERMINDED_TYPE, owntype1);
                             //owntype1 = syms.errType;
                         }
 		    }
+		    */
                 }
 
                 // If the variable is a constant, record constant value in
@@ -5867,6 +5900,16 @@ public class F3Attr implements F3Visitor {
         // will attempt to visit each Erroneous node that it has
         // encapsualted.
         //
+    }
+
+    public ForAll newForAll(List<Type> targs, Type t) {
+	if (t instanceof FunctionType) {
+	    t = ((FunctionType)t).asMethodOrForAll();
+	}
+	if (t instanceof ClassType) {
+	    //throw new IllegalArgumentException(t.getClass()+ ": "+types.toF3String(t));
+	}
+	return new ForAll(targs, t);
     }
 
     ClassType newClassType(Type enclosing, List<Type> targs, TypeSymbol tsym) {

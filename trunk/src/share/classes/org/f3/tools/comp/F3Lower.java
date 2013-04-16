@@ -531,6 +531,7 @@ public class F3Lower implements F3Visitor {
         else {
 	    try {
 		//System.err.println("tree.args="+tree.args);
+		//System.err.println("paramTypes="+paramTypes);
 		//System.err.println("meth.paramTypes="+tree.meth.type.getParameterTypes());
 		//System.err.println("type.paramTypes="+tree.type.getParameterTypes());
 		args = lowerExprs(tree.args, paramTypes);
@@ -541,6 +542,13 @@ public class F3Lower implements F3Visitor {
         result = m.Apply(tree.typeargs, meth, args);
 	result.type = tree.type;
 	Type retType = tree.meth.type.getReturnType();
+	if (retType instanceof Type.ForAll) {
+	    Type q = ((Type.ForAll)retType).qtype; 
+	    if (q instanceof ClassType) { // wtf? how did that happen?
+		//System.err.println("forall contained: "+ q.getClass()+ ": "+ q);
+		retType = q;
+	    }
+	}
 	int i = types.isTypeConsType(retType);
 	if (i >= 0) {
 	    //System.err.println("retType="+retType);
@@ -552,7 +560,6 @@ public class F3Lower implements F3Visitor {
 	    if (!(ctor instanceof TypeVar)) {
 		result = preTrans.makeCast((F3Expression)result, 
 					   types.applySimpleGenericType(ctor, targs.tail));
-		//System.err.println("result="+result);
 	    }
 	} 
     }
