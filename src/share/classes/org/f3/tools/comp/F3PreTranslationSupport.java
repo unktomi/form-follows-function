@@ -303,13 +303,19 @@ public class F3PreTranslationSupport {
             return tree;
         else {
             tree = makeNumericBoxConversionIfNeeded(tree, type);
-            return !types.isSameType(tree.type, type) &&
+            F3Expression newTree =  !types.isSameType(tree.type, type) &&
                    (!types.isSubtypeUnchecked(tree.type, type) ||
                    (tree.type.isPrimitive() && type.isPrimitive() ||
                    (types.isSameType(tree.type, syms.f3_EmptySequenceType) &&
                    types.isSequence(type)))) ?
                 makeCast(tree, type) :
                 tree;
+	    if (newTree != tree) {
+		//System.err.println("make cast: "+ newTree);
+		//Thread.currentThread().dumpStack();
+		return newTree;
+	    }
+	    return tree;
         }
     }
 

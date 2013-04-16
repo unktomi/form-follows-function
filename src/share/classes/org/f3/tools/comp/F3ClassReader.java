@@ -259,8 +259,8 @@ public class F3ClassReader extends ClassReader {
 	if (type.tsym instanceof F3Resolve.TypeAliasSymbol) {
 	    return translateType(type.tsym.type);
 	}
-	int tc = f3Types.isTypeConsType(type);
 	/*
+	int tc = f3Types.isTypeConsType(type);
 	if (false && tc >= 0) {
 	    System.err.println("translating type cons: "+ tc+": "+type.getClass() + ": "+type);
 	    if (type instanceof TypeVar) {

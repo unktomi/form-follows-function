@@ -231,7 +231,6 @@ public class F3Types extends Types {
     
     public Type applyTypeCons(Type t) {
 	if (t instanceof TypeCons) {
-	    System.err.println("early return: "+toF3String(t));
 	    return t;
 	}
 	List<Type> args = t.getTypeArguments();
@@ -529,8 +528,18 @@ public class F3Types extends Types {
     }
 
     public Type applySimpleGenericType(Type base, List<Type> actuals) {
-        Type clazzOuter = base.getEnclosingType();
-        return new ClassType(clazzOuter, actuals, base.tsym);
+	if (base instanceof TypeCons) {
+	    TypeCons cons = (TypeCons)base;
+	    TypeCons c = new TypeCons(cons.tsym.name,
+				      cons.tsym,
+				      cons.lower,
+				      actuals);
+	    //c.bound = cons.bound;
+	    c.bound = cons.bound;
+	    c.ctor = cons;
+	    return c;
+	}
+        return newClassType(base.getEnclosingType(), actuals, base.tsym);
     }
 
     public F3TypeRepresentation typeRep(Type type) {
@@ -665,17 +674,51 @@ public class F3Types extends Types {
 	if (t == s) {
 	    return true;
 	}
-
 	if (true) {
 	    int i = isTypeConsType(s);
 	    if (i >= 0) {
+		if (t instanceof TypeCons) {
+		    TypeCons tc = (TypeCons)t;
+		    if (tc.ctor != null) {
+			Type tc_enc = makeTypeCons(tc.ctor, tc.getTypeArguments());
+			int j = isTypeConsType(tc_enc);
+			if (i == j) {
+			    for (List<Type> x = s.getTypeArguments(), y = tc_enc.getTypeArguments();
+				 x != null && x.head != null && y != null && y.head != null; x = x.tail, y = y.tail) {
+				Type t0 = x.head;
+				Type t1 = y.head;
+				if (i == j) {
+				    t0 = upperBound(t0);
+				    t1 = upperBound(t1);
+				}
+				if (!isSameType(t0, t1)) {
+				    break;
+				}
+				//System.err.println("s.arg="+toF3String(t0)+ " / " + System.identityHashCode(t0));
+				//System.err.println("tc.arg="+toF3String(t1)+ " / " + System.identityHashCode(t1));
+				j--;
+			    }
+			}
+			if (j == 0) {
+			    return true;
+			}
+			//boolean b = isSameType(tc_enc, s);
+			//System.err.println("typecons="+toF3String(t)+": "+toF3String(tc_enc)+", s="+toF3String(s)+ ": "+b);
+		    }
+		}
+		if (isSameTypeCons(s, t)) {
+		    return true;
+		}
 		Type tt = subst(t, t.getTypeArguments(), s.getTypeArguments());
-		//System.err.println("S="+s);
-		//System.err.println("TT="+tt);
-		for (Type st : supertypesClosure(t)) {
-		    if (isConvertible(st, s)) {
-			//System.err.println("isSubtype? "+st +": "+s);
-			return true;
+		//System.err.println("S="+toF3String(s));
+		//System.err.println("TT="+toF3String(tt));
+		if (s.getTypeArguments().size() > 0) {
+		    for (Type st : supertypesClosure(t)) {
+			//System.err.println("st="+toF3String(st));
+			if (isConvertible(st, s)) {
+			    //System.err.println("isSubtype? "+st +": "+s);
+			    return true;
+			}
 		    }
 		}
 	    }
@@ -721,7 +764,7 @@ public class F3Types extends Types {
 	} catch (StackOverflowError exc) {
 	    System.err.println("circular: "+ t + " " + s);
 	    System.err.println("circular: "+ t.getClass() + " " + s.getClass());
-	    Thread.currentThread().dumpStack();
+	    //Thread.currentThread().dumpStack();
 	    return false;
 	}
     }
@@ -1173,14 +1216,22 @@ public class F3Types extends Types {
 		return true;
 	    }
 	}
-	if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
-	    a = new ForAll(List.of(a), a);
-	    b = new ForAll(List.of(b), b);
+	if (true) {
+	    if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
+		a = newForAll(List.of(a), a);
+		b = newForAll(List.of(b), b);
+	    }
 	}
 	if (a == syms.unknownType) {
 	    return false;
 	}
 	try {
+	    if ((a instanceof ClassType) && a.getEnclosingType() == null) {
+		System.err.println("null enclosing: "+ toF3String(a));
+	    }
+	    if ((b instanceof ClassType) && b.getEnclosingType() == null) {
+		System.err.println("null enclosing: "+ toF3String(b));
+	    }
 	    boolean result = super.isSameType(a, b);
 	    return result;
 	} catch (AssertionError err) {
@@ -1448,11 +1499,15 @@ public class F3Types extends Types {
             return null;
         }
 
+	boolean isSameType0(Type x, Type y) {
+	    return x == y;
+	}
+
         @Override
         public Void visitClassType(ClassType t, StringBuilder buffer) {
-            if (isSameType(t, syms.stringType))
+            if (isSameType0(t, syms.stringType))
                 buffer.append("String");
-            else if (isSameType(t, syms.objectType))
+            else if (isSameType0(t, syms.objectType))
                 buffer.append("Object");
             else if (isSequence(t)) {
                 if (t != syms.f3_EmptySequenceType) {
@@ -1468,6 +1523,9 @@ public class F3Types extends Types {
             }
             else {
 		List<Type> targs = t.getTypeArguments();
+		if (t.getEnclosingType() == null) {
+		    System.err.println(t.getClass() + ": "+ t.tsym.name);
+		}
 		if (targs.nonEmpty()) { // hack
 		    String str = t.toString();
 		    if (str.startsWith("org.f3.functions.Function")) {
@@ -1653,7 +1711,7 @@ public class F3Types extends Types {
                 if (!isFunc &&
 		    (!isSameTypes(args2, t.getTypeArguments()) ||
 		     !isSameType(encl2, t.getEnclosingType()))) {
-		    t = new ClassType(encl2, args2, t.tsym);
+		    t = newClassType(encl2, args2, t.tsym);
                 }
 		//System.err.println("clazz: "+ t0 + " => "+ t);
 		if (isTypeConsType(t) >= 0) {
@@ -1719,9 +1777,14 @@ public class F3Types extends Types {
     }
 
     class TypeNormalizer2 extends SimpleVisitor<Type, Boolean> {
+	    Set visited = new HashSet();
 	    @Override
             public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) 
 	    {
+		if (visited.contains(t0)) {
+		    return t0;
+		}
+		visited.add(t0);
 		TypeVar t = t0;
 		Type upper = visit(t.getUpperBound(), preserveWildcards);
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
@@ -1761,7 +1824,7 @@ public class F3Types extends Types {
 		if (vtype != null) {
 		    type1 = visit(vtype, preserveWildcards);
 		    if (!preserveWildcards) {
-			System.err.println("type1="+type1);
+			//System.err.println("type1="+type1);
 			return type1;
 		    }
 		} 
@@ -1791,11 +1854,11 @@ public class F3Types extends Types {
                 if (//!isFunc &&
 		    (!isSameTypes(args2, t.getTypeArguments()) ||
 		     !isSameType(encl2, t.getEnclosingType()))) {
-		    t = new ClassType(encl2, args2, t.tsym);
+		    t = newClassType(encl2, args2, t.tsym);
                 }
 		if (isTypeConsType(t) >= 0) {
 		    Type r = applyTypeCons(t);
-		    System.err.println("APPLY TCONS "+t+" => "+r);
+		    //System.err.println("APPLY TCONS "+t+" => "+r);
 		    return r;
 		}
 		return t;
@@ -1868,7 +1931,7 @@ public class F3Types extends Types {
 		    mtype = new ExplicitMethodType(ptypes, mtype.restype, mtype.getTypeArguments(), syms.methodClass, result);
 		    //System.err.println("created explicit method type: "+mtype);
 		    if (result instanceof ForAll) {
-			result = new ForAll(((ForAll)result).tvars, mtype);
+			result = newForAll(((ForAll)result).tvars, mtype);
 		    } else {
 			result = mtype;
 		    }
@@ -2085,7 +2148,7 @@ public class F3Types extends Types {
                 if (typarams1 == typarams && outer1 == outer)
                     return t;
                 else
-                    return new ClassType(outer1, typarams1, t.tsym);
+                    return newClassType(outer1, typarams1, t.tsym);
             } else {
                 Type st = subst(supertype(t));
                 List<Type> is = upperBounds(subst(interfaces(t)));
@@ -2127,9 +2190,9 @@ public class F3Types extends Types {
             if (tvars1 == t.tvars && qtype1 == t.qtype) {
                 return t;
             } else if (tvars1 == t.tvars) {
-                return new ForAll(tvars1, qtype1);
+                return newForAll(tvars1, qtype1);
             } else {
-                return new ForAll(tvars1, F3Types.this.subst2(qtype1, t.tvars, tvars1));
+                return newForAll(tvars1, F3Types.this.subst2(qtype1, t.tvars, tvars1));
             }
         }
 
@@ -2137,6 +2200,24 @@ public class F3Types extends Types {
         public Type visitErrorType(ErrorType t, Void ignored) {
             return t;
         }
+    }
+
+    public ForAll newForAll(List<Type> targs, Type t) {
+	if (t instanceof FunctionType) {
+	    t = ((FunctionType)t).asMethodOrForAll();
+	}
+	if (t instanceof ClassType) {
+	    throw new IllegalArgumentException(t.getClass()+ ": "+toF3String(t));
+	}
+	return new ForAll(targs, t);
+    }
+
+    public ClassType newClassType(Type enclosing, List<Type> targs, TypeSymbol sym) {
+	if (enclosing == null) {
+	    System.err.println(sym.name + " "+targs);
+	    throw new NullPointerException("enclosing is null: "+sym.name);
+	}
+	return new ClassType(enclosing, targs, sym);
     }
 
 
@@ -2225,7 +2306,7 @@ public class F3Types extends Types {
                 if (!isFunc &&
 		    (!isSameTypes(args2, t.getTypeArguments()) ||
 		     !isSameType(encl2, t.getEnclosingType()))) {
-		    t = new ClassType(encl2, args2, t.tsym);
+		    t = newClassType(encl2, args2, t.tsym);
                 }
 		//System.err.println("clazz: "+ t0 + " => "+ t);
                 return t;
