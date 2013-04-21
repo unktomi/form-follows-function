@@ -321,6 +321,9 @@ public class F3ClassReader extends ClassReader {
 		{
 
 		    TypeVar tv = (TypeVar) type;
+		    if (tv instanceof F3Attr.TypeVarDefn) {
+			return tv;
+		    }
 		    TypeSymbol tsym = (TypeSymbol)typeMap.get(tv.tsym);
 		    if (tsym != null) {
 			return tsym.type;
@@ -614,7 +617,9 @@ public class F3ClassReader extends ClassReader {
 							       vsym.flags(), vsym.name, 
 							       vsym.type,
 							       res));
-		pts = pts.tail;
+		if (pts != null) {
+		    pts = pts.tail;
+		}
 	    }
 	    //System.err.println("res.params="+res.params);
 	}

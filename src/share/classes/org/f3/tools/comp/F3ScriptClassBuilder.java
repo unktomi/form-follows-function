@@ -204,14 +204,14 @@ public class F3ScriptClassBuilder {
             }
         }
         PseudoIdentScanner pseudoScanner = new PseudoIdentScanner();
-        pseudoScanner.scan(module.defs);
+        pseudoScanner.scan(module.getDefs());
         //debugPositions(module);
 
         ListBuffer<F3Tree> scriptTops = ListBuffer.<F3Tree>lb();
         final List<F3Tree> pseudoVars = pseudoVariables(module.pos(), moduleClassName, module,
                 pseudoScanner.usesSourceFile, pseudoScanner.usesFile, pseudoScanner.usesDir, pseudoScanner.usesProfile);
         scriptTops.appendList(pseudoVars);
-        scriptTops.appendList(module.defs);
+        scriptTops.appendList(module.getDefs());
         
         // Determine if this is a library script
         boolean externalAccessFound = false;
@@ -265,6 +265,7 @@ public class F3ScriptClassBuilder {
        
         // Divide module defs between internsl run function body, Java compilation unit, and module class
         ListBuffer<F3Tree> topLevelDefs = new ListBuffer<F3Tree>();
+        ListBuffer<F3Tree> typeAliases = new ListBuffer<F3Tree>();
         F3ClassDeclaration moduleClass = null;
         boolean looseExpressionsSeen = false;
         for (F3Tree tree : scriptTops) {
@@ -329,7 +330,8 @@ public class F3ScriptClassBuilder {
                 }
                 default: {
 		    if (tree instanceof F3TypeAlias) {
-			value = (F3Expression) tree;
+			//value = (F3Expression) tree;
+                        typeAliases.append(tree);
 		    } else {
 			// loose expressions, if allowed, get added to the statements/value
 			if (isLibrary && !looseExpressionsSeen) {
@@ -439,6 +441,7 @@ public class F3ScriptClassBuilder {
         topLevelDefs.append(moduleClass);
 
         module.defs = topLevelDefs.toList();
+	module.typeAliases = typeAliases.toList();
 
         // Sort the list into startPosition order for IDEs
         //

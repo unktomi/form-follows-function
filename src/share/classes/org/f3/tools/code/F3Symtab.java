@@ -394,6 +394,9 @@ public class F3Symtab extends Symtab {
         Type restype = null;
         for (List<Type> l = typarams; l.nonEmpty();  l = l.tail) {
             Type a = l.head;
+	    if (a instanceof CapturedType) {
+		a = ((CapturedType)a).wildcard;
+	    }
             if (a instanceof WildcardType)
                 a = ((WildcardType) a).type;
             if (restype == null) {
@@ -416,6 +419,9 @@ public class F3Symtab extends Symtab {
         Type restype = null;
         for (List<Type> l = typarams; l.nonEmpty();  l = l.tail) {
             Type a = l.head;
+	    if (a instanceof CapturedType) {
+		a = ((CapturedType)a).wildcard;
+	    }
             if (a instanceof WildcardType)
                 a = ((WildcardType) a).type;
             if (restype == null) {
@@ -482,12 +488,22 @@ public class F3Symtab extends Symtab {
 	int i = 0;
 	for (Type arg: typarams) {
 	    Type boxed = types.boxedTypeOrType(arg);
+	    if (boxed instanceof CapturedType) {
+		boxed = ((CapturedType)boxed).wildcard;
+	    }
+            if (boxed instanceof WildcardType)
+                boxed = ((WildcardType) boxed).type;
+	    /*
+	    if (boxed instanceof CapturedType)
 	    if (!(boxed instanceof TypeVar)) { // hack
 		if (!(boxed instanceof WildcardType)) { // hack
 		    boxed = new WildcardType(boxed, i == 0 ? BoundKind.EXTENDS : 
 					     BoundKind.SUPER, boundClass);
 		}
 	    }
+	    */
+	    boxed = new WildcardType(boxed, i == 0 ? BoundKind.EXTENDS : 
+				     BoundKind.SUPER, boundClass);
 	    boxedArgs = boxedArgs.append(boxed);
 	    i++;
 	}

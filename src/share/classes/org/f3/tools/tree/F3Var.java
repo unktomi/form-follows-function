@@ -29,7 +29,7 @@ import org.f3.api.F3BindStatus;
 import org.f3.tools.code.F3VarSymbol;
 import com.sun.tools.mjavac.util.Name;
 import com.sun.tools.mjavac.code.Type;
-
+import com.sun.tools.mjavac.code.Flags;
 /**
  * Variable declaration.
  *
@@ -55,6 +55,16 @@ public class F3Var extends F3AbstractVar implements VariableTree {
             F3OnReplace onInvalidate,
             F3VarSymbol sym) {
         super(name, f3type, mods, init, bindStat, onReplace, onInvalidate, sym);
+    }
+    
+    public static class This extends F3Var
+    {
+	public This(Name name,
+		    F3Type type,
+		    F3Modifiers mods) {
+	    super(name, type,
+		  mods, null, F3BindStatus.UNBOUND, null, null, null);
+	}
     }
 
     /**

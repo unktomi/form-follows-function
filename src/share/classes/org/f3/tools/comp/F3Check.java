@@ -435,7 +435,7 @@ public class F3Check {
 	    return found;
         if (found.tag == FORALL) {
 	    if (true) {
-		return found;
+		//		return found;
 	    }
             if (false && (req == syms.f3_UnspecifiedType || req == Type.noType))
                 // Is this the right thing to do?  FIXME
@@ -897,7 +897,8 @@ public class F3Check {
 	t = checkClassType(pos, t);
 	if (noBounds && t.isParameterized()) {
 	    List<Type> args = t.getTypeArguments();
-	    while (args.nonEmpty()) {
+	    if (false) while (args.nonEmpty()) {
+		System.err.println("args="+types.toF3String(args));
 		if (args.head.tag == WILDCARD)
 		    return typeTagError(pos,
 					Log.getLocalizedString(MsgSym.MESSAGE_TYPE_REQ_EXACT),

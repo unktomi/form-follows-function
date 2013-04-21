@@ -39,6 +39,7 @@ import static com.sun.tools.mjavac.code.TypeTags.*;
 import java.util.Set;
 import java.util.HashSet;
 import org.f3.tools.comp.F3Attr.TypeCons; // hack
+import org.f3.tools.comp.F3Attr.ConstI; // hack
 /**
  *
  * @author bothner
@@ -251,6 +252,9 @@ public class F3Types extends Types {
 	if (type == null) {
 	    return null;
 	}
+	if (type instanceof TypeCons) {
+	    return null;
+	}
 	if (isTypeConsType(type) >= 0) {
 	    return type;
 	}
@@ -272,6 +276,9 @@ public class F3Types extends Types {
         if (!(type != Type.noType && type != null
 	      && type.tag != TypeTags.ERROR
 	      && type.tag != TypeTags.METHOD && type.tag != TypeTags.FORALL)) {
+	    return -1;
+	}
+	if (type instanceof TypeCons) {
 	    return -1;
 	}
 	Type t;
@@ -538,6 +545,15 @@ public class F3Types extends Types {
 	    c.bound = cons.bound;
 	    c.ctor = cons;
 	    return c;
+	}
+	//System.err.println("base="+base.getClass()+": "+base + ": ("+actuals+")");
+	if (base instanceof ConstI) {
+	    return actuals.get(((ConstI)base).i);
+	}
+	if (base instanceof MethodType) {
+	    //System.err.println("base="+base);
+	    //System.err.println("actuals="+actuals);
+	    return new ForAll(actuals, base);
 	}
         return newClassType(base.getEnclosingType(), actuals, base.tsym);
     }
@@ -1241,13 +1257,14 @@ public class F3Types extends Types {
 	    return false;
 	}
     }
-    /*
-    public Type subst(Type t, List<Type> from, List<Type> to) {
-	Type result = super.subst(t, from, to);
-	System.err.println("subst " +t+", "+from +", "+to+" => "+ result);
-	return result;
-    }
-    */
+
+    //    public Type subst(Type t, List<Type> from, List<Type> to) {
+	//Type result = super.subst(t, from, to);
+	//Type result = super.subst(t, from, to);
+	//System.err.println("subst " +t+", "+from +", "+to+" => "+ result);
+	//return result;
+    // }
+
     public boolean isNumeric(Type type) {
         return (isSameType(type, syms.f3_ByteType) ||
                 isSameType(type, syms.f3_ShortType) ||
@@ -1347,6 +1364,8 @@ public class F3Types extends Types {
 	@Override
 	public Void visitCapturedType(CapturedType t, StringBuilder buffer) {
 	    
+	    buffer.append(t);
+	    if (true) return null;
 	    if (false) {
 		if (t.lower != syms.botType) {
 		    visit(t.lower, buffer);
@@ -1410,10 +1429,6 @@ public class F3Types extends Types {
 		}
 		for (Type targ: targs) {
 		    buffer.append(str);
-		    if (!(targ instanceof WildcardType)) {
-			visit(targ, buffer);
-			buffer.append("..");
-		    }
 		    visit(targ, buffer);
 		    str = ", ";
 		}
@@ -1627,6 +1642,9 @@ public class F3Types extends Types {
 		if (t0 instanceof TypeCons) {
 		    return t0;
 		}
+		if (t0 instanceof ConstI) {
+		    return t0;
+		}
 		visited.add(t0);
 		TypeVar t = t0;
                 Type upper = visit(t.getUpperBound(), preserveWildcards);
@@ -1782,6 +1800,9 @@ public class F3Types extends Types {
             public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) 
 	    {
 		if (visited.contains(t0)) {
+		    return t0;
+		}
+		if (t0 instanceof ConstI) {
 		    return t0;
 		}
 		visited.add(t0);

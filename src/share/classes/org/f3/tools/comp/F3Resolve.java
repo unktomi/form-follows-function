@@ -1245,6 +1245,7 @@ public class F3Resolve {
         if (mtype instanceof FunctionType)
             mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = mtype instanceof MethodType || mtype instanceof ForAll;
+	//System.err.println("searching for "+name+": "+mtype);
 	boolean isThe = name == syms.the;
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
@@ -1444,7 +1445,7 @@ public class F3Resolve {
 		if (bestSoFar.type != syms.unknownType) {
 		    bestSoFar = bestSoFar.type.tsym;
 		}
-		//System.err.println(name + " => "+types.toF3String(bestSoFar.type));
+		System.err.println(name + " => "+bestSoFar.type.getClass()+": "+types.toF3String(bestSoFar.type));
 	    }
 	}
 	return bestSoFar;
@@ -1519,7 +1520,8 @@ public class F3Resolve {
     Symbol findGlobalType(F3Env<F3AttrContext> env, Scope scope, Name name) {
         Symbol bestSoFar = typeNotFound;
         for (Scope.Entry e = scope.lookup(name); e.scope != null; e = e.next()) {
-            Symbol sym = loadClass(env, e.sym.flatName());
+	    //System.err.println("find global type "+ name + " in "+ scope);
+            Symbol sym = e.sym instanceof TypeSymbol ? e.sym : loadClass(env, e.sym.flatName());
             if (bestSoFar.kind == TYP && sym.kind == TYP &&
                 bestSoFar != sym)
                 return new AmbiguityError(bestSoFar, sym);
@@ -1572,20 +1574,22 @@ public class F3Resolve {
 	    if (bestSoFar instanceof F3Resolve.TypeAliasSymbol) {
 		bestSoFar.complete();
 		if (bestSoFar.type != syms.unknownType) {
-		    bestSoFar = bestSoFar.type.tsym;
+		    //bestSoFar = bestSoFar.type.tsym;
 		}
-		//System.err.println(name + " => "+types.toF3String(bestSoFar.type));
+		System.err.println(name + " => "+types.toF3String(bestSoFar.type));
 	    }
 	}
 	return bestSoFar;
     }
 
     Symbol findType0(F3Env<F3AttrContext> env, Name name) {
+	//System.err.println("env.tree="+env.tree.getClass());
         Symbol bestSoFar = typeNotFound;
         Symbol sym;
         boolean staticOnly = false;
         for (F3Env<F3AttrContext> env1 = env; env1.outer != null; env1 = env1.outer) {
             if (isStatic(env1)) staticOnly = true; else staticOnly = false;
+	    //System.err.println("scope="+env1.info.scope);
             for (Scope.Entry e = env1.info.scope.lookup(name);
                  e.scope != null;
                  e = e.next()) {

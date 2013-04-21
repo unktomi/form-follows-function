@@ -221,7 +221,7 @@ class JoglTextLayout is Text.Layout
                 const y = ys[i];
                 const path = new GeneralPath();
                 const t = AffineTransform.getTranslateInstance(dx, y);
-                const shapes = layout.getCaretShapes(caret-pos);
+                var shapes = layout.getCaretShapes(caret-pos);
                 if (shapes[0].getBounds().getWidth() == 0) {
                     shapes[0] = new java.awt.BasicStroke(1).createStrokedShape(shapes[0]);
                 }
@@ -1594,7 +1594,7 @@ class SceneRenderer {
 		    const shape = n as Shape2D.MeshNode2D;
 		    if (shape.shader == null) {
 			if (shape.paint is Shape2D.ColorPaint) {
-			    const paint = bind shape.paint as Shape2D.ColorPaint;
+			    readonly var paint = bind shape.paint as Shape2D.ColorPaint;
 			    if (paint is Shape2D.TexturePaint) {
 				var tex = 
 				    bind (paint as Shape2D.TexturePaint).texture;

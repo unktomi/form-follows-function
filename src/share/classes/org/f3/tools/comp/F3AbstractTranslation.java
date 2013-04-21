@@ -3395,7 +3395,8 @@ public abstract class F3AbstractTranslation
         InstanciateTranslator(final F3Instanciate tree) {
             super(tree.pos(), tree.varDefinedByThis != null ? tree.varDefinedByThis.name : null);
             this.tree = tree;
-            this.idSym = (ClassSymbol)F3TreeInfo.symbol(tree.getIdentifier());
+            this.idSym = (ClassSymbol)tree.type.tsym;
+		//F3TreeInfo.symbol(tree.getIdentifier());
         }
 
         @Override
