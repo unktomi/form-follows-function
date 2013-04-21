@@ -281,8 +281,8 @@ class MaModel
 	const target = c.targetNode;
 	var key = c.targetPath;
 	const attr = target.attrs.get(key); 
-	const attrType is String;
-	const parentAttrType is String;
+	var attrType is String;
+	var parentAttrType is String;
 	if (attr <> null) {
 	    attrType = attr.type;
 	    if (attr.parent <> null) {
@@ -322,7 +322,7 @@ class MaModel
 	}
 	if (attr.parent <> null) {
 	    const v is Object = ptr.get();
-	    const t = parentAttrType; // can be wrong...
+	    var t = parentAttrType; // can be wrong...
 	    if (v is Tuple4) {
 		t = "float4";
 	    }
@@ -459,7 +459,7 @@ class MaModel
 
     function toClipLibrary from (n is MClipLibrary) to TimeNode 
     {
-	const r is TimeGroup = clipLibMap.get(n);
+	var r is TimeGroup = clipLibMap.get(n);
 	if (r == null) {
 	    println("converting clip library {n.name}");
 	    var clips is TimeGroup[];
@@ -1571,7 +1571,7 @@ abstract class MMeshDeformer is MNode {
     protected var targetMesh is MMesh;
 
     protected function resolveSourceMesh from () to MMesh {
-	const gp = getGroupParts();
+	var gp = getGroupParts();
 	println("group parts {name} => {gp.name}");
 	const tweak = getTweak(gp);
 	if (tweak <> null) {

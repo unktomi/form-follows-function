@@ -258,7 +258,7 @@ public class Vec3 is Tuple3
 	if (Math.abs(factor) > LinearMath.EPSILON) {
 	    const dot = s.dot(t) / factor;
 	    const theta = Math.acos(Math.max(-1, Math.min(dot, 1.0)));
-	    const pivot = s.cross(t);
+	    var pivot = s.cross(t);
 	    if (pivot.length() > LinearMath.EPSILON) {
 		if (dot < 0.0) {
                     // Vectors parallel and opposite direction, therefore a rotation
@@ -280,7 +280,7 @@ public class Vec3 is Tuple3
                                 dominantIndex = 2;
                             }
                         }
-                        const p = [0.0, 0.0, 0.0];
+                        var p = [0.0, 0.0, 0.0];
                         p[dominantIndex] = -s.get((dominantIndex+1) mod 3);
                         p[(dominantIndex+1) mod 3] = s.get(dominantIndex);
                         p[(dominantIndex+2) mod 3] = 0;

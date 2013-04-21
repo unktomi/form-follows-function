@@ -13,8 +13,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	from (z is b, f is function from (b, a) to b) 
 	to Stream of b 
     {
-	const self = this;
-	readonly var now = bind f(z, self.now);
+	readonly var now = bind f(z, this.now);
 	Stream of b {
 	    now: bind now;
 	    later: bind later.fold(now, f);

@@ -56,6 +56,7 @@ public class F3Script extends F3Tree implements UnitTree {
 
     public final F3Expression pid;
     public List<F3Tree> defs;
+    public List<F3Tree> typeAliases;
     public JavaFileObject sourcefile;
     public PackageSymbol packge;
     public Scope namedImportScope;
@@ -123,6 +124,12 @@ public class F3Script extends F3Tree implements UnitTree {
 
     public Position.LineMap getLineMap() {
         return lineMap;
+    }
+
+    public List<F3Tree> getDefs() {
+	List<F3Tree> result = List.nil();
+	result = result.appendList(defs);
+	return result;
     }
 
     public List<F3Tree> getTypeDecls() {

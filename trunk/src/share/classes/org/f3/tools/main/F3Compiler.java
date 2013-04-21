@@ -906,7 +906,7 @@ public class F3Compiler implements ClassReader.SourceCompleter {
                 taskListener.finished(e);
             }
         }
-
+	/*
         //If generating source, remember the classes declared in
         //the original compilation units listed on the command line.
         if (sourceOutput || stubOutput) {
@@ -921,6 +921,7 @@ public class F3Compiler implements ClassReader.SourceCompleter {
                 }
             }
         }
+	*/
         return roots;
     }
 

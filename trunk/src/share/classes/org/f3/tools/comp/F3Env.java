@@ -74,6 +74,8 @@ public class F3Env<A> implements Iterable<F3Env<A>> {
 
     public F3Var enclVar;
 
+    public F3Var thisVar;
+
     /* implicit the uses */
     List<Symbol> implicitArgs = List.nil();
 

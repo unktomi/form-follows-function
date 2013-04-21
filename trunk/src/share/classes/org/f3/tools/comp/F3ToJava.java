@@ -851,7 +851,7 @@ public class F3ToJava extends F3AbstractTranslation {
             ListBuffer<JCTree> imports = ListBuffer.lb();
             additionalImports = ListBuffer.lb();
             prependToStatements = prependToDefinitions = ListBuffer.lb();
-            for (F3Tree def : tree.defs) {
+            for (F3Tree def : tree.getDefs()) {
                 switch (def.getF3Tag()) {
                     case IMPORT:
                         // ignore import

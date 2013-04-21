@@ -235,8 +235,8 @@ public class F3Enter extends F3TreeScanner {
     Type classEnter(F3Tree tree, F3Env<F3AttrContext> env) {
         F3Env<F3AttrContext> prevEnv = this.env;
         try {
+	    //System.err.println("classEnter: "+ tree.getClass());
             this.env = env;
-	    //System.err.println("entering: "+tree);
             if (tree != null) {
                 tree.accept(this);
             }
@@ -297,7 +297,7 @@ public class F3Enter extends F3TreeScanner {
                 }
             }
         }
-        classEnter(tree.defs, localEnv);
+        classEnter(tree.getDefs(), localEnv);
         log.useSource(prev);
         tree.scriptScope = moduleClass.sym.members_field;
         scriptScopes.append(moduleClass.sym.members_field);
@@ -426,6 +426,7 @@ public class F3Enter extends F3TreeScanner {
         if (!c.isLocal() && uncompleted != null) uncompleted.append(c);
         // Recursively enter all member classes.
 	for (F3Tree t: tree.getMembers()) {
+	    //System.err.println("class member: "+ t.getClass());
 	    if (t instanceof F3ClassDeclaration) {
 		classEnter(t, localEnv);
 	    }

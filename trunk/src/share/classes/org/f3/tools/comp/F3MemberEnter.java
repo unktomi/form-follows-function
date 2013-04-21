@@ -44,6 +44,7 @@ import org.f3.tools.util.MsgSym;
 import javax.tools.JavaFileObject;
 import java.util.Set;
 import java.util.HashSet;
+import org.f3.tools.comp.F3Attr.TypeVarDefn;
 
 /**
  * Add local declarations to current environment.
@@ -426,6 +427,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
      */
     void memberEnter(F3Tree tree, F3Env<F3AttrContext> env) {
         F3Env<F3AttrContext> prevEnv = this.env;
+	//System.err.println("memberEnter: "+ tree.getClass());
         try {
             this.env = env;
             if (tree != null) {
@@ -484,9 +486,25 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         }
 
         importStaticAll(-1, syms.f3_AutoImportRuntimeType.tsym, env);
-
+	final F3Env<F3AttrContext> env1 = env;
+	for (F3Tree tx: tree.typeAliases) {
+	    final F3TypeAlias ta = (F3TypeAlias)tx;
+	    Scope toScope = env.toplevel.namedImportScope;
+	    System.err.println("env.info.scope.owner="+env.info.scope.owner);
+	    ta.tsym = new F3Resolve.TypeAliasSymbol(ta.getIdentifier(), 
+						    syms.unknownType,
+						    toScope.owner);
+	    ta.tsym.completer = new Completer() {
+		    public void complete(Symbol m) throws CompletionFailure {
+			System.err.println("completing alias: "+ m);
+			attr.attribType(ta, env1);
+		    }
+		};
+	    toScope.enter(ta.tsym);
+	    System.err.println(toScope);
+	}
         // Process all import clauses.
-        memberEnter(tree.defs, env);
+        memberEnter(tree.getDefs(), env);
     }
 
     public void visitTypeAny(final F3TypeAny tree) {
@@ -504,7 +522,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		    }
 		};
 	    env1.info.scope.enter(ta.tsym);
-	    //System.err.println(env1.info.scope);
+	    System.err.println(env1.toplevel.namedImportScope);
 	}
     }    
 
@@ -816,24 +834,25 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
             sym.completer = this;
             return;
         }
-
         ClassSymbol c = (ClassSymbol) sym;
         ClassType ct = (ClassType) c.type;
         F3Env<F3AttrContext> localEnv = enter.typeEnvs.get(c);
 	//System.err.println("localEnv: "+ c);
 	//System.err.println(localEnv);
         F3ClassDeclaration tree = (F3ClassDeclaration) localEnv.tree;
-	if (tree.typeArgs != null) {
+	if (tree.typeArgs != null && tree.typeArgs.nonEmpty()) {
 	    if (tree.typeArgTypes == null) {
 		tree.typeArgTypes = attr.makeTypeVars(tree.typeArgs, tree.sym, localEnv);
+		//System.err.println("type args: "+ types.toF3String(tree.typeArgTypes));
 	    }
 	    localEnv.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
 		localEnv.info.scope.enter(((TypeVar)t).tsym);
 	    }
 	}
-	if (tree.typeArgTypes != null) {
+	if (tree.typeArgTypes != null && tree.typeArgTypes.nonEmpty()) {
 	    c.type = ct = new ClassType(ct.getEnclosingType(), tree.typeArgTypes, ct.tsym);
+	    //System.err.println("ct="+types.toF3String(ct));
 	}
         boolean wasFirst = isFirst;
         isFirst = false;
@@ -1008,8 +1027,12 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    }
             int count = tree.typeArgs.size();
             if (count > 0) {
-                tree.addSupertype(f3make.TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]),
-                                                   tree.typeArgs.prepend(f3make.Ident(tree.getName()))));
+		List<F3Expression> targs = List.<F3Expression>nil();
+		targs = targs.append(f3make.Ident(tree.getName()));
+		for (Type t: tree.typeArgTypes) {
+		    targs = targs.append(f3make.Ident(((TypeVar)t).tsym.name));
+		}
+                tree.addSupertype(f3make.TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), targs));
                 //System.err.println("tree=>"+tree);
             }
 	}

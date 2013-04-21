@@ -438,7 +438,11 @@ scriptItem  [ListBuffer<F3Tree> items] // This rule builds a list of F3Tree, whi
                             }
                  ))
             
-            |  typeAlias { $items.append($typeAlias.rtype); }
+            |  
+               typeAlias { 
+                  errNodes.append($typeAlias.rtype); 
+                  $items.append($typeAlias.rtype); 
+	           }
                 
             | i=importDecl
             
@@ -1713,7 +1717,10 @@ formalParameters
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 }
     : LPAREN 
-    
+
+        (th=THIS IS refineThis=type {
+                params.append(F.at($th.pos).ParamThis($refineThis.rtype));
+            } COMMA? )?
         (
             fp1=formalParameter 
     
@@ -3365,10 +3372,10 @@ expression
         {
             if (($m.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
                 $m.mods.flags &= ~F3Flags.PUBLIC_INIT;
-                //$m.mods.flags |= F3Flags.IS_DEF;
+                $m.mods.flags |= F3Flags.IS_DEF;
             }
             if (($m.mods.flags & F3Flags.PUBLIC_READ) != 0) {
-                $m.mods.flags &= ~F3Flags.PUBLIC_READ;
+                $m.mods.flags &= ~F3Flags.PUBLIC_READ; // @TODO
             }
             $value = $variableDeclaration.value;
         }
@@ -6644,7 +6651,7 @@ genericParams[boolean contravar, boolean covar]
        $value = $gas.value;
     })| { $value = com.sun.tools.mjavac.util.List.<F3Expression>nil();}) RPAREN)   
    |
-   ga=identifier
+   ga=genericArgument
    {
        ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
        exprbuff.append($ga.value);
@@ -7419,8 +7426,8 @@ keyword
 //
 reservedWord
     : ABSTRACT      | AFTER     | AND           | AS
-    | ASSERT        | AT        | ATTRIBUTE     | BEFORE
-    | BIND          | BOUND     | BREAK         | CASCADE
+    | ASSERT        | AT        | ATTRIBUTE     | BEFORE 
+    | BIND          | BOUND     | BREAK         | CASCADE | CASE
     | CATCH         | CLASS     | CONTINUE      | DEF | ENUM | OF | FORALL
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR

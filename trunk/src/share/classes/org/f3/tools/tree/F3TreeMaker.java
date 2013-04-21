@@ -1252,6 +1252,12 @@ public class F3TreeMaker implements F3TreeFactory {
         return tree;
     }
 
+    public F3Var ParamThis(F3Type type) {
+	F3Var tree = new F3Var.This(names._this, type, Modifiers(Flags.PARAMETER));
+        tree.pos = type.pos;
+        return tree;
+    }
+
     public F3ForExpression ForExpression(
             List<F3ForExpressionInClause> inClauses,
             F3Expression bodyExpr) {
@@ -1671,6 +1677,7 @@ public class F3TreeMaker implements F3TreeFactory {
      */
     public F3Script Script(F3Expression pid,
                                       List<F3Tree> defs) {
+
         F3Script tree = new F3Script(pid, defs,
                                      null, null, null, null);
         tree.pos = pos;

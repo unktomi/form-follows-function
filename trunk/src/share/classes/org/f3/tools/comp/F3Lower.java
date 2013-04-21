@@ -442,6 +442,11 @@ public class F3Lower implements F3Visitor {
             enclFunc = tree;
             F3Block body  = (F3Block)lowerExpr(tree.getBodyExpression(), tree.type != null ? tree.type.getReturnType() : Type.noType);
 	    List<F3Var> vars = tree.getParams();
+	    F3Var thisVar = null;
+	    if (vars.head instanceof F3Var.This) {
+		thisVar = vars.head;
+		vars = vars.tail;
+	    }
 	    if (tree.implicitArgs.size() > 0) {
 		for (F3VarSymbol sym: tree.implicitArgs) {
 		    F3Var var = m.at(tree.pos).Param(sym.name, preTrans.makeTypeTree(sym.type));
