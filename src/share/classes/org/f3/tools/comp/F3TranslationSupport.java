@@ -346,6 +346,10 @@ public abstract class F3TranslationSupport {
 	    ListBuffer<JCTypeParameter> buf = new ListBuffer<JCTypeParameter>();
 	    for (List<Type> x = typeArgTypes; x != null; x = x.tail) {
 		TypeVar t = (TypeVar)x.head;
+		if (t != null && (t.bound instanceof WildcardType) &&
+		    ((WildcardType)t.bound).kind == BoundKind.SUPER) {
+		    continue;
+		}
 		if (t instanceof F3Attr.TypeCons) {
 		    //System.err.println("***TYPECONS="+t);
 		    F3Attr.TypeCons tcons = (F3Attr.TypeCons)t;
@@ -431,6 +435,15 @@ public abstract class F3TranslationSupport {
 	}
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
+	}
+	if (t instanceof TypeVar) {
+	    TypeVar tv = (TypeVar)t;
+	    if (tv.bound instanceof WildcardType) {
+		WildcardType wc = (WildcardType)tv.bound;
+		if (wc.kind == BoundKind.SUPER) {
+		    return makeTypeTreeInner01(diagPos, wc, makeIntf, expandTypeCons);
+		}
+	    }
 	}
 	if (t instanceof F3Attr.TypeCons) {
 	    Type orig = t;
