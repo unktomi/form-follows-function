@@ -668,6 +668,31 @@ static jobject fromJSValue(JNIEnv *env, const awe_jsvalue *v) {
   return 0;
 }
 
+/*
+ * Class:     org_f3_media_web_awesomium_Browser
+ * Method:    execute_js
+ * Signature: (JLjava/lang/String;)J
+ */
+JNIEXPORT jobject JNICALL Java_org_f3_media_web_awesomium_Browser_execute_1js
+  (JNIEnv *env, jclass, jlong h, jstring script)
+{
+  MyWebViewListener *l = (MyWebViewListener*)h;
+  fprintf(stderr, "handle=%p\n", h);
+  if (l->webView == 0) {
+    return 0;
+  }
+  fprintf(stderr, "webview=%p\n", l->webView);
+  fprintf(stderr, "script=%p\n", script);
+  awe_string *str = toWebString(env, script);
+  fprintf(stderr, "str=%p\n", str);
+  awe_jsvalue *value = awe_webview_execute_javascript_with_result((awe_webview*)l->webView, str, awe_string_empty(), 5000);
+  fprintf(stderr, "value=%p\n", value);
+  jobject result = fromJSValue(env, value);
+  awe_string_destroy(str);
+  awe_jsvalue_destroy(value);
+  return result;
+}
+
 
 /*
  * Class:     org_f3_media_web_awesomium_Browser

@@ -52,8 +52,7 @@ import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.ListBuffer;
 import com.sun.tools.mjavac.util.Name;
-
-
+import com.sun.tools.mjavac.code.BoundKind;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -461,6 +460,9 @@ public class F3Lower implements F3Visitor {
 		var.type = sym.type;
 		var.sym = sym;
 		vars = vars.append(var);
+	    }
+	    for (F3Var var: vars) {
+		var.type = types.unexpandWildcard(var.type);
 	    }
             F3FunctionDefinition res = m.at(tree.pos).FunctionDefinition(tree.mods, tree.name, tree.getF3ReturnType(), vars, body);
             res.operation.definition = res;

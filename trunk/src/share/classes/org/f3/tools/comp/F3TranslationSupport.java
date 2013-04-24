@@ -436,6 +436,7 @@ public abstract class F3TranslationSupport {
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	}
+	t = types.unexpandWildcard(t);
 	if (t instanceof TypeVar) {
 	    TypeVar tv = (TypeVar)t;
 	    if (tv.bound instanceof WildcardType) {

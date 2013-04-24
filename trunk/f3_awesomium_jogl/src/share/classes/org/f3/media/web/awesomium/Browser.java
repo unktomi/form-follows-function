@@ -853,6 +853,17 @@ public class Browser implements AbstractWebBrowser {
         injectKeyInput(handle, mods, mapKeyCode(keyCode), keyChar);
     }
 
+    JSObject window = null;
+
+    public JSObject getWindow() {
+	if (window == null) {
+	    if (handle != 0) {
+		window = (JSObject)execute_js(handle, "window");
+	    }
+	}
+	return window;
+    }
+    static native Object execute_js(long handle, String script);
     static native long create_js_array();
     static native long create_js_object();
     static native void destroy_js_array(long h);
@@ -879,5 +890,7 @@ public class Browser implements AbstractWebBrowser {
     static native void put_object_element(long object, int index, long handle);
     static native void put_array_element(long object, int index, long handle);
     static native int getSize(long array);
+
+    //    static native long callFunction(long webview, String object, String function, long args, String frame);
 
 }

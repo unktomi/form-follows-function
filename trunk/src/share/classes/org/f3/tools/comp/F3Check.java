@@ -246,6 +246,13 @@ public class F3Check {
     Type typeError(DiagnosticPosition pos, Object problem, Type found, Type req) {
         String foundAsF3Type = types.toF3String(found);
         String requiredAsF3Type = types.toF3String(req);
+	System.err.println("found="+found);
+	System.err.println("req="+req);
+	if (req instanceof TypeVar) {
+	    TypeVar tv = (TypeVar)req;
+	    System.err.println("tv.lower="+tv.lower);
+	    System.err.println("tv.bound="+tv.bound);
+	}
 	log.error(pos, MsgSym.MESSAGE_PROB_FOUND_REQ, problem, foundAsF3Type, requiredAsF3Type);
 	return syms.errType;
     }
@@ -524,12 +531,24 @@ public class F3Check {
             }
             return realFound;
         }
-        if (found.isSuperBound()) {
-            log.error(pos, MsgSym.MESSAGE_ASSIGNMENT_FROM_SUPER_BOUND, found);
-            return syms.errType;
+       if (found.isSuperBound()) {
+	   //Thread.currentThread().dumpStack();
+	   Type.WildcardType wc = (Type.WildcardType)found;
+	   if (wc.type instanceof F3Attr.TypeVarDefn) {
+	       return found;
+	   }
+	   log.error(pos, MsgSym.MESSAGE_ASSIGNMENT_FROM_SUPER_BOUND, found);
+	   return syms.errType;
         }
         if (req.isExtendsBound()) {
+	    System.err.println("found="+found);
+	    System.err.println("req="+req);
+	    Type.WildcardType wc = (Type.WildcardType)req;
+	    if (wc.type instanceof F3Attr.TypeVarDefn) {
+		return found;
+	    }
             log.error(pos, MsgSym.MESSAGE_ASSIGNMENT_TO_EXTENDS_BOUND, req);
+	    //Thread.currentThread().dumpStack();
             return syms.errType;
         }
         return typeError(pos, JCDiagnostic.fragment(MsgSym.MESSAGE_INCOMPATIBLE_TYPES), found, req);

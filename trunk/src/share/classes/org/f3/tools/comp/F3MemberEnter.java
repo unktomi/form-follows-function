@@ -1032,7 +1032,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		for (Type t: tree.typeArgTypes) {
 		    targs = targs.append(f3make.Ident(((TypeVar)t).tsym.name));
 		}
-                tree.addSupertype(f3make.TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), targs));
+                tree.addSupertype(f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), targs));
                 //System.err.println("tree=>"+tree);
             }
 	}
