@@ -1858,7 +1858,8 @@ public class F3Attr implements F3Visitor {
                 var.type = elemtype;
                 var.sym.type = elemtype;
             }
-            clauseTypes[clauseTypes.length-1-idx] = elemtype;
+            //clauseTypes[clauseTypes.length-1-idx] = elemtype;
+            clauseTypes[idx] = elemtype;
 	    if (clause1Type == null) {
 		clause1Type = elemtype;
 	    } else {
