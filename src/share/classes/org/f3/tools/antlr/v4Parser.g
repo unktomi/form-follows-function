@@ -6731,7 +6731,6 @@ genericParam[boolean contravar, boolean covar]
 */
     ;
 
-
 genericArgument
 
     returns [F3Type value]

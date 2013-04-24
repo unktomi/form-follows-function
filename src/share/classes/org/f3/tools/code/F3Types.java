@@ -38,6 +38,7 @@ import static com.sun.tools.mjavac.code.Flags.*;
 import static com.sun.tools.mjavac.code.TypeTags.*;
 import java.util.Set;
 import java.util.HashSet;
+import org.f3.tools.comp.F3Attr; // hack
 import org.f3.tools.comp.F3Attr.TypeCons; // hack
 import org.f3.tools.comp.F3Attr.ConstI; // hack
 /**
@@ -555,6 +556,21 @@ public class F3Types extends Types {
 	    //System.err.println("actuals="+actuals);
 	    return new ForAll(actuals, base);
 	}
+	if (false && base instanceof TypeVar) {
+	    TypeVar v = (TypeVar)base;
+	    if (false) {
+		TypeCons cons = new TypeCons(v.tsym.name,
+					     v.tsym,
+					     v.lower,
+					     actuals);
+		cons.bound = v.bound;
+		return cons;
+	    }
+	    base = syms.f3_TypeCons[actuals.size()];
+	    //actuals = actuals.prepend(new WildcardType(v, BoundKind.EXTENDS, syms.boundClass));
+	    actuals = actuals.prepend(v);
+	    //System.err.println("base="+base.getClass()+": "+base + " / " + base.tsym.type);
+	}
         return newClassType(base.getEnclosingType(), actuals, base.tsym);
     }
 
@@ -839,8 +855,28 @@ public class F3Types extends Types {
         }
     };
 
+    public Type expandTypeVar(final Type x) {
+	if (x instanceof F3Attr.TypeVarDefn) {
+	    final F3Attr.TypeVarDefn def = (F3Attr.TypeVarDefn)x;
+	    return new WildcardType(def, def.variance, syms.boundClass); 
+	}
+	return x;
+    }
+
+    public Type unexpandWildcard(final Type t) {
+	if (t instanceof WildcardType) {
+	    final Type x = ((WildcardType)t).type;
+	    if (x instanceof F3Attr.TypeVarDefn) {
+		return x;
+	    }
+	}
+	return t;
+    }
+
     @Override
     public boolean isConvertible (Type t, Type s, Warner warn) {
+	//t = expandTypeVar(t);
+	//s = expandTypeVar(s);
 	if (isSameType(t, s, true)) {
 	    return true;
 	}
@@ -1623,6 +1659,14 @@ public class F3Types extends Types {
 	return loc;
     }
 
+    public List<Type> normalize(List<Type> input) {
+	ListBuffer<Type> result = ListBuffer.lb();
+	for (Type t: input) {
+	    result.append(normalize(t));
+	}
+	return result.toList();
+    }
+
     /**
      * Computes a type which is suitable as a variable inferred type.
      * This step is needed because the inferred type can contain captured
@@ -1646,6 +1690,14 @@ public class F3Types extends Types {
 		    return t0;
 		}
 		visited.add(t0);
+		if (true) {
+		    Type x = t0;
+		    if (x instanceof F3Attr.TypeVarDefn) {
+			F3Attr.TypeVarDefn def = (F3Attr.TypeVarDefn)x;
+			x = new WildcardType(def, def.variance, syms.boundClass); 
+			return x;
+		    }
+		}
 		TypeVar t = t0;
                 Type upper = visit(t.getUpperBound(), preserveWildcards);
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
@@ -1695,7 +1747,7 @@ public class F3Types extends Types {
 			bound1 = ((WildcardType)type1).bound;
 			type1 = ((WildcardType)type1).type;
 		    } 
-		    if (bound1 != null) {
+		    if (bound1 instanceof TypeVar) {
 			t = new WildcardType(type1, t.kind, t.tsym, (TypeVar)bound1);
 		    } else {
 			t = new WildcardType(type1, t.kind, t.tsym);
@@ -1806,6 +1858,14 @@ public class F3Types extends Types {
 		    return t0;
 		}
 		visited.add(t0);
+		if (true) {
+		    Type x = t0;
+		    if (x instanceof F3Attr.TypeVarDefn) {
+			F3Attr.TypeVarDefn def = (F3Attr.TypeVarDefn)x;
+			x = new WildcardType(def.base, def.variance, syms.boundClass); 
+			return x;
+		    }
+		}
 		TypeVar t = t0;
 		Type upper = visit(t.getUpperBound(), preserveWildcards);
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack

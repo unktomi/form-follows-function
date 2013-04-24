@@ -27,6 +27,7 @@
     <javac includeantruntime="false" fork="true" debug="true" srcdir="src/share/classes" destdir="build/classes">
       <classpath>
         <pathelement location="lib/f3rt.jar"/>
+        <pathelement location="lib/js.jar"/>
         <pathelement location="lib/jogl.all.jar"/>
         </classpath>
       <src path="src/share/classes"/>

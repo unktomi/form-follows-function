@@ -48,6 +48,7 @@ import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.util.Name;
 import com.sun.tools.mjavac.util.Options;
+import com.sun.tools.mjavac.code.BoundKind;
 import javax.tools.JavaFileObject;
 
 /**
