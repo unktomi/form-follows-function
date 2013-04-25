@@ -1556,6 +1556,11 @@ public class F3Types extends Types {
 
         @Override
         public Void visitClassType(ClassType t, StringBuilder buffer) {
+	    Type unboxed = unboxedType(t);
+	    if (unboxed.isPrimitive()) {
+		visit(unboxed, buffer);
+		return null;
+	    }
             if (isSameType0(t, syms.stringType))
                 buffer.append("String");
             else if (isSameType0(t, syms.objectType))

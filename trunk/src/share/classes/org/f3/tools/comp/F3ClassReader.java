@@ -562,7 +562,20 @@ public class F3ClassReader extends ClassReader {
             flags |= F3Flags.BOUND;
         }
         F3Symtab f3Syms = (F3Symtab) this.syms;
+	Type thisType = null;
 	for (Attribute.Compound ann : sym.getAnnotationMirrors()) {
+	    if (ann.type.tsym.flatName() == f3Syms.f3_thisTypeAnnotationType.tsym.flatName()) {
+		String sig = (String)ann.values.head.snd.getValue();
+		signatureBuffer = new byte[sig.length()*3];
+		try {
+		    thisType = sigToType(names.fromString(sig));
+                }
+                catch (Exception e) {
+		    System.err.println("bad sig="+sig);
+		    //e.printStackTrace();
+                    //throw new AssertionError("Bad F3 signature");
+                }
+            }
 	    if (ann.type.tsym.flatName() == f3Syms.f3_signatureAnnotationType.tsym.flatName()) {
 		String sig = (String)ann.values.head.snd.getValue();
 		signatureBuffer = new byte[sig.length()*3];
@@ -592,6 +605,9 @@ public class F3ClassReader extends ClassReader {
                 type = popMethodTypeArg(type, name, owner.type);
             }
         }
+	if (thisType != null) {
+	    owner = thisType.tsym;
+	}
         name = names.fromString(nameString);
 	MethodSymbol origSym = (MethodSymbol)sym;
         MethodSymbol res = new MethodSymbol(flags, name, type, owner);

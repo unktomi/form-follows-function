@@ -253,6 +253,7 @@ public class F3Check {
 	    System.err.println("tv.lower="+tv.lower);
 	    System.err.println("tv.bound="+tv.bound);
 	}
+	Thread.currentThread().dumpStack();
 	log.error(pos, MsgSym.MESSAGE_PROB_FOUND_REQ, problem, foundAsF3Type, requiredAsF3Type);
 	return syms.errType;
     }
@@ -822,7 +823,7 @@ public class F3Check {
                 case IDENT: {
                     initSym = ((F3Ident) init).sym;
                     base = null;
-                    site = env.enclClass.sym.type;
+                    site = env.getEnclosingClassType();
                     break;
                 }
                 case SELECT: {

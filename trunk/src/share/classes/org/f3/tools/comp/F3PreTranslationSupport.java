@@ -184,9 +184,12 @@ public class F3PreTranslationSupport {
         // Set outer_field of this class to closest enclosing class
         // which contains this class in a non-static context
         // (its "enclosing instance class"), provided such a class exists.
-        Symbol owner1 = owner.enclClass();
+	//System.err.println("make class symbol: "+ name+": "+owner +":"+owner.type);
+        Symbol owner1 = (owner instanceof MethodSymbol) ? owner.owner : owner.enclClass();
+
         if (owner1.kind == Kinds.TYP) {
             ct.setEnclosingType(owner1.type);
+	    //System.err.println("owner1="+owner1.type);
         }
 
         ct.supertype_field = syms.f3_BaseType;
