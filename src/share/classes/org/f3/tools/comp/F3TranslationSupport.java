@@ -252,6 +252,16 @@ public abstract class F3TranslationSupport {
         return (sym.flags_field & F3Flags.F3_BOUND_FUNCTION_CLASS) != 0L;
     }
 
+    protected JCAnnotation thisTypeSignature(DiagnosticPosition diagPos, Type type) {
+	JCAnnotation sig = make.Annotation(
+					   makeIdentifier(diagPos, F3Symtab.thisTypeAnnotationClassNameString),
+					   List.<JCExpression>of(makeLit(diagPos, 
+									 syms.stringType, 
+									 types.toSignature(type))));
+	return sig;
+    }
+
+
     protected JCExpression makeIdentifier(DiagnosticPosition diagPos, String str) {
         assert str.indexOf('<') < 0 : "attempt to parse a type with 'Identifier'.  Use TypeTree";
         JCExpression tree = null;
@@ -373,7 +383,7 @@ public abstract class F3TranslationSupport {
 			}
 		    }
 		    JCTypeParameter exp = make.at(diagPos).TypeParameter(t.tsym.name, bb.toList());
-		    System.err.println(t + " => "+exp);
+		    //System.err.println(t + " => "+exp);
 		    buf.append(exp);
 		}
 	    }
@@ -1110,6 +1120,9 @@ public abstract class F3TranslationSupport {
             this.isScript = isScript;
         }
 
+	public ClassSymbol getEnclosingClassSymbol() {
+	    return enclosingClassDecl.sym;
+	}
 
         //
         // Returns the current class decl.
@@ -1120,7 +1133,7 @@ public abstract class F3TranslationSupport {
         // Returns true if the class (or current class) is a mixin.
         //
         public boolean isMixinClass() {
-            return F3TranslationSupport.this.isMixinClass((ClassSymbol)enclosingClassDecl.sym);
+            return F3TranslationSupport.this.isMixinClass((ClassSymbol)getEnclosingClassSymbol());
         }
 
         public boolean isMixinClass(ClassSymbol sym) {
@@ -1128,7 +1141,7 @@ public abstract class F3TranslationSupport {
         }
         
         public boolean isAnonClass() {
-            return F3TranslationSupport.this.isAnonClass((ClassSymbol)enclosingClassDecl.sym);
+            return F3TranslationSupport.this.isAnonClass((ClassSymbol)getEnclosingClassSymbol());
         }
         
         public boolean isAnonClass(ClassSymbol sym) {
@@ -1136,7 +1149,7 @@ public abstract class F3TranslationSupport {
         }
 
         public boolean isLocalClass() {
-            return F3TranslationSupport.this.isLocalClass((ClassSymbol)enclosingClassDecl.sym);
+            return F3TranslationSupport.this.isLocalClass((ClassSymbol)getEnclosingClassSymbol());
         }
                 
         public boolean isLocalClass(ClassSymbol sym) {
@@ -1144,7 +1157,7 @@ public abstract class F3TranslationSupport {
         }
         
         public boolean isBoundFuncClass() {
-            return F3TranslationSupport.this.isBoundFuncClass((ClassSymbol)enclosingClassDecl.sym);
+            return F3TranslationSupport.this.isBoundFuncClass((ClassSymbol)getEnclosingClassSymbol());
         }
                 
         public boolean isBoundFuncClass(ClassSymbol sym) {
@@ -1367,15 +1380,15 @@ public abstract class F3TranslationSupport {
         // Return a receiver$, scriptLevelAccess$() or null depending on the context.
         //
         protected JCExpression getReceiver() {
-            return resolveThis(enclosingClassDecl.sym, true);
+            return resolveThis(getEnclosingClassSymbol(), true);
         }
 
         protected JCExpression getReceiverOrThis() {
-            return resolveThis(enclosingClassDecl.sym, false);
+            return resolveThis(getEnclosingClassSymbol(), false);
         }
 
         protected JCExpression getReceiverOrThis(boolean isStatic) {
-            Symbol cSym = enclosingClassDecl.sym;
+            Symbol cSym = getEnclosingClassSymbol();
             if (isStatic) {
                 return Select(makeType(types.erasure(cSym.type), false), f3make.ScriptAccessSymbol(cSym).name);
             } else if(isMixinClass()) {
@@ -1406,26 +1419,47 @@ public abstract class F3TranslationSupport {
         //where
         private JCExpression resolveThisInternal(Symbol owner, boolean nullForThis) {
             JCExpression _this = owner.kind == Kinds.TYP ?
-                resolveThisInternal(owner, enclosingClassDecl.sym, false) :
+                resolveThisInternal(owner, getEnclosingClassSymbol(), false) :
                 id(names._this);
             return (nullForThis && _this.getTag() == JCTree.IDENT) ?
                 null :
                 _this;
         }
+        private JCExpression resolveThisInternal(Type currentThisType, boolean rec) {
+	    return resolveThisInternal(currentThisType, rec, false);
+	}
+
+        private JCExpression resolveThisInternal(Type currentThisType, boolean rec, boolean addCast) {
+            JCExpression thisExpr = rec ? 
+                Select(makeType(currentThisType), names._this) :
+                id(names._this);
+	    if (addCast){
+		return TypeCast(currentThisType, Type.noType, thisExpr);
+	    }
+	    return thisExpr;
+	}
         //where
         private JCExpression resolveThisInternal(Symbol ownerThis, Symbol currentThis, boolean rec) {
-            JCExpression thisExpr = rec ? 
-                Select(makeType(currentThis.type), names._this) :
-                id(names._this);
+	    //System.err.println("ownerThis: "+ownerThis + ": "+ownerThis.type);
+	    //System.err.println("currentThis: "+currentThis + ": "+currentThis.type);
+	    Type encl = currentThis.type.getEnclosingType();
+	    //System.err.println("encl="+encl);
             if (!currentThis.isSubClass(ownerThis, types)) {
-                Type encl = currentThis.type.getEnclosingType();
+		//System.err.println("is subtype "+ currentThis + ", "+ ownerThis);
                 if (encl == null || encl == Type.noType || types.isMixin(encl.tsym)) {
-                    return resolveThisInternal(ownerThis, currentThis, thisExpr);
+                    return resolveThisInternal(ownerThis, currentThis, resolveThisInternal(currentThis.type, rec));
                 }
-                return resolveThisInternal(ownerThis, currentThis.type.getEnclosingType().tsym, true);
+		if (types.isSameType(types.erasure(ownerThis.type), types.erasure(encl))) {
+		    return resolveThisInternal(encl, true, encl != ownerThis.type);
+		}
+                return resolveThisInternal(ownerThis, encl.tsym, true);
             }
             else {
-                return thisExpr;
+		Type currentThisType = currentThis.type;
+		if (encl != null && encl != Type.noType) {
+		    currentThisType = encl;
+		}
+                return resolveThisInternal(currentThisType, rec);
             }
         }
         //where
@@ -1446,7 +1480,7 @@ public abstract class F3TranslationSupport {
         }
         
         protected JCExpression resolveSuper(Symbol owner) {
-            return resolveSuperInternal(owner, enclosingClassDecl.sym, false);
+            return resolveSuperInternal(owner, getEnclosingClassSymbol(), false);
         }
 
         private JCExpression resolveSuperInternal(Symbol ownerSym, Symbol currentSym, boolean rec) {
@@ -2024,7 +2058,7 @@ public abstract class F3TranslationSupport {
             Name depName = depName(selectorSym, varSym);
             
             if (isMixinClass()) {
-                return PLUS(Call(classDCNT$Name(enclosingClassDecl.sym)), id(depName));
+                return PLUS(Call(classDCNT$Name(getEnclosingClassSymbol())), id(depName));
             }
             
             return Select(selector, depName);
@@ -2034,9 +2068,9 @@ public abstract class F3TranslationSupport {
             JCExpression baseExpr;
             
             if (isMixinClass() && !isScript()) {
-                baseExpr = Call(classFCNT$Name(enclosingClassDecl.sym));
+                baseExpr = Call(classFCNT$Name(getEnclosingClassSymbol()));
             } else if (isScript()) {
-                baseExpr = Select(id(f3make.ScriptAccessSymbol(enclosingClassDecl.sym).name), defs.funcCount_F3ObjectFieldName);
+                baseExpr = Select(id(f3make.ScriptAccessSymbol(getEnclosingClassSymbol()).name), defs.funcCount_F3ObjectFieldName);
             } else {
                 baseExpr = id(defs.funcCount_F3ObjectFieldName);
             }

@@ -167,15 +167,15 @@ public class F3Resolve {
         switch ((short)(c.flags() & Flags.AccessFlags)) {
         case PRIVATE:
             return
-                env.enclClass.sym.outermostClass() ==
+                env.getEnclosingClassSymbol().outermostClass() ==
                 c.owner.outermostClass();
         case 0:
             if ((c.flags() & F3Flags.SCRIPT_PRIVATE) != 0) {
                 // script-private
-                //System.err.println("isAccessible " + c + " = " + (env.enclClass.sym.outermostClass() ==
+                //System.err.println("isAccessible " + c + " = " + (env.getEnclosingClassSymbol().outermostClass() ==
                 //        c.outermostClass()) + ", enclClass " + env.enclClass.getName());
-                //System.err.println(" encl outer: " + env.enclClass.sym.outermostClass() + ", c outer: " + c.outermostClass());
-                return env.enclClass.sym.outermostClass() == c.outermostClass();
+                //System.err.println(" encl outer: " + env.getEnclosingClassSymbol().outermostClass() + ", c outer: " + c.outermostClass());
+                return env.getEnclosingClassSymbol().outermostClass() == c.outermostClass();
             };
             // 'package' access
             return
@@ -197,7 +197,7 @@ public class F3Resolve {
                 ||
                 env.toplevel.packge == c.packge()
                 ||
-                isInnerSubClass(env.enclClass.sym, c.owner);
+                isInnerSubClass(env.getEnclosingClassSymbol(), c.owner);
         }
     }
 
@@ -262,9 +262,9 @@ public class F3Resolve {
         switch ((short)(sym.flags() & Flags.AccessFlags)) {
         case PRIVATE:
             return
-                (env.enclClass.sym == sym.owner // fast special case
+                (env.getEnclosingClassSymbol() == sym.owner // fast special case
                  ||
-                 env.enclClass.sym.outermostClass() ==
+                 env.getEnclosingClassSymbol().outermostClass() ==
                  sym.owner.outermostClass())
                 &&
                 isInheritedIn(sym, site.tsym, types);
@@ -272,10 +272,10 @@ public class F3Resolve {
             if ((sym.flags() & F3Flags.SCRIPT_PRIVATE) != 0) {
                 // script-private
                 //TODO: don't know what is right
-                if (env.enclClass.sym == sym.owner) {
+                if (env.getEnclosingClassSymbol() == sym.owner) {
                     return true;  // fast special case -- in this class
                 }
-                Symbol enclOuter = env.enclClass.sym.outermostClass();
+                Symbol enclOuter = env.getEnclosingClassSymbol().outermostClass();
                 Symbol ownerOuter = sym.owner.outermostClass();
                 return enclOuter == ownerOuter;
             };
@@ -300,7 +300,7 @@ public class F3Resolve {
                  ||
                  env.toplevel.packge == sym.packge()
                  ||
-                 isProtectedAccessible(sym, env.enclClass.sym, site)
+                 isProtectedAccessible(sym, env.getEnclosingClassSymbol(), site)
                  ||
                  // OK to select instance method or field from 'super' or type name
                  // (but type names should be disallowed elsewhere!)
@@ -438,7 +438,7 @@ public class F3Resolve {
              l = l.tail) {
             if (l.head.tag == FORALL) instNeeded = true;
         }
-        if (instNeeded) {
+        if (true || instNeeded) {
 	    if (!(mt instanceof MethodType)) {
 		if (debug) {
 		    System.err.println("mt.class="+mt.getClass());
@@ -724,6 +724,9 @@ public class F3Resolve {
             }
             else
                 envClass = null;
+	    if (env.thisVar != null) {
+		envClass = env.thisVar.type;
+	    }
             if (envClass != null) {
                 //first try resolution without boxing
 
@@ -887,7 +890,7 @@ public class F3Resolve {
         if (name == names.fromString("__DIR__") || name == names.fromString("__FILE__") 
 			|| name == names.fromString("__PROFILE__")) {
             Type type = syms.stringType;
-            return new F3VarSymbol(types, names,Flags.PUBLIC, name, type, env.enclClass.sym);
+            return new F3VarSymbol(types, names,Flags.PUBLIC, name, type, env.getEnclosingClassSymbol());
         }
         if (bestSoFar.kind == VAR && bestSoFar.owner.type != origin.type)
             return bestSoFar.clone(origin);
@@ -1438,6 +1441,7 @@ public class F3Resolve {
                           Type site,
                           Name name,
                           TypeSymbol c) {
+
 	Symbol bestSoFar = findMemberType0(env, site, name, c);
 	if (bestSoFar != null) {
 	    if (bestSoFar instanceof F3Resolve.TypeAliasSymbol) {
@@ -1854,7 +1858,7 @@ public class F3Resolve {
         Symbol sym = findIdent(env, name, kind, pt);
         if (sym.kind >= AMBIGUOUS) {
 	    System.err.println("resolveIdent " +name+" "+((pt == null) ? null : pt.getClass())+": "+pt);
-            return access(sym, pos, env.enclClass.sym.type, name, false, pt);
+            return access(sym, pos, env.getEnclosingClassType(), name, false, pt);
         } else
             return sym;
     }
@@ -2027,7 +2031,7 @@ public class F3Resolve {
 		sym = defSym;
 	    }
 	}
-        return access(sym, pos, env.enclClass.sym.type, name,
+        return access(sym, pos, env.getEnclosingClassType(), name,
                       false, argtypes, null);
     }
 
@@ -2039,7 +2043,7 @@ public class F3Resolve {
 	//System.err.println("resolveOperator1: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind >= WRONG_MTHS) {
 	    /*
-            sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
+            sym = findMethod(env, env.getEnclosingClassType(), name, argtypes,
                              null, true, false, true);
 	    */
 	    sym = findVar(env, name, MTH, 
@@ -2058,7 +2062,7 @@ public class F3Resolve {
                                 null, true, false, true);
 	//System.err.println("resolveOperator2: "+name+": "+argtypes+": "+sym);
         if (boxingEnabled && sym.kind != MTH) {
-            //sym = findMethod(env, env.enclClass.sym.type, name, argtypes,
+            //sym = findMethod(env, env.getEnclosingClassType(), name, argtypes,
 	    //null, true, false, true);
 	    sym = findVar(env, name, MTH, 
 			  newMethTemplate(argtypes, List.<Type>nil()),
@@ -2457,7 +2461,7 @@ public class F3Resolve {
         Symbol sym = findMethod(env, type, name, argtypes,
                                 null, true, false, false);
         if (sym.kind == MTH) { // skip access if method wasn't found
-            return access(sym, pos, env.enclClass.sym.type, name,
+            return access(sym, pos, env.getEnclosingClassType(), name,
                           false, argtypes, null);
         }
         return sym;
@@ -2483,7 +2487,7 @@ public class F3Resolve {
                 Symbol sym = env1.info.scope.lookup(name).sym;
                 if (sym != null) {
                     if (staticOnly) sym = new StaticError(sym);
-                    return access(sym, pos, env.enclClass.sym.type,
+                    return access(sym, pos, env.getEnclosingClassType(),
                                   name, true);
                 }
             }
@@ -2514,7 +2518,7 @@ public class F3Resolve {
                 Symbol sym = env1.info.scope.lookup(name).sym;
                 if (sym != null) {
                     if (staticOnly) sym = new StaticError(sym);
-                    return access(sym, pos, env.enclClass.sym.type,
+                    return access(sym, pos, env.getEnclosingClassType(),
                                   name, true);
                 }
             }
@@ -2535,7 +2539,7 @@ public class F3Resolve {
         Type thisType = (((t.tsym.owner.kind & (MTH|VAR)) != 0)
                          ? resolveSelf(pos, env, t.getEnclosingType().tsym, names._this)
                          : resolveSelfContaining(pos, env, t.tsym)).type;
-        if (env.info.isSelfCall && thisType.tsym == env.enclClass.sym)
+        if (env.info.isSelfCall && thisType.tsym == env.getEnclosingClassSymbol())
             log.error(pos, MsgSym.MESSAGE_CANNOT_REF_BEFORE_CTOR_CALLED, "this");
         return thisType;
     }

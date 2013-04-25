@@ -54,6 +54,7 @@ public class F3Symtab extends Symtab {
     public static final String publicReadAnnotationClassNameString = anno + ".PublicReadable";
     public static final String bindeesAnnotationClassNameString = anno + ".F3Bindees";
     public static final String signatureAnnotationClassNameString = anno + ".F3Signature";
+    public static final String thisTypeAnnotationClassNameString = anno + ".F3ThisType";
     public static final String defAnnotationClassNameString = anno + ".Def";
     public static final String staticAnnotationClassNameString = anno + ".Static";
     public static final String inheritedAnnotationClassNameString = anno + ".Inherited";
@@ -139,6 +140,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_publicInitAnnotationType;
     public final Type f3_publicReadAnnotationType;
     public final Type f3_signatureAnnotationType;
+    public final Type f3_thisTypeAnnotationType;
     public final Type f3_defAnnotationType;
     public final Type f3_staticAnnotationType;
     public final Type f3_inheritedAnnotationType;
@@ -304,6 +306,7 @@ public class F3Symtab extends Symtab {
         f3_publicInitAnnotationType = enterClass(publicInitAnnotationClassNameString);
         f3_publicReadAnnotationType = enterClass(publicReadAnnotationClassNameString);
         f3_signatureAnnotationType = enterClass(signatureAnnotationClassNameString);
+        f3_thisTypeAnnotationType = enterClass(thisTypeAnnotationClassNameString);
         f3_defAnnotationType = enterClass(defAnnotationClassNameString);
         f3_staticAnnotationType = enterClass(staticAnnotationClassNameString);
         f3_inheritedAnnotationType = enterClass(inheritedAnnotationClassNameString);

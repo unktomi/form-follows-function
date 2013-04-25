@@ -117,6 +117,14 @@ public abstract class F3AbstractTranslation
         return yieldKind;
     }
 
+    ClassSymbol currentClassSym() {
+	F3Env<F3AttrContext> env = getAttrEnv();
+	if (env.thisVarSym != null) {
+	    return env.thisVarSym;
+	}
+	return currentClass().sym;
+    }
+
     F3ClassDeclaration currentClass() {
         return getAttrEnv().enclClass;
     }
@@ -150,6 +158,7 @@ public abstract class F3AbstractTranslation
     }
 
     /********** Utility routines **********/
+
 
     /**
      * @return the substitutionMap
@@ -959,7 +968,7 @@ public abstract class F3AbstractTranslation
 
         JCExpression staticReference(Symbol sym) {
             Symbol owner = sym.owner;
-            Symbol encl = currentClass().sym;
+            Symbol encl = currentClassSym();
             if (encl.name.endsWith(defs.scriptClassSuffixName) && owner == encl.owner) {
                 return null;
             } else {
@@ -1075,7 +1084,7 @@ public abstract class F3AbstractTranslation
                     values.prepend(String(tree.translationKey));
                 }
                 String resourceName =
-                       currentClass().sym.flatname.toString().replace('.', '/').replaceAll("\\$.*", "");
+                       currentClassSym().flatname.toString().replace('.', '/').replaceAll("\\$.*", "");
                 values.prepend(String(resourceName));
             } else if (containsDateTimeFormat) {
                 formatMethod = defs.F3Formatter_sprintf;
@@ -1459,7 +1468,7 @@ public abstract class F3AbstractTranslation
             Name selectorIdName = (selector != null && selector.getF3Tag() == F3Tag.IDENT) ? ((F3Ident) selector).getName() : null;
             thisCall = selectorIdName == names._this;
             superCall = selectorIdName == names._super;
-            ClassSymbol csym = currentClass().sym;
+            ClassSymbol csym = currentClassSym();
 
             useInvoke = (msym == null) || (meth.type instanceof FunctionType);
 	    //System.err.println("meth.type="+meth.type.getClass());
@@ -1833,6 +1842,8 @@ public abstract class F3AbstractTranslation
         final boolean isInstanceFunctionAsStaticMethod;
         final boolean isMixinClass;
 
+	ClassSymbol enclosingClassSym;
+
         FunctionTranslator(F3FunctionDefinition tree, boolean maintainContext) {
             super(tree.pos());
             this.tree = tree;
@@ -1850,7 +1861,15 @@ public abstract class F3AbstractTranslation
             this.isStatic = (originalFlags & Flags.STATIC) != 0L;
             this.isInstanceFunction = !isAbstract && !isStatic && !isSynthetic;
             this.isInstanceFunctionAsStaticMethod = isInstanceFunction && isMixinClass;
+	    //enclosingClassSym = currentClassSym(); 
+	    enclosingClassSym = (ClassSymbol)sym.owner;
+	    //System.err.println("ENCLOSING CLASS SYM:" + sym +": "+mtype+": "+enclosingClassSym);
+	    //System.err.println("Msym.owner="+sym.owner.type);
         }
+
+	public ClassSymbol getEnclosingClassSymbol() {
+	    return enclosingClassSym;
+	}
 
         private JCBlock makeRunMethodBody(F3Block bexpr) {
             final F3Expression value = bexpr.value;
@@ -2010,6 +2029,9 @@ public abstract class F3AbstractTranslation
             if (isBound) {
                 meth.mods.annotations = meth.mods.annotations.append(methodSignature());
             }
+	    if (methSym.owner.type != methSym.owner.type.tsym.type) {
+		meth.mods.annotations = meth.mods.annotations.append(thisTypeSignature(diagPos, methSym.owner.type));
+	    }
             return meth;
         }
 
@@ -2132,7 +2154,7 @@ public abstract class F3AbstractTranslation
             if (sym instanceof F3VarSymbol) {
                 F3VarSymbol vsym = (F3VarSymbol) sym;
                 boolean isScriptContext = receiverContext() == ReceiverContext.ScriptAsStatic;
-                if ((isScriptContext == sym.isStatic())  && currentClass().sym.isSubClass(sym.owner, types)) {
+                if ((isScriptContext == sym.isStatic())  && currentClassSym().isSubClass(sym.owner, types)) {
                     // The var is in our class (or a superclass)
                     addBindee(vsym);
                 } else {

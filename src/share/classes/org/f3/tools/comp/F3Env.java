@@ -26,6 +26,9 @@ package org.f3.tools.comp;
 import com.sun.tools.mjavac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.mjavac.util.List;
 import com.sun.tools.mjavac.code.Symbol;
+import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
+import com.sun.tools.mjavac.code.Type.ClassType;
 import org.f3.tools.tree.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -68,13 +71,29 @@ public class F3Env<A> implements Iterable<F3Env<A>> {
      */
     public F3ClassDeclaration enclClass;
 
+    public ClassSymbol getEnclosingClassSymbol() {
+	if (thisVarSym != null) {
+	    return thisVarSym;
+	}
+	return enclClass.sym;
+    }
+
+    public Type getEnclosingClassType() {
+	if (thisVar != null) {
+	    return thisVar.type;
+	}
+	return enclClass.sym.type;
+    }
+
     /** The next enclosing method definition.
      */
     public F3FunctionDefinition enclFunction;
 
+
     public F3Var enclVar;
 
     public F3Var thisVar;
+    public ClassSymbol thisVarSym;
 
     /* implicit the uses */
     List<Symbol> implicitArgs = List.nil();
@@ -120,6 +139,8 @@ public class F3Env<A> implements Iterable<F3Env<A>> {
 	that.toplevel = this.toplevel;
  	that.enclClass = this.enclClass;
 	that.enclFunction = this.enclFunction;
+	that.thisVar = thisVar;
+	that.thisVarSym = thisVarSym;
 	return that;
     }
 

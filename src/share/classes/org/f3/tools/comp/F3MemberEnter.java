@@ -637,7 +637,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
             localEnv.info.scope.owner = tree.sym;
         }
         if ((tree.mods.flags & STATIC) != 0
-                || (env.enclClass.sym.flags() & INTERFACE) != 0) {
+	    || (env.getEnclosingClassSymbol().flags() & INTERFACE) != 0) {
             localEnv.info.staticLevel++;
         }
         return localEnv;
