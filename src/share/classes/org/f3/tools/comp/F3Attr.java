@@ -3570,7 +3570,7 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("mpt="+types.toF3String(mpt));
 	    localEnv.info.varArgs = false;
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
-	    {
+	    if (false) {
 		Symbol sym = F3TreeInfo.symbol(tree.meth);
 		System.err.println("mtype="+mtype);
 		System.err.println("sym="+sym);
