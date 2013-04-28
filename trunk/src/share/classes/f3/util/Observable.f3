@@ -510,7 +510,9 @@ public function empty of a to Observable of a
     }
 }
 
+/*
 public function every from (dur is Duration) to Observable of Integer {
+
     DefaultObservable of Integer {
 	public override function subscribe from (observer is Observer of Integer) to Disposable {
 	    var nextTime is Duration;
@@ -535,6 +537,8 @@ public function every from (dur is Duration) to Observable of Integer {
     }
 }
 
+*/
+
 class Println of a is DefaultObserver of a
 {
     override function onNext from (x is a) to () {
@@ -547,7 +551,7 @@ function Println of a to Println of a
     Println of  a {
     }
 }
-
+/*
 public function run 
 {
     const j =
@@ -567,3 +571,4 @@ public function run
     }
 }
 
+*/

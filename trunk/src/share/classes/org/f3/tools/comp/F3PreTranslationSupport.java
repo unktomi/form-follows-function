@@ -306,8 +306,21 @@ public class F3PreTranslationSupport {
                 type == syms.unreachableType)
             return tree;
         else {
+	    int tcons0 = types.isTypeConsType(tree.type);
+	    int tcons1 = types.isTypeConsType(type);
+	    boolean forceCast = false;
+	    if (tcons0 <= 0 & tcons1 > 0) {
+		if (false) {
+		    System.err.println("tree="+tree);
+		    System.err.println("tree.type="+tree.type+ ": "+ tcons0);
+		    System.err.println("type="+type + ": "+tcons1);
+		}
+		// need to cast TypeConsN of (X, Y, ..) to the real type: X of (Y, ...)
+		type = tree.type;
+		forceCast = true;
+	    }
             tree = makeNumericBoxConversionIfNeeded(tree, type);
-            F3Expression newTree =  !types.isSameType(tree.type, type) &&
+            F3Expression newTree =  forceCast || !types.isSameType(tree.type, type) &&
                    (!types.isSubtypeUnchecked(tree.type, type) ||
                    (tree.type.isPrimitive() && type.isPrimitive() ||
                    (types.isSameType(tree.type, syms.f3_EmptySequenceType) &&

@@ -468,6 +468,9 @@ public class F3TreeMaker implements F3TreeFactory {
         if (t == null) {
             return null;
         }
+	if (t == syms.botType) {
+	    t = syms.objectType;
+	}
 	return Type(t, new HashMap<Type, F3Expression>());
     }
 

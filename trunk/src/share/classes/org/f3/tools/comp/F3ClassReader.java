@@ -251,6 +251,9 @@ public class F3ClassReader extends ClassReader {
 	if (type == Type.noType) {
 	    return type;
 	}
+	if (type == syms.objectType) {
+	    return type;
+	}
         if (type == null) 
             return null;
         Type t = (Type) typeMap.get(type);

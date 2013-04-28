@@ -74,7 +74,7 @@ public class F3Resolve {
     Log log;
     F3Symtab syms;
     F3Check chk;
-    Infer infer;
+    F3Infer infer;
     F3ClassReader reader;
     JCDiagnostic.Factory diags;
     F3Attr attr;
@@ -110,7 +110,7 @@ public class F3Resolve {
         names = Name.Table.instance(context);
         log = Log.instance(context);
         chk = (F3Check)F3Check.instance(context);
-        infer = Infer.instance(context);
+        infer = F3Infer.instance(context);
         reader = F3ClassReader.instance(context);
         treeinfo = F3TreeInfo.instance(context);
         types = F3Types.instance(context);
@@ -385,7 +385,7 @@ public class F3Resolve {
                         boolean useVarargs,
                         Warner warn,
 			boolean debug)
-        throws Infer.NoInstanceException {
+        throws F3Infer.NoInstanceException {
         if (useVarargs && (m.flags() & VARARGS) == 0) return null;
         m.complete();
 	if (debug) {
@@ -490,7 +490,7 @@ public class F3Resolve {
 				    allowBoxing, useVarargs, warn);
 	    //System.err.println("instantiated "+m+" to "+ r);
 	    return r;
-        } catch (Infer.NoInstanceException ex) {
+        } catch (F3Infer.NoInstanceException ex) {
             return null;
         }
     }
@@ -508,7 +508,7 @@ public class F3Resolve {
 					 allowBoxing, useVarargs, warn);
 	    //System.err.println("instantiated "+m+" to "+ r);
 	    return r;
-        } catch (Infer.NoInstanceException ex) {
+        } catch (F3Infer.NoInstanceException ex) {
 	    ex.printStackTrace();
             return null;
         }
@@ -1007,7 +1007,7 @@ public class F3Resolve {
 		    //System.err.println("cloned "+origSym +": "+sym.type);
 		}
 	    }
-        } catch (Infer.NoInstanceException ex) {
+        } catch (F3Infer.NoInstanceException ex) {
 	    //if (allowBoxing) {
 	    //System.err.println("raw instantiate exception: "+ sym);
 	    //System.err.println("argtypes: "+argtypes);
