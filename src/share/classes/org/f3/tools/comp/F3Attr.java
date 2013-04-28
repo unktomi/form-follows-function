@@ -3891,12 +3891,12 @@ public class F3Attr implements F3Visitor {
 		Type self1 = reader.translateType(self);
 		if (self != null && self != env.getEnclosingClassType() && !(self1 instanceof FunctionType) &&
 		    self.getTypeArguments().nonEmpty()) {
-		    System.err.println("self="+self.getClass() +": "+self);
+		    //System.err.println("self="+self.getClass() +": "+self);
 		    Symbol found = rs.resolveMethod(dt.pos(), env, msym.name, self, msym.type.getParameterTypes());
 		    if (found != null) {
 			found.complete();
 		    }
-		    System.err.println("found="+found);
+		    //System.err.println("found="+found);
 		    //System.err.println("found="+found.owner.type);
 		    if (found != null && found.owner != null && found.owner.type != null && msym !=null && msym.owner != null && msym.owner.type != null && !types.isSameType(found.owner.type, msym.owner.type.tsym.type) && msym.owner.type.tsym != null) {
 			Type hack = types.subst2(msym.owner.type,
@@ -5905,10 +5905,11 @@ public class F3Attr implements F3Visitor {
 				       otvars,
 				       mtvars,
 				       true);
-		//System.err.println("x1="+x1+ "..."+y.head);
+
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
 		    if (tc2 >= 0 || !x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
+			System.err.println("x1="+x1+"..."+x.head+ " / "+y.head);
 			vars.head.baseType = x1;
 		    }
 		}

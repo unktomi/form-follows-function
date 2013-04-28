@@ -2119,7 +2119,7 @@ public class F3Types extends Types {
 					}
 				    }
 				}
-				Type r = subst2(sym.type, ownerParams, baseParams);
+				Type r = subst2(sym.type, ownerParams, baseParams, true);
 				//if (true) System.err.println("subst "+sym.type +" => "+r);
 				return r;
                             }

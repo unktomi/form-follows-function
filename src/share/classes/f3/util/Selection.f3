@@ -45,7 +45,7 @@ public abstract class Selection of a is org.f3.runtime.Monad of (Selection, a) {
     {
 	const self = this;
 	Selection of b {
-	    override public function select of r from (k is function from b to r) to b 
+	    override public function select of q from (k is function from b to q) to b 
 	    {
 		f(self.select(f)).select(k)
 	    }
@@ -54,6 +54,7 @@ public abstract class Selection of a is org.f3.runtime.Monad of (Selection, a) {
 	    }		  
 	}
     }
+
 
     public function toDoubleNegation to DoubleNegation of a 
     {
