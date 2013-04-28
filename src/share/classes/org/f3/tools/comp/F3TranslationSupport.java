@@ -649,7 +649,7 @@ public abstract class F3TranslationSupport {
             return accessEmptySequence(diagPos, types.elementType(type));
         } else if (typeRep.isObject()) {
             if (types.isSameType(type, syms.f3_StringType)) {
-                return make.Literal("");
+                return make.at(diagPos).Literal("");
             }
             if (types.isSameType(type, syms.f3_DurationType)) {
                 return makeQualifiedTree(diagPos, F3Defs.zero_DurationFieldName);

@@ -1646,15 +1646,17 @@ class F3AnalyzeClass {
         long flags = sym.flags();
         // Only look at real instance methods.
 	cSym.complete();
-	Type memberType = types.memberType(currentClassSym.type, sym);
 	MethodSymbol origSym = sym;
-	if (memberType != sym.type) {
-	    MethodSymbol memberSym = 
-		new MethodSymbol(sym.flags_field, sym.name, memberType, currentClassSym);
-	    //System.err.println("CREATED MEMBER SYM: "+memberSym+": "+memberType + " from " +sym.type);
-	    sym = memberSym;
+	MethodSymbol impl = sym.implementation(currentClassSym.getSuperclass().tsym, types, false);
+	if (impl != null) {
+	    sym = impl;
 	}
-        if ((flags & (Flags.ABSTRACT | Flags.SYNTHETIC)) == 0) {
+	Type memberType = types.memberType(currentClassSym.type, sym);
+	MethodSymbol memberSym = sym.implementation(currentClassSym, types, false);
+	if (memberSym == null) {
+	    memberSym = new MethodSymbol(sym.flags_field, sym.name, memberType, sym.owner);
+	}
+        if (!sym.isStatic() && (flags & (Flags.ABSTRACT | Flags.SYNTHETIC)) == 0) {
             // Generate a name/signature string for uniqueness.
 	    String nameSig0 = methodSignature(cSym, sym);
             String nameSig =  methodSignature(currentClassSym, origSym);
@@ -1662,20 +1664,23 @@ class F3AnalyzeClass {
             FuncInfo oldMethod = visitedMethods.get(nameSig0);
 	    if (false && needsCloning && !nameSig.contains("$")) {
 		System.err.println("processMethod: "+ sym);
+		if (impl != null) {
+		    System.err.println("impl="+impl.owner + " for "+ origSym.owner);
+		}
 		System.err.println("owner="+sym.owner);
 		System.err.println("csym="+cSym);
 		System.err.println("currentClass="+currentClassSym);
 		System.err.println("nameSig="+nameSig);
 		System.err.println("nameSig0='"+nameSig0+"'");
 		System.err.println("oldMethod="+oldMethod);
-		System.err.println("visitedMethods="+visitedMethods.keySet());
+		//System.err.println("visitedMethods="+visitedMethods.keySet());
 	    }
             // See if the current method is a mixin.
             boolean newIsMixin = isMixinClass(sym.owner);
             // See if the previous methods is a mixin.
             boolean oldIsMixin = oldMethod != null && isMixinClass(oldMethod.getSymbol().owner);
             // Create new info.
-            FuncInfo newMethod = newIsMixin ? new MixinFuncInfo(sym) :  new SuperClassFuncInfo(sym);
+            FuncInfo newMethod = newIsMixin ? new MixinFuncInfo(memberSym) :  new SuperClassFuncInfo(memberSym);
             // Are we are still cloning this far up the hierarchy?
             if (needsCloning && (sym.flags() & Flags.PRIVATE) == 0) {
                 // If the method didn't occur before or is a real method overshadowing a prior mixin.
@@ -1689,8 +1694,7 @@ class F3AnalyzeClass {
 			}
 		    } else {
 			// Add to the methods needing $impl dispatch.
-			//System.err.println("needs dispatch: "+nameSig+": "+newMethod);
-			sym.owner = origSym.owner;
+			//System.err.println("needs dispatch: "+memberSym+" in "+currentClassSym);
 			needDispatchMethods.put(nameSig, newMethod);
 		    }
 		}
@@ -1764,10 +1768,13 @@ class F3AnalyzeClass {
     //
     private String methodSignature(ClassSymbol site, MethodSymbol meth) {
         StringBuilder nameSigBld = new StringBuilder();
-	Type memberType = types.memberType(site.type, meth);
+	MethodSymbol impl = meth.implementation(site, types, false);
+	if (impl != null) {
+	    meth = impl;
+	}
         nameSigBld.append(meth.name.toString());
-	nameSigBld.append(memberType);
-        return nameSigBld.toString().replaceAll("<>", "");
+	nameSigBld.append(types.erasure(meth.type));
+        return nameSigBld.toString();
     }
 
     private String methodSignature(MethodSymbol meth) {

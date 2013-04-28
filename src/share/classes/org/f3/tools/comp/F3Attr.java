@@ -83,7 +83,7 @@ public class F3Attr implements F3Visitor {
     private final Log log;
     F3ClassReader reader;
     private final F3Resolve rs;
-    private final Infer infer;
+    private final F3Infer infer;
     private final F3Symtab syms;
     private final F3Check chk;
     private final Messages messages;
@@ -125,7 +125,7 @@ public class F3Attr implements F3Visitor {
         diags = JCDiagnostic.Factory.instance(context);
         messages = Messages.instance(context);
         rs = F3Resolve.instance(context);
-        infer = Infer.instance(context);
+        infer = F3Infer.instance(context);
         chk = F3Check.instance(context);
         memberEnter = F3MemberEnter.instance(context);
         f3make = (F3TreeMaker)F3TreeMaker.instance(context);
@@ -521,7 +521,7 @@ public class F3Attr implements F3Visitor {
         ListBuffer<Type> argtypes = new ListBuffer<Type>();
         for (List<F3Expression> l = trees; l.nonEmpty(); l = l.tail)
             argtypes.append(chk.checkNonVoid(
-                l.head.pos(), types.upperBound(attribTree(l.head, env, VAL, Infer.anyPoly))));
+                l.head.pos(), types.upperBound(attribTree(l.head, env, VAL, F3Infer.anyPoly))));
         return argtypes.toList();
     }
 
@@ -886,7 +886,7 @@ public class F3Attr implements F3Visitor {
         }
         // Attribute the qualifier expression, and determine its symbol (if any).
         Type site = attribTree(tree.selected, env, skind,
-                Infer.anyPoly, Sequenceness.PERMITTED);
+                F3Infer.anyPoly, Sequenceness.PERMITTED);
         boolean wasPrimitive = site.isPrimitive();
         site = types.boxedTypeOrType(site);
         
@@ -2503,9 +2503,6 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("with type var: "+ this + ": "+t.getClass()+ ": "+t);
 	    return super.withTypeVar(t);
 	}
-	public boolean isA(Type t) {
-	    return lower == t;
-	}
     }
 
     Type makeTypeVar(F3Expression exp, Symbol sym) {
@@ -3513,8 +3510,8 @@ public class F3Attr implements F3Visitor {
                 argtype = attribExpr(l.head, env, argtype);
             else
                 argtype = chk.checkNonVoid(l.head.pos(),
-					   //types.upperBound(attribTree(l.head, env, VAL, Infer.anyPoly, Sequenceness.PERMITTED)));
-					   (attribTree(l.head, env, VAL, Infer.anyPoly, Sequenceness.PERMITTED)
+					   //types.upperBound(attribTree(l.head, env, VAL, F3Infer.anyPoly, Sequenceness.PERMITTED)));
+					   (attribTree(l.head, env, VAL, F3Infer.anyPoly, Sequenceness.PERMITTED)
 					   ));
 	    //System.err.println("argType "+ l.head+": "+argtype);
 	    if (argtype instanceof MethodType) {
@@ -3573,6 +3570,14 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("mpt="+types.toF3String(mpt));
 	    localEnv.info.varArgs = false;
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
+	    {
+		Symbol sym = F3TreeInfo.symbol(tree.meth);
+		System.err.println("mtype="+mtype);
+		System.err.println("sym="+sym);
+		if (sym != null) {
+		    sym.complete();
+		}
+	    }
 	    //System.err.println("mtype="+types.toF3String(mtype));
 	    //System.err.println("attrib " +tree.meth.getClass()+": "+ tree.meth + " => "+mtype);
 	    if (true) {
@@ -3755,7 +3760,7 @@ public class F3Attr implements F3Visitor {
 						 args, 
 						 typeargtypes, true, false, 
 						 noteWarner);
-		    } catch (Infer.NoInstanceException exc) {
+		    } catch (F3Infer.NoInstanceException exc) {
 			//exc.printStackTrace();
 		    }
 		    //System.err.println("inst="+inst);
@@ -3886,16 +3891,18 @@ public class F3Attr implements F3Visitor {
 		Type self1 = reader.translateType(self);
 		if (self != null && self != env.getEnclosingClassType() && !(self1 instanceof FunctionType) &&
 		    self.getTypeArguments().nonEmpty()) {
-		    //System.err.println("self="+self.getClass() +": "+self);
+		    System.err.println("self="+self.getClass() +": "+self);
 		    Symbol found = rs.resolveMethod(dt.pos(), env, msym.name, self, msym.type.getParameterTypes());
 		    if (found != null) {
 			found.complete();
 		    }
+		    System.err.println("found="+found);
 		    //System.err.println("found="+found.owner.type);
 		    if (found != null && found.owner != null && found.owner.type != null && msym !=null && msym.owner != null && msym.owner.type != null && !types.isSameType(found.owner.type, msym.owner.type.tsym.type) && msym.owner.type.tsym != null) {
 			Type hack = types.subst2(msym.owner.type,
 						 msym.owner.type.tsym.type.getTypeArguments(),
-						 msym.owner.type.tsym.type.getTypeArguments());
+						 msym.owner.type.tsym.type.getTypeArguments(),
+						 true);
 			Type mt1 = rs.newMethTemplate(//List.of(msym.owner.type),
 						      List.of(hack),
 						      msym.owner.type.tsym.type.getTypeArguments());
@@ -3905,9 +3912,10 @@ public class F3Attr implements F3Visitor {
 			    Type rtype = found.type.getReturnType();
 			    rtype = types.subst2(rtype,
 						 msym.owner.type.tsym.type.getTypeArguments(),
-						 msym.owner.type.tsym.type.getTypeArguments());
+						 msym.owner.type.tsym.type.getTypeArguments(),
+						 true);
 			    Type instanced = rs.rawInstantiate(env, found, mt1, List.of(self), List.<Type>nil(), true, false, Warner.noWarnings);
-			    //System.err.println("found="+found+ ": instance="+instanced);
+			    System.err.println("found="+found+ ": instance="+instanced);
 			    Type proto = 
 				syms.makeFunctionType(List.of(hack).prepend(rtype)).asMethodOrForAll();
 			    proto = types.subst2(proto,
@@ -3916,12 +3924,12 @@ public class F3Attr implements F3Visitor {
 			    proto = new ForAll(msym.owner.type.tsym.type.getTypeArguments(), proto);
 			    //System.err.println("fun1="+proto);
 			    Type instanced2 = rs.rawInstantiate(env, found, proto, List.of(self), List.<Type>nil(), true, false, Warner.noWarnings);
-			    //System.err.println("found="+found+ ": instanced2="+instanced2);
+			    System.err.println("found="+found+ ": instanced2="+instanced2);
 			    restype = instanced2.getReturnType();
 			    tree.type = restype;
 			    ((MethodType)msym.type).restype = restype;
 			    //System.err.println("msym=>"+msym.type);
-			} catch (Infer.NoInstanceException ex) {
+			} catch (F3Infer.NoInstanceException ex) {
 			    if (true) {
 				Type t = self;
 				if (ex.isAmbiguous) {
@@ -3938,6 +3946,7 @@ public class F3Attr implements F3Visitor {
 				}
 			    }
 			}
+		    } else {
 		    }
 		}
 	    }
@@ -5894,7 +5903,8 @@ public class F3Attr implements F3Visitor {
 	    if (x.head != null && y.head != null) {
 		Type x1 = types.subst2(y.head, 
 				       otvars,
-				       mtvars);
+				       mtvars,
+				       true);
 		//System.err.println("x1="+x1+ "..."+y.head);
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
@@ -6063,7 +6073,7 @@ public class F3Attr implements F3Visitor {
             targetType = t.type;
         } else
             targetType = var.type;
-        Type valueType = attribExpr(tree.getValue(), env, Infer.anyPoly);
+        Type valueType = attribExpr(tree.getValue(), env, F3Infer.anyPoly);
 
         Type interpolateType = syms.errType;
         if (types.isAssignable(valueType, syms.f3_ColorType)) {

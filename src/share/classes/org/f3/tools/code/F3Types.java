@@ -556,7 +556,7 @@ public class F3Types extends Types {
 	    //System.err.println("actuals="+actuals);
 	    return new ForAll(actuals, base);
 	}
-	if (false && base instanceof TypeVar) {
+	if (base instanceof TypeVar) {
 	    TypeVar v = (TypeVar)base;
 	    if (false) {
 		TypeCons cons = new TypeCons(v.tsym.name,
@@ -570,6 +570,9 @@ public class F3Types extends Types {
 	    //actuals = actuals.prepend(new WildcardType(v, BoundKind.EXTENDS, syms.boundClass));
 	    actuals = actuals.prepend(v);
 	    //System.err.println("base="+base.getClass()+": "+base + " / " + base.tsym.type);
+	}
+	if (base.getEnclosingType() == null) {
+	    System.err.println("base is "+base.getClass()+ ": "+base);
 	}
         return newClassType(base.getEnclosingType(), actuals, base.tsym);
     }
@@ -1294,12 +1297,12 @@ public class F3Types extends Types {
 	}
     }
 
-    //    public Type subst(Type t, List<Type> from, List<Type> to) {
-	//Type result = super.subst(t, from, to);
+    public Type subst(Type t, List<Type> from, List<Type> to) {
+	Type result = subst2(t, from, to);
 	//Type result = super.subst(t, from, to);
 	//System.err.println("subst " +t+", "+from +", "+to+" => "+ result);
-	//return result;
-    // }
+	return result;
+    }
 
     public boolean isNumeric(Type type) {
         return (isSameType(type, syms.f3_ByteType) ||
@@ -1380,18 +1383,39 @@ public class F3Types extends Types {
 		    buffer.append(")");
 		}
 	    } else {
+		String lower = null;
+		String upper = null;
 		if (t.bound != null && t.bound != syms.objectType) {
-		    String str = toF3String(t.bound);
-		    if (!"Object".equals(str)) {
-			buffer.append("(");
-			buffer.append(t.tsym.name);
-			buffer.append(" is ");
-			buffer.append(str);
-			buffer.append(")");
-		    } else {
-			buffer.append(t.tsym.name);
+		    upper = toF3String(t.bound);
+		    if ("Object".equals(upper)) {
+			upper = null;
 		    }
-		} else {
+		}
+		if (t.lower != null && t.lower != syms.botType) {
+		    if (t.lower == syms.objectType) {
+			System.err.println("bad lower bound: "+ t.lower);
+		    } else {
+			lower = toF3String(t.lower);
+			if ("Object".equals(upper)) {
+			    lower = null;
+			}
+		    }
+		}
+		if (lower != null || upper != null) {
+		    buffer.append("(");
+		    buffer.append(t.tsym.name);
+		    buffer.append(" is ");
+		    if (lower != null) {
+			buffer.append(lower);
+		    }
+		    if (upper != lower) {
+			buffer.append("..");
+		    }
+		    if (upper != null) {
+			buffer.append(upper);
+		    }
+		    buffer.append(")");
+		} else {		    
 		    buffer.append(t.tsym.name);
 		}
 	    }
@@ -1809,7 +1833,7 @@ public class F3Types extends Types {
 
             public Type visitType0(Type t, Boolean preserveWildcards) {
                 if (t == syms.botType) {
-                    return syms.objectType;
+                    return t;
                 }
                 else if (isSameType(t, syms.f3_EmptySequenceType)) {
                     return sequenceType(syms.objectType);
@@ -1958,7 +1982,7 @@ public class F3Types extends Types {
 
             public Type visitType0(Type t, Boolean preserveWildcards) {
                 if (t == syms.botType) {
-                    return syms.objectType;
+                    return t;
                 }
                 else if (isSameType(t, syms.f3_EmptySequenceType)) {
                     return sequenceType(syms.objectType);
@@ -2132,7 +2156,20 @@ public class F3Types extends Types {
         return new Subst(from, to).subst(t);
     }
 
+    boolean HACK;
+
+    public Type subst2(Type t, List<Type> from, List<Type> to, boolean hack) {
+        Subst s = new Subst(from, to);
+	try {
+	    HACK = hack;
+	    return s.subst(t);
+	} finally {
+	    HACK = false;
+	}
+    }
+
     private class Subst extends UnaryVisitor<Type> {
+
         List<Type> from;
         List<Type> to;
 
@@ -2192,9 +2229,17 @@ public class F3Types extends Types {
                 return new MethodType(argtypes, restype, thrown, t.tsym);
         }
 
+	java.util.Map<Symbol, Type> visited = new java.util.HashMap();
+
         @Override
         public Type visitTypeVar(TypeVar t, Void ignored) {
 	    //System.err.println("Subst t="+System.identityHashCode(t)+"@"+t.getClass()+": "+t);
+	    final TypeSymbol tsym = t.tsym;
+	    Type seen = visited.get(tsym);
+	    if (seen != null) {
+		return seen;
+	    }
+	    visited.put(tsym, t);
             for (List<Type> from = this.from, to = this.to;
                  from.nonEmpty();
                  from = from.tail, to = to.tail) {
@@ -2217,10 +2262,25 @@ public class F3Types extends Types {
 			}
 		    }
 		}
-                if (t == from.head || t.tsym.name == from.head.tsym.name) { // hack!!!
-                    return to.head.withTypeVar(t);
+                if (t == from.head //) { 
+		    || t.tsym == from.head.tsym
+		    || (HACK && t.tsym.name == from.head.tsym.name)) { // hack!!!
+                    Type rt = to.head.withTypeVar(t);
+		    visited.put(tsym, rt);
+		    return rt;
                 }
             }
+	    TypeVar t1 = t;
+	    if (t.lower != syms.botType || t.bound != syms.objectType) {
+		t1 = new TypeVar(tsym, syms.objectType, syms.botType);
+		visited.put(tsym, t1);
+		Type lower = visit(t.lower, null);
+		Type upper = visit(t.bound, null);
+		t1.bound = upper;
+		t1.lower = lower;
+		//System.err.println("SUBST "+ toF3String(t) +" => "+toF3String(t1));
+		t = t1;
+	    }
             return t;
         }
 
@@ -2271,14 +2331,23 @@ public class F3Types extends Types {
 
         @Override
         public Type visitForAll(ForAll t, Void ignored) {
-            List<Type> tvars1 = substBounds(t.tvars, from, to);
+            List<Type> tvars1 = F3Types.this.subst2(t.tvars, from, to);
             Type qtype1 = subst(t.qtype);
             if (tvars1 == t.tvars && qtype1 == t.qtype) {
                 return t;
-            } else if (tvars1 == t.tvars) {
+            } else if (tvars1 == t.tvars && (qtype1 instanceof ForAll)) {
                 return newForAll(tvars1, qtype1);
             } else {
-                return newForAll(tvars1, F3Types.this.subst2(qtype1, t.tvars, tvars1));
+		Type x = F3Types.this.subst2(qtype1, t.tvars, tvars1);
+		if (false && x instanceof ClassType) {
+		    System.err.println("from="+from+", to="+to);
+		    System.err.println("tvars="+t.tvars);
+		    System.err.println("tvars1="+tvars1);
+		    System.err.println("x="+x);
+		    System.err.println("qtype1="+qtype1);
+		    //return x;
+		}
+                return newForAll(tvars1, x);
             }
         }
 
@@ -2293,7 +2362,7 @@ public class F3Types extends Types {
 	    t = ((FunctionType)t).asMethodOrForAll();
 	}
 	if (t instanceof ClassType) {
-	    throw new IllegalArgumentException(t.getClass()+ ": "+toF3String(t));
+	    //throw new IllegalArgumentException(t.getClass()+ ": "+toF3String(t));
 	}
 	return new ForAll(targs, t);
     }
@@ -2410,7 +2479,7 @@ public class F3Types extends Types {
 
             public Type visitType0(Type t, Boolean preserveWildcards) {
                 if (t == syms.botType) {
-                    return syms.objectType;
+                    return syms.botType;
                 }
                 else if (isSameType(t, syms.f3_EmptySequenceType)) {
                     return sequenceType(syms.objectType);

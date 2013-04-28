@@ -44,7 +44,6 @@ import static com.sun.tools.mjavac.code.Kinds.*;
 import static com.sun.tools.mjavac.code.TypeTags.*;
 import static com.sun.tools.mjavac.code.TypeTags.WILDCARD;
 
-import com.sun.tools.mjavac.comp.Infer;
 import com.sun.tools.mjavac.jvm.ByteCodes;
 import com.sun.tools.mjavac.jvm.ClassReader;
 import com.sun.tools.mjavac.jvm.Target;
@@ -83,7 +82,7 @@ public class F3Check {
     private final Messages messages;
     private final Options options;
     private final F3Symtab syms;
-    private final Infer infer;
+    private final F3Infer infer;
     private final Target target;
     private final Source source;
     private final F3Types types;
@@ -127,7 +126,7 @@ public class F3Check {
         diags = JCDiagnostic.Factory.instance(context);
         messages = Messages.instance(context);
         syms = (F3Symtab) Symtab.instance(context);
-        infer = Infer.instance(context);
+        infer = F3Infer.instance(context);
         types = F3Types.instance(context);
         attr = F3Attr.instance(context);
         options = Options.instance(context);
@@ -560,9 +559,9 @@ public class F3Check {
      *  is returned unchanged.
      */
     Type instantiatePoly(DiagnosticPosition pos, ForAll t, Type pt, Warner warn) {
-	if (pt == Infer.anyPoly && complexInference) {
+	if (pt == F3Infer.anyPoly && complexInference) {
 	    return t;
-	} else if (pt == Infer.anyPoly || pt.tag == NONE) {
+	} else if (pt == F3Infer.anyPoly || pt.tag == NONE) {
 	    Type newpt = t.qtype.tag <= VOID ? t.qtype : syms.objectType;
 	    return instantiatePoly(pos, t, newpt, warn);
 	} else if (pt.tag == ERROR) {
@@ -570,7 +569,7 @@ public class F3Check {
 	} else {
 	    try {
 		return infer.instantiateExpr(t, pt, warn);
-	    } catch (Infer.NoInstanceException ex) {
+	    } catch (F3Infer.NoInstanceException ex) {
 		if (ex.isAmbiguous) {
 		    JCDiagnostic d = ex.getDiagnostic();
 		    log.error(pos,
