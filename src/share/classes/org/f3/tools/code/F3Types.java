@@ -123,8 +123,10 @@ public class F3Types extends Types {
 		args = thisType.getTypeArguments().appendList(args);
 	    }
 	}
-	list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
-	//System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
+	if (!(list.head instanceof TypeVar)) {
+	    list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
+	}
+	System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
 	int n = args.size();
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
@@ -230,8 +232,45 @@ public class F3Types extends Types {
 	}
 	return type;
     }
-    
+
     public Type applyTypeCons(Type t) {
+	if (false) {
+	    return applyTypeConsOrig(t);
+	}
+	if (t instanceof TypeCons) {
+	    return t;
+	}
+	List<Type> args = t.getTypeArguments();
+	int i = isTypeConsType(t);
+	if (i < 0) {
+	    //System.err.println("applyTypeCons "+ t+ " =/=> "+t);
+	    return t;
+	}
+	if (args.head == null) {
+	    //System.err.println("applyTypeCons "+ t+ " =/=> "+t);
+	    return t;
+	}
+	List<Type> headArgs = args.head.getTypeArguments();
+	if (headArgs.size() > 0) {
+	    Type base = args.head.tsym.type;
+	    if (base.getTypeArguments().size() == headArgs.size()) {
+		//System.err.println("f-ed up: "+args.head + " is " + base);
+		headArgs = List.<Type>nil();
+	    }
+	}
+	List<Type> allArgs = args.tail == null? headArgs: headArgs.appendList(args.tail);
+	Type ctor = args.head instanceof TypeVar ? args.head : erasure(args.head);
+	///System.err.println(ctor + " of ("+allArgs+")");
+	if (allArgs.size() == 0) {
+	    //System.err.println("applyTypeCons "+ t+ " ===> "+ctor);
+	    return ctor;
+	}
+	Type result = applySimpleGenericType(ctor, allArgs);
+	//System.err.println("applyTypeCons "+ t+ " => "+result);
+	return result;
+    }
+
+    public Type applyTypeConsOrig(Type t) {
 	if (t instanceof TypeCons) {
 	    return t;
 	}
@@ -241,6 +280,7 @@ public class F3Types extends Types {
 	    return t;
 	}
 	if (args.tail == null) {
+
 	    return args.head;
 	}
 	if (args.head instanceof TypeVar) {
@@ -556,6 +596,9 @@ public class F3Types extends Types {
 	    //System.err.println("actuals="+actuals);
 	    return new ForAll(actuals, base);
 	}
+	if (isTypeConsType(base) >= 0) {
+	    //System.err.println("apply simple="+base+" of ("+actuals+")");
+	}
 	if (base instanceof TypeVar) {
 	    TypeVar v = (TypeVar)base;
 	    if (false) {
@@ -741,9 +784,11 @@ public class F3Types extends Types {
 			//System.err.println("typecons="+toF3String(t)+": "+toF3String(tc_enc)+", s="+toF3String(s)+ ": "+b);
 		    }
 		}
+
 		if (isSameTypeCons(s, t)) {
 		    return true;
 		}
+
 		Type tt = subst(t, t.getTypeArguments(), s.getTypeArguments());
 		//System.err.println("S="+toF3String(s));
 		//System.err.println("TT="+toF3String(tt));
@@ -769,7 +814,7 @@ public class F3Types extends Types {
 	    if (isSameType(t, s, true)) {
 		return true;
 	    }
-	} catch (AssertionError err) {
+	} catch (Throwable err) {
 	    // hack;
 	    err.printStackTrace();
 	}
@@ -919,6 +964,7 @@ public class F3Types extends Types {
     boolean isSameTypeCons(Type t, Type s, boolean debug) {
 	//System.err.println("s="+s.getClass()+": "+s);
 	//System.err.println("t="+t.getClass()+": "+t);
+	if (true) return t == s; // disabled for now
 	int i = isTypeConsType(s);
 	boolean doit = false;
 	if (i >= 0) {
@@ -934,7 +980,8 @@ public class F3Types extends Types {
 	//System.err.println("t'="+t);
 	if (doit) {
 	    boolean result = isSameType(s, t);
-	    //  System.err.println(s + " ==  " + t + " => "+ result);
+	    System.err.println(s + " ==  " + t + " => "+ result);
+	    return result;
 	}
 	return false;
     }
@@ -1289,7 +1336,8 @@ public class F3Types extends Types {
 	    }
 	    boolean result = super.isSameType(a, b);
 	    return result;
-	} catch (AssertionError err) {
+	} catch (Throwable err) {
+	    System.err.println(err);
 	    System.err.println("a: "+ a);
 	    System.err.println("b: "+ b);
 	    //throw err;
@@ -1323,7 +1371,7 @@ public class F3Types extends Types {
 
     public String toF3String(Type type) {
         StringBuilder buffer = new StringBuilder();
-        typePrinter.visit(type, buffer);
+	typePrinter.visit(type, buffer);
 	visited.clear();
         return buffer.toString();
     }
@@ -2244,9 +2292,9 @@ public class F3Types extends Types {
                  from.nonEmpty();
                  from = from.tail, to = to.tail) {
 		//System.err.println("Subst from.head="+System.identityHashCode(from.head)+"@"+from.head.getClass()+": "+from.head);
-		//System.err.println("t="+toF3String(t));
-		//System.err.println("from="+toF3String(from.head));
-		//System.err.println("to="+toF3String(to.head));
+		//System.err.println("t="+t);
+		//System.err.println("from="+from.head);
+		//System.err.println("to="+to.head);
 		if (t instanceof TypeCons) {
 		    TypeCons tc1 = (TypeCons)t;
 		    if (from.head instanceof TypeCons) {
