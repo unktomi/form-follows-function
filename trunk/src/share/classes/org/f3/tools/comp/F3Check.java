@@ -245,8 +245,8 @@ public class F3Check {
     Type typeError(DiagnosticPosition pos, Object problem, Type found, Type req) {
         String foundAsF3Type = types.toF3String(found);
         String requiredAsF3Type = types.toF3String(req);
-	System.err.println("found="+found);
-	System.err.println("req="+req);
+	System.err.println("found="+found.getClass()+": "+found);
+	System.err.println("req="+req.getClass()+": "+req);
 	if (req instanceof TypeVar) {
 	    TypeVar tv = (TypeVar)req;
 	    System.err.println("tv.lower="+tv.lower);
