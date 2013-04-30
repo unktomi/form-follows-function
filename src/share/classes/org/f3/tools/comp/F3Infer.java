@@ -111,9 +111,11 @@ public class F3Infer {
                 if (t.tag == TYPEVAR) {
 		    UndetVar v = new UndetVar(t);
 		    TypeVar tv = (TypeVar)t;
-		    if (tv.lower != syms.botType) {
+		    if (tv.lower != syms.botType && tv.lower != tv.bound) {
 			v.lobounds = v.lobounds.append(tv.lower);
 		    }
+		    Type upper = tv.getUpperBound();
+		    tv.bound = upper == null ? tv: upper;
 		    return v;
 		}
                 else return t.map(this);
@@ -151,6 +153,7 @@ public class F3Infer {
      *  Throw a NoInstanceException if this not possible.
      */
     void maximizeInst(UndetVar that, Warner warn) throws NoInstanceException {
+	//System.err.println("maximize inst: "+ that);
         if (that.inst == null) {
             if (that.hibounds.isEmpty())
                 that.inst = syms.objectType;
@@ -234,9 +237,13 @@ public class F3Infer {
                     hb = types.fromUnknownFun.apply(bs.head);
             }
             if (hb == null ||
-                !types.isSubtypeUnchecked(hb, that.hibounds, warn) ||
-                !types.isSubtypeUnchecked(that.inst, hb, warn))
+                !types.isSubtypeUnchecked(hb, that.hibounds, warn) /* ||
+								      !types.isSubtypeUnchecked(that.inst, hb, warn) */) {
+		//System.err.println("inst="+that.inst);
+		//System.err.println("hb="+hb);
+		//System.err.println("hibounds="+that.hibounds);
                 throw ambiguousNoInstanceException;
+	    }
         }
     }
 
@@ -254,17 +261,25 @@ public class F3Infer {
                                 Type to,
                                 Warner warn) throws NoInstanceException {
         List<Type> undetvars = Type.map(that.tvars, fromTypeVarFun);
+	System.err.println("undetvars="+undetvars);
         for (List<Type> l = undetvars; l.nonEmpty(); l = l.tail) {
             UndetVar v = (UndetVar) l.head;
             ListBuffer<Type> hibounds = new ListBuffer<Type>();
+	    System.err.println("v="+v);
+	    System.err.println("v.qtype="+v.qtype);
             for (List<Type> l1 = types.getBounds((TypeVar) v.qtype); l1.nonEmpty(); l1 = l1.tail) {
+		System.err.println("l1.head="+l1.head);
+		System.err.println("that.tvars="+that.tvars);
                 if (!l1.head.containsSome(that.tvars)) {
                     hibounds.append(l1.head);
                 }
             }
             v.hibounds = hibounds.toList();
+	    System.err.println("v="+v);
+	    System.err.println("v.hibounds="+v.hibounds);
         }
         Type qtype1 = types.subst(that.qtype, that.tvars, undetvars);
+	System.err.println("qtype1="+qtype1+", to="+to);
         if (!types.isSubtype(qtype1, to)) {
             throw unambiguousNoInstanceException
                 .setMessage("no.conforming.instance.exists",
@@ -291,7 +306,10 @@ public class F3Infer {
                                   boolean allowBoxing,
                                   boolean useVarargs,
                                   Warner warn) throws NoInstanceException {
-        //-System.err.println("instantiateMethod(" + tvars + ", " + mt + ", " + argtypes + ")"); //DEBUG
+	if (false) {
+	    System.err.println("instantiateMethod(" + tvars + ", " + mt + ", " + argtypes + ")"); //DEBUG
+	    System.err.println("allowBoxing+"+allowBoxing+ ", varargs="+useVarargs);
+	}
         List<Type> undetvars = Type.map(tvars, fromTypeVarFun);
         List<Type> formals = mt.argtypes;
 
@@ -301,13 +319,22 @@ public class F3Infer {
         while (argtypes.nonEmpty() && formals.head != varargsFormal) {
             Type ft = formals.head;
             Type at = argtypes.head.baseType();
-            if (at.tag == FORALL)
+            if (at.tag == FORALL) {
+		Type bt = at;
                 at = instantiateArg((ForAll) at, ft, tvars, warn);
+		//System.err.println("instantiated: "+ bt + " to "+ at);
+	    }
+	    //System.err.println("undetvars="+undetvars);
             Type sft = types.subst(ft, tvars, undetvars);
             boolean works = allowBoxing
                 ? types.isConvertible(at, sft, warn)
                 : types.isSubtypeUnchecked(at, sft, warn);
             if (!works) {
+		if (false) {
+		    System.err.println("ft="+ft);
+		    System.err.println("at="+at);
+		    System.err.println("sft="+sft);
+		}
                 throw unambiguousNoInstanceException
                     .setMessage("no.conforming.assignment.exists",
                                 tvars, at, ft);
@@ -366,6 +393,7 @@ public class F3Infer {
                 undettypes.append(uv.inst);
             }
         }
+
         checkWithinBounds(tvars, undettypes.toList(), warn);
 
         if (!restvars.isEmpty()) {
@@ -407,13 +435,14 @@ public class F3Infer {
                                    List<Type> arguments,
                                    Warner warn)
         throws NoInstanceException {
+	//System.err.println("check within bounds: "+tvars + ": "+arguments);
         for (List<Type> tvs = tvars, args = arguments;
              tvs.nonEmpty();
              tvs = tvs.tail, args = args.tail) {
             if (args.head instanceof UndetVar) continue;
             List<Type> bounds = types.subst(types.getBounds((TypeVar)tvs.head), tvars, arguments);
             if (!types.isSubtypeUnchecked(args.head, bounds, warn)) {
-		System.err.println("not a subtype: "+ args.head +" " +bounds);
+		//System.err.println("not a subtype: "+ args.head +" " +bounds);
                 throw unambiguousNoInstanceException
                     .setMessage("inferred.do.not.conform.to.bounds",
                                 arguments, tvars);

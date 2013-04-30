@@ -498,9 +498,9 @@ public class F3Attr implements F3Visitor {
 			env.getEnclosingClassType(),
 			pSequenceness, false);
 	    tree.baseType = env.getEnclosingClassType();
-	    System.err.println("this: "+env.getEnclosingClassType());
-	    System.err.println("this': "+t1);;
-	    System.err.println("check id: "+ t);
+	    //System.err.println("this: "+env.getEnclosingClassType());
+	    //System.err.println("this': "+t1);;
+	    //System.err.println("check id: "+ t);
 	    t = tree.sym.type = tree.type = t1;
 	}
 	return t;
@@ -3896,6 +3896,10 @@ public class F3Attr implements F3Visitor {
 		    if (found != null) {
 			found.complete();
 		    }
+		    Symbol generic = found;
+		    if (found instanceof F3Resolve.InstanceMethodSymbol) {
+			generic = ((F3Resolve.InstanceMethodSymbol)found).generic;
+		    }
 		    //System.err.println("found="+found);
 		    //System.err.println("found="+found.owner.type);
 		    if (found != null && found.owner != null && found.owner.type != null && msym !=null && msym.owner != null && msym.owner.type != null && !types.isSameType(found.owner.type, msym.owner.type.tsym.type) && msym.owner.type.tsym != null) {
@@ -3903,19 +3907,26 @@ public class F3Attr implements F3Visitor {
 						 msym.owner.type.tsym.type.getTypeArguments(),
 						 msym.owner.type.tsym.type.getTypeArguments(),
 						 true);
-			Type mt1 = rs.newMethTemplate(//List.of(msym.owner.type),
-						      List.of(hack),
-						      msym.owner.type.tsym.type.getTypeArguments());
+			List<Type> formals = List.of(hack).appendList(generic.type.getParameterTypes());
+			List<Type> targs = msym.owner.type.tsym.type.getTypeArguments().appendList(generic.type.getTypeArguments());
+			Type rtype = found.type.getReturnType();
+			rtype = types.subst2(rtype,
+					     msym.owner.type.tsym.type.getTypeArguments(),
+					     msym.owner.type.tsym.type.getTypeArguments(),
+					     true);
+			Type mt1 = //rs.newMethTemplate(formals, targs);
+			    new ForAll(targs,
+				       new MethodType(formals, rtype, List.<Type>nil(), 
+						      syms.methodClass));
+			
 			//System.err.println("mt1="+mt1);
 			try {
-			    // omg, this is fucked...
-			    Type rtype = found.type.getReturnType();
-			    rtype = types.subst2(rtype,
-						 msym.owner.type.tsym.type.getTypeArguments(),
-						 msym.owner.type.tsym.type.getTypeArguments(),
-						 true);
-			    Type instanced = rs.rawInstantiate(env, found, mt1, List.of(self), List.<Type>nil(), true, false, Warner.noWarnings);
-			    System.err.println("found="+found+ ": instance="+instanced);
+			    // omg, this is so fucked...
+			    List<Type> parms = List.of(self).appendList(mtype.getParameterTypes());
+			    Type instanced = 
+				rs.rawInstantiate(env, found, mt1, parms, List.<Type>nil(), true, false, Warner.noWarnings);
+			    //System.err.println("found="+found+ ": instance="+instanced);
+			    /*
 			    Type proto = 
 				syms.makeFunctionType(List.of(hack).prepend(rtype)).asMethodOrForAll();
 			    proto = types.subst2(proto,
@@ -3926,17 +3937,21 @@ public class F3Attr implements F3Visitor {
 			    Type instanced2 = rs.rawInstantiate(env, found, proto, List.of(self), List.<Type>nil(), true, false, Warner.noWarnings);
 			    System.err.println("found="+found+ ": instanced2="+instanced2);
 			    restype = instanced2.getReturnType();
+			    */
+			    restype = instanced.getReturnType();
 			    tree.type = restype;
 			    ((MethodType)msym.type).restype = restype;
 			    //System.err.println("msym=>"+msym.type);
 			} catch (F3Infer.NoInstanceException ex) {
+			    ex.printStackTrace();
+			    System.err.println(ex.getDiagnostic());
 			    if (true) {
 				Type t = self;
 				if (ex.isAmbiguous) {
 				    JCDiagnostic d = ex.getDiagnostic();
 				    log.error(dt.pos(),
 					      d!=null ? MsgSym.MESSAGE_UNDETERMINDED_TYPE_1 : MsgSym.MESSAGE_UNDETERMINDED_TYPE,
-					      types.toF3String(t), d);
+					      types.toF3String(generic.type), d);
 				} else {
 				    JCDiagnostic d = ex.getDiagnostic();
 				    chk.typeError(dt.pos(),
@@ -5909,7 +5924,7 @@ public class F3Attr implements F3Visitor {
 		if (x1 != x.head) {
 		    int tc2 = types.isTypeConsType(y.head);
 		    if (tc2 >= 0 || !x1.toString().equals(x.head.toString())) { // hack - but cheaper than propagating a copy ?
-			System.err.println("x1="+x1+"..."+x.head+ " / "+y.head);
+			//System.err.println("x1="+x1+"..."+x.head+ " / "+y.head);
 			vars.head.baseType = x1;
 		    }
 		}

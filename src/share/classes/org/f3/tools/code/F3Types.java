@@ -126,7 +126,7 @@ public class F3Types extends Types {
 	if (!(list.head instanceof TypeVar)) {
 	    list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
 	}
-	System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
+	//System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
 	int n = args.size();
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);
@@ -747,10 +747,25 @@ public class F3Types extends Types {
         return lub;
     }
     
+    boolean WARNED_BUG = false;
     @Override
     public boolean isSubtype(Type t, Type s, boolean capture) {
 	if (t == s) {
 	    return true;
+	}
+	if (!(t instanceof WildcardType) && !(t instanceof MethodType)) {
+	    try {
+		if (super.isSubtype(t, s, capture)) {
+		    return true;
+		}
+	    } catch (AssertionError err) {
+		if (!WARNED_BUG) {
+		    WARNED_BUG = true;
+		    System.err.println("t="+t+", s="+s);
+		    System.err.println(err);
+		    //Thread.currentThread().dumpStack();
+		}
+	    }
 	}
 	if (true) {
 	    int i = isTypeConsType(s);
@@ -903,11 +918,30 @@ public class F3Types extends Types {
         }
     };
 
-    public Type expandTypeVar(final Type x) {
+    public Type expandTypeVar(final Type t) {
+	Type x = t;
 	if (x instanceof F3Attr.TypeVarDefn) {
 	    final F3Attr.TypeVarDefn def = (F3Attr.TypeVarDefn)x;
 	    return new WildcardType(def, def.variance, syms.boundClass); 
 	}
+	if (x instanceof ClassType) {
+	    ClassSymbol def = (ClassSymbol)x.tsym;
+	    if (x.isParameterized()) {
+		for (List<Type> l0 = x.getTypeArguments(),
+			 l1 = def.type.getTypeArguments();
+		     l0 != null && l1 != null && l0.head != null && l1.head != null;
+		     l0 = l0.tail, l1 = l1.tail) {
+		    if (l1.head instanceof F3Attr.TypeVarDefn) {
+			F3Attr.TypeVarDefn d = (F3Attr.TypeVarDefn)l1.head;
+			while (l0.head instanceof WildcardType) {
+			    l0.head = ((WildcardType)l0.head).type;
+			}
+			l0.head = new WildcardType(l0.head, d.variance, syms.boundClass);
+		    }
+		}
+	    }
+	}
+	//System.err.println("expanding: "+ t + " => "+ x);
 	return x;
     }
 
@@ -1435,6 +1469,9 @@ public class F3Types extends Types {
 		String upper = null;
 		if (t.bound != null && t.bound != syms.objectType) {
 		    upper = toF3String(t.bound);
+		    if ("java.lang.Object".equals(upper)) {
+			upper = null;
+		    }
 		    if ("Object".equals(upper)) {
 			upper = null;
 		    }
@@ -1444,7 +1481,7 @@ public class F3Types extends Types {
 			System.err.println("bad lower bound: "+ t.lower);
 		    } else {
 			lower = toF3String(t.lower);
-			if ("Object".equals(upper)) {
+			if ("<nulltype>".equals(lower)) {
 			    lower = null;
 			}
 		    }

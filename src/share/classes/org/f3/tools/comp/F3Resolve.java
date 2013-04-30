@@ -418,6 +418,9 @@ public class F3Resolve {
                 actuals = actuals.tail;
             }
             mt = types.subst(pmt.qtype, pmt.tvars, typeargtypes);
+	    if (debug) {
+		System.err.println("mt''="+mt);
+	    }
         } else if (mt.tag == FORALL) {
             ForAll pmt = (ForAll) mt;
             List<Type> tvars1 = types.newInstances(pmt.tvars);
