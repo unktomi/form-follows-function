@@ -579,7 +579,10 @@ public class F3ClassReader extends ClassReader {
 		String sig = (String)ann.values.head.snd.getValue();
 		signatureBuffer = new byte[sig.length()*3];
 		try {
+		    typevars = typevars.dup(owner);
+		    enterTypevars(owner.type);
 		    mtype = sigToType(names.fromString(sig));
+		    typevars = typevars.leave();
                 }
                 catch (Exception e) {
 		    System.err.println("bad sig="+sig);

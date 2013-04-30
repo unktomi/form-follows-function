@@ -237,8 +237,9 @@ public class F3Infer {
                     hb = types.fromUnknownFun.apply(bs.head);
             }
             if (hb == null ||
-                !types.isSubtypeUnchecked(hb, that.hibounds, warn) /* ||
-								      !types.isSubtypeUnchecked(that.inst, hb, warn) */) {
+                !types.isSubtypeUnchecked(hb, that.hibounds, warn)
+		//||!types.isSubtypeUnchecked(that.inst, hb, warn) 
+		) {
 		//System.err.println("inst="+that.inst);
 		//System.err.println("hb="+hb);
 		//System.err.println("hibounds="+that.hibounds);
