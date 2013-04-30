@@ -248,12 +248,6 @@ public class F3ClassReader extends ClassReader {
 
     /** Translate raw JVM type to F3 type. */
     public Type translateType (Type type) {
-	if (type == Type.noType) {
-	    return type;
-	}
-	if (type == syms.objectType) {
-	    return type;
-	}
         if (type == null) 
             return null;
         Type t = (Type) typeMap.get(type);
@@ -292,7 +286,17 @@ public class F3ClassReader extends ClassReader {
 	    System.err.println("translated to: "+ type);
 	}
 	*/
-        switch (type.tag) {
+
+	if (type == Type.noType) {
+	    t = type;
+	}
+	if (type == syms.objectType) {
+	    t = type;
+	}
+	if (type == syms.botType) {
+	    t = type;
+	}
+        if (t == null) switch (type.tag) {
             case VOID:
                 t = syms.voidType;
                 break;
@@ -566,19 +570,11 @@ public class F3ClassReader extends ClassReader {
         }
         F3Symtab f3Syms = (F3Symtab) this.syms;
 	Type thisType = null;
+	String thisTypeSig = null;
 	for (Attribute.Compound ann : sym.getAnnotationMirrors()) {
 	    if (ann.type.tsym.flatName() == f3Syms.f3_thisTypeAnnotationType.tsym.flatName()) {
-		String sig = (String)ann.values.head.snd.getValue();
-		signatureBuffer = new byte[sig.length()*3];
-		try {
-		    thisType = sigToType(names.fromString(sig));
-                }
-                catch (Exception e) {
-		    System.err.println("bad sig="+sig);
-		    //e.printStackTrace();
-                    //throw new AssertionError("Bad F3 signature");
-                }
-            }
+		thisTypeSig = (String)ann.values.head.snd.getValue();
+	    }	    
 	    if (ann.type.tsym.flatName() == f3Syms.f3_signatureAnnotationType.tsym.flatName()) {
 		String sig = (String)ann.values.head.snd.getValue();
 		signatureBuffer = new byte[sig.length()*3];
@@ -608,12 +604,32 @@ public class F3ClassReader extends ClassReader {
                 type = popMethodTypeArg(type, name, owner.type);
             }
         }
-	if (thisType != null) {
-	    owner = thisType.tsym;
-	}
         name = names.fromString(nameString);
 	MethodSymbol origSym = (MethodSymbol)sym;
         MethodSymbol res = new MethodSymbol(flags, name, type, owner);
+	if (thisTypeSig != null) {
+	    String sig = thisTypeSig;
+	    signatureBuffer = new byte[sig.length()*3];
+	    try {
+		currentOwner = res;
+		typevars = typevars.dup(res);
+		enterTypevars(owner.type);
+		enterTypevars(res.type);
+		System.err.println("typevars="+typevars);
+		thisType = sigToType(names.fromString(sig));
+		System.err.println("thisType="+thisType);
+		typevars = typevars.leave();
+	    }
+	    catch (Exception e) {
+		System.err.println("bad thisType sig="+sig);
+		e.printStackTrace();
+		//throw new AssertionError("Bad F3 signature");
+	    }
+	}
+	if (thisType != null) {
+	    Symbol base = res.owner;
+	    res.owner = new ClassSymbol(base.flags(), base.name, thisType, base.owner);
+	}
 	//System.err.println("TRANSLATED: "+System.identityHashCode(origSym)+": "+origSym);
 	//System.err.println("TRANSLATED TO: "+System.identityHashCode(res)+": "+origSym);
 	//System.err.println("translated: "+res+": "+res.type);
