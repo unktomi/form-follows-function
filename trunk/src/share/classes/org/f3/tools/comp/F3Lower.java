@@ -1249,7 +1249,16 @@ public class F3Lower implements F3Visitor {
             result = toFunctionValue(tree, false);
         }
         else {
+	    Symbol sym = F3TreeInfo.symbol(tree);
             result = tree;
+	    if (sym instanceof F3VarSymbol) {
+		if (sym.type != tree.type && !(tree.type instanceof MethodType)) {
+		    System.err.println("symbol for "+ tree+": "+sym.getClass()+": "+sym);
+		    System.err.println("sym.type="+sym.type);
+		    System.err.println("tree.type="+tree.type);
+		    result = preTrans.makeCast(tree, tree.type);
+		}
+	    }
         }
     }
 

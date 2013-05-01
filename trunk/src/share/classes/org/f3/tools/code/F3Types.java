@@ -1508,15 +1508,6 @@ public class F3Types extends Types {
 	}
 	@Override
 	public Void visitCapturedType(CapturedType t, StringBuilder buffer) {
-	    
-	    buffer.append(t);
-	    if (true) return null;
-	    if (false) {
-		if (t.lower != syms.botType) {
-		    visit(t.lower, buffer);
-		    buffer.append("..");
-		}
-	    }
 	    if (t.wildcard.kind == BoundKind.EXTENDS) {
 		buffer.append("*");
 	    } 
