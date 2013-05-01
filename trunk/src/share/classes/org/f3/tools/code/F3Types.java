@@ -1804,7 +1804,7 @@ public class F3Types extends Types {
 		    return t0;
 		}
 		visited.add(t0);
-		if (true) {
+		if (preserveWildcards) {
 		    Type x = t0;
 		    if (x instanceof F3Attr.TypeVarDefn) {
 			F3Attr.TypeVarDefn def = (F3Attr.TypeVarDefn)x;
@@ -1972,7 +1972,7 @@ public class F3Types extends Types {
 		    return t0;
 		}
 		visited.add(t0);
-		if (true) {
+		if (preserveWildcards) {
 		    Type x = t0;
 		    if (x instanceof F3Attr.TypeVarDefn) {
 			F3Attr.TypeVarDefn def = (F3Attr.TypeVarDefn)x;

@@ -910,6 +910,9 @@ public class F3Attr implements F3Visitor {
         // for the selection. This is relevant for determining whether
         // protected symbols are accessible.
         Symbol sitesym = F3TreeInfo.symbol(tree.selected);
+	if (isType(sitesym)) {
+	    site = types.normalize(site, false);
+	}
         boolean selectSuperPrev = env.info.selectSuper;
         env.info.selectSuper =
             sitesym != null &&

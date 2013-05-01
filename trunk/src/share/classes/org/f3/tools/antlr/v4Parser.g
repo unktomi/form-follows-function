@@ -5109,6 +5109,12 @@ objectLiteralPart
                     $value = $variableDeclaration.value;
                     errNodes.append($value);
                 }
+              |
+               typeAlias { 
+                  errNodes.append($typeAlias.rtype); 
+                  $value = $typeAlias.rtype; 
+	           }
+
                 
         )
         
