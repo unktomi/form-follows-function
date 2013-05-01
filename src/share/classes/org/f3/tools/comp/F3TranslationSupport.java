@@ -443,6 +443,12 @@ public abstract class F3TranslationSupport {
 	       t.tsym instanceof F3Resolve.TypeAliasSymbol) {
 	    t = t.tsym.type;
 	}
+	if (t instanceof ForAll) {
+	    Type q = ((ForAll)t).qtype;
+	    if (!(q instanceof MethodType)) { // ugh, this is fucked, but necessary atm
+		t = q;
+	    }
+	}
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	}
