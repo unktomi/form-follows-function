@@ -2190,6 +2190,10 @@ public class F3Types extends Types {
 		if (owner == null) {
 		    return sym.type;
 		}
+		if (owner.type == null) {
+		    System.err.println("owner.type of "+sym+" is null: "+ owner.name);
+		    return sym.type;
+		}
                 if (((flags & STATIC) == 0) && owner.type.isParameterized()) {
                     Type base = asOuterSuper(t, owner);
 		    //System.err.println("t="+toF3String(t));

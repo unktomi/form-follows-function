@@ -1691,7 +1691,7 @@ public class F3TreeMaker implements F3TreeFactory {
         return names.fromString(superclass.toString() + infix + ++syntheticClassNumber);
     }
 
-    Name objectLiteralClassName(Name superclass) {
+    public Name objectLiteralClassName(Name superclass) {
         return syntheticClassName(superclass, F3Defs.objectLiteralClassInfix);
     }
 

@@ -856,6 +856,7 @@ public class F3Attr implements F3Visitor {
 	}
 	//System.err.println("checkId: "+ sym);
 	//System.err.println("pt="+pt);
+	//System.err.println("actuals="+actuals);
         result = checkId(tree, env1.getEnclosingClassType(), sym, env, actuals, pkind, pt, pSequenceness, varArgs);
 	if (actuals.size() > 0) {
 	    //System.err.println("sym.type="+sym.type);
@@ -868,6 +869,10 @@ public class F3Attr implements F3Visitor {
 	    System.err.println("result="+result);
 	}
 	tree.type = result;
+	if (false) {
+	    System.out.println("result of "+tree+ " = "+result.getClass()+": "+result);
+	    System.err.println("result="+result);
+	}
 	if (pkind == TYP && !inSuperType) {
 	    tree.type = result = types.expandTypeVar(result);
 	}
@@ -2296,7 +2301,7 @@ public class F3Attr implements F3Visitor {
         for (List<F3Var> l = vars; l.nonEmpty(); l = l.tail)
             attribExpr(l.head, localEnv);
 	tree.type = owntype;
-
+	Type clazztype0 = clazztype;
 	clazz.type = clazztype = tree.type = owntype;
 
 	Symbol ownerSym = clazztype.tsym;
@@ -2311,11 +2316,17 @@ public class F3Attr implements F3Visitor {
             //
             if (localPt == null) continue;
 
+
+
             F3ObjectLiteralPart part = (F3ObjectLiteralPart)localPt;
+
+	    //System.err.println("part="+part);
 
             Symbol memberSym = rs.findIdentInType(env, clazz.type, part.name, VAR);
             memberSym = rs.access(memberSym, localPt.pos(), clazz.type, part.name, true);
             memberSym.complete();
+
+	    //System.err.println("memberSym="+memberSym.getClass()+": "+memberSym);
 
             Scope.Entry oldEntry = partsScope.lookup(memberSym.name);
             if (oldEntry.sym != null) {
@@ -2336,14 +2347,57 @@ public class F3Attr implements F3Visitor {
 
             // Protect against erroneous tress called for attribution from the IDE
             //
-            if  (part.getExpression() != null) {
-
+            if (part.getExpression() != null) {
                 attribExpr(part.getExpression(), initEnv, memberType);
                 if (types.isArray(part.getExpression().type) &&
                     part.isBound()) {
                     log.warning(part.pos(), MsgSym.MESSAGE_F3_UNSUPPORTED_TYPE_IN_BIND);
                 }
             }
+	    Type x = memberType;
+	    if (x instanceof FunctionType) {
+		x = ((FunctionType)x).asMethodOrForAll();
+	    }
+	    if (memberSym instanceof MethodSymbol) {
+		if (cdef == null) {
+		    long innerClassFlags = Flags.SYNTHETIC | Flags.FINAL; // to enable, change to Flags.FINAL
+		    cdef = f3make.at(tree.pos()).ClassDeclaration(f3make.Modifiers(innerClassFlags),
+								  f3make.objectLiteralClassName(ownerSym.name),
+								  List.<F3Expression>of(f3make.Ident(ownerSym.name)),
+								  List.<F3Tree>nil());
+		    if (cdef.sym == null) {
+			enter.classEnter(cdef, env);
+		    }
+		    attribDecl(cdef, localEnv);
+		}
+		MethodSymbol methSym = new MethodSymbol(F3Flags.OVERRIDE, 
+							memberSym.name, 
+							part.getExpression().type, 
+							cdef.sym);
+		System.err.println("method type: "+ methSym.type);
+		System.err.println("member method type: "+ memberSym.type);
+		System.err.println("member method type': "+ memberType);
+		Type expType = part.getExpression().type;
+		Symbol inherited = rs.findMethod(env, 
+						 ownerSym.type, 
+						 memberSym.name, 
+						 expType.getParameterTypes(),
+						 expType.getTypeArguments(),
+						 true, false, false);
+		if (inherited instanceof MethodSymbol) {
+		    chk.checkOverride(part, methSym);
+		    seen.add(memberSym.name);
+		    part.type = memberType;
+		    part.expr.type = memberType;
+		    part.sym = memberSym;
+		    part.isMethodDef = true;
+		    System.err.println("inherited="+inherited.getClass()+": "+inherited);
+		    if (tree.def == null) {
+			tree.def = cdef;
+		    }
+		    continue;
+		}
+	    }
             if (memberSym instanceof F3VarSymbol) {
                 F3VarSymbol v = (F3VarSymbol) memberSym;
                 if (v.isStatic()) {
@@ -3581,7 +3635,8 @@ public class F3Attr implements F3Visitor {
 	    }
 	    //System.err.println("mpt="+types.toF3String(mpt));
 	    localEnv.info.varArgs = false;
-	    mtype = attribExpr(tree.meth, localEnv, mpt);
+	    mtype = attribExpr(tree.meth, localEnv, 
+			       mpt);
 	    if (false) {
 		Symbol sym = F3TreeInfo.symbol(tree.meth);
 		System.err.println("mtype="+mtype);
@@ -3599,7 +3654,9 @@ public class F3Attr implements F3Visitor {
 		    !(mtype instanceof ForAll)) {
 		    Name invoke = names.fromString("invoke");
 		    F3Expression invokeTree = f3make.at(tree.meth.pos).Select(tree.meth, invoke, true);
+		    System.err.println("invokeTree="+invokeTree);
 		    mtype = attribExpr(invokeTree, localEnv, mpt);
+		    System.err.println("mtype="+mtype);
 		    if ((mtype instanceof FunctionType) ||
 			(mtype instanceof MethodType) ||
 			(mtype instanceof ForAll)) {
@@ -3923,9 +3980,10 @@ public class F3Attr implements F3Visitor {
 			List<Type> targs = msym.owner.type.tsym.type.getTypeArguments().appendList(generic.type.getTypeArguments());
 			Type rtype = found.type.getReturnType();
 			rtype = types.subst2(rtype,
-					     msym.owner.type.tsym.type.getTypeArguments(),
-					     msym.owner.type.tsym.type.getTypeArguments(),
+					     targs,
+					     targs,
 					     true);
+			//System.err.println("rtype="+rtype);
 			Type mt1 = //rs.newMethTemplate(formals, targs);
 			    new ForAll(targs,
 				       new MethodType(formals, rtype, List.<Type>nil(), 
@@ -3945,14 +4003,18 @@ public class F3Attr implements F3Visitor {
 						 msym.owner.type.tsym.type.getTypeArguments(),
 						 msym.owner.type.tsym.type.getTypeArguments());
 			    proto = new ForAll(msym.owner.type.tsym.type.getTypeArguments(), proto);
-			    //System.err.println("fun1="+proto);
+			    System.err.println("fun1="+proto);
 			    Type instanced2 = rs.rawInstantiate(env, found, proto, List.of(self), List.<Type>nil(), true, false, Warner.noWarnings);
 			    System.err.println("found="+found+ ": instanced2="+instanced2);
 			    restype = instanced2.getReturnType();
 			    */
 			    restype = instanced.getReturnType();
 			    tree.type = restype;
-			    ((MethodType)msym.type).restype = restype;
+			    Type mt = msym.type;
+			    if (mt instanceof ForAll) {
+				mt = ((ForAll)mt).qtype;
+			    }
+			    ((MethodType)mt).restype = restype;
 			    //System.err.println("msym=>"+msym.type);
 			} catch (F3Infer.NoInstanceException ex) {
 			    ex.printStackTrace();
@@ -5330,6 +5392,7 @@ public class F3Attr implements F3Visitor {
                 }
                 break;
             case VAR:
+		//System.err.println("VAR");
                 F3VarSymbol v = (F3VarSymbol)sym;
                 // Test (4): if symbol is an instance field of a raw type,
                 // which is being assigned to, issue an unchecked warning if
@@ -5359,9 +5422,15 @@ public class F3Attr implements F3Visitor {
 		    owntype = ((FunctionType)owntype).asMethodOrForAll();
 		    //System.err.println("owntype is now: "+ owntype);
 		}
-                if (false && ((pt instanceof MethodType) || (pt instanceof ForAll))) {
-		    owntype = types.memberType(site,
-					       sym);
+                if (((pt instanceof MethodType) || (pt instanceof ForAll))) {
+		    try {
+			owntype = types.memberType(site, sym);
+		    } catch (NullPointerException exc) {
+			System.err.println("owntype: "+owntype);
+			System.err.println("site: "+ site);
+			System.err.println("sym="+sym.getClass()+": "+sym);
+			System.err.println("pt="+pt);
+		    }
                     F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
 		    Type siteType = site;
 		    if (sym instanceof F3Resolve.InstanceMethodSymbol) {
@@ -5386,24 +5455,25 @@ public class F3Attr implements F3Visitor {
 			    // could happen if too many args
 			}
 		    }
-	    } else
-		if (owntype instanceof ForAll) {
-		    if (typeargtypes.nonEmpty()) {
-			owntype = types.subst(owntype.asMethodType(),
-					      owntype.getTypeArguments(),
-					      typeargtypes);
+		} else {
+		    if (owntype instanceof ForAll) {
+			if (typeargtypes.nonEmpty()) {
+			    owntype = types.subst(owntype,
+						  owntype.getTypeArguments(),
+						  typeargtypes);
+			}
+		    } else if (env.info.tvars.nonEmpty()) {
+			/*
+			  Type owntype1 = newForAll(env.info.tvars, owntype);
+			  for (List<Type> l = env.info.tvars; l.nonEmpty(); l = l.tail) {
+			  if (!owntype.contains(l.head)) {
+			  //log.error(tree.pos(), MsgSym.MESSAGE_UNDETERMINDED_TYPE, owntype1);
+			  //owntype1 = syms.errType;
+			  }
+			  }
+			*/
 		    }
-		} else if (env.info.tvars.nonEmpty()) {
-		    /*
-                    Type owntype1 = newForAll(env.info.tvars, owntype);
-                    for (List<Type> l = env.info.tvars; l.nonEmpty(); l = l.tail) {
-                        if (!owntype.contains(l.head)) {
-                            //log.error(tree.pos(), MsgSym.MESSAGE_UNDETERMINDED_TYPE, owntype1);
-                            //owntype1 = syms.errType;
-                        }
-		    }
-		    */
-                }
+		}
 
                 // If the variable is a constant, record constant value in
                 // computed type.
@@ -5415,6 +5485,7 @@ public class F3Attr implements F3Visitor {
                 }
                 break;
             case MTH: {
+		//xSystem.err.println("MTH");
                 owntype = types.memberType(site,
 					   sym);
 		//System.err.println("meth: "+ sym+": "+owntype);
@@ -5422,9 +5493,10 @@ public class F3Attr implements F3Visitor {
                 // Instead, we should checkMethod in visitFunctionInvocation.
                 // In that case we should also handle FunctionType. FIXME.
                 if ((pt instanceof MethodType) || (pt instanceof ForAll)) {
+		    Type siteType = site;
 		    if (env.tree instanceof F3FunctionInvocation) {
 			F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
-			Type siteType = site;
+
 			if (siteType instanceof MethodType) {
 			    siteType = syms.makeFunctionType((MethodType)siteType);
 			}
@@ -5434,16 +5506,23 @@ public class F3Attr implements F3Visitor {
 			if (inst != null) { // hack
 			    owntype = inst;
 			} else {
-			    owntype = pt;
+			    //owntype = pt;
 			    System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
-			    Thread.currentThread().dumpStack();
+			    //Thread.currentThread().dumpStack();
 			}
-			if (owntype instanceof MethodType) {
-			    try {
-				owntype = syms.makeFunctionType((MethodType)owntype);
-			    } catch (Exception exc) { // hack
-				// could happen if too many args
-			    }
+		    } else {
+			if (typeargtypes.nonEmpty()) {
+			    owntype = types.subst(owntype.asMethodType(), 
+						  owntype.getTypeArguments(),
+						  typeargtypes);
+			    System.err.println("subst="+owntype);
+			}
+		    }
+		    if (false && owntype instanceof MethodType) {
+			try {
+			    owntype = syms.makeFunctionType((MethodType)owntype);
+			} catch (Exception exc) { // hack
+			    // could happen if too many args
 			}
 		    }
                 } else {

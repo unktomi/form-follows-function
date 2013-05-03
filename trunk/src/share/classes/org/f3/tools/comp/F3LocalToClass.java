@@ -180,7 +180,11 @@ public class F3LocalToClass {
             boolean prevStatic = isStatic;
             isStatic = false;
             pushOwner(preTrans.makeDummyMethodSymbol(owner, defs.boundForPartName), false);
-            blockWithin((F3Block) tree.getBodyExpression(), BlockKind.LOOP);
+	    F3Expression bodyExpr = tree.getBodyExpression();
+	    if(!(bodyExpr instanceof F3Block)) {
+		bodyExpr = f3make.Block(0L, List.<F3Expression>nil(), bodyExpr).setType(bodyExpr.type);
+	    }
+            blockWithin((F3Block) bodyExpr, BlockKind.LOOP);
             popOwner();
             isStatic = prevStatic;
         }

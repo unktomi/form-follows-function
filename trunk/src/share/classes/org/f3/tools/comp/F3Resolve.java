@@ -489,7 +489,11 @@ public class F3Resolve {
                      boolean useVarargs,
                      Warner warn) {
         try {
-            Type r = rawInstantiate(env, m, types.memberType(site, m), argtypes, typeargtypes,
+	    Type mt = types.memberType(site, m);
+	    if (mt instanceof FunctionType) {
+		mt = ((FunctionType)mt).asMethodOrForAll();
+	    }
+            Type r = rawInstantiate(env, m, mt, argtypes, typeargtypes,
 				    allowBoxing, useVarargs, warn);
 	    //System.err.println("instantiated "+m+" to "+ r);
 	    return r;
@@ -1861,8 +1865,20 @@ public class F3Resolve {
     Symbol resolveIdent(DiagnosticPosition pos, F3Env<F3AttrContext> env,
                         Name name, int kind, Type pt) {
         Symbol sym = findIdent(env, name, kind, pt);
+	if (sym.kind == WRONG_MTH) {
+	    Symbol wrongSym = ((ResolveError)sym).wrongSym;
+	    if ((pt instanceof MethodType) || (pt instanceof ForAll)) {
+		Name invoke = names.fromString("invoke");
+		Symbol invokeSym = findMember(env, wrongSym.type, invoke, pt, true, false, false);
+		if (invokeSym.kind < AMBIGUOUS) {
+		    sym = invokeSym;
+		    System.err.println("invoke sym: "+ invokeSym);
+		    return wrongSym;
+		}
+	    }
+	}
         if (sym.kind >= AMBIGUOUS) {
-	    System.err.println("resolveIdent " +name+" "+((pt == null) ? null : pt.getClass())+": "+pt);
+	    System.err.println("resolveIdent " +name+" "+((pt == null) ? null : pt.getClass())+": "+pt + " => "+ sym);
             return access(sym, pos, env.getEnclosingClassType(), name, false, pt);
         } else
             return sym;

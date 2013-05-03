@@ -59,11 +59,7 @@ public abstract class DoubleNegation of a
 	{
 	    override function negate of _ from (negate_b is function from b to _) to _ 
 	    {
-		const negate_a = function from (x is a) to _ 
-		    {
-			negate_b(f(x));
-		    }
-		self.negate(negate_a)
+		self.negate(negate_b * f)
 	    }
 	}
     }
@@ -85,7 +81,7 @@ public abstract class DoubleNegation of a
 			const m is DoubleNegation of b = f(x);
 			m.negate(negate_b);
 		    }
-		self.negate(negate_a)
+		self.negate(negate_a);
 	    }
 	}
     }
@@ -203,7 +199,8 @@ public function callCC of (a, b)
     from (f is function from (function from a to b) to b) 
     to DoubleNegation of a 
 {
-    DoubleNegation of a {
+    DoubleNegation of a 
+    {
 	override function negate of _ 
 	    from (negate_a is function from a to _) 
 	    to _ 

@@ -1086,7 +1086,7 @@ public class Timeline {
         for (pairlist in targets) {
             for (i in [0..<pairlist.size()]) {
                 var kfpair = pairlist.get(i);
-		val f = kfpair.value.value as function from () to Object; // hack
+		val f = kfpair.value.value;
                 kfpair.value.evaluation = f(); 
                 // Also set current values
                 if (kfpair.frame == pairlist.startKF) {
