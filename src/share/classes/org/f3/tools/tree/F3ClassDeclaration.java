@@ -86,9 +86,9 @@ public class F3ClassDeclaration extends F3Expression implements ClassDeclaration
             ClassSymbol sym) {
         this.mods = mods;
         this.name = name;           
-        this.extending = null;
-        this.implementing = null;
-        this.mixing = null;
+        this.extending = List.<F3Expression>nil();
+        this.implementing = List.<F3Expression>nil();
+        this.mixing = List.<F3Expression>nil();
         this.defs = declarations;
         this.supertypes = supertypes;
         this.objInitSyms = null;

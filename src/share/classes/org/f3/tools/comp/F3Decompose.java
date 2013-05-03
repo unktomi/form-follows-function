@@ -821,6 +821,10 @@ public class F3Decompose implements F3Visitor {
        List<F3Expression> dargs = decomposeComponents(tree.getArgs());
 
        F3Instanciate res = f3make.at(tree.pos).Instanciate(tree.getF3Kind(), klassExpr, dcdel, dargs, dparts, tree.getLocalvars());
+       if (dcdel != null && dcdel.sym == null) {
+	   dcdel.sym = tree.sym;
+	   dcdel.type = tree.type;
+       }
        res.sym = tree.sym;
        res.constructor = tree.constructor;
        res.varDefinedByThis = tree.varDefinedByThis;
@@ -1231,6 +1235,9 @@ public class F3Decompose implements F3Visitor {
 	    } else {
 		List<F3ForExpressionInClause> inClauses = decompose(tree.inClauses);
 		F3Expression bodyExpr = decompose(tree.bodyExpr);
+		if(!(bodyExpr instanceof F3Block)) {
+		    bodyExpr = f3make.Block(0L, List.<F3Expression>nil(), bodyExpr).setType(bodyExpr.type);
+		}
 		result = f3make.at(tree.pos).ForExpression(inClauses, bodyExpr);
 	    }
         }

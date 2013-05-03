@@ -704,6 +704,18 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitObjectLiteralPart(F3ObjectLiteralPart tree) {
+	//System.err.println("lower: "+ tree);
+	if (tree.isMethodDef) {
+	    //Thread.currentThread().dumpStack();
+	    F3FunctionValue v = (F3FunctionValue)toFunctionValue(tree.getExpression(), false);
+	    F3FunctionDefinition def  = new F3FunctionDefinition(m.at(tree.pos()).Modifiers(0L),
+								 tree.sym.name, v);
+	    def.sym = (MethodSymbol)tree.sym;
+	    def.pos = tree.pos;
+	    def.setType(tree.type);
+	    result = def;
+	    return;
+	}
         F3Expression expr = lowerExpr(tree.getExpression(), tree.type); //tree.sym.type);
         F3ObjectLiteralPart res = m.at(tree.pos).ObjectLiteralPart(tree.name, expr, tree.getExplicitBindStatus());
         res.markBound(tree.getBindStatus());
@@ -1276,6 +1288,8 @@ public class F3Lower implements F3Visitor {
 	Symbol sym = F3TreeInfo.symbolFor(tree);
         MethodSymbol msym = sym instanceof MethodSymbol ? (MethodSymbol)sym : null;
         Type mtype = tree.type; // hack!!
+	//System.err.println("tree="+tree.getClass()+": "+tree);
+	//System.err.println("mtype="+mtype);
 	Type callType = mtype;
 	if (tree instanceof F3FunctionInvocation) {
 	    F3FunctionInvocation ftree = (F3FunctionInvocation)tree;
@@ -1291,6 +1305,7 @@ public class F3Lower implements F3Visitor {
 	    System.err.println("fail: "+ tree+": "+mtype.getClass()+": "+mtype);
 	}
 	mtype = mtype.asMethodType();
+	//System.err.println("mtype'="+mtype);
         ListBuffer<F3Var> params = ListBuffer.lb();
         ListBuffer<F3Expression> args = ListBuffer.lb();
         MethodSymbol lambdaSym = new MethodSymbol(Flags.SYNTHETIC, defs.lambda_MethodName, mtype, currentClass);
@@ -1515,7 +1530,12 @@ public class F3Lower implements F3Visitor {
                 ocv.type = partType;//part.sym.type;
                 newOverrides.append(ocv);
             } else {
-                unboundParts.append(lowerExpr(part));
+		F3Expression partExpr = lowerExpr((F3Expression)part);
+		if (part.isMethodDef) {
+		    newOverrides.append(partExpr);
+		} else {
+		    unboundParts.append((F3ObjectLiteralPart)partExpr);
+		}
             }
         }
 
@@ -1526,17 +1546,24 @@ public class F3Lower implements F3Visitor {
             cdecl.setMembers(cdecl.getMembers().appendList(newOverrides));
             lowCdecl = lowerDecl(cdecl);
             preTrans.liftTypes(cdecl, cdecl.type, preTrans.makeDummyMethodSymbol(cdecl.sym));
+	    //System.err.println("cdecl="+cdecl);
+	    if (cdecl.sym == null) {
+		System.err.println("cdecl.sym is null");
+	    }
         } else {
-            lowCdecl = lowerDecl(cdecl);
+	    if (cdecl != null && cdecl.sym == null) {
+		cdecl = null;
+	    }
+	    lowCdecl = lowerDecl(cdecl);
         }
-
+	//System.err.println("unbound parts="+unboundParts.toList());
         // Construct the new instanciate
         F3Instanciate res = m.at(tree.pos).Instanciate(tree.getF3Kind(),
-                tree.getIdentifier(),
-                lowCdecl,
-                lowerExprs(tree.getArgs()),
-                unboundParts.toList(),
-                List.<F3Var>nil());
+						       tree.getIdentifier(),
+						       lowCdecl,
+						       lowerExprs(tree.getArgs()),
+						       unboundParts.toList(),
+						       List.<F3Var>nil());
         res.sym = tree.sym;
         res.constructor = tree.constructor;
         res.varDefinedByThis = tree.varDefinedByThis;

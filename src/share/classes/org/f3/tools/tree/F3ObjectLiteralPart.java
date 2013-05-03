@@ -35,10 +35,11 @@ import org.f3.api.F3BindStatus;
  */
 public class F3ObjectLiteralPart extends F3Expression implements ObjectLiteralPartTree {
     public final Name name;
-    private final F3Expression expr;
+    public final F3Expression expr;
     private final F3BindStatus explicitBindStatus;
     public Symbol sym;
     public boolean isVarAssignment;
+    public boolean isMethodDef = false;
    /*
     * @param selector member name and class name of member
     * @param init type of attribute
