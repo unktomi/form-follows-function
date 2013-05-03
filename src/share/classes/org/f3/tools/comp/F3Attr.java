@@ -388,8 +388,10 @@ public class F3Attr implements F3Visitor {
 			    tc.bound = tv.bound;
 			    tc.ctor = tv;
 			    localResult = tc;
+			    //System.err.println("tree="+tree);
 			    //System.err.println("tv="+tv);
 			    //System.err.println("tc="+tc.getClass()+": "+types.toF3String(tc));
+			    localResult = types.applySimpleGenericType(tc, tc.getTypeArguments());
 			    //System.err.println("bound="+tv.bound);
 			} 
 
@@ -1804,13 +1806,16 @@ public class F3Attr implements F3Visitor {
 			if (theOne != null) {
 			    Type tcons = types.asSuper(exprType, syms.f3_TypeCons[1].tsym);
 			    if (tcons != null) {
+				System.err.println("tcons="+tcons);
 				List<Type> targs = tcons.getTypeArguments();
-				monadType = targs.get(0);
-				Type altElemType = targs.get(1);
-				if (elemtype == null) {
-				    elemtype = altElemType;
+				if (targs.nonEmpty()) {
+				    monadType = targs.get(0);
+				    Type altElemType = targs.get(1);
+				    if (elemtype == null) {
+					elemtype = altElemType;
+				    }
+				    //System.err.println("ELEM TYPE="+altElemType);
 				}
-				//System.err.println("ELEM TYPE="+altElemType);
 			    }
 			}
 		    } else {
@@ -2505,6 +2510,10 @@ public class F3Attr implements F3Visitor {
         public Type withTypeVar(Type t) {
 	    //System.err.println("with type var: "+ this + ": "+t.getClass()+ ": "+t);
 	    return super.withTypeVar(t);
+	}
+	
+	public String toString() {
+	    return super.toString() +" ctor="+ctor+" args="+args;
 	}
     }
 

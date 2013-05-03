@@ -578,14 +578,16 @@ public class F3Types extends Types {
     public Type applySimpleGenericType(Type base, List<Type> actuals) {
 	if (base instanceof TypeCons) {
 	    TypeCons cons = (TypeCons)base;
-	    TypeCons c = new TypeCons(cons.tsym.name,
-				      cons.tsym,
-				      cons.lower,
-				      actuals);
-	    //c.bound = cons.bound;
-	    c.bound = cons.bound;
-	    c.ctor = cons;
-	    return c;
+	    if (cons.ctor == null) {
+		TypeCons c = new TypeCons(cons.tsym.name,
+					  cons.tsym,
+					  cons.lower,
+					  actuals);
+		//c.bound = cons.bound;
+		c.bound = cons.bound;
+		c.ctor = cons;
+		return c;
+	    }
 	}
 	//System.err.println("base="+base.getClass()+": "+base + ": ("+actuals+")");
 	if (base instanceof ConstI) {
@@ -609,9 +611,15 @@ public class F3Types extends Types {
 		cons.bound = v.bound;
 		return cons;
 	    }
+	    if (v instanceof TypeCons) {
+		TypeCons cons = (TypeCons)v;
+		if (cons.ctor != null) {
+		    v = (TypeVar)cons.ctor;
+		}
+	    }
 	    base = syms.f3_TypeCons[actuals.size()];
-	    //actuals = actuals.prepend(new WildcardType(v, BoundKind.EXTENDS, syms.boundClass));
-	    actuals = actuals.prepend(v);
+	    actuals = actuals.prepend(new WildcardType(v, BoundKind.EXTENDS, syms.boundClass));
+	    //actuals = actuals.prepend(v);
 	    //System.err.println("base="+base.getClass()+": "+base + " / " + base.tsym.type);
 	}
 	if (base.getEnclosingType() == null) {
@@ -962,13 +970,6 @@ public class F3Types extends Types {
 	if (isSameType(t, s, true)) {
 	    return true;
 	}
-	/*
-	if (isFunctor(t) && isFunctor(s)) {
-	    if (super.isConvertible(erasure(t), erasure(s), warn)) {
-		return isConvertible(functorElementType(t), functorElementType(s), warn);
-	    }
-	}
-	*/
         if (super.isConvertible(t, s, warn))
             return true;
         if (isSequence(t) && isArray(s))
@@ -998,7 +999,14 @@ public class F3Types extends Types {
     boolean isSameTypeCons(Type t, Type s, boolean debug) {
 	//System.err.println("s="+s.getClass()+": "+s);
 	//System.err.println("t="+t.getClass()+": "+t);
-	if (true) return t == s; // disabled for now
+	if (t instanceof TypeCons) {
+	    Type t1 = applySimpleGenericType(t, t.getTypeArguments());
+	    return isSameType(t1, s);
+	} else if (s instanceof TypeCons) {
+	    Type s1 = applySimpleGenericType(s, s.getTypeArguments());
+	    return isSameType(t, s1);
+	}
+	//if (true) return t == s; // disabled for now
 	int i = isTypeConsType(s);
 	boolean doit = false;
 	if (i >= 0) {
@@ -1014,11 +1022,16 @@ public class F3Types extends Types {
 	//System.err.println("t'="+t);
 	if (doit) {
 	    boolean result = isSameType(s, t);
-	    System.err.println(s + " ==  " + t + " => "+ result);
+	    //System.err.println(s + " ==  " + t + " => "+ result);
 	    return result;
 	}
 	return false;
     }
+
+    public boolean overrideEquivalent(Type t, Type s) {
+	return super.overrideEquivalent(normalize(t), normalize(s));
+    }
+
 
     @Override
     public boolean isCastable(Type t, Type s, Warner warn) {
@@ -1789,7 +1802,10 @@ public class F3Types extends Types {
 		    return t0;
 		}
 		if (t0 instanceof TypeCons) {
-		    return t0;
+		    //System.err.println("NORMALIZE: "+ t0);
+		    Type x = applySimpleGenericType(t0, t0.getTypeArguments());
+		    //System.err.println("returning: "+ x);
+		    return x;
 		}
 		if (t0 instanceof ConstI) {
 		    return t0;
@@ -1870,8 +1886,11 @@ public class F3Types extends Types {
 		    restype == t.restype &&
 		    thrown == t.thrown)
 		    return t;
-		else
-		    return new MethodType(argtypes, restype, thrown, t.tsym);
+		else {
+		    Type n = new MethodType(argtypes, restype, thrown, t.tsym);
+		    //System.err.println("method "+t +" => "+n);
+		    return n;
+		}
 	    }
 
             @Override
@@ -1958,6 +1977,12 @@ public class F3Types extends Types {
 	    {
 		if (visited.contains(t0)) {
 		    return t0;
+		}
+		if (t0 instanceof TypeCons) {
+		    //System.err.println("NORMALIZE': "+ t0);
+		    Type x = applySimpleGenericType(t0, t0.getTypeArguments());
+		    //System.err.println("returning: "+ x);
+		    return x;
 		}
 		if (t0 instanceof ConstI) {
 		    return t0;

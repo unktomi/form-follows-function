@@ -2317,6 +2317,17 @@ statement
     | throwStatement        { $value = $throwStatement.value;                               }
     | returnStatement       { $value = $returnStatement.value;                              }
     | tryStatement          { $value = $tryStatement.value;                                 }
+/*
+    |
+        (modifiers funcName (nameAll | name)) =>( m0=modifiers 
+              funDef = functionDefinition [$m0.mods, $m0.pos]
+            
+                {
+                    $value = F.Var ((F3FunctionDefinition)$funDef.value);
+                                  
+                }
+    )
+*/
     | expression           { $value = $expression.value;                                   }
     ;
 
@@ -3367,8 +3378,8 @@ expression
       // to throw out modifiers where they are not allowed such as on 
       // local variable declarations.
       //
-      m=modifiers 
-        variableDeclaration [$m.mods, $m.pos]
+     (m=modifiers 
+            variableDeclaration [$m.mods, $m.pos]
         {
             if (($m.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
                 $m.mods.flags &= ~F3Flags.PUBLIC_INIT;
@@ -3378,7 +3389,8 @@ expression
                 $m.mods.flags &= ~F3Flags.PUBLIC_READ; // @TODO
             }
             $value = $variableDeclaration.value;
-        }
+        })
+        
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.
@@ -4735,7 +4747,8 @@ primaryExpression
         {
             $value = F.at(pos($THE)).TheType($theType.rtype);
         }
-    | fe=functionExpression
+    |
+        fe=functionExpression
     
         {
             $value = $fe.value;
@@ -4884,8 +4897,9 @@ functionExpression
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 
     F3Expression bodyExpr = null;
+    Name fname = null;
 }
-    :   (modifiers) => modifiers fun=funcName
+    :   (modifiers) => modifiers fun=funcName (nameAll {fname = $nameAll.value; })?
             ((OF | FORALL) gas=genericParams[false, false] { 
                 exprbuff.appendList($gas.value);
             })?
@@ -4916,6 +4930,9 @@ functionExpression
                                 
             // Tree span
             //
+            if (fname != null) {
+                $value = F.Var(fname, (F3FunctionValue)$value);
+            }
             endPos($value);
         }
     |
@@ -7433,7 +7450,7 @@ reservedWord
     : ABSTRACT      | AFTER     | AND           | AS
     | ASSERT        | AT        | ATTRIBUTE     | BEFORE 
     | BIND          | BOUND     | BREAK         | CASCADE | CASE
-    | CATCH         | CLASS     | CONTINUE      | DEF | ENUM | OF | FORALL
+    | CATCH         | CLASS     | CONTINUE      | DEF | ENUM 
     | DEFAULT       | DELETE    | ELSE          | EXCLUSIVE
     | EXTENDS       | FALSE     | FINALLY       | FOR
     | IF            | IMPORT     

@@ -262,25 +262,25 @@ public class F3Infer {
                                 Type to,
                                 Warner warn) throws NoInstanceException {
         List<Type> undetvars = Type.map(that.tvars, fromTypeVarFun);
-	System.err.println("undetvars="+undetvars);
+	//System.err.println("undetvars="+undetvars);
         for (List<Type> l = undetvars; l.nonEmpty(); l = l.tail) {
             UndetVar v = (UndetVar) l.head;
             ListBuffer<Type> hibounds = new ListBuffer<Type>();
-	    System.err.println("v="+v);
-	    System.err.println("v.qtype="+v.qtype);
+	    //System.err.println("v="+v);
+	    //System.err.println("v.qtype="+v.qtype);
             for (List<Type> l1 = types.getBounds((TypeVar) v.qtype); l1.nonEmpty(); l1 = l1.tail) {
-		System.err.println("l1.head="+l1.head);
-		System.err.println("that.tvars="+that.tvars);
+		//System.err.println("l1.head="+l1.head);
+		//System.err.println("that.tvars="+that.tvars);
                 if (!l1.head.containsSome(that.tvars)) {
                     hibounds.append(l1.head);
                 }
             }
             v.hibounds = hibounds.toList();
-	    System.err.println("v="+v);
-	    System.err.println("v.hibounds="+v.hibounds);
+	    //System.err.println("v="+v);
+	    //System.err.println("v.hibounds="+v.hibounds);
         }
         Type qtype1 = types.subst(that.qtype, that.tvars, undetvars);
-	System.err.println("qtype1="+qtype1+", to="+to);
+	//System.err.println("qtype1="+qtype1+", to="+to);
         if (!types.isSubtype(qtype1, to)) {
             throw unambiguousNoInstanceException
                 .setMessage("no.conforming.instance.exists",

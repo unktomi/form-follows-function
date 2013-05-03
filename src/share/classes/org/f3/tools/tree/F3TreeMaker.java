@@ -1219,6 +1219,26 @@ public class F3TreeMaker implements F3TreeFactory {
          return tree;
      }
 
+    public F3Var Var(F3FunctionDefinition def) {
+	F3FunctionValue val = def.operation;
+	return Var(def.name, val);
+    }
+
+    public F3Var Var(Name name, F3FunctionValue val) {
+	ListBuffer<F3Type> argTypes = ListBuffer.lb();
+	for (F3Var var: val.funParams) {
+	    argTypes.append(var.getF3Type());
+	}
+	pos = val.pos;
+	return Var(name,
+		   TypeFunctional(argTypes.toList(), 
+				  val.rettype, Cardinality.SINGLETON),
+		   Modifiers(F3Flags.IS_DEF),
+		   val,
+		   F3BindStatus.UNBOUND,
+		   null, null);
+    }
+
     public F3Var Var(Name name,
             F3Type type,
             F3Modifiers mods,
