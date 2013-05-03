@@ -449,7 +449,7 @@ public class F3Resolve {
 		return null;
 	    }
 	    if (debug) {
-		System.err.println("mt="+mt);
+		System.err.println("mt="+types.toF3String(mt));
 		System.err.println("args="+argtypes);
 	    }
 	    Type r = 
@@ -1074,8 +1074,10 @@ public class F3Resolve {
                                            allowBoxing, true, noteWarner) != null) &&
                 !noteWarner.unchecked;
             if (m1SignatureMoreSpecific && m2SignatureMoreSpecific) {
-                if (!types.overrideEquivalent(mt1, mt2))
+                if (!types.overrideEquivalent(mt1, mt2)) {
+		    System.err.println("not override eq "+ mt1 + ", "+mt2);
                     return new AmbiguityError(m1, m2);
+		}
                 // same signature; select (a) the non-bridge method, or
                 // (b) the one that overrides the other, or (c) the concrete
                 // one, or (d) merge both abstract signatures
@@ -2771,9 +2773,8 @@ public class F3Resolve {
                                 types.toF3String((MethodSymbol) wrongSym.asMemberOf(site, types),
                                     ((MethodSymbol) wrongSym).params);
 		    else
-                        wrongSymStr = wrongSym.toString();
-		    //System.err.println("wrongSym="+wrongSym.getClass() + wrongSymStr);
-		    //Thread.currentThread().dumpStack();
+                        wrongSymStr = wrongSym.toString() + " of type "+types.toF3String(wrongSym.type);
+		    Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,
@@ -2898,9 +2899,10 @@ public class F3Resolve {
 
         AmbiguityError(Symbol sym1, Symbol sym2) {
             super(AMBIGUOUS, sym1, "ambiguity error");
-	    //Thread.currentThread().dumpStack();
             this.sym1 = sym1;
             this.sym2 = sym2;
+	    //System.err.println(this);
+	    //Thread.currentThread().dumpStack();
         }
 
         /** Report error.

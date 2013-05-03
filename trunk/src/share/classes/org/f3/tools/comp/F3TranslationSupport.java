@@ -513,9 +513,16 @@ public abstract class F3TranslationSupport {
 	} else {
 	    int i = types.isTypeConsType(t);
 	    if (i >= 0) {
-		if (!(t instanceof WildcardType)) {
-		    //System.err.println("erasing: "+ t);
-		    //t = types.erasure(t);
+		if (false && t.getTypeArguments().nonEmpty()) {
+		    List<Type> targs = t.getTypeArguments();
+		    Type ctor = targs.head;
+		    if (ctor instanceof WildcardType) {
+			ctor = ((WildcardType)ctor).type;
+		    }
+		    if (!(ctor instanceof TypeVar)) {
+			Type r = types.applySimpleGenericType(ctor, targs.tail);
+			System.err.println("not expanding: " +t+ " => " +r);
+		    }
 		}
 	    } else {
 		if (t.isParameterized()) {
