@@ -269,7 +269,8 @@ public class F3Infer {
 	    //System.err.println("v="+v);
 	    //System.err.println("v.qtype="+v.qtype);
             for (List<Type> l1 = types.getBounds((TypeVar) v.qtype); l1.nonEmpty(); l1 = l1.tail) {
-		//System.err.println("l1.head="+l1.head);
+		System.err.println("l1.head="+l1.head);
+		System.err.println("v.qtype="+(v.qtype));
 		//System.err.println("that.tvars="+that.tvars);
                 if (!l1.head.containsSome(that.tvars)) {
                     hibounds.append(l1.head);

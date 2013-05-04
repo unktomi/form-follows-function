@@ -444,10 +444,14 @@ public class F3Check {
 	    if (true) {
 		//		return found;
 	    }
-            if (false && (req == syms.f3_UnspecifiedType || req == Type.noType))
+            if (true || (req == syms.f3_UnspecifiedType || req == Type.noType)) {
                 // Is this the right thing to do?  FIXME
-                return types.erasure(found);
-            else {
+		System.err.println("not instantiating: "+ found);
+		if (!found.getTypeArguments().nonEmpty()) {
+		    return ((ForAll)found).qtype;
+		}
+                return found;
+            } else {
 		req = types.boxedTypeOrType(req);
 		return instantiatePoly(pos, (ForAll)found, req, convertWarner(pos, found, req));
 	    }

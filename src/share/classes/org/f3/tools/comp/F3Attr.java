@@ -290,6 +290,7 @@ public class F3Attr implements F3Visitor {
             this.pkind = pkind;
             this.pt = pt;
             this.pSequenceness = pSequenceness;
+	    //System.err.println("attrib tree: "+ tree+ ", pt="+pt);
             if (tree != null )tree.accept(this);
             if (tree == breakTree)
                 throw new BreakAttr(env);
@@ -3635,8 +3636,7 @@ public class F3Attr implements F3Visitor {
 	    }
 	    //System.err.println("mpt="+types.toF3String(mpt));
 	    localEnv.info.varArgs = false;
-	    mtype = attribExpr(tree.meth, localEnv, 
-			       mpt);
+	    mtype = attribExpr(tree.meth, localEnv, mpt);
 	    if (false) {
 		Symbol sym = F3TreeInfo.symbol(tree.meth);
 		System.err.println("mtype="+mtype);
@@ -3749,13 +3749,13 @@ public class F3Attr implements F3Visitor {
 		//System.err.println("skipped check");
 		ListBuffer<Type> typarams = new ListBuffer<Type>();
 		Type rtype = restype;
-		List<Type> pt = mtype.getParameterTypes();
+		List<Type> pts = mtype.getParameterTypes();
 		for (int j = 0; j < argtypes.size(); j++) {
-		    pt = pt.tail;
+		    pts = pts.tail;
 		}
 		typarams.append(types.boxedTypeOrType(rtype));
-		if (pt != null) {
-		    for (Type t: pt) {
+		if (pts != null) {
+		    for (Type t: pts) {
 			typarams.append(types.boxedTypeOrType(t));
 		    }
 		}
@@ -4124,6 +4124,7 @@ public class F3Attr implements F3Visitor {
                 }
             }
         }
+
 	result = check(tree, capture(restype), VAL, pkind, pt, pSequenceness);
 	tree.type = result;
 	//System.err.println("tree="+tree);
@@ -4368,6 +4369,7 @@ public class F3Attr implements F3Visitor {
         // Attribute arguments.
         Type left = chk.checkNonVoid(tree.lhs.pos(), attribExpr(tree.lhs, env));
         Type right = chk.checkNonVoid(tree.rhs.pos(), attribExpr(tree.rhs, env));
+	//System.err.println("tree="+tree+ " left="+left+", right="+right);
 
         if (left == syms.f3_UnspecifiedType) {
             left = setEffectiveExpressionType(tree.lhs, newTypeFromType(getEffectiveExpressionType(right)));
@@ -5527,7 +5529,7 @@ public class F3Attr implements F3Visitor {
 		    }
                 } else {
 		    if (typeargtypes.nonEmpty()) {
-			owntype = types.subst(owntype.asMethodType(), 
+			owntype = types.subst(((ForAll)owntype).qtype,
 					      owntype.getTypeArguments(),
 					      typeargtypes);
 
@@ -5571,7 +5573,7 @@ public class F3Attr implements F3Visitor {
 
             // Test (3): if symbol is a variable, check that its type and
             // kind are compatible with the prototype and protokind.
-
+	    //System.err.println("check: "+ owntype+": pt="+pt);
             return check(tree, owntype, sym.kind, pkind, pt, pSequenceness);
         }
 

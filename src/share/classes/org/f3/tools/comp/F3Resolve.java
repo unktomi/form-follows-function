@@ -1253,15 +1253,28 @@ public class F3Resolve {
 	    System.err.println("site "+origSite + " ==> "+site);
 	}
 	*/
+	if (site instanceof ForAll) {
+	    site = syms.makeFunctionType((ForAll)site);
+	} else if (site instanceof MethodType) { // hack
+	    site = syms.makeFunctionType((MethodType)site);
+	}
+	if (intype instanceof ForAll) {
+	    intype = syms.makeFunctionType((ForAll)intype);
+	} else if (intype instanceof MethodType) { // hack
+	    intype = syms.makeFunctionType((MethodType)intype);
+	}
         Type mtype = expected;
         if (mtype instanceof FunctionType)
             mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = mtype instanceof MethodType || mtype instanceof ForAll;
 	//System.err.println("searching for "+name+": "+mtype);
+	//System.err.println("site="+site);
+	//System.err.println("intype="+intype);
 	boolean isThe = name == syms.the;
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
 	    if (c.members() == null) {
+		System.err.println("ct="+ct);
 		System.err.println("site="+site);
 		System.err.println("members null: "+ c);
 		continue;
