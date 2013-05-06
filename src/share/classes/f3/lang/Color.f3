@@ -35,7 +35,6 @@ import java.text.DecimalFormat;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.util.Formatter;
-import f3.animation.Interpolatable;
 import f3.util.Bits;
 
 // script-level "static" functions below
@@ -49,7 +48,7 @@ import f3.util.Bits;
  * @return a Color instance for the specified hex integer
  * @profile common
  */
-public function valueOf(hex:Integer, hasAlpha:Boolean):Color {
+public function valueOf from (hex is Integer, hasAlpha is Boolean) to Color {
     def r = Bits.bitAnd(Bits.shiftRight(hex, 16), 0xFF);
     def g = Bits.bitAnd(Bits.shiftRight(hex, 8), 0xFF);
     def b = Bits.bitAnd(hex, 0xFF);
@@ -67,7 +66,7 @@ public function valueOf(hex:Integer, hasAlpha:Boolean):Color {
  * @return a Color instance for the specified rgb values
  * @profile common
  */
-public function color(red:Float, green:Float, blue:Float):Color {
+public function color from (red is Float, green is Float, blue is Float) to Color {
     color(red, green, blue, 1);
 }
 
@@ -83,7 +82,7 @@ public function color(red:Float, green:Float, blue:Float):Color {
  * @return a Color instance for the specified rgb and opacity values
  * @profile common
  */
-public function color(red:Float, green:Float, blue:Float, opacity:Float):Color {
+public function color from (red is Float, green is Float, blue is Float, opacity is Float) to Color {
     Color {
         red: red
         green: green
@@ -102,7 +101,7 @@ public function color(red:Float, green:Float, blue:Float, opacity:Float):Color {
  * @return a Color instance for the specified hsb values
  * @profile common
  */
-public function hsb(hue:Angle, saturation:Float, brightness:Float):Color {
+public function hsb from (hue is Angle, saturation is Float, brightness is Float) to Color {
     hsb(hue, saturation, brightness, 1);
 }
 
@@ -118,7 +117,7 @@ public function hsb(hue:Angle, saturation:Float, brightness:Float):Color {
  * @return a Color instance for the specified hsb and opacity values
  * @profile common
  */
-public function hsb(hue:Angle, saturation:Float, brightness:Float, opacity:Number):Color {
+public function hsb from (hue is Angle, saturation is Float, brightness is Float, opacity is Number) to Color {
     def rgb = hsvToRgb(hue.toDegrees(), saturation, brightness);
     Color {
         red: rgb[0]
@@ -404,7 +403,7 @@ def DF = ThreadLocal of DecimalFormat {
  *
  * @profile common
  */
-public class Color extends Comparable of Object, Formattable, Interpolatable {
+public class Color extends Comparable of Object, Formattable {
 
     public const red is Number;
     public const green is Number;
@@ -698,7 +697,7 @@ public class Color extends Comparable of Object, Formattable, Interpolatable {
      *
      * @profile common
      */
-    override function ofTheWay(endVal:Object, t:Number):Object {
+    public function ofTheWay(endVal:Object, t:Number):Object {
         if (t == 0) return this;
         if (t == 1) return endVal;
         def c = endVal as Color;

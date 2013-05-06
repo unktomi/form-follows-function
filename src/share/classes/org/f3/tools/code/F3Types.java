@@ -1032,7 +1032,6 @@ public class F3Types extends Types {
 	return super.overrideEquivalent(normalize(t), normalize(s));
     }
 
-
     @Override
     public boolean isCastable(Type t, Type s, Warner warn) {
         //if source is a sequence and target is neither a sequence nor Object return false

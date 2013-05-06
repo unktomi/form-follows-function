@@ -58,6 +58,6 @@ public class BlendShape is MeshDeformer {
         }
         positionData.rewind();
         normalData.rewind();
-	return function () {}
+	return function {}
     }
 }
