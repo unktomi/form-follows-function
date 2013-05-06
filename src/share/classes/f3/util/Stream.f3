@@ -245,7 +245,7 @@ public function take of a
 }
 
 public bound function toStream of a 
-    from (xs is a[]) 
+    from (xs is (..a)[]) 
     to Stream of a 
 {
     if xs == [] then null else 

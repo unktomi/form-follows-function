@@ -967,11 +967,20 @@ public class F3Types extends Types {
     public boolean isConvertible (Type t, Type s, Warner warn) {
 	//t = expandTypeVar(t);
 	//s = expandTypeVar(s);
+        boolean tPrimitive = t.isPrimitive();
+        boolean sPrimitive = s.isPrimitive();
+        if (tPrimitive == sPrimitive)
+            if (isSubtypeUnchecked(t, s, warn)) {
+		return true;
+	    }
+        if (tPrimitive
+            ? isSubtype(boxedClass(t).type, s)
+            : isSubtype(unboxedType(t), s)) {
+	    return true;
+	}
 	if (isSameType(t, s, true)) {
 	    return true;
 	}
-        if (super.isConvertible(t, s, warn))
-            return true;
         if (isSequence(t) && isArray(s))
             return isConvertible(elementType(t), elemtype(s), warn);
         if (isArray(t) && isSequence(s))
@@ -1304,8 +1313,7 @@ public class F3Types extends Types {
         List<Type> closure = supertypesClosure(t, ListBuffer.<Type>lb(), ascending);
         return includeThis ? closure :
             ascending ? 
-                closure.reverse().tail.reverse() :
-                closure.tail;
+                closure.reverse().tail.reverse() :  (closure.tail == null ? List.<Type>nil() : closure.tail);
     }
     //where
     private List<Type> supertypesClosure(Type t, ListBuffer<Type> seenTypes, boolean ascending) {
