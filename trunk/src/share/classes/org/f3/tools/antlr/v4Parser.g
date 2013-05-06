@@ -4895,7 +4895,7 @@ functionExpression
     // Accumulate any generic arguments
     //
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
-
+    com.sun.tools.mjavac.util.List<F3Var> formals = com.sun.tools.mjavac.util.List.<F3Var>nil();
     F3Expression bodyExpr = null;
     Name fname = null;
 }
@@ -4903,7 +4903,7 @@ functionExpression
             ((OF | FORALL) gas=genericParams[false, false] { 
                 exprbuff.appendList($gas.value);
             })?
-        FROM?
+    (FROM?
         formalParameters    
             { 
                 // Accumulate in case of error
@@ -4911,10 +4911,10 @@ functionExpression
                 for ( F3Tree t : $formalParameters.params) {
                     errNodes.append(t);
                 }
-            }
-            
+                formals = $formalParameters.params.toList();
+            })?
         returnTypeReference   { errNodes.append($returnTypeReference.rtype); }
-        ((LBRACE) => (block   [-1]    { errNodes.append($block.value); }
+        ( LBRACE) => (block   [-1]    { errNodes.append($block.value); })
     
         {
             // F3 AST
@@ -4924,7 +4924,7 @@ functionExpression
                                     $modifiers.mods,
                                     exprbuff.toList(),
                                     $returnTypeReference.rtype, 
-                                    $formalParameters.params.toList(),
+                                    formals,
                                     $block.value
                                 );
                                 
@@ -4935,25 +4935,6 @@ functionExpression
             }
             endPos($value);
         }
-    |
-        primaryExpression 
-            {
-            bodyExpr = $primaryExpression.value; 
-            $value = F.at(pos($fun.tok)).FunctionValue
-                                (
-                                    $modifiers.mods,
-                                    exprbuff.toList(),
-                                    $returnTypeReference.rtype, 
-                                    $formalParameters.params.toList(),
-                                    F.at(pos($fun.tok)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>of(bodyExpr), null)
-                                );
-                                
-            // Tree span
-            //
-            endPos($value);
-            }
-    
-    ))
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.

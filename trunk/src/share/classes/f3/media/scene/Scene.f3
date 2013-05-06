@@ -202,7 +202,7 @@ public class Scene
         updateCamera();
         const nowUnderMouse = pick(mouseX, mouseY);
         const mouseV = camera.toScene(mouseX, mouseY, 0);
-        root.foldLeft((), function(_ is(), n is Node) to () {
+        root.foldLeft((), function from (_ is(), n is Node) to () {
 		/*
                 if (n instanceof MeshNode) {
                     var mn = n as MeshNode;

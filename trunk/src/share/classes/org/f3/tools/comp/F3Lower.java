@@ -707,13 +707,14 @@ public class F3Lower implements F3Visitor {
 	//System.err.println("lower: "+ tree);
 	if (tree.isMethodDef) {
 	    //Thread.currentThread().dumpStack();
-	    F3FunctionValue v = (F3FunctionValue)toFunctionValue(tree.getExpression(), false);
+	    F3FunctionValue v = (F3FunctionValue)toFunctionValue(tree.getExpression(), false, false);
 	    F3FunctionDefinition def  = new F3FunctionDefinition(m.at(tree.pos()).Modifiers(0L),
 								 tree.sym.name, v);
 	    def.sym = (MethodSymbol)tree.sym;
 	    def.pos = tree.pos;
 	    def.setType(tree.type);
 	    result = def;
+	    System.err.println("lowered obj lit part: "+result);
 	    return;
 	}
         F3Expression expr = lowerExpr(tree.getExpression(), tree.type); //tree.sym.type);
@@ -1275,6 +1276,10 @@ public class F3Lower implements F3Visitor {
     }
 
     F3Expression toFunctionValue(F3Expression tree, boolean isSelect) {
+	return toFunctionValue(tree, isSelect, true);
+    }
+
+    F3Expression toFunctionValue(F3Expression tree, boolean isSelect, boolean apply) {
         boolean needsReceiverVar = isSelect;
 	boolean staticOfNonStatic = false;
         if (isSelect) {
@@ -1291,7 +1296,7 @@ public class F3Lower implements F3Visitor {
 	//System.err.println("tree="+tree.getClass()+": "+tree);
 	//System.err.println("mtype="+mtype);
 	Type callType = mtype;
-	if (tree instanceof F3FunctionInvocation) {
+	if (apply && tree instanceof F3FunctionInvocation) {
 	    F3FunctionInvocation ftree = (F3FunctionInvocation)tree;
 	    callType = ftree.meth.type;
 	}
@@ -1326,7 +1331,7 @@ public class F3Lower implements F3Visitor {
         Type returnType = mtype.getReturnType();
         F3Var receiverVar = null;
         F3Expression meth;
-	if (tree instanceof F3FunctionInvocation) {
+	if (apply && tree instanceof F3FunctionInvocation) {
 	    F3FunctionInvocation ftree = (F3FunctionInvocation)tree;
 	    List extraArgs = args.toList();
 	    args.clear();

@@ -111,6 +111,6 @@ public class SkinCluster is MeshDeformer {
 	    targetNormals.put(vert+1, norm.y());
 	    targetNormals.put(vert+2, norm.z());
 	}
-	return function () {}
+	return function {}
     }
 }

@@ -2190,6 +2190,7 @@ public class F3Attr implements F3Visitor {
             long flags = clazztype.tsym.flags();
             if ((cdef == null &&
 			  (flags & (ABSTRACT | INTERFACE | F3Flags.MIXIN)) != 0)) {
+		/*
                 if ((flags & (F3Flags.MIXIN)) != 0) {
                     // VSGC-2815 - new expressions should report an error when trying to instantiate a mixin class.
                     log.error(tree.pos(), MsgSym.MESSAGE_F3_MIXIN_CANNOT_BE_INSTANTIATED,
@@ -2198,6 +2199,7 @@ public class F3Attr implements F3Visitor {
                     log.error(tree.pos(), MsgSym.MESSAGE_ABSTRACT_CANNOT_BE_INSTANTIATED,
                               clazztype.tsym);
                 }
+		*/
             } else if (cdef != null && clazztype.tsym.isInterface()) {
                 // Check that no constructor arguments are given to
                 // anonymous classes implementing an interface
@@ -2369,7 +2371,11 @@ public class F3Attr implements F3Visitor {
 		    if (cdef.sym == null) {
 			enter.classEnter(cdef, env);
 		    }
-		    attribDecl(cdef, localEnv);
+		    cdef.sym.complete();
+		    attribSupertypes(cdef, cdef.sym);
+		    cdef.type = cdef.sym.type;
+		    System.err.println("cdef.type="+cdef.type);
+		    types.addF3Class(cdef.sym, cdef);
 		}
 		MethodSymbol methSym = new MethodSymbol(F3Flags.OVERRIDE, 
 							memberSym.name, 
@@ -2379,14 +2385,19 @@ public class F3Attr implements F3Visitor {
 		System.err.println("member method type: "+ memberSym.type);
 		System.err.println("member method type': "+ memberType);
 		Type expType = part.getExpression().type;
-		Symbol inherited = rs.findMethod(env, 
-						 ownerSym.type, 
-						 memberSym.name, 
-						 expType.getParameterTypes(),
-						 expType.getTypeArguments(),
-						 true, false, false);
+		System.err.println("expType="+expType.getClass()+": "+expType);
+		expType = reader.translateType(types.normalize(expType, false));
+		System.err.println("expType="+expType.getClass()+": "+expType);
+		if (expType instanceof FunctionType) {
+		    expType = ((FunctionType)expType).asMethodOrForAll();
+		}
+		System.err.println("expType: "+ expType);
+		Symbol inherited = rs.resolveQualifiedMethod(part.pos(), env, 
+							     ownerSym.type, 
+							     memberSym.name,
+							     expType);
+		System.err.println("inherited: "+inherited);
 		if (inherited instanceof MethodSymbol) {
-		    chk.checkOverride(part, methSym);
 		    seen.add(memberSym.name);
 		    part.type = memberType;
 		    part.expr.type = memberType;
@@ -2396,6 +2407,7 @@ public class F3Attr implements F3Visitor {
 		    if (tree.def == null) {
 			tree.def = cdef;
 		    }
+		    cdef.sym.members_field.enter(memberSym);
 		    continue;
 		}
 	    }
@@ -2448,6 +2460,18 @@ public class F3Attr implements F3Visitor {
 		}
 	    }
 	    tree.parts = tree.parts.appendList(newParts);
+	}
+	long flags = clazztype.tsym.flags();
+	if ((cdef == null &&
+	     (flags & (ABSTRACT | INTERFACE | F3Flags.MIXIN)) != 0)) {
+	    if ((flags & (F3Flags.MIXIN)) != 0) {
+		// VSGC-2815 - new expressions should report an error when trying to instantiate a mixin class.
+		log.error(tree.pos(), MsgSym.MESSAGE_F3_MIXIN_CANNOT_BE_INSTANTIATED,
+			  clazztype.tsym);
+	    } else {
+		log.error(tree.pos(), MsgSym.MESSAGE_ABSTRACT_CANNOT_BE_INSTANTIATED,
+			  clazztype.tsym);
+	    }
 	}
         result = check(tree, owntype, VAL, pkind, pt, pSequenceness);
         localEnv.info.scope.leave();

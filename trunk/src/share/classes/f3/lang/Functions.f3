@@ -1,16 +1,5 @@
 package f3.lang;
 
-public function of a id(x is a) returns a { x }
-
-public function of (a, b) constant(x is a, y is b) returns a { x }
-
-public function of (a, b, c) compose(g is function from b to c,
-				     f is function from a to b) returns function from a to c 
-{
-    function(x is a) returns c {
-	g(f(x))
-    }
-}
 				     
 
 
