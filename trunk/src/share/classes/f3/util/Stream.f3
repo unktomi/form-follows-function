@@ -261,10 +261,10 @@ public const <<1.0>> = constant(1.0);
 public const X = <<0.0>>.followedBy(<<1.0>>);
 
 public bound function constant 
-    from (x is Number) 
+    from (n is Number) 
     to Stream of Number 
 {
-    repeat(x).followedBy(<<0.0>>);
+    repeat(n).followedBy(<<0.0>>);
 }
 
 public function convolve 
@@ -273,7 +273,7 @@ public function convolve
     to Stream of Number
 {
     const temp is Stream of Number = xs;
-    var x is Number = bind temp.now as Number;
+    var x is Number = bind temp.now;
     Stream of Number 
     {
 	now: bind x * ys.now;

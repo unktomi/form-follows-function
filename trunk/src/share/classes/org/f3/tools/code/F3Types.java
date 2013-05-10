@@ -41,6 +41,7 @@ import java.util.HashSet;
 import org.f3.tools.comp.F3Attr; // hack
 import org.f3.tools.comp.F3Attr.TypeCons; // hack
 import org.f3.tools.comp.F3Attr.ConstI; // hack
+import org.f3.tools.comp.F3Attr.TypeVarDefn; // hack
 /**
  *
  * @author bothner
@@ -935,32 +936,51 @@ public class F3Types extends Types {
 	if (x instanceof ClassType) {
 	    ClassSymbol def = (ClassSymbol)x.tsym;
 	    if (x.isParameterized()) {
+		//System.err.println("x="+x);
+		//System.err.println("def="+def.type);
 		for (List<Type> l0 = x.getTypeArguments(),
 			 l1 = def.type.getTypeArguments();
 		     l0 != null && l1 != null && l0.head != null && l1.head != null;
 		     l0 = l0.tail, l1 = l1.tail) {
-		    if (l1.head instanceof F3Attr.TypeVarDefn) {
-			F3Attr.TypeVarDefn d = (F3Attr.TypeVarDefn)l1.head;
+		    //  System.err.println("l1.head="+l1.head.getClass()+": "+ l1.head);
+		    //System.err.println("l0.head="+l0.head.getClass()+": "+ l0.head);
+		    Type u = unexpandWildcard(l1.head);
+		    if (u instanceof F3Attr.TypeVarDefn) {
+			F3Attr.TypeVarDefn d = (F3Attr.TypeVarDefn)u;
+			while (l0.head instanceof CapturedType) {
+			    l0.head = ((CapturedType)l0.head).wildcard;
+			}
 			while (l0.head instanceof WildcardType) {
 			    l0.head = ((WildcardType)l0.head).type;
 			}
-			l0.head = new WildcardType(l0.head, d.variance, syms.boundClass);
+			//if (!(l0.head instanceof TypeVar)) {
+			    l0.head = new WildcardType(l0.head, d.variance, syms.boundClass);
+			    //}
 		    }
 		}
+		//System.err.println("x'="+x);
 	    }
 	}
 	//System.err.println("expanding: "+ t + " => "+ x);
 	return x;
     }
 
-    public Type unexpandWildcard(final Type t) {
+    public Type unexpandWildcard(final Type t0) {
+	return unexpandWildcard(t0, false);
+    }
+
+    public Type unexpandWildcard(final Type t0, boolean unconditionally) {
+	Type t = t0;
+	if (t instanceof CapturedType) {
+	    t = ((CapturedType)t).wildcard;
+	}
 	if (t instanceof WildcardType) {
 	    final Type x = ((WildcardType)t).type;
-	    if (x instanceof F3Attr.TypeVarDefn) {
+	    if (unconditionally || (x instanceof F3Attr.TypeVarDefn)) {
 		return x;
 	    }
 	}
-	return t;
+	return t0;
     }
 
     @Override
@@ -1834,7 +1854,7 @@ public class F3Types extends Types {
 		if (upper == null) {
 		    upper = syms.objectType;
 		}
-		t = new TypeVar(t.tsym, upper, t.lower);
+		t = newTypeVar(t.tsym, upper, t.lower);
 		return t;
             }
 
@@ -1870,6 +1890,9 @@ public class F3Types extends Types {
 		//System.err.println("vtype="+vtype);
 		//System.err.println("type="+type1);
 		if (bound1 != vbound || vtype != type1) {
+		    if (type1 instanceof CapturedType) {
+			type1 = ((CapturedType)type1).wildcard;
+		    }
 		    if (type1 instanceof WildcardType) {
 			//t = (WildcardType)type1;
 			bound1 = ((WildcardType)type1).bound;
@@ -1887,6 +1910,16 @@ public class F3Types extends Types {
 
 	    public Type visitMethodType(MethodType t, Boolean pw) {
 		List<Type> argtypes = visit(t.argtypes, pw);
+		List<Type> unexpanded = List.<Type>nil();
+		boolean diff = false;
+		for (Type x: argtypes) {
+		    Type g = unexpandWildcard(x);
+		    if (g != x) diff = true;
+		    unexpanded = unexpanded.append(g);
+		}
+		if (false && diff) {
+		    argtypes = unexpanded;
+		}
 		Type restype = visit(t.restype, pw);
 		List<Type> thrown = visit(t.thrown, pw);
 		if (argtypes == t.argtypes &&
@@ -1920,7 +1953,7 @@ public class F3Types extends Types {
 		    //System.err.println("APPLY TCONS "+t+" => "+r);
 		    return r;
 		}
-                return t;
+                return expandTypeVar(t);
             }
 
             public Type visitType(Type t, Boolean preserveWildcards) {
@@ -2008,7 +2041,7 @@ public class F3Types extends Types {
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
 		    return upper;
 		}
-		t = new TypeVar(t.tsym, upper, visit(t.lower, preserveWildcards));
+		t = newTypeVar(t.tsym, upper, visit(t.lower, preserveWildcards));
 		return t;
 	    }
 	
@@ -2047,6 +2080,9 @@ public class F3Types extends Types {
 		    }
 		} 
 		if (bound1 != vbound || vtype != type1) {
+		    if (type1 instanceof CapturedType) {
+			type1 = ((CapturedType)type1).wildcard;
+		    }
 		    if (type1 instanceof WildcardType) {
 			//t = (WildcardType)type1;
 			bound1 = ((WildcardType)type1).bound;
@@ -2079,7 +2115,7 @@ public class F3Types extends Types {
 		    //System.err.println("APPLY TCONS "+t+" => "+r);
 		    return r;
 		}
-		return t;
+                return expandTypeVar(t);
             }
 
             public Type visitType(Type t, Boolean preserveWildcards) {
@@ -2271,6 +2307,11 @@ public class F3Types extends Types {
     boolean HACK;
 
     public Type subst2(Type t, List<Type> from, List<Type> to, boolean hack) {
+	ListBuffer<Type> froms = ListBuffer.lb();
+	for (Type x: from) {
+	    froms.append(unexpandWildcard(x));
+	}
+	from = froms.toList();
         Subst s = new Subst(from, to);
 	try {
 	    HACK = hack;
@@ -2303,6 +2344,7 @@ public class F3Types extends Types {
         Type subst(Type t) {
 	    if (t == null) {
 		System.err.println("type is null");
+		Thread.currentThread().dumpStack();
 		return syms.botType;
 	    }
             if (from.tail == null)
@@ -2345,6 +2387,12 @@ public class F3Types extends Types {
 
         @Override
         public Type visitTypeVar(TypeVar t, Void ignored) {
+	    Type t1 = visitTypeVar0(t, ignored);
+	    //System.err.println("SUBST "+ toF3String(t) +" => "+toF3String(t1)+ ", from="+from+", to="+to);
+	    return t1;
+	}
+
+        public Type visitTypeVar0(TypeVar t, Void ignored) {
 	    //System.err.println("Subst t="+System.identityHashCode(t)+"@"+t.getClass()+": "+t);
 	    final TypeSymbol tsym = t.tsym;
 	    Type seen = visited.get(tsym);
@@ -2384,13 +2432,12 @@ public class F3Types extends Types {
             }
 	    TypeVar t1 = t;
 	    if (t.lower != syms.botType || t.bound != syms.objectType) {
-		t1 = new TypeVar(tsym, syms.objectType, syms.botType);
+		t1 = newTypeVar(tsym, syms.objectType, syms.botType);
 		visited.put(tsym, t1);
 		Type lower = visit(t.lower, null);
 		Type upper = visit(t.bound, null);
 		t1.bound = upper;
 		t1.lower = lower;
-		//System.err.println("SUBST "+ toF3String(t) +" => "+toF3String(t1));
 		t = t1;
 	    }
             return t;
@@ -2469,6 +2516,17 @@ public class F3Types extends Types {
         }
     }
 
+    TypeVar newTypeVar(TypeSymbol sym, Type bound, Type lower) {
+	if (sym.type instanceof TypeVarDefn) {
+	    TypeVarDefn base = (TypeVarDefn)sym.type;
+	    //TypeVarDefn def = new TypeVarDefn(base, base.variance);
+	    //def.lower = lower;
+	    //def.bound = bound;
+	    return base;
+	}
+	return new TypeVar(sym, bound, lower);
+    }
+
     public ForAll newForAll(List<Type> targs, Type t) {
 	if (t instanceof FunctionType) {
 	    t = ((FunctionType)t).asMethodOrForAll();
@@ -2513,7 +2571,7 @@ public class F3Types extends Types {
 		if ("<captured wildcard>".equals(t.tsym.name.toString())) { // major hack
 		    return upper;
 		}
-		t = new TypeVar(t.tsym, upper, t.lower);
+		t = newTypeVar(t.tsym, upper, t.lower);
 		return t;
             }
 

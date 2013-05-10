@@ -252,7 +252,7 @@ public class F3Check {
 	    System.err.println("tv.lower="+tv.lower);
 	    System.err.println("tv.bound="+tv.bound);
 	}
-	Thread.currentThread().dumpStack();
+	//Thread.currentThread().dumpStack();
 	log.error(pos, MsgSym.MESSAGE_PROB_FOUND_REQ, problem, foundAsF3Type, requiredAsF3Type);
 	return syms.errType;
     }
@@ -548,7 +548,7 @@ public class F3Check {
 	    System.err.println("found="+found);
 	    System.err.println("req="+req);
 	    Type.WildcardType wc = (Type.WildcardType)req;
-	    if (wc.type instanceof F3Attr.TypeVarDefn) {
+	    if (true || wc.type instanceof F3Attr.TypeVarDefn) {
 		return found;
 	    }
             log.error(pos, MsgSym.MESSAGE_ASSIGNMENT_TO_EXTENDS_BOUND, req);

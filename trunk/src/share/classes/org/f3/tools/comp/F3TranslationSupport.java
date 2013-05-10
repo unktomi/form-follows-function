@@ -355,7 +355,7 @@ public abstract class F3TranslationSupport {
 	if (typeArgTypes != null) { // note bounds on type parameters might contain references to mixin classes 
 	    ListBuffer<JCTypeParameter> buf = new ListBuffer<JCTypeParameter>();
 	    for (List<Type> x = typeArgTypes; x != null; x = x.tail) {
-		TypeVar t = (TypeVar)x.head;
+		TypeVar t = (TypeVar)types.unexpandWildcard(x.head);
 		if (t != null && (t.bound instanceof WildcardType) &&
 		    ((WildcardType)t.bound).kind == BoundKind.SUPER) {
 		    continue;
@@ -452,9 +452,9 @@ public abstract class F3TranslationSupport {
 	if (t instanceof MethodType) { // hack!!!
 	    t = syms.makeFunctionType((MethodType)t);
 	}
-	t = types.unexpandWildcard(t);
-	if (t instanceof TypeVar) {
-	    TypeVar tv = (TypeVar)t;
+	Type tu = types.unexpandWildcard(t);
+	if (tu instanceof TypeVar) {
+	    TypeVar tv = (TypeVar)tu;
 	    if (tv.bound instanceof WildcardType) {
 		WildcardType wc = (WildcardType)tv.bound;
 		if (wc.kind == BoundKind.SUPER) {
@@ -572,6 +572,13 @@ public abstract class F3TranslationSupport {
                     List<JCExpression> targs = List.nil();
                     for (Type ta : t.getTypeArguments()) {
 			//System.err.println("ta="+ta);
+			Type tp = ta;
+			if (tp instanceof WildcardType) {
+			    tp = ((WildcardType)tp).type;
+			}
+			if (tp == syms.botType) { // send back a raw type
+			    return texp;
+			}
                         targs = targs.append(makeTypeTreeInner01(diagPos, ta, /*makeIntf*/ true, expandTypeCons));
                    }
 		    //System.err.println(t.getTypeArguments()+" => "+targs);

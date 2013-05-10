@@ -843,6 +843,12 @@ classDefinition [ F3Modifiers mods, int pos ]
         RBRACE
         
         { 
+            /* @TODO
+            if (($mods.flags & Flags.ABSTRACT) != 0) {
+                $mods.flags |= F3Flags.MIXIN;
+                $mods.flags &= ~Flags.ABSTRACT;
+            }
+            */
             $value = F.at($pos).ClassDeclaration
                 (
                               

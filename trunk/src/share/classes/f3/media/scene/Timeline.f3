@@ -7,7 +7,7 @@ import f3.lang.Ref;
 public class Timeline 
 {
     init {
-	MasterTimeline.timelines.put(this, null);
+	MasterTimeline.timelines.put(this, ());
     }
 
     function interpolateChannels from (channels is (Channel of (?))[],

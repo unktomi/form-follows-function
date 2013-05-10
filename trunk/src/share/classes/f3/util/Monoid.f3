@@ -29,7 +29,7 @@ public abstract class Monoid of a
 
 public interface Reducer of (a, b) 
 {
-    public const monoid is Monoid of b;
+    public const monoid is Monoid of b = the Monoid of b;
     public function append from (x is a, y is b) to b 
     {
 	monoid.add(invoke(x), y)

@@ -7,7 +7,7 @@ public abstract class Ordering of a
 	to Comparison;
 }
 
-public class ComparableOrdering of (a is java.lang.Comparable), is Ordering of a 
+public class ComparableOrdering of (a is java.lang.Comparable of a), is Ordering of a 
 {
     override function compare 
 	from (x is a, y is a) 

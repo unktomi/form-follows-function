@@ -193,6 +193,8 @@ public class F3Lower implements F3Visitor {
 	if (type.tag == TypeTags.TYPEVAR) {
 	    return tree;
 	}
+	tree.type = types.unexpandWildcard(tree.type);
+	type = types.unexpandWildcard(type);
         return tree = needSequenceConversion(tree, type) ?
             toSequence(tree, type) :
             preTrans.makeCastIfNeeded(tree, type);
@@ -714,14 +716,19 @@ public class F3Lower implements F3Visitor {
 	    def.pos = tree.pos;
 	    def.setType(tree.type);
 	    result = def;
-	    System.err.println("lowered obj lit part: "+result);
+	    //System.err.println("lowered obj lit part: "+result);
 	    return;
 	}
+	tree.type = types.unexpandWildcard(tree.type, true);
+	//System.err.println("expr="+tree.getExpression()+", expType="+tree.getExpression().type+" tree.type="+tree.type);
         F3Expression expr = lowerExpr(tree.getExpression(), tree.type); //tree.sym.type);
+	expr = preTrans.makeCast(expr, tree.type);
+	//System.err.println("expr'="+expr+", type="+tree.type);
         F3ObjectLiteralPart res = m.at(tree.pos).ObjectLiteralPart(tree.name, expr, tree.getExplicitBindStatus());
         res.markBound(tree.getBindStatus());
         res.sym = tree.sym;
         result = res.setType(tree.type);
+	res.sym.type = tree.type;
     }
 
     public void visitOverrideClassVar(F3OverrideClassVar tree) {
@@ -995,9 +1002,15 @@ public class F3Lower implements F3Visitor {
     public void visitVar(F3Var tree) {
 	try {
 	    if (tree.type == null) {
-		System.err.println("type is null: "+tree);
+		System.err.println("lower: type is null: "+tree);
 	    }
+	    tree.type = types.unexpandWildcard(tree.type);
+	    tree.sym.type = tree.type;
+	    //System.err.println("var "+tree+": type="+tree.type);
 	    F3Expression init = lowerExpr(tree.getInitializer(), tree.type);
+	    //if (init != null) {
+		//init = preTrans.makeCast(init, tree.type);
+	    //}
 	    F3OnReplace onReplace = lowerDecl(tree.getOnReplace());
 	    F3OnReplace onInvalidate = lowerDecl(tree.getOnInvalidate());
 	    F3Var res = m.at(tree.pos).Var(tree.name, tree.getF3Type(), tree.mods, init, tree.getBindStatus(), onReplace, onInvalidate);
