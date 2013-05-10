@@ -2,7 +2,7 @@ package f3.util;
 
 public class Subject of a is Observable of a, Observer of a {
 
-    var observers is java.util.Map of (Observer of a, null);
+    var observers is java.util.Map of (Observer of a, ());
 
     public override function onNext from (x is a) to ()
     {
@@ -28,9 +28,9 @@ public class Subject of a is Observable of a, Observer of a {
     public override function subscribe from (x is Observer of a) to Disposable 
     {
 	if (observers == null) {
-	    observers = new java.util.WeakHashMap of (Observer of a, null);
+	    observers = new java.util.WeakHashMap of (Observer of a, ());
 	}
-	observers.put(x, null);
+	observers.put(x, ());
 	Disposable {
 	    override public function dispose 
 	    {

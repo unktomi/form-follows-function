@@ -398,6 +398,9 @@ public class F3Resolve {
         if (mt == null) {
             return null;
         }
+	if (mt instanceof FunctionType) {
+	    mt = ((FunctionType)mt).asMethodOrForAll();
+	}
         if (mt.tag != FORALL && typeargtypes.nonEmpty()) {
             // This is not a polymorphic method, but typeargs are supplied
             // which is fine, see JLS3 15.12.2.1
@@ -511,12 +514,16 @@ public class F3Resolve {
 			  boolean useVarargs,
 			  Warner warn) {
         try {
-            Type r = rawInstantiateDebug(env, m, types.memberType(site, m), argtypes, typeargtypes,
+
+	    Type memtype = types.memberType(site, m);
+	    System.err.println("site: "+ types.toF3String(site));
+	    System.err.println("member type: "+types.toF3String(memtype));
+            Type r = rawInstantiateDebug(env, m, memtype, argtypes, typeargtypes,
 					 allowBoxing, useVarargs, warn);
 	    //System.err.println("instantiated "+m+" to "+ r);
 	    return r;
         } catch (F3Infer.NoInstanceException ex) {
-	    ex.printStackTrace();
+	    Thread.currentThread().dumpStack();
             return null;
         }
     }
@@ -1022,6 +1029,7 @@ public class F3Resolve {
 	    //Thread.currentThread().dumpStack();
 	    //}
 	    //if (true) return bestSoFar;
+	    //ex.printStackTrace()
             switch (bestSoFar.kind) {
             case ABSENT_MTH:
                 return wrongMethod.setWrongSym(sym, ex.getDiagnostic());
