@@ -1330,14 +1330,17 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3Expression TupleType(F3Expression first, F3Expression second) {
 	// hack...
-	//System.err.println(first.getClass());
-	//System.err.println(second.getClass());
-	if (first instanceof F3Type) {
-	    ((F3Type)first).boundKind = BoundKind.EXTENDS;
+	System.err.println("TupleType: "+ first+ ", "+ second);
+	System.err.println(first.getClass());
+	System.err.println(second.getClass());
+	if (!(first instanceof F3Type)) {
+	    first = TypeClass(first, Cardinality.SINGLETON);
 	}
-	if (second instanceof F3Type) {
-	    ((F3Type)second).boundKind = BoundKind.EXTENDS;
+	((F3Type)first).boundKind = BoundKind.EXTENDS;
+	if (!(second instanceof F3Type)) {
+	    second = TypeClass(second, Cardinality.SINGLETON);
 	}
+	((F3Type)second).boundKind = BoundKind.EXTENDS;
         F3Ident id = Ident(names.fromString("org"));
         F3Select sel = 
             Select(id, names.fromString("f3"), false);
@@ -1345,6 +1348,30 @@ public class F3TreeMaker implements F3TreeFactory {
         sel = Select(sel, names.fromString("Pair"), false);
 	return Ident(sel, List.of(first, second));
     }
+
+    public F3Expression CoTupleType(F3Expression first, F3Expression second) {
+	// hack...
+	System.err.println("CoTupleType: "+ first+ ", "+ second);
+	System.err.println(first.getClass());
+	System.err.println(second.getClass());
+	/*
+	if (!(first instanceof F3Type)) {
+	    first = TypeClass(first, Cardinality.SINGLETON);
+	}
+	((F3Type)first).boundKind = BoundKind.EXTENDS;
+	if (!(second instanceof F3Type)) {
+	    second = TypeClass(second, Cardinality.SINGLETON);
+	}
+	((F3Type)second).boundKind = BoundKind.EXTENDS;
+	*/
+        F3Ident id = Ident(names.fromString("org"));
+        F3Select sel = 
+            Select(id, names.fromString("f3"), false);
+        sel = Select(sel, names.fromString("runtime"), false);
+        sel = Select(sel, names.fromString("Either"), false);
+	return Ident(sel, List.of(first, second));
+    }
+
 
     public F3Expression Ident(F3Expression name, List<F3Expression> typeVars) {
 	if (typeVars.head != null) {
