@@ -24,7 +24,7 @@ public class Plane is F3Value
 {
     public const point is Point3 = Point3.<<0>>;
     public const normal is Vec3 = Vec3.Z_AXIS;
-    const c is Number;
+    var c is Number;
     postinit {
 	c = normal.dot(point);
     }

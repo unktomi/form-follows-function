@@ -57,7 +57,7 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
 */
     function normalize to Distribution of a 
     {
-        var map = new java.util.HashMap of (a, Possibility of a);
+        const map = new java.util.HashMap of (a, Possibility of a);
         for (x in likelihoods) {
             const p = map.get(x.event);
             if (p <> null) {

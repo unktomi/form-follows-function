@@ -47,7 +47,7 @@ class FilterMethodsTargetSub extends Mixin1, Mixin2, FilterMethodsTarget {
     function stopHere() {
         mixiFunc();
     }
-    function getInt() {
+    function getInt to Integer {
         return 22;
     }
 }

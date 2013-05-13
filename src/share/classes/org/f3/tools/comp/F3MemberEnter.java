@@ -28,7 +28,7 @@ import com.sun.tools.mjavac.util.*;
 import com.sun.tools.mjavac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.mjavac.code.Symbol.*;
 import com.sun.tools.mjavac.code.Type.*;
-
+import org.f3.api.tree.TypeTree.Cardinality;
 import static com.sun.tools.mjavac.code.Flags.*;
 import static com.sun.tools.mjavac.code.Kinds.*;
 import static com.sun.tools.mjavac.code.TypeTags.*;
@@ -1032,7 +1032,32 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		for (Type t: tree.typeArgTypes) {
 		    targs = targs.append(f3make.Ident(((TypeVar)t).tsym.name));
 		}
-                tree.addSupertype(f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), targs));
+		// TypeCons2(F, a, b)
+		tree.addSupertype(f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), targs));
+		targs = List.<F3Expression>nil();
+		F3Type typ = f3make.TypeClass(f3make.Ident(tree.getName()), Cardinality.SINGLETON);
+		typ.boundKind = BoundKind.EXTENDS;
+		//System.err.println("typ="+typ);
+		targs = targs.append(typ);
+		for (Type t: tree.typeArgTypes) {
+		    targs = targs.append(f3make.Ident(((TypeVar)t).tsym.name));
+		}
+		List<F3Expression> targs0 = targs;
+		while (count > 1) {
+		    count--;
+		    //TypeCons1(TypeCons1(F, a), a)
+		    List<F3Expression> nargs = List.<F3Expression>nil();
+		    int argCount = targs.size()-1;
+		    List<F3Expression> dargs = targs.tail.tail;
+		    for (int i = 0; i < argCount; i++) {
+			nargs = nargs.append(targs.head);
+			targs = targs.tail;
+		    }
+		    targs = targs0;
+		    F3Expression arg0 = f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), nargs);
+		    
+		    tree.addSupertype(f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), dargs.prepend(arg0)));
+		}
                 //System.err.println("tree=>"+tree);
             }
 	}

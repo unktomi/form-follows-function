@@ -43,7 +43,7 @@ public class DateTime {
      *
      * @defaultvalue the instant at which this DateTime was instantiated
      */
-    public-init var instant: Long;
+    public readonly var instant: Long;
 
     var tz: TimeZone;
     var engine: DateTimeEngine;

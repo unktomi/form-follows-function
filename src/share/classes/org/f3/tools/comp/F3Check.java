@@ -727,6 +727,7 @@ public class F3Check {
             log.error(pos, MsgSym.MESSAGE_F3_CANNOT_ASSIGN_TO_PARAMETER, v);
         } else {
             // now check access permissions for write/init
+	    boolean isAssignConst = false;
             switch (writeKind) {
                 case INIT_NON_BIND:
                     if ((v.flags() & F3Flags.PUBLIC_INIT) != 0L) {
@@ -734,8 +735,13 @@ public class F3Check {
                         return;
                     }
                     break;
+	        case ASSIGN:
+                    if ((v.flags() & F3Flags.PUBLIC_INIT) != 0L) {
+			isAssignConst = true;
+		    }
+		    break;
             }
-            if (!rs.isAccessibleForWrite(env, site, v)) {
+            if (isAssignConst || !rs.isAccessibleForWrite(env, site, v)) {
                 String msg;
                 switch (writeKind) {
                     case INIT_BIND:
@@ -753,8 +759,8 @@ public class F3Check {
                         break;
                 }
                 log.error(pos, msg, v,
-                        F3Check.protectionString(v.flags()),
-                        v.location());
+			  F3Check.protectionString(v.flags()),
+			  v.location());
             }
         }
     }
@@ -1347,6 +1353,9 @@ public class F3Check {
      *  This always returns a space-separated list of Java Keywords.
      */
     public static String protectionString(long flags) {
+	if ((flags & F3Flags.PUBLIC_INIT) != 0) {
+	    return "initialization only";
+	}
 	long flags1 = flags & (F3Flags.F3AccessFlags | F3Flags.F3ExplicitAccessFlags);
 	return F3TreeInfo.flagNames(flags1);
     }

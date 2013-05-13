@@ -265,10 +265,10 @@ public class F3TreeInfo {
             fsb.append("script only (default) ");
         }
         if ((flags & F3Flags.PUBLIC_READ) != 0) {
-            fsb.append("public-read ");
+            fsb.append("readonly ");
         }
         if ((flags & F3Flags.PUBLIC_INIT) != 0) {
-            fsb.append("public-init ");
+            fsb.append("const ");
         }
         if ((flags & F3Flags.DEFAULT) != 0) {
             fsb.append("default ");

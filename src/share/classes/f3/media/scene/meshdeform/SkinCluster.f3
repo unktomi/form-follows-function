@@ -21,7 +21,7 @@ public class SkinCluster is MeshDeformer {
     var combined is Mat4f[];
     var combinedInverseTranspose is Mat4f[];
     const sceneToLocal = new Mat4f();
-    const lastWm is Mat4[];
+    var lastWm is Mat4[];
     const tempMat = new Mat4f();
     const pos = new Vec3f();
     const norm = new Vec3f();

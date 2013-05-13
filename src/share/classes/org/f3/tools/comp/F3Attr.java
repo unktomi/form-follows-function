@@ -2642,7 +2642,8 @@ public class F3Attr implements F3Visitor {
 	    tv.tsym = tsym;
 	    env.info.scope.enter(tsym);
 	    tv.args = makeTypeVars(cons.getArgs(), tsym);
-	    tv.bound = types.makeTypeCons(tv, tv.args);
+	    //tv.bound = types.makeTypeCons(tv, tv.args);
+	    tv.bound = syms.objectType;
 	    //System.err.println("typeCons: "+tv);
 	    return tv;
 	} else if (exp instanceof F3Ident) {

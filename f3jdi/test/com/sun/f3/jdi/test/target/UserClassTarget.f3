@@ -20,7 +20,7 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  */
-
+/*
 package org.f3.jdi.test.target;
 
 var sv1 = 89;
@@ -48,3 +48,5 @@ function run() {
                  override var ovar1 = bind sv1 on replace {println("override2");}
                }
 }
+
+*/

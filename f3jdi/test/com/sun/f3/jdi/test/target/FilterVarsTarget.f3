@@ -22,9 +22,9 @@
  */
 
 package org.f3.jdi.test.target;
-
+/*
 class FilterVarsTarget {
-    var baseivar1: Number;    // this is declared private because there are no refs
+    public var baseivar1: Number;    // this is declared private because there are no refs
                               // to it in this script, outside this class
     var baseivar2: Number;    // These three are refd in the subclass below which
     var baseivar3: Number;    // causes them to be declared as public, with name 
@@ -41,7 +41,7 @@ class FilterVarsTargetSub extends Mixin1, FilterVarsTarget {
     function stopHere():Void {
         baseivar2;
     }
-    function getInt() {
+    function getInt to Integer {
         return 22;
     }
 }
@@ -59,7 +59,8 @@ var binder1 = FilterVarsTarget{baseivar1: bind bb};
 // this creates $binder2$_$2
 var binder2 = bind if (bb == 89) then obj.baseivar1 else obj.getInt();
 
-var binder3 = for (ii in [bb .. bb + 10]) {
+var binder3 = foreach (ii in [bb .. bb + 10]) {
                 ii*2
               };
 
+*/

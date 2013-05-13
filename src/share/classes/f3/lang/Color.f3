@@ -673,7 +673,7 @@ public class Color extends Comparable of Object, Formattable {
 
     override function compareTo(obj:Object):Integer {
         def c = obj as Color;
-        def mag = (red = green + blue) * opacity;
+        def mag = (red + green + blue) * opacity;
         def cMag = (c.red + c.green + c.blue) * c.opacity;
         if (mag == cMag) {
             return 0;
