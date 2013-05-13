@@ -82,6 +82,7 @@ public class F3Symtab extends Symtab {
     public final Type f3_AnyType;
     public final Type f3_UnspecifiedType;
     public final Type f3_AutoImportRuntimeType;
+    public Type f3_AutoImportF3RuntimeType;
     public final Type f3_RuntimeType;
     public final Type f3_VoidType;
     public final Type f3_java_lang_VoidType;
@@ -249,6 +250,11 @@ public class F3Symtab extends Symtab {
         f3_VoidType = voidType;
 
         f3_AutoImportRuntimeType = enterClass("f3.lang.Builtins");
+	try {
+	    f3_AutoImportF3RuntimeType = enterClass("f3.lang.F3Builtins");
+	} catch (Exception ignored) {
+	    f3_AutoImportF3RuntimeType = null;
+	}
         f3_RuntimeType = enterClass("f3.lang.F3");
         unreachableType = new Type(TypeTags.VOID, null);
         unreachableType.tsym = new TypeSymbol(0, names.fromString("<unreachable>"), Type.noType, rootPackage);

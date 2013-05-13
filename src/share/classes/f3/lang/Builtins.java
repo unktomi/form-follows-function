@@ -174,7 +174,7 @@ public class Builtins {
             }
         };
     }
-
+    /*
     public static <a,b> Either<a, b> Former(a x) 
     {
 	return Either.former(x);
@@ -184,6 +184,7 @@ public class Builtins {
     {
 	return Either.latter(y);
     }
+    */
 
     public static <a,b> Pair<? extends a, ? extends b> both(a x,  b y) 
     {

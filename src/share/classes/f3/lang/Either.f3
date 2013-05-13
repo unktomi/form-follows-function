@@ -1,0 +1,170 @@
+package f3.lang;
+
+public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
+{
+    public abstract function case of _ 
+	from (f is function from a to _, 
+	      g is function from b to _) 
+	to _;
+
+    override abstract public function map of c 
+	from (f is function from b to c) 
+	to Either of (a, c);
+
+    abstract public function flatmap of c 
+	from (f is function from b to Either of (a, c)) 
+	to Either of (a, c);
+
+
+    public function swap to Either of (b, a) 
+    {
+	const self = this;
+	Either of (b, a) 
+	{
+	    override public function map of c 
+		from (f is function from a to c) 
+		to Either of (b, c)
+	    {
+		self.case(function from (x is a) to Either of (b, c) 
+			  {
+			      Latter of (b, c) (f(x))
+			  },
+			  function from (y is b) to Either of (b, c) 
+			  {
+			      Former of (b, c) (y);
+			  });
+	    }
+
+	    override public function flatmap of c 
+		from (f is function from a to Either of (b, c)) 
+		to Either of (b, c)
+	    {
+		self.case(function from (x is a) to Either of (b, c) 
+			  {
+			      f(x);
+			  },
+			  function from (y is b) to Either of (b, c) 
+			  {
+			      Former of (b, c) (y);
+			  });
+		
+	    }
+
+	    override function case of _ from (f is function from b to _, 
+					      g is function from a to _) to _
+	    {
+		self.case(g, f)
+	    }
+	}
+    }
+
+    public function getFormer to java.lang.Iterable of a 
+    {
+	java.util.Collections.emptySet of a()
+    }
+
+    public function getLatter to java.lang.Iterable of b 
+    {
+	java.util.Collections.emptySet of b()
+    }
+}
+
+public function Former of (a, b) from (x is a) to Either of (a, b) 
+{
+    Either of (a, b) {
+
+	override function toString to String 
+	{
+	    "Former: {x}";
+	}
+
+	override function case of _ 
+	    from (f is function from a to _, 
+		  g is function from b to _) 
+	    to _
+	{
+	    f(x);
+	}
+
+	override public function map of c from (f is function from b to c) to Either of (a, c)
+	{
+	    Former of (a, c) (x)
+	}
+
+	override public function flatmap of c from (f is function from b to Either of (a, c)) to Either of (a, c)
+	{
+	    Former of (a, c) (x)
+	}
+	
+	override function getFormer to java.lang.Iterable of a 
+	{
+	    java.lang.Iterable of a {
+		override function iterator to java.util.Iterator of a 
+		{
+		    java.util.Iterator of a {
+			var flag = true;
+			override function hasNext to Boolean 
+			{
+			    return flag;
+			}
+			override function next to a 
+			{
+			    flag = false; return x
+			}
+			override function remove {}
+		    }
+		}
+	    }
+	}
+    }
+}
+
+public function Latter of (a, b) from (y is b) to Either of (a, b) 
+{
+    Either of (a, b) {
+
+	override function toString to String 
+	{
+	    "Latter: {y}";
+	}
+
+	override function case of _ 
+	    from (f is function from a to _, 
+		  g is function from b to _) 
+	    to _
+	{
+	    g(y);
+	}
+
+	override public function map of c from (f is function from b to c) to Either of (a, c)
+	{
+	    Latter of (a, c) (f(y))
+	}
+
+	override public function flatmap of c from (f is function from b to Either of (a, c)) to Either of (a, c)
+	{
+	    f(y)
+	}
+
+	override function getLatter to java.lang.Iterable of b 
+	{
+	    java.lang.Iterable of b {
+		override function iterator to java.util.Iterator of b 
+		{
+		    java.util.Iterator of b {
+			var flag = true;
+			override function hasNext to Boolean 
+			{
+			    return flag;
+			}
+			override function next to b 
+			{
+			    flag = false; return y
+			}
+			override function remove {}
+		    }
+		}
+	    }
+	}
+    }
+}
