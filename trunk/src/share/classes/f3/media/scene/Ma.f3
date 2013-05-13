@@ -2082,7 +2082,7 @@ function parsePath from (path is String) to Path
 
 class UVSet {
     const uvIndex is Integer;
-    const uvs is Number[];
+    var uvs is Number[];
     override function toString to String {
 	"uvSet: {uvIndex}, uvs: {uvs}";
     }
@@ -3136,7 +3136,7 @@ class MAnimCurve__ is MAnimCurve of Number
 class Command 
 {
     const name is String;
-    const args is String[];
+    readonly var args is String[];
     const namedArgs is java.util.Map of (String, String) 
 	= new java.util.HashMap of (String, String) ();
 

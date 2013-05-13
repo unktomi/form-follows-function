@@ -1372,7 +1372,7 @@ class OffscreenSurface is JoglTexture
 
 class JoglTexture is AbstractTexture 
 {
-    public const tex is Texture;
+    public readonly var tex is Texture;
     public const gl is GL2;
     public const id is String;
     public var width = bind tex.getWidth();
