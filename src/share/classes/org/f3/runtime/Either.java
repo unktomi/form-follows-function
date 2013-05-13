@@ -16,9 +16,11 @@ public abstract class Either<a, b> implements Monad<Either, b>
 {
     public abstract <c> c match(Function1<? extends c, ? super a> f,
                                 Function1<? extends c, ? super b> g); 
+
     public static <a, b> Either<a, b> former(a x) {
 	return new Former<a, b>(x);
     }
+
     public static <a, b> Either<a, b> latter(b y) {
 	return new Latter<a, b>(y);
     }

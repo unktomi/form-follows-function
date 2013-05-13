@@ -175,12 +175,12 @@ public class Builtins {
         };
     }
 
-    public static <a,b> Either<? extends a, ? extends b> Former(a x) 
+    public static <a,b> Either<a, b> Former(a x) 
     {
 	return Either.former(x);
     }
 
-    public static <a,b> Either<? extends a, ? extends b> Latter(b y) 
+    public static <a,b> Either<a, b> Latter(b y) 
     {
 	return Either.latter(y);
     }
@@ -212,6 +212,8 @@ public class Builtins {
 	return Pair.both(x, y);
     }
 
+    /*
+
     public static <a> Pair<? extends a,? extends java.lang.Integer> $comma(a x, int y) 
     {
 	return Pair.<a,java.lang.Integer>both(x, y);
@@ -231,4 +233,5 @@ public class Builtins {
     {
 	return Pair.<java.lang.Float, a>both(x, y);
     }
+    */
 }

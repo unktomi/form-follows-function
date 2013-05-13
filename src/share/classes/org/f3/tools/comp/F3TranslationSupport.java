@@ -1487,11 +1487,20 @@ public abstract class F3TranslationSupport {
             if (currentThis == null) {
 		System.err.println("owner="+ownerThis);
 		System.err.println("receiver="+receiver);
-		System.err.println("enclosing="+enclosingClassDecl);
+		//System.err.println("enclosing="+enclosingClassDecl);
                 //throw new AssertionError("Cannot find owner");
+		//Thread.currentThread().dumpStack();
 		return receiver;
             }
             else if (!currentThis.isSubClass(ownerThis, types)) {
+		if (types.isSameType(types.erasure(ownerThis.type),
+				     types.erasure(currentThis.type))) {
+		    System.err.println("currentThis: "+currentThis.type);
+		    System.err.println("ownerThis: "+ ownerThis.type);
+		    JCExpression result = typeCast(ownerThis.type, currentThis.type, receiver);
+		    System.err.println("result="+result);
+		    return result;
+		}
                 return resolveThisInternal(ownerThis, currentThis.owner.enclClass(), Call(receiver, defs.outerAccessor_MethodName));
             }
             else {

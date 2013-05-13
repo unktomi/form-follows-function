@@ -136,6 +136,7 @@ public class F3Types extends Types {
 	if (!(list.head instanceof TypeVar)) {
 	    list.head = new WildcardType(list.head, BoundKind.EXTENDS, syms.boundClass);
 	}
+	/*
 	if (list.head instanceof TypeCons) {
 	    TypeCons k = (TypeCons)list.head;
 	    if (k.ctor == null) {
@@ -143,6 +144,7 @@ public class F3Types extends Types {
 	    }
 	}
 	System.err.println("make type cons: "+ list.head+": "+args.size() + ": "+args);
+	*/
 	int n = args.size();
 	list = list.appendList(args);
         return applySimpleGenericType(syms.f3_TypeCons[n], list);

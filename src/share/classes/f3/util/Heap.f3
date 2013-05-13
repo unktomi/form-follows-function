@@ -256,7 +256,8 @@ public class Heap of a {
 }
 
 public function toHeap of a
-    from (xs is a[]) to Heap of a 
+    from (xs is a[]) 
+    to Heap of a 
     with (ord is the Ordering of a)
 {
     var h = Heap of a { 

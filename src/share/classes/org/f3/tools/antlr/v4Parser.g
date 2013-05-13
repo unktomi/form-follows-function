@@ -6567,19 +6567,20 @@ typeName
              }
          }
          )
+    |
+    LT
+    ((garg=genericArgument
+            { $value = $garg.value; }
+            (COMMA garg2=genericArgument
+            {
+               $value = F.at(rPos).CoTupleType($value, $garg2.value);
+            })*
+     )
+     | { 
+          $value = F.at(rPos).BottomType();
+     })  
+     GT
     | 
-/*
-    LPAREN 
-           ((typeparens  // Allows cardinality coherence, using nested paren parsing trick
-            { $value = $typeparens.value; }) 
-              (COMMA x=type {
-                    $value = F.at(rPos).TupleType($value, x); 
-               })*
-            | { 
-                  $value = F.at(rPos).Ident(names.fromString("<any?>"));
-             })  
-    RPAREN
-*/
     LPAREN
     ((garg=genericArgument
             { $value = $garg.value; }

@@ -138,6 +138,33 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
     {
         uniform(foreach (i in [0..<samples]) pick());
     }
+    
+    public function expected
+	from (this is Distribution of Number) to Number
+    {
+	var r = 0.0;
+	for (p in likelihoods) {
+	    r += p.event * p.likelihood;
+	}
+	return r;
+    }
+
+    public function variance
+	from (this is Distribution of Number) 
+	to Number
+    {
+	const exp = expected();
+	const d = foreach (x in this) {x*x - exp};
+	d.expected();
+    }
+
+    public function stdDev 
+	from (this is Distribution of Number) 
+	to Number 
+    {
+	Math.sqrt(variance());
+    }
+
 }
 
 public function probably of a from (x is a, p is Number) to Possibility of a
@@ -177,6 +204,8 @@ public function choose of a
     weighted([probably(x1, p), probably(x2, 1-p)]);
 }
 
+/*
+
 public function expected
     from (dist is Distribution of Number) to Number
 {
@@ -201,6 +230,7 @@ public function stdDev
 {
     Math.sqrt(variance(xs))
 }
+*/
 
 function run { 
     const die = uniform([1..6]);

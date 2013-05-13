@@ -9,4 +9,9 @@ public enum Comparison
 	return (i < 0) ? Less : (i > 0) ? Greater : Equal;
     }
 
+    public int toInteger()
+    {
+	return this == Less ? -1 : this == Equal ? 0 : 1;
+    }
+
 }
