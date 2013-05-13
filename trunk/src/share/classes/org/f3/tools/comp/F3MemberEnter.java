@@ -486,6 +486,9 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         }
 
         importStaticAll(-1, syms.f3_AutoImportRuntimeType.tsym, env);
+	if (syms.f3_AutoImportF3RuntimeType != null) {
+	    importStaticAll(-1, syms.f3_AutoImportF3RuntimeType.tsym, env);
+	}
 	final F3Env<F3AttrContext> env1 = env;
 	for (F3Tree tx: tree.typeAliases) {
 	    final F3TypeAlias ta = (F3TypeAlias)tx;
@@ -847,7 +850,11 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    }
 	    localEnv.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
-		localEnv.info.scope.enter(((TypeVar)t).tsym);
+		if (t instanceof TypeVar) {
+		    localEnv.info.scope.enter(((TypeVar)t).tsym);
+		} else {
+		    System.err.println("not a type var: "+ t + " in "+tree.typeArgs);
+		}
 	    }
 	}
 	if (tree.typeArgTypes != null && tree.typeArgTypes.nonEmpty()) {
@@ -1023,7 +1030,11 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    env.info.tvars = tree.typeArgTypes;
 	    for (Type t: tree.typeArgTypes) {
 		//		System.err.println("entering type var: "+ t);
-		typaramScope.enter(((TypeVar)t).tsym);
+		if (t instanceof TypeVar) {
+		    typaramScope.enter(((TypeVar)t).tsym);
+		} else {
+		    System.err.println("not a type var: "+ t + " in "+tree.typeArgs);
+		}
 	    }
             int count = tree.typeArgs.size();
             if (count > 0) {

@@ -1364,10 +1364,9 @@ public class F3TreeMaker implements F3TreeFactory {
 	}
 	((F3Type)second).boundKind = BoundKind.EXTENDS;
 	*/
-        F3Ident id = Ident(names.fromString("org"));
+        F3Ident id = Ident(names.fromString("f3"));
         F3Select sel = 
-            Select(id, names.fromString("f3"), false);
-        sel = Select(sel, names.fromString("runtime"), false);
+            Select(id, names.fromString("lang"), false);
         sel = Select(sel, names.fromString("Either"), false);
 	return Ident(sel, List.of(first, second));
     }

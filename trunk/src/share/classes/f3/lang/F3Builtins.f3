@@ -1,0 +1,12 @@
+package f3.lang;
+import f3.lang.Either;
+
+public function Former of (a, b) from (x is a) to Either of (a, b) 
+{
+    Either.Former of (a, b) (x)
+}
+
+public function Latter of (a, b) from (y is b) to Either of (a, b) 
+{
+    Either.Latter of (a, b) (y)
+}
