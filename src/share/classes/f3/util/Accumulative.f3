@@ -29,19 +29,15 @@ public interface Accumulative of a is org.f3.runtime.Foldable of a
     {
 	accumulateBackwards(z, f)
     }
-/*
-    public function partition from (f is function from a to Boolean) to ((..a)[], (..a)[]) 
+
+    public function partition from (f is function from a to Boolean) to (a[], a[]) 
     {
-	var xs is (..a)[];
-	var ys is (..a)[];
-	accumulate((), function from (_ is (), y is a) to () {
-		if (f(y)) {
-		    insert y into xs;
-		} else {
-		    insert y into ys;
-		}
-	    });
-	(xs, ys)
+	accumulate(([] as a[], [] as a[]), 
+		   function from (r is (a[], a[]), y is a) 
+		   to (a[], a[]) 
+		   {
+		       if (f(y)) then ([r.first, y] as a[], r.second) else (r.first, [r.second, y] as a[]);
+		   });
     }
-*/
+
 }
