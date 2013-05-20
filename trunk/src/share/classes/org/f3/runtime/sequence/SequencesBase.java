@@ -1176,7 +1176,8 @@ public class SequencesBase {
         return arr;
     }
 
-    public static <T> Sequence<? extends T> insert(Sequence<? extends T> oldValue, T newValue) {
+    public static <T> Sequence<? extends T> insert(Sequence/*<? extends T>*/ oldValue0, T newValue) {
+	Sequence<? extends T> oldValue = (Sequence<? extends T>)oldValue0;
         if (newValue == null)
             return oldValue;
         int oldSize = oldValue.size();

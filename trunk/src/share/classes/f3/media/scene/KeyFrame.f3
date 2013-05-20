@@ -114,17 +114,19 @@ public class Tangent is NumberInterpolator
 
 public abstract class Interpolator of a 
 {
+    public const zero is a;
+
     abstract function interpolate from (k is Key of a, t is Number) to a;
 
     public function scale from (x is a, weight is Number) to a 
     {
 	x
     }
+
     public function add from (x is a, y is a) to a 
     {
 	y
     }
-    public const zero is a;
 }
 
 public class Key of a 
@@ -133,13 +135,14 @@ public class Key of a
     public const value is a;
     public readonly var prev is Key of a;
     public readonly var next is Key of a;
+    public const interpolator is Interpolator of a;
+
     public function interpolate from (t is Number) to a 
     {
 	interpolator.interpolate(this, t);
     }
-    public const interpolator is Interpolator of a;
 
-    public function zero() to a 
+    public function zero to a 
     {
 	interpolator.zero;
     }

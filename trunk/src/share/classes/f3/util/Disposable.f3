@@ -4,9 +4,8 @@ public interface Disposable {
     public abstract function dispose to ();
 }
 
+const Empty = Disposable { override function dispose {} }
 
-const Empty = Disposable { override function dispose to () {} }
-
-public function empty() {
+public function empty to Disposable {
     Empty;
 }

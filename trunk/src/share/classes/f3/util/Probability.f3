@@ -29,7 +29,7 @@ public class Possibility of a is Functor of (Possibility, a)
 public class Distribution of a is Monad of (Distribution, a), Foldable of Possibility of a 
 {
 
-    const likelihoods is (Possibility of a)[];
+    public const likelihoods is (Possibility of a)[];
 
     override function foldLeft of b 
         from (z is b, 
@@ -45,16 +45,7 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
     {
         likelihoods.foldRight(z, f)
     }
-/*
-    public function zip of (b, c) 
-        from (f is function from (a, b) to c,
-              ys is Distribution of b) 
-        to Distribution of c
-    {
-        const xs = this;
-        foreach (x in xs, y in ys) f(x, y)
-    }
-*/
+
     function normalize to Distribution of a 
     {
         const map = new java.util.HashMap of (a, Possibility of a);
@@ -74,18 +65,7 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
             likelihoods: normalized;
         }
     }
-/*
-    public function * of b
-        from (d is Distribution of b) 
-        to Distribution of (Pair of (..a, ..b))
-    {
-        Distribution of (Pair of (..a, ..b)) {
-            likelihoods: foreach (x in likelihoods, y in d.likelihoods) {
-                probably((x.event, y.event), x.likelihood * y.likelihood);
-            }
-        }
-    }
-*/
+
     override function map of b
         from (f is function from a to b) 
         to Distribution of b
