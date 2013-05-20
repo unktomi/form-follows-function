@@ -11,8 +11,6 @@ public interface Comonad of (class F of _) is Functor of F, org.f3.runtime.typec
     public abstract function extract of a
 	from (xs is F of a) 
 	to a;
-
-
 }
 
 

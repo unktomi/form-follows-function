@@ -11,7 +11,6 @@ public interface Monad of (class F of _) is Functor of F, org.f3.runtime.typecla
     public abstract function return of a
 	from (x is a) 
 	to F of a;
-
 }
 
 
