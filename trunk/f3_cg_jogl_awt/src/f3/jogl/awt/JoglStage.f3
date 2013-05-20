@@ -1315,7 +1315,7 @@ class OffscreenSurface is JoglTexture
 	    });
     }
 
-    function cleanup to () 
+    function cleanup 
     {
         if (_fboID <> 0) {
             const id = BufferUtils.createIntBuffer(1);
@@ -1332,7 +1332,7 @@ class OffscreenSurface is JoglTexture
         }
     }
 
-    function setupForDraw to ()
+    function setupForDraw
     {
 	gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
         gl.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0);
@@ -2020,8 +2020,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	      clickCount is Integer)
 	to ()
     {
-        var e is MouseEvent;
-        stage.injectMouseDown(e=MouseEvent {
+        stage.injectMouseDown(MouseEvent {
                 screenx:  screenx;
                 screeny:  screeny;
                 altKey:  altDown;
@@ -2033,8 +2032,7 @@ public class Listener is GLEventListener, DropTargetListener {
     }
 
     function mouseUp from (button is Integer, controlDown is Boolean, altDown is Boolean, metaDown is Boolean, shiftDown is Boolean) to () {
-        var e is MouseEvent;
-        stage.injectMouseUp(e=MouseEvent {
+        stage.injectMouseUp(MouseEvent {
                 screenx:  screenx;
                 screeny:  screeny;
                 ctrlKey:  controlDown;
@@ -2054,7 +2052,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	      amount is Integer)
 	to ()
     {
-	println("mouse wheel {rot} {amount}");
+    //	println("mouse wheel {rot} {amount}");
         stage.injectMouseWheel(MouseWheelEvent {
                 screenx: screenx = x;
                 screeny: screeny = y;
