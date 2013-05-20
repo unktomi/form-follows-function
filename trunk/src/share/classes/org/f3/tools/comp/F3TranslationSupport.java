@@ -1453,33 +1453,33 @@ public abstract class F3TranslationSupport {
             JCExpression thisExpr = rec ? 
                 Select(makeType(currentThisType), names._this) :
                 id(names._this);
-	    if (addCast){
+	    if (addCast) {
+		//System.err.println("casting: "+ currentThisType + ", "+thisExpr);
 		return TypeCast(currentThisType, Type.noType, thisExpr);
+	    } else {
+		//System.err.println("not casting: "+ currentThisType + ", "+thisExpr);
 	    }
 	    return thisExpr;
 	}
         //where
         private JCExpression resolveThisInternal(Symbol ownerThis, Symbol currentThis, boolean rec) {
-	    //System.err.println("ownerThis: "+ownerThis + ": "+ownerThis.type);
-	    //System.err.println("currentThis: "+currentThis + ": "+currentThis.type);
 	    Type encl = currentThis.type.getEnclosingType();
-	    //System.err.println("encl="+encl);
             if (!currentThis.isSubClass(ownerThis, types)) {
-		//System.err.println("is subtype "+ currentThis + ", "+ ownerThis);
+		if (encl != null && !types.isMixin(encl.tsym) && types.isSameType(types.erasure(ownerThis.type), types.erasure(encl))) {
+		    return resolveThisInternal(encl, true, encl != ownerThis.type);
+		}
                 if (encl == null || encl == Type.noType || types.isMixin(encl.tsym)) {
                     return resolveThisInternal(ownerThis, currentThis, resolveThisInternal(currentThis.type, rec));
                 }
-		if (types.isSameType(types.erasure(ownerThis.type), types.erasure(encl))) {
-		    return resolveThisInternal(encl, true, encl != ownerThis.type);
-		}
                 return resolveThisInternal(ownerThis, encl.tsym, true);
             }
             else {
+		//System.err.println("is subtype "+ currentThis.type + ", "+ ownerThis.type);
 		Type currentThisType = currentThis.type;
 		if (encl != null && encl != Type.noType) {
 		    currentThisType = encl;
 		}
-                return resolveThisInternal(currentThisType, rec);
+                return resolveThisInternal(currentThisType, rec, false);
             }
         }
         //where

@@ -1141,7 +1141,8 @@ patternMatch
 
     : MATCH expression WITH
 
-        (PIPE)=>(PIPE expression SUCHTHAT expression possiblyOptSemi)+
+        (PIPE)=>(PIPE ((nameAll IS)=>((nameAll IS) expression)|expression) SUCHTHAT 
+            expression possiblyOptSemi)+
     
 ;
 
@@ -1864,7 +1865,7 @@ implicitFormalParameters
                         params.append($fp2.var); 
                     } 
             )*
-            COMMA?  
+            //COMMA?  
         )?
             
       RPAREN
@@ -1906,21 +1907,21 @@ implicitFormalParameter
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 }
     : 
-        name IS THE typeRef=type
+        nameAll IS THE typeRef=type
     
         { 
-            if ($name.inError) {
+            if ($nameAll.inError) {
             
-                // Looks like the name was missing, create an erroneous var instead
+                // Looks like the nameAll was missing, create an erroneous var instead
                 // Build up new node in case of error
                 //
-                F3Expression part = F.at($name.pos).Ident($name.value);
+                F3Expression part = F.at($nameAll.pos).Ident($nameAll.value);
                 errNodes.append(part);
                 endPos(part);
                 errNodes.append($typeRef.rtype);
                 
             } else {
-                $var = F.at($name.pos).Param($name.value, $typeRef.rtype);
+                $var = F.at($nameAll.pos).Param($nameAll.value, $typeRef.rtype);
             }
             endPos($var); 
         }
@@ -6581,6 +6582,8 @@ typeName
      })  
      GT
     | 
+        LTGT { $value = F.at(rPos).BottomType(); }
+    |
     LPAREN
     ((garg=genericArgument
             { $value = $garg.value; }

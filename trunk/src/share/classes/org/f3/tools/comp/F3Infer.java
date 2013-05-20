@@ -261,6 +261,12 @@ public class F3Infer {
     public Type instantiateExpr(ForAll that,
                                 Type to,
                                 Warner warn) throws NoInstanceException {
+	return instantiateExpr1(that, to, warn).qtype;
+    }
+
+    public ForAll instantiateExpr1(ForAll that,
+				   Type to,
+				   Warner warn) throws NoInstanceException {
         List<Type> undetvars = Type.map(that.tvars, fromTypeVarFun);
 	//System.err.println("undetvars="+undetvars);
         for (List<Type> l = undetvars; l.nonEmpty(); l = l.tail) {
@@ -295,8 +301,7 @@ public class F3Infer {
         List<Type> targs = Type.map(undetvars, getInstFun);
         targs = types.subst(targs, that.tvars, targs);
         checkWithinBounds(that.tvars, targs, warn);
-
-        return getInstFun.apply(qtype1);
+        return new ForAll(targs, getInstFun.apply(qtype1));
     }
 
     /** Instantiate method type `mt' by finding instantiations of

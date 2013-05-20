@@ -1,0 +1,21 @@
+package f3.util;
+import f3.util.Functor;
+
+public interface Comonad of (class F of _) is Functor of F, org.f3.runtime.typeclass.Comonad of F
+{
+    public abstract function coflatmap of (a, b) 
+	from (xs is F of a,
+	      f is function from F of a to b) 
+	to F of b;
+
+    public abstract function extract of a
+	from (xs is F of a) 
+	to a;
+
+
+}
+
+
+
+
+

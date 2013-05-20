@@ -1279,9 +1279,9 @@ public class F3Lower implements F3Visitor {
             result = tree;
 	    if (sym instanceof F3VarSymbol) {
 		if (sym.type != tree.type && !(tree.type instanceof MethodType)) {
-		    System.err.println("symbol for "+ tree+": "+sym.getClass()+": "+sym);
-		    System.err.println("sym.type="+sym.type);
-		    System.err.println("tree.type="+tree.type);
+		    //System.err.println("symbol for "+ tree+": "+sym.getClass()+": "+sym);
+		    //System.err.println("sym.type="+sym.type);
+		    //System.err.println("tree.type="+tree.type);
 		    result = preTrans.makeCast(tree, tree.type);
 		}
 	    }
@@ -1682,11 +1682,25 @@ public class F3Lower implements F3Visitor {
         result = m.at(tree.pos).Try(body, catches, finallyBlock).setType(tree.type);
     }
 
+    F3Expression accessThe(Symbol sym, Type expectedType) {
+	if (sym == null) return null;
+	F3Expression exp = m.QualIdent(sym);
+	System.err.println("sym.type="+sym.type);
+	System.err.println("expectedType="+expectedType);
+	exp.type = sym.type;
+	if (!types.isSubtype(sym.type, expectedType)) {
+	    exp = m.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());
+	    exp.type = expectedType;
+	}
+	return exp;
+    }
+
     public void visitTypeAny(F3TypeAny tree) {
 	if (tree instanceof F3Type.TheType) {
 	    F3Type.TheType theType = (F3Type.TheType)tree;
 	    if (theType.resolvedSymbol != null) {
-		result = m.at(tree.pos).Ident(theType.resolvedSymbol);
+		//result = m.at(tree.pos).Ident(theType.resolvedSymbol);
+		result = theType.accessExpr;
 		return;
 	    }
 	}
