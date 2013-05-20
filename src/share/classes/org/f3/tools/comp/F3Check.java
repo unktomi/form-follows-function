@@ -729,8 +729,9 @@ public class F3Check {
             // now check access permissions for write/init
 	    boolean isAssignConst = false;
             switch (writeKind) {
+                case INIT_BIND:
                 case INIT_NON_BIND:
-                    if ((v.flags() & F3Flags.PUBLIC_INIT) != 0L) {
+                    if ((v.flags() & (F3Flags.PUBLIC_READ|F3Flags.PUBLIC_INIT)) != 0L) {
                         // it is an initialization, and init is explicitly allowed
                         return;
                     }
@@ -758,6 +759,7 @@ public class F3Check {
                         msg = MsgSym.MESSAGE_F3_REPORT_WRITE_ACCESS;
                         break;
                 }
+		Thread.currentThread().dumpStack();
                 log.error(pos, msg, v,
 			  F3Check.protectionString(v.flags()),
 			  v.location());

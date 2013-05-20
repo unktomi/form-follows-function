@@ -407,7 +407,7 @@ class Deep of (Measurement, a) is FingerTree of (Measurement, a)
     {
 	const n = sizeof xs mod 3;
 	// hacks to work around compiler bugs...
-	//  var ys is (Node of (Measurement, a))[];
+	//var ys is (..(Node of (Measurement, a)))[];
 	var ys is Object[];
 	if (n > 0) {
 	    insert makeNode(m, xs[0..n]) into ys;

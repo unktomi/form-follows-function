@@ -5,6 +5,16 @@ public abstract class Ordering of a
     public abstract function compare 
 	from (x is a, y is a) 
 	to Comparison;
+
+    public function max from (x is a, y is a) to a 
+    {
+	if (compare(x, y) == Comparison.Less) then y else x
+    }
+
+    public function min from (x is a, y is a) to a 
+    {
+	if (compare(x, y) == Comparison.Less) then x else y
+    }
 }
 
 public class ComparableOrdering of (a is java.lang.Comparable of a), is Ordering of a 

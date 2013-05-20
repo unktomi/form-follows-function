@@ -227,6 +227,17 @@ public class F3Types extends Types {
         return applySimpleGenericType(syms.f3_MonadTypeClass, elemType);
     }
 
+    public Type comonadTypeClass(Type elemType) {
+        elemType = boxedTypeOrType(elemType);
+	elemType = erasure(elemType);
+	if (!isWildcard(elemType)) {
+	    elemType = new WildcardType(elemType, BoundKind.EXTENDS, syms.boundClass);
+	} else {
+	    //System.err.println("elemType="+elemType);
+	} 
+        return applySimpleGenericType(syms.f3_ComonadTypeClass, elemType);
+    }
+
     public Type getTypeConsThis(Type type)  {
 	if (type == null) return null;
 	if (type instanceof FunctionType) {
@@ -275,7 +286,7 @@ public class F3Types extends Types {
 	if (headArg instanceof WildcardType) {
 	    headArg = ((WildcardType)headArg).type;
 	}
-	if (headArg instanceof TypeVar) {
+	if (headArg instanceof TypeVar || isTypeConsType(headArg) >= 0) {
 	    return t;
 	}
 	int i = isTypeConsType(t);
@@ -1436,11 +1447,14 @@ public class F3Types extends Types {
 	    }
 	}
 	if (true) {
-	    if (!(a instanceof TypeCons) && !(b instanceof TypeCons)) {
-		if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
-		    a = newForAll(List.of(a), a);
-		    b = newForAll(List.of(b), b);
+	    if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
+		TypeVar ta = (TypeVar)a;
+		TypeVar tb = (TypeVar)b;
+		if (ta.tsym == tb.tsym) {
+		    return true;
 		}
+		a = newForAll(List.of(a), a);
+		b = newForAll(List.of(b), b);
 	    }
 	}
 	if (a == syms.unknownType) {
@@ -1875,7 +1889,7 @@ public class F3Types extends Types {
 		}
 		if (t0 instanceof TypeCons) {
 		    //System.err.println("NORMALIZE: "+ t0);
-		    Type x = applySimpleGenericType(t0, t0.getTypeArguments());
+		    Type x = applySimpleGenericType(t0, visit(t0.getTypeArguments(), true));
 		    //System.err.println("returning: "+ x);
 		    return x;
 		}
@@ -2060,16 +2074,20 @@ public class F3Types extends Types {
 	    @Override
             public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) 
 	    {
-		if (visited.contains(t0)) {
-		    return t0;
-		}
 		if (t0 instanceof TypeCons) {
-		    //System.err.println("NORMALIZE': "+ t0);
+		    System.err.println("NORMALIZE': "+ t0);
+		    TypeCons c = (TypeCons)t0;
+		    if (c.ctor == null) {
+			return c;
+		    }
 		    Type x = applySimpleGenericType(t0, t0.getTypeArguments());
-		    //System.err.println("returning: "+ x);
+		    System.err.println("returning: "+ x);
 		    return x;
 		}
 		if (t0 instanceof ConstI) {
+		    return t0;
+		}
+		if (visited.contains(t0)) {
 		    return t0;
 		}
 		visited.add(t0);
@@ -2483,10 +2501,26 @@ public class F3Types extends Types {
 		t1 = newTypeVar(tsym, syms.objectType, syms.botType);
 		visited.put(tsym, t1);
 		Type lower = visit(t.lower, null);
+		if (t.bound == null) {
+		    t.bound = syms.objectType;
+		    System.err.println("bound was null: "+ t);
+		} 
 		Type upper = visit(t.bound, null);
 		t1.bound = upper;
 		t1.lower = lower;
-		t = t1;
+		if (t instanceof TypeCons) {
+		    TypeCons c = (TypeCons)t;
+		    if (c.ctor != null) {
+			//System.err.println("typecons => "+t);
+			//System.err.println("typecons' => "+t1);
+			t = new TypeCons(t1.tsym.name,
+					 t1.tsym,
+					 c.bound,
+					 subst(t.getTypeArguments()));
+		    }
+		} else {
+		    t = t1;
+		}
 	    }
             return t;
         }
@@ -2565,6 +2599,9 @@ public class F3Types extends Types {
     }
 
     TypeVar newTypeVar(TypeSymbol sym, Type bound, Type lower) {
+	if (sym.type instanceof TypeCons) {
+	    //throw new Error("typecons "+ sym);
+	}
 	if (sym.type instanceof TypeVarDefn) {
 	    TypeVarDefn base = (TypeVarDefn)sym.type;
 	    //TypeVarDefn def = new TypeVarDefn(base, base.variance);
@@ -2592,7 +2629,14 @@ public class F3Types extends Types {
 	}
 	return new ClassType(enclosing, targs, sym);
     }
-
+    /*
+    public Type upperBound(Type t) {
+	if (t instanceof TypeVar) {
+	    Thread.currentThread().dumpStack();
+	}
+	return super.upperBound(t);
+    }
+    */
 
     // <editor-fold defaultstate="collapsed" desc="Internal utility methods">
     private List<Type> upperBounds(List<Type> ss) {

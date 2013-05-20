@@ -67,6 +67,7 @@ public abstract class F3Type extends F3Expression implements TypeTree {
     public static class TheType extends F3TypeAny {
 	final public F3Type theType;
 	public Symbol resolvedSymbol;
+	public F3Expression accessExpr;
 	protected TheType(F3Type t) {
 	    super(Cardinality.SINGLETON);
 	    theType = t;

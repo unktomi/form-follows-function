@@ -147,6 +147,7 @@ public class F3Defs {
     static public final String cFunctorTypeClass = runtime_PackageString + ".typeclass.Functor";
     static public final String cMonad = runtime_PackageString + ".Monad";
     static public final String cMonadTypeClass = runtime_PackageString + ".typeclass.Monad";
+    static public final String cComonadTypeClass = runtime_PackageString + ".typeclass.Comonad";
     static public final String cComonad = runtime_PackageString + ".Comonad";
     static public final String cTypeCons = runtime_PackageString + ".TypeCons";
     static public final String cTypeApply = runtime_PackageString + ".TypeApply";

@@ -56,6 +56,7 @@ public class F3Resolve {
 	public InstanceMethodSymbol(MethodSymbol generic, Type type, Symbol owner) {
 	    super(generic.flags(), generic.name, type, owner);
 	    this.generic = generic;
+	    this.params = generic.params;
 	}
 
         public MethodSymbol clone(Symbol newOwner) {
