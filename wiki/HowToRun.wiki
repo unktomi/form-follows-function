@@ -1,3 +1,7 @@
+You can just download the [http://code.google.com/p/form-follows-function/downloads/detail?name=demo.app.dmg&can=2&q= Demo App].
+
+Otherwise, to build it yourself:
+
 How to run (only macosx)
 
 svn checkout https://form-follows-function.googlecode.com/svn/trunk/ form-follows-function
