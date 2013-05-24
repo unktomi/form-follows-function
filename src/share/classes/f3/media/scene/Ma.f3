@@ -2081,8 +2081,8 @@ function parsePath from (path is String) to Path
 }
 
 class UVSet {
-    const uvIndex is Integer;
-    var uvs is Number[];
+    public const uvIndex is Integer;
+    public var uvs is Number[];
     override function toString to String {
 	"uvSet: {uvIndex}, uvs: {uvs}";
     }
