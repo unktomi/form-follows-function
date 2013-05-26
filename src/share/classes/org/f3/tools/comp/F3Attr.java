@@ -1399,7 +1399,11 @@ public class F3Attr implements F3Visitor {
         sym.complete();
         
         boolean isClassVar = env.info.scope.owner.kind == TYP;
+
+	//System.err.println("flags "+sym.name+": "+F3TreeInfo.flagNames(flags));
+
         if (isClassVar && (flags & STATIC) == 0L) {
+	    //System.err.println("isClassVar: "+sym.name);
             // Check that instance variables don't override
             chk.checkVarOverride(tree, (F3VarSymbol)sym);
         }

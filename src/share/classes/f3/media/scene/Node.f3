@@ -94,6 +94,16 @@ public abstract class Node is Foldable of Node
 	else mouseWheel;
 	
     }
+
+    var mouseDrag1 is Observable of MouseEvent = 
+         foreach (press in observeMouseDown()) observeMouseMove().takeUntil(observeMouseUp());
+    var dummy1 = mouseDrag1.subscribe(Observer of MouseEvent 		     
+    {
+	override function onNext from (e is MouseEvent) to () {
+		 println(e);
+	}	
+    });
+    
 }
 
 

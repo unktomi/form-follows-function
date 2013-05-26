@@ -681,10 +681,12 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
             localEnv = env.dup(tree, env.info.dup());
             localEnv.info.staticLevel++;
         }
-
         Scope enclScope = F3Enter.enterScope(env);
         F3VarSymbol v = new F3VarSymbol(types, names, 0, tree.name, null, enclScope.owner);
         if (enclScope.owner.kind == TYP) {
+	    //System.err.println("var="+v.name);
+	    //System.err.println("owner:" +enclScope.owner);
+	    //System.err.println("flags: "+F3TreeInfo.flagNames(tree.mods.flags));
             ((F3ClassSymbol) enclScope.owner).addVar(v, (tree.mods.flags & STATIC) != 0);
         }
         addDefault(tree);
@@ -695,10 +697,15 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
         completer.tree = tree;
         completer.attr = attr;
         v.completer = completer;
+
 	if ((tree.mods.flags & STATIC) != 0) {
 	    if ((tree.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
 		tree.mods.flags &= ~F3Flags.PUBLIC_INIT;
 		tree.mods.flags |= F3Flags.IS_DEF;
+	    }
+	} else {
+	    if ((tree.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
+		tree.mods.flags &= ~Flags.PUBLIC;
 	    }
 	}
         v.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, v, tree);
