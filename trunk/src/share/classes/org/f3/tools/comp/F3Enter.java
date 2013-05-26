@@ -399,6 +399,7 @@ public class F3Enter extends F3TreeScanner {
 	    if ((tree.mods.flags & F3Flags.PUBLIC_INIT) != 0) {
 		tree.mods.flags &= ~F3Flags.PUBLIC_INIT;
 		tree.mods.flags |= F3Flags.IS_DEF;
+		tree.mods.flags |= Flags.PUBLIC;
 	    }
 	}
         c.flags_field = chk.checkFlags(tree.pos(), tree.mods.flags, c, tree);

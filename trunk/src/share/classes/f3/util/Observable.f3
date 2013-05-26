@@ -95,10 +95,11 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 
     function until of b (sig is Observable of b, taking is Boolean) to Observable of a 
     {
+	const self = this;
 	DefaultObservable of a {
 	    override function subscribe from (ob is Observer of a) to Disposable {
 		var enabled is Boolean = taking;
-		const sub1 = subscribe(Observer of a {
+		const sub1 = self.subscribe(Observer of a {
 			override public function onNext from (x is a) to () {
 			    if (enabled) {
 				ob.onNext(x)
@@ -174,7 +175,6 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
-
     public function drop from (n is Integer) to Observable of a 
     {
 	const self = this;
@@ -205,7 +205,8 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	take(1).concat(xs);
     }
 
-    public function concat from (xs is Observable of a) to Observable of a {
+    public function concat from (xs is Observable of a) to Observable of a 
+    {
 	const self = this;
 	DefaultObservable of a {
 	    override function subscribe from (observer is Observer of a) to Disposable {
@@ -404,7 +405,7 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
-    public function of b fold from (z is b, f is function from (b, a) to b) to Observable of b 
+    public function fold of b from (z is b, f is function from (b, a) to b) to Observable of b 
     {
 	const self = this;
 	DefaultObservable of b {

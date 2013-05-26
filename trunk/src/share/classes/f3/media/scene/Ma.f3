@@ -3044,7 +3044,8 @@ class MAnimCurve__ is MAnimCurve of Number
 	    }
 	}
 	if (tan0 == FIXED) {
-	    return KeyFrame.Discrete;
+	    //return KeyFrame.Discrete;
+	    return KeyFrame.Linear;
 	}
 	if (tan0 == STEPPED or i1 >= kix.size()) {
 	    return KeyFrame.Linear;
@@ -3138,7 +3139,7 @@ class Command
     const name is String;
     readonly var args is String[];
     const namedArgs is java.util.Map of (String, String) 
-	= new java.util.HashMap of (String, String) ();
+	= new java.util.HashMap of (String, String);
 
     override function toString to String 
     {

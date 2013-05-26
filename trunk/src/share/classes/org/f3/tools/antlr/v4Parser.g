@@ -1617,11 +1617,12 @@ variableDeclaration [ F3Modifiers mods, int pos ]
             // Note that syntactically, we allow all label types at all levels and must throw
             // out any invalid ones at the semantic checking phase
             //
+            //System.err.println("mods: "+ Flags.toString($mods.flags) + " on "+$nameAll.value);
             if (vmod == F3Flags.PUBLIC_INIT) { 
                 if (($mods.flags & Flags.STATIC) != 0) {
                     vmod = F3Flags.IS_DEF;
                 } else if (($mods.flags & Flags.PUBLIC) != 0) {
-                    $mods.flags &= ~Flags.PUBLIC;
+                    //$mods.flags &= ~Flags.PUBLIC;
                 } else {
                     //const
                     //vmod = F3Flags.IS_DEF;
@@ -1633,6 +1634,9 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                     //const 
                 }
             }
+            //if (vmod != 0) {
+            //   System.err.println("setting vmod: "+ F3TreeInfo.flagNames(vmod) + " on "+$nameAll.value);
+            //}
             $mods.flags |= vmod;
             
             // Construct the variable F3Tree, unless it was in error
