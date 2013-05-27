@@ -1106,9 +1106,11 @@ public class F3Types extends Types {
 	Type t1 = normalize(t); Type s1 = normalize(s);
 	boolean result = super.overrideEquivalent(t1, s1);
 	if (!result) {
-	    String str = "overrideEq "+t1+", "+ s1+": "+result;
+	    String str = "overrideEq\nt="+t1+"\ns="+ s1;
+	    String str1 = "overrideEq\nt="+toF3String(t1)+"\ns="+ toF3String(s1);
 	    if (str.indexOf("TypeCons") > 0) {
 		System.err.println(str);
+		System.err.println(str1);
 	    }
 	}
 	return result;
@@ -1754,7 +1756,8 @@ public class F3Types extends Types {
 	}
 
         @Override
-        public Void visitClassType(ClassType t, StringBuilder buffer) {
+        public Void visitClassType(ClassType ct, StringBuilder buffer) {
+	    Type t = ct;
 	    Type unboxed = unboxedType(t);
 	    if (unboxed.isPrimitive()) {
 		visit(unboxed, buffer);
@@ -1778,18 +1781,51 @@ public class F3Types extends Types {
             }
             else {
 		List<Type> targs = t.getTypeArguments();
-		if (t.getEnclosingType() == null) {
-		    System.err.println(t.getClass() + ": "+ t.tsym.name);
+		int k = isTypeConsType(t);
+		if (k >= 0) {
+		    t = targs.head;
+		    targs = targs.tail;
+		    //System.err.println("t="+t);
+		    //System.err.println("targs="+targs);
+		    if (t instanceof WildcardType) {
+			t = ((WildcardType)t).type;
+		    }
+		    while (isTypeConsType(t) >= 0) {
+			List<Type> targs1 = t.getTypeArguments();
+			if (targs1.head != null) {
+			    t = targs1.head;
+			    if (targs1.tail != null) {
+				targs = targs.appendList(targs1.tail);
+			    }
+			    if (t instanceof WildcardType) {
+				t = ((WildcardType)t).type;
+			    }
+			} else {
+			    break;
+			}
+		    }
+		}
+		if (t != ct) {
+		    //visit(t, buffer);
+		    //return null;
+		}
+		if (ct.getEnclosingType() == null) {
+		    System.err.println(ct.getClass() + ": "+ t.tsym.name);
 		}
 		if (targs.nonEmpty()) { // hack
-		    String str = t.toString();
+		    //System.err.println("t="+t);
+		    //System.err.println("t.tsym="+t.tsym);
+		    //System.err.println("t.tsym.name="+t.tsym.name);
+		    String str = t.tsym.name.toString();
 		    if (str.startsWith("org.f3.functions.Function")) {
 			//Thread.currentThread().dumpStack();
 			visitMethodType(syms.makeFunctionType(targs).asMethodType(), buffer);
 			return null;
 		    } 
 		    int lt = str.indexOf("<");
-		    str = str.substring(0, lt);
+		    if (lt > 0) {
+			str = str.substring(0, lt);
+		    }
 		    buffer.append(str);
 		    buffer.append(" of ");
 		    str = "";
@@ -1889,9 +1925,14 @@ public class F3Types extends Types {
 		}
 		if (t0 instanceof TypeCons) {
 		    //System.err.println("NORMALIZE: "+ t0);
-		    Type x = applySimpleGenericType(t0, visit(t0.getTypeArguments(), true));
-		    //System.err.println("returning: "+ x);
-		    return x;
+		    TypeCons tcons = (TypeCons)t0;
+		    if (tcons.ctor != null) {
+			Type x = applySimpleGenericType(t0, visit(t0.getTypeArguments(), true));
+			//System.err.println("returning: "+ x);
+			return x;
+		    }
+		    //System.err.println("returning: "+ t0);
+		    return t0;
 		}
 		if (t0 instanceof ConstI) {
 		    return t0;
@@ -2080,7 +2121,7 @@ public class F3Types extends Types {
 		    if (c.ctor == null) {
 			return c;
 		    }
-		    Type x = applySimpleGenericType(t0, t0.getTypeArguments());
+		    Type x = applySimpleGenericType(t0, visit(t0.getTypeArguments(), preserveWildcards));
 		    System.err.println("returning: "+ x);
 		    return x;
 		}
