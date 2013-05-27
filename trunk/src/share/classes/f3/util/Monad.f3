@@ -11,6 +11,11 @@ public interface Monad of (class F of _) is Functor of F, org.f3.runtime.typecla
     public abstract function return of a
 	from (x is a) 
 	to F of a;
+
+    public function join of a from (xs is F of F of a) to F of a 
+    {
+	flatmap(xs, id of F of a);
+    }
 }
 
 
