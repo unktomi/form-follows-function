@@ -1691,7 +1691,12 @@ public class F3Attr implements F3Visitor {
 
     F3Expression accessThe(Symbol sym, Type expectedType) {
 	if (sym == null) return null;
-	F3Expression exp = f3make.QualIdent(sym);
+	F3Expression exp;
+	if ((sym.flags() & Flags.STATIC) != 0) {
+	    exp = f3make.QualIdent(sym);
+	} else {
+	    exp = f3make.Ident(sym);
+	}
 	exp.type = sym.type;
 	//System.err.println("sym.type="+sym.type);
 	//System.err.println("expectedType="+expectedType);
@@ -2471,22 +2476,22 @@ public class F3Attr implements F3Visitor {
             part.sym = memberSym;
         }
 	{
-
 	    List<F3ObjectLiteralPart> newParts = List.<F3ObjectLiteralPart>nil();
 	    for (Type clazz1: types.supertypesClosure(clazz.type, true)) {
+		clazz1.tsym.complete();
 		for (Scope.Entry ent = clazz1.tsym.members().elems; ent != null && ent.scope != null; ent = ent.sibling) {
 		    if (ent.sym instanceof F3VarSymbol) {
 			F3VarSymbol varSym = (F3VarSymbol)ent.sym;
-			if (clazz.type == clazz1 && (varSym.flags() & STATIC) == 0) {
-			    varSym.complete();
+			if ((varSym.flags() & STATIC) == 0) {
+			    varSym.complete();			
 			}
 			if (!seen.contains(varSym.name)) {
 			    seen.add(varSym.name);
 			    if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
 				Type memberType = types.memberType(clazz.type, varSym);
 				System.err.println("varSym="+varSym+ ":"+memberType);
-				Symbol toAssign = findThe(localEnv, tree, memberType, true);
-				if (toAssign.kind < AMBIGUOUS) {
+				Symbol toAssign = findThe(localEnv, tree, memberType, false);
+				if (toAssign != null && toAssign.kind < AMBIGUOUS) {
 				    //F3Expression exp = f3make.QualIdent(toAssign);
 				    F3Expression exp = accessThe(toAssign, varSym.type);
 				    attribExpr(exp, localEnv, memberType);
@@ -2497,7 +2502,7 @@ public class F3Attr implements F3Visitor {
 				    newPart.type = memberType;
 				    newParts = newParts.append(newPart);
 				} else {
-				    
+				    log.error(tree.pos(), "the.not.found", varSym.name, clazz, types.toF3String(memberType));
 				}
 			    }
 			}
