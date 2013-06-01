@@ -1061,14 +1061,15 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		    targs = targs.append(f3make.Ident(((TypeVar)t).tsym.name));
 		}
 		List<F3Expression> targs0 = targs;
-		while (count > 1) {
+		if (false) while (count > 1) {
 		    count--;
 		    //TypeCons1(TypeCons1(F, a), a)
 		    List<F3Expression> nargs = List.<F3Expression>nil();
-		    int argCount = targs.size()-1;
-		    List<F3Expression> dargs = targs.tail.tail;
+		    int argCount = count+1;
+		    List<F3Expression> dargs = List.<F3Expression>nil();
 		    for (int i = 0; i < argCount; i++) {
 			nargs = nargs.append(targs.head);
+			dargs = targs;
 			targs = targs.tail;
 		    }
 		    targs = targs0;

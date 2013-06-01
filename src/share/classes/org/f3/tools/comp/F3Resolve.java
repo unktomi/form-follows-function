@@ -856,9 +856,10 @@ public class F3Resolve {
             if ((sym.kind & (MTH|VAR)) == 0)
                 continue;
             // invariant: sym.kind == VAR
-            if (bestSoFar.kind < AMBIGUOUS && sym.owner != bestSoFar.owner)
-                return new AmbiguityError(bestSoFar, sym);
-            else if (bestSoFar.kind >= VAR) {
+            if (bestSoFar.kind < AMBIGUOUS && sym.owner != bestSoFar.owner) {
+                //return new AmbiguityError(bestSoFar, sym);
+		continue;
+            } else if (bestSoFar.kind >= VAR) {
                 origin = e.getOrigin().owner;
 		//System.err.println("sym: "+ (sym.kind == VAR) + " "+ (sym.kind == MTH));
 		//System.err.println("sym: "+ sym.getClass());
@@ -907,6 +908,9 @@ public class F3Resolve {
             Type type = syms.stringType;
             return new F3VarSymbol(types, names,Flags.PUBLIC, name, type, env.getEnclosingClassSymbol());
         }
+	if (bestSoFar == null || origin == null) {
+	    return bestSoFar;
+	}
         if (bestSoFar.kind == VAR && bestSoFar.owner.type != origin.type)
             return bestSoFar.clone(origin);
         else
