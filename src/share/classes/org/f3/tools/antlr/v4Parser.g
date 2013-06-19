@@ -742,7 +742,6 @@ modifierFlag
     | PACKAGE           { $flag = F3Flags.PACKAGE_ACCESS;   }
     | PROTECTED         { $flag = Flags.PROTECTED;          }
     | PUBLIC            { $flag = Flags.PUBLIC;             }
-
     | PUBLIC_INIT       { $flag = F3Flags.PUBLIC_INIT;      }
         
     
@@ -4983,19 +4982,21 @@ newExpression
     // Rule pos in case of error
     //
     int rPos = pos();
+    F3Expression type = null;
 }
     : NEW 
-        typeName                { errNodes.append($typeName.value); }
+        ((typeName                { errNodes.append($typeName.value); type = $typeName.value; }              
+          |
+          typePrefixed { type = $typePrefixed.rtype; } )
         expressionListOpt
-    
         {
             // If we got ehre, there wil lbe no errors for expressionListOpt, and if 
             // did not, then the expressionListOpt will not be built, so we do not accumulate
             // its nodes for error.
             //
-            $value = F.at(pos($NEW)).InstanciateNew($typeName.value, $expressionListOpt.args.toList());
+            $value = F.at(pos($NEW)).InstanciateNew(type, $expressionListOpt.args.toList());
             endPos($value);
-        }
+        })
     ;
 // Catch an error. We create an erroneous node for anything that was at the start 
 // up to wherever we made sense of the input.
@@ -6085,7 +6086,10 @@ type
     //
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();
 }
-    : (typeName  { errNodes.append($typeName.value); }
+    : 
+    typePrefixed  { $rtype = $typePrefixed.rtype; } 
+    |
+        (typeName  { errNodes.append($typeName.value); }
     
         cardinality
     
@@ -6105,7 +6109,6 @@ type
         } )
     | LBRACKET RBRACKET { $rtype = F.at(pos($LBRACKET)).RawSequenceType(); }
     | typeFunction  { $rtype = $typeFunction.rtype; } 
-    | typePrefixed  { $rtype = $typePrefixed.rtype; } 
     | q=QUES {$rtype = F.at($q.pos).TypeExists();}
     ;
 

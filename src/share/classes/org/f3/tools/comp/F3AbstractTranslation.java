@@ -3399,7 +3399,12 @@ public abstract class F3AbstractTranslation
 
             } else {
                 // this is a Java class or has no instance variable initializers, just instanciate it
-                instExpression = m().NewClass(null, typeArgTypes != null ? makeTypes(null, typeArgTypes): null, classTypeExpr, newClassArgs, null);
+		if (types.isArray(declaredType)) {
+		    JCExpression elemType = makeType(types.elemtype(declaredType), false);
+		    instExpression = m().NewArray(elemType, newClassArgs, null);
+		} else {
+		    instExpression = m().NewClass(null, typeArgTypes != null ? makeTypes(null, typeArgTypes): null, classTypeExpr, newClassArgs, null);
+		}
             }
 
             return toResult(instExpression, type);
