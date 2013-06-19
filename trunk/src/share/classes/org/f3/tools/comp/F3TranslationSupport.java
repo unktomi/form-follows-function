@@ -439,6 +439,10 @@ public abstract class F3TranslationSupport {
     }
 
     JCExpression makeTypeTreeInner01(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons) {
+	return makeTypeTreeInner02(diagPos, t, makeIntf, expandTypeCons, true);
+    }
+
+    JCExpression makeTypeTreeInner02(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons, boolean topLevel) {
 	while (t != null && t.tsym != null && 
 	       t.tsym instanceof F3Resolve.TypeAliasSymbol) {
 	    t = t.tsym.type;
@@ -579,7 +583,7 @@ public abstract class F3TranslationSupport {
 			if (tp == syms.botType) { // send back a raw type
 			    return texp;
 			}
-                        targs = targs.append(makeTypeTreeInner01(diagPos, ta, /*makeIntf*/ true, expandTypeCons));
+                        targs = targs.append(makeTypeTreeInner02(diagPos, ta, /*makeIntf*/ true, expandTypeCons, false));
                    }
 		    //System.err.println(t.getTypeArguments()+" => "+targs);
                     texp = make.at(diagPos).TypeApply(texp, targs);
@@ -591,6 +595,12 @@ public abstract class F3TranslationSupport {
 		return makeQualifiedTree(diagPos, syms.objectType.tsym.getQualifiedName().toString());
             }
             case TypeTags.WILDCARD: {
+		if (topLevel) {
+		    t = types.unexpandWildcard(t);
+		    if (!(t instanceof WildcardType)) {
+			return makeTypeTreeInner02(diagPos, t, makeIntf, expandTypeCons, true);
+		    }
+		}
                 WildcardType wtype = (WildcardType) t;
 		JCExpression bound = wtype.kind == BoundKind.UNBOUND ? null : makeTypeTreeInner01(diagPos, wtype.type, makeIntf, expandTypeCons);
 		//System.err.println("bound="+bound);

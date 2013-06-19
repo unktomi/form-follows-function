@@ -1290,6 +1290,8 @@ public class F3Resolve {
 		System.err.println("ct="+ct);
 		System.err.println("site="+site);
 		System.err.println("members null: "+ c);
+		System.err.println("intype="+intype);
+		Thread.currentThread().dumpStack();
 		continue;
 	    }
 	    for (Scope.Entry e = lookup(c.members(), name, isThe);
@@ -1543,7 +1545,7 @@ public class F3Resolve {
              l = l.tail) {
             sym = findMemberType(env, site, name, l.head.tsym);
             if (bestSoFar.kind < AMBIGUOUS && sym.kind < AMBIGUOUS &&
-                sym.owner != bestSoFar.owner)
+		sym.owner != bestSoFar.owner)
                 bestSoFar = new AmbiguityError(bestSoFar, sym);
             else if (sym.kind < bestSoFar.kind)
                 bestSoFar = sym;
@@ -2203,10 +2205,16 @@ public class F3Resolve {
                                  Type left,
                                  Type right) {
 	if (left instanceof MethodType) {
-	    left = syms.makeFunctionType(left.asMethodType());
+	    left = syms.makeFunctionType((MethodType)left);
+	}
+	if (left instanceof ForAll) {
+	    left = syms.makeFunctionType((ForAll)left);
 	}
 	if (right instanceof MethodType) {
-	    right = syms.makeFunctionType(right.asMethodType());
+	    right = syms.makeFunctionType((MethodType)right);
+	}
+	if (right instanceof ForAll) {
+	    right = syms.makeFunctionType((ForAll)right);
 	}
         // Duration operator overloading
         if (true ||(types.isSameType(left, syms.f3_DurationType) ||
@@ -2245,7 +2253,6 @@ public class F3Resolve {
                 }
                 */
 		//System.err.println("resolving * in "+dur);
-		
                 res =  resolveMethod(pos,  env,
                                      defs.mul_DurationMethodName,
                                      dur,

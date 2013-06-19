@@ -27,6 +27,7 @@ public abstract class Monoid of a
     }
 }
 
+
 public interface Reducer of (a, b) 
 {
     public const monoid is Monoid of b = the Monoid of b;
