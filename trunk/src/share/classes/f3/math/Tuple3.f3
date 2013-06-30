@@ -2,8 +2,8 @@ package f3.math;
 import org.f3.runtime.*;
 import java.lang.Math;
 
-public static const <<0>> = Tuple3 {x: 0.0, y: 0.0, z: 0.0};
-public static const <<1>> = Tuple3 {x: 1.0, y: 1.0, z: 1.0};
+public const <<0>> = new Tuple3(0, 0, 0);
+public const <<1>> = new Tuple3(1, 1, 1);
 
 public class Tuple3 is F3Value
 {
@@ -91,4 +91,4 @@ public class Tuple3 is F3Value
 }
 
 public static def TYPE_INFO is TypeInfo of ..Tuple3 = 
-       org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
+       org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Tuple3.<<0>>);

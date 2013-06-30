@@ -2278,7 +2278,31 @@ public class F3Attr implements F3Visitor {
                 // Error recovery: pretend no arguments were supplied.
                 argtypes = List.nil();
             } else if (types.isF3Class(clazztype.tsym) && tree.getArgs().nonEmpty()) {
-                log.error(tree.getArgs().head.pos(), MsgSym.MESSAGE_NEW_F3_CLASS_NO_ARGS);
+		//try to map args to members
+		List<F3VarSymbol> initvars = List.<F3VarSymbol>nil();
+		for (Type clazz1: types.supertypesClosure(clazztype, true)) {
+		    for (Scope.Entry ent = clazz1.tsym.members().elems; ent != null && ent.scope != null; ent = ent.sibling) {
+			if (ent.sym instanceof F3VarSymbol) {
+			    F3VarSymbol varSym = (F3VarSymbol)ent.sym;
+			    if ((varSym.flags() & F3Flags.PUBLIC_INIT) != 0) {
+				System.err.println(varSym.name);
+				initvars = initvars.prepend(varSym);
+			    }
+			}
+		    }
+		}
+		System.err.println("vars="+initvars);
+		if (initvars.size() == tree.getArgs().size()) {
+		    List<F3ObjectLiteralPart> initparts = List.<F3ObjectLiteralPart>nil();
+		    List<F3Expression> vargs = tree.getArgs();
+		    for (List<F3VarSymbol> vl = initvars; vl.nonEmpty(); vl = vl.tail, vargs = vargs.tail) {
+			F3VarSymbol v = vl.head;
+			initparts = initparts.append(f3make.at(vargs.head.pos()).ObjectLiteralPart(v.name, vargs.head, F3BindStatus.UNBOUND));
+		    }
+		    tree.parts = initparts;
+		} else {
+		    log.error(tree.getArgs().head.pos(), MsgSym.MESSAGE_NEW_F3_CLASS_NO_ARGS);
+		}
             }
 
             // Resolve the called constructor under the assumption
@@ -2549,7 +2573,6 @@ public class F3Attr implements F3Visitor {
         localEnv.info.scope.leave();
 	//	chk.checkAllDefined(tree.pos(), (ClassSymbol)clazz.type.tsym);
     }
-
     /** Make an attributed null check tree.
      */
     public F3Expression makeNullCheck(F3Expression arg) {
@@ -6202,6 +6225,17 @@ public class F3Attr implements F3Visitor {
 	}
 	Type mtres = mt.getReturnType();
 	Type otres = types.subst(ot.getReturnType(), otvars, mtvars);
+	{
+	    int tc2 = types.isTypeConsType(ot.getReturnType());
+	    if (tc2 >= 0) {
+		otres = types.subst2(ot.getReturnType(),
+				     otvars,
+				     mtvars,
+				     true);
+		
+		mt.asMethodType().restype = otres;
+	    }
+	}
         return fixOverride1(tree, m, other, mt, ot, mtres, otres, fixFlags);
     }
 

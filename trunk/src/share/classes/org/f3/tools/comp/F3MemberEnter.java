@@ -1061,7 +1061,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		    targs = targs.append(f3make.Ident(((TypeVar)t).tsym.name));
 		}
 		List<F3Expression> targs0 = targs;
-		if (false) while (count > 1) {
+		while (count > 1) {
 		    count--;
 		    //TypeCons1(TypeCons1(F, a), a)
 		    List<F3Expression> nargs = List.<F3Expression>nil();
@@ -1073,9 +1073,16 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 			targs = targs.tail;
 		    }
 		    targs = targs0;
+		    dargs = dargs.tail;
 		    F3Expression arg0 = f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), nargs);
-		    
-		    tree.addSupertype(f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), dargs.prepend(arg0)));
+		    System.err.println("supertype="+arg0.getClass()+arg0);
+		    System.err.println("dargs="+dargs);
+		    if (false) {
+			typ = f3make.TypeClass(arg0, Cardinality.SINGLETON);
+			typ.boundKind = BoundKind.EXTENDS;
+			arg0 = typ;
+		    }
+		    tree.addSupertype(f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[dargs.size()]), dargs.prepend(arg0)));
 		}
                 //System.err.println("tree=>"+tree);
             }

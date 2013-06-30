@@ -2822,7 +2822,7 @@ public class F3Resolve {
                                 types.toF3String((MethodSymbol) wrongSym.asMemberOf(site, types),
                                     ((MethodSymbol) wrongSym).params);
 		    else
-                        wrongSymStr = wrongSym.toString() + " of type "+types.toF3String(wrongSym.type);
+                        wrongSymStr = wrongSym.toString() + " of type "+types.toF3String(reader.translateType(wrongSym.asMemberOf(site, types).type));
 		    //Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),

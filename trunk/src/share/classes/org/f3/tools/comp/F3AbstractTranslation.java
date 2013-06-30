@@ -3445,6 +3445,9 @@ public abstract class F3AbstractTranslation
 
         protected List<JCExpression> translatedConstructorArgs() {
             List<F3Expression> args = tree.getArgs();
+	    if (tree.getParts().nonEmpty()) { // args were turned into parts
+		return List.<JCExpression>nil();
+	    }
             Symbol sym = tree.constructor;
             if (sym != null && sym.type != null) {
                 ListBuffer<JCExpression> translated = ListBuffer.lb();

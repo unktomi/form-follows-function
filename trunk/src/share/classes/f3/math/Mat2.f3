@@ -4,8 +4,8 @@ import java.lang.Math;
 public class Mat2 
 {
     // column 1               // column 2
-    public val xx is Number;  public val xy is Number;  
-    public val yx is Number;  public val yy is Number;
+    public const xx is Number;  public const xy is Number;  
+    public const yx is Number;  public const yy is Number;
 
     override public function equals(obj is Object) returns Boolean 
     {
