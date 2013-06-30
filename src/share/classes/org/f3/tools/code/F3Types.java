@@ -1886,7 +1886,20 @@ public class F3Types extends Types {
         while ((sym.owner.flags() & BLOCK) != 0 ||
                 syms.isRunMethod(sym.owner))
             sym = sym.owner;
-        return sym.location(site, this);
+	Symbol owner = sym.owner;
+        if (owner.name == null || owner.name.len == 0) {
+            return owner.toString();
+        }
+        if (owner.type.tag == CLASS) {
+            Type ownertype = asOuterSuper(site, owner);
+            if (ownertype != null) return toF3String(ownertype);
+        }
+	if (owner instanceof MethodSymbol) {
+	    return toF3String((MethodSymbol)owner, ((MethodSymbol)owner).params);
+	}
+        return owner.toString();
+
+	//        return sym.location(site, this);
     }
 
     public String location (Symbol sym) {
@@ -2650,7 +2663,13 @@ public class F3Types extends Types {
 	    //def.bound = bound;
 	    return base;
 	}
-	return new TypeVar(sym, bound, lower);
+	return new SubstTypeVar(sym, bound, lower);
+    }
+
+    public static class SubstTypeVar extends TypeVar {
+	public SubstTypeVar(TypeSymbol sym, Type bound, Type lower) {
+	    super(sym, bound, lower);
+	}
     }
 
     public ForAll newForAll(List<Type> targs, Type t) {

@@ -607,6 +607,7 @@ public class PriorityQueue of (k is java.lang.Comparable of k, v) {
     }
 	
 }
+
 class SeqSize is Measurer of Integer 
 {
     override function measure of a from (x is a[]) to Integer

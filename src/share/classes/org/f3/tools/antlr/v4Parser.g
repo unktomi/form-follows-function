@@ -1137,12 +1137,16 @@ patternMatch
     //
     ListBuffer<F3Expression> exprbuff = ListBuffer.<F3Expression>lb();
 }
-
+/*
     : MATCH expression WITH
 
         (PIPE)=>(PIPE ((nameAll IS)=>((nameAll IS) expression)|expression) SUCHTHAT 
             expression possiblyOptSemi)+
-    
+*/
+    : IF expression IS
+        (PIPE)=>(PIPE ((nameAll IS)=>((nameAll IS) expression)|expression) THEN
+            expression possiblyOptSemi)+
+
 ;
 
 
@@ -3360,8 +3364,9 @@ expression
     //
     int rPos = pos();
  }
-    : patternMatch 
-    |
+    : 
+    //(IF expression IS)=>patternMatch 
+    // |
      ifExpression
 
         {
@@ -3602,7 +3607,7 @@ ifExpression
             econd=expression    { errNodes.append($econd.value);    }
             
             RPAREN) (THEN { isThen = true; })?
-          | econd = expression THEN{ errNodes.append($econd.value);  isThen=true;  }
+          | econd = expression THEN { errNodes.append($econd.value);  isThen=true;  }
           )
           statement            { sVal = $statement.value;  errNodes.append(sVal);  }
             
@@ -7404,6 +7409,13 @@ nameAll
         { 
             $value = Name.fromString(names, $aw.text); 
             $pos = rPos; 
+            $inError = false;
+        }
+    |
+    d = DECIMAL_LITERAL
+        {
+            $value = Name.fromString(names, $d.text);
+            $pos = rPos;
             $inError = false;
         }
     ;

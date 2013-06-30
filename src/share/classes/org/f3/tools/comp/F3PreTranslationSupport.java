@@ -297,37 +297,42 @@ public class F3PreTranslationSupport {
     }
     
     F3Expression makeCastIfNeeded(F3Expression tree, Type type) {
+	Type treetype = tree.type;
+	if (F3TranslationSupport.ERASE_BACK_END) {
+	    type = types.erasure(type);
+	    treetype = types.erasure(treetype);
+	}
         if (type == Type.noType ||
                 type == null ||
                 type.isErroneous() ||
                 type == syms.voidType ||
-                tree.type == syms.voidType ||
-                tree.type == syms.unreachableType ||
+                treetype == syms.voidType ||
+                treetype == syms.unreachableType ||
                 type == syms.unreachableType)
             return tree;
         else {
-	    int tcons0 = types.isTypeConsType(tree.type);
+	    int tcons0 = types.isTypeConsType(treetype);
 	    int tcons1 = types.isTypeConsType(type);
 	    boolean forceCast = false;
 	    if (tcons0 <= 0 & tcons1 > 0) {
 		if (false) {
 		    System.err.println("tree="+tree);
-		    System.err.println("tree.type="+tree.type+ ": "+ tcons0);
+		    System.err.println("treetype="+treetype+ ": "+ tcons0);
 		    System.err.println("type="+type + ": "+tcons1);
 		}
 		// need to cast TypeConsN of (X, Y, ..) to the real type: X of (Y, ...)
-		type = tree.type;
+		type = treetype;
 		forceCast = true;
 	    }
             tree = makeNumericBoxConversionIfNeeded(tree, type);
 	    F3Expression target = tree;
-	    if (types.isSameType(tree.type, type) && !types.isSameType(tree.type, type, false)) {
+	    if (types.isSameType(treetype, type) && !types.isSameType(treetype, type, false)) {
 		target = makeCast(tree, syms.objectType);
 	    }
-            F3Expression newTree =  forceCast || !types.isSameType(tree.type, type) &&
-                   (!types.isSubtypeUnchecked(tree.type, type) ||
-                   (tree.type.isPrimitive() && type.isPrimitive() ||
-                   (types.isSameType(tree.type, syms.f3_EmptySequenceType) &&
+            F3Expression newTree =  forceCast || !types.isSameType(treetype, type) &&
+                   (!types.isSubtypeUnchecked(treetype, type) ||
+                   (treetype.isPrimitive() && type.isPrimitive() ||
+                   (types.isSameType(treetype, syms.f3_EmptySequenceType) &&
                    types.isSequence(type)))) ?
                 makeCast(target, type) :
                 tree;

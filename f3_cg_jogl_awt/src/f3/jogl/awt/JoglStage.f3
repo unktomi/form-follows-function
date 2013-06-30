@@ -43,7 +43,6 @@ const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 
 var DISABLE_DEFORMERS = false;
 
-
 const frc = new java.awt.font.FontRenderContext(null, true, false);
 function getFont from (spec is String) to java.awt.Font 
 {
@@ -2467,9 +2466,8 @@ public function run from (args is String[]) to ()
     println("args={args}");
 
     var playerUrl is String;
-
-
-    readonly var model is Ma.Model = bind if (not playerUrl.endsWith(".ma")) then null else Ma.Model {
+    readonly var model is Ma.Model = 
+	bind if (not playerUrl.endsWith(".ma")) then null else Ma.Model {
 		effectLoader: the CGEffectLoader;
 		imageLoader: the ImageLoader;
 		url: playerUrl;
@@ -2477,14 +2475,14 @@ public function run from (args is String[]) to ()
 
     var clipIndex is Integer;
 
-    const getClips = function(libs is TimeGroup[]) to TimeNode[] {
+    const getClips = function from (libs is TimeGroup[]) to TimeNode[] {
 	foreach (lib in libs) lib.content;
     }
 
-    var allClips = bind getClips(model.getClipLibraries());
-    var clips is TimeNode[] = bind [model.getTemporalRoot(), allClips];
+    readonly var allClips = bind getClips(model.getClipLibraries());
+    readonly var clips is TimeNode[] = bind [model.getTemporalRoot(), allClips];
 
-    var currentClip is TimeNode = bind clips[clipIndex];
+    readonly var currentClip is TimeNode = bind clips[clipIndex];
 
     const player = Timeline {
 	content: TimeLayer {
@@ -2530,20 +2528,18 @@ public function run from (args is String[]) to ()
 			      playerUrl.endsWith(".tif") or 
 			      playerUrl.endsWith(".tga")) 
 	Image { 
-	    //imageLoader: ImageLoader_INSTANCE; 
 	    url: playerUrl;
-	    //pathFactory: ThePath2DFactory
 	} else null;
 
-    readonly var textModel = bind if (playerUrl.endsWith(".txt")) {
+    readonly var textModel = bind if (playerUrl.endsWith(".txt")) then 
 	Text.Area {
 	    //pathFactory: ThePath2DFactory;
 	    //layoutEngine: TheLayoutEngine;
 	    override var height = bind font.height() * 24;
-	} 
-    } else null;
+	} else null;
 
-    const doDrop = function from (url is String) to () {
+    function doDrop from (url is String) to () 
+    {
 	stage.title = url;
 	playerUrl = url;
 	if (url.endsWith(".ma")) {
@@ -2604,7 +2600,7 @@ public function run from (args is String[]) to ()
 		    }]
     }
 
-    const setCamera = function from (i is Integer) to ()
+    operation setCamera from (i is Integer) to ()
     {
 	if (i == 0) {
 	    currentCamera = camera;
@@ -2627,7 +2623,8 @@ public function run from (args is String[]) to ()
 
     stage.addMouseInputHandler(viewer);
     stage.addKeyboardInputHandler(KeyboardInputHandler {
-	    override function onKeyDown from (event is KeyboardEvent) to () {
+	    override function onKeyDown from (event is KeyboardEvent) to () 
+	    {
 		if (event.propagate) {
 		    if (event.keyCode == Keys.F) {
 			viewer.focusCamera(currentModel);
@@ -2651,7 +2648,8 @@ public function run from (args is String[]) to ()
 	    }
 	});
     stage.addDnDInputHandler(DnDInputHandler {
-	    override function onDrop from (event is DropEvent) to () {
+	    override function onDrop from (event is DropEvent) to () 
+	    {
 		const url = event.url;
 		event.accept();
 		try {
@@ -2663,7 +2661,7 @@ public function run from (args is String[]) to ()
 	    }
 	});
 
-    stage.invoke(function () {
+    stage.invoke(function {
 	    viewer.focusCamera(currentModel);
 	});
 

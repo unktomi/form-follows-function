@@ -6,7 +6,7 @@ public class Interval
 {
     public const start is Duration;
     public const end is Duration;
-    public const duration = bind end - start;
+    public readonly var duration = bind end - start;
 
     override function toString to String {
 	"Interval {start}, {end}";

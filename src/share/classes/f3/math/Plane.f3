@@ -9,7 +9,8 @@ public class Intersection {
 
 public function Intersection from (p is Point3, t is Number) to Intersection 
 {
-    Intersection { point: p, t: t }
+    //Intersection { point: p, t: t }
+    new Intersection(p, t)
 }
 
 public function Plane from (p is Point3, n is Vec3) to Plane 
@@ -49,7 +50,7 @@ public class Plane is F3Value
 	    then null 
 	    else {
 		const t = (c - normal.dot(ray.origin)) / proj;
-        	Intersection(ray.origin + ray.direction*t, t)
+        	new Intersection(ray.origin + ray.direction*t, t)
 	    }
     }
 
@@ -58,7 +59,7 @@ public class Plane is F3Value
         Plane { point: t * point, normal: (t * normal).normalize() }
     }
 
-    override function toString():String {
+    override function toString to String {
         "\{ Plane point: {point}, normal: {normal}, c: {c} \}";
     }
 }

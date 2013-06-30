@@ -7,5 +7,3 @@ public interface Functor of (class F of _) is org.f3.runtime.typeclass.Functor o
 	      f is function from a to b) 
         to F of b;
 }
-
-
