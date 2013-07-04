@@ -1579,6 +1579,13 @@ public abstract class F3AbstractTranslation
 		    System.err.println("exp="+exp.getClass() + ": "+ exp);
 		    System.err.println("te="+te);
 		    */
+		    if (exp == null) {
+			System.err.println("exp is null: "+ typeargs + " of "+mungedToCheckTranslated);
+			continue;
+		    }
+		    if (exp.type == null) {
+			System.err.println("exp.type is null: "+ exp);
+		    }
 		    JCExpression te = makeType(types.boxedTypeOrType(exp.type), false);
 		    if (exp.type instanceof Type.TypeVar) { // hack
 			te = m().Ident(((Type.TypeVar)exp.type).tsym.name);
@@ -2508,10 +2515,9 @@ public abstract class F3AbstractTranslation
                     }
                 default:
 		    if (!(tree.operator instanceof OperatorSymbol)) {
-			JCExpression acc = getReceiver(tree.operator);
-			//System.err.println("ACC="+acc+" for " +tree.operator);
-			JCExpression call = acc == null ? Call(transExpr, tree.methodName, List.<JCExpression>nil()) :
-			    Call(acc, tree.methodName, transExpr);
+			boolean isStatic = tree.operator.isStatic();
+			JCExpression call = isStatic ? Call(transExpr, tree.methodName, List.<JCExpression>nil()) :
+			    Call(transExpr, tree.methodName, List.<JCExpression>nil());
 			//System.err.println("call="+call);
 			return toResult(call, tree.type);
 			

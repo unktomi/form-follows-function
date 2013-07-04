@@ -24,6 +24,8 @@ public static const monad = f3.util.Monad of List
     }
 }
 
+public static const functor is Functor of List = monad;
+
 // List = Empty | Single x | Prepend x List | Append List x | Concat List List | ArrayList x[] | Replicate List n
 
 const EmptyList = Empty of (null) {};

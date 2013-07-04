@@ -1716,9 +1716,11 @@ public class F3Attr implements F3Visitor {
 	    exp = f3make.Ident(sym);
 	}
 	exp.type = sym.type;
-	//System.err.println("sym.type="+sym.type);
-	//System.err.println("expectedType="+expectedType);
 	if (!types.isSubtype(sym.type, expectedType)) {
+	    System.err.println("sym.type="+sym.type);
+	    System.err.println("expectedType="+expectedType);
+	}
+	if (!types.isSubtype(sym.type, expectedType) && (sym instanceof MethodSymbol)) {
 	    MethodSymbol msym = (MethodSymbol)sym;
 	    if (sym instanceof F3Resolve.InstanceMethodSymbol) {
 		msym = ((F3Resolve.InstanceMethodSymbol)sym).generic;
@@ -3676,17 +3678,19 @@ public class F3Attr implements F3Visitor {
 		if (true) {
 		    List<Type> toSearch = List.nil();
 		    toSearch = toSearch.append(expectedType);
-		    toSearch.appendList(expectedType.getTypeArguments());
+		    toSearch = toSearch.appendList(expectedType.getTypeArguments());
+		    //System.err.println("searching: "+ toSearch);
 		    for (Type st: toSearch) {
+			//System.err.println("st="+st.getClass()+": "+st);
 			if (st instanceof ClassType) {
 			    sym = rs.findMember(env,
-						types.erasure(expectedType),
+						types.erasure(st),
 						syms.the,
 						expectedType,
 						true, false,
 						false);
-			    //System.err.println("searched "+expectedType+": "+sym);
-			    if (sym.kind <= AMBIGUOUS) {
+			    //System.err.println("searched "+st+": "+sym);
+			    if (sym.kind < AMBIGUOUS) {
 				return sym;
 			    }
 			}

@@ -1102,10 +1102,11 @@ public class F3Types extends Types {
 	return false;
     }
 
+
     public boolean overrideEquivalent(Type t, Type s) {
 	Type t1 = normalize(t); Type s1 = normalize(s);
 	boolean result = super.overrideEquivalent(t1, s1);
-	if (!result) {
+	if (false && !result) {
 	    String str = "overrideEq\nt="+t1+"\ns="+ s1;
 	    String str1 = "overrideEq\nt="+toF3String(t1)+"\ns="+ toF3String(s1);
 	    if (str.indexOf("TypeCons") > 0) {
@@ -1421,6 +1422,20 @@ public class F3Types extends Types {
     }
 
     public boolean isSameType(Type a, Type b) {
+	/*
+	if (a instanceof ForAll) {
+	    ForAll t = (ForAll)a;
+	    if (t.tvars == null || t.tvars.size() == 0) {
+		a = t.qtype;
+	    }
+	}
+	if (b instanceof ForAll) {
+	    ForAll t = (ForAll)b;
+	    if (t.tvars == null || t.tvars.size() == 0) {
+		b = t.qtype;
+	    }
+	}
+	*/
 	if (a instanceof MethodType) { // hack not sure why unknownType is found here, but it crashes javac
 	    if (b instanceof MethodType) {
 		MethodType m1 = (MethodType)a;
@@ -2020,6 +2035,14 @@ public class F3Types extends Types {
 		//System.err.println("wildcard: "+ t0 + " => "+ t);
                 return t;
             }
+	    /*
+	    public Type visitForAll(ForAll t, Boolean pw) {
+		if (t.tvars == null || t.tvars.size() == 0) {
+		    return t.qtype;
+		}
+		return t;
+	    }
+	    */
 
 	    public Type visitMethodType(MethodType t, Boolean pw) {
 		List<Type> argtypes = visit(t.argtypes, pw);
@@ -2272,6 +2295,14 @@ public class F3Types extends Types {
                 }
                 return buf.toList();
             }
+	    /*
+	    public Type visitForAll(ForAll t, Boolean pw) {
+		if (t.tvars == null || t.tvars.size() == 0) {
+		    return t.qtype;
+		}
+		return t;
+	    }
+	    */
     }
 
     public String toSignature(Type t) {

@@ -654,19 +654,33 @@ public class F3Resolve {
     }
     //where
     boolean mixableIn(Symbol s1, Symbol s2, Type site) {
+	System.err.println("mixable in s1 " + s1);
+	System.err.println("mixable in s2 " + s2);
+	System.err.println("mixable in site " + site);
+	System.err.println("mixable in s1 " + s1.owner.type);
+	System.err.println("mixable in s2 " + s2.owner.type);
+	System.err.println("ismixin s1 " + types.isMixin(s1.owner));
+	System.err.println("ismixin s2 " + types.isMixin(s2.owner));
         if (!types.isMixin(s1.owner) &&
-                !types.isMixin(s2.owner))
+	    !types.isMixin(s2.owner))
             return false;
-        List<Type> supertypes = types.supertypesClosure(site);
-        int i1 = indexInSupertypeList(supertypes, s1.owner.type);
-        int i2 = indexInSupertypeList(supertypes, s2.owner.type);
+        List<Type> supertypes = types.supertypesClosure(site, true);
+	System.err.println("supertypes="+supertypes);
+	Type t1 = types.memberType(site, s1.owner);
+	Type t2 = types.memberType(site, s2.owner);
+	System.err.println("t1="+t1);
+	System.err.println("t2="+t2);
+        int i1 = indexInSupertypeList(supertypes, t1);
+        int i2 = indexInSupertypeList(supertypes, t2);
+	System.err.println("i1="+i1);
+	System.err.println("i2="+i2);
         return i1 <= i2 && i1 != -1 && i2 != -1;
     }
 
     int indexInSupertypeList(List<Type> ts, Type t) {
         int count = 0;
         for (Type t2 : ts) {
-            if (types.isSameType(t, t2))
+            if (types.isSameType(types.erasure(t), types.erasure(t2)))
                 return count;
             count++;
         }
@@ -2950,8 +2964,8 @@ public class F3Resolve {
             super(AMBIGUOUS, sym1, "ambiguity error");
             this.sym1 = sym1;
             this.sym2 = sym2;
-	    //System.err.println(this);
-	    //Thread.currentThread().dumpStack();
+	    System.err.println(this);
+	    Thread.currentThread().dumpStack();
         }
 
         /** Report error.
