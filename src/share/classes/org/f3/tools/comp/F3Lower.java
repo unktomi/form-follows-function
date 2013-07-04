@@ -193,6 +193,9 @@ public class F3Lower implements F3Visitor {
 	if (type.tag == TypeTags.TYPEVAR) {
 	    return tree;
 	}
+	if (tree == null) {
+	    return tree;
+	}
 	tree.type = types.unexpandWildcard(tree.type);
 	type = types.unexpandWildcard(type);
         return tree = needSequenceConversion(tree, type) ?
@@ -728,8 +731,12 @@ public class F3Lower implements F3Visitor {
 	tree.type = types.unexpandWildcard(tree.type, true);
 	//System.err.println("expr="+tree.getExpression()+", expType="+tree.getExpression().type+" tree.type="+tree.type);
         F3Expression expr = lowerExpr(tree.getExpression(), tree.type); //tree.sym.type);
-	expr = preTrans.makeCast(expr, tree.type);
-	//System.err.println("expr'="+expr+", type="+tree.type);
+	if (expr != null) {
+	    expr = preTrans.makeCast(expr, tree.type);
+	} else {
+	    System.err.println("tree.expr="+tree.getExpression());
+	    System.err.println("expr'="+expr+", type="+tree.type);
+	}
         F3ObjectLiteralPart res = m.at(tree.pos).ObjectLiteralPart(tree.name, expr, tree.getExplicitBindStatus());
         res.markBound(tree.getBindStatus());
         res.sym = tree.sym;
@@ -1011,6 +1018,9 @@ public class F3Lower implements F3Visitor {
 		System.err.println("lower: type is null: "+tree);
 	    }
 	    tree.type = types.unexpandWildcard(tree.type);
+	    if (tree.type == syms.voidType) {
+		tree.type = types.boxedTypeOrType(tree.type);
+	    }
 	    tree.sym.type = tree.type;
 	    //System.err.println("var "+tree+": type="+tree.type);
 	    F3Expression init = lowerExpr(tree.getInitializer(), tree.type);

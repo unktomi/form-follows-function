@@ -212,6 +212,7 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	    override function subscribe from (observer is Observer of a) to Disposable {
 		var d2 is Disposable;
 		const d1 = self.subscribe (Observer of a {
+			/*
 			override function onNext from (x is a) to () {
 			    observer.onNext(x);
 			}
@@ -223,6 +224,10 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 			{
 			    d2 = xs.subscribe(observer);
 			}
+			*/
+			onNext: observer.onNext;
+			onError: observer.onError;
+			onCompleted: function { xs.subscribe(observer) }
 		    });
 		Disposable {
 		    override function dispose {
@@ -335,7 +340,7 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	    var zs is (..b)[];
 	    var completed = false;
 	    override function subscribe from (observer is Observer of c) to Disposable {
-		const flush = function from () to () {
+		function flush {
 		    if (not completed) {
 			const j = java.lang.Math.min(ys.size(), zs.size());
 			const left = ys[0..<j];
@@ -347,11 +352,11 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 			}
 		    }
 		}
-		const err = function from (e is java.lang.Exception) to () {
+		function err from (e is java.lang.Exception) to () {
 		    completed = true;
 		    observer.onError(e);
 		}
-		const complete = function from () to () {
+		function complete {
 		    completed = true;
 		    observer.onCompleted();
 		}
@@ -405,7 +410,14 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
-    public function fold of b from (z is b, f is function from (b, a) to b) to Observable of b 
+    public function accumulate of b 
+	from (z is b, f is function from (b, a) to b) to Observable of b 
+    {
+	fold(z, f)
+    }
+
+    public function fold of b 
+	from (z is b, f is function from (b, a) to b) to Observable of b 
     {
 	const self = this;
 	DefaultObservable of b {
@@ -429,13 +441,31 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
     }
 }
 
-
 abstract class DefaultObservable of a is Observable of a, org.f3.runtime.Monad of (Observable, a) 
 {
 }
 
+
 public function observe of a
     from (xs is (..a)[]) 
+    to Observable of a 
+{
+    DefaultObservable of a {
+	override public function subscribe 
+	    from (observer is Observer of a) 
+	    to Disposable 
+	{
+	    foreach (x in xs) {
+		observer.onNext(x);
+	    }
+	    observer.onCompleted();
+	    Disposable.empty();
+	}
+    }
+}
+
+public function observe of (f is org.f3.runtime.Functor, a) 
+    from (xs is org.f3.runtime.Functor of (f, a)) 
     to Observable of a 
 {
     DefaultObservable of a {
@@ -450,9 +480,10 @@ public function observe of a
     }
 }
 
-public function observe of (f is org.f3.runtime.Functor, a) 
-    from (xs is org.f3.runtime.Functor of (f, a)) 
+public function observe of (class F of _, a) 
+    from (xs is F of a) 
     to Observable of a 
+    with (_ is the Functor of F)
 {
     DefaultObservable of a {
 	override public function subscribe from (observer is Observer of a) to Disposable 
@@ -483,7 +514,9 @@ public function error of a
        to Observable of a 
 {
     DefaultObservable of a {
-	override public function subscribe from (observer is Observer of a) to Disposable 
+	override public function subscribe 
+	from (observer is Observer of a) 
+	to Disposable 
 	{
 	    observer.onError(e);
 	    Disposable.empty();
@@ -491,7 +524,8 @@ public function error of a
     }
 }
 
-public function never of a to Observable of a {
+public function never of a to Observable of a 
+{
     DefaultObservable of a {
 	override public function subscribe from (observer is Observer of a) to Disposable 
 	{
@@ -549,10 +583,9 @@ class Println of a is DefaultObserver of a
 
 function Println of a to Println of a 
 {
-    Println of  a {
-    }
+    Println of a {}
 }
-/*
+
 public function run 
 {
     const j =
@@ -560,16 +593,17 @@ public function run
     j.subscribe(Println of Integer());
     
     const k = observe([1..10]);
-    k.take(6).subscribe(Println of Integer());
+    k.take(6).subscribe(new Println of Integer());
 
     const l = foreach (x in observe(List.asList([1..10]))) "#{x}";
     l.drop(3).subscribe(Println of String());
-
+    /*
     const e = every(1s);
     e.subscribe(Println of Integer());
+
     for (i in [1..100]) {
 	f3.media.scene.MasterTimeline.setPlayhead(0.5s * i);
     }
+    */
 }
 
-*/

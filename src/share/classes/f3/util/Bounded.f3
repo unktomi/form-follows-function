@@ -1,0 +1,25 @@
+package f3.util;
+
+public abstract class Bounded of a 
+{
+    public const lowerBound is a;
+    public const upperBound is a;
+}
+
+public const BoundedOfInteger = Bounded of Integer 
+{
+    override const lowerBound = Integer.MIN_VALUE;
+    override const upperBound = Integer.MAX_VALUE;
+}
+
+public const BoundedOfDuration = Bounded of Duration
+{
+    override const lowerBound = Duration.valueOf(Double.NEGATIVE_INFINITY);
+    override const upperBound = Duration.valueOf(Double.POSITIVE_INFINITY);
+}
+
+public const BoundedOfNumber = Bounded of Number
+{
+    override const lowerBound = Number.valueOf(Number.NEGATIVE_INFINITY);
+    override const upperBound = Number.valueOf(Number.POSITIVE_INFINITY);
+}

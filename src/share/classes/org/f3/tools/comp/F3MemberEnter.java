@@ -489,22 +489,23 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	if (syms.f3_AutoImportF3RuntimeType != null) {
 	    importStaticAll(-1, syms.f3_AutoImportF3RuntimeType.tsym, env);
 	}
-	final F3Env<F3AttrContext> env1 = env;
 	for (F3Tree tx: tree.typeAliases) {
 	    final F3TypeAlias ta = (F3TypeAlias)tx;
-	    Scope toScope = env.toplevel.namedImportScope;
+	    final F3Env<F3AttrContext> env1 = env;
+	    Scope toScope = env1.toplevel.scriptScope;//env.toplevel.namedImportScope;
 	    System.err.println("env.info.scope.owner="+env.info.scope.owner);
 	    ta.tsym = new F3Resolve.TypeAliasSymbol(ta.getIdentifier(), 
 						    syms.unknownType,
 						    toScope.owner);
+
+	    toScope.enter(ta.tsym);
+	    System.err.println(toScope);
 	    ta.tsym.completer = new Completer() {
 		    public void complete(Symbol m) throws CompletionFailure {
 			System.err.println("completing alias: "+ m);
 			attr.attribType(ta, env1);
 		    }
 		};
-	    toScope.enter(ta.tsym);
-	    System.err.println(toScope);
 	}
         // Process all import clauses.
         memberEnter(tree.getDefs(), env);
@@ -515,17 +516,19 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	//System.err.println(tree);
 	if (tree instanceof F3TypeAlias) {
 	    F3TypeAlias ta = (F3TypeAlias)tree;
-	    final F3Env<F3AttrContext> env1 = env;
-	    ta.tsym = new F3Resolve.TypeAliasSymbol(ta.getIdentifier(), 
-						    syms.unknownType,
-						    env1.info.scope.owner);
-	    ta.tsym.completer = new Completer() {
-		    public void complete(Symbol m) throws CompletionFailure {
-			attr.attribType(tree, env1);
-		    }
-		};
-	    env1.info.scope.enter(ta.tsym);
-	    System.err.println(env1.toplevel.namedImportScope);
+	    if (ta.tsym == null) {
+		final F3Env<F3AttrContext> env1 = env;
+		ta.tsym = new F3Resolve.TypeAliasSymbol(ta.getIdentifier(), 
+							syms.unknownType,
+							env1.info.scope.owner);
+		ta.tsym.completer = new Completer() {
+			public void complete(Symbol m) throws CompletionFailure {
+			    attr.attribType(tree, env1);
+			}
+		    };
+		env1.info.scope.enter(ta.tsym);
+		System.err.println(env1.info.scope);
+	    }
 	}
     }    
 

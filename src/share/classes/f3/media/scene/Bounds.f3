@@ -270,7 +270,6 @@ public function transformBounds
                      maxX, maxY, maxZ);
 }
 
-
 public function merge
     from (b1_ is Bounds, b2_ is Bounds) 
     to Bounds 

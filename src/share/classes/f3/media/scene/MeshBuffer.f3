@@ -158,6 +158,8 @@ public function createVertexBuffer
 
 public class MeshBuffer 
 {
+    public const polygonMode is PolygonMode = PolygonMode.Fill;
+    public const indexMode is IndexMode = IndexMode.Lines;
     public const indexBuffer is IntBuffer;
     public const vertexBuffer is  VertexAttributeBuffer;
     public const normalBuffer is  VertexAttributeBuffer;
@@ -169,6 +171,8 @@ public class MeshBuffer
 	const result = 
 	    AbstractMesh 
 	    {
+		polygonMode: polygonMode;
+		indexMode: indexMode;
 	        override public function getIndexBuffer to IntBuffer { indexBuffer }
 		override public function getVertexBuffer to FloatBuffer { vertexBuffer.buffer }
 		override public function getNormalBuffer to FloatBuffer { normalBuffer.buffer }

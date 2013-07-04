@@ -218,6 +218,9 @@ public class F3Decompose implements F3Visitor {
     }
 
     private F3Var makeVar(DiagnosticPosition diagPos, String label, F3Expression initExpr, F3BindStatus bindStatus, Type type) {
+	if (type == syms.voidType) {
+	    type = types.boxedTypeOrType(type);
+	}
 	F3Var var = preTrans.SynthVar(diagPos, currentVarSymbol, label, initExpr, bindStatus, type, inScriptLevel, varOwner);
 	lbVar.append(var);
 	return var;
@@ -225,6 +228,9 @@ public class F3Decompose implements F3Visitor {
 
     private F3Var makeVar(DiagnosticPosition diagPos, Name vName, F3Expression pose, F3BindStatus bindStatus, Type type) {
         optStat.recordSynthVar("synth");
+	if (type == syms.voidType) {
+	    type = types.boxedTypeOrType(type);
+	}
         long flags = F3Flags.SCRIPT_PRIVATE | Flags.SYNTHETIC | (inScriptLevel ? Flags.STATIC | F3Flags.SCRIPT_LEVEL_SYNTH_STATIC : 0L);
         F3Var var = preTrans.Var(diagPos, flags, /*types.normalize(type)*/type, vName, bindStatus, pose, varOwner);
         varOwner.members().enter(var.sym);
