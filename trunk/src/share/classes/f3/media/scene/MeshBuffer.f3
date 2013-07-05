@@ -159,7 +159,7 @@ public function createVertexBuffer
 public class MeshBuffer 
 {
     public const polygonMode is PolygonMode = PolygonMode.Fill;
-    public const indexMode is IndexMode = IndexMode.Lines;
+    public const indexMode is IndexMode = IndexMode.Triangles;
     public const indexBuffer is IntBuffer;
     public const vertexBuffer is  VertexAttributeBuffer;
     public const normalBuffer is  VertexAttributeBuffer;
