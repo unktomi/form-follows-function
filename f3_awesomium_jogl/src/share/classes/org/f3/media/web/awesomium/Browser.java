@@ -852,7 +852,7 @@ public class Browser implements AbstractWebBrowser {
     public void injectKeyInput(int keyCode, int mods, char keyChar) {
         injectKeyInput(handle, mods, mapKeyCode(keyCode), keyChar);
     }
-
+    /*
     JSObject window = null;
 
     public JSObject getWindow() {
@@ -863,6 +863,7 @@ public class Browser implements AbstractWebBrowser {
 	}
 	return window;
     }
+    */
     static native Object execute_js(long handle, String script);
     static native long create_js_array();
     static native long create_js_object();
