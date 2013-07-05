@@ -1326,6 +1326,7 @@ functionDefinition [ F3Modifiers mods, int pos ]
              RETURN? bodyExpr=expression { blk = F.at(pos($fun.tok)).Block(0L, com.sun.tools.mjavac.util.List.<F3Expression>nil(), bodyExpr); }
             |
             SEMI
+            {$mods.flags |= Flags.ABSTRACT;}
 
         )
     

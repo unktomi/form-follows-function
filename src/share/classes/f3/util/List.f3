@@ -520,6 +520,15 @@ public function asList of a
 		}
 }
 
+public const filterable = Filterable of List {
+    override function filter of a from (xs is List of a, f is function from a to Boolean) to List of a {
+	xs.foldRight(empty of a(), 
+		     function from (x is a, ys is List of a) to List of a {
+			 if (f(x)) then ys.prepend(x) else ys;
+		     });
+    }
+}
+
 function run 
 {
     const xs = asList([1..5]);
