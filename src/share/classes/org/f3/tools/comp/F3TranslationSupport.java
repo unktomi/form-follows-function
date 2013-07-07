@@ -355,6 +355,9 @@ public abstract class F3TranslationSupport {
 	if (typeArgTypes != null) { // note bounds on type parameters might contain references to mixin classes 
 	    ListBuffer<JCTypeParameter> buf = new ListBuffer<JCTypeParameter>();
 	    for (List<Type> x = typeArgTypes; x != null; x = x.tail) {
+		if (!(x.head instanceof TypeVar)) {
+		    continue;
+		}
 		TypeVar t = (TypeVar)types.unexpandWildcard(x.head);
 		if (t != null && (t.bound instanceof WildcardType) &&
 		    ((WildcardType)t.bound).kind == BoundKind.SUPER) {
@@ -439,7 +442,12 @@ public abstract class F3TranslationSupport {
     }
 
     JCExpression makeTypeTreeInner01(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons) {
-	return makeTypeTreeInner02(diagPos, t, makeIntf, expandTypeCons, true);
+	JCExpression result = 
+	    makeTypeTreeInner02(diagPos, t, makeIntf, expandTypeCons, true);
+	//System.err.println("translated: "+ t);
+	//System.err.println("translated to: "+ result);
+	//System.err.println("translated to: "+ result.type);
+	return result;
     }
 
     JCExpression makeTypeTreeInner02(DiagnosticPosition diagPos, Type t, boolean makeIntf, boolean expandTypeCons, boolean topLevel) {
@@ -577,7 +585,7 @@ public abstract class F3TranslationSupport {
                     for (Type ta : t.getTypeArguments()) {
 			//System.err.println("ta="+ta);
 			Type tp = ta;
-			if (tp instanceof WildcardType) {
+			while (tp instanceof WildcardType) {
 			    tp = ((WildcardType)tp).type;
 			}
 			if (tp == syms.botType) { // send back a raw type
@@ -917,11 +925,16 @@ public abstract class F3TranslationSupport {
 
     private String getParameterTypeSuffix(MethodSymbol sym) {
         StringBuilder sb = new StringBuilder();
+	if (sym instanceof F3Resolve.InstanceMethodSymbol) { // instantiated generic
+	    sym = null;
+	}
         if (sym != null && sym.type != null) {
             Type mtype = sym.type;
+	    /*
             if (sym.type.tag == TypeTags.FORALL) {
                 mtype = ((ForAll) mtype).asMethodType();
             }
+	    */
             if (mtype.tag == TypeTags.METHOD) {
                 List<Type> argtypes = ((MethodType) mtype).getParameterTypes();
 		if (argtypes == null) {
@@ -942,7 +955,9 @@ public abstract class F3TranslationSupport {
                 }
             }
         }
-        return sb.toString();
+        String r = sb.toString();
+	System.err.println("sym="+sym+" => "+r);
+	return r;
     }
 
     JCExpression accessEmptySequence(DiagnosticPosition diagPos, Type elemType) {
@@ -1421,7 +1436,7 @@ public abstract class F3TranslationSupport {
             Symbol cSym = getEnclosingClassSymbol();
             if (isStatic) {
                 return Select(makeType(types.erasure(cSym.type), false), f3make.ScriptAccessSymbol(cSym).name);
-            } else if(isMixinClass()) {
+            } else if (isMixinClass()) {
                 return id(defs.receiverName);
             }
             return resolveThisInternal(cSym, false);

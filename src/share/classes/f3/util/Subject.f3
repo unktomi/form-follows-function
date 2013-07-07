@@ -6,6 +6,7 @@ public class Subject of a is Observable of a, Observer of a {
 
     public override function onNext from (x is a) to ()
     {
+    //    println("subject on next {x}, obs={observers}");
 	if (observers <> null) 
 	    for (ob in observers.keySet()) 
 		ob.onNext(x)
@@ -30,9 +31,10 @@ public class Subject of a is Observable of a, Observer of a {
 	if (observers == null) {
 	    observers = new java.util.WeakHashMap of (Observer of a, ());
 	}
+	//	println("subject subscribe {x}, obs={observers}"); 
 	observers.put(x, ());
 	Disposable {
-	    override public function dispose 
+	    override function dispose
 	    {
 		observers.remove(x)
 	    }

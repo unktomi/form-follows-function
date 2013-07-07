@@ -654,6 +654,7 @@ public class F3Resolve {
     }
     //where
     boolean mixableIn(Symbol s1, Symbol s2, Type site) {
+	/*
 	System.err.println("mixable in s1 " + s1);
 	System.err.println("mixable in s2 " + s2);
 	System.err.println("mixable in site " + site);
@@ -661,19 +662,26 @@ public class F3Resolve {
 	System.err.println("mixable in s2 " + s2.owner.type);
 	System.err.println("ismixin s1 " + types.isMixin(s1.owner));
 	System.err.println("ismixin s2 " + types.isMixin(s2.owner));
+	*/
         if (!types.isMixin(s1.owner) &&
 	    !types.isMixin(s2.owner))
             return false;
         List<Type> supertypes = types.supertypesClosure(site, true);
+	/*
 	System.err.println("supertypes="+supertypes);
+	*/
 	Type t1 = types.memberType(site, s1.owner);
 	Type t2 = types.memberType(site, s2.owner);
+	/*
 	System.err.println("t1="+t1);
 	System.err.println("t2="+t2);
+	*/
         int i1 = indexInSupertypeList(supertypes, t1);
         int i2 = indexInSupertypeList(supertypes, t2);
+	/*
 	System.err.println("i1="+i1);
 	System.err.println("i2="+i2);
+	*/
         return i1 <= i2 && i1 != -1 && i2 != -1;
     }
 

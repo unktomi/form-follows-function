@@ -479,6 +479,9 @@ public class F3Attr implements F3Visitor {
 	try {
 	    inSuperType = true;
 	    Type localResult = attribTree(tree, env, TYP, Type.noType, Sequenceness.PERMITTED);
+	    if (localResult instanceof ClassType) {
+		localResult = applyTypeArgs((ClassType)localResult);;
+	    }
 	    return localResult;
 	} finally {
 	    inSuperType = prevInSuperType;
@@ -3007,6 +3010,7 @@ public class F3Attr implements F3Visitor {
 		    m.owner = owner;
 		    localEnv.thisVarSym = owner;
 		}
+		pvar.sym.refinedThis = refinedThis.tsym.type;
 	    }
             int paramCount = params.size();
 	    boolean inferring = false;
@@ -6494,8 +6498,34 @@ public class F3Attr implements F3Visitor {
 	if (enclosing == null) {
 	    throw new NullPointerException("enclosing");
 	}
+	//System.err.println("new class type: "+ tsym + ": "+tsym.type+": "+targs);
 	ClassType ct = new ClassType(enclosing, targs, tsym);
 	return ct;
+    }
+
+    ClassType applyTypeArgs(ClassType ct) {
+	if (ct.tsym.type == ct) return ct;
+	List<Type> targs = ct.getTypeArguments();
+	Type enclosing = ct.getEnclosingType();
+	TypeSymbol tsym = ct.tsym;
+	if (targs != null && targs.size() == tsym.type.getTypeArguments().size()) {
+	    List<Type> newTargs = List.<Type>nil();
+	    List<Type> baseTargs = tsym.type.getTypeArguments();
+	    for (; targs.head != null; targs = targs.tail, baseTargs = baseTargs.tail) {
+		Type targ = targs.head;
+		Type baseTarg = baseTargs.head;
+		if (baseTarg instanceof TypeVarDefn) {
+		    TypeVarDefn defn = (TypeVarDefn)baseTarg;
+		    if (targ instanceof TypeVar) {
+			targ = new TypeVarDefn((TypeVar)targ, defn.variance);
+		    }
+		}
+		newTargs = newTargs.append(targ);
+	    }
+	    //System.err.println("newTargs="+newTargs);
+	    targs = newTargs;
+	}
+	return new ClassType(enclosing, targs, tsym);
     }
 
     abstract class TypeVariance extends SimpleVisitor<Void, BoundKind> {

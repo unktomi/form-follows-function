@@ -2093,7 +2093,18 @@ public abstract class F3AbstractTranslation
         protected JCExpression doitExpr() {
             if (tree.getName() == names._this) {
                 // in the static implementation method, "this" becomes "receiver$"
-                return getReceiverOrThis(sym);
+                JCExpression result = getReceiverOrThis(sym);
+		if (sym instanceof F3VarSymbol) {
+		    F3VarSymbol fsym = (F3VarSymbol)sym;
+		    if (fsym.refinedThis != null) {
+			System.err.println("this.type="+sym.type);
+			System.err.println("refinedThis="+fsym.refinedThis);
+			System.err.println("acc="+result);
+			System.err.println("enclosing: "+getEnclosingClassSymbol());
+			result = make.TypeCast(makeType(sym.type, true), result);
+		    }
+		}
+		return result;
             } else if (tree.getName() == names._super) {
                 if (types.isMixin(tree.type.tsym)) {
                     // "super" becomes just the class where the static implementation method is defined

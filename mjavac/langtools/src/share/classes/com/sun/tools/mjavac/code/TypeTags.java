@@ -56,7 +56,7 @@ public class TypeTags {
 
     /** The tag of the basic type `long'.
      */
-    public static final int LONG = INT+1;
+    public static final int LONG = INT+1; // 5
 
     /** The tag of the basic type `float'.
      */
@@ -76,7 +76,7 @@ public class TypeTags {
 
     /** The tag of all class and interface types.
      */
-    public static final int CLASS = VOID+1;
+    public static final int CLASS = VOID+1; // 10
 
     /** The tag of all array types.
      */
@@ -96,7 +96,7 @@ public class TypeTags {
 
     /** The tag of all type arguments.
      */
-    public static final int WILDCARD = TYPEVAR+1;
+    public static final int WILDCARD = TYPEVAR+1; // 15
 
     /** The tag of all polymorphic (method-) types.
      */
