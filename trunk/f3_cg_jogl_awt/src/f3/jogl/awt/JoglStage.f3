@@ -543,6 +543,8 @@ class SceneRenderer2D
 	const g = target.createGraphics();
 	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+	g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS,
+			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 	g.setBackground(new java.awt.Color(scene.background.red,
 					   scene.background.green,
 					   scene.background.blue,

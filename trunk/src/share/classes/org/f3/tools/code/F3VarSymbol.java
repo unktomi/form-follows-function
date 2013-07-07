@@ -55,6 +55,8 @@ public class F3VarSymbol extends VarSymbol {
     private final F3Types types;
 
     private List<Symbol> overridingClasses = List.nil();
+    
+    public Type refinedThis;
 
 /****
     private boolean isForwardReferenced = false;

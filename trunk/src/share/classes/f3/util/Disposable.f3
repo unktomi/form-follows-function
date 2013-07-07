@@ -6,6 +6,4 @@ public interface Disposable {
 
 const Empty = Disposable { override function dispose {} }
 
-public function empty to Disposable {
-    Empty;
-}
+public function empty to Disposable { Empty }

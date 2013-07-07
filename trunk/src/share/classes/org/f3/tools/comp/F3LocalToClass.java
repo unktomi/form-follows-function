@@ -393,9 +393,7 @@ public class F3LocalToClass {
                 if (oldScope != null) {
                     oldScope.remove(var.sym);
                 }
-                
                 var.sym.name = preTrans.makeUniqueVarNameIn(var.sym.name, classSym);
-                
                 if (isStatic) {
                     var.sym.flags_field |= Flags.STATIC;
                     var.mods.flags |= Flags.STATIC;

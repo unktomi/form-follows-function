@@ -2,27 +2,45 @@ package f3.util;
 import f3.util.Observer.DefaultObserver;
 import f3.lang.Ref;
 
-public interface Observable of a is org.f3.runtime.Monad of (Observable, a) 
+public interface Observable of a, is org.f3.runtime.Monad of (Observable, a) 
 {
-    public abstract function subscribe from (observer is Observer of a) to Disposable;
-
-    public function bind from (p is Ref of a) to Disposable 
+    public function subscribe 
+	from (p is Ref of a) 
+	to Disposable 
     {
-	subscribe(Observer of a {
-		override function onNext from (x is a) to () 
-		{
-		    p.set(x);
-		}
-		override function onError from (e is java.lang.Exception) to () 
-		{
-		    //
-		}
-		override function onCompleted from () to () 
-		{
-		    //
-		}
-	    });
+	subscribe(p.set);
     }
+
+    public function subscribe of b 
+	from (f is function from a to b) 
+	to Disposable 
+    {
+	subscribe(DefaultObserver of a 
+		  {
+		      override function onNext from (x is a) to ()
+		      {
+			  f(x);
+		      }
+		  });
+    }
+
+    /*
+    public function subscribe of b 
+	from (this is Observable of (()),
+	      f is function from () to b) 
+	to Disposable 
+    {
+	subscribe(DefaultObserver of (()) 
+		  {
+		      override function onNext from (x is ()) to ()
+		      {
+			  f();
+		      }
+		  });
+    }
+    */
+
+    public abstract function subscribe from (observer is Observer of a) to Disposable;
 
     override public function map of b from (f is function from a to b) to Observable of b 
     {
@@ -57,19 +75,34 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	    override function subscribe from (observer is Observer of b) to Disposable 
 	    {
 		var toDispose is Disposable[];
+		function terminateWithError from (e is java.lang.Exception) to () {
+		    alive = -1;
+		    observer.onError(e);
+		    terminate();
+		}
+		var alive = 0;
+		function terminate {
+		    if (--alive == 0) {
+			observer.onCompleted();
+		    }
+		    var tmp = toDispose;
+		    toDispose = [];
+		    for (x in tmp) x.dispose();
+		}
 		const d = self.subscribe(DefaultObserver of a {
 			override public function onNext from (x is a) to () 
 			{
 			    const observable = f(x);
 			    insert observable.subscribe(observer) into toDispose; // !!
+			    alive++;
 			}
 			override public function onError from (e is java.lang.Exception) to () 
 			{
-			    observer.onError(e);
+			    terminateWithError(e);
 			}
 			override public function onCompleted from () to () 
 			{
-			    observer.onCompleted();
+			    terminate();
 			}
 		    });
 		insert d into toDispose;
@@ -100,15 +133,18 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	    override function subscribe from (ob is Observer of a) to Disposable {
 		var enabled is Boolean = taking;
 		const sub1 = self.subscribe(Observer of a {
-			override public function onNext from (x is a) to () {
+			override public function onNext from (x is a) to () 
+			{
 			    if (enabled) {
 				ob.onNext(x)
 			    }
 			}
-			override public function onError from (e is java.lang.Exception) to () {
+			override public function onError from (e is java.lang.Exception) to () 
+			{
 			    ob.onError(e);
 			}
-			override public function onCompleted from () to () {
+			override public function onCompleted from () to () 
+			{
 			    ob.onCompleted();
 			}
 		    });
@@ -181,11 +217,11 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
 	DefaultObservable of a {
 	    override function subscribe from (observer is Observer of a) to Disposable {
 		self.subscribe(Observer of a {
-			var taken = 0;
+			var pos = 0;
 			override function onNext from (x is a) to () {
-			    if (++taken > n) {
+			    if (pos == n) {
 				observer.onNext(x);
-			    }
+			    } else pos++;
 			}
 			override function onError from (e is java.lang.Exception) to ()
 			{
@@ -411,13 +447,15 @@ public interface Observable of a is org.f3.runtime.Monad of (Observable, a)
     }
 
     public function accumulate of b 
-	from (z is b, f is function from (b, a) to b) to Observable of b 
+	from (z is b, f is function from (b, a) to b) 
+	to Observable of b 
     {
 	fold(z, f)
     }
 
     public function fold of b 
-	from (z is b, f is function from (b, a) to b) to Observable of b 
+	from (z is b, f is function from (b, a) to b) 
+	to Observable of b 
     {
 	const self = this;
 	DefaultObservable of b {
@@ -590,14 +628,14 @@ public function run
 {
     const j =
 	foreach (x in Observable.return(1), y in Observable.return(2)) x + y;
-    j.subscribe(Println of Integer());
-    
+    const d = j.subscribe(Println of Integer());
+    d.dispose();
+    /*    
     const k = observe([1..10]);
     k.take(6).subscribe(new Println of Integer());
 
     const l = foreach (x in observe(List.asList([1..10]))) "#{x}";
     l.drop(3).subscribe(Println of String());
-    /*
     const e = every(1s);
     e.subscribe(Println of Integer());
 

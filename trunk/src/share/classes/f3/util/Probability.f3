@@ -133,9 +133,8 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
 	from (this is Distribution of Number) 
 	to Number
     {
-	const exp = expected();
-	const d = foreach (x in this) {x*x - exp};
-	d.expected();
+        const exp = expected();
+	(foreach (x in this) {x*x - exp}).expected();
     }
 
     public function stdDev 

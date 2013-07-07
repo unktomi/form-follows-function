@@ -1463,6 +1463,13 @@ public class F3Types extends Types {
 		return true;
 	    }
 	}
+	if (a instanceof WildcardType && b instanceof WildcardType) {
+	    WildcardType wc1 = (WildcardType)a;
+	    WildcardType wc2 = (WildcardType)b;
+	    if (wc1.kind == wc2.kind) {
+		return isSameType(wc1.type, wc2.type);
+	    }
+	}
 	if (true) {
 	    if (a.tag == TYPEVAR && b.tag == TYPEVAR) { // hack: fix me (I have duplicate type vars somewhere)
 		TypeVar ta = (TypeVar)a;
@@ -1485,6 +1492,7 @@ public class F3Types extends Types {
 		System.err.println("null enclosing: "+ toF3String(b));
 	    }
 	    boolean result = super.isSameType(a, b);
+	    //System.err.println(a + " ==  " + b + " => "+ result);
 	    return result;
 	} catch (Throwable err) {
 	    System.err.println(err);
