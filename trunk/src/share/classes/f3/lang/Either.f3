@@ -15,6 +15,36 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 	from (f is function from b to Either of (a, c)) 
 	to Either of (a, c);
 
+    public function case of (c, _) 
+	from (this is Either of (Either of (a, b), c),
+	      f is function from a to _,
+	      g is function from b to _,
+	      h is function from c to _) to _
+    {
+	this.case(function from (y is Either of (a, b)) to _ 
+		  {
+		      y.case(f, g);
+		  },
+		  h)
+    }
+
+    public function case of (c, d, _) 
+	from (this is Either of (Either of (Either of (a, b), c), d),
+	      f is function from a to _,
+	      g is function from b to _,
+	      h is function from c to _,
+	      i is function from d to _) to _
+    {
+	this.case(function from (y is Either of (Either of (a, b), c)) to _ 
+		  {
+		      y.case(function from (z is Either of (a, b)) to _ 
+			     {
+				 z.case(f, g);
+			     },
+			     h);
+		  },
+		  i)
+    }
 
     public function swap to Either of (b, a) 
     {
@@ -136,12 +166,16 @@ public function Latter of (a, b) from (y is b) to Either of (a, b)
 	    g(y);
 	}
 
-	override public function map of c from (f is function from b to c) to Either of (a, c)
+	override public function map of c 
+	    from (f is function from b to c) 
+	    to Either of (a, c)
 	{
 	    Latter of (a, c) (f(y));
 	}
 
-	override public function flatmap of c from (f is function from b to Either of (a, c)) to Either of (a, c)
+	override public function flatmap of c 
+	    from (f is function from b to Either of (a, c)) 
+	    to Either of (a, c)
 	{
 	    f(y);
 	}

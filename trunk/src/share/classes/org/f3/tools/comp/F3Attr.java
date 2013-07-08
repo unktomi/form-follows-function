@@ -3297,6 +3297,14 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("m.type="+m.type);
 	    m.params = paramSyms;
 	}
+
+	{
+	    Type argtype = m.type.getReturnType();
+	    if (argtype != null && types.expandTypeVar(argtype).isSuperBound()) {
+		log.error(tree.getF3ReturnType().pos(),
+			  "contravariant.in.covariant.pos", tree.getF3ReturnType());
+	    }
+	}
 	
         // mark the method varargs, if necessary
         // if (isVarArgs) m.flags_field |= Flags.VARARGS;
@@ -3813,8 +3821,22 @@ public class F3Attr implements F3Visitor {
 	    mtype = attribExpr(tree.meth, localEnv, mpt);
 	    if (false) {
 		Symbol sym = F3TreeInfo.symbol(tree.meth);
+		System.err.println("meth="+tree.meth);
 		System.err.println("mtype="+mtype);
 		System.err.println("sym="+sym);
+		System.err.println("sym.owner="+sym.owner.type);
+		if (tree.meth instanceof F3Select) {
+		    F3Select select = (F3Select)tree.meth;
+		    Type receiver = select.selected.type;
+		    System.err.println("receiver="+receiver);
+		    System.err.println("tv1="+sym.owner.type.tsym.type.getTypeArguments());
+		    System.err.println("tv2="+receiver.getTypeArguments());
+		    mtype = types.subst2(mtype, 
+					 sym.owner.type.getTypeArguments(),
+					 receiver.getTypeArguments(), 
+					 true);
+		    System.err.println("mtype"+mtype);
+		}
 		if (sym != null) {
 		    sym.complete();
 		}
