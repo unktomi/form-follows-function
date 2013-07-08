@@ -587,7 +587,13 @@ public class F3Lower implements F3Visitor {
 		result = preTrans.makeCast((F3Expression)result, 
 					   types.applySimpleGenericType(ctor, targs.tail));
 	    }
-	} 
+	} else {
+	    if (preTrans.containsTypeConsType(retType) && !preTrans.containsTypeConsType(tree.type)) {
+		result = preTrans.makeCast((F3Expression)result, 
+					   tree.type);
+	    }
+	}
+
     }
     //where
     private F3Expression lowerFunctionName(F3Expression meth) {
@@ -1022,11 +1028,10 @@ public class F3Lower implements F3Visitor {
 		tree.type = types.boxedTypeOrType(tree.type);
 	    }
 	    tree.sym.type = tree.type;
-	    //System.err.println("var "+tree+": type="+tree.type);
-	    F3Expression init = lowerExpr(tree.getInitializer(), tree.type);
-	    //if (init != null) {
-		//init = preTrans.makeCast(init, tree.type);
-	    //}
+	    F3Expression init = tree.getInitializer();
+	    if (init != null) {
+		init = lowerExpr(init, tree.type);
+	    }
 	    F3OnReplace onReplace = lowerDecl(tree.getOnReplace());
 	    F3OnReplace onInvalidate = lowerDecl(tree.getOnInvalidate());
 	    F3Var res = m.at(tree.pos).Var(tree.name, tree.getF3Type(), tree.mods, init, tree.getBindStatus(), onReplace, onInvalidate);

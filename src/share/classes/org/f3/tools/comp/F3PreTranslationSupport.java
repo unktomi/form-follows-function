@@ -296,6 +296,11 @@ public class F3PreTranslationSupport {
         return var;
     }
     
+    public boolean containsTypeConsType(Type t) { // hack!!!!
+	String str = t.toString();
+	return str.contains("org.f3.runtime.TypeCons");
+    }
+
     F3Expression makeCastIfNeeded(F3Expression tree, Type type) {
 	Type treetype = tree.type;
 	if (F3TranslationSupport.ERASE_BACK_END) {

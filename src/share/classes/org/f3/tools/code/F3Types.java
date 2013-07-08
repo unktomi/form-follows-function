@@ -655,8 +655,9 @@ public class F3Types extends Types {
 		cons.bound = v.bound;
 		return cons;
 	    }
+	    TypeCons cons = null;
 	    if (v instanceof TypeCons) {
-		TypeCons cons = (TypeCons)v;
+		cons = (TypeCons)v;
 		if (cons.ctor != null) {
 		    v = (TypeVar)cons.ctor;
 		}
@@ -664,6 +665,22 @@ public class F3Types extends Types {
 	    base = syms.f3_TypeCons[actuals.size()];
 	    Type ctor = v;
 	    ctor = new WildcardType(v, BoundKind.EXTENDS, syms.boundClass);
+	    List<Type> newArgs = List.<Type>nil();
+	    for (List<Type> l1 = actuals, l2 = v.getTypeArguments(); l1.head != null; l1 = l1.tail) {
+		Type arg = l1.head;
+		if (l2 != null) {
+		    Type at = l2.head;
+		    if (at instanceof TypeVarDefn) {
+			if (at instanceof F3Attr.TypeVarDefn) {
+			    final F3Attr.TypeVarDefn def = (F3Attr.TypeVarDefn)at;
+			    arg = new WildcardType(arg, def.variance, syms.boundClass);
+			}
+		    }
+		} 
+		newArgs = newArgs.append(arg);
+		l2 = l2.tail;
+	    }
+	    actuals = newArgs;
 	    actuals = actuals.prepend(ctor);
 	    //System.err.println("base="+base.getClass()+": "+base + " / " + base.tsym.type);
 	}

@@ -538,7 +538,7 @@ public class F3Check {
        if (found.isSuperBound()) {
 	   //Thread.currentThread().dumpStack();
 	   Type.WildcardType wc = (Type.WildcardType)found;
-	   if (wc.type instanceof F3Attr.TypeVarDefn) {
+	   if (true || wc.type instanceof F3Attr.TypeVarDefn) {
 	       return found;
 	   }
 	   log.error(pos, MsgSym.MESSAGE_ASSIGNMENT_FROM_SUPER_BOUND, found);
