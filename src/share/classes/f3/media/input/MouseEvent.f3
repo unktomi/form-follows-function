@@ -15,11 +15,11 @@ public class MouseEvent is PointerEvent
         }
         return false;
     }
-/*
-    public readonly var dragStart = bind sceneToLocal*picked.dragPoint0;
-    public readonly var drag: Vec3 = bind location - dragStart;
+
+    public readonly var dragStart = bind sceneToLocal(picked.node.toSceneTransform, picked.dragPoint0);
+    public readonly var drag is Vec3 = bind location - dragStart;
     public readonly var sceneDrag = bind picked.dragPoint0 - picked.dragPoint1;
-*/
+
     override function toString to String {
         "Mouse Event screen {screenx}, {screeny} button {buttons} scene {sceneLocation} location {location}";
     }

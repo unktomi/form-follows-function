@@ -1,5 +1,6 @@
 package org.f3.media.web.awesomium;
 import f3.media.scene.AbstractWebBrowser;
+import f3.media.scene.AbstractTexture;
 import f3.media.input.Keys;
 import f3.media.scene.CursorType;
 import java.nio.*;
@@ -742,6 +743,23 @@ public class Browser implements AbstractWebBrowser {
                     }
                 });
         }
+    }
+
+    public AbstractTexture grabTexture() {
+	final Texture tex = backingStore;
+	backingStore = null;
+	resize(width, height);
+	return new AbstractTexture() {
+	    public int getWidth() {
+		return tex.getWidth();
+	    }
+	    public int getHeight() {
+		return tex.getHeight();
+	    }
+	    public int getTextureId() {
+		return tex.getTextureObject(GLContext.getCurrentGL());
+	    }
+	};
     }
 
     public void resize(int width, int height) {

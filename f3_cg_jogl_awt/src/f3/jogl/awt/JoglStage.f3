@@ -137,7 +137,8 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
 	from (text0 is String, 
 	      font0 is Text.Font, 
 	      wrapWidth is Integer, 
-	      clipHeight is Integer)
+	      clipHeight is Integer,
+	      rightJustify is Boolean)
 	to Text.Layout 
     {
 	const font = if (font0 <> null) then font0 else engine.createFont("");
@@ -162,7 +163,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
 	    }
 	    if (layout <> null) {
 		var dx = 
-		    if (not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
+		    if (rightJustify or not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
                 dx -= wrapWidth / 2.0;
                 y += layout.getDescent() + layout.getLeading();
                 insert dx into xs;
@@ -485,8 +486,8 @@ class JoglPath2DFactory is Shape2D.Path2DFactory
     }
 }
 
-const ThePath2DFactory = JoglPath2DFactory {};
-const TheLayoutEngine = JoglTextLayoutEngine {};
+public const ThePath2DFactory = JoglPath2DFactory {};
+public const TheLayoutEngine = JoglTextLayoutEngine {};
 
 function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to Shader 
 {
@@ -1591,6 +1592,15 @@ class SceneRenderer {
 		if (n is PointLight) {
 		    insert (n as PointLight) into lights;
 		}
+		var debug = false;
+		var par = n;
+		while (par <> null) {
+		    if (par.debug) {
+			debug = true;
+			break;
+		    }
+		    par = par.parent;
+		}
 		if (n is Shape2D.MeshNode2D) {
 		    const shape = n as Shape2D.MeshNode2D;
 		    if (shape.shader == null) {
@@ -1650,7 +1660,9 @@ class SceneRenderer {
 			}
 			lastDrawn.remove(n);
 		    } else {
-		    //		    			println("culled {n} {n.id} {n.boundsInScene}");
+			if (debug) {
+			    println("culled {n} {n.id} {n.boundsInScene}");
+			}
 			if (lastDrawn.remove(n)) {
 			    dirty = true;
 			}
@@ -2142,7 +2154,7 @@ public class Listener is GLEventListener, DropTargetListener {
         if (startTime == 0) startTime = now;
         const currentTime = 1ms *(now - startTime);
 	MasterTimeline.setPlayhead(currentTime);
-        setCursor(stage.cursor);
+
         if (mainSceneRenderer == null and gl <> null) {
             mainSceneRenderer = SceneRenderer {
                 activate: function from () to () {
@@ -2174,6 +2186,7 @@ public class Listener is GLEventListener, DropTargetListener {
             lastOpaque = opaque;
         }
         stage.flush();
+        setCursor(stage.cursor);
     }
 
     var title is String;
@@ -2513,7 +2526,8 @@ public function run from (args is String[]) to ()
     }
 
     var currentModel is Node = HTML {
-    	content: "<html><body><h1>Welcome to F3</h1></body></html>";
+    	transform: translate(512, 0, 0);
+    	content: "<html><body><div contenteditable='true'><h1>Welcome to F3</h1></div></body></html>";
 	//factory: TheWebBrowserFactory;
 	//effectLoader: CGEffectLoader_INSTANCE;
 	//pathFactory: ThePath2DFactory;

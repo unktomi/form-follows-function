@@ -386,7 +386,8 @@ public abstract class F3TranslationSupport {
 			}
 		    }
 		    JCTypeParameter exp = make.at(diagPos).TypeParameter(t.tsym.name, bb.toList());
-		    //System.err.println(t + " => "+exp);
+		    System.err.println(t + " => "+exp + ": "+exp.type);
+		    exp.type = null;
 		    buf.append(exp);
 		}
 	    }
@@ -447,6 +448,7 @@ public abstract class F3TranslationSupport {
 	//System.err.println("translated: "+ t);
 	//System.err.println("translated to: "+ result);
 	//System.err.println("translated to: "+ result.type);
+	result.type = null;
 	return result;
     }
 

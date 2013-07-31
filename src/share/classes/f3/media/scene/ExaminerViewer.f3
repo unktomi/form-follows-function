@@ -68,21 +68,24 @@ public abstract class ExaminerViewer is MouseInputHandler {
 	updateCameraPosition(ori);
     }
 
+    var mouseEnabled = false;
+
     override function onMouseDown from (event is MouseEvent) to () {
-        for (b in event.buttons) {
+    	mouseEnabled = event.scene.pressed == [];
+        if (mouseEnabled) for (b in event.buttons) {
             mouseDown(b, event.ctrlKey, event.altKey);
         }
     }
 
     override function onMouseUp from (event is MouseEvent) to () {
-        for (b in event.buttons) {
+        if (mouseEnabled) for (b in event.buttons) {
             mouseUp(b);
         }
     }
 
     override function onMouseMove from (event is MouseEvent) to () {
-        mouseMove(event.screenx, event.screeny,
-                  event.ctrlKey, event.altKey);
+        if (mouseEnabled) mouseMove(event.screenx, event.screeny,
+	                  event.ctrlKey, event.altKey);
     }
 
     public function mouseDown from (button is Integer, isControlDown is Boolean, isAltDown is Boolean) to () {

@@ -6,6 +6,8 @@ import org.f3.runtime.*;
 
 public abstract class AbstractNode is Node 
 {
+    public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
+    public const layoutEngine is Text.LayoutEngine = the Text.LayoutEngine;
     protected var internalContent is Node;
     override var contentBounds = bind internalContent.bounds;
 

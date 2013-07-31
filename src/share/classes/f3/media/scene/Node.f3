@@ -11,6 +11,7 @@ public abstract class Node is Foldable of Node
     override function toString to String {
 	"{super.toString()} {id}"
     }
+    public var debug is Boolean;
     public var id is String;
     public var cursor is Cursor;
     public readonly var parent is Node;
@@ -21,13 +22,17 @@ public abstract class Node is Foldable of Node
     public readonly var parentToSceneTransform is Mat4 = 
 	bind if parent == null then Mat4.<<1>> else parent.toSceneTransform;
     public readonly var transform is Mat4 = Mat4.<<1>>;
+    public function setTransform from (m is Mat4) to ()
+    {
+	transform = m;
+    }
     public readonly var toSceneTransform is Mat4 = 
 	bind parentToSceneTransform * transform;
     public readonly var bounds is Bounds = bind transform * contentBounds;
     public readonly var boundsInScene is Bounds = bind parentToSceneTransform * bounds;
     public readonly var contentBounds is Bounds;
 
-    public readonly var blocksPointer is Boolean = false;
+    public var blocksPointer is Boolean = false;
     public readonly var containsPointer is Boolean;
     protected function setContainsPointer from (value is Boolean) to () { containsPointer = value; }
     public readonly var pickable is Boolean = true;
@@ -94,7 +99,7 @@ public abstract class Node is Foldable of Node
 	else mouseWheel;
 	
     }
-
+    /*
     var mouseDrag1 is Observable of MouseEvent = 
          foreach (press in observeMouseDown()) observeMouseMove().takeUntil(observeMouseUp());
     var dummy1 = mouseDrag1.subscribe(Observer of MouseEvent 		     
@@ -103,6 +108,14 @@ public abstract class Node is Foldable of Node
 		 println(e);
 	}	
     });
+    */
+    public function lookup from (id is String) to Node {
+	foldLeft(null as Node, 
+		 function from (r is Node, n is Node) to Node 
+		 {
+		     if (r == null and n.id == id) then n else r;
+		 })
+    }
     
 }
 

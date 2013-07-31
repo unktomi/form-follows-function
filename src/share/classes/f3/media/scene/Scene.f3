@@ -166,8 +166,8 @@ public class Scene
 
     var mouseX is Number;
     var mouseY is Number;
-    var underMouse is Pick[];
-    var pressed is Pick[];
+    public readonly var underMouse is Pick[];
+    public readonly var pressed is Pick[];
 
     public function update to () 
     {
@@ -275,8 +275,14 @@ public class Scene
             doMouseMove(i, event);
         for (i in pressed) 
             doMouseDrag(i, event);
-	const cursorPick = underMouse[p | p.node.cursor <> null];
-	cursor = cursorPick[0].node.cursor;
+	var cursorPick is Pick = null;
+	for (i in underMouse) {
+	    if (i.node.blocksPointer or i.node.cursor <> null) {
+		cursorPick = i;
+		break;
+	    }
+	}
+	cursor = cursorPick.node.cursor;
     }
 
     public readonly var cursor is Cursor;
@@ -454,7 +460,6 @@ public class Scene
     function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to ()
     {
 	const hs = getMouseInputHandlers(p);
-	println("mouseDown: {p.node}: {hs}");
         if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
@@ -493,7 +498,7 @@ public class Scene
     function doMouseDrag from (p is Pick, sceneEvent is MouseEvent) to () 
     {   
         const hs = getMouseInputHandlers(p);
-        if (hs <> []) {
+        if (hs <> [] or p.node.mouseDrag <> null) {
             const translation = p.node.toSceneTransform.getTranslation();
             const ray = camera.getPickRay(sceneEvent.screenx, sceneEvent.screeny);
 	    const normal = ray.direction.negate();
@@ -503,14 +508,18 @@ public class Scene
             }
             const hit = plane.intersectRay(ray);
             p.dragPoint0 = p.dragPoint1;
+	    if (p.dragPoint0 == null) {
+		p.dragPoint0 = hit.point;
+	    }
             p.dragPoint1 = hit.point;
             for (h in hs) {
                 h.onMouseDrag(makeMouseEvent(null, p, sceneEvent));
             }
-        }
-	if (p.node.mouseDrag <> null) {	
-            const e = makeMouseEvent(null, p, sceneEvent);
-	    p.node.mouseDrag.onNext(e);
+	    if (p.node.mouseDrag <> null) {	
+		println("mouse drag {p.node}");
+		const e = makeMouseEvent(null, p, sceneEvent);
+		p.node.mouseDrag.onNext(e);
+	    }
 	}
     }
 
@@ -530,7 +539,7 @@ public class Scene
             screenx: e.screenx;
             screeny: e.screeny;
             screenDrag: e.screenDrag;
-            sceneLocation: p.scenePoint;
+            sceneLocation: e.sceneLocation;
             buttons: e.buttons;
             picked: p;
         }

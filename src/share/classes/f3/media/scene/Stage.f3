@@ -60,25 +60,37 @@ public interface Stage
 
     public function injectMouseDown from (event is MouseEvent) to () 
     {
-	println("mouse down: {event}");
-        for (h in mouseHandlers) {
-            h.onMouseDown(event);
-        }
         var focusSet = false;
+	var blocked = false;
         for (c in content.reverse()) {
             c.injectMouseDown(event);
             if (not focusSet and c.focus <> null) {
                 focusSet = true;
                 focusedScene = c;
             }
+	    for (x in c.pressed) {
+	    	if (x.node.blocksPointer) {
+		   blocked = true;	  
+		   break;
+		}
+	    }
+	    if (blocked) break;
+        }
+	//	println("mouse down: {event}");
+        if (not blocked) for (h in mouseHandlers) {
+            h.onMouseDown(event);
         }
         if (not focusSet) {
             focusedScene = null;
         }
     }
 
-    public function injectMouseUp from (event:MouseEvent)to () {
-        for (h in mouseHandlers) {
+    public function injectMouseUp from (event is MouseEvent) to () {
+    	var hit = false;
+	for (c in content) {	
+	    if (c.pressed <> []) hit = true;
+	}
+        if (not hit) for (h in mouseHandlers) {
             h.onMouseUp(event);
         }
         for (c in content.reverse()) {
@@ -86,7 +98,7 @@ public interface Stage
         }
     }
 
-    public function injectMouseMove from (event:MouseEvent)to () {
+    public function injectMouseMove from (event is MouseEvent) to () {
         for (h in mouseHandlers) {
             h.onMouseMove(event);
         }
@@ -165,7 +177,7 @@ public interface Stage
 
     protected function updateCursor to () 
     {
-	var sceneCursor is Cursor;
+	var sceneCursor is Cursor = null;
 	for (scene in content.reverse()) {
 	    sceneCursor = scene.cursor;
 	    if (sceneCursor <> null) {

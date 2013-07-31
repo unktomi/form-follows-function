@@ -1308,7 +1308,15 @@ public class F3Attr implements F3Visitor {
 
         try {
             Type declType = attribType(tree.getF3Type(), env);
-	    //System.err.println("var "+tree+": "+declType);
+	    if (declType instanceof WildcardType) {
+		System.err.println(tree.getF3Type().getClass());
+		if (tree.getF3Type() instanceof F3TypeClass) {
+		    F3TypeClass c = (F3TypeClass)tree.getF3Type();
+		    System.err.println("lower="+c.getClassName());
+		    System.err.println("upper="+c.upperBound);
+		}
+		System.err.println("var "+tree+": "+declType.getClass()+": "+declType+ ": "+types.toF3String(declType));
+	    }
             declType = chk.checkNonVoid(tree.getF3Type(), declType);
             if (declType != syms.f3_UnspecifiedType) {
                 result = tree.type = v.type = declType;
@@ -1493,6 +1501,18 @@ public class F3Attr implements F3Visitor {
 	    if (argtype != null && types.expandTypeVar(argtype).isSuperBound()) {
 		log.warning(pvar.getF3Type().pos(),
 			 "contravariant.in.covariant.pos", pvar.getF3Type());
+	    }
+	}
+	if (argtype != null) {
+	    if ((tree.sym.flags_field & (F3Flags.IS_DEF | F3Flags.PUBLIC_INIT | Flags.FINAL)) == 0) {
+		Type expanded = types.expandTypeVar(argtype);
+		if (expanded.isSuperBound()) {
+		    log.warning(pvar.getF3Type().pos(),
+			      "contravariant.in.invariant.pos", pvar.getF3Type());
+		} else if (expanded.isExtendsBound()) {
+		    log.warning(pvar.getF3Type().pos(),
+				"covariant.in.invariant.pos", pvar.getF3Type());
+		}
 	    }
 	}
         result = /*tree.isBound()? syms.voidType : */ tree.type;
@@ -2723,7 +2743,7 @@ public class F3Attr implements F3Visitor {
 	    TypeCons tv = new TypeCons(ident.getName(), sym, syms.botType, null);
 	    TypeSymbol tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
 	    tv.tsym = tsym;
-	    env.info.scope.enter(tsym);
+	    env.info.scope.enterIfAbsent(tsym);
 	    tv.args = makeTypeVars(cons.getArgs(), tsym);
 	    tv.bound = types.makeTypeCons(tv, tv.args);
 	    //tv.bound = syms.objectType;
@@ -2736,7 +2756,7 @@ public class F3Attr implements F3Visitor {
 	    tv.bound = syms.objectType;
 	    //System.err.println("created type var: "+ System.identityHashCode(tv) + ": " +tv);
 	    //Thread.currentThread().dumpStack();
-	    env.info.scope.enter(((TypeVar)tv).tsym);
+	    env.info.scope.enterIfAbsent(((TypeVar)tv).tsym);
 	    return tv;
 	} else if (exp instanceof F3TypeExists) {
 	    return new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass);
@@ -2760,7 +2780,7 @@ public class F3Attr implements F3Visitor {
 	    boolean checkBound = false;
 	    TypeVar tv = new TypeVar(ident.getName(), sym, lower);
 	    tv.tsym = new TypeSymbol(flags, ident.getName(), tv, sym);
-	    env.info.scope.enter(((TypeVar)tv).tsym);
+	    env.info.scope.enterIfAbsent(((TypeVar)tv).tsym);
 	    //System.err.println("attrib bound: "+ t.getBound());
 	    Type bound = attribType(t.getBound(), env);
 	    if (bound instanceof WildcardType) {
@@ -5373,7 +5393,28 @@ public class F3Attr implements F3Visitor {
         }
         type = sequenceType(type, cardinality);
 	BoundKind bk = tree.boundKind;
-	//System.err.println("visit type class: "+classNameExpr.getClass()+": "+tree.pos()+": "+ type + " bk="+bk + " inSuper="+inSuperType);
+	Type bound = null;
+	if (tree.upperBound != null) {
+	    bound = attribType(tree.upperBound, env);
+	    type = types.unexpandWildcard(type);
+	    if (type instanceof TypeVarDefn) {
+		TypeVar tv = ((TypeVarDefn)type).base;
+		type = tv;
+	    }
+	    if (types.isSameType(type, bound)) {
+		tree.type = type;
+		result = type;
+		return;
+	    }
+	    if (type instanceof TypeVar) {
+		TypeVar tv = (TypeVar)type;
+		type =new WildcardType(new TypeVar(tv.tsym, syms.botType, bound),
+				       BoundKind.SUPER, syms.boundClass);
+		tree.type = type;
+		result = type;
+		return;
+	    }
+	}
 	if (bk != null && bk != BoundKind.UNBOUND) {
 	    if (type instanceof WildcardType) {
 		type = ((WildcardType)type).type;

@@ -6109,7 +6109,9 @@ type
                 $rtype = F.at(rPos).ErroneousType(errNodes.elems);
                 
             } else {
-                $rtype = F.at(rPos).TypeClass($typeName.value, $cardinality.ary);
+                
+                $rtype = ($cardinality.ary == TypeTree.Cardinality.SINGLETON && ($typeName.value instanceof F3TypeClass)) ? (F3TypeClass)$typeName.value : 
+                    F.at(rPos).TypeClass($typeName.value, $cardinality.ary);
             }
             endPos($rtype);
         } )
@@ -6778,8 +6780,9 @@ genericArgument
       (type DOTDOT type)=>lower=type DOTDOT upper=type
         {
             $lower.rtype.boundKind = BoundKind.SUPER;
-            $lower.rtype.upperBound = upper;
+            $lower.rtype.upperBound = $upper.rtype;
             $value = $lower.rtype;
+            System.err.println("GENERIC ARG: "+ $value + " <= " + $lower.rtype + ".."+$upper.rtype);
         }
       |
       (type DOTDOT)=>lower=type DOTDOT
