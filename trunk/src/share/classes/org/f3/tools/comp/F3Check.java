@@ -252,7 +252,7 @@ public class F3Check {
 	    System.err.println("tv.lower="+tv.lower);
 	    System.err.println("tv.bound="+tv.bound);
 	}
-	Thread.currentThread().dumpStack();
+	//Thread.currentThread().dumpStack();
 	log.error(pos, MsgSym.MESSAGE_PROB_FOUND_REQ, problem, foundAsF3Type, requiredAsF3Type);
 	return syms.errType;
     }
@@ -759,7 +759,7 @@ public class F3Check {
                         msg = MsgSym.MESSAGE_F3_REPORT_WRITE_ACCESS;
                         break;
                 }
-		Thread.currentThread().dumpStack();
+		//Thread.currentThread().dumpStack();
                 log.error(pos, msg, v,
 			  F3Check.protectionString(v.flags()),
 			  v.location());

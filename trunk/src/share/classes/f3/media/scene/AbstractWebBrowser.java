@@ -7,6 +7,7 @@ public interface AbstractWebBrowser {
     public String getContent();
     public void resize(int width, int height);
     public boolean update();
+    public AbstractTexture grabTexture();
     public int getTextureId();
     public int getWidth();
     public int getHeight();

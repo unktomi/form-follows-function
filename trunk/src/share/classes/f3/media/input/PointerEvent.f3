@@ -9,7 +9,7 @@ public interface PointerEvent is InputEvent
     public var sceneLocation is Point3 = Point3.<<0>>;
     public var picked is Pick;
     public readonly var location is Point3 = bind sceneToLocal(picked.node.toSceneTransform, sceneLocation);
-    function sceneToLocal from (mat is Mat4, p is Point3) to Point3 {
+    protected function sceneToLocal from (mat is Mat4, p is Point3) to Point3 {
 	if (mat == null) then p else mat.inverse() * p;
     }
 }

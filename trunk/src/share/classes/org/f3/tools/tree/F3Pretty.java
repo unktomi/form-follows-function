@@ -1164,6 +1164,10 @@ public class F3Pretty implements F3Visitor {
     public void visitTypeClass(F3TypeClass tree) {
         try {
             print(tree.getClassName());
+	    if (tree.upperBound != null) {
+		print("..");
+		print(tree.upperBound);
+	    }
             print(ary(tree));
         } catch (IOException e) {
             throw new UncheckedIOException(e);

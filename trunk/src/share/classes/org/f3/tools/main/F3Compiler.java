@@ -576,6 +576,33 @@ public class F3Compiler implements ClassReader.SourceCompleter {
                 System.err.println("Exception thrown in F3 pretty printing: " + ex);
             }
         }
+        String gen = options.get("gendart");
+        if (gen != null) {
+            try {
+                String fn = env.toplevel.sourcefile.toString().replace(".f3", ".dart");
+		String dirName = env.toplevel.packge.toString().replace(".", "/");
+		fn = new File(fn).getName();
+		File dir = new File("dart");
+                File outFile; 
+		if (!dirName.equals("unnamed package")) {
+		    outFile = new File(dir, new File(dirName, fn).toString());
+		} else {
+		    outFile = new File(dir, fn);
+		}
+		System.err.println("dirName="+dirName);
+		System.err.println("outFile="+outFile);
+		outFile.getParentFile().mkdirs();
+                FileWriter fw = new FileWriter(outFile);
+                BufferedWriter out = new BufferedWriter(fw);
+                try {
+                    new DartPretty(out, true, context).printUnit(env.translatedToplevel, null);
+                } finally {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                System.err.println("Exception thrown in F3 pretty printing: " + ex);
+            }
+        }
     }
 
     /** Emit Java-like source corresponding to translated tree.
