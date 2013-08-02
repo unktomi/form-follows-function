@@ -2,6 +2,7 @@ package f3.media.scene;
 
 public class Image is AbstractTexture, Shape2D.MeshNode2D {
     public var url is String;
+    override var debug = true;
     public const imageLoader is ImageLoader = the ImageLoader;
     public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
     readonly var tex is AbstractTexture = bind imageLoader.loadImage(url);

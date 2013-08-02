@@ -15,9 +15,9 @@ public interface CGEffectLoader
         from (url is String,
               technique is String)
         to Shader;
-    /*
+
     abstract public function loadPaintShader 
 	from (paint is Shape2D.Paint) 
 	to Shader;
-    */
+
 }

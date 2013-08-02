@@ -52,6 +52,10 @@ public class Scene
 	const pickedMeshes = pickGeometry(ray);
 	const picked = new java.util.HashSet of Node;
         for (p in pickedMeshes) {
+	    if (picked.contains(p.node)) {
+		continue;
+	    }
+	    picked.add(p.node);
             var par = p.node.parent;
             var toAdd is Pick[];
             while (par <> null) {
@@ -72,11 +76,6 @@ public class Scene
             }
             insert toAdd.reverse() into result;
             insert p into result;
-        }
-        for (p in result) {
-            if (p.node.blocksPointer) {
-                return result[0..indexof p];
-            }
         }
         return result;
     }
@@ -161,6 +160,11 @@ public class Scene
 		    java.lang.Math.signum(p0.t - p1.t) as Integer;
 		}
 	});
+	for (i in result) {
+	    if (i.node.blocksPointer) {
+		return result[0..indexof i];
+	    }
+	}
 	return result;
     }
 
@@ -497,6 +501,7 @@ public class Scene
 
     function doMouseDrag from (p is Pick, sceneEvent is MouseEvent) to () 
     {   
+	println("do mouse drag {p.node}");
         const hs = getMouseInputHandlers(p);
         if (hs <> [] or p.node.mouseDrag <> null) {
             const translation = p.node.toSceneTransform.getTranslation();
@@ -516,7 +521,7 @@ public class Scene
                 h.onMouseDrag(makeMouseEvent(null, p, sceneEvent));
             }
 	    if (p.node.mouseDrag <> null) {	
-		println("mouse drag {p.node}");
+		//println("mouse drag {p.node}");
 		const e = makeMouseEvent(null, p, sceneEvent);
 		p.node.mouseDrag.onNext(e);
 	    }

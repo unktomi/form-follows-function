@@ -66,19 +66,38 @@ public class TextMeshNode is MeshNode2D
 
 const OFFWHITE = new Color(.9, .9, .9, 1);
 
-
-public class Area is AbstractNode, Focusable, KeyboardInputHandler, MouseInputHandler 
-{
+abstract public class AbstractText is AbstractNode {
     public var width is Number = 300;
     public var height is Number = bind font.height();
-    //public const layoutEngine is LayoutEngine = the LayoutEngine;
-    //public const pathFactory is Path2DFactory = the Path2DFactory;
     public var font is Font = layoutEngine.createFont("font-size:14;font-family:Dialog;");
     public var rightJustified is Boolean = false;
-    public var background is Paint = ColorPaint { color: OFFWHITE }
-    public var foreground is Paint = ColorPaint { color: Color.BLACK };
-    public var selectionForeground is Paint = ColorPaint { color: Color.BLACK };
+    public var background is Paint = ColorPaint(OFFWHITE);
+    public var foreground is Paint = ColorPaint(Color.BLACK);
+    public var selectionForeground is Paint = 
+	ColorPaint(Color.BLACK);
     public var selectionBackground is Paint = ColorPaint { color: Color.WHITE };
+}
+
+public class Label is AbstractText {
+    var content is Text.Area = Text.Area {
+	width: bind width;
+	height: bind height;
+	font: bind font;
+	rightJustified: bind rightJustified;
+	background: bind background;
+	foreground: bind foreground;
+	selectionForeground: bind selectionForeground;
+	selectionBackground: bind selectionBackground;
+	pickable: false;
+    };
+    override var internalContent = bind content;
+    public var text is String on replace {
+	content.setText(text);
+    }
+}
+
+public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHandler 
+{
     override var cursor = Cursor.IBeam;
     public readonly var text is String = "";
     const buffer = new java.lang.StringBuffer;
