@@ -95,7 +95,7 @@ public function ColorPaint from (color is Color) to ColorPaint
 
 public class TexturePaint is ColorPaint 
 {
-    override var color = Color.WHITE;
+    override var color = Color.color(1, 1, 1, 0);
     public var texture is AbstractTexture;
     public var x is Number;
     public var y is Number;

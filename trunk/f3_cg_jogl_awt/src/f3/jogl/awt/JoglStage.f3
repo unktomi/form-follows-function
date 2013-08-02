@@ -1005,6 +1005,24 @@ class JoglCGEffectLoader is CGEffectLoader
             technique: technique;
         }
     }
+
+    override public function loadPaintShader(paint is Shape2D.Paint) to Shader {
+	if (paint is Shape2D.ColorPaint) {
+	    readonly var colorPaint = bind paint as Shape2D.ColorPaint;
+	    if (paint is Shape2D.TexturePaint) {
+		var tex = 
+		    bind (paint as Shape2D.TexturePaint).texture;
+		TexturePaintShader {
+		    color: bind colorPaint.color;
+		    tex: bind tex;
+		}
+	    } else {
+		ColorPaintShader {
+		    color: bind colorPaint.color;
+		}
+	    }
+	} else null; // @todo
+    }
 }
 
 
@@ -1651,7 +1669,7 @@ class SceneRenderer {
 			    dirty = true; //mn.shader.isDirty() or mn.needsDraw;
 			}
 			const tris = mn.mesh.getIndexBuffer().limit() / 3;
-			if (shader.isTransparent) {
+			if ((scene.camera is Camera2D) or shader.isTransparent) {
 			    transparentToDraw.add(mn);
 			    transparentTris += tris;
 			} else {
@@ -1738,7 +1756,7 @@ class SceneRenderer {
 			return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
 		    }
 		});
-	}
+	} 
         onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
         draw(gl, scene.root.parent, camera, opaqueToDraw, lightPositions);
         opaqueToDraw.clear();

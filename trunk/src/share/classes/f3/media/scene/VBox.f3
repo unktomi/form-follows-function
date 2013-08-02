@@ -1,0 +1,33 @@
+package f3.media.scene;
+
+public class VBox is AbstractNode {
+    public var content is Node[];
+    public var spacing is Number;
+    function layoutNode from (y is Number, n is Node) to Node 
+    {
+	println("layout node: {y} {n} bounds={n.bounds}");
+	TransformNode { ty: y, content: n }
+    }
+
+    bound function layout 
+	from (input is Node[], 
+	      spacing is Number, 
+	      y is Number,
+	      output is Node[]) 
+	to Node[]
+    {
+	if (input == []) then output else {
+		var n = input[0];
+		var ns = input[1..];
+		layout(ns, 
+		       spacing, 
+		       y + spacing + 2*n.bounds.extent.y, 
+		       [output, 
+			layoutNode(y, n)]);
+	    }
+    }
+
+    override var internalContent = Group {
+	content: bind layout(content, spacing, 0, [])
+    }
+}

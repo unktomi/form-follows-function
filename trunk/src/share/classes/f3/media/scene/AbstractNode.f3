@@ -8,6 +8,8 @@ public abstract class AbstractNode is Node
 {
     public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
     public const layoutEngine is Text.LayoutEngine = the Text.LayoutEngine;
+    public const effectLoader is CGEffectLoader = the CGEffectLoader;
+    public const imageLoader is ImageLoader = the ImageLoader;
     protected var internalContent is Node;
     override var contentBounds = bind internalContent.bounds;
 
