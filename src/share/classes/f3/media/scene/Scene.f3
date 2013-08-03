@@ -501,7 +501,7 @@ public class Scene
 
     function doMouseDrag from (p is Pick, sceneEvent is MouseEvent) to () 
     {   
-	println("do mouse drag {p.node}");
+	//println("do mouse drag {p.node}");
         const hs = getMouseInputHandlers(p);
         if (hs <> [] or p.node.mouseDrag <> null) {
             const translation = p.node.toSceneTransform.getTranslation();
