@@ -204,8 +204,8 @@ public abstract class Shape2D is Node
 	to b
     { 
         var r = z;
-        if (fillMesh <> null) r = fillMesh.foldRight(r, f);
 	if (strokeMesh <> null) r = strokeMesh.foldRight(r, f);
+        if (fillMesh <> null) r = fillMesh.foldRight(r, f);
         f(this, r);
     }
 

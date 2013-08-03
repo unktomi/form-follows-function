@@ -23,11 +23,7 @@ public abstract class AbstractNode is Node
 	from (z is b, f is function from (b, Node) to b) 
 	to b
     {
-	internalContent.foldLeft(f(z, this), 
-				 function from (z is b, n is Node) to b 
-				 {
-				     n.foldLeft(z, f); 
-				 });
+	internalContent.foldLeft(f(z, this), f);
     }
 
     override public function foldRight of b
@@ -35,11 +31,7 @@ public abstract class AbstractNode is Node
 	to b
     {
 	const r = 
-	    internalContent.foldRight(z,
-				      function from (n is Node, z is b) to b 
-				      {
-					  n.foldRight(z, f)
-				      });
+	    internalContent.foldRight(z, f);
 	f(this, r);
     }
 }

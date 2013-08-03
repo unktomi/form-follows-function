@@ -1600,12 +1600,18 @@ class SceneRenderer {
         var lights is PointLight[];
         var dirty = dirty0;
 	//println("scene.root={scene.root} => {scene.content}");
-        scene.updateCamera();
+	scene.update();
+	const visited = new java.util.HashSet of Node;
         const vf = function from (_ is (), n is Node) to () {
 	    if (n.toSceneTransform == null) {
 		println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
 		return;
 	    }
+	    if (visited.contains(n)) {
+		java.lang.Thread.currentThread().dumpStack();
+		return;
+	    }
+	    visited.add(n);
 	    if (n.visibleInScene) {
 		if (n is PointLight) {
 		    insert (n as PointLight) into lights;
@@ -1689,7 +1695,7 @@ class SceneRenderer {
 	    }
 	};
         offscreenToRender.clear();
-	scene.update();
+
 	if (false and scene.camera instanceof Camera2D) {
 	    const cam = scene.camera as Camera2D;
 	    const r = getRenderer2D(scene, gl);
@@ -1757,6 +1763,7 @@ class SceneRenderer {
 		    }
 		});
 	} 
+	//println("DRAW: {scene} {camera}");
         onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
         draw(gl, scene.root.parent, camera, opaqueToDraw, lightPositions);
         opaqueToDraw.clear();
@@ -1773,6 +1780,7 @@ class SceneRenderer {
 	      opaqueTris is Integer)
 	to ()
     {
+	println("draw {transparent}/{transpTris}, {opaque}/{opaqueTris}");
     }
 
     var polygonMode = PolygonMode.Fill;
@@ -1787,6 +1795,11 @@ class SceneRenderer {
     {
         const cameraLight = camera.toSceneTransform.getTranslation();
 	const sceneParentInverse = if (sceneParent == null) Mat4.<<1>> else sceneParent.toSceneTransform.inverse();
+	if (camera instanceof Camera2D) {
+	   gl.glDisable(GL.GL_DEPTH_TEST);
+	} else {
+	   gl.glEnable(GL.GL_DEPTH_TEST);
+	}
         for (n in toDraw) {
             const mn = n as MeshNode;
 	    //println("drawing {n}");
@@ -2186,6 +2199,7 @@ public class Listener is GLEventListener, DropTargetListener {
                 }
             }
         }
+	stage.title = "{opaque}/{opaque_tris}, {transp}/{transp_tris}";
         opaque = 0;
         transp = 0;
         transp_tris = 0;
@@ -2221,7 +2235,7 @@ public class Listener is GLEventListener, DropTargetListener {
 
     override function init from (drawable is GLAutoDrawable) to () {
         animator = new com.jogamp.opengl.util.Animator(drawable);
-        //animator.setRunAsFastAsPossible(true);
+        animator.setRunAsFastAsPossible(true);
         animator.start();
     }
 
