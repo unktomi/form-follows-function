@@ -3,6 +3,7 @@ import f3.util.*;
 import f3.math.*;
 import java.lang.Math;
 import f3.lang.Ref;
+import f3.util.*;
 
 public class Timeline 
 {
@@ -43,6 +44,12 @@ public class Timeline
 	}
     }
 
+    var positionSubject is Subject of Duration;
+
+    public function observePlayhead to Observable of Duration {
+	if (positionSubject == null) then positionSubject = Subject of Duration {} else positionSubject;
+    }
+
     function interpolateChannel
 	from (ch is Channel of Object, 
 	      sceneTime is Duration,
@@ -74,15 +81,13 @@ public class Timeline
 	playhead = sceneTime;
 	root.updateParent();
         underPlayhead = pick(sceneTime);
-	if (not paused) {
-	    //println("under playhead = {underPlayhead}");
-	    const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
-	    interpolateChannels(chs, sceneTime);
-	}
+	const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
+	interpolateChannels(chs, sceneTime);
         root.visit(function from (n is TimeNode) to () 
 		   { 
 		       n.update(sceneTime);
 		   });
+	positionSubject.onNext(playhead);
     }
 
     public readonly var playhead is Duration;

@@ -19,6 +19,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		  {
 		      override function onNext from (x is a) to ()
 		      {
+		      println("ON NEXT {f} {x}");
 			  f(x);
 		      }
 		  });

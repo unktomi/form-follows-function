@@ -10,6 +10,8 @@ public function getTimelines to Timeline[]
 public function setPlayhead from (worldTime is Duration) to () 
 {
     for (t in getTimelines()) {
-	t.setPlayhead(worldTime);
+	if (not t.paused) {
+	    t.setPlayhead(worldTime);
+	}
     }
 }
