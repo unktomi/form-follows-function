@@ -280,6 +280,9 @@ public class Scene
         for (i in pressed) 
             doMouseDrag(i, event);
 	var cursorPick is Pick = null;
+	//for (i in underMouse) {
+	//    println("picked {i.node}");
+	//}
 	for (i in underMouse) {
 	    if (i.node.blocksPointer or i.node.cursor <> null) {
 		cursorPick = i;
@@ -544,7 +547,7 @@ public class Scene
             screenx: e.screenx;
             screeny: e.screeny;
             screenDrag: e.screenDrag;
-            sceneLocation: e.sceneLocation;
+            sceneLocation: p.scenePoint;
             buttons: e.buttons;
             picked: p;
         }

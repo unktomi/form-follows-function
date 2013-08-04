@@ -38,6 +38,7 @@ public class F3Instanciate extends F3Expression implements InstantiateTree {
 
     private final F3Kind f3Kind;
     private final F3Expression clazz;
+    public List<F3Expression> supertypes;
     public F3ClassDeclaration def;
     public List<F3Expression> args;
     public List<F3ObjectLiteralPart> parts;

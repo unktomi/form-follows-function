@@ -34,6 +34,22 @@ public class Mat4 is F3Value
 	Quat.Quat(this);
     }
 
+    public function setScale from (x is Number, y is Number, z is Number) to Mat4 
+    {
+	LinearMath.matrix(x, xy, xz, xw,
+			  yx, y, yz, yw,
+			  zx, zy, z, zw,
+			  wx, wy, wz, ww);
+    }
+
+    public function getScale to Tuple3 {
+    	Tuple3 {
+	    x: xx
+	    y: yy
+	    z: zz
+	}
+    }
+
     public function getTranslation to Point3 
     {
     	Point3 {

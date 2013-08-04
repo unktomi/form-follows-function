@@ -1,6 +1,7 @@
 package f3.media.scene;
 
-public class VBox is AbstractNode {
+public class HBox is AbstractNode 
+{
     public var content is Node[];
     public var spacing is Number;
     function layoutNode from (x is Number, n is Node) to Node 

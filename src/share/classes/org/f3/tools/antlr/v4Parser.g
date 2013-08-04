@@ -4029,11 +4029,13 @@ typeExpression
                     endPos($value);
 
                  }
+/*
     | (WITH LBRACE)=>(WITH LBRACE ol = objectLiteral {
         
              $value = $relationalExpression.value;
              $value = F.at(rPos).WithObjectLiteral($value, $ol.parts.toList());
         } RBRACE)
+*/
 
    | AS atn=type
             
@@ -4691,6 +4693,7 @@ primaryExpression
     //
     ListBuffer<F3Tree> errNodes = new ListBuffer<F3Tree>();   
     com.sun.tools.mjavac.util.List<F3Expression> genericArgs = null;
+    ListBuffer<F3Expression> supersLb = ListBuffer.lb();
 }
     : qualname ((OF)=>(OF gas=genericArguments) { genericArgs = $gas.value; })?
         {
@@ -4702,23 +4705,22 @@ primaryExpression
             errNodes.append($value);
         }
         (
-            (LBRACE)=>LBRACE  
-                
+        (supers? LBRACE)=>
+            (sup=supers {supersLb = sup; })?
+            LBRACE  
                     o1=objectLiteral
-                    
             RBRACE
-                  
                 {
                     // AST
                     //
-                    $value = F.at(rPos).ObjectLiteral($value, $o1.parts.toList());
+                    $value = F.at(rPos).ObjectLiteral($value, supersLb.toList(), $o1.parts.toList());
                     
                     // Tree span
                     //
                     endPos($value);
                 }
-            |
-        )
+    |
+    )
 
     | THIS
 

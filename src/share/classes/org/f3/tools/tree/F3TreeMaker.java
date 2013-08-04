@@ -936,11 +936,18 @@ public class F3TreeMaker implements F3TreeFactory {
     }
 
     public F3Instanciate ObjectLiteral(F3Expression ident,
-            List<F3Tree> defs) {
+				       List<F3Tree> defs) {
+	return ObjectLiteral(ident, List.<F3Expression>nil(), defs);
+    }
+
+    public F3Instanciate ObjectLiteral(F3Expression ident,
+				       List<F3Expression> supers,
+				       List<F3Tree> defs) {
         return Instanciate(F3Kind.INSTANTIATE_OBJECT_LITERAL,
-                ident,
-                List.<F3Expression>nil(),
-                defs);
+			   ident,
+			   supers,
+			   List.<F3Expression>nil(),
+			   defs);
     }
 
     public F3Instanciate WithObjectLiteral(F3Expression ident,
@@ -959,9 +966,18 @@ public class F3TreeMaker implements F3TreeFactory {
                 List.<F3Tree>nil());
     }
 
-   public F3Instanciate Instanciate(F3Kind kind, F3Expression ident,
-           List<F3Expression> args,
-           List<F3Tree> defs) {
+   public F3Instanciate Instanciate(F3Kind kind, 
+				    F3Expression ident,
+				    List<F3Expression> args,
+				    List<F3Tree> defs) {
+       return Instanciate(kind, ident, List.<F3Expression>nil(), args, defs);
+   }
+
+   public F3Instanciate Instanciate(F3Kind kind, 
+				    F3Expression ident,
+				    List<F3Expression> supers,
+				    List<F3Expression> args,
+				    List<F3Tree> defs) {
 
        // Don't try and process object literals that have erroneous elements
        //
@@ -992,7 +1008,7 @@ public class F3TreeMaker implements F3TreeFactory {
            Name cname = objectLiteralClassName(((F3Ident)id).getName());
            long innerClassFlags = Flags.SYNTHETIC | Flags.FINAL; // to enable, change to Flags.FINAL
 	   
-           klass = this.ClassDeclaration(this.Modifiers(innerClassFlags), cname, List.<F3Expression>of(ident), defsBuffer.toList());
+           klass = this.ClassDeclaration(this.Modifiers(innerClassFlags), cname, List.<F3Expression>of(ident).appendList(supers), defsBuffer.toList());
 	   //klass.typeArgs = F3TreeInfo.typeArgs(ident);
 	   //System.err.println("set type args "+F3TreeInfo.typeArgs(ident)+" on "+cname);
        }
