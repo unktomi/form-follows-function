@@ -209,7 +209,7 @@ public abstract class Camera is TransformNode
 
     public function toScreen
 	from (sceneLocation is Point3) 
-	to Vec3 
+	to Point3 
     {
         const scenev = vector(sceneLocation, 1.0);
         var projv = viewProjection * scenev;
@@ -217,18 +217,18 @@ public abstract class Camera is TransformNode
         // map from range -1..1 to 0..1
         var x = (projv.x + 1)/2;
         var y = (projv.y + 1)/2;
-        var z = (projv.z + 1)/2;
+        const z = -(projv.z + 1)/2;
         // scale to screen and convert to left-handed
         x *= width;
         y *= height;
         y -= height;
         y = -y;
-        const screenv = Vec3 {
+        const screenPt = Point3 {
 	    x: x;
 	    y: y;
 	    z: z;
 	}
-        return screenv;
+        return screenPt;
     }
 
     public function getPickRay

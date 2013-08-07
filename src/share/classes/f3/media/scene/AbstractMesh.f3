@@ -66,6 +66,7 @@ public abstract class AbstractMesh
 				     vertices.getZ(i+2));
 		for (weights in ray.intersect(pointA, pointB, pointC)) 
 		{
+			//    println("intersected {pointA}, {pointB}, {pointC} at {weights}");
 		    insert tuple(weights, i / 3) into result;
 		}
 	    }

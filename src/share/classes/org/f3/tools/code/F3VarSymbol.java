@@ -58,6 +58,8 @@ public class F3VarSymbol extends VarSymbol {
     
     public Type refinedThis;
 
+    boolean special = false;
+
 /****
     private boolean isForwardReferenced = false;
     private boolean hasForwardReferencesInInit = false;
@@ -68,6 +70,7 @@ public class F3VarSymbol extends VarSymbol {
     public F3VarSymbol(F3Types types, Name.Table names, long flags, Name name, Type type, Symbol owner) {
         super(flags, name, type, owner);
         this.types = types;
+	special = name == names._this || name == names._class;
         if (name == names._class)
             extraFlags |= IS_DOT_CLASS;
     }
@@ -131,7 +134,7 @@ public class F3VarSymbol extends VarSymbol {
     }
 
     public boolean isSpecial() {
-        return (flags_field & F3Flags.VARUSE_SPECIAL) != 0;
+	return special;
     }
 
     public boolean isSynthetic() {

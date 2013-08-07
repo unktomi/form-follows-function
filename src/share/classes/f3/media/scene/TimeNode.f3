@@ -101,7 +101,7 @@ public abstract class TimeNode is Foldable of TimeNode
 	// hack: avoid boxing
         var now = ((parentTime.toMillis() - playTime.toMillis()) * playRate) ;
 	now -= contentPlayRange.start.toMillis();
-	const dur = contentPlayRange.duration.toMillis();
+	const dur = contentPlayRange.duration().toMillis();
 	now = now mod dur;
 	now += contentPlayRange.start.toMillis();
         localTime = Duration.valueOf(now);

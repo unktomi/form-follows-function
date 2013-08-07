@@ -5,7 +5,7 @@ public class Image is AbstractTexture, Shape2D.MeshNode2D {
     override var debug = true;
     public const imageLoader is ImageLoader = the ImageLoader;
     public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
-    readonly var tex is AbstractTexture = bind imageLoader.loadImage(url);
+    public var tex is AbstractTexture = bind imageLoader.loadImage(url);
     override function getTextureId to Integer {
         return tex.getTextureId();
     }

@@ -23,7 +23,7 @@ class MAttr {
 class MaModel 
 {
     const nodeMap is java.util.Map of (String, MNode) = 
-	new java.util.HashMap of (String, MNode) ();
+	new java.util.HashMap of (String, MNode);
 
     function findNode from (name is String) to MNode 
     {

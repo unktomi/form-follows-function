@@ -402,10 +402,9 @@ public class F3TreeMaker implements F3TreeFactory {
         F3ClassSymbol owner = (F3ClassSymbol)t.tsym;
 
         if (owner.thisSymbol == null) {
-            long flags = FINAL | HASINIT | F3Flags.VARUSE_SPECIAL;
+            final long flags = (FINAL | HASINIT | F3Flags.VARUSE_SPECIAL);
             owner.thisSymbol = new F3VarSymbol(types, names, flags, names._this, t, owner);
         }
-        
         return owner.thisSymbol;
     }
     public F3Ident This(Type t) {

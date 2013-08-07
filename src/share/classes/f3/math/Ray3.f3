@@ -80,7 +80,7 @@ public class Ray3 is Mat4.Transformable of Ray3 {
         } else {
             // ray and triangle are parallel
             //println("parallel {dirDotNorm}");
-            return null;
+            return [];
         }
         const dirDotDiffxEdge2 = sign * direction.dot(diff.cross(edge2));
         if (dirDotDiffxEdge2 >= 0.0) {
@@ -109,7 +109,7 @@ public class Ray3 is Mat4.Transformable of Ray3 {
         } else {
             //println("dirDotDiffxEdge2={dirDotDiffxEdge2}");
         }
-        return null;
+        return [];
     }   
 
     override function toString to String 
