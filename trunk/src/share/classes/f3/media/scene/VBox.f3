@@ -9,6 +9,8 @@ public class VBox is AbstractNode {
 	TransformNode { ty: y, content: n }
     }
 
+    function getHeight from (b is Bounds) to Number { 2*b.extent.y }
+
     bound function layout 
 	from (input is Node[], 
 	      spacing is Number, 
@@ -21,7 +23,7 @@ public class VBox is AbstractNode {
 		var ns = input[1..];
 		layout(ns, 
 		       spacing, 
-		       y + spacing + 2*n.bounds.extent.y, 
+		       y + spacing + getHeight(n.bounds),
 		       [output, 
 			layoutNode(y, n)]);
 	    }
