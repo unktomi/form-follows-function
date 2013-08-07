@@ -886,7 +886,7 @@ however this is what we need */
             
             boolean needsInvalidate = needInvalidateAccessorMethod(varInfo);
             boolean needsOnReplace = needOnReplaceAccessorMethod(varInfo);
-            
+
             // Set read only bit (trapdoor.)
             if (varInfo.isReadOnly()) {
                  stmts.append(FlagChangeStmt(proxyVarSym, null, defs.varFlagIS_READONLY));
@@ -1536,6 +1536,12 @@ however this is what we need */
         // Must be in sync with makeInvalidateAccessorMethod
         //
         private boolean needInvalidateAccessorMethod(VarInfo varInfo) {
+	    boolean isValueType = 
+		isValueType(varInfo.sym.owner.type);
+	    System.err.println("isValueType: "+ varInfo.sym.owner.type+": "+isValueType);
+	    if (isValueType) {
+		return false;
+	    }
             return (varInfo.isOverride() && needOverrideInvalidateAccessorMethod(varInfo)) ||
                     varInfo.generateSequenceAccessors() ||
                     !isLeaf(varInfo) ||
@@ -1889,7 +1895,6 @@ however this is what we need */
                                              phaseArg()));
                         }
                     }
-
                     if (!override) {
                         // notifyDependents(VOFF$var, phase$);
                         addStmt(CallStmt(getReceiver(varInfo), defs.notifyDependents_F3ObjectMethodName, Offset(proxyVarSym),
