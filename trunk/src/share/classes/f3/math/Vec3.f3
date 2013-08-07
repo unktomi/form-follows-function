@@ -183,6 +183,11 @@ public class Vec3 is Tuple3
 	this * (1/n)
     }
 
+    public function map from (f is function from Number to Number) to Vec3 
+    {
+	new Vec3(f(x), f(y), f(z))
+    }
+
     public function normalize to Vec3 
     {
 	const lenSq = lengthSquared();

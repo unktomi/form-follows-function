@@ -17,4 +17,21 @@ public class HTML is WebBrowserNode
 	    super.update();
 	}
     }
+    public const imageLoader is ImageLoader = the ImageLoader;
+    public function toImage {
+	var html = this;
+	Image {
+	    override var tex = null;
+	    override function update {
+		if (tex == null) {
+		    html.update();
+		    tex = html.tex.grabTexture();
+		    if (tex <> null) {
+			println("GRABBED TEXTURE {tex.getWidth()} {tex.getHeight()} => {tex.getTextureId()}");
+			html = null;
+		    }
+		}
+	    }
+	}
+    }
 }

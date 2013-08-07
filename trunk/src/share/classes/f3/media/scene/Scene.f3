@@ -107,14 +107,14 @@ public class Scene
 				      w = Tuple3.<<1>>;
 				  } else {
 				      const points = mesh.intersect(localRay);
-				      var nearest is Tuple4;
+				      var nearest is Tuple4[];
 				      for (i in points) {
-					  if (nearest == null or i.x < nearest.x) {
-					      nearest = i;
+					  if (nearest == [] or i.x < nearest[0].x) {
+					      nearest = [i];
 					  }
 				      }
-				      if (nearest <> null) {
-					  const pt = nearest;
+				      if (nearest <> []) {
+					  const pt = nearest[0];
 					  const verts = mesh.vertices;
 					  tri = pt.w as Integer;
 					  const j = tri * 3;
@@ -143,7 +143,7 @@ public class Scene
 				  }
 				  //				      println("picked {n}");
 				  const worldPoint = n.toSceneTransform * point;
-				  insert Pick 
+				  if (t <> 0) insert Pick 
 				  {
 				      node: n;
 				      scenePoint: worldPoint;
@@ -160,11 +160,18 @@ public class Scene
 		    java.lang.Math.signum(p0.t - p1.t) as Integer;
 		}
 	});
-	for (i in result) {
-	    if (i.node.blocksPointer) {
-		return result[0..indexof i];
+//	for (i in result) {
+	//    println("picked {i.node} => {i.t}");
+//	}
+	for (i in [0..<result.size()]) {
+	    if (result[i].node.blocksPointer) {
+		result = result[i..i];
+		break;
 	    }
 	}
+	//for (i in result) {
+	 //   println("picked {i.node} blocks={i.node.blocksPointer}");
+	//}
 	return result;
     }
 
@@ -175,9 +182,13 @@ public class Scene
 
     public function update to () 
     {
-	updateCamera();
-	updateMouse(mouseX, this.height-mouseY);
-	root.updateParent();
+	try {
+	    updateCamera();
+	    updateMouse(mouseX, this.height-mouseY);
+	    root.updateParent();
+	} catch (e is java.lang.Throwable) {
+	    e.printStackTrace();
+	}
     }
 
     var lastCamera is Camera = null;
@@ -259,7 +270,7 @@ public class Scene
             sceneLocation: mouseV;
             screenx: mouseX;
             screeny: mouseY;
-            screenDrag: tuple(mouseX - oldMouseX, mouseY - oldMouseY);
+            screenDrag: tuple(this.mouseX - oldMouseX, this.mouseY - oldMouseY);
         }
         for (x in underMouse) 
 	    oldUnderMouse.put(x.node, x);

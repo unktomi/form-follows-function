@@ -6,6 +6,7 @@ public class HBox is AbstractNode
     public var spacing is Number;
     function layoutNode from (x is Number, n is Node) to Node 
     {
+	println("layout {x} {n}");
 	TransformNode { tx: x, content: n }
     }
 
@@ -28,6 +29,6 @@ public class HBox is AbstractNode
     }
 
     override var internalContent = Group {
-	content: bind layout(content, spacing, 0, [])
+	content: bind layout(content, spacing, 0, []);
     }
 }
