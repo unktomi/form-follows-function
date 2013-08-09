@@ -8,8 +8,24 @@ public static const <<0>> = Quat { };
 
 // mostly from ardor3d
 
-public class Quat is Tuple4 
+public class Quat is Tuple4, Mat4.Transformable of Quat
 {
+    public function toAngleAxis to (Number, Vec3) {
+        const sqrLength = x*x + y*y + z*z;
+        if (Math.abs(sqrLength) <= LinearMath.EPSILON) { // length is ~0
+	   (0.0, Vec3.<<0>>)
+        } else {
+            const angle = 2.0 * Math.acos(w);
+	    (Math.toDegrees(angle) as Number, new Vec3(x, y, z))
+        }
+    }
+
+    override function premultiply from (m is Mat4) to Quat 
+    {
+	const aa = toAngleAxis();
+	Quat(aa.first, m * aa.second);
+    }
+
     override public function mul 
 	from (n is Number) 
 	to Quat 

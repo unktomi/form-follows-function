@@ -27,7 +27,7 @@ public class TransformNode is Group//, Transform
     }
 
     public bound function getScalePivot to Mat4 {
-	getPivot() * rotate(rx, ry, rz) * translate(-px, -py, -pz);
+	getPivot() * rotate(rx, ry, rz) 
     }
 
     public bound function computeTransform to Mat4 
