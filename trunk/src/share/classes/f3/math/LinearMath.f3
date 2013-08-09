@@ -210,6 +210,11 @@ public function translate from (x is Number, y is Number) to Mat4
     translate(x, y, 0);
 }
 
+public function uniformScale from (s is Number) to Mat4 
+{
+    scale(s, s, s)
+}
+
 public function scale from (sx is Number, sy is Number) to Mat4 
 {
     scale(sx, sy, 1.0)

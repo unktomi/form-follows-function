@@ -4,7 +4,7 @@ import LinearMath.*;
 import f3.math.Util.*;
 import org.f3.runtime.F3Value;
 
-public abstract class Transformable of a 
+public interface Transformable of a 
 {
     abstract public function premultiply from (m is Mat4) to a;
 }
@@ -597,18 +597,6 @@ function luBacksubstitution
 			   matrix1[rv+2] * matrix2[cv+4*2] -
 			   matrix1[rv+3] * matrix2[cv+4*3]) / matrix1[rv+0];
     }
-}
-
-
-function run {
-    const m = translate(13, 12, 11);
-    println("m={m}");
-    println(m * Vec3.<<1>> * 2);
-    const inv = m.inverse();
-    println("inv={inv}");
-    println("translation={inv.getTranslation()}");
-    println(inv * Point3.<<1>>);
-    println(m * Point3.<<1>> * 2);
 }
 
 public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
