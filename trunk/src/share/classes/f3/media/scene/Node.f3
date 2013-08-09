@@ -63,7 +63,11 @@ public abstract class Node is Foldable of Node
     protected var mouseDrag is Subject of MouseEvent;
     protected var mouseWheel is Subject of MouseEvent;
 
-    public bound function getPivot to Mat4 { toSceneTransform }
+    public bound function getPivot { Mat4.<<1>> }
+    public bound function getScalePivot { Mat4.<<1>> }
+
+    public bound function getPivotInScene to Mat4 { parentToSceneTransform * getPivot() }
+    public bound function getScalePivotInScene to Mat4 { parentToSceneTransform * getScalePivot() }
 
     public function observeMouseDown to Observable of MouseEvent 
     {

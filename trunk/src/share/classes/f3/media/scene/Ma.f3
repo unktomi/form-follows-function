@@ -3568,7 +3568,7 @@ const RotateOrder =
 const axes = [Vec3.X_AXIS, Vec3.Y_AXIS, Vec3.Z_AXIS];
 
 // http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/transform.html
-public class MaTransform is Group 
+public class MaTransform is Group
 {
     // translation
     public var tx is Number;
