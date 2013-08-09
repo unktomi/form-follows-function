@@ -140,6 +140,9 @@ public function vector
     }
 }
 
+public function pivot from (point is Tuple3, m is Mat4) to Mat4 {
+    translate(point) * m * translate(-point)
+}
 
 public function matrix(r is Quat, t is Point3) to Mat4 
 {

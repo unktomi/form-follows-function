@@ -23,7 +23,11 @@ public class TransformNode is Group//, Transform
 
     public bound function getPivot to Mat4 
     { 
-	parent.toSceneTransform * translate(tx + px, ty + py, tz + pz);
+	translate(tx+px, ty+py, tz+pz);
+    }
+
+    public bound function getScalePivot to Mat4 {
+	getPivot() * rotate(rx, ry, rz) * translate(-px, -py, -pz);
     }
 
     public bound function computeTransform to Mat4 
@@ -31,13 +35,13 @@ public class TransformNode is Group//, Transform
         translate(tx+px, ty+py, tz+pz)*rotate(rx, ry, rz)*scale(sx, sy, sz)*translate(-px, -py, -pz);
     }
 
-    override var transform = //bind computeTransform();
-
+    override var transform = bind computeTransform();
+    /*
         bind trsp(tx, ty, tz,      
                   rx, ry, rz,
                   sx, sy, sz,
                   px, py, pz);
-
+    */
     function trsp 
 	from (tx is Number,
 	      ty is Number,

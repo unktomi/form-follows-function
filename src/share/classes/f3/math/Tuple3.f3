@@ -11,6 +11,14 @@ public class Tuple3 is F3Value
     public const y is Number;
     public const z is Number;
 
+    public function negate to Tuple3 {
+	Tuple3 {
+	    x: x;
+	    y: y;
+	    z: z;
+	}
+    }
+
     override public function equals from (obj is Object) to Boolean 
     {
 	obj is Tuple3 and {

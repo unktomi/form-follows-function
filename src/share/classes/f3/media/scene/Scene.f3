@@ -288,8 +288,9 @@ public class Scene
         oldUnderMouse.clear();
         for (i in underMouse) 
             doMouseMove(i, event);
-        for (i in pressed) 
-            doMouseDrag(i, event);
+        if (event.screenDrag <> Vec2.<<0>>) {
+	    for (i in pressed) doMouseDrag(i, event);
+	}
 	var cursorPick is Pick = null;
 	//for (i in underMouse) {
 	//    println("picked {i.node}");

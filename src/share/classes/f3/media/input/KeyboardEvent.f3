@@ -4,4 +4,7 @@ public class KeyboardEvent is InputEvent
 {
     public var keyChar is String;
     public var keyCode is Integer;
+    override function toString {
+	"KeyboardEvent keyChar {keyChar}, keyCode {keyCode}";
+    }
 }
