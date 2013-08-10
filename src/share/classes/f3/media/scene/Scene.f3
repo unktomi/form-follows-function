@@ -86,7 +86,7 @@ public class Scene
         var result is Pick[];
         root.foldLeft((), 
 		      function from (_ is (), n is Node) to () 
-		      {
+		       {
 			  if (n is MeshNode and 
 			      n.visibleInScene and
 			      n.pickableInScene and
@@ -154,7 +154,7 @@ public class Scene
 				  } into result;
 			      }
 		      });
-	result = f3.util.Sequences.sort(result, java.util.Comparator of Pick {
+	result = f3.util.Sequences.sort(result.reverse(), java.util.Comparator of Pick {
 		override function compare from (p0 is Pick , p1 is Pick) to Integer 
 		{
 		    java.lang.Math.signum(p0.t - p1.t) as Integer;
@@ -217,8 +217,9 @@ public class Scene
         updateCamera();
         const nowUnderMouse = pick(mouseX, mouseY);
         const mouseV = camera.toScene(mouseX, mouseY, 0);
+	/*
         root.foldLeft((), function from (_ is(), n is Node) to () {
-		/*
+
                 if (n instanceof MeshNode) {
                     var mn = n as MeshNode;
                     var mesh = mn.mesh;
@@ -264,8 +265,9 @@ public class Scene
 			}
                         }
 		}
-		*/
+
 	    });
+		*/
         const event = MouseEvent {
             sceneLocation: mouseV;
             screenx: mouseX;

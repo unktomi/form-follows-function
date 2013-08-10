@@ -56,7 +56,7 @@ public function intersect
     if (x == null or y == null) then null
     else {
         const start = x.start.max(y.start);
-        const end = y.end.min(y.end);
+        const end = x.end.min(y.end);
         if (start >= end) then null
 	    else Interval { start: start, end: end };
     }

@@ -155,6 +155,13 @@ public class Bounds is Mat4.Transformable of Bounds
     }
 }
 
+public function boundsFromRect from (width is Number, height is Number) to Bounds
+{
+    Bounds {
+	extent: new Tuple3(width/2, height/2, 0);
+    }
+}
+
 public function boundsFromExtent
     from (minX is Number, minY is Number, minZ is Number, 
 	  maxX is Number, maxY is Number, maxZ is Number) 

@@ -40,4 +40,5 @@ public class Subject of a is Observable of a, Observer of a {
 	    }
 	}
     }
+
 }

@@ -1153,7 +1153,7 @@ class OffscreenSurface is JoglTexture
     var _height is Integer = bind (height+0.5) as Integer;
     var pot_width = bind pot(_width);
     var pot_height = bind pot(_height);
-    const _samples is Integer = 0;
+    const _samples is Integer = 16;
     const _depthBits is Integer = 24;
     const _stencilBits is Integer = 8;
     var _fboID is Integer;
@@ -1164,7 +1164,7 @@ class OffscreenSurface is JoglTexture
     var _msdepthRBID is Integer;
     var lastTextureId is Integer;
 
-    function activate to () 
+    function activate 
     {
 	if (tex.getWidth() <> pot_width or tex.getHeight() <> pot_height) {
 	    tex = null;
@@ -1172,6 +1172,8 @@ class OffscreenSurface is JoglTexture
 	}
 	if (tex == null) {
 	    tex = genTexture(gl, pot_width, pot_height);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
 	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
 	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 	    const textureId = tex.getTextureObject(gl);
@@ -1194,7 +1196,6 @@ class OffscreenSurface is JoglTexture
             _fboID = buffer.get(0);
 	    gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, _fboID);
 	    tex.bind(gl);
-	    
 	    gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, 
 				      GL.GL_COLOR_ATTACHMENT0, 
 				      GL.GL_TEXTURE_2D, textureId, 0);
@@ -1228,10 +1229,10 @@ class OffscreenSurface is JoglTexture
             gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0);
             // add multisample framebuffer + renderbuffers
             if (_samples > 0) {
-		gl.glEnable(GL.GL_MULTISAMPLE);
                 // create ms framebuffer object
                 gl.glGenFramebuffers(1, buffer);
                 _msfboID = buffer.get(0);
+                gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, _msfboID);
                 // create ms renderbuffers
                 gl.glGenRenderbuffers(1, buffer); 
                 _mscolorRBID = buffer.get(0);
@@ -1250,12 +1251,11 @@ class OffscreenSurface is JoglTexture
 
                 gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
 
-                gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, _msfboID);
-		/*
+
 		gl.glFramebufferTexture2D(GL.GL_FRAMEBUFFER, 
 					  GL.GL_COLOR_ATTACHMENT0, 
 					  GL.GL_TEXTURE_2D, textureId, 0);
-		*/
+
                 gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0,
                         GL.GL_RENDERBUFFER, _mscolorRBID);
                 gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT,
@@ -1271,10 +1271,11 @@ class OffscreenSurface is JoglTexture
 
     function bindFrameBuffer to ()
     {
-	gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
 	if (_samples > 0) {
-            gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, _msfboID);
-	} 
+	    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _msfboID);
+	}  else {
+	    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, _fboID);
+	}
 	//gl.glViewport(0, 0, _width, _height);
 	//println("bound frame buffer {_fboID} {_msfboID}, viewport {_width} {_height}");
     }
@@ -1314,7 +1315,7 @@ class OffscreenSurface is JoglTexture
             }
             gl.glBlitFramebuffer(0, 0, pot_width, pot_height, 
                                  0, 0, pot_width, pot_height, 
-                                 bits, GL.GL_LINEAR);
+                                 bits, GL.GL_NEAREST);
 
             //println("blitting framebuffer {_msfboID} {_fboID} {_width} {_height} {pot_width} {pot_height}");
         }
@@ -1785,6 +1786,8 @@ class SceneRenderer {
 
     var polygonMode = PolygonMode.Fill;
 
+    var currentScissor is Node;
+
     function draw
 	from (gl is GL2,
 	      sceneParent is Node,
@@ -1802,6 +1805,29 @@ class SceneRenderer {
 	}
         for (n in toDraw) {
             const mn = n as MeshNode;
+	    var scissor is Node = null;
+	    var mp = n.parent;
+	    while (mp <> null) {
+		if (mp instanceof Scissored) {
+		    scissor = mp;
+		    break;
+		}
+		mp = mp.parent;
+	    }
+	    if (scissor <> currentScissor) {
+		currentScissor = scissor;
+		if (scissor <> null) {
+		    const bounds = scissor.toSceneTransform  * (scissor as Scissored).scissorBounds;
+		    const sb = camera.toScreen(bounds);
+		    gl.glEnable(GL.GL_SCISSOR_TEST);
+		    gl.glScissor(sb.center.x - sb.extent.x,
+				 camera.height-sb.center.y-sb.extent.y,
+				 sb.extent.x*2,
+				 sb.extent.y*2);
+		} else {
+		    gl.glDisable(GL.GL_SCISSOR_TEST);
+		}
+	    }
 	    //println("drawing {n}");
 	    const toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
 	    if (DEBUG_MESHES) println("drawing {mn.id}");
@@ -2624,7 +2650,7 @@ public function run from (args is String[]) to ()
     const stage = JoglStage {
 	title: new java.io.File(args[0]).getName();
 	content: [mainScene,
-		  if (true) null else Scene {
+		  if (false) null else Scene {
                     background: null;
                     camera: Camera2D {}; 
 		    content: bind foreach (i in [0..<model.getCameras().size()]) StageNode {
