@@ -1,9 +1,36 @@
 package f3.media.scene;
+import f3.media.input.*;
 
-public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture {
+public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInputHandler {
+
+    override public function onMouseDown from (event is MouseEvent) to ()  {
+	injectMouseDown(event);
+        event.stopPropagation();
+    }
+
+    override public function onMouseUp from (event is MouseEvent) to ()  {
+	injectMouseUp(event);
+        event.stopPropagation();
+    }
+
+    override public function onMouseWheel from (event is MouseWheelEvent) to () 
+    {
+        injectMouseWheel(event);
+        event.stopPropagation();
+    }
+
+    override public function onMouseMove from (event is MouseEvent) to ()  {
+        injectMouseMove(event);
+        event.stopPropagation();
+    }
+    override function update 
+    {
+	updateCursor();
+    }
     public var drawingSurface is AbstractTexture;
-    public var factory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
-    override var path = bind Shape2D.rect(factory, 0, 0, width, height);
+    public const factory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
+    public const imageLoader is ImageLoader = the ImageLoader;
+    override var path = bind Shape2D.rect(factory, -width/2, -height/2, width, height);
     override var paint = {
 	const self = this;
 	Shape2D.TexturePaint {

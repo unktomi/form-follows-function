@@ -135,7 +135,7 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
         F3Object listener = new F3Base() {
             @Override
             public boolean update$(F3Object src, final int depNum,
-                    int startPos, int endPos, int newLength, final int phase) {
+				   int startPos, int endPos, int newLength, final int phase) {
                 if ((phase & PHASE_TRANS$PHASE) == PHASE$TRIGGER) {
                     // update value from "src"
                     if (thisObj != null) {
