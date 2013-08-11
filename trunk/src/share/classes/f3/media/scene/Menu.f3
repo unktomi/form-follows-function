@@ -1,0 +1,49 @@
+package f3.media.scene;
+
+public class Separator is MenuItem 
+{
+}
+
+public class Menu is MenuItem 
+{
+    public var items is MenuItem[];
+    override function foldLeft of b from (z is b, f is function from (b, MenuItem) to b) to b
+    {
+	items.foldLeft(f(z, this), 
+		       function from (y is b, x is MenuItem) to b
+		       {
+			   x.foldLeft(y, f)
+		       });
+    }
+    override function foldRight of b from (z is b, f is function from (MenuItem, b) to b) to b
+    {
+	f(this,
+	  items.foldRight(z,
+			  function from (x is MenuItem, y is b) to b
+			  {
+			      x.foldRight(y, f);
+			  })); 
+    }
+}
+
+public class Bar is MenuItem {
+    public var stage is Stage;
+    public var menus is Menu[];
+    override function foldLeft of b from (z is b, f is function from (b, MenuItem) to b) to b
+    {
+	menus.foldLeft(f(z, this), 
+		       function from (y is b, x is Menu) to b
+		       {
+			   x.foldLeft(y, f)
+		       });
+    }
+    override function foldRight of b from (z is b, f is function from (MenuItem, b) to b) to b
+    {
+	f(this,
+	  menus.foldRight(z,
+			  function from (x is Menu, y is b) to b
+			  {
+			      x.foldRight(y, f);
+			  })); 
+    }
+}

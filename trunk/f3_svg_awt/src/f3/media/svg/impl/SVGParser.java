@@ -746,6 +746,26 @@ public class SVGParser {
 
         Stack<Properties> gStack = new Stack();
 
+	Stack<String> idStack = new Stack();
+
+	void pushId(String id) {
+	    if (canvas != null) {
+		canvas.setId(id);
+	    }
+	    idStack.push(id);
+	}
+
+	void popId() {
+	    idStack.pop();
+	}
+
+	public String getId() {
+	    for (String id: idStack) {
+		if (id != null) return id;
+	    }
+	    return null;
+	}
+
         Properties getParent() {
             if (gStack.size()  > 0) {
                 return gStack.peek();
@@ -999,6 +1019,8 @@ public class SVGParser {
                 }
                 return;
             }
+	    String id = getStringAttr("id", atts);
+	    pushId(id);
             if (localName.equals("svg")) {
                 pushG(new Properties(getParent(), atts));
                 int width = -1;
@@ -1011,7 +1033,6 @@ public class SVGParser {
                 }
                 canvas = picture.beginRecording(width, height);
             } else if (localName.equals("symbol")) {
-                String id = getStringAttr("id", atts);
                 canvasStack.push(canvas);
                 canvas = picture.beginRecording(0, 0);
                 canvas.beginSymbol();
@@ -1234,6 +1255,7 @@ public class SVGParser {
             if (localName.length() == 0) {
                 localName = qName;
             }
+	    popId();
             if (localName.equals("svg")) {
                 popG();
             } else if (localName.equals("clipPath")) {

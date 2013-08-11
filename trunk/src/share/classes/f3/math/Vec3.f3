@@ -231,6 +231,11 @@ public class Vec3 is Tuple3
 	xyzw(w)
     }
 
+    public function xy to Vec2
+    {
+	new Vec2(x, y);
+    }
+
     public function xyzw 
 	from (w is Number) 
 	to Vec4

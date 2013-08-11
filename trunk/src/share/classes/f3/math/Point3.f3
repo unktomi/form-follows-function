@@ -79,7 +79,11 @@ public class Point3 is Tuple3
 	mul(1/n)
     }
 
-
+    public function xy to Point2 
+    {
+	new Point2(x, y);
+    }
+    
     public function lerp from (t is Number, target is Point3) to Point3 
     {
 	const inv_t = 1 - t;

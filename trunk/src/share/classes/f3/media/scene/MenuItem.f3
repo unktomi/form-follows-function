@@ -1,0 +1,18 @@
+package f3.media.scene;
+import org.f3.runtime.Foldable;
+
+public class MenuItem is Foldable of MenuItem
+{
+    public var label is String;
+    public var enabled is Boolean = true;
+    public var parentItem is MenuItem;
+    public var action is function from () to ();
+    override function foldLeft of b from (z is b, f is function from (b, MenuItem) to b) to b
+    {
+	f(z, this)
+    }
+    override function foldRight of b from (z is b, f is function from (MenuItem, b) to b) to b
+    {
+	f(this, z);
+    }
+}
