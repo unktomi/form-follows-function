@@ -21,7 +21,7 @@ public class SVG
 {
     public var url is String;
     public var root is Node = bind load(url);
-    public const factory is Path2DFactory;
+    public const factory is Path2DFactory = the Path2DFactory;
     function load from (url is String) to Node 
     {
         if (url == null) return null;
@@ -339,7 +339,7 @@ function flipPaint from (paint is Shape2D.Paint) to Shape2D.Paint
 class Loader {
     public var fac is Path2DFactory;
     public var url is String;
-    public var rootNode = RootNode {};
+    public var rootNode = RootNode {id: url};
     public var contentNode is  Group = Group {};
     function load {
         insert contentNode into rootNode.content;

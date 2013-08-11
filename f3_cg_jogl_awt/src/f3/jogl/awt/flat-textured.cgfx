@@ -74,7 +74,6 @@ technique Transparent {
 
 technique Opaque {
     pass P {
-	DepthTestEnable = false;
         DepthMask = false;
         CullFaceEnable  = false; 
         BlendEnable = false;

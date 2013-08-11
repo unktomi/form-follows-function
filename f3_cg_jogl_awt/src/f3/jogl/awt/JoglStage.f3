@@ -1798,13 +1798,25 @@ class SceneRenderer {
     {
         const cameraLight = camera.toSceneTransform.getTranslation();
 	const sceneParentInverse = if (sceneParent == null) Mat4.<<1>> else sceneParent.toSceneTransform.inverse();
+	gl.glPolygonOffset(1, 1);
+	gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
+	var disableDepth = false;
 	if (camera instanceof Camera2D) {
-	   gl.glDisable(GL.GL_DEPTH_TEST);
-	} else {
-	   gl.glEnable(GL.GL_DEPTH_TEST);
-	}
+	    disableDepth = true;
+	} 
+	var prev is Node = null;
         for (n in toDraw) {
+	    prev = n;
             const mn = n as MeshNode;
+	    if (mn instanceof Shape2D.MeshNode2D) {
+		if (prev instanceof Shape2D.MeshNode2D) {
+		    const t0 = mn.toSceneTransform.getTranslation().z;
+		    const t1 = mn.toSceneTransform.getTranslation().z;
+		    if (t0 == t1) {
+			disableDepth = true;
+		    }
+		}
+	    }
 	    var scissor is Node = null;
 	    var mp = n.parent;
 	    while (mp <> null) {
@@ -1950,7 +1962,11 @@ class SceneRenderer {
 			     toSceneTransform,
                              camera.viewMatrix,
                              camera.projectionMatrix);
-            } catch (e is java.lang.Exception) {
+		if (disableDepth) {
+		    gl.glDisable(GL.GL_DEPTH_TEST);
+		}
+            } catch (e is java.lang.Throwable) {
+		println("Error drawing: {mn}");
                 e.printStackTrace();
                 (shader = phongShader).apply(mesh,
                                              mn.toSceneTransform,
@@ -2196,6 +2212,8 @@ public class Listener is GLEventListener, DropTargetListener {
 
     var stageTitle is String;
 
+    var prevTime is Long;
+
     function render from (gl is GL2, width is Integer, height is Integer) to () {
 	if (false) {
 	    const rt = java.lang.Runtime.getRuntime();
@@ -2208,9 +2226,13 @@ public class Listener is GLEventListener, DropTargetListener {
 	    }
 	}
         const now = java.lang.System.currentTimeMillis();
-        if (startTime == 0) startTime = now;
-        const currentTime = 1ms *(now - startTime);
-	MasterTimeline.setPlayhead(currentTime);
+        if (startTime == 0) {
+	    startTime = now;
+	    prevTime = now;
+	}
+        const delta = 1ms * (now - prevTime);
+	MasterTimeline.advancePlayhead(delta);
+	prevTime = now;
 
         if (mainSceneRenderer == null and gl <> null) {
             mainSceneRenderer = SceneRenderer {
@@ -2449,7 +2471,8 @@ public class JoglStage is Stage
 	return r;
     }
 
-    function buildMenus from (frame is java.awt.Frame) to () {
+    function buildMenus from (frame is java.awt.Frame) to () 
+    {
 	if (menubar <> null) {
 	    awt_menubar = new java.awt.MenuBar();
 	    menubar.stage = this;

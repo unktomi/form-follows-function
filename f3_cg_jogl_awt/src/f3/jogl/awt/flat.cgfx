@@ -59,22 +59,19 @@ float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
 
 technique Opaque {
     pass P {
-	DepthTestEnable = false;
         DepthFunc = Less;
         DepthMask = true;
         CullFaceEnable  = false; 
-        BlendEnable = true;
+        BlendEnable = false;
         BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
         BlendEnable = false;
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
-	PolygonOffset = float2(1, 1);
     }
 }
 
 technique Transparent {
     pass P {
-	DepthTestEnable = false;
         DepthMask = false;
         CullFaceEnable  = false; 
         BlendEnable = true;

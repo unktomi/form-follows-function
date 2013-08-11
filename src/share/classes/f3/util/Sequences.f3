@@ -1,5 +1,14 @@
 package f3.util;
 
+public function of b indexOf from (xs is (..b)[], y is b) to Integer {
+    for (x in xs) {
+	if (x == y) {
+	    return indexof x;
+	}
+    }
+    return -1;
+}
+
 public function sort of a 
     from (xs is (..a)[], 
 	  comparator is java.util.Comparator of a..) 

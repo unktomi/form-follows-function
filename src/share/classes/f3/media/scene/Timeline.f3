@@ -74,6 +74,11 @@ public class Timeline
 
     public readonly var underPlayhead is TimeNode[];
 
+    public function advancePlayhead from (delta is Duration) to ()
+    {
+	setPlayhead(playhead + delta);
+    }
+
     public function setPlayhead
 	from (sceneTime is Duration) 
 	to () 

@@ -183,6 +183,7 @@ public class Float4x4Parameter is Parameter of Mat4
 		e.printStackTrace();
 		errored = true;
 	    }
+	    throw e;
 	}
     }
     override var value = Mat4.<<1>>;
@@ -406,6 +407,7 @@ public class CGFXShader is Shader
 	    } catch (e is java.lang.Exception) {
 		println("parameter {p.name}");
 		e.printStackTrace();
+		throw new java.lang.RuntimeException(e);
 	    }
         }
         effect.setPass();

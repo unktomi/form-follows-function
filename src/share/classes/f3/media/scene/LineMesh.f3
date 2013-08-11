@@ -1,0 +1,78 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class LineMesh {
+
+    var indexBuilder is IntBufferBuilder = new IntBufferBuilder();
+    var builder is FloatBufferBuilder = new FloatBufferBuilder();
+    var x is Number;
+    var y is Number;
+    var z is Number;
+    var startx is Number;
+    var starty is Number;
+    var startz is Number;
+
+    public function reset {
+        builder.reset();
+        indexBuilder.reset();
+        startx = starty = startz = 0;
+    }
+
+    public function moveTo from (pos is Vec3) to () {
+        moveTo(pos.x, pos.y, pos.z);
+    }
+
+    public function moveTo from (x is Number, y is Number) to () {
+	moveTo(x, y, 0)
+    }
+
+    public function moveTo from (x is Number, y is Number, z is Number) to () {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        startx = x;
+        starty = y;
+        startz = z;
+    }
+
+    public function lineTo from (pos is Vec3) to () {
+        lineTo(pos.x, pos.y, pos.z);
+    }
+
+    public function lineTo from (x is Number, y is Number) to () {
+	lineTo(x, y, 0)
+    }
+
+    public function lineTo from (x is Number, y is Number, z is Number) to () {
+//    println("line to {x}, {y}, {z}");
+        indexBuilder.add(indexBuilder.getBufferSize());
+        builder.add(this.x, this.y, this.z);
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        indexBuilder.add(indexBuilder.getBufferSize());
+        builder.add(x, y, z);
+    }
+
+    public function close {
+        lineTo(startx, starty, startz);
+    }
+
+    var buffer is java.nio.FloatBuffer;
+    var indexBuffer is java.nio.IntBuffer;
+
+    public function getMesh to AbstractMesh {
+        buffer = builder.getBuffer(buffer);
+        indexBuffer = indexBuilder.getBuffer(indexBuffer);
+	const vertexAttrs = MeshBuffer.VertexAttributeBuffer {
+	    coordsPerVertex: 3;
+	    buffer: buffer;
+	}
+	MeshBuffer {
+	    polygonMode: PolygonMode.Line;
+	    indexMode: IndexMode.Lines;
+	    indexBuffer: indexBuffer;
+	    vertexBuffer: vertexAttrs;
+	}.toMesh();
+    }
+}

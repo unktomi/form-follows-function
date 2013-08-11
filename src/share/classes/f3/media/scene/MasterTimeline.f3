@@ -7,11 +7,11 @@ public function getTimelines to Timeline[]
     foreach (x in timelines.keySet()) x;
 }
 
-public function setPlayhead from (worldTime is Duration) to () 
+public function advancePlayhead from (worldTime is Duration) to () 
 {
     for (t in getTimelines()) {
 	if (not t.paused) {
-	    t.setPlayhead(worldTime);
+	    t.advancePlayhead(worldTime);
 	}
     }
 }
