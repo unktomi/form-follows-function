@@ -17,6 +17,51 @@ public class Bounds is Mat4.Transformable of Bounds
     public const center is Point3 = Point3.<<0>>;
     public const extent is Tuple3 = Tuple3.<<0>>;
 
+    public function height to Number 
+    {
+	extent.y * 2;
+    }
+
+    public function width to Number 
+    {
+	extent.x * 2;
+    }
+
+    public function depth to Number 
+    {
+	extent.z * 2;
+    }
+
+    public function top to Number 
+    {
+	center.y + extent.y;
+    }
+
+    public function bottom to Number 
+    {
+	center.y - extent.y;
+    }
+
+    public function left to Number 
+    {
+	center.x - extent.x;
+    }
+
+    public function right to Number 
+    {
+	center.x + extent.x;
+    }
+
+    public function far to Number 
+    {
+	center.z - extent.z;
+    }
+
+    public function near to Number 
+    {
+	center.z + extent.z;
+    }
+
     override public function premultiply from (m is Mat4) to Bounds 
     {
 	Bounds.transformBounds(m, this)
@@ -125,21 +170,6 @@ public class Bounds is Mat4.Transformable of Bounds
          center + vector(-extent.x, extent.y, extent.z)];    
     }
 
-    public function width to Number 
-    {
-        extent.x * 2;
-    }
-
-    public function height to Number 
-    {
-        extent.y * 2;
-    }
-
-    public function depth to Number 
-    {
-        extent.z * 2;
-    }
-
     public function min	to Point3 
     {
         point(center.x-extent.x,
@@ -155,11 +185,20 @@ public class Bounds is Mat4.Transformable of Bounds
     }
 }
 
-public function boundsFromRect from (width is Number, height is Number) to Bounds
+public function boundsFromRect from (x is Number, 
+				     y is Number, 
+				     width is Number, 
+				     height is Number) to Bounds
 {
     Bounds {
+	center: new Point3(x + width/2, y + height/2, 0);
 	extent: new Tuple3(width/2, height/2, 0);
     }
+}
+
+public function boundsFromRect from (width is Number, height is Number) to Bounds
+{
+    boundsFromRect(-width/2, -height/2, width, height);
 }
 
 public function boundsFromExtent

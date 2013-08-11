@@ -187,6 +187,7 @@ class RootNode extends TransformNode {
 }
 
 public class NodeInfo {
+    public var id: String;
     public var transform: java.awt.geom.AffineTransform;
     public var path: java.awt.Shape;
     public var paint: Paint;
@@ -235,6 +236,7 @@ class CanvasImpl is Canvas {
         }
         // insert Shape2D.createMeshNode(shape2d, stroke, paint) into content;
         const n = NodeInfo {
+            id: getId();
             transform: if (worldMatrix == null) then A_ID else worldMatrix;
             path: shape,
             paint: paint;
@@ -377,7 +379,7 @@ class Loader {
             if (i.stroke != null) {
                 println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
             }
-            var shape = Shape2D.createMeshNode(convertPath(fac, height, i.transform, i.path), i.stroke, i.paint);
+            var shape = Shape2D.createMeshNode(i.id, convertPath(fac, height, i.transform, i.path), i.stroke, i.paint);
             if (sizeof contentNode.content == 50) {
                 contentNode = Group {}
                 insert contentNode into rootNode.content;

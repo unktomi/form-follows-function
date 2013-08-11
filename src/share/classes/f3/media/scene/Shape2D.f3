@@ -88,6 +88,8 @@ public class ColorPaint is Paint
     public var color is Color = Color.WHITE;
 }
 
+public const TransparentPaint = ColorPaint(Color.TRANSPARENT);
+
 public function ColorPaint from (color is Color) to ColorPaint 
 {
     ColorPaint { color: color }
@@ -153,13 +155,25 @@ function getStroke from (stroke is Stroke) to Stroke
 }
 
 public function createMeshNode
-    from (p is Path2D, 
+    from (
+	  p is Path2D, 
+	  stroke is Stroke, 
+	  paint is Paint)
+    to MeshNode2D 
+{
+    createMeshNode("", p, stroke, paint);
+}
+
+public function createMeshNode
+    from (id is String,
+	  p is Path2D, 
 	  stroke is Stroke, 
 	  paint is Paint)
     to MeshNode2D 
 {
     if (paint == null) then null else {
 	    MeshNode2D {
+		id: id,
 		paint: paint;
 		override var path = if (stroke == null) then p else p.createStrokedShape(stroke);
             }

@@ -1,8 +1,10 @@
 package f3.media.scene;
 import f3.media.input.*;
 
-public interface Stage 
+
+public interface Stage
 {
+    public const menubar is Menu.Bar;
     public const alphaBits is Integer = 0;
     public const colorBits is Integer = 32;
     public const depthBits is Integer = 32;

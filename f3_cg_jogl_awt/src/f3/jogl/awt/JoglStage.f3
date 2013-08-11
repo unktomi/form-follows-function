@@ -2422,6 +2422,45 @@ public class JoglStage is Stage
 	}
     }
 
+    var awt_menubar is java.awt.MenuBar;
+
+    function buildMenuItem from (m is MenuItem) to java.awt.MenuItem 
+    {
+	if (m is Menu.Separator) { 
+	    null
+	} else if (m is Menu) {
+	    buildMenu(m as Menu);
+	} else {
+	    new java.awt.MenuItem(m.label);
+	}
+    }
+
+    function buildMenu from (m is Menu) to java.awt.Menu 
+    {
+	const r = new java.awt.Menu(m.label);
+	for (item in m.items) {
+	    item.parentItem = m;
+	    if (item is Menu.Separator) {
+		r.addSeparator(); null
+	    } else {
+		r.add(buildMenuItem(item));
+	    }
+	}
+	return r;
+    }
+
+    function buildMenus from (frame is java.awt.Frame) to () {
+	if (menubar <> null) {
+	    awt_menubar = new java.awt.MenuBar();
+	    menubar.stage = this;
+	    for (m in menubar.menus) {
+		m.parentItem = menubar;
+		awt_menubar.add(buildMenu(m));
+	    }
+	    frame.setMenuBar(awt_menubar);
+	}
+    }
+
     //override var width: Integer = 640;
     // override var height: Integer = 480;
     function doUpdate {
@@ -2445,6 +2484,7 @@ public class JoglStage is Stage
                 }
             });
         buildKeyMap();
+	buildMenus(frame);
         listener = Listener { stage: this }
         listener.setTitle = function from (title is String) to () {
             frame.setTitle(title);

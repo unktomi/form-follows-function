@@ -63,6 +63,26 @@ public class Point2 is Tuple2
 	"\{ x: {x}, y: {y} \}"
     }
 
+    public function min from (p is Point2) to Point2 {
+	const le_x = this.x <= p.x;
+	const le_y = this.y <= p.y;
+	if (le_x and le_y) then this else if (not le_x and not le_y) then p else {
+		    const x = if (le_x) then this.x else p.x;
+		    const y = if (le_y) then this.y else p.y;
+		    new Point2(x, y);
+		}
+    }
+
+    public function max from (p is Point2) to Point2 {
+	const ge_x = x <= p.x;
+	const ge_y = y <= p.y;
+	if (ge_x and ge_y) then this else if (not ge_x and not ge_y) then p else {
+		    const x = if (ge_x) then this.x else p.x;
+		    const y = if (ge_y) then this.y else p.y;
+		    new Point2(x, y);
+		}
+    }
+
 }
 
 public static const <<0>> = Point2 {x: 0.0, y: 0.0};

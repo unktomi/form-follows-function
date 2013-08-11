@@ -13,7 +13,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public const id is String;
     public var parent is TimeNode;
 
-    public readonly var pickable is Boolean = true;
+    public var pickable is Boolean = true;
     public readonly var pickableInScene is Boolean = 
 	bind if parent == null then pickable else pickable and parent.pickableInScene;
 
