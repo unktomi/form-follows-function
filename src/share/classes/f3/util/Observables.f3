@@ -10,24 +10,4 @@ public class Println of a is DefaultObserver of a
     }
 }
 
-public class Value of a is Observable of a 
-{
-    const subject is Subject of a = Subject of a {};
-    public var value is a on replace old {
-    	println("value {old} => {value}");
-	subject.onNext(value);
-    }
-    override function subscribe from (ob is Observer of a) to Disposable
-    {
-	subject.subscribe(ob);
-    }
-}
-
-public bound function observe of a from (x is a) to Observable of a 
-{
-    Value of a 
-    {
-	value: bind x;
-    }
-}
 

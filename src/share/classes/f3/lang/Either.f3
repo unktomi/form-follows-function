@@ -97,6 +97,7 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
     {
 	java.util.Collections.emptySet of b()
     }
+
 }
 
 public function Former of (a, b) from (x is a) to Either of (a, b) 

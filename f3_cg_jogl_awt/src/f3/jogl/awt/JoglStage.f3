@@ -43,6 +43,20 @@ const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 
 var DISABLE_DEFORMERS = false;
 
+class VideoTexture is HTML {
+      public var url is String;
+      override var content = bind
+      "<html><head><style>#video_background \{"
+            "  position: fixed;"
+	    "  top: 0;"
+	    "  left: 0;"
+	    "  bottom: 0;"
+	    "  right: 0;"
+	    "  z-index: -1000;"
+	    "\}"
+	    "</style></head><body><video id=\"video_background\" src=\"{url}\" autoplay></body></html>" on replace { println("content={content}") };
+}
+
 const frc = new java.awt.font.FontRenderContext(null, true, false);
 function getFont from (spec is String) to java.awt.Font 
 {
@@ -546,10 +560,11 @@ class SceneRenderer2D
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
 	g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS,
 			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-	g.setBackground(new java.awt.Color(scene.background.red,
-					   scene.background.green,
-					   scene.background.blue,
-					   scene.background.opacity));
+	const bg = if (scene.background == null) Color.color(0, 0, 0, 0) else scene.background;
+	g.setBackground(new java.awt.Color(bg.red,
+					   bg.green,
+					   bg.blue,
+					   bg.opacity));
 	g.clearRect(0, 0, w, h);
 	scene.root.foldLeft((), 
 			    function from (_ is (), n is Node) to () 
@@ -1433,6 +1448,7 @@ class JoglImageLoader is ImageLoader {
         }
         return null;
     }
+
     function loadTexture2D0
 	from (url is String)
 	to AbstractTexture 
@@ -2417,14 +2433,62 @@ function makeKeyEvent from (e is java.awt.event.KeyEvent) to KeyboardEvent {
     }
 }
 
-public class JoglStage is Stage 
+class AWTDialogFactory is DialogFactory {
+    public var frame is java.awt.Frame;
+    var fd is java.awt.FileDialog;
+    function getFD to java.awt.FileDialog
+    {
+	java.lang.System.setProperty("apple.awt.fileDialogForDirectories", "true");
+	if (fd == null) {
+	    fd = new java.awt.FileDialog(frame);
+	}
+	return fd;
+    }
+    override public function openFileOpenDialog from (dialog is FileDialog.FileOpen) to String
+    {
+	const fd = getFD();
+	println("file open {fd}");
+	fd.setMode(fd.LOAD);
+	fd.setTitle(dialog.title);
+	var f = new java.io.File(dialog.fileName);
+	fd.setFilenameFilter(java.io.FilenameFilter {
+		override function accept from (dir is java.io.File, name is String) to Boolean 
+		{
+		    for (filterName in dialog.filterNames) {
+			if (name == filterName) return true
+		    }
+		    for (filterName in dialog.filterExtensions) {
+			if (name.endsWith(filterName)) return true
+		    }
+		    return false;
+		}
+	    });
+	fd.setDirectory(f.getParentFile().toString());
+	fd.setFile(f.getName());
+	fd.setVisible(true); 
+	fd.getFile();
+    }
+
+    override public function openFileSaveDialog from (dialog is FileDialog.FileSave) to String
+    {
+	const fd = getFD();
+	println("file save {fd}");
+	fd.setTitle(dialog.title);
+	fd.setMode(fd.SAVE);
+	fd.setFile(dialog.fileName);
+	fd.setVisible(true); 
+	fd.getFile();
+    }
+}
+
+public const TheDialogFactory = AWTDialogFactory {
+}
+
+public class JoglStage is Stage
 {
     var listener is  Listener;
     public var title is String;
     var todo is (function from () to ())[];
-
-
-
     public function invoke from (fun is function from () to ()) to () {
         insert fun into todo;
     }
@@ -2448,13 +2512,30 @@ public class JoglStage is Stage
 
     function buildMenuItem from (m is MenuItem) to java.awt.MenuItem 
     {
-	if (m is Menu.Separator) { 
-	    null
-	} else if (m is Menu) {
-	    buildMenu(m as Menu);
-	} else {
-	    new java.awt.MenuItem(m.label);
+       const item = 
+	if (m is Menu.Separator) 
+	    then null
+	    else if (m is Menu) 
+		then buildMenu(m as Menu)
+	    else
+		new java.awt.MenuItem(m.label);
+	if (m.shortcut <> null) {
+	    const x = m.shortcut;
+	    var enabled = &m.enabled;
+	    item.setShortcut(new java.awt.MenuShortcut(x.keyCode,
+						       x.shiftKey));
+	    enabled.onReplace(item.setEnabled);
+	    item.setEnabled(m.enabled);
+	    item.addActionListener(java.awt.event.ActionListener {
+		    override function actionPerformed 
+			from (e is java.awt.event.ActionEvent) 
+			to () 
+		    {
+			m.action()
+		    }
+		})
 	}
+	return item;
     }
 
     function buildMenu from (m is Menu) to java.awt.Menu 
@@ -2490,6 +2571,8 @@ public class JoglStage is Stage
 	updateCursor();
     }
 
+    var frame is Frame;
+
     function setup {
         const glp = GLProfile.get("GL2");
         const caps = new GLCapabilities(glp);
@@ -2498,7 +2581,8 @@ public class JoglStage is Stage
         caps.setSampleBuffers(SAMPLE_BUFFERS);
         caps.setNumSamples(NUM_SAMPLES);
         const canvas = new GLCanvas(caps);
-        const frame = new Frame();
+        frame = new Frame();
+	TheDialogFactory.frame = frame;
         frame.setSize(width, height);
         frame.add(canvas);
         frame.addWindowListener(java.awt.event.WindowAdapter {
@@ -2675,6 +2759,13 @@ public function run from (args is String[]) to ()
 	    override var height = bind font.height() * 24;
 	} else null;
 
+    readonly var videoTexture = 
+       bind if (playerUrl.endsWith(".mp4")) then VideoTexture 
+       { 
+       	    url: bind playerUrl 
+       } else null;
+
+
     function doDrop from (url is String) to () 
     {
 	stage.title = url;
@@ -2685,6 +2776,9 @@ public function run from (args is String[]) to ()
 	    viewer.focusCamera(currentModel = svgModel.root)
 	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith(".tif") or url.endsWith(".tiff") or url.endsWith(".tga")) {
 	    viewer.focusCamera(currentModel = imageModel)
+	} else if (url.endsWith(".mp4")) {
+	    viewer.focusCamera(currentModel = videoTexture);
+	    println("set video texture {videoTexture.url}");
 	} else if (url.endsWith(".txt")) {
 	    textModel.setText(readTextFile(url).first);
 	    viewer.focusCamera(currentModel = TransformNode {

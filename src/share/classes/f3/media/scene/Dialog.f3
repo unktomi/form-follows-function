@@ -1,0 +1,6 @@
+package f3.media.scene;
+
+
+public abstract class Dialog {
+    public const dialogFactory is DialogFactory = the DialogFactory;
+}

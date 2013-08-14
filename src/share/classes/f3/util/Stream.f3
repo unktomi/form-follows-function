@@ -33,7 +33,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	}
     }
 
-    public bound function interleave(xs is Stream of a) to Stream of a 
+    public bound function interleave from (xs is Stream of a) to Stream of a 
     {
 	xs.prepend(now).followedBy(xs.interleave(later));
     }
