@@ -8,10 +8,23 @@ public class Shortcut {
     public const altKey is Boolean;
     public const keyCode is Integer;
     public const keyChar is String;
+    override public function equals from (obj is Object) to Boolean {
+	(obj is Shortcut) and {
+	    const s = obj as Shortcut;
+	    ctrlKey == s.ctrlKey and
+		shiftKey == s.shiftKey and
+		metaKey == s.metaKey and
+		altKey == s.altKey and
+		keyCode == s.keyCode and
+		keyChar == s.keyChar
+	}
+    }
 }
 
 public class MenuItem is Foldable of MenuItem
 {
+    public const factory is MenuFactory = the MenuFactory;
+    public var itemImpl = bind factory.createItemImpl(this);
     public var label is String;
     public var enabled is Boolean = true;
     public var parentItem is MenuItem;

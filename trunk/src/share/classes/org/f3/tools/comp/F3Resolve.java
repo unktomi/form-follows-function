@@ -1313,7 +1313,7 @@ public class F3Resolve {
 		System.err.println("site="+site);
 		System.err.println("members null: "+ c);
 		System.err.println("intype="+intype);
-		Thread.currentThread().dumpStack();
+		//Thread.currentThread().dumpStack();
 		continue;
 	    }
 	    for (Scope.Entry e = lookup(c.members(), name, isThe);
@@ -1822,8 +1822,14 @@ public class F3Resolve {
             } while (sym.kind >= AMBIGUOUS);
             if (sym == syms.errSymbol // preserve the symbol name through errors
                 || ((sym.kind & ERRONEOUS) == 0 // make sure an error symbol is returned
-                    && (sym.kind & TYP) != 0))
-                sym = new ErrorType(name, qualified?site.tsym:syms.noSymbol).tsym;
+                    && (sym.kind & TYP) != 0)) {
+		try {
+		    sym = new ErrorType(name, qualified?site.tsym:syms.noSymbol).tsym;
+		} catch (NullPointerException exc) {
+		    System.err.println("name="+name);
+		    System.err.println("site.tsym="+site.tsym);
+		}
+	    }
         }
         return sym;
     }

@@ -27,6 +27,7 @@ public class Menu is MenuItem
 }
 
 public class Bar is MenuItem {
+    override var itemImpl = null;
     public var stage is Stage;
     public var menus is Menu[];
     override function foldLeft of b from (z is b, f is function from (b, MenuItem) to b) to b
