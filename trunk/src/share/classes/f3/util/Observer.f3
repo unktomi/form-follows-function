@@ -5,11 +5,38 @@ public interface Observer of a
     public function onNext from (x is a) to () {}
     public function onError from (e is java.lang.Exception) to () {}
     public function onCompleted from () to () {}
+
+    public function comap of b from (f is function from b to a) to Observer of b
+    {
+	const self = this;
+	DefaultObserver of b
+	{
+	    override function onNext from (x is b) to () {
+		self.onNext(f(x));
+	    }
+	    //onNext: self.onNext * f;
+	    onError: onError;
+	    onCompleted: onCompleted;
+	}
+    }
 }
 
 public abstract class DefaultObserver of a is Observer of a 
 {
 }
+
+const cofunctor = Cofunctor of Observer {
+
+    override public function comap of (a, b)
+	from (xs is Observer of a,
+	      f is function from b to a) 
+        to Observer of b
+    {
+	xs.comap(f)
+    }
+
+}
+
 
 
 

@@ -1,0 +1,26 @@
+package f3.media.scene;
+
+abstract public class AbstractFileDialog is Dialog {
+    public var title is String;
+    public var filterPath is String;
+    public var filterExtensions is String[];
+    public var filterNames is String[];
+    public var fileName is String;
+    abstract public function open to String;
+}
+
+public class FileOpen is AbstractFileDialog {
+    override var title = "Open";
+    public var selectedFile is String;
+    public var selectedFiles is String[];
+    override public function open to String {
+        return dialogFactory.openFileOpenDialog(this);
+    }
+}
+
+public class FileSave is AbstractFileDialog {
+    override var title = "Save";
+    override public function open to String {
+        return dialogFactory.openFileSaveDialog(this);
+    }
+}
