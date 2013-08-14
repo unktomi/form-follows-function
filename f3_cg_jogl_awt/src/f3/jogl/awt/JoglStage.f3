@@ -2263,7 +2263,7 @@ public class Listener is GLEventListener, DropTargetListener {
                 }
             }
         }
-	stage.title = "{opaque}/{opaque_tris}, {transp}/{transp_tris}";
+	setTitle("{opaque}/{opaque_tris}, {transp}/{transp_tris} - {stage.title}");
         opaque = 0;
         transp = 0;
         transp_tris = 0;
@@ -2484,6 +2484,134 @@ class AWTDialogFactory is DialogFactory {
 public const TheDialogFactory = AWTDialogFactory {
 }
 
+class AwtMenuItem is MenuFactory.MenuItemImpl {
+    public var item is MenuItem;
+    public var awtItem = new java.awt.MenuItem();
+    
+    public bound function getAwtItem to java.awt.MenuItem 
+    {
+	result
+    }	
+
+    public function update from () to () {
+	result;
+    }
+
+    public function addTo from (parent is java.awt.Menu) to ()
+    {
+	parent.add(result);
+    }
+
+    var action is function from () to ();
+    postinit {
+	awtItem.addActionListener(java.awt.event.ActionListener {
+		override function actionPerformed 
+		    from (e is java.awt.event.ActionEvent) 
+		    to () 
+		{
+		    action();
+		}
+	    });
+    }
+    protected var result = 
+	bind buildMenuItem(item.label,
+			   item.enabled,
+			   item.shortcut,
+			   item.action);
+    function buildMenuItem 
+	from (label is String,
+	      enabled is Boolean,
+	      shortcut is MenuItem.Shortcut,
+	      action is function from () to ())
+	to java.awt.MenuItem
+    {
+	println("building item {this} {awtItem} {label} {enabled} {shortcut} {action}");
+	awtItem.setLabel(label);
+	awtItem.setEnabled(enabled);
+	if (shortcut <> null) {
+	    awtItem.setShortcut(new java.awt.MenuShortcut(shortcut.keyCode,
+							  shortcut.shiftKey));
+	} else {
+	    awtItem.setShortcut(null);
+	}
+	this.action = action;
+	return awtItem;
+    }
+}
+
+class AwtSeparator is AwtMenuItem {
+    override var awtItem = null;
+    override public function addTo from (menu is java.awt.Menu) to ()
+    {
+	menu.addSeparator();
+    }
+}
+
+class AwtMenu is AwtMenuItem {
+    override var awtItem = new java.awt.Menu();
+    readonly var menuResult = 
+	bind buildMenuItems(result as java.awt.Menu, 
+			    foreach (m in (item as Menu).items) m.itemImpl as AwtMenuItem);
+
+
+    override public bound function getAwtItem to java.awt.MenuItem 
+    {
+	getMenu()
+    }		
+
+    override function update from () to ()
+    {
+	menuResult;
+    }
+
+    bound function getMenu to java.awt.Menu {
+	menuResult;
+    }
+
+    public function addTo from (parent is java.awt.Menu) to ()
+    {
+	parent.add(menuResult);
+    }
+
+    function buildMenuItems
+	from (parent is java.awt.Menu,
+	      items is AwtMenuItem[]) 
+	to java.awt.Menu
+    {
+	parent.removeAll();
+	println("BUILDING {items.size()} items {item.label} parent={parent} awtItem={awtItem}");
+	for (item in items) {
+	    item.addTo(parent);
+	    println("added {item} to parent={parent}, count={parent.getItemCount()}");
+	}
+	println("parent=>{parent} {parent.getItemCount()}");
+	parent;
+    }
+}
+
+class AWTMenuFactoryImpl is MenuFactory {
+
+    override public bound function createItemImpl 
+	from (item is MenuItem)
+	to MenuItemImpl
+	{
+	    if (item is Menu.Separator) {
+		AwtSeparator {
+		}
+	    } else if (item is Menu) {
+		AwtMenu {
+		    item: bind item;
+		}	
+	    } else {
+		AwtMenuItem {
+		    item: bind item;
+		}
+	    }
+	}
+}
+
+public const THE_MENU_FACTORY = AWTMenuFactoryImpl {}
+
 public class JoglStage is Stage
 {
     var listener is  Listener;
@@ -2508,66 +2636,52 @@ public class JoglStage is Stage
 	}
     }
 
-    var awt_menubar is java.awt.MenuBar;
+    var awt_menubar is java.awt.MenuBar = new java.awt.MenuBar();
+;
 
-    function buildMenuItem from (m is MenuItem) to java.awt.MenuItem 
+    var awt_menus = bind createMenus(awt_menubar, menubar.menus);
+    
+    function createMenus from 
+	(menubar is java.awt.MenuBar,
+	 menus is Menu[]) 
+	to java.awt.MenuBar
     {
-       const item = 
-	if (m is Menu.Separator) 
-	    then null
-	    else if (m is Menu) 
-		then buildMenu(m as Menu)
-	    else
-		new java.awt.MenuItem(m.label);
-	if (m.shortcut <> null) {
-	    const x = m.shortcut;
-	    var enabled = &m.enabled;
-	    item.setShortcut(new java.awt.MenuShortcut(x.keyCode,
-						       x.shiftKey));
-	    enabled.onReplace(item.setEnabled);
-	    item.setEnabled(m.enabled);
-	    item.addActionListener(java.awt.event.ActionListener {
-		    override function actionPerformed 
-			from (e is java.awt.event.ActionEvent) 
-			to () 
-		    {
-			m.action()
-		    }
-		})
-	}
-	return item;
-    }
-
-    function buildMenu from (m is Menu) to java.awt.Menu 
-    {
-	const r = new java.awt.Menu(m.label);
-	for (item in m.items) {
-	    item.parentItem = m;
-	    if (item is Menu.Separator) {
-		r.addSeparator(); null
-	    } else {
-		r.add(buildMenuItem(item));
+	if (menubar <> null) {
+	    while (menubar.getMenuCount() > 0) {
+		menubar.remove(0);
+	    }
+	    println("BUILDING MENU BAR {menus}");
+	    for (m in menus) {
+		const i = m.itemImpl as AwtMenu;
+		const menu = i.menuResult;
+		println("CREATED {i} {menu} {menu.getItemCount()}");
+		menubar.add(menu);
+		for (j in [0..<menu.getItemCount()]) {
+		    const mi = menu.getItem(j);
+		    println(mi);
+		}
 	    }
 	}
-	return r;
+	menubar;
     }
 
     function buildMenus from (frame is java.awt.Frame) to () 
     {
 	if (menubar <> null) {
-	    awt_menubar = new java.awt.MenuBar();
-	    menubar.stage = this;
-	    for (m in menubar.menus) {
-		m.parentItem = menubar;
-		awt_menubar.add(buildMenu(m));
-	    }
-	    frame.setMenuBar(awt_menubar);
+	    frame.setMenuBar(awt_menus);
+	} else {
+	    frame.setMenuBar(null);
 	}
     }
 
     //override var width: Integer = 640;
     // override var height: Integer = 480;
     function doUpdate {
+	menubar.foldLeft((), function from (_ is (), m is MenuItem) to () {
+		const awtItem = m.itemImpl as AwtMenuItem;
+		awtItem.update();
+	    });
+	buildMenus(frame);
 	updateCursor();
     }
 
@@ -2591,7 +2705,6 @@ public class JoglStage is Stage
                 }
             });
         buildKeyMap();
-	buildMenus(frame);
         listener = Listener { stage: this }
         listener.setTitle = function from (title is String) to () {
             frame.setTitle(title);

@@ -5691,22 +5691,30 @@ public class F3Attr implements F3Visitor {
 			System.err.println("sym="+sym.getClass()+": "+sym);
 			System.err.println("pt="+pt);
 		    }
-                    F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
-		    Type siteType = site;
-		    if (sym instanceof F3Resolve.InstanceMethodSymbol) {
-			sym = ((F3Resolve.InstanceMethodSymbol)sym).generic;
-		    }
-		    if (siteType instanceof MethodType) {
-			siteType = syms.makeFunctionType((MethodType)siteType);
-		    }
-                    Type inst = checkMethod(siteType, sym, env, app.args,
-					    pt.getParameterTypes(), typeargtypes,
-					    env.info.varArgs);
-		    if (inst != null) { // hack
-			owntype = inst;
+		    if (!(env.tree instanceof F3FunctionInvocation)) {
+			System.err.println("tree="+env.tree);
+			System.err.println("owntype: "+owntype);
+			System.err.println("site: "+ site);
+			System.err.println("sym="+sym.getClass()+": "+sym);
+			System.err.println("pt="+pt);
 		    } else {
+			F3FunctionInvocation app = (F3FunctionInvocation)env.tree;
+			Type siteType = site;
+			if (sym instanceof F3Resolve.InstanceMethodSymbol) {
+			    sym = ((F3Resolve.InstanceMethodSymbol)sym).generic;
+			}
+			if (siteType instanceof MethodType) {
+			    siteType = syms.makeFunctionType((MethodType)siteType);
+			}
+			Type inst = checkMethod(siteType, sym, env, app.args,
+						pt.getParameterTypes(), typeargtypes,
+						env.info.varArgs);
+			if (inst != null) { // hack
+			    owntype = inst;
+			} else {
 			//owntype = pt;
-			System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
+			    System.err.println("inst failed: using : "+owntype +": "+pt.getParameterTypes() +": "+app.args);
+			}
 		    }
 		    if (owntype instanceof MethodType) {
 			try {
