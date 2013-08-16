@@ -1,0 +1,51 @@
+package f3.media.scene;
+
+public class Movie is Shape2D.MeshNode2D, AbstractTexture {
+    public var url is String;
+    public const movieLoader is MovieLoader = the MovieLoader;
+    public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
+    public readonly var movie is AbstractMovie = bind movieLoader.loadMovie(url);
+    public var tex is AbstractTexture;
+    public var paused is Boolean = false;
+    public readonly var position is Duration = 0s;
+    function getMovieIfLoaded to AbstractMovie { tex as AbstractMovie }
+    override function update {
+	if (tex <> movie) {
+	    tex = movie;
+	    movie.setVolume(volume);
+	    movie.setRate(rate);
+	}
+	movie.update();
+	width = movie.getWidth();
+	height = movie.getHeight();
+	if (not movie.isPlaying()) {
+	    movie.play();
+	}
+	var pos is Long;
+	if (paused) {
+	    pos = movie.pause();
+	} else {
+	    movie.play();
+	    pos = movie.getPosition();
+	}
+	if (pos <> position.toMillis()) {
+	    position = Duration.valueOf(pos);
+	}
+	println("movie update {movie} {position} w={tex.getWidth()} h={tex.getHeight()} texId={getTextureId()}");
+    }    
+    override function getTextureId to Integer {
+        return tex.getTextureId();
+    }
+    public readonly var width is Integer;
+    public readonly var height is Integer;
+    override function getWidth to Integer { width }
+    override function getHeight to Integer { height }
+    override var path = bind Shape2D.rect(pathFactory, 
+					  -width/2, -height/2, 
+					  width, height);
+    override var paint = bind Shape2D.TexturePaint { texture: getThis() }
+    function getThis to Movie { this } // workaround for compiler bug with bound "this"    
+    public var volume is Number = 1.0 on replace { getMovieIfLoaded().setVolume(volume) }
+    public var rate is Number = 1.0 on replace { getMovieIfLoaded().setRate(volume) }
+
+}

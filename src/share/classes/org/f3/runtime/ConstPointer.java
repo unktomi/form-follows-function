@@ -37,7 +37,7 @@ import org.f3.functions.Function1;
 // Pointers are Functors/Monads/Comonads (i.e they are "containers" of 1 object, namely the thing they point at)
 //
 
-public class ConstPointer<This extends F3Object,a> implements f3.lang.MemberRef<This>, f3.lang.ConstRef<a> 
+public class ConstPointer<This extends F3Object,a> implements f3.lang.MemberRef<This>, f3.lang.ConstRef<a>
 {
     final Type type;
     final This obj;

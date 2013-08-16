@@ -1,12 +1,31 @@
 package f3.util;
 import f3.util.Observable.*;
 import f3.util.Observer.*;
+import f3.lang.*;
 
 public class Println of a is DefaultObserver of a
 {
     override function onNext from (x is a) to () 
     {
 	println(x);
+    }
+}
+
+class PointerObserver of a is Subject of a {
+    public const ptr is ObservableRef of a;
+    var disp;
+    init {
+	disp = ptr.onReplace(this.onNext);
+	onNext(ptr.get());
+    }
+}
+
+public function observe of a 
+    from (p is ObservableRef of a)
+    to Observable of a
+{
+    PointerObserver of a {
+	ptr: p
     }
 }
 

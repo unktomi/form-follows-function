@@ -32,7 +32,7 @@ import org.f3.functions.*;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> implements KeyValueTarget<a>, f3.lang.MemberRef<This>, f3.lang.Ref<a> {
+public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> implements KeyValueTarget<a>, f3.lang.MemberRef<This>, f3.lang.Ref<a>, f3.lang.ObservableRef<a>  {
     @org.f3.runtime.annotation.F3Signature("(Ljava/lang/Object;)Lorg/f3/runtime/Pointer;")
     public static <This extends F3Object, a> Pointer<This,a> make(Type type, This obj, int varnum) {
         return new Pointer<This,a>(type, obj, varnum);
@@ -128,8 +128,9 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
             @Override
             public boolean update$(F3Object src, final int depNum,
 				   int startPos, int endPos, int newLength, final int phase) {
+		System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
                 if ((phase & PHASE_TRANS$PHASE) == PHASE$TRIGGER) {
-                    // update value from "src"
+		    System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
 		    f.invoke(get());
                 }
                 return true;
