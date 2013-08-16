@@ -71,4 +71,20 @@ public class Group is Node
 	f(this, r);
     }
 
+    public function toFront from (n is Node) to ()
+    {
+	if (n.parent == this and content[content.size()-1] <> n) {
+	    delete n from content;
+	    insert n into content;
+	}
+    }
+
+    public function toBack from (n is Node) to ()
+    {
+	if (n.parent == this and n <> content[0]) {
+	    delete n from content;
+	    insert n before content[0];
+	}
+    }
+
 }

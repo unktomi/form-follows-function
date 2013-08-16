@@ -122,6 +122,17 @@ public abstract class Node is Foldable of Node
 		     if (r == null and n.id == id) then n else r;
 		 })
     }
+
+
+    public function toFront from () to () 
+    {
+    	(parent as Group).toFront(this)
+    }
+
+    public function toBack from () to () 
+    {
+    	(parent as Group).toBack(this)
+    }
     
 }
 

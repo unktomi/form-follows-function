@@ -1,28 +1,80 @@
 package f3.media.scene;
 import f3.media.input.*;
 
-public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInputHandler {
+public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInputHandler, Focusable {
+
+    const _1 = observeKeyDown().subscribe(injectKeyDown);
+    const _2 = observeKeyUp().subscribe(injectKeyUp);
+    const _3 = observeKeyInput().subscribe(injectKeyInput);
+
+    override public function acceptFocus to Boolean {
+	if (getFocusedScene() <> null) {
+	    Focusable.acceptFocus();
+	} else {
+	    Focusable.loseFocus();
+	}
+    }
+
+    override public function loseFocus to Boolean {
+	getFocusedScene().loseFocus();
+	if (getFocusedScene() == null) { Focusable.loseFocus() };
+	focused;
+    }
 
     override public function onMouseDown from (event is MouseEvent) to ()  {
-	injectMouseDown(event);
+	injectMouseDown(convert(event));
         event.stopPropagation();
     }
 
     override public function onMouseUp from (event is MouseEvent) to ()  {
-	injectMouseUp(event);
+	injectMouseUp(convert(event));
         event.stopPropagation();
     }
 
     override public function onMouseWheel from (event is MouseWheelEvent) to () 
     {
-        injectMouseWheel(event);
+        injectMouseWheel(convert(event));
         event.stopPropagation();
     }
 
     override public function onMouseMove from (event is MouseEvent) to ()  {
-        injectMouseMove(event);
+        injectMouseMove(convert(event));
         event.stopPropagation();
     }
+
+    function convert from (e is MouseEvent) to MouseEvent
+    {
+       const e1 = MouseEvent {
+            clickCount: e.clickCount;
+            stage: this;
+            altKey: e.altKey;
+            ctrlKey: e.ctrlKey;
+            shiftKey: e.shiftKey;
+            metaKey: e.metaKey;
+	    screenx: e.location.x + width/2.0;
+	    screeny: -e.location.y + height/2.0;
+            buttons: e.buttons;
+        }
+       //println("w={width}, h={height} {e} => {e1}");
+       return e1;
+    }
+
+    function convert from (e is MouseWheelEvent) to MouseWheelEvent
+    {
+       MouseWheelEvent {
+            clickCount: e.clickCount;
+            stage: this;
+            altKey: e.altKey;
+            ctrlKey: e.ctrlKey;
+            shiftKey: e.shiftKey;
+            metaKey: e.metaKey;
+	    screenx: e.location.x + width/2.0;
+            screeny: e.location.y - height/2.0;
+            buttons: e.buttons;
+            scroll: e.scroll;
+        }
+    }
+
     override function update 
     {
 	updateCursor();
