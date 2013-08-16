@@ -16,7 +16,8 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 	   (0.0, Vec3.<<0>>)
         } else {
             const angle = 2.0 * Math.acos(w);
-	    (Math.toDegrees(angle) as Number, new Vec3(x, y, z))
+	    const i is Number = 1.0/Math.sqrt(sqrLength);
+	    (Math.toDegrees(angle) as Number, new Vec3(x*i, y*i, z*i));
         }
     }
 
@@ -191,17 +192,17 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 	var ry is Number;
 	var rz is Number;
         if (test > 0.499 * unit) { // singularity at north pole
-            rx = 2 * Math.atan2(x, w);
-	    ry = Math.PI/2.0;
-	    rz = 0.0;
+            ry = 2 * Math.atan2(x, w);
+	    rz = Math.PI/2.0;
+	    rx = 0.0;
         } else if (test < -0.499 * unit) { // singularity at south pole
-	    rx = -2 * Math.atan2(x, w);
-	    ry = -Math.PI/2.0;
-	    rz = 0.0;
+	    ry = -2 * Math.atan2(x, w);
+	    rz = -Math.PI/2.0;
+	    rx = 0.0;
         } else {
-            rx = Math.atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw);
-	    ry = Math.asin(2 * test / unit);
-	    rz = Math.atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw);
+            ry = Math.atan2(2 * y * w - 2 * x * z, sqx - sqy - sqz + sqw);
+	    rz = Math.asin(2 * test / unit);
+	    rx = Math.atan2(2 * x * w - 2 * y * z, -sqx + sqy - sqz + sqw);
         }
 	Tuple3 {
 	    x: toDegrees(rx);
@@ -290,9 +291,9 @@ public function Quat from (eulerAngles is Tuple3) to Quat {
 
 public function Quat from (rx is Number, ry is Number, rz is Number) to Quat 
 {
-    const heading = Math.toRadians(rx);
-    const attitude = Math.toRadians(ry);
-    const bank = Math.toRadians(rz);
+    const heading = Math.toRadians(ry);
+    const attitude = Math.toRadians(rz);
+    const bank = Math.toRadians(rx);
     var angle = heading * 0.5;
     const sinHeading = Math.sin(angle);
     const cosHeading = Math.cos(angle);
@@ -529,3 +530,7 @@ function EulFromMatrix from (M is Mat4, order is Integer) to Tuple3
 
 public static def TYPE_INFO =
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
+
+public function run {
+    println(Quat(0, 90, 0).toAngleAxis());
+}
