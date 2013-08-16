@@ -1857,7 +1857,15 @@ class SceneRenderer {
 		}
 	    }
 	    //println("drawing {n}");
-	    const toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
+	    var toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
+	    if ((mn is Text.TextMeshNode) and (camera is Camera2D)) {
+		if (toSceneTransform.getRotation() == Quat.<<1>>) {
+		    const t = mn.toSceneTransform.getTranslation();
+		    toSceneTransform = translate(Math.round(t.x)+0.5,
+						 Math.round(t.y)+0.5,
+						 Math.round(t.z)+0.5);
+		}
+	    }
 	    if (DEBUG_MESHES) println("drawing {mn.id}");
             const mesh = mn.mesh;
             const indexBuffer = mesh.getIndexBuffer();
@@ -2768,6 +2776,7 @@ var currentCamera is Camera on replace {
 }
 
 public var TheWebBrowserFactory is AbstractWebBrowserFactory;
+public var TheMovieLoader is MovieLoader;
 
 function readTextFile from (url is String) to (String, Integer)
 {
@@ -2793,7 +2802,15 @@ public function run from (args is String[]) to ()
 	TheWebBrowserFactory = clazz.newInstance();
 	    
     } catch (e is java.lang.Exception) {
-	println("NOTE: couldn't load awesomium web browser factory");
+	println("NOTE: couldn't create awesomium web browser factory");
+    }
+
+    try {
+	const clazz = 
+	    java.lang.Class.forName("org.f3.media.video.macos.MovieLoaderImpl") as java.lang.Class of MovieLoader;
+	TheMovieLoader = clazz.newInstance();
+    } catch (e is java.lang.Exception) {
+	println("NOTE: couldn't create corevideo movie loader");
     }
 
     println("args={args}");
@@ -2873,9 +2890,10 @@ public function run from (args is String[]) to ()
 	} else null;
 
     readonly var videoTexture = 
-       bind if (playerUrl.endsWith(".mp4")) then VideoTexture 
+       bind if (playerUrl.endsWith(".mp4")) then Movie
        { 
        	    url: bind playerUrl 
+	    paused: false;
        } else null;
 
 

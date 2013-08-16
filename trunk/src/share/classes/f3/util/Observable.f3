@@ -156,7 +156,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    }
 		    sub2 = null;
 		}
-		sub2 = sig.subscribe(Observer of b {
+		sub2 = sig.subscribe(DefaultObserver of b {
 			override public function onNext from (x is b) to () {
 			    enabled = not taking;
 			    unSub2();

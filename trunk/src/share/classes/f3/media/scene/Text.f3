@@ -76,10 +76,11 @@ abstract public class AbstractText is AbstractNode {
     public var selectionForeground is Paint = 
 	ColorPaint(Color.BLACK);
     public var selectionBackground is Paint = ColorPaint { color: Color.WHITE };
+    public var indent is Number = 0.0;
 }
 
 public class Label is AbstractText {
-    var content is Text.Area = Text.Area {
+    public readonly var content is Text.Area = Text.Area {
 	width: bind width;
 	height: bind height;
 	font: bind font;
@@ -88,8 +89,10 @@ public class Label is AbstractText {
 	foreground: bind foreground;
 	selectionForeground: bind selectionForeground;
 	selectionBackground: bind selectionBackground;
-	pickable: false;
+	pickable: bind pickable;
+	indent: bind indent;
     };
+    override var pickable = false;
     override var internalContent = bind content;
     public var text is String on replace {
 	content.setText(text);
@@ -113,7 +116,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         fillPaint: bind background;
     };
     readonly var layoutInstance = bind layoutEngine.createLayoutInstance();
-    readonly var layout = bind layoutInstance.createLayout(text, font, width, height, rightJustified);
+    readonly var layout = bind layoutInstance.createLayout(text, font, width-indent, height, rightJustified);
     readonly var selectionShape = bind layout.getSelectionShape(start, end);
     readonly var caretShape = bind layout.getCaretShape(caretPosition);
     readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
@@ -144,7 +147,8 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     }
 
     readonly var contentGroup is Group = Group {
-	override var transform = bind translate(0, height / 2, 0);
+	override var transform = bind translate(if (rightJustified) -indent else indent, 
+						height / 2);
 	content: bind [selectionMesh, textMesh, caretMesh];
     }
 

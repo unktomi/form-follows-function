@@ -1,5 +1,6 @@
 package f3.media.scene;
 import f3.math.*;
+import f3.util.*;
 import f3.math.LinearMath.*;
 import f3.media.scene.*;
 import f3.lang.Ref;
@@ -3727,7 +3728,7 @@ function dumpScene from (spatialRoot is Node) to ()
 				 }));
 }
 
-class ModelContent {
+public class ModelContent {
     public var spatial is Node;
     public var temporal is TimeNode;
     public var clipLibraries is TimeGroup[];
@@ -3739,6 +3740,13 @@ public class Model {
     public var url is String;
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
+
+    const subject = Subject of ModelContent {};
+    
+    public function observeModelContent to Observable of ModelContent 
+    {
+	subject
+    }
 
     public bound function getClipLibraries to TimeGroup[] 
     {
@@ -3767,12 +3775,14 @@ public class Model {
 	const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader};
 	const m = p.parse(new java.net.URL(url));
 	m.spatialRoot.updateParent();
-	ModelContent {
+	const mc = ModelContent {
 	    spatial: m.spatialRoot;
 	    temporal: m.temporalRoot;
 	    cameras: m.getCameras();
 	    clipLibraries: m.clipLibs;
 	}
+	subject.onNext(mc);
+	return mc;
     }
 }
 
