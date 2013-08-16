@@ -154,7 +154,7 @@ function getStroke from (stroke is Stroke) to Stroke
     if (stroke == null) then DEFAULT_STROKE else stroke;
 }
 
-public function createMeshNode
+public bound function createMeshNode
     from (
 	  p is Path2D, 
 	  stroke is Stroke, 
@@ -164,7 +164,7 @@ public function createMeshNode
     createMeshNode("", p, stroke, paint);
 }
 
-public function createMeshNode
+public bound function createMeshNode
     from (id is String,
 	  p is Path2D, 
 	  stroke is Stroke, 
@@ -174,8 +174,8 @@ public function createMeshNode
     if (paint == null) then null else {
 	    MeshNode2D {
 		id: id,
-		paint: paint;
-		override var path = if (stroke == null) then p else p.createStrokedShape(stroke);
+		paint: bind paint;
+		override var path = bind if (stroke == null) then p else p.createStrokedShape(stroke);
             }
         }
 }

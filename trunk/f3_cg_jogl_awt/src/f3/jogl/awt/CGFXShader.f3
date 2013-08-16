@@ -12,7 +12,7 @@ public static var DEBUG = false;
 
 public abstract class Parameter of a is AbstractRef of a, f3.media.scene.Shader.Parameter of a
 {
-   public readonly var value is a;
+    public readonly var value is a;
     var ref is Ref of a;
     public const semantic is String;
     public function apply

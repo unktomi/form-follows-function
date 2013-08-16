@@ -40,6 +40,7 @@ import com.jogamp.opengl.util.awt.TextureRenderer;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
+const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
 
 var DISABLE_DEFORMERS = false;
 
@@ -57,7 +58,7 @@ class VideoTexture is HTML {
 	    "</style></head><body><video id=\"video_background\" src=\"{url}\" autoplay></body></html>" on replace { println("content={content}") };
 }
 
-const frc = new java.awt.font.FontRenderContext(null, true, false);
+const frc = new java.awt.font.FontRenderContext(null, true, true);
 function getFont from (spec is String) to java.awt.Font 
 {
     const props = spec.split(";");
@@ -1162,7 +1163,7 @@ function genTexture
 
 class OffscreenSurface is JoglTexture 
 {
-    var sceneRenderer is SceneRenderer;
+    var stageRenderer is StageRenderer;
     const _backgroundColor is Color;
     var _width is Integer = bind (width+0.5) as Integer;
     var _height is Integer = bind (height+0.5) as Integer;
@@ -1378,22 +1379,6 @@ class OffscreenSurface is JoglTexture
         } 
     }
 
-    function renderScenes 
-	from (gl is GL2, scenes is Scene[])
-	to ()
-    {
-        push();
-        setupForDraw();
-        var dirty = false;
-        for (scene in scenes where scene.visible) {
-            if (sceneRenderer.renderScene(gl, scene, pot_width, pot_height, dirty)) {
-                dirty = true;
-            }
-        }
-        blitMSFBO();
-        pop();
-    }
-
     function push to ()
     {
         activate()
@@ -1401,7 +1386,7 @@ class OffscreenSurface is JoglTexture
 
     function pop to () 
     {
-        sceneRenderer.parent.activate();        
+        stageRenderer.parent.activate();        
     }
 
 }
@@ -1547,19 +1532,71 @@ class JoglImageLoader is ImageLoader {
     }
 }
 
-class SceneRenderer {
+class DrawInfo {
+    public var worldBounds is Bounds;
+    public var shaderParams = new java.util.HashMap of (String, Object);
+    public var mesh is AbstractMesh;
+}
 
-    public var parent is SceneRenderer;
+
+class StageRenderer {
+    public var parent is StageRenderer;
+    public var activate is function from () to ();
+    public var cursor is Cursor;
+    public var stage is Stage;
+    public var sceneRenderers is SceneRenderer[];
+    var lastWidth is Integer;
+    var lastHeight is Integer;
+    function startDraw from () to () {
+    }
+    function endDraw from () to () {
+    }
+    public function renderScenes from (gl is GL2, width is Integer, height is Integer) to Boolean
+    {
+	var dirty = cursor <> stage.cursor;
+	if (lastWidth <> width) {
+	    dirty = true;
+	    lastWidth = width;
+	}
+	if (lastHeight <> height){
+	    dirty = true;
+	    lastHeight = height;
+	}
+	cursor = stage.cursor;
+	if ((foreach (r in sceneRenderers) r.scene) <> stage.content) {
+	    dirty = true;
+	    sceneRenderers = 
+		foreach (scene in stage.content) SceneRenderer {scene: scene, parent: this};
+
+	}
+        for (sceneRenderer in sceneRenderers) {
+	    if (sceneRenderer.checkNeedsDraw(gl, width, height)) {
+		dirty = true;
+	    }
+	}
+	if (dirty) {
+	    startDraw();
+	    for (sceneRenderer in sceneRenderers) {
+		sceneRenderer.renderScene(gl, width, height);
+	    }
+	    endDraw();
+	}
+	return dirty;
+    }
+}
+
+class SceneRenderer {
 
     var phongShader is Shader;
     var transparentToDraw = new java.util.ArrayList of MeshNode;
+    var last2DDraw = new java.util.ArrayList of MeshNode;
     var opaqueToDraw = new java.util.ArrayList of MeshNode;
+    public var parent is StageRenderer;
 
-    var activate is function from () to ();
 
     function renderStageNode 
 	from (gl is GL2, stageNode is StageNode)
-	to ()
+	to Boolean
     {
 	//println("rendering stage node {gl} {stageNode}");
         var surface = stageNode.drawingSurface as OffscreenSurface;
@@ -1569,21 +1606,33 @@ class SceneRenderer {
                 override var width = bind stageNode.width;
                 override var height = bind stageNode.height;
             }
-	    surface.sceneRenderer = SceneRenderer {};
-            surface.sceneRenderer.activate = surface.activate;
+	    surface.stageRenderer = StageRenderer {
+		stage: stageNode;
+		override function startDraw {
+		    surface.push();
+		    surface.setupForDraw();
+		}
+		override function endDraw {
+		    surface.blitMSFBO();
+		    surface.pop();
+		}
+	    };
+            surface.stageRenderer.activate = surface.activate;
             stageNode.drawingSurface = surface;
         }
 	//println("scene renderer = {surface.sceneRenderer}");
-        surface.sceneRenderer.parent = this;
-	for (scene in stageNode.content) {
+        surface.stageRenderer.parent = this.parent;
+        for (scene in stageNode.content) {
 	    scene.stage = stageNode;
 	}
-        surface.renderScenes(gl, stageNode.content);
+        surface.stageRenderer.renderScenes(gl, surface.pot_width, surface.pot_height);
 	//println("done rendering stage node");
     }
 
     var offscreenToRender = new java.util.HashSet of StageNode;
-    var lastDrawn = new java.util.HashSet of MeshNode;
+    var lastDrawn = new java.util.HashMap of (MeshNode, DrawInfo);
+    var viewMatrix is Mat4;
+    var projectionMatrix is Mat4;
     var lightPositions is Point3[]; // hack
     var lastCamera is Camera;
 
@@ -1601,24 +1650,31 @@ class SceneRenderer {
 	return r;
     }
 
-    function renderScene
+    function checkNeedsDraw
 	from (gl is GL2, 
-	      scene is Scene, 
 	      width is Number, 
-	      height is Number, 
-	      dirty0 is Boolean)
+	      height is Number)
 	to Boolean
     {
         opaqueToDraw.clear();
+	var iter is java.util.Iterator of MeshNode;
+	last2DDraw.clear();
+	if (scene.camera is Camera2D) {
+	    last2DDraw.addAll(transparentToDraw);
+	    iter = last2DDraw.iterator();
+	}
         transparentToDraw.clear();
         offscreenToRender.clear();
         var opaqueTris = 0;
         var transparentTris = 0;
         var lights is PointLight[];
-        var dirty = dirty0;
+        var dirty = false;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
 	const visited = new java.util.HashSet of Node;
+	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
+
+	
         const vf = function from (_ is (), n is Node) to () {
 	    if (n.toSceneTransform == null) {
 		println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
@@ -1677,7 +1733,7 @@ class SceneRenderer {
 			    //println("bounds is now {mn.mesh.bounds}");
 			}
 		    }
-		    if (scene.camera.contains(n.boundsInScene)) {
+		    if (scene.camera.contains(mn.boundsInScene)) {
 			const shader = mn.shader;
 			if (mn.shader <> null) {
 			    for (p in (mn.shader as CGFXShader).parameters) {
@@ -1688,9 +1744,6 @@ class SceneRenderer {
 				}
 			    }
 			} 
-			if (not dirty) {
-			    dirty = true; //mn.shader.isDirty() or mn.needsDraw;
-			}
 			const tris = mn.mesh.getIndexBuffer().limit() / 3;
 			if ((scene.camera is Camera2D) or shader.isTransparent) {
 			    transparentToDraw.add(mn);
@@ -1699,51 +1752,143 @@ class SceneRenderer {
 			    opaqueToDraw.add(mn);
 			    opaqueTris += tris;
 			}
-			lastDrawn.remove(n);
+			var info = lastDrawn.get(mn);
+			const cgfx = mn.shader as CGFXShader;
+			if (info == null) {
+			    dirty = true;
+			    if (DEBUG_DRAW) {
+				println("dirty due to new mesh {mn}");
+			    }
+			    info = DrawInfo {
+			    }
+			} else {
+			    if (not dirty) {
+				if (info.mesh <> mn.mesh or
+				    info.worldBounds <> mn.boundsInScene) {
+				    dirty = true;
+				    if (DEBUG_DRAW) {
+					println("is dirty: {mn}");
+				    }
+				}
+				if (not dirty) {
+				    for (p in cgfx.parameters) {
+					const x = p.get() as Object;
+					const y = info.shaderParams.get(p.name);
+					if (x <> y) {
+					    if (DEBUG_DRAW) {
+						println("is dirty: {mn}: {p.name}");
+					    }
+					    dirty = true;
+					    break;
+					}
+				    }
+				}
+			    }
+			}
+			info.mesh = mn.mesh;
+			info.worldBounds = mn.boundsInScene;
+			for (i in (mn.shader as CGFXShader).parameters) {
+			    info.shaderParams.put(i.name, i.get());
+			}
+			thisDraw.put(mn, info);
+			if (scene.camera is Camera2D and not dirty) {
+			    if (not iter.hasNext() or iter.next() <> mn) {
+				dirty = true;
+			    }
+			}
+			//println("thisDraw {mn}: {thisDraw.size()}");
 		    } else {
 			if (debug) {
 			    println("culled {n} {n.id} {n.boundsInScene}");
 			}
-			if (lastDrawn.remove(n)) {
+			if (lastDrawn.containsKey(mn)) {
 			    dirty = true;
+			    if (DEBUG_DRAW) {
+				println("is dirty: culled {n}");
+			    }
 			}
+		    }
+		}
+	    } else if (n is MeshNode) {
+		if (lastDrawn.containsKey(n as MeshNode)) {
+		    dirty = true;
+		    if (DEBUG_DRAW) {
+			println("is dirty: visibility {n}");
 		    }
 		}
 	    }
 	};
         offscreenToRender.clear();
-
 	if (false and scene.camera instanceof Camera2D) {
 	    const cam = scene.camera as Camera2D;
 	    const r = getRenderer2D(scene, gl);
 	    r.render2d(cam, scene);
 	    opaqueToDraw.add(r.meshNode);
 	} else {
-	    scene.root.foldLeft((), vf);
+	    //scene.root.foldLeft((), vf);
+	    for (i in scene.visibleMeshes) {
+		vf((), i);
+	    }
 	    for (i in offscreenToRender) {
 		renderStageNode(gl, i as StageNode);
 	    }
 	}
+	//println("last: {lastDrawn.size()}");
+	//println("current: {thisDraw.size()}");
+	for (x in lastDrawn.keySet()) {
+	    if (not thisDraw.containsKey(x)) {
+		dirty = true;
+		if (DEBUG_DRAW) {
+		    println("dirty due to no longer drawing: {x}");
+		}
+	    }
+	}
+	lastDrawn = thisDraw;
         var camera = scene.camera;
-        dirty = dirty or camera.needsDraw;
-        dirty = dirty or lastDrawn.size() <> 0;
-        lastDrawn.clear();
-        lastDrawn.addAll(opaqueToDraw);
-        lastDrawn.addAll(transparentToDraw);
+	if (not dirty) {
+	    if (camera.viewMatrix <> viewMatrix) {
+		dirty = true;
+		if (DEBUG_DRAW) {
+		    println("needs draw due to camera view");
+		}
+		viewMatrix = camera.viewMatrix;
+	    }
+	    if (camera.projectionMatrix <> projectionMatrix) {
+		dirty = true;
+		if (DEBUG_DRAW) {
+		    println("needs draw due to camera projection");
+		}
+		projectionMatrix = camera.projectionMatrix;
+	    }
+	}
         var positions is Point3[] = foreach (light in lights) light.location;
 	//println("light positions = {positions}");
         if (positions <> lightPositions) {
             lightPositions = positions;
             dirty = true;
+	    if (DEBUG_DRAW) {
+		println("needs draw due to light positions");
+	    }
         }
         if (scene.camera <> lastCamera) {
             lastCamera = scene.camera;
             dirty = true;
+	    if (DEBUG_DRAW) {
+		println("needs draw due to camera change {lastCamera} => {camera}");
+	    }
         }
-	dirty = true;
-        if (not dirty) {
-            return false;
-        }
+	//println("check {scene} dirty={dirty}");
+	return dirty;
+    }
+
+    public var scene is Scene;
+
+    function renderScene
+	from (gl is GL2, 
+	      width is Number, 
+	      height is Number)
+	to ()
+    {
         gl.glViewport(0, 0, width, height);
         if (scene.background.opacity <> 0) {
             const bg = scene.background;
@@ -1754,6 +1899,7 @@ class SceneRenderer {
 	    //println("clearing depth");
 	    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
         }
+	const camera = scene.camera;
 	if (not (camera is Camera2D)) {
 	    // sort opaque front to back      
 	    java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
@@ -1781,11 +1927,10 @@ class SceneRenderer {
 		});
 	} 
 	//println("DRAW: {scene} {camera}");
-        onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
+        //onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
         draw(gl, scene.root.parent, camera, opaqueToDraw, lightPositions);
         opaqueToDraw.clear();
         draw(gl, scene.root.parent, camera, transparentToDraw, lightPositions);
-        transparentToDraw.clear();
         //camera.needsDraw = false;
         return true;
     }
@@ -2111,14 +2256,19 @@ public class Listener is GLEventListener, DropTargetListener {
 	      shiftDown is Boolean)
 	to ()
     {
-        stage.injectMouseMove(MouseEvent {
-                screenx: screenx = x;
-                screeny: screeny = y;
-                altKey: altDown;
-                ctrlKey: controlDown;
-                metaKey: metaDown;
-                shiftKey: shiftDown;
-            });
+        try {
+            ctx.makeCurrent();
+	    stage.injectMouseMove(MouseEvent {
+		    screenx: screenx = x;
+		    screeny: screeny = y;
+		    altKey: altDown;
+		    ctrlKey: controlDown;
+		    metaKey: metaDown;
+		    shiftKey: shiftDown;
+		});
+	} finally {
+	    ctx.release();
+	}
     }
 
     function mouseDown
@@ -2217,15 +2367,15 @@ public class Listener is GLEventListener, DropTargetListener {
     function setup from (gl is GL2, width is Integer, height is Integer) to () {
         ctx = GLContext.getCurrent();
 	ImageLoader_INSTANCE.gl = gl; // hack
-        gl.setSwapInterval(1);
 	stage.resize(width, height);
+	gl.setSwapInterval(1);
     }
 
     var mouseX is Number;
     var mouseY is Number;
     var setTitle is function from String to ();
     var setCursor is function from Cursor to ();
-    var mainSceneRenderer is SceneRenderer;
+    var stageRenderer is StageRenderer;
 
     var opaque = 0;
     var transp = 0;
@@ -2258,19 +2408,14 @@ public class Listener is GLEventListener, DropTargetListener {
 	MasterTimeline.advancePlayhead(delta);
 	prevTime = now;
 
-        if (mainSceneRenderer == null and gl <> null) {
-            mainSceneRenderer = SceneRenderer {
-                activate: function from () to () {
-                    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
-                }
-                override function onDraw from (t is Integer, tt is Integer, o is Integer, ot is Integer) to () {
-                    opaque += o;
-                    transp += t;
-                    transp_tris += tt;
-                    opaque_tris += ot;
-                }
-            }
-        }
+        if (stageRenderer == null) {
+	    stageRenderer = StageRenderer {
+		stage: stage;
+		activate: function from () to () {
+		    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+		}
+	    }
+	}
 	setTitle("{opaque}/{opaque_tris}, {transp}/{transp_tris} - {stage.title}");
         opaque = 0;
         transp = 0;
@@ -2280,17 +2425,23 @@ public class Listener is GLEventListener, DropTargetListener {
         for (scene in stage.content) {
 	    scene.stage = stage;
 	}
-        for (scene in stage.content where scene.visible) {
-            if (mainSceneRenderer.renderScene(gl, scene, width, height, dirty)) {
-                dirty = true;
-            }
-        }
-        if (lastOpaque <> opaque or lastTransp <> transp) {
-            lastTransp = transp;
-            lastOpaque = opaque;
-        }
-        stage.flush();
+	var skip = true;
+	if (stageRenderer.renderScenes(gl, stage.width, stage.height)) {
+	    if (lastOpaque <> opaque or lastTransp <> transp) {
+		lastTransp = transp;
+		lastOpaque = opaque;
+	    }
+	    skip = false;
+	}
+	stage.flush();
         setCursor(stage.cursor);
+	if (skip) {
+	    gl.setSwapInterval(0);
+	    java.lang.Thread.sleep(10);
+	} else {
+	    gl.setSwapInterval(1);
+	    canvas.swapBuffers();
+	}
     }
 
     var title is String;
@@ -2576,7 +2727,7 @@ class AwtMenu is AwtMenuItem {
 	menuResult;
     }
 
-    public function addTo from (parent is java.awt.Menu) to ()
+    override public function addTo from (parent is java.awt.Menu) to ()
     {
 	parent.add(menuResult);
     }
@@ -2694,6 +2845,7 @@ public class JoglStage is Stage
     }
 
     var frame is Frame;
+    var canvas is GLCanvas;
 
     function setup {
         const glp = GLProfile.get("GL2");
@@ -2702,10 +2854,11 @@ public class JoglStage is Stage
         caps.setDepthBits(DEPTH_BITS);
         caps.setSampleBuffers(SAMPLE_BUFFERS);
         caps.setNumSamples(NUM_SAMPLES);
-        const canvas = new GLCanvas(caps);
+        canvas = new GLCanvas(caps);
         frame = new Frame();
 	TheDialogFactory.frame = frame;
         frame.setSize(width, height);
+	canvas.setAutoSwapBufferMode(false);
         frame.add(canvas);
         frame.addWindowListener(java.awt.event.WindowAdapter {
                 override public function windowClosing from (e is java.awt.event.WindowEvent) to () {

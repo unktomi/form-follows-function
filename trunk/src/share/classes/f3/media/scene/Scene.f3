@@ -36,6 +36,20 @@ public class Scene
 	    override var parentToSceneTransform = Mat4.<<1>>;
 	    override var pickableInScene = true;
 	    override var content = bind scene.content;
+	    override public function toFront from (n is Node) to ()
+	    {
+		if (n.parent == this and content[content.size()-1] <> n) {
+		    delete n from scene.content;
+		    insert n into scene.content;
+		}
+	    }
+	    override public function toBack from (n is Node) to ()
+	    {
+		if (n.parent == this and n <> content[0]) {
+		    delete n from scene.content;
+		    insert n before scene.content[0];
+		}
+	    }
 	}
     }
 
@@ -80,14 +94,21 @@ public class Scene
         return result;
     }
 
+    public readonly var visibleMeshes is MeshNode[];
+
     public function pickGeometry 
 	from (ray is Ray3) to Pick[]
     {
         var result is Pick[];
+	visibleMeshes = [];
         root.foldLeft((), 
 		      function from (_ is (), n is Node) to () 
 		       {
-			  if (n is MeshNode and 
+			   if (n is MeshNode and n.visibleInScene and 
+			       camera.contains(n.boundsInScene)) {
+			       insert n as MeshNode into visibleMeshes;
+			   }
+			   if (n is MeshNode and 
 			      n.visibleInScene and
 			      n.pickableInScene and
 			      n.boundsInScene.intersects(ray)) 
@@ -184,7 +205,7 @@ public class Scene
     {
 	try {
 	    updateCamera();
-	    updateMouse(mouseX, this.height-mouseY);
+	    updateMouse(this.mouseX, this.height-this.mouseY);
 	    root.updateParent();
 	} catch (e is java.lang.Throwable) {
 	    e.printStackTrace();
@@ -349,9 +370,15 @@ public class Scene
             doMouseDown(p, event);
         }
         if (not focusSet) {
-            focus.loseFocus();
-            focus = null;
+	    loseFocus()
         }
+    }
+
+    protected function loseFocus from () to Boolean {
+	if (not focus.loseFocus()) {
+	    focus = null;
+	}
+	focus <> null
     }
 
     public function injectMouseUp from (event is MouseEvent) to ()
