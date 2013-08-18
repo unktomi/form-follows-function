@@ -746,6 +746,9 @@ abstract class JoglGradientShader is CGFXShader
         }
     }
 
+    override function updateParameters {
+    }
+
     protected abstract function updateParams
 	from (x is Number, y is Number, w is Number, h is Number) to ();
 
@@ -857,6 +860,12 @@ class ColorPaintShader is CGFXShader
     public readonly var color = bind colorPaint.color;
     override var url =  "{__DIR__}flat.cgfx";
     override var technique =  bind if (color.opacity == 1) then "Opaque" else "Transparent";
+    
+    override function updateParameters to ()
+    {
+        setParameter("diffuse", color);
+    }
+
     override function apply
         from (mesh is AbstractMesh,
 	      worldTransform is Mat4,
@@ -864,7 +873,7 @@ class ColorPaintShader is CGFXShader
 	      projectionMatrix is Mat4) 
 	to () 
     {
-        setParameter("diffuse", color);
+
         super.apply(mesh,
 		    worldTransform,
                     viewMatrix,
@@ -880,13 +889,17 @@ class TexturePaintShader is CGFXShader
     override var url =  "{__DIR__}flat-textured.cgfx";
     override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
     override var uvMap = [0];
+
+    override function updateParameters to ()
+    {
+        setParameter("texSampler0", tex);
+    }
+
     override function apply from (mesh is AbstractMesh,
 				  worldTransform is  Mat4,
 				  viewMatrix is  Mat4,
 				  projectionMatrix is  Mat4) to () 
     {
-        //setParameter("diffuse", color);
-        setParameter("texSampler0", tex);
         super.apply(mesh,
 		    worldTransform,
                     viewMatrix,
@@ -907,13 +920,17 @@ function flatShader from (color is Color, tex is AbstractTexture) to Shader
 	    override var uvMap = [0];
             url: "{__DIR__}flat-textured.cgfx";
             //technique: bind if (color.opacity == 1) "Opaque" else "Transparent";
+	    override function updateParameters to ()
+	    {
+                var xywh = vector(0, 0, tex.getWidth(), tex.getHeight());
+                shader.setParameter("xywh", xywh);
+	    }
+
             override function apply from (mesh is AbstractMesh,
 					  worldTransform is Mat4,
 					  viewMatrix is Mat4,
 					  projectionMatrix is Mat4) to () 
 	    {
-                var xywh = vector(0, 0, tex.getWidth(), tex.getHeight());
-                shader.setParameter("xywh", xywh);
                 super.apply(mesh, worldTransform, viewMatrix, projectionMatrix);
             }
         }
@@ -939,6 +956,11 @@ const DEPTH_BITS = java.lang.Integer.getInteger("depthBits", 32);
 class DefaultPhongShader is CGFXShader 
 {
     public var lightScenePos is Point3 = Point3.<<0>>;
+    override function updateParameters to ()
+    {
+        setParameter("lightWorldPos", lightScenePos);
+    }
+
     override function apply
 	from (mesh is AbstractMesh,
 	      sceneTransform is Mat4,
@@ -946,7 +968,7 @@ class DefaultPhongShader is CGFXShader
 	      projectionMatrix is Mat4)
 	to ()
     {
-        setParameter("lightWorldPos", lightScenePos);
+
         super.apply(mesh, sceneTransform, viewMatrix, projectionMatrix);
     }
 }
@@ -958,6 +980,15 @@ class DefaultPhongShader4 is CGFXShader
     public var lightScenePos3 is Point3 = Point3.<<0>>;
     public var lightScenePos4 is Point3 = Point3.<<0>>;
     public var lightMask is Tuple4 = Tuple4.<<1>>;
+    override function updateParameters to ()
+    {
+        setParameter("lightWorldPos1", lightScenePos1);
+        setParameter("lightWorldPos2", lightScenePos2);
+        setParameter("lightWorldPos3", lightScenePos3);
+        setParameter("lightWorldPos4", lightScenePos4);
+        setParameter("lightMask", lightMask);
+    }
+
     override function apply
 	from (mesh is AbstractMesh,
 	      sceneTransform is Mat4,
@@ -965,11 +996,6 @@ class DefaultPhongShader4 is CGFXShader
 	      projectionMatrix is Mat4)
 	to ()
     {
-        setParameter("lightWorldPos1", lightScenePos1);
-        setParameter("lightWorldPos2", lightScenePos2);
-        setParameter("lightWorldPos3", lightScenePos3);
-        setParameter("lightWorldPos4", lightScenePos4);
-        setParameter("lightMask", lightMask);
         super.apply(mesh, sceneTransform, viewMatrix, projectionMatrix);
     }
 }
@@ -1534,8 +1560,9 @@ class JoglImageLoader is ImageLoader {
 }
 
 class DrawInfo {
+    public var shader is Shader;
     public var worldBounds is Bounds;
-    public var shaderParams = new java.util.HashMap of (String, Object);
+    public const shaderParams = new java.util.HashMap of (String, Object);
     public var mesh is AbstractMesh;
 }
 
@@ -1755,6 +1782,7 @@ class SceneRenderer {
 			}
 			var info = lastDrawn.get(mn);
 			const cgfx = mn.shader as CGFXShader;
+			cgfx.updateParameters();
 			if (info == null) {
 			    dirty = true;
 			    if (DEBUG_DRAW) {
@@ -1769,6 +1797,12 @@ class SceneRenderer {
 				    dirty = true;
 				    if (DEBUG_DRAW) {
 					println("is dirty: {mn}");
+				    }
+				}
+				if (info.shader <> mn.shader) {
+				    dirty = true;
+				    if (DEBUG_DRAW) {
+					println("is dirty due to shader change {info.shader} => {mn.shader}");
 				    }
 				}
 				if (not dirty) {
@@ -1787,6 +1821,7 @@ class SceneRenderer {
 			    }
 			}
 			info.mesh = mn.mesh;
+			info.shader = mn.shader;
 			info.worldBounds = mn.boundsInScene;
 			for (i in (mn.shader as CGFXShader).parameters) {
 			    info.shaderParams.put(i.name, i.get());
@@ -1831,7 +1866,9 @@ class SceneRenderer {
 		vf((), i);
 	    }
 	    for (i in offscreenToRender) {
-		renderStageNode(gl, i as StageNode);
+		if (renderStageNode(gl, i as StageNode)) {
+		    dirty = true;
+		}
 	    }
 	}
 	//println("last: {lastDrawn.size()}");

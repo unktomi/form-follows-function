@@ -356,20 +356,30 @@ public class Scene
 
     public function injectMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
-        var focusSet = false;
+	var focusSet = false;
         for (p in underMouse) {
+            doMouseDown(p, event);
             if (not focusSet and (p.node instanceof Focusable)) {
                 const f = p.node as Focusable;
                 if (f == focus or f.acceptFocus()) {
                     if (f <> focus) {
                         focus.loseFocus();
                         focus = f;
-
                     }
                     focusSet = true;
                 }
             }
-            doMouseDown(p, event);
+	    var n = p.node;
+	    if (not focusSet and (p.node instanceof Focuser)) {
+                const f = (p.node as Focuser).getTargetOfFocus();
+                if (f == focus or f.acceptFocus()) {
+                    if (f <> focus) {
+                        focus.loseFocus();
+                        focus = f;
+                    }
+                    focusSet = true;
+                }
+	    }
         }
         if (not focusSet) {
 	    loseFocus()

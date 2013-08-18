@@ -1,6 +1,7 @@
 package f3.media.scene;
 import java.lang.Math.sqrt;
 import f3.math.*;
+import f3.media.input.*;
 
 public interface Path2DFactory {
     public abstract function createPath to Path2D;
@@ -196,7 +197,7 @@ public bound function createMeshNode
         }
 }
 
-public abstract class Shape2D is Node 
+public abstract class Shape2D is Node, MouseInputHandler 
 {
     public const factory is Path2DFactory = the Path2DFactory;
     public var stroke is Stroke;
