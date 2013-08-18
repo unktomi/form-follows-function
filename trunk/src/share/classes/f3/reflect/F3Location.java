@@ -29,10 +29,7 @@ package f3.reflect;
  * @profile desktop
  */
 
-public abstract class F3Location {
-    protected F3Location() {
-    }
-
+public interface F3Location {
     /** Get the (current) value "stored" in this location. */
     public abstract F3Value getValue();
 

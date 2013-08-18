@@ -40,16 +40,18 @@ public function rect
     return path;
 }
 
-const u = 2.0 / 3.0 * (sqrt(2.0) - 1.0);
-const points = 
-[1.0, 0.5 + u, 0.5 + u, 1.0, 0.5, 1.0 ,
- 0.5 - u, 1.0, 0.0, 0.5 + u, 0.0, 0.5 ,
- 0.0, 0.5 - u, 0.5 - u, 0.0, 0.5, 0.0 ,
- 0.5 + u, 0.0, 1.0, 0.5 - u, 1.0, 0.5];
 
 public function ellipse
-    from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number) to Path2D
+    from (fac is Path2DFactory, 
+	  x is Number, y is Number, 
+	  width is Number, height is Number) to Path2D
 {
+    const u = 2.0 / 3.0 * (sqrt(2.0) - 1.0);
+    const points = 
+	[1.0, 0.5 + u, 0.5 + u, 1.0, 0.5, 1.0 ,
+	 0.5 - u, 1.0, 0.0, 0.5 + u, 0.0, 0.5 ,
+	 0.0, 0.5 - u, 0.5 - u, 0.0, 0.5, 0.0 ,
+	 0.5 + u, 0.0, 1.0, 0.5 - u, 1.0, 0.5];
     const path = fac.createPath();
     var p = 6 * 3;
     path.moveTo(x+points[p+4]*width,
@@ -65,6 +67,20 @@ public function ellipse
     }
     path.closePath();
     return path;
+}
+
+function makePolygon from (fac is Path2DFactory,
+			   points is Number[]) to Path2D
+{
+
+    if (points.size() >= 4) {
+	const p = fac.createPath();
+	p.moveTo(points[0], points[1]);
+	for (i in [2..<points.size() step 2]) {
+	    p.lineTo(points[i], points[i+1]);
+	}
+	p.closePath(); p
+    } else null
 }
 
 public function createMesh 
@@ -190,13 +206,13 @@ public abstract class Shape2D is Node
     public var centerY is Number;
     public readonly var path is Path2D;
 
-    var fillMesh is MeshNode = bind createMeshNode(path, 
-						   null, 
-						   fillPaint);
+    public readonly var fillMesh is MeshNode = bind createMeshNode(path, 
+								   null, 
+								   fillPaint);
 
-    var strokeMesh is MeshNode = bind createMeshNode(path, 
-						     getStroke(stroke), 
-						     strokePaint);
+    public readonly var strokeMesh is MeshNode = bind createMeshNode(path, 
+								     getStroke(stroke), 
+								     strokePaint);
 
     override var contentBounds = bind Bounds.merge(fillMesh.bounds, 
 						   strokeMesh.bounds);
@@ -258,4 +274,9 @@ public class Rectangle is Shape2D
     public var width is Number = 1;
     public var height is Number = 1;
     override var path = bind rect(factory, centerX-width/2, centerY-height/2, width, height);
+}
+
+public class Polygon is Shape2D {
+    public var points is Number[];
+    override var path = bind makePolygon(factory, points);
 }

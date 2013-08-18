@@ -3,14 +3,18 @@ package f3.util;
 public class Subject of a is Observable of a, Observer of a {
 
     var observers is java.util.Map of (Observer of a, ());
+    var last is a;
 
     public override function onNext from (x is a) to ()
     {
     //    println("subject on next {x}, obs={observers}");
+	last = x;
 	if (observers <> null) 
 	    for (ob in observers.keySet()) 
 		ob.onNext(x)
     }
+
+    public bound function extract to a { last }
 
     public override function onError from (x is java.lang.Exception) to ()
     {

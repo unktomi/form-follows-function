@@ -553,7 +553,7 @@ public class F3ClassReader extends ClassReader {
 	//System.err.println("created: "+ name+" "+mt);
 	return mt;
     }
-    
+
     MethodSymbol translateMethodSymbol(long flags, Symbol sym, Symbol owner) {
 	if (sym instanceof F3Resolve.InstanceMethodSymbol) {
 	    return (MethodSymbol)sym;
@@ -582,10 +582,13 @@ public class F3ClassReader extends ClassReader {
 		    typevars = typevars.dup(owner);
 		    enterTypevars(owner.type);
 		    mtype = sigToType(names.fromString(sig));
+		    //mtype = f3Types.fixWildcards(mtype);
+		    //System.err.println("sig="+sig);
+		    //System.err.println("type="+mtype);
 		    typevars = typevars.leave();
                 }
                 catch (Exception e) {
-		    System.err.println("bad sig="+sig);
+		    System.err.println("bad sig="+sig+": "+e); e.printStackTrace();
 		    //e.printStackTrace();
                     //throw new AssertionError("Bad F3 signature");
                 }

@@ -66,9 +66,10 @@ public interface Sequence<T> extends Iterable<T>, MonadZero<Sequence, T>, MonadP
 				     Function2<? extends S, ? super T, ? super S> f);
 
     public Sequence<T> reverse();
-
-    public Sequence<T> prepend(T x);
-    public Sequence<T> append(T x);
+    //public <S super T> Sequence<S> prepend(S x);
+    public Sequence<T> prepend(Object x);
+    //public <S super T> Sequence<S> append(S x);
+    public Sequence<T> append(Object x);
 
     public Sequence<T> replicate(int n);
 

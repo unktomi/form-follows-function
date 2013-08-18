@@ -58,15 +58,14 @@ public interface LayoutEngine
     public abstract function createLayoutInstance to LayoutInstance;
 }
 
-public class TextMeshNode is MeshNode2D 
+public abstract class TextMeshNode is MeshNode2D 
 {
-    public readonly var textLayout is Layout;
-    override var path = bind textLayout.getShape();
     protected var debugText is String;
     override function toString to String
     {
 	"{super.toString()}: {debugText}";
     }
+    public function getLayout to Layout;
 }
 
 const OFFWHITE = new Color(.9, .9, .9, 1);
@@ -121,19 +120,17 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         fillPaint: bind background;
     };
     readonly var layoutInstance = bind layoutEngine.createLayoutInstance();
-    readonly var layout = bind layoutInstance.createLayout(text, font, width-indent, height, rightJustified);
-    readonly var selectionShape = bind layout.getSelectionShape(start, end);
-    readonly var caretShape = bind layout.getCaretShape(caretPosition);
+    public readonly var layout = bind layoutInstance.createLayout(text, font, width-indent, height, rightJustified);
+    public readonly var textShape = bind layout.getShape();
+    public readonly var selectionShape = bind layout.getSelectionShape(start, end);
+    public readonly var caretShape = bind layout.getCaretShape(caretPosition);
     readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
-    readonly var textMesh is TextMeshNode = bind createTextMeshNode(layout, foreground);
-    const t = TextMeshNode {
+    readonly var textMesh is TextMeshNode = TextMeshNode {
+        override var path = bind textShape;
 	override var paint = bind foreground;
-	override var textLayout = bind layout;
-    }
-    function createTextMeshNode from (layout is Layout, foreground is Paint) to TextMeshNode 
-    {
-	t.setParent(contentGroup);
-	return t;
+	override function getLayout to Layout {
+	    layout
+	}
     }
     readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
     var column is Number;

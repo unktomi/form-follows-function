@@ -1538,7 +1538,7 @@ however this is what we need */
         private boolean needInvalidateAccessorMethod(VarInfo varInfo) {
 	    boolean isValueType = 
 		isValueType(varInfo.sym.owner.type);
-	    System.err.println("isValueType: "+ varInfo.sym.owner.type+": "+isValueType);
+	    //System.err.println("isValueType: "+ varInfo.sym.owner.type+": "+isValueType);
 	    if (isValueType) {
 		return false;
 	    }

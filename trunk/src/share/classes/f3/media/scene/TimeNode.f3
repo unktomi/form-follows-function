@@ -154,4 +154,21 @@ public abstract class TimeNode is Foldable of TimeNode
         paused = false;
         playTime = currentTime / playRate; // advance to playhead
     }
+
+    public function reverse to ()
+    {
+	playRate = -playRate;
+    }
+
+    public function pause to ()
+    {
+	paused = true;
+    }
+
+    readonly var completed = bind Subject of (()) {};
+
+    public function observeCompletion to Observable of (()) 
+    {
+	completed
+    }
 }
