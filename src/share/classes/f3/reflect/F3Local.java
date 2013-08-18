@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.f3.functions.*;
 import org.f3.runtime.F3Object;
+import org.f3.runtime.Pointer;
 import org.f3.runtime.TypeInfo;
 import org.f3.runtime.sequence.Sequence;
 import org.f3.runtime.sequence.Sequences;
@@ -134,7 +135,6 @@ public class F3Local {
             Object t = PlatformUtils.resolveGeneric(this, typ);
             if (t instanceof F3Type)
                 return (F3Type) t;
-        
             Class clas = (Class) t;
             if (clas.isArray()) {
                 F3Type elType = makeTypeRef(clas.getComponentType());
@@ -155,7 +155,6 @@ public class F3Local {
                     if (ptype != null) 
                         return new F3SequenceType(ptype); 
                 } 
-
                 F3Type ptype = getPrimitiveType(rawName);
                 if (ptype != null)
                     return ptype;
@@ -178,15 +177,16 @@ public class F3Local {
                 return F3PrimitiveType.booleanType;
             if (typ == Void.TYPE)
                 return F3PrimitiveType.voidType;
-
-            return makeClassRef(clas);
+            return makeClassRef(clas, typ);
         }
 
-        /** Create a reference to a given Class. */
         public ClassType makeClassRef(Class cls) {
+	    return makeClassRef(cls, cls);
+	}
+        /** Create a reference to a given Class. */
+        public ClassType makeClassRef(Class cls, Type type) {
             int modifiers = 0;
             try {
-
                 Class[] interfaces = cls.getInterfaces();
                 for (int i = 0;  i < interfaces.length;  i++ ) {
                     String iname = interfaces[i].getName();
@@ -196,7 +196,6 @@ public class F3Local {
                         modifiers |= F3ClassType.F3_MIXIN;
                     } 
                 }
-                
                 Class clsInterface = null;
                 if ((modifiers & F3ClassType.F3_MIXIN) != 0) {
                     String cname = cls.getName();
@@ -214,7 +213,7 @@ public class F3Local {
                     }
                 }
  
-                return new ClassType(this, modifiers, cls, clsInterface);
+                return new ClassType(this, modifiers, cls, clsInterface, type);
             }
             catch (RuntimeException ex) {
                 throw ex;
@@ -257,18 +256,20 @@ public class F3Local {
      * @profile desktop
      */
     public static class ClassType extends F3ClassType {
+	Type type;
         Class refClass;
         Class refInterface;
 	protected static int VOFF_INITIALIZED = 1 << 16; // high to avoid collisions with masks added in parent class.
 
         public ClassType(Context context, int modifiers,
-                Class refClass, Class refInterface) {
+			 Class refClass, Class refInterface, Type type) {
             super(context, modifiers);
             this.refClass = refClass;
             this.refInterface = refInterface;
             this.name = PlatformUtils.getCanonicalName(refClass);
+	    this.type = type;
         }
-
+	public Type getType() { return type; }
         public Class getJavaImplementationClass() { return refClass; }
         public Class getJavaInterfaceClass() { return refInterface; }
 
@@ -746,7 +747,7 @@ public class F3Local {
         }
     }
 
-    static class VarMember extends F3VarMember {
+    public static class VarMember extends F3VarMember {
         Field fld;
         Method getter;
         Method setter;
@@ -843,7 +844,11 @@ public class F3Local {
         public F3Location getLocation(F3ObjectValue obj) {
             return new VarMemberLocation(obj, this);
         }
-        
+
+	public Pointer getPointer(F3Object obj) {
+	    return Pointer.make(obj, offset);
+	}
+
         static final Object[] noObjects = {};
 
         protected void initVar(F3ObjectValue instance, F3Value value) {
@@ -865,7 +870,6 @@ public class F3Local {
                 }
                 checkGetterSetter();
                 if (fld != null || setter != null) {
-                   
                     if (setter != null) {
                         Object[] args = { ((Value) value).asObject() };
                         setter.invoke(robj, args);
@@ -878,7 +882,11 @@ public class F3Local {
                             return;
                         }
                     }
+
                 }
+		if (robj instanceof F3Object) {
+		    ((F3Object)robj).set$(offset, ((Value)value).asObject());
+		}
             } catch (RuntimeException ex) {
                 throw ex;
             } catch (Exception ex) {

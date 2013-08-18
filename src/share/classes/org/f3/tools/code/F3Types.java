@@ -2963,4 +2963,54 @@ public class F3Types extends Types {
 	}
 	return false;
     }
+
+    private DefaultTypeVisitor<Type,Type> fixW = new DefaultTypeVisitor<Type,Type>() {
+
+	public void visit(List<Type> ts) {
+	    for (Type t : ts) {
+		visit(t, t);
+	    }
+	}
+
+        public Type visitWildcardType(WildcardType t, Type s) {
+	    if (t.type instanceof WildcardType) {
+		t.type = (WildcardType)t.type;
+	    }
+	    return t;
+	}
+        public Type visitClassType(ClassType t, Type s) { 
+	    visit(t.getTypeArguments());
+	    return t;
+	}
+        public Type visitArrayType(ArrayType t, Type s) { 
+	    visit(t.elemtype, s);
+	    return t;
+	}
+        public Type visitMethodType(MethodType t, Type s)     { 
+	    visit(t.argtypes);
+	    visit(t.restype, s);
+	    return t;
+	}
+
+        public Type visitPackageType(PackageType t, Type s)   { return visitType(t, s); }
+        public Type visitTypeVar(TypeVar t, Type s)           { return visitType(t, s); }
+        public Type visitCapturedType(CapturedType t, Type s) { 
+	    visit(t.getTypeArguments());
+	    visit(t.wildcard, s);
+	    return t;
+	}
+        public Type visitForAll(ForAll t, Type s)             { 
+	    visit(t.qtype, s);
+	    return visitType(t, s); 
+	}
+        public Type visitUndetVar(UndetVar t, Type s)         { return visitType(t, s); }
+        public Type visitErrorType(ErrorType t, Type s)       { return visitType(t, s); }
+	public Type visitType(Type t, Type s) {
+	    return t;
+	}
+    };
+    public Type fixWildcards(Type t) {
+	fixW.visit(t, t);
+	return t;
+    }
 }

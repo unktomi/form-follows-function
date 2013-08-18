@@ -74,7 +74,6 @@ public abstract class F3Type {
     public boolean isAssignableFrom(F3Type cls) {
         if (this instanceof F3ClassType && cls instanceof F3ClassType)
             return ((F3ClassType) this).isAssignableFrom((F3ClassType) cls);
-        // FIXME
-        return equals(cls);
+        return this == cls;
     }
 }

@@ -108,73 +108,75 @@ public class Scene
 			       camera.contains(n.boundsInScene)) {
 			       insert n as MeshNode into visibleMeshes;
 			   }
-			   if (n is MeshNode and 
-			      n.visibleInScene and
-			      n.pickableInScene and
-			      n.boundsInScene.intersects(ray)) 
-			      {
-				  const mesh = (n as MeshNode).mesh;
-				  const localRay = n.toSceneTransform.inverse() * ray;
-				  var point is Point3;
-				  var t is Number;
-				  var tri is Integer;
-				  var w is Tuple3;
-				  if (false and (n is Shape2D.MeshNode2D)) {
-				      const plane = Plane{};
-				      const int = plane.intersectRay(localRay);
-				      point = int.point;
-				      tri = 0;
-				      t = int.t;
-				      w = Tuple3.<<1>>;
-				  } else {
-				      const points = mesh.intersect(localRay);
-				      var nearest is Tuple4[];
-				      for (i in points) {
-					  if (nearest == [] or i.x < nearest[0].x) {
-					      nearest = [i];
-					  }
-				      }
-				      if (nearest <> []) {
-					  const pt = nearest[0];
-					  const verts = mesh.vertices;
-					  tri = pt.w as Integer;
-					  const j = tri * 3;
-					  const x0 = verts.getX(j);
-					  const y0 = verts.getY(j);
-					  const z0 = verts.getZ(j);
-					  const x1 = verts.getX(j+1);
-					  const y1 = verts.getY(j+1);
-					  const z1 = verts.getZ(j+1);
-					  const x2 = verts.getX(j+2);
-					  const y2 = verts.getY(j+2);
-					  const z2 = verts.getZ(j+2);
-					  w = tuple(1.0-(pt.y+pt.z), 
-						    pt.y, 
-						    pt.z);
-					  const v0 = vector(x0, y0, z0);
-					  const v1 = vector(x1, y1, z1);
-					  const v2 = vector(x2, y2, z2);
-					  const v = 
-					      v0 * w.x + 
-					      v1 * w.y + 
-					      v2 * w.z;
-					  point = Point3.<<0>> + v;
-					  t = pt.x;
-				      }
-				  }
-				  //				      println("picked {n}");
-				  const worldPoint = n.toSceneTransform * point;
-				  if (t <> 0) insert Pick 
-				  {
-				      node: n;
-				      scenePoint: worldPoint;
-				      t: t;
-				      mesh: mesh;
-				      tri: tri;
-				      w: w;
-				  } into result;
-			      }
-		      });
+		       });
+	for (n in visibleMeshes) {
+	    if (n is MeshNode and 
+		n.visibleInScene and
+		n.pickableInScene and
+		n.boundsInScene.intersects(ray)) 
+		{
+		    const mesh = (n as MeshNode).mesh;
+		    const localRay = n.toSceneTransform.inverse() * ray;
+		    var point is Point3;
+		    var t is Number;
+		    var tri is Integer;
+		    var w is Tuple3;
+		    if (false and (n is Shape2D.MeshNode2D)) {
+			const plane = Plane{};
+			const int = plane.intersectRay(localRay);
+			point = int.point;
+			tri = 0;
+			t = int.t;
+			w = Tuple3.<<1>>;
+		    } else {
+			const points = mesh.intersect(localRay);
+			var nearest is Tuple4[];
+			for (i in points) {
+			    if (nearest == [] or i.x < nearest[0].x) {
+				nearest = [i];
+			    }
+			}
+			if (nearest <> []) {
+			    const pt = nearest[0];
+			    const verts = mesh.vertices;
+			    tri = pt.w as Integer;
+			    const j = tri * 3;
+			    const x0 = verts.getX(j);
+			    const y0 = verts.getY(j);
+			    const z0 = verts.getZ(j);
+			    const x1 = verts.getX(j+1);
+			    const y1 = verts.getY(j+1);
+			    const z1 = verts.getZ(j+1);
+			    const x2 = verts.getX(j+2);
+			    const y2 = verts.getY(j+2);
+			    const z2 = verts.getZ(j+2);
+			    w = tuple(1.0-(pt.y+pt.z), 
+				      pt.y, 
+				      pt.z);
+			    const v0 = vector(x0, y0, z0);
+			    const v1 = vector(x1, y1, z1);
+			    const v2 = vector(x2, y2, z2);
+			    const v = 
+				v0 * w.x + 
+				v1 * w.y + 
+				v2 * w.z;
+			    point = Point3.<<0>> + v;
+			    t = pt.x;
+			}
+		    }
+		    //				      println("picked {n}");
+		    const worldPoint = n.toSceneTransform * point;
+		    if (t <> 0) insert Pick 
+			{
+			    node: n;
+			    scenePoint: worldPoint;
+			    t: t;
+			    mesh: mesh;
+			    tri: tri;
+			    w: w;
+			} into result;
+		}
+	}
 	result = f3.util.Sequences.sort(result.reverse(), java.util.Comparator of Pick {
 		override function compare from (p0 is Pick , p1 is Pick) to Integer 
 		{

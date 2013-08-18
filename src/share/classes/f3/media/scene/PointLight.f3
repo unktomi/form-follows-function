@@ -1,6 +1,8 @@
 package f3.media.scene;
 import f3.math.Point3;
+import f3.util.*;
 
-public class PointLight is Node {
+public class PointLight is TransformNode {
     public readonly var location is Point3 = bind toSceneTransform.getTranslation();
+    public const isOn is Subject of Boolean = Observables.observe(&visible);
 }

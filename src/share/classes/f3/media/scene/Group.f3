@@ -18,16 +18,16 @@ public class Group is Node
 
                      
     // hacks to work around excessive stack consumption
-    var bnds0 = bind mergeBounds(content[0..<100], null);
-    var bnds1 = bind mergeBounds(content[100..<200], null);
-    var bnds2 = bind mergeBounds(content[200..<300], null);
-    var bnds3 = bind mergeBounds(content[300..<400], null);
-    var bnds4 = bind mergeBounds(content[400..<500], null);
-    var bnds5 = bind mergeBounds(content[500..<600], null);
-    var bnds6 = bind mergeBounds(content[600..<700], null);
-    var bnds7 = bind mergeBounds(content[700..<800], null);
-    var bnds8 = bind mergeBounds(content[800..<900], null);
-    var bnds9 = bind mergeBounds(content[900..], null);
+    readonly var bnds0 = bind mergeBounds(content[0..<100], null);
+    readonly var bnds1 = bind mergeBounds(content[100..<200], null);
+    readonly var bnds2 = bind mergeBounds(content[200..<300], null);
+    readonly var bnds3 = bind mergeBounds(content[300..<400], null);
+    readonly var bnds4 = bind mergeBounds(content[400..<500], null);
+    readonly var bnds5 = bind mergeBounds(content[500..<600], null);
+    readonly var bnds6 = bind mergeBounds(content[600..<700], null);
+    readonly var bnds7 = bind mergeBounds(content[700..<800], null);
+    readonly var bnds8 = bind mergeBounds(content[800..<900], null);
+    readonly var bnds9 = bind mergeBounds(content[900..], null);
 
     override function updateParent {
 	for (x in content) {
@@ -86,5 +86,4 @@ public class Group is Node
 	    insert n before content[0];
 	}
     }
-
 }

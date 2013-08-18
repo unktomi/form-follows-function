@@ -138,7 +138,8 @@ class PlatformUtils {
 
     // Return either an F3Type, if resolved, or a Type (which
     // the same as typ, though possibly "simplified".
-    static Object resolveGeneric (F3Local.Context context, Type typ) {
+    static Object resolveGeneric (F3Local.Context context, Type typ0) {
+	Type typ = typ0;
         if (typ instanceof ParameterizedType) {
             ParameterizedType ptyp = (ParameterizedType) typ;
             Type raw = ptyp.getRawType();
@@ -169,7 +170,6 @@ class PlatformUtils {
                     return new F3FunctionType(prtypes, rettype);
                 }
             }
-
             typ = raw;
         }
         if (typ instanceof WildcardType) {
@@ -194,6 +194,6 @@ class PlatformUtils {
             // KLUDGE
             typ = Object.class;
         }
-    return typ;
+	return typ;
     }
 }

@@ -9,3 +9,9 @@ public class MeshNode is Node
     override var contentBounds = bind mesh.bounds;
     public var deformers is MeshDeformer[];
 }
+
+public class Instance is MeshNode {
+    public var source is MeshNode;
+    override var mesh = bind source.mesh;
+    override var shader = bind source.shader;
+}

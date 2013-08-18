@@ -387,13 +387,15 @@ $PREFIX:{T|
 	return result;
     }
 
-    public Sequence<T> prepend(T x) {
+    public Sequence<T> prepend(Object o) {
 	// fix me !!
+	final T x = (T)o;
 	return (Sequence<T>)Sequences.insertBefore(this, x, 0);
     }
 
-    public Sequence<T> append(T x) {
+    public Sequence<T> append(Object o) {
 	// fix me !!
+	final T x = (T)o;
 	return (Sequence<T>)Sequences.insertBefore(this, x, size());
     }
 

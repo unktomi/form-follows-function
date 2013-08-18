@@ -4,6 +4,15 @@ import f3.lang.Ref;
 
 public interface Observable of a, is org.f3.runtime.Monad of (Observable, a) 
 {
+    public function toggle from (p is Ref of Boolean) to Disposable
+    {
+	accumulate(p.get(),
+		   function from (b is Boolean, _ is a) to Boolean
+		   {
+		       not b;
+		   }).subscribe(p);
+    }
+
     public function subscribe 
 	from (p is Ref of a) 
 	to Disposable 
@@ -19,7 +28,6 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		  {
 		      override function onNext from (x is a) to ()
 		      {
-		      println("ON NEXT {f} {x}");
 			  f(x);
 		      }
 		  });
@@ -237,7 +245,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
-    public function followedBy(xs is Observable of a) to Observable of a 
+    public function followedBy from (xs is Observable of a) to Observable of a 
     {
 	take(1).concat(xs);
     }
@@ -366,6 +374,13 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
+    public function zip of b 
+	from (xs is Observable of b) to
+	Observable of ((a, b))
+    {
+	zip(xs, function from (x is a, y is b) to (a, b) { (x, y) })
+    }
+
     public function zip of (b, c) 
 	from (xs is Observable of b, 
 	      f is function from (a, b) to c) 
@@ -477,6 +492,19 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    });
 	    }
 	}
+    }
+
+    public function always of b from (x is b) to Observable of b 
+    {
+	map(function from (_ is a) to b 
+	    {
+		x
+	    })
+    }
+
+    public function apply from () to Observable of (()) 
+    {
+	always(())
     }
 }
 

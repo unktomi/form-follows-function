@@ -22,7 +22,7 @@ class PointerObserver of a is Subject of a {
 
 public function observe of a 
     from (p is ObservableRef of a)
-    to Observable of a
+    to Subject of a
 {
     PointerObserver of a {
 	ptr: p

@@ -103,7 +103,7 @@ public class Builtins {
     public static boolean isInitialized(F3Object instance, int offset) {
         return instance != null && (
                    offset == -1 ? instance.isInitialized$internal$() // this pointer uses -1
-                   : instance.varTestBits$(offset, F3Object.VFLGS$IS_BOUND, F3Object.VFLGS$IS_BOUND) ||
+                   : (instance.varTestBits$(offset, F3Object.VFLGS$IS_BOUND, F3Object.VFLGS$IS_BOUND) && instance.varTestBits$(offset, F3Object.VFLGS$INIT$MASK, F3Object.VFLGS$INIT$PENDING)) ||
                      instance.varTestBits$(offset, F3Object.VFLGS$INIT$MASK, F3Object.VFLGS$INIT$INITIALIZED_DEFAULT)
                );
     }

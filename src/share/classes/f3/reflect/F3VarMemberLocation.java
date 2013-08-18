@@ -29,7 +29,7 @@ package f3.reflect;
  * @author Per Bothner
  * @profile desktop
  */
-public class F3VarMemberLocation extends F3Location {
+public class F3VarMemberLocation implements F3Location {
     F3ObjectValue object;
     F3VarMember attr;
     F3VarMemberLocation(F3ObjectValue object, F3VarMember attr)
