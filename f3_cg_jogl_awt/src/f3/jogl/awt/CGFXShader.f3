@@ -356,6 +356,10 @@ public class CGFXShader is Shader
         }
         return null;
     }        
+    
+    public function updateParameters to ()
+    {
+    }   
 
     public readonly var parameters is Parameter[] = bind getParameters(effect);
 
