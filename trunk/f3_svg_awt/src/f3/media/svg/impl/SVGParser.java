@@ -749,9 +749,6 @@ public class SVGParser {
 	Stack<String> idStack = new Stack();
 
 	void pushId(String id) {
-	    if (canvas != null) {
-		canvas.setId(id);
-	    }
 	    idStack.push(id);
 	}
 
@@ -1020,7 +1017,11 @@ public class SVGParser {
                 return;
             }
 	    String id = getStringAttr("id", atts);
+	    if (id == null && getId() == null) {
+		id = localName;
+	    }
 	    pushId(id);
+	    if (canvas != null) canvas.setId(id);
             if (localName.equals("svg")) {
                 pushG(new Properties(getParent(), atts));
                 int width = -1;
@@ -1220,7 +1221,6 @@ public class SVGParser {
             } else if (!hidden && localName.equals("clipPath")) {
                 canvas.beginClip();
             } else if (!hidden && localName.equals("path")) {
-
                 pushTransform(atts);
                 Properties props = new Properties(getParent(), atts);
                 String fillRule = props.getString("fill-rule");

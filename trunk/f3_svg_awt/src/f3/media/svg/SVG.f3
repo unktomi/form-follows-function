@@ -228,7 +228,7 @@ class CanvasImpl is Canvas {
         println("paint {paint}");
         const stroke = convertStroke(svgPaint);
         var shape = shape0;
-	println("add shape {shape}");
+	println("add shape id={getId()} {shape}");
         if (clipShape != null) {
             const a = new java.awt.geom.Area(transformShape(shape, worldMatrix));
             a.intersect(clipShape);
