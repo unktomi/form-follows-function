@@ -67,6 +67,7 @@ public abstract class TextMeshNode is MeshNode2D
     }
     public function getLayout to Layout;
     public var background is Paint;
+    public function getText to Area;
 }
 
 const OFFWHITE = new Color(.9, .9, .9, 1);
@@ -126,6 +127,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
     public readonly var caretShape = bind layout.getCaretShape(caretPosition);
     readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
+    const self = this;
     readonly var textMesh is TextMeshNode = TextMeshNode {
         override var path = bind textShape;
 	override var paint = bind foreground;
@@ -133,6 +135,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	override function getLayout to Layout {
 	    layout
 	}
+	override function getText to Area {self}
     }
     readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
     var column is Number;

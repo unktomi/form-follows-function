@@ -77,6 +77,7 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
 
     override function update 
     {
+        super.update();
 	updateCursor();
     }
     public var drawingSurface is AbstractTexture;

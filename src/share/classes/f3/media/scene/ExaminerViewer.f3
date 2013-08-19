@@ -85,7 +85,7 @@ public abstract class ExaminerViewer is MouseInputHandler {
 
     override function onMouseMove from (event is MouseEvent) to () {
         if (mouseEnabled) mouseMove(event.screenx, event.screeny,
-	                  event.ctrlKey, event.altKey);
+		                  event.ctrlKey, event.altKey);
     }
 
     public function mouseDown from (button is Integer, isControlDown is Boolean, isAltDown is Boolean) to () {
@@ -110,6 +110,8 @@ public abstract class ExaminerViewer is MouseInputHandler {
         dragging = button1Down or button2Down or button3Down;
     }
 
+    var firstTime = true;
+
     public function mouseMove 
 	from (mouseX is Number, 
 	      mouseY is Number, 
@@ -121,6 +123,10 @@ public abstract class ExaminerViewer is MouseInputHandler {
         var dragY = mouseY - this.mouseY;
         this.mouseY = mouseY;
         this.mouseX = mouseX;
+	if (firstTime) {
+	    firstTime = false;
+	    dragX = dragY = 0;
+	}
 	dragging = button1Down or button2Down or button3Down;
         if (dragging) {
             var doRotation =

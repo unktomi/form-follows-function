@@ -43,6 +43,8 @@ import com.jogamp.opengl.util.awt.TextureRenderer;
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
 
+public var ENABLE_TEXTURED_TEXT is Boolean = false;
+
 var DISABLE_DEFORMERS = false;
 
 class VideoTexture is HTML {
@@ -519,68 +521,85 @@ function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to S
         }
     }
 }
-/*
+
 
 class TextRenderer2D {
-    function render from (text is Text.TextMeshNode2D) to MeshNode 
+    var target is TextureRenderer;
+    const gl is GL2;
+    function render from (text is Text.TextMeshNode) to MeshNode 
     {
-	const bounds = text.contentBounds;
+	const p = text.getText();
+	const layout = text.getLayout() as JoglTextLayout;
+	const bounds = layout.getShape().getBounds();
 	const bg = (text.background as ColorPaint).color;
+	const fg = (text.paint as ColorPaint).color;
 	const w = pot(bounds.width());
-	const h = pot(bounds.height);
+	const h = pot(bounds.height());
 	if (target.getWidth() <> w or target.getHeight() <> h) {
 	    target = new TextureRenderer(w, h, true);
-	    tex == null;
-	    meshNode = null;
 	}
 	//println("camera={camera.bounds}");
 	const g = target.createGraphics();
+	g.setBackground(new java.awt.Color(0, 0, 0, 0.0));
+	g.clearRect(0, 0, w, h);
+	const bgc = new java.awt.Color(bg.red,
+				       bg.green,
+				       bg.blue,
+				       bg.opacity);
+	g.setBackground(bgc);
+	g.setColor(bgc);
+	println("layout bounds = {layout.getShape().getBounds()}");
+	const tx = AffineTransform.getTranslateInstance(Math.round(w/2), Math.round(h/2));
+	tx.concatenate(AffineTransform.getScaleInstance(1, -1));
+	g.setTransform(tx);
+	const b = p.contentBounds;
+	g.fillRect(-b.extent.x,
+		   -b.extent.y,
+	           b.width(), 
+		   b.height());
+	const fgc = new java.awt.Color(fg.red, fg.green, fg.blue, fg.opacity);
+	g.setColor(fgc);
+	g.translate(-bounds.center.x, bounds.center.y);
 	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+
 	g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
 	g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS,
 			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-	const bg = if (scene.background == null) Color.color(0, 0, 0, 0) else scene.background;
-	g.setBackground(new java.awt.Color(bg.red,
-					   bg.green,
-					   bg.blue,
-					   bg.opacity));
-	g.clearRect(0, 0, w, h);
-	const tx = AffineTransform.getScaleInstance(1, -1);
-	tx.concatenate(AffineTransform.getScaleInstance(x, y));
-	g.setTransform(tx);
-	for (layout in t.layouts) {
-	    const i = indexof layout;
-	    layout.draw(g, t.xs[i], t.ys[i]);
+
+	for (tl in layout.layouts) {
+	    const i = indexof tl;
+	    tl.draw(g, Math.round(layout.xs[i]), Math.round(layout.ys[i]));
 	}
-	target.markDirty(0, 0, w, h);
-	target.getTexture();
-	if (tex == null or meshNode == null) {
-	    println("target texture {target.getTexture()}");
-	    const texture = JoglTexture {
-		gl: this.gl;
-		tex: target.getTexture();
-		id: scene.id;
+	target.markDirty(0, 0, w, h);	
+	const tex = target.getTexture();
+	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
+	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
+	const id = "{text.id}#texture";
+	const texture = JoglTexture {
+	    gl: this.gl;
+	    tex: tex;
+	    id: id;
+	}
+	println("text={p.text} => bounds={bounds} w={w} h={h}");
+	MeshNode {
+	    id: id;
+	    mesh: MeshBuffer.quad(w, h)
+	    shader: TexturePaintShader 
+	    {
+		color: Color.TRANSPARENT;
+		tex: texture;
 	    }
-	    tex = texture;
-	    meshNode = MeshNode {
-	       parent: scene.root;
-	       id: scene.id;
-	       mesh: MeshBuffer.quad(w, h);
-	       shader: TexturePaintShader 
-	       {
-		   color: Color.WHITE;
-		   tex: texture;
-	       }
-	       override var transform = text.toSceneTransform;
-	   }
-	   println("bounds={meshNode.bounds}");
+	    transform: bind text.toSceneTransform * 
+		translate(bounds.extent.x-p.width/2, bounds.bottom()+p.height/2);
+	    override var visible = bind text.visibleInScene;
 	}
     }
 }
 
-*/
+
 
 class SceneRenderer2D 
 {
@@ -1627,11 +1646,19 @@ class JoglImageLoader is ImageLoader {
     }
 }
 
-class DrawInfo {
+public class DrawInfo {
     public var shader is Shader;
     public var worldBounds is Bounds;
     public const shaderParams = new java.util.HashMap of (String, Object);
     public var mesh is AbstractMesh;
+}
+
+public class TextDrawInfo is DrawInfo {
+    public var renderer is TextRenderer2D;
+    public var layout is Text.Layout;
+    public var tex is MeshNode;
+    public var background is Paint;
+    public var foreground is Paint;
 }
 
 
@@ -1820,7 +1847,7 @@ class SceneRenderer {
 		    }
 		} 
 		if (n is MeshNode) {
-		    const mn = n as MeshNode;
+		    var mn = n as MeshNode;
 		    if (not DISABLE_DEFORMERS) {
 			for (deformer in mn.deformers) {
 			    //println("applying deformer {deformer} to {mn}");
@@ -1841,13 +1868,6 @@ class SceneRenderer {
 			    }
 			} 
 			const tris = mn.mesh.getIndexBuffer().limit() / 3;
-			if ((scene.camera is Camera2D) or shader.isTransparent) {
-			    transparentToDraw.add(mn);
-			    transparentTris += tris;
-			} else {
-			    opaqueToDraw.add(mn);
-			    opaqueTris += tris;
-			}
 			var info = lastDrawn.get(mn);
 			const cgfx = mn.shader as CGFXShader;
 			cgfx.updateParameters();
@@ -1856,8 +1876,17 @@ class SceneRenderer {
 			    if (DEBUG_DRAW) {
 				println("dirty due to new mesh {mn}");
 			    }
-			    info = DrawInfo {
+			    if (ENABLE_TEXTURED_TEXT and scene.camera is Camera2D and mn is Text.TextMeshNode) {
+				info = TextDrawInfo {
+				    renderer: TextRenderer2D {
+					gl: gl
+				    }
+				}
+			    } else {
+				info = DrawInfo {
+				}
 			    }
+			    println("created draw info {info} for {mn}");
 			} else {
 			    if (not dirty) {
 				if (info.mesh <> mn.mesh or
@@ -1891,10 +1920,34 @@ class SceneRenderer {
 			info.mesh = mn.mesh;
 			info.shader = mn.shader;
 			info.worldBounds = mn.boundsInScene;
+			const key = mn;
+			if (info is TextDrawInfo) {
+			    const ti = info as TextDrawInfo;
+			    const tn = mn as Text.TextMeshNode;
+			    if (ti.tex == null or 
+				ti.layout <> tn.getLayout() or 
+				ti.background <> tn.background or
+				ti.foreground <> tn.paint) {
+				dirty = true;
+				ti.tex = ti.renderer.render(mn as Text.TextMeshNode);
+				println("rendered {mn}");
+				ti.layout = tn.getLayout();
+				ti.background = tn.background;
+				ti.foreground = tn.paint;
+			    }
+			    mn = ti.tex;
+			}
+			if ((scene.camera is Camera2D) or shader.isTransparent) {
+			    transparentToDraw.add(mn);
+			    transparentTris += tris;
+			} else {
+			    opaqueToDraw.add(mn);
+			    opaqueTris += tris;
+			}
 			for (i in (mn.shader as CGFXShader).parameters) {
 			    info.shaderParams.put(i.name, i.get());
 			}
-			thisDraw.put(mn, info);
+			thisDraw.put(key, info);
 			if (scene.camera is Camera2D and not dirty) {
 			    if (not iter.hasNext() or iter.next() <> mn) {
 				dirty = true;
@@ -2557,15 +2610,16 @@ public class Listener is GLEventListener, DropTargetListener {
 	if (lastFrame == 0) {
 	   lastFrame = end;
 	} 
-	const d = lastFrame + 16 - end;
+	const d = lastFrame + 32 - end;
 	if (skip and d > 0) {
 	    gl.setSwapInterval(0);
+	    //println("sleeping {d}");
 	    java.lang.Thread.sleep(d);
 	    lastFrame = end+d;
 	} else {
 	    gl.setSwapInterval(1);
 	    canvas.swapBuffers();
-	    lastFrame = end;	
+	    lastFrame = java.lang.System.currentTimeMillis();
 	}
     }
 
@@ -3008,8 +3062,15 @@ public class JoglStage is Stage
                 frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
             }
         }
+	
+	var x = Integer.MAX_VALUE;
+	var y = Integer.MAX_VALUE;
         canvas.addMouseListener(java.awt.event.MouseAdapter {
                 override function mousePressed from (e is java.awt.event.MouseEvent) to () {
+		    if (x <> e.getX() or y <> e.getY()) {
+			x = e.getX(); y = e.getY();
+			listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
+		    }
                     listener.mouseDown(e.getButton(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown(), e.getClickCount());
                 }
                 override function mouseReleased from (e is java.awt.event.MouseEvent) to () {
@@ -3023,9 +3084,11 @@ public class JoglStage is Stage
 	    });
         canvas.addMouseMotionListener(java.awt.event.MouseMotionAdapter {
                 override function mouseMoved from (e is java.awt.event.MouseEvent) to () {
+		    x = e.getX(); y = e.getY();
                     listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
                 }
                 override function mouseDragged from (e is java.awt.event.MouseEvent) to () {
+		    x = e.getX(); y = e.getY();
                     listener.mouseMove(e.getX(), e.getY(), e.isControlDown(), e.isAltDown(), e.isMetaDown(), e.isShiftDown());
                 }
             });
