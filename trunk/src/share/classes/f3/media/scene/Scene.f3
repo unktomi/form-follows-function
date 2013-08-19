@@ -121,7 +121,7 @@ public class Scene
 		    var t is Number;
 		    var tri is Integer;
 		    var w is Tuple3;
-		    if (false and (n is Shape2D.MeshNode2D)) {
+		    if (n is Shape2D.MeshNode2D) {
 			const plane = Plane{};
 			const int = plane.intersectRay(localRay);
 			point = int.point;
