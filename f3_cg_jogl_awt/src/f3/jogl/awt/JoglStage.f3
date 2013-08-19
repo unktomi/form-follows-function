@@ -519,6 +519,68 @@ function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to S
         }
     }
 }
+/*
+
+class TextRenderer2D {
+    function render from (text is Text.TextMeshNode2D) to MeshNode 
+    {
+	const bounds = text.contentBounds;
+	const bg = (text.background as ColorPaint).color;
+	const w = pot(bounds.width());
+	const h = pot(bounds.height);
+	if (target.getWidth() <> w or target.getHeight() <> h) {
+	    target = new TextureRenderer(w, h, true);
+	    tex == null;
+	    meshNode = null;
+	}
+	//println("camera={camera.bounds}");
+	const g = target.createGraphics();
+	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
+			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+	g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
+			   java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+	g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS,
+			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+	const bg = if (scene.background == null) Color.color(0, 0, 0, 0) else scene.background;
+	g.setBackground(new java.awt.Color(bg.red,
+					   bg.green,
+					   bg.blue,
+					   bg.opacity));
+	g.clearRect(0, 0, w, h);
+	const tx = AffineTransform.getScaleInstance(1, -1);
+	tx.concatenate(AffineTransform.getScaleInstance(x, y));
+	g.setTransform(tx);
+	for (layout in t.layouts) {
+	    const i = indexof layout;
+	    layout.draw(g, t.xs[i], t.ys[i]);
+	}
+	target.markDirty(0, 0, w, h);
+	target.getTexture();
+	if (tex == null or meshNode == null) {
+	    println("target texture {target.getTexture()}");
+	    const texture = JoglTexture {
+		gl: this.gl;
+		tex: target.getTexture();
+		id: scene.id;
+	    }
+	    tex = texture;
+	    meshNode = MeshNode {
+	       parent: scene.root;
+	       id: scene.id;
+	       mesh: MeshBuffer.quad(w, h);
+	       shader: TexturePaintShader 
+	       {
+		   color: Color.WHITE;
+		   tex: texture;
+	       }
+	       override var transform = text.toSceneTransform;
+	   }
+	   println("bounds={meshNode.bounds}");
+	}
+    }
+}
+
+*/
 
 class SceneRenderer2D 
 {
@@ -546,6 +608,7 @@ class SceneRenderer2D
 	}
     }
 
+
     function render2d from (camera is Camera2D, scene is Scene) to () 
     {
 	const w = pot(scene.stage.width);
@@ -560,6 +623,8 @@ class SceneRenderer2D
 	const g = target.createGraphics();
 	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+	g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
+			   java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 	g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS,
 			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
 	const bg = if (scene.background == null) Color.color(0, 0, 0, 0) else scene.background;
@@ -567,6 +632,7 @@ class SceneRenderer2D
 					   bg.green,
 					   bg.blue,
 					   bg.opacity));
+	camera.update();
 	g.clearRect(0, 0, w, h);
 	scene.root.foldLeft((), 
 			    function from (_ is (), n is Node) to () 
@@ -611,6 +677,7 @@ class SceneRenderer2D
 	    }
 	    tex = texture;
 	    meshNode = MeshNode {
+	       parent: scene.root;
 	       id: scene.id;
 	       mesh: MeshBuffer.quad(w, h);
 	       shader: TexturePaintShader 
@@ -900,6 +967,7 @@ class TexturePaintShader is CGFXShader
 				  viewMatrix is  Mat4,
 				  projectionMatrix is  Mat4) to () 
     {
+	updateParameters();
         super.apply(mesh,
 		    worldTransform,
                     viewMatrix,
@@ -1855,22 +1923,15 @@ class SceneRenderer {
 	    }
 	};
         offscreenToRender.clear();
-	if (false and scene.camera instanceof Camera2D) {
-	    const cam = scene.camera as Camera2D;
-	    const r = getRenderer2D(scene, gl);
-	    r.render2d(cam, scene);
-	    opaqueToDraw.add(r.meshNode);
-	} else {
-	    //scene.root.foldLeft((), vf);
-	    for (i in scene.visibleMeshes) {
-		vf((), i);
-	    }
-	    for (i in offscreenToRender) {
-		if (renderStageNode(gl, i as StageNode)) {
-		    dirty = true;
-		}
-	    }
+		    //scene.root.foldLeft((), vf);
+	for (i in scene.visibleMeshes) {
+	    vf((), i);
 	}
+	for (i in offscreenToRender) {
+	    if (renderStageNode(gl, i as StageNode)) {
+		dirty = true;
+	    }
+	}	
 	//println("last: {lastDrawn.size()}");
 	//println("current: {thisDraw.size()}");
 	for (x in lastDrawn.keySet()) {
@@ -1927,6 +1988,22 @@ class SceneRenderer {
 	      height is Number)
 	to ()
     {
+	if (false and scene.camera is Camera2D) {
+	    var canUse2d = true;
+	    for (x in  transparentToDraw) {
+		if (not (x is Shape2D.MeshNode2D)) {
+		    canUse2d = false;
+		    break;
+		}
+	    }
+	    if (canUse2d) {
+		const cam = scene.camera as Camera2D;
+		const r = getRenderer2D(scene, gl);
+		r.render2d(cam, scene);
+		transparentToDraw.clear();
+		transparentToDraw.add(r.meshNode);
+	    } 
+	}
         gl.glViewport(0, 0, width, height);
         if (scene.background.opacity <> 0) {
             const bg = scene.background;
@@ -1997,12 +2074,15 @@ class SceneRenderer {
     {
         const cameraLight = camera.toSceneTransform.getTranslation();
 	const sceneParentInverse = if (sceneParent == null) Mat4.<<1>> else sceneParent.toSceneTransform.inverse();
+	var disableDepth = false;
+	/*
 	gl.glPolygonOffset(1, 1);
 	gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
-	var disableDepth = false;
+
 	if (camera instanceof Camera2D) {
 	    disableDepth = true;
 	} 
+	*/
 	var prev is Node = null;
         for (n in toDraw) {
 	    prev = n;
@@ -3142,6 +3222,7 @@ public function run from (args is String[]) to ()
     
     currentCamera = camera;
     const mainScene = Scene {
+	id: "Main Scene";
 	background: Color.GRAY;
 	override var camera = bind currentCamera on invalidate {
 	    println("scene camera invalidated {currentCamera}");
@@ -3152,7 +3233,7 @@ public function run from (args is String[]) to ()
     const stage = JoglStage {
 	title: new java.io.File(args[0]).getName();
 	content: [mainScene,
-		  if (false) null else Scene {
+		  if (true) null else Scene {
                     background: null;
                     camera: Camera2D {}; 
 		    content: bind foreach (i in [0..<model.getCameras().size()]) StageNode {

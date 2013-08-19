@@ -506,6 +506,47 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     {
 	always(())
     }
+
+    public function partition from (f is function from a to Boolean) 
+	to (Observable of a)[]
+    {
+	var d0 is Disposable;
+	var d1 is Disposable;
+	const y = Subject of a {
+	    override function onNext from (x is a) to () {
+		if (f(x)) super.onNext(x);
+	    }
+	    override function onError from (e is java.lang.Exception) to ()
+	    {
+		d0.dispose();
+		super.onError(e);
+	    }
+	    override function onCompleted from () to ()
+	    {
+		d0.dispose();
+		super.onCompleted();
+	    }
+	};
+	const n = Subject of a {
+	    override function onNext from (x is a) to () {
+		if (f(x)) super.onNext(x);
+	    }
+	    override function onError from (e is java.lang.Exception) to ()
+	    {
+		d1.dispose();
+		super.onError(e);
+	    }
+	    override function onCompleted from () to ()
+	    {
+		d1.dispose();
+		super.onCompleted();
+	    }
+	}
+	d0 = subscribe(y);
+	d1 = subscribe(n);
+	[y, n]
+    }
+
 }
 
 abstract class DefaultObservable of a is Observable of a, org.f3.runtime.Monad of (Observable, a) 
@@ -610,6 +651,7 @@ public function empty of a to Observable of a
 	    Disposable.empty();
 	}
     }
+
 }
 
 /*

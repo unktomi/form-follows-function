@@ -70,6 +70,16 @@ public function color from (red is Float, green is Float, blue is Float) to Colo
     color(red, green, blue, 1);
 }
 
+public function gray from (c is Number) to Color
+{
+    gray(c, 1);
+}
+
+public function gray from (c is Number, o is Number) to Color
+{
+    color(c, c, c, o);
+}
+
 /**
  * Factory method that returns a Color instance for the specified
  * red, green, and blue values in the sRGB color space with the specified
