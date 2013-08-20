@@ -63,8 +63,6 @@ technique Opaque {
         DepthMask = true;
         CullFaceEnable  = false; 
         BlendEnable = false;
-        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
-        BlendEnable = false;
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
     }

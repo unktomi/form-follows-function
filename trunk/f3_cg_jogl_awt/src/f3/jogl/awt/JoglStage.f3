@@ -43,7 +43,8 @@ import com.jogamp.opengl.util.awt.TextureRenderer;
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
 
-public var ENABLE_TEXTURED_TEXT is Boolean = false;
+public var ENABLE_TEXTURED_TEXT is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.textured.text");;
+public var ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.2d.renderer");;
 
 var DISABLE_DEFORMERS = false;
 
@@ -549,34 +550,35 @@ class TextRenderer2D {
 	g.setBackground(bgc);
 	g.setColor(bgc);
 	println("layout bounds = {layout.getShape().getBounds()}");
-	const tx = AffineTransform.getTranslateInstance(Math.round(w/2), Math.round(h/2));
-	tx.concatenate(AffineTransform.getScaleInstance(1, -1));
+	const tx = AffineTransform.getTranslateInstance(Math.round(w/2.0), Math.round(h/2.0));
 	g.setTransform(tx);
-	const b = p.contentBounds;
-	g.fillRect(-b.extent.x,
-		   -b.extent.y,
-	           b.width(), 
-		   b.height());
-	const fgc = new java.awt.Color(fg.red, fg.green, fg.blue, fg.opacity);
-	g.setColor(fgc);
-	g.translate(-bounds.center.x, bounds.center.y);
+	const b = p.bounds;
+	g.fillRect(-b.extent.x-1,
+		   b.extent.y+1,
+	           b.width()+2, 
+		   b.height()+2);
 	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
-
 	g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
 	g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS,
 			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-
+	const hints = java.awt.Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints") as java.util.Map of (String, String);
+	g.addRenderingHints(hints);
+	const fgc = new java.awt.Color(fg.red, fg.green, fg.blue, fg.opacity);
+	g.setColor(fgc);
+	tx.scale(1, -1);
+	tx.translate(Math.round(-bounds.center.x), Math.round(bounds.center.y));
+	g.setTransform(tx);
 	for (tl in layout.layouts) {
 	    const i = indexof tl;
-	    tl.draw(g, Math.round(layout.xs[i]), Math.round(layout.ys[i]));
+	    const x = Math.round(layout.xs[i]);
+	    const y = Math.round(layout.ys[i]);
+	    println("drawing {x},{y} t={g.getTransform()}");
+	    tl.draw(g, x, y);
 	}
 	target.markDirty(0, 0, w, h);	
 	const tex = target.getTexture();
-	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP_TO_EDGE);
-	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP_TO_EDGE);
 	const id = "{text.id}#texture";
 	const texture = JoglTexture {
 	    gl: this.gl;
@@ -585,16 +587,18 @@ class TextRenderer2D {
 	}
 	println("text={p.text} => bounds={bounds} w={w} h={h}");
 	MeshNode {
+	    parent: text;
 	    id: id;
-	    mesh: MeshBuffer.quad(w, h)
-	    shader: TexturePaintShader 
-	    {
+	    mesh: MeshBuffer.quad(w, h);
+	    shader: TexturePaintShader {
 		color: Color.TRANSPARENT;
 		tex: texture;
 	    }
-	    transform: bind text.toSceneTransform * 
-		translate(bounds.extent.x-p.width/2, bounds.bottom()+p.height/2);
-	    override var visible = bind text.visibleInScene;
+	    transform: bind translate(bounds.center.x, bounds.center.y);
+	    /*
+	    transform: bind 
+		translate(bounds.extent.x-p.width/2+p.indent, bounds.bottom()+p.height/2);
+	    */
 	}
     }
 }
@@ -1876,7 +1880,7 @@ class SceneRenderer {
 			    if (DEBUG_DRAW) {
 				println("dirty due to new mesh {mn}");
 			    }
-			    if (ENABLE_TEXTURED_TEXT and scene.camera is Camera2D and mn is Text.TextMeshNode) {
+			    if (ENABLE_TEXTURED_TEXT and scene.camera is Camera2D and mn is Text.TextMeshNode and { const tn = mn as Text.TextMeshNode; tn.getText().background <> null }) {
 				info = TextDrawInfo {
 				    renderer: TextRenderer2D {
 					gl: gl
@@ -2041,7 +2045,7 @@ class SceneRenderer {
 	      height is Number)
 	to ()
     {
-	if (false and scene.camera is Camera2D) {
+	if (ENABLE_2D_RENDERER and scene.camera is Camera2D) {
 	    var canUse2d = true;
 	    for (x in  transparentToDraw) {
 		if (not (x is Shape2D.MeshNode2D)) {
@@ -2174,7 +2178,7 @@ class SceneRenderer {
 	    }
 	    //println("drawing {n}");
 	    var toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
-	    if ((mn is Text.TextMeshNode) and (camera is Camera2D)) {
+	    if (false and ((mn is Text.TextMeshNode) and (camera is Camera2D))) {
 		if (toSceneTransform.getRotation() == Quat.<<1>>) {
 		    const t = mn.toSceneTransform.getTranslation();
 		    toSceneTransform = translate(Math.round(t.x)+0.5,

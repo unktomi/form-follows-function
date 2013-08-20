@@ -64,9 +64,7 @@ technique Transparent {
         DepthMask = false;
         CullFaceEnable  = false; 
         BlendEnable = true;
-	AlphaBlendEnable = true;
         BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
-
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
     }
