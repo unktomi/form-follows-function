@@ -96,6 +96,16 @@ public class Tuple3 is F3Value
     {
 	if (i == 0) then x else if i == 1 then y else if i == 2 then z else 0.0;
     }
+
+    public function min from (v is Tuple3) to Tuple3 
+    {
+	if (v == this) v else new Tuple3(Math.min(x, v.x), Math.min(y, v.y), Math.min(z, v.z))
+    }
+
+    public function max from (v is Tuple3) to Tuple3 
+    {
+	if (v == this) v else new Tuple3(Math.max(x, v.x), Math.max(y, v.y), Math.max(z, v.z))
+    }
 }
 
 public static def TYPE_INFO is TypeInfo of ..Tuple3 = 
