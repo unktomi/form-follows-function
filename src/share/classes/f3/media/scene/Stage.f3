@@ -54,8 +54,10 @@ public interface Stage
     {
         for (h in mouseHandlers) {
             h.onMouseWheel(event);
+	    if (not event.propagate) break;
         }
         for (c in content.reverse()) {
+	    if (not event.propagate) break;
             c.injectMouseWheel(event);
         }
     } 

@@ -102,10 +102,10 @@ import org.f3.runtime.sequence.Sequences;
  */
  public class F3Base implements F3Object {
      public static boolean f3debug = false;
-     public static boolean isDebug (F3Object obj) {
+     public static boolean isDebug$ (F3Object obj) {
 	 return f3debug;
      }
-     public static void setDebug(Object obj, boolean value) {
+     public static void setDebug$(Object obj, boolean value) {
 	 f3debug = value;
      }
 
@@ -330,11 +330,11 @@ import org.f3.runtime.sequence.Sequences;
 	}
     }
     public static void applyDefaultsDebug$(F3Object obj, final int varNum) {
-	if (isDebug(obj)) {
+	if (isDebug$(obj)) {
 	    System.err.println("apply default: "+obj+": "+ varNum);
 	}
 	applyDefaults$(obj, varNum);
-	if (isDebug(obj)) {
+	if (isDebug$(obj)) {
 	    System.err.println("apply default: "+obj+": "+ varNum+ " = "+ obj.get$(varNum));
 	}
     }

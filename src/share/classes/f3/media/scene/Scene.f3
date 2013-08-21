@@ -511,8 +511,25 @@ public class Scene
             }
         }
 	if (p.node.mouseWheel <> null) {	
+            sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
-	    p.node.mouseWheel.onNext(e);
+	    const we = MouseWheelEvent { // this sucks
+		clickCount: e.clickCount;
+		stage: e.stage;
+		scene: this;
+		altKey: e.altKey;
+		ctrlKey: e.ctrlKey;
+		shiftKey: e.shiftKey;
+		metaKey: e.metaKey;
+		screenx: e.screenx;
+		screeny: e.screeny;
+		screenDrag: e.screenDrag;
+		sceneLocation: p.scenePoint;
+		buttons: e.buttons;
+		picked: p;
+		scroll: sceneEvent.scroll;
+	    }
+	    p.node.mouseWheel.onNext(we);
 	}
     }
 

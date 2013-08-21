@@ -62,7 +62,7 @@ class VideoTexture is HTML {
 	    "</style></head><body><video id=\"video_background\" src=\"{url}\" autoplay></body></html>" on replace { println("content={content}") };
 }
 
-const frc = new java.awt.font.FontRenderContext(null, true, true);
+var frc = new java.awt.font.FontRenderContext(null, true, false);
 function getFont from (spec is String) to java.awt.Font 
 {
     const props = spec.split(";");
@@ -172,6 +172,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
         str.addAttribute(java.awt.font.TextAttribute.FONT, (font as JoglFont).font); 
         const measurer = new java.awt.font.LineBreakMeasurer(str.getIterator(), frc);
         var y = 0.0;
+	var w = Math.round(wrapWidth / 2.0);
         while (measurer.getPosition() < text.length()) {
             const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
             const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline+1;
@@ -183,7 +184,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
 	    if (layout <> null) {
 		var dx = 
 		    if (rightJustify or not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
-                dx -= wrapWidth / 2.0;
+                dx -= w;
                 y += layout.getDescent() + layout.getLeading();
                 insert dx into xs;
                 insert y into ys;
@@ -1798,6 +1799,7 @@ class SceneRenderer {
         var dirty = false;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
+	scene.update();
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
 
@@ -2178,12 +2180,18 @@ class SceneRenderer {
 	    }
 	    //println("drawing {n}");
 	    var toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
-	    if (false and ((mn is Text.TextMeshNode) and (camera is Camera2D))) {
+	    if (((mn is Text.TextMeshNode) and (camera is Camera2D))) {
 		if (toSceneTransform.getRotation() == Quat.<<1>>) {
 		    const t = mn.toSceneTransform.getTranslation();
-		    toSceneTransform = translate(Math.round(t.x)+0.5,
-						 Math.round(t.y)+0.5,
-						 Math.round(t.z)+0.5);
+		    const tn = mn as Text.TextMeshNode;
+		    const b = tn.getLayout().getShape().getBounds();
+		    const x = if (tn.getText().rightJustified) then b.right() else b.left();
+		    const dx = x - Math.round(x);
+		    const dy = b.bottom() - Math.round(b.bottom());
+		    toSceneTransform = translate(Math.round(t.x)-dx+.1,
+						 Math.round(t.y)-dy+.1,
+						 0);
+		    //println("{tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
 		}
 	    }
 	    if (DEBUG_MESHES) println("drawing {mn.id}");
@@ -2580,6 +2588,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	    prevTime = now;
 	}
         const delta = 1ms * (now - prevTime);
+	//	println("delta={delta}");
 	MasterTimeline.advancePlayhead(delta);
 	prevTime = now;
 
@@ -2614,18 +2623,21 @@ public class Listener is GLEventListener, DropTargetListener {
 	if (lastFrame == 0) {
 	   lastFrame = end;
 	} 
-	const d = lastFrame + 32 - end;
+	const d = lastFrame + sleepFrames - end;
 	if (skip and d > 0) {
 	    gl.setSwapInterval(0);
 	    //println("sleeping {d}");
 	    java.lang.Thread.sleep(d);
-	    lastFrame = end+d;
+	    sleepFrames = Math.min(sleepFrames*2, 32);
 	} else {
 	    gl.setSwapInterval(1);
 	    canvas.swapBuffers();
-	    lastFrame = java.lang.System.currentTimeMillis();
+	    sleepFrames = 16;
 	}
+	lastFrame = java.lang.System.currentTimeMillis();
     }
+    
+    var sleepFrames = 32;
 
     var lastFrame is Long;
 
