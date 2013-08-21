@@ -123,11 +123,11 @@ public abstract class ExaminerViewer is MouseInputHandler {
         var dragY = mouseY - this.mouseY;
         this.mouseY = mouseY;
         this.mouseX = mouseX;
+	dragging = button1Down or button2Down or button3Down;
 	if (firstTime) {
 	    firstTime = false;
 	    dragX = dragY = 0;
 	}
-	dragging = button1Down or button2Down or button3Down;
         if (dragging) {
             var doRotation =
                 (button1Down and not button2Down and not button3Down);

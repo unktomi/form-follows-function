@@ -30,6 +30,7 @@ public class Group is Node
     readonly var bnds9 = bind mergeBounds(content[900..], null);
 
     override function updateParent {
+        preupdate();
 	for (x in content) {
 	    x.setParent(this);
 	    x.updateParent();

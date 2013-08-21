@@ -65,6 +65,11 @@ public class F3Local {
         /** Get the default instance. */
         public static Context getInstance() { return instance; }
 
+	public F3FunctionType makeFunctionType(F3Type[] argTypes, F3Type returnType) 
+	{
+	    return new F3FunctionType(argTypes, returnType);
+	}
+
         /** Create a reference to a given Object. */
         public ObjectValue mirrorOf(Object obj) {
             return new ObjectValue(obj, this);
@@ -1309,4 +1314,25 @@ public class F3Local {
         // FIXME: yet to be implemented for compiled binds
         //    public AbstractVariable getAbstractVariable(F3ObjectValue obj) {...}
     }
+
+
+    /*
+
+    public F3FunctionMember makeFunctionMember(final String name,
+					       final F3FunctionType funType,
+					       final org.f3.function.Function impl)
+	return new F3FunctionMember() {
+	    public String getName() {return name;}
+	    public F3ClassType getDeclaringClass() { return null }
+	    public boolean isStatic() { return true; }
+	    public boolean isPublic() {return true; }
+	    public boolean isPackage() { return false; }
+	    public boolean isProtected() { return false; }
+	    public F3FunctionType getType() { return funType; }
+	    public F3Value invoke(F3ObjectValue owner, F3Value... arg)
+	    {
+	    }
+	}
+    }
+    */
 }

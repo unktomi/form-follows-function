@@ -56,12 +56,13 @@ public abstract class Node is Foldable of Node
     public function updateParent from () to () { update() }
     protected function setParent from (n is Node) to () { parent = n }
     public function update from () to () {}
+    public function preupdate from () to () {}
 
     protected var mouseDown is Subject of MouseEvent;
     protected var mouseUp is Subject of MouseEvent;
     protected var mouseMove is Subject of MouseEvent;
     protected var mouseDrag is Subject of MouseEvent;
-    protected var mouseWheel is Subject of MouseEvent;
+    protected var mouseWheel is Subject of MouseWheelEvent;
 
     public bound function getPivot { Mat4.<<1>> }
     public bound function getScalePivot { Mat4.<<1>> }
@@ -98,10 +99,10 @@ public abstract class Node is Foldable of Node
 	else mouseDrag;
     }
 
-    public function observeMouseWheel to Observable of MouseEvent 
+    public function observeMouseWheel to Observable of MouseWheelEvent 
     {
 	if (mouseWheel == null) 
-	    then mouseWheel = Subject of MouseEvent {}
+	    then mouseWheel = Subject of MouseWheelEvent {}
 	else mouseWheel;
 	
     }
