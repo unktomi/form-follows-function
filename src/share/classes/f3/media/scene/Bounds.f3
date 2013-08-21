@@ -62,6 +62,7 @@ public class Bounds is Mat4.Transformable of Bounds
 	center.z + extent.z;
     }
 
+
     override public function premultiply from (m is Mat4) to Bounds 
     {
 	Bounds.transformBounds(m, this)
@@ -345,3 +346,37 @@ public function merge
                          maxX, maxY, maxZ);
     }
 }
+
+function gt from (x is Number, y is Number) to Boolean 
+{
+    x - .0001 >= y;
+}
+
+public function intersect from (b1 is Bounds, b2 is Bounds) to Bounds 
+{   	   
+    if (b1 == null) b2
+	else if (b2 == null) b1
+	    else {
+		const m = b1.min();
+		const n = b1.max();
+		const o = b2.min();
+		const p = b2.max();
+		if (gt(m.x, p.x) or gt(o.x, n.x) or gt(m.y,  p.y) or gt(o.y, n.y) or gt(m.z, p.z) or gt(o.z, n.z)) {
+		    return null;
+		}
+		Bounds.bounds(m.max(o), n.min(p));
+	    }
+}
+
+public function bounds from (min is Point3, max is Point3) to Bounds 
+{
+    const e = ((max - min) / 2).max(Point3.<<0>>);
+    if (e == Point3.<<0>>) then null else {
+	    const c = min + e;
+	    Bounds {
+		center: c;
+		extent: e;
+	    }
+	}
+}
+

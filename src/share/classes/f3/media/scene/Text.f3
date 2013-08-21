@@ -97,7 +97,9 @@ public class Label is AbstractText {
 	selectionBackground: bind selectionBackground;
 	pickable: bind pickable;
 	indent: bind indent;
+	editable: false;
     };
+    override var blocksPointer = true;
     override var pickable = false;
     override var internalContent = bind content;
     public var text is String on replace {
@@ -107,6 +109,7 @@ public class Label is AbstractText {
 
 public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHandler 
 {
+    public var editable is Boolean = true;
     override var cursor = Cursor.IBeam;
     public readonly var text is String = "";
     const buffer = new java.lang.StringBuffer;
@@ -125,8 +128,8 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     public readonly var layout = bind layoutInstance.createLayout(text, font, width-indent, height, rightJustified);
     public readonly var textShape = bind layout.getShape();
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
-    public readonly var caretShape = bind layout.getCaretShape(caretPosition);
-    readonly var selectionMesh = bind createMeshNode(selectionShape, null, selectionBackground);
+    public readonly var caretShape = bind if (editable) then layout.getCaretShape(caretPosition) else null;
+    readonly var selectionMesh = bind if (editable) then createMeshNode(selectionShape, null, selectionBackground) else null;
     const self = this;
     readonly var textMesh is TextMeshNode = TextMeshNode {
         override var path = bind textShape;
@@ -165,6 +168,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 
     override function onMouseDown from (event is MouseEvent) to () 
     {
+	if (not editable) return;
 	const pt = event.location;
 	const mouseHit = layout.pick(pt.x, pt.y);
 	if (mouseHit <> null)  {
@@ -189,24 +193,30 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	    text = buffer.toString();
 	    dirty = false;
 	}
-        const now = java.lang.System.currentTimeMillis();
-        if (not focused) {
-            caretMesh.visible = false;
-        } else {
-            if (caretMesh.visible) {
-                if (now - lastTime >= 600) {
-                    lastTime = now;
-                    caretMesh.visible = false;
-                }
-            } else if (now - lastTime >= 400) {
-                caretMesh.visible = true;
-                lastTime = now;
-            }
-        }
+	if (editable) {
+	    const now = java.lang.System.currentTimeMillis();
+	    
+	    if (not focused) {
+		caretMesh.visible = false;
+	    } else {
+		if (caretMesh.visible) {
+		    if (now - lastTime >= 600) {
+			lastTime = now;
+			caretMesh.visible = false;
+		    }
+		} else if (now - lastTime >= 400) {
+		    caretMesh.visible = true;
+		    lastTime = now;
+		}
+	    }
+	} else {
+	    caretMesh.visible = false;
+	}
     }
 
     override function onMouseDrag from (event is MouseEvent) to () 
     {
+	if (not editable) return;
         const pt = event.location;
         const mouseHit = layout.pick(pt.x, pt.y);
         if (mouseHit <> null) {
@@ -214,6 +224,10 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
             selectionEnd = caretPosition = index;
         }
 	updateColumn();
+    }
+
+    override function acceptFocus to Boolean {
+	if (editable) then Focusable.acceptFocus() else false;
     }
 
     override function onKeyDown from (event is KeyboardEvent) to () 

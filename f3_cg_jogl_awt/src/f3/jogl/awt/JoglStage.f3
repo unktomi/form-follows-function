@@ -62,7 +62,7 @@ class VideoTexture is HTML {
 	    "</style></head><body><video id=\"video_background\" src=\"{url}\" autoplay></body></html>" on replace { println("content={content}") };
 }
 
-var frc = new java.awt.font.FontRenderContext(null, true, false);
+var frc = new java.awt.font.FontRenderContext(null, false, false);
 function getFont from (spec is String) to java.awt.Font 
 {
     const props = spec.split(";");
@@ -1679,6 +1679,21 @@ class StageRenderer {
     }
     function endDraw from () to () {
     }
+
+    function onDraw 
+	from (transparent is Integer, 
+	      transpTris is Integer, 
+	      opaque is Integer, 
+	      opaqueTris is Integer)
+	to ()
+    {
+    }
+
+    var m1 = 0;
+    var m2 = 0;
+    var t1 = 0;
+    var t2 = 0;
+
     public function renderScenes from (gl is GL2, width is Integer, height is Integer) to Boolean
     {
 	var dirty = cursor <> stage.cursor;
@@ -1690,11 +1705,27 @@ class StageRenderer {
 	    dirty = true;
 	    lastHeight = height;
 	}
+	const self = this;
 	cursor = stage.cursor;
 	if ((foreach (r in sceneRenderers) r.scene) <> stage.content) {
 	    dirty = true;
 	    sceneRenderers = 
-		foreach (scene in stage.content) SceneRenderer {scene: scene, parent: this};
+		foreach (scene in stage.content) SceneRenderer {
+		scene: scene, parent: this
+		override function onDraw 
+		from (transparent is Integer, 
+		      transpTris is Integer, 
+		      opaque is Integer, 
+		      opaqueTris is Integer)
+		to ()
+		{
+		    println("draw  {scene} {transparent}/{transpTris}, {opaque}/{opaqueTris}");
+		    m1 += transparent;
+		    t1 += transpTris;
+		    m2 += opaque;
+		    t2 += opaqueTris;
+		}
+	    };
 
 	}
         for (sceneRenderer in sceneRenderers) {
@@ -1708,6 +1739,11 @@ class StageRenderer {
 		sceneRenderer.renderScene(gl, width, height);
 	    }
 	    endDraw();
+	    onDraw(m1, t1, m2, t2);
+	    m1 = 0;
+	    m2 = 0;
+	    t1 = 0;
+	    t2 = 0;
 	}
 	return dirty;
     }
@@ -1799,7 +1835,7 @@ class SceneRenderer {
         var dirty = false;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
-	scene.update();
+	scene.update(); // hack!!!!
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
 
@@ -1822,8 +1858,21 @@ class SceneRenderer {
 		var par = n;
 		while (par <> null) {
 		    if (par.debug) {
-			debug = true;
+			debug = true;		       
 			break;
+		    }
+		    par = par.parent;
+		}
+		par = n.parent;
+		while (par <> null) {
+		    if (par is Scissored) {
+			const sb = par.toSceneTransform * (par as Scissored).scissorBounds;
+			if (Bounds.intersect(sb, n.boundsInScene) == null) {
+			    if (false and debug) {
+				println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
+			    }
+			    return;
+			}
 		    }
 		    par = par.parent;
 		}
@@ -2036,6 +2085,9 @@ class SceneRenderer {
 	    }
         }
 	//println("check {scene} dirty={dirty}");
+	if (dirty) {
+	    onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
+	}
 	return dirty;
     }
 
@@ -2101,7 +2153,6 @@ class SceneRenderer {
 		});
 	} 
 	//println("DRAW: {scene} {camera}");
-        //onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
         draw(gl, scene.root.parent, camera, opaqueToDraw, lightPositions);
         opaqueToDraw.clear();
         draw(gl, scene.root.parent, camera, transparentToDraw, lightPositions);
@@ -2158,7 +2209,7 @@ class SceneRenderer {
 	    var scissor is Node = null;
 	    var mp = n.parent;
 	    while (mp <> null) {
-		if (mp instanceof Scissored) {
+		if (mp instanceof Scissored and (mp as Scissored).scissorBounds <> null) {
 		    scissor = mp;
 		    break;
 		}
@@ -2188,8 +2239,8 @@ class SceneRenderer {
 		    const x = if (tn.getText().rightJustified) then b.right() else b.left();
 		    const dx = x - Math.round(x);
 		    const dy = b.bottom() - Math.round(b.bottom());
-		    toSceneTransform = translate(Math.round(t.x)-dx+.1,
-						 Math.round(t.y)-dy+.1,
+		    toSceneTransform = translate(Math.round(t.x)-dx,
+						 Math.round(t.y)-dy,
 						 0);
 		    //println("{tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
 		}
@@ -2571,6 +2622,8 @@ public class Listener is GLEventListener, DropTargetListener {
 
     var prevTime is Long;
 
+    const self = this;
+
     function render from (gl is GL2, width is Integer, height is Integer) to () {
 	if (false) {
 	    const rt = java.lang.Runtime.getRuntime();
@@ -2598,9 +2651,21 @@ public class Listener is GLEventListener, DropTargetListener {
 		activate: function from () to () {
 		    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
 		}
+		override function onDraw 
+		from (transparent is Integer, 
+		      transpTris is Integer, 
+		      opaque is Integer, 
+		      opaqueTris is Integer)
+		to ()
+		{
+		    println("draw {transparent}/{transpTris}, {opaque}/{opaqueTris}");
+		    self.opaque += opaque;
+		    self.transp_tris += transpTris;
+		    self.transp += transparent;
+		    self.opaque_tris += opaqueTris;
+		}
 	    }
 	}
-	setTitle("{opaque}/{opaque_tris}, {transp}/{transp_tris} - {stage.title}");
         opaque = 0;
         transp = 0;
         transp_tris = 0;
@@ -2617,6 +2682,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	    }
 	    skip = false;
 	}
+	setTitle("{opaque}/{opaque_tris}, {transp}/{transp_tris} - {stage.title}");
 	stage.flush();
         setCursor(stage.cursor);
 	var end = java.lang.System.currentTimeMillis();
