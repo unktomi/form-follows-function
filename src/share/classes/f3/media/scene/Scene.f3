@@ -590,12 +590,13 @@ public class Scene
 		p.dragPoint0 = hit.point;
 	    }
             p.dragPoint1 = hit.point;
+	    const scenePt = p.node.toSceneTransform * hit.point;
             for (h in hs) {
-                h.onMouseDrag(makeMouseEvent(null, p, sceneEvent));
+                h.onMouseDrag(makeMouseEvent(p, sceneEvent, scenePt));
             }
 	    if (p.node.mouseDrag <> null) {	
 		//println("mouse drag {p.node}");
-		const e = makeMouseEvent(null, p, sceneEvent);
+		const e = makeMouseEvent(p, sceneEvent, scenePt);
 		p.node.mouseDrag.onNext(e);
 	    }
 	}
@@ -603,6 +604,13 @@ public class Scene
 
     function makeMouseEvent
 	from (dragStart is Pick, p is Pick, sceneEvent is MouseEvent) 
+	to MouseEvent 
+    {
+	makeMouseEvent(p, sceneEvent, p.scenePoint);
+    }
+
+    function makeMouseEvent
+	from (p is Pick, sceneEvent is MouseEvent, sceneLocation is Point3) 
 	to MouseEvent 
     {
         const e = sceneEvent;
@@ -617,7 +625,7 @@ public class Scene
             screenx: e.screenx;
             screeny: e.screeny;
             screenDrag: e.screenDrag;
-            sceneLocation: p.scenePoint;
+            sceneLocation: sceneLocation;
             buttons: e.buttons;
             picked: p;
         }

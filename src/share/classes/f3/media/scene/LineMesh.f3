@@ -18,7 +18,7 @@ public class LineMesh {
         startx = starty = startz = 0;
     }
 
-    public function moveTo from (pos is Vec3) to () {
+    public function moveTo from (pos is Point3) to () {
         moveTo(pos.x, pos.y, pos.z);
     }
 
@@ -35,7 +35,7 @@ public class LineMesh {
         startz = z;
     }
 
-    public function lineTo from (pos is Vec3) to () {
+    public function lineTo from (pos is Point3) to () {
         lineTo(pos.x, pos.y, pos.z);
     }
 
