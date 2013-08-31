@@ -76,4 +76,12 @@ public abstract class F3Type {
             return ((F3ClassType) this).isAssignableFrom((F3ClassType) cls);
         return this == cls;
     }
+
+    public boolean isConvertibleFrom(F3Type cls) {
+	if (cls instanceof F3PrimitiveType) {
+	}
+        if (this instanceof F3ClassType && cls instanceof F3ClassType)
+            return ((F3ClassType) this).isAssignableFrom((F3ClassType) cls);
+        return this == cls;
+    }
 }

@@ -62,6 +62,19 @@ public class F3Local {
         private Context () {
         }
 
+	static F3Type[] boxedPrimitives =  
+	{
+	    F3PrimitiveType.voidType, instance.makeClassRef(F3PrimitiveType.voidType.getBoxed()),
+	    F3PrimitiveType.byteType, instance.makeClassRef(F3PrimitiveType.byteType.getBoxed()),
+	    F3PrimitiveType.charType, instance.makeClassRef(F3PrimitiveType.charType.getBoxed()),
+	    F3PrimitiveType.shortType, instance.makeClassRef(F3PrimitiveType.shortType.getBoxed()),
+	    F3PrimitiveType.integerType, instance.makeClassRef(F3PrimitiveType.integerType.getBoxed()),
+	    F3PrimitiveType.longType, instance.makeClassRef(F3PrimitiveType.longType.getBoxed()),
+	    F3PrimitiveType.floatType, instance.makeClassRef(F3PrimitiveType.floatType.getBoxed()),
+	    F3PrimitiveType.doubleType, instance.makeClassRef(F3PrimitiveType.doubleType.getBoxed())
+	};
+
+
         /** Get the default instance. */
         public static Context getInstance() { return instance; }
 
@@ -190,6 +203,14 @@ public class F3Local {
 	}
         /** Create a reference to a given Class. */
         public ClassType makeClassRef(Class cls, Type type) {
+	    if (boxedPrimitives != null) {
+		for (int i = 0; i < boxedPrimitives.length; i += 2) {
+		    F3PrimitiveType t = (F3PrimitiveType)boxedPrimitives[i];
+		    if (t.getBoxed() == cls) {
+			return (ClassType)boxedPrimitives[i+1];
+		    }
+		}
+	    }
             int modifiers = 0;
             try {
                 Class[] interfaces = cls.getInterfaces();
@@ -257,6 +278,7 @@ public class F3Local {
         public Class getJavaClass() { return cls; }
     }
 
+
     /** A mirror of a {@code Class} in the current JVM.
      * @profile desktop
      */
@@ -274,6 +296,20 @@ public class F3Local {
             this.name = PlatformUtils.getCanonicalName(refClass);
 	    this.type = type;
         }
+
+	public boolean isConvertibleFrom(F3Type typ) {
+	    if (typ instanceof F3PrimitiveType) {
+		for (int i = 0; i < Context.boxedPrimitives.length; i += 2) {
+		    if (Context.boxedPrimitives[i] == typ) {
+			if (this == Context.boxedPrimitives[i+1]) {
+			    return true;
+			}
+		    }
+		}
+	    }
+	    return isAssignableFrom(typ);
+	}
+
 	public Type getType() { return type; }
         public Class getJavaImplementationClass() { return refClass; }
         public Class getJavaInterfaceClass() { return refInterface; }

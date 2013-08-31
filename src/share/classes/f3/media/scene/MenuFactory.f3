@@ -1,0 +1,13 @@
+package f3.media.scene;
+
+public interface MenuItemImpl {
+}
+
+public interface MenuImpl is MenuItemImpl {
+}
+
+public abstract class MenuFactory {
+
+    public bound function createItemImpl from (item is MenuItem)
+	to MenuItemImpl { null }
+}

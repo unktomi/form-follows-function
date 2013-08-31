@@ -739,7 +739,7 @@ public class Browser implements AbstractWebBrowser {
             final GL gl = this.gl;
             org.f3.runtime.Entry.deferAction(new java.lang.Runnable() {
                     public void run() {
-                        tex.dispose(gl);
+                        tex.destroy(gl);
                     }
                 });
         }
@@ -775,7 +775,7 @@ public class Browser implements AbstractWebBrowser {
         gl = GLContext.getCurrentGL();
         buffer = ByteBuffer.allocateDirect(w*h*4);
         if (backingStore != null) {
-            backingStore.dispose(gl);
+            backingStore.destroy(gl);
         }
         backingStore = allocateBackingStore(w, h);
         data = new TextureData(GLProfile.get(GLProfile.GL2),
