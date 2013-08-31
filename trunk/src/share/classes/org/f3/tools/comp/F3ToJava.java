@@ -574,8 +574,10 @@ public class F3ToJava extends F3AbstractTranslation {
             this.tree = tree;
             F3Modifiers mods = tree.getModifiers();
             vsym = tree.getSymbol();
+	    /*
             assert !vsym.isMember() : "attributes are processed in the class and should never come here: " + tree.name;
             assert !vsym.isParameter() : "we should not see parameters here" + tree.name;
+	    */
             modFlags = (mods.flags & ~Flags.FINAL) | (vsym.isMutatedWithinScript() ? 0L : Flags.FINAL);
         }
 

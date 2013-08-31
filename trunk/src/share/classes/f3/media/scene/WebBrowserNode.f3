@@ -29,35 +29,44 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
         return tex.getTextureId();
     }
 
-    public function updateTexture to Boolean {
-	var needsDraw is Boolean = false;
-        if (tex == null) {
+    var needsDraw is Boolean = true;
+
+    override public function update {
+	if (tex == null) {
             tex = factory.newInstance();
             tex.resize(width, height);
-	    needsDraw = true;
+            needsDraw = true;
         }
         if (tex.getWidth() <> width or tex.getHeight() <> height) {
             tex.resize(width, height);
-	    needsDraw = true;
+            needsDraw = true;
         }
         if (tex.update()) {
             needsDraw = true;
         }
-        var ctype = tex.getCursorType();
+        const ctype = tex.getCursorType();
         if (cursor.type <> ctype) {
             println("setting cursor to {ctype}");
             cursor = Cursor { type: ctype };
 	    needsDraw = true;
         }
-	return needsDraw;
+    }
+
+    public function updateTexture to Boolean {
+	var result = needsDraw;
+	needsDraw = false;
+	return result;
     }
 
     override var path = bind Shape2D.rect(pathFactory, -width/2, -height/2, width, height);
 
     function getSelf to WebBrowserNode { this } // workaround for compiler bug
 
+    public var background is Color = Color.WHITE;
+
     override var paint = bind Shape2D.TexturePaint 
     {
+        color: bind background;
 	texture: getSelf();
     }
 

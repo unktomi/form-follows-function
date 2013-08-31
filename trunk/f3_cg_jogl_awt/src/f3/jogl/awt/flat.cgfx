@@ -53,6 +53,10 @@ PixelShaderInput vertexShaderFunction2d(VertexShaderInput input) {
 }
 
 
+float4 pixelShaderFunctionTransp(PixelShaderInput input) : COLOR {
+  return float4(diffuse.xyz*diffuse.w, diffuse.w);
+}
+
 float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
   return diffuse;
 }
@@ -73,8 +77,8 @@ technique Transparent {
         DepthMask = false;
         CullFaceEnable  = false; 
         BlendEnable = true;
-        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
+        BlendFunc = int2(One, OneMinusSrcAlpha);
         VertexShader = compile latest vertexShaderFunction();
-        PixelShader  = compile latest pixelShaderFunction();
+        PixelShader  = compile latest pixelShaderFunctionTransp();
     }
 }
