@@ -297,7 +297,7 @@ public class ScriptShell implements DiagnosticListener<JavaFileObject> {
      * @param script Script source string
      * @param exitOnError whether to exit the process on script error
      */
-    private void evaluateString(String script, boolean exitOnError) {
+   private void evaluateString(String script, boolean exitOnError) {
         String sourcePath = null; // FIXME
         String classPath = System.getProperty("java.class.path"); // FIXME
         Writer err = null; // FIXME
@@ -314,8 +314,8 @@ public class ScriptShell implements DiagnosticListener<JavaFileObject> {
      * @param se ScriptEngine to evaluate the string
      * @param script Script source string
      */
-    protected void evaluateString(String script) {
-        evaluateString(script, true);
+    public void evaluateString(String script) {
+        evaluateString(script, false);
     }
 
     /**
@@ -324,7 +324,7 @@ public class ScriptShell implements DiagnosticListener<JavaFileObject> {
      * @param reader Reader from which is script is read
      * @param name file name to report in error.
      */
-    protected void evaluateReader(Reader reader, String fileName) {
+    public void evaluateReader(Reader reader, String fileName) {
         String sourcePath = null; // FIXME
         String classPath = System.getProperty("java.class.path"); // FIXME
         Writer err = null;
@@ -343,7 +343,19 @@ public class ScriptShell implements DiagnosticListener<JavaFileObject> {
         evaluate(compiled);
     }
 
-    protected void evaluate (F3CompiledScript compiled) {
+    public Object compileAndRun(String script) throws Throwable {
+        String sourcePath = null; // FIXME
+        String classPath = System.getProperty("java.class.path"); // FIXME
+        Writer err = null; // FIXME
+        String fileName = "f3" + counter;
+        F3CompiledScript compiled = context.compiler.compile(fileName, script,
+                err, sourcePath, classPath, getDiagnosticListener());
+        if (compiled == null)
+            return null;
+	return compiled.eval(context);
+    }
+
+    public void evaluate (F3CompiledScript compiled) {
          try {
             reportResult(compiled.eval(context));
         }

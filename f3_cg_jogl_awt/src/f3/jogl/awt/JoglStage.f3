@@ -1494,6 +1494,7 @@ class OffscreenSurface is JoglTexture
         gl.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0);
         gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0);
         if (_samples > 0) {
+            gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, _msfboID);
             gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, _msfboID);
         } 
     }
@@ -1676,6 +1677,7 @@ class StageRenderer {
     var lastWidth is Integer;
     var lastHeight is Integer;
     function startDraw from () to () {
+	activate();
     }
     function endDraw from () to () {
     }
@@ -1735,6 +1737,7 @@ class StageRenderer {
 	}
 	if (dirty) {
 	    startDraw();
+	    gl.glViewport(0, 0, width, height);
 	    for (sceneRenderer in sceneRenderers) {
 		sceneRenderer.renderScene(gl, width, height);
 	    }
@@ -1762,7 +1765,7 @@ class SceneRenderer {
 	from (gl is GL2, stageNode is StageNode)
 	to Boolean
     {
-	//println("rendering stage node {gl} {stageNode}");
+
         var surface = stageNode.drawingSurface as OffscreenSurface;
         if (surface == null) {
             surface = OffscreenSurface {
@@ -1789,8 +1792,12 @@ class SceneRenderer {
         for (scene in stageNode.content) {
 	    scene.stage = stageNode;
 	}
-        surface.stageRenderer.renderScenes(gl, surface.pot_width, surface.pot_height);
-	//println("done rendering stage node");
+        var result = surface.stageRenderer.renderScenes(gl, surface.pot_width, surface.pot_height);
+	if (result) {
+	    println("rendering stage node {gl} {stageNode}");
+	    println("done rendering stage node => {result}");
+	}
+	return result;
     }
 
     var offscreenToRender = new java.util.HashSet of StageNode;
@@ -1869,7 +1876,7 @@ class SceneRenderer {
 		    par = par.parent;
 		}
 		par = n.parent;
-		while (par <> null) {
+		while (par <> null and not (par is Stage)) {
 		    if (par is Scissored) {
 			const sb = par.toSceneTransform * (par as Scissored).scissorBounds;
 			if (Bounds.intersect(sb, n.boundsInScene) == null) {
@@ -1923,10 +1930,10 @@ class SceneRenderer {
 				const value = (p as CGFXShader.Parameter of Object).get();
 				if (value is StageNode) {
 				    const stageNode = value as StageNode;
-				    if (renderStageNode(gl, stageNode)) {
-					dirty = true;
-				    }
-				    //offscreenToRender.add(stageNode);
+				    //if (renderStageNode(gl, stageNode)) {
+				    //dirty = true;
+				    //}
+				    offscreenToRender.add(stageNode);
 				} else if (value is WebBrowserNode) {
 				    if ((value as WebBrowserNode).updateTexture()) {
 					dirty = true;
@@ -2042,8 +2049,6 @@ class SceneRenderer {
 		}
 	    }
 	};
-        offscreenToRender.clear();
-		    //scene.root.foldLeft((), vf);
 	for (i in scene.visibleMeshes) {
 	    vf((), i);
 	}
@@ -2052,6 +2057,7 @@ class SceneRenderer {
 		dirty = true;
 	    }
 	}	
+        offscreenToRender.clear();
 	//println("last: {lastDrawn.size()}");
 	//println("current: {thisDraw.size()}");
 	for (x in lastDrawn.keySet()) {
@@ -2127,7 +2133,6 @@ class SceneRenderer {
 		transparentToDraw.add(r.meshNode);
 	    } 
 	}
-        gl.glViewport(0, 0, width, height);
         if (scene.background.opacity <> 0) {
             const bg = scene.background;
 	    //println("clearing {bg}");
@@ -2207,6 +2212,8 @@ class SceneRenderer {
 	} 
 	*/
 	var prev is Node = null;
+	gl.glDisable(GL.GL_SCISSOR_TEST);
+	gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
         for (n in toDraw) {
 	    prev = n;
             const mn = n as MeshNode;
@@ -2221,7 +2228,7 @@ class SceneRenderer {
 	    }
 	    var scissor is Node = null;
 	    var mp = n.parent;
-	    while (mp <> null) {
+	    while (mp <> null and not (mp is Stage)) {
 		if (mp instanceof Scissored and (mp as Scissored).scissorBounds <> null) {
 		    scissor = mp;
 		    break;
@@ -2230,7 +2237,7 @@ class SceneRenderer {
 	    }
 	    if (scissor <> currentScissor) {
 		currentScissor = scissor;
-		if (scissor <> null) {
+		if (false and scissor <> null) {
 		    const bounds = scissor.toSceneTransform  * (scissor as Scissored).scissorBounds;
 		    const sb = camera.toScreen(bounds);
 		    gl.glEnable(GL.GL_SCISSOR_TEST);

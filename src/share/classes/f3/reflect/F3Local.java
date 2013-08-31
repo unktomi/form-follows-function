@@ -301,9 +301,8 @@ public class F3Local {
 	    if (typ instanceof F3PrimitiveType) {
 		for (int i = 0; i < Context.boxedPrimitives.length; i += 2) {
 		    if (Context.boxedPrimitives[i] == typ) {
-			if (this == Context.boxedPrimitives[i+1]) {
-			    return true;
-			}
+			typ = Context.boxedPrimitives[i+1];
+			break;
 		    }
 		}
 	    }

@@ -61,7 +61,9 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		self.subscribe(DefaultObserver of a {
 			override public function onNext from (x is a) to () 
 			{
-			    observer.onNext(f(x));
+			    const y = f(x);
+			    println("{self} map {f}: {x} => {y}");
+			    observer.onNext(y);
 			}
 			override public function onError from (e is java.lang.Exception) to () 
 			{

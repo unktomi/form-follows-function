@@ -200,10 +200,6 @@ public class SamplerParameter is Parameter of AbstractTexture
     {
 	const value = get();
         const id = value.getTextureId();
-        //if (value instanceof MeshNode) {
-        //    //(value as MeshNode).needsDraw = false;
-	// }
-	//	println("setup sampler {value} {name} {id}");
         effect.setupSampler(name, id);
     }
 }

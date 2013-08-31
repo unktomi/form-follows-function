@@ -84,9 +84,11 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
     public const factory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
     public const imageLoader is ImageLoader = the ImageLoader;
     override var path = bind Shape2D.rect(factory, -width/2, -height/2, width, height);
+    public var background is Color = Color.TRANSPARENT;
     override var paint = {
 	const self = this;
 	Shape2D.TexturePaint {
+	    color: bind background;
 	    texture: self;
 	}
     }
