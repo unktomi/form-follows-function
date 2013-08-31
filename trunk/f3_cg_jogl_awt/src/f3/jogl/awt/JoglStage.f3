@@ -62,7 +62,7 @@ class VideoTexture is HTML {
 	    "</style></head><body><video id=\"video_background\" src=\"{url}\" autoplay></body></html>" on replace { println("content={content}") };
 }
 
-var frc = new java.awt.font.FontRenderContext(null, false, false);
+var frc = new java.awt.font.FontRenderContext(null, true, false);
 function getFont from (spec is String) to java.awt.Font 
 {
     const props = spec.split(";");
@@ -1719,7 +1719,7 @@ class StageRenderer {
 		      opaqueTris is Integer)
 		to ()
 		{
-		    println("draw  {scene} {transparent}/{transpTris}, {opaque}/{opaqueTris}");
+		    //println("draw  {scene} {transparent}/{transpTris}, {opaque}/{opaqueTris}");
 		    m1 += transparent;
 		    t1 += transpTris;
 		    m2 += opaque;
@@ -1814,6 +1814,9 @@ class SceneRenderer {
 	return r;
     }
 
+    var lastWidth = 0.0;
+    var lastHeight = 0.0;
+
     function checkNeedsDraw
 	from (gl is GL2, 
 	      width is Number, 
@@ -1832,7 +1835,9 @@ class SceneRenderer {
         var opaqueTris = 0;
         var transparentTris = 0;
         var lights is PointLight[];
-        var dirty = false;
+        var dirty = lastWidth <> width or lastHeight <> height;
+	lastWidth = width;
+	lastHeight = height;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
 	scene.update(); // hack!!!!
@@ -1918,7 +1923,14 @@ class SceneRenderer {
 				const value = (p as CGFXShader.Parameter of Object).get();
 				if (value is StageNode) {
 				    const stageNode = value as StageNode;
-				    offscreenToRender.add(stageNode);
+				    if (renderStageNode(gl, stageNode)) {
+					dirty = true;
+				    }
+				    //offscreenToRender.add(stageNode);
+				} else if (value is WebBrowserNode) {
+				    if ((value as WebBrowserNode).updateTexture()) {
+					dirty = true;
+				    }
 				}
 			    }
 			} 
@@ -2126,6 +2138,7 @@ class SceneRenderer {
 	    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
         }
 	const camera = scene.camera;
+	camera.update();
 	if (not (camera is Camera2D)) {
 	    // sort opaque front to back      
 	    java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
@@ -2167,7 +2180,7 @@ class SceneRenderer {
 	      opaqueTris is Integer)
 	to ()
     {
-	println("draw {transparent}/{transpTris}, {opaque}/{opaqueTris}");
+	//println("draw {transparent}/{transpTris}, {opaque}/{opaqueTris}");
     }
 
     var polygonMode = PolygonMode.Fill;
@@ -2658,7 +2671,7 @@ public class Listener is GLEventListener, DropTargetListener {
 		      opaqueTris is Integer)
 		to ()
 		{
-		    println("draw {transparent}/{transpTris}, {opaque}/{opaqueTris}");
+		    //println("draw {transparent}/{transpTris}, {opaque}/{opaqueTris}");
 		    self.opaque += opaque;
 		    self.transp_tris += transpTris;
 		    self.transp += transparent;

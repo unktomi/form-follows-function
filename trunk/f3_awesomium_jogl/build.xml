@@ -11,7 +11,7 @@
     <mkdir dir="lib"/>
     <copy todir="lib">
       <fileset dir="../dist/lib/shared" includes="*.jar"/>
-      <fileset dir="../f3_cg_jogl_awt/lib/" includes="jogl.all.jar"/>
+      <fileset dir="../f3_cg_jogl_awt/lib/" includes="jogl-all.jar"/>
     </copy>
     <mkdir dir="build/native/include"/>
     <mkdir dir="build/native/obj"/>
@@ -28,7 +28,7 @@
       <classpath>
         <pathelement location="lib/f3rt.jar"/>
         <pathelement location="lib/js.jar"/>
-        <pathelement location="lib/jogl.all.jar"/>
+        <pathelement location="lib/jogl-all.jar"/>
         </classpath>
       <src path="src/share/classes"/>
     </javac>

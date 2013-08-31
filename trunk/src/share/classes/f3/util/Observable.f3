@@ -549,7 +549,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 
 }
 
-abstract class DefaultObservable of a is Observable of a, org.f3.runtime.Monad of (Observable, a) 
+public abstract class DefaultObservable of a is Observable of a, org.f3.runtime.Monad of (Observable, a) 
 {
 }
 

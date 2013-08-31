@@ -45,9 +45,9 @@
              includes="**/*.java" source="${javac.source}" sourcepath=""
              srcdir="${src.classes.dir}" target="${javac.target}">
             <classpath>
-                <path path="lib/jogl.all.jar"/>
+                <path path="lib/jogl-all.jar"/>
                 <path path="lib/gluegen-rt.jar"/>
-                <path path="lib/jogl.cg.jar"/>
+                <path path="lib/jogl-cg.jar"/>
                 <path path="lib/f3rt.jar"/>
 		<path path="lib/f3.svg.awt.jar"/>
             </classpath>
@@ -60,9 +60,9 @@
              compilerclasspath="${javac.classpath}">
 	  <!--compilerarg value="-XDdumpjava"/-->
             <classpath>
-                <path path="lib/jogl.all.jar"/>
+                <path path="lib/jogl-all.jar"/>
                 <path path="lib/gluegen-rt.jar"/>
-                <path path="lib/jogl.cg.jar"/>
+                <path path="lib/jogl-cg.jar"/>
 		<path path="lib/f3.svg.awt.jar"/>
 		<path path="lib/f3.awesomium.jogl.jar"/>
             </classpath>
@@ -76,9 +76,9 @@
   <target name="run" depends="jar">
     <java fork="true" classname="org.f3.runtime.Main"> 
       <classpath>
-        <path path="lib/jogl.all.jar"/>
+        <path path="lib/jogl-all.jar"/>
         <path path="lib/gluegen-rt.jar"/>
-        <path path="lib/jogl.cg.jar"/>
+        <path path="lib/jogl-cg.jar"/>
         <path path="lib/f3rt.jar"/>
         <path path="build/f3.cg.jogl.awt.jar"/>
 	<path path="lib/f3.svg.awt.jar"/>

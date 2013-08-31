@@ -322,15 +322,15 @@ public class Mat4 is F3Value
     }
 }
 
-public var <<1>> = Mat4 {xx: 1.0, xy: 0.0, xz: 0.0, xw: 0.0 
-                         yx: 0.0, yy: 1.0, yz: 0.0, yw: 0.0
-                         zx: 0.0, zy: 0.0, zz: 1.0, zw: 0.0
-                         wx: 0.0, wy: 0.0, wz: 0.0, ww: 1.0};
+public const <<1>> = Mat4 {xx: 1.0, xy: 0.0, xz: 0.0, xw: 0.0 
+			   yx: 0.0, yy: 1.0, yz: 0.0, yw: 0.0
+			   zx: 0.0, zy: 0.0, zz: 1.0, zw: 0.0
+			   wx: 0.0, wy: 0.0, wz: 0.0, ww: 1.0};
 
-public var <<0>> = Mat4 {xx: 0.0, xy: 0.0, xz: 0.0, xw: 0.0 
-                         yx: 0.0, yy: 0.0, yz: 0.0, yw: 0.0
-                         zx: 0.0, zy: 0.0, zz: 0.0, zw: 0.0
-                         wx: 0.0, wy: 0.0, wz: 0.0, ww: 0.0};
+public const <<0>> = Mat4 {xx: 0.0, xy: 0.0, xz: 0.0, xw: 0.0 
+			   yx: 0.0, yy: 0.0, yz: 0.0, yw: 0.0
+			   zx: 0.0, zy: 0.0, zz: 0.0, zw: 0.0
+			   wx: 0.0, wy: 0.0, wz: 0.0, ww: 0.0};
 
 public function fromRows from (a is nativearray of Number) to Mat4 
 {

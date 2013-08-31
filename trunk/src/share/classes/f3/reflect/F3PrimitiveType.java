@@ -31,40 +31,46 @@ package f3.reflect;
 public class F3PrimitiveType extends F3Type {
     Class clas;
     String name;
-    F3PrimitiveType(Class clas, String name) {
+    Class boxed;
+    F3PrimitiveType(Class clas, String name, Class boxed) {
         this.clas = clas;
         this.name = name;
+	this.boxed = boxed;
     }
     public String getName() { return name; }
 
     static final F3PrimitiveType voidType =
-        new F3PrimitiveType(Void.TYPE, "Void");
+        new F3PrimitiveType(Void.TYPE, "Void", Void.class);
 
-   static final F3PrimitiveType byteType =
-        new F3PrimitiveType(Byte.TYPE, "Byte");
-
+    static final F3PrimitiveType byteType =
+	new F3PrimitiveType(Byte.TYPE, "Byte", Byte.class);
+    
     static final F3PrimitiveType shortType =
-        new F3PrimitiveType(Short.TYPE, "Short");
-
+        new F3PrimitiveType(Short.TYPE, "Short", Short.class);
+    
     static final F3PrimitiveType integerType =
-        new F3PrimitiveType(Integer.TYPE, "Integer");
+        new F3PrimitiveType(Integer.TYPE, "Integer", Integer.class);
 
     static final F3PrimitiveType longType =
-        new F3PrimitiveType(Byte.TYPE, "Long");
+        new F3PrimitiveType(Byte.TYPE, "Long", Long.class);
 
     static final F3PrimitiveType floatType =
-        new F3PrimitiveType(Float.TYPE, "Float");
+        new F3PrimitiveType(Float.TYPE, "Float", Float.class);
     
     static final F3PrimitiveType doubleType =
-        new F3PrimitiveType(Double.TYPE, "Double");
+        new F3PrimitiveType(Double.TYPE, "Double", Double.class);
 
     static final F3PrimitiveType charType =
-        new F3PrimitiveType(Character.TYPE, "Character");
+        new F3PrimitiveType(Character.TYPE, "Character", Character.class);
 
     static final F3PrimitiveType booleanType =
-        new F3PrimitiveType(Boolean.TYPE, "Boolean");
+        new F3PrimitiveType(Boolean.TYPE, "Boolean", Boolean.class);
 
     static final F3PrimitiveType numberType = floatType;
+
+    public Class getBoxed() {
+	return boxed;
+    }
 
     public F3PrimitiveValue mirrorOf(Object value) {
         if (this == integerType || this == shortType || this == byteType ||
