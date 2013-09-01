@@ -24,11 +24,11 @@ class MAttr {
 class MaModel 
 {
     const nodeMap is java.util.Map of (String, MNode) = 
-	new java.util.HashMap of (String, MNode);
+        new java.util.HashMap of (String, MNode);
 
     function findNode from (name is String) to MNode 
     {
-	nodeMap.get(name);
+        nodeMap.get(name);
     }
 
     var current is MNode; 
@@ -38,156 +38,156 @@ class MaModel
 
     function createNode from (cmd is Command) to () 
     {
-	const nodeType = cmd.getString(0);
-	const name = cmd.getString("n");
-	const parent = cmd.getString("p");
+        const nodeType = cmd.getString(0);
+        const name = cmd.getString("n");
+        const parent = cmd.getString("p");
 
-	current = 
-	    if (nodeType == "transform") 
-		then MTransform {name: name, parent: findNode(parent)}
-	    else if (nodeType == "joint") 
-		then MJoint {name: name, parent: findNode(parent)}
-	    else if (nodeType == "camera") 
-		then MCamera {name: name, parent: findNode(parent)}
-	    else if (nodeType == "mesh") 
-		then MMesh {name: name, parent: findNode(parent)}
-	    else if (nodeType == "phong" or nodeType == "blinn" or nodeType == "lambert") 
-		then MShader {type: nodeType, name: name}
-	    else if (nodeType == "cgfxShader") 
-		then MCGFXShader {name: name}
-	    else if (nodeType == "cgfxVector") 
-		then MCGFXVector {name: name}
-	    else if (nodeType == "file") 
-		then MFile {name: name}
-	    else if (nodeType == "shadingEngine") 
-		then MShadingEngine {name: name}
-	    else if (nodeType == "pointLight") 
-		then MLight { name: name, parent: findNode(parent), type: nodeType }
-	    else if (nodeType.startsWith("animCurve")) 
-		then MAnimCurve__ {type: nodeType, name: name, parent: findNode(parent)}
-	    else if (nodeType == "character") 
-		then MCharacter {name: name}
-	    else if (nodeType == "animClip") 
-		then MAnimClip {name: name}
-	    else if (nodeType == "clipLibrary") 
-		then MClipLibrary {name: name}
-	    else if (nodeType == "addDoubleLinear") 
-		then MAddDoubleLinear {name: name}
-	    else if (nodeType == "plusMinusAverage") 
-		then MPlusMinusAverage {name: name}
-	    else if (nodeType == "multiplyDivide") 
-		then MMultiplyDivide {name: name}
-	    else if (nodeType == "clamp") 
-		then MClamp {name: name}
-	    else if (nodeType == "reverse") 
-		then MReverse {name: name}
-	    else if (nodeType == "blendShape") 
-		then MBlendShape {name: name}
-	    else if (nodeType == "skinCluster") 
-		then MSkinCluster {name: name}
-	    else if (nodeType == "groupParts") 
-		then MGroupParts {name: name}
-	    else if (nodeType == "tweak") 
-		then MTweak {name: name}
-	    else if (nodeType == "script") {
-		if (name == "sceneConfigurationScriptNode") then MSceneConfig {model: this} else null
-	    }
-	    else null;
-	if (current <> null) {
-	    nodeMap.put(current.name, current);
-	    nodeMap.put(current.getFullName(), current);
-	}
+        current = 
+            if (nodeType == "transform") 
+                then MTransform {name: name, parent: findNode(parent)}
+            else if (nodeType == "joint") 
+                then MJoint {name: name, parent: findNode(parent)}
+            else if (nodeType == "camera") 
+                then MCamera {name: name, parent: findNode(parent)}
+            else if (nodeType == "mesh") 
+                then MMesh {name: name, parent: findNode(parent)}
+            else if (nodeType == "phong" or nodeType == "blinn" or nodeType == "lambert") 
+                then MShader {type: nodeType, name: name}
+            else if (nodeType == "cgfxShader") 
+                then MCGFXShader {name: name}
+            else if (nodeType == "cgfxVector") 
+                then MCGFXVector {name: name}
+            else if (nodeType == "file") 
+                then MFile {name: name}
+            else if (nodeType == "shadingEngine") 
+                then MShadingEngine {name: name}
+            else if (nodeType == "pointLight") 
+                then MLight { name: name, parent: findNode(parent), type: nodeType }
+            else if (nodeType.startsWith("animCurve")) 
+                then MAnimCurve__ {type: nodeType, name: name, parent: findNode(parent)}
+            else if (nodeType == "character") 
+                then MCharacter {name: name}
+            else if (nodeType == "animClip") 
+                then MAnimClip {name: name}
+            else if (nodeType == "clipLibrary") 
+                then MClipLibrary {name: name}
+            else if (nodeType == "addDoubleLinear") 
+                then MAddDoubleLinear {name: name}
+            else if (nodeType == "plusMinusAverage") 
+                then MPlusMinusAverage {name: name}
+            else if (nodeType == "multiplyDivide") 
+                then MMultiplyDivide {name: name}
+            else if (nodeType == "clamp") 
+                then MClamp {name: name}
+            else if (nodeType == "reverse") 
+                then MReverse {name: name}
+            else if (nodeType == "blendShape") 
+                then MBlendShape {name: name}
+            else if (nodeType == "skinCluster") 
+                then MSkinCluster {name: name}
+            else if (nodeType == "groupParts") 
+                then MGroupParts {name: name}
+            else if (nodeType == "tweak") 
+                then MTweak {name: name}
+            else if (nodeType == "script") {
+                if (name == "sceneConfigurationScriptNode") then MSceneConfig {model: this} else null
+            }
+            else null;
+        if (current <> null) {
+            nodeMap.put(current.name, current);
+            nodeMap.put(current.getFullName(), current);
+        }
     }
 
     var lastSetAttr is Command;
     function mergeSetAttr from (next is Command) to () 
     {
-	const c = lastSetAttr;
-	lastSetAttr = null;
-	if (c <> null) {
-	    next.namedArgs.putAll(c.namedArgs);
-	}
+        const c = lastSetAttr;
+        lastSetAttr = null;
+        if (c <> null) {
+            next.namedArgs.putAll(c.namedArgs);
+        }
     }
 
     function processCommand from (cmd is Command) to () 
     {
-	const n = cmd.name;
-	if (n == "createNode") {
-	    createNode(cmd);
-	} else if (n == "setAttr") {
-	    if (cmd.args.size() > 1) {
-		mergeSetAttr(cmd);
-		setAttr(cmd);
-	    } else {
-		lastSetAttr = cmd;
-	    }
-	} else if (n == "addAttr") {
-	    addAttr(cmd);
-	} else if (n == "connectAttr") {
-	    connectAttr(cmd)
-	} else if (n == "parent") {
-	    const src = cmd.getString("add");
-	    const target = cmd.getString(0);
-	    const srcNode = findNode(src);
-	    const targetNode = findNode(target);
-	    if (srcNode instanceof MMesh) {
-		insert targetNode into (srcNode as MMesh).parents;
-	    }
-	}
+        const n = cmd.name;
+        if (n == "createNode") {
+            createNode(cmd);
+        } else if (n == "setAttr") {
+            if (cmd.args.size() > 1) {
+                mergeSetAttr(cmd);
+                setAttr(cmd);
+            } else {
+                lastSetAttr = cmd;
+            }
+        } else if (n == "addAttr") {
+            addAttr(cmd);
+        } else if (n == "connectAttr") {
+            connectAttr(cmd)
+        } else if (n == "parent") {
+            const src = cmd.getString("add");
+            const target = cmd.getString(0);
+            const srcNode = findNode(src);
+            const targetNode = findNode(target);
+            if (srcNode instanceof MMesh) {
+                insert targetNode into (srcNode as MMesh).parents;
+            }
+        }
     }
 
     function addAttr from (cmd is Command) to () 
     {
-	current.addAttr(cmd);
+        current.addAttr(cmd);
     }
 
     function setAttr from (cmd is Command) to () 
     {
-	current.setAttr(cmd);
+        current.setAttr(cmd);
     }
     
     function connectAttr from (cmd is Command) to () 
     {
-	const source = cmd.getString(0);
-	var dot = source.indexOf(".");
-	const sourceName = source.substring(0, dot);
-	const sourcePath = source.substring(dot+1);
-	const target = cmd.getString(1);
-	dot = target.indexOf(".");
-	const targetName = target.substring(0, dot);
-	const targetPath = target.substring(dot+1);
-	const sourceNode = findNode(sourceName);
-	const targetNode = findNode(targetName);
-	//println("connectAttr {sourceNode} => {targetNode} from {sourcePath} to {targetPath}");
-	const conn = 
-	    Connection 
-	    {
-		sourceNode: sourceNode;
-		sourcePath: sourcePath;
-		targetNode: targetNode;
-		targetPath: targetPath;
-	    }
-	sourceNode.addConnectionFrom(conn);
-	targetNode.addConnectionTo(conn);
+        const source = cmd.getString(0);
+        var dot = source.indexOf(".");
+        const sourceName = source.substring(0, dot);
+        const sourcePath = source.substring(dot+1);
+        const target = cmd.getString(1);
+        dot = target.indexOf(".");
+        const targetName = target.substring(0, dot);
+        const targetPath = target.substring(dot+1);
+        const sourceNode = findNode(sourceName);
+        const targetNode = findNode(targetName);
+        //println("connectAttr {sourceNode} => {targetNode} from {sourcePath} to {targetPath}");
+        const conn = 
+            Connection 
+            {
+                sourceNode: sourceNode;
+                sourcePath: sourcePath;
+                targetNode: targetNode;
+                targetPath: targetPath;
+            }
+        sourceNode.addConnectionFrom(conn);
+        targetNode.addConnectionTo(conn);
     }
 
     const spatialMap is java.util.Map of (MNode, Node) = 
-	new java.util.HashMap of (MNode, Node) ();
+        new java.util.HashMap of (MNode, Node) ();
 
     const temporalMap is java.util.Map of (MNode, TimeNode) = 
-	new java.util.HashMap of (MNode, TimeNode) ();
+        new java.util.HashMap of (MNode, TimeNode) ();
 
     const shaderMap is java.util.Map of (MNode, Shader) = 
-	new java.util.HashMap of (MNode, Shader) ();
+        new java.util.HashMap of (MNode, Shader) ();
 
     const clipLibMap is java.util.Map of (MNode, TimeGroup) = 
-	new java.util.HashMap of (MNode, TimeGroup) ();
+        new java.util.HashMap of (MNode, TimeGroup) ();
 
     const linkMap is java.util.Map of (MNode, Link of ?) = 
-	new java.util.HashMap of (MNode, Link of ?) ();
+        new java.util.HashMap of (MNode, Link of ?) ();
 
     const deformerMap is java.util.Map of (MNode, MeshDeformer) = 
-	new java.util.HashMap of (MNode, MeshDeformer) ();
+        new java.util.HashMap of (MNode, MeshDeformer) ();
 
     public var url is String;
 
@@ -198,221 +198,222 @@ class MaModel
     var channels is TimeNode[];
     var clipLibs is TimeGroup[];
 
+
     function getCameras to Camera[] 
     {
-	foreach (n in spatialMap.values() where n is Camera) n as Camera;
+        foreach (n in spatialMap.values() where n is Camera) n as Camera;
     }
 
     function toNode from (n is MSpatial) to Node 
     {
-	if spatialMap.containsKey(n)
-	    then spatialMap.get(n) 
-	    else spatialMap.put(n, n.toNode(this))
+        if spatialMap.containsKey(n)
+            then spatialMap.get(n) 
+            else spatialMap.put(n, n.toNode(this))
     }
 
     function resolveInput 
-	from (n is MNode, 
-	      attr is String, 
-	      i is Integer,
-	      value is Number) 
-	to ConstRef of Number
+        from (n is MNode, 
+              attr is String, 
+              i is Integer,
+              value is Number) 
+        to ConstRef of Number
     {
-	var result is ConstRef of Number;
-	const key = if (n.connectionsToThis.containsKey(attr)) then attr else {
-		const xyz = "xyz";
-		const rgb = "rgb";
-		const abc = "012";
-		const k1 = "{attr}{xyz.charAt(i)}";
-		if (n.connectionsToThis.containsKey(k1)) then k1 else {
-			const k2 = "{attr}{rgb.charAt(i)}";
-			if (n.connectionsToThis.containsKey(k2)) then k2 else "{attr}[{abc.charAt(i)}]";
-		    }
-	    }
-	println("key={key}");
-	for (c in n.connectionsToThis.get(key)) {
-	    if (c.sourceNode is MUtilityOfNumber) {
-		const src = c.sourceNode as MUtilityOfNumber;
-		result = src.getOutput(this, c.sourcePath);
-	    } else {
-		result = resolveSourcePointer(c) as Ref of Number;
-	    }
-	}
-	return result;
+        var result is ConstRef of Number;
+        const key = if (n.connectionsToThis.containsKey(attr)) then attr else {
+                const xyz = "xyz";
+                const rgb = "rgb";
+                const abc = "012";
+                const k1 = "{attr}{xyz.charAt(i)}";
+                if (n.connectionsToThis.containsKey(k1)) then k1 else {
+                        const k2 = "{attr}{rgb.charAt(i)}";
+                        if (n.connectionsToThis.containsKey(k2)) then k2 else "{attr}[{abc.charAt(i)}]";
+                    }
+            }
+        println("key={key}");
+        for (c in n.connectionsToThis.get(key)) {
+            if (c.sourceNode is MUtilityOfNumber) {
+                const src = c.sourceNode as MUtilityOfNumber;
+                result = src.getOutput(this, c.sourcePath);
+            } else {
+                result = resolveSourcePointer(c) as Ref of Number;
+            }
+        }
+        return result;
     }
 
     function resolveInput 
-	from (n is MNode, 
-	      attr is String, 
-	      value is Number) 
-	to ConstRef of Number
+        from (n is MNode, 
+              attr is String, 
+              value is Number) 
+        to ConstRef of Number
     {
-	resolveInput(n, attr, 0, value);
+        resolveInput(n, attr, 0, value);
     }
 
     function resolveInput 
-	from (n is MUtility, 
-	      attr is String, 
-	      value is Tuple3) 
-	to ConstRef of Tuple3
+        from (n is MUtility, 
+              attr is String, 
+              value is Tuple3) 
+        to ConstRef of Tuple3
     {
-	var result is ConstRef of Tuple3;
-	for (c in n.connectionsToThis.get(attr)) {
-	    if (c.sourceNode is MUtility of Tuple3) {
-		const src = c.sourceNode as MUtilityOfTuple3;
-		result = src.getOutput(this, c.sourcePath);
-	    } else {
-		result = resolveSourcePointer(c) as ConstRef of Tuple3;
-	    }
-	}
-	if (result == null) {
-	    const fx = resolveInput(n, "{attr}", 0, value.x);
-	    const fy = resolveInput(n, "{attr}", 1, value.y);
-	    const fz = resolveInput(n, "{attr}", 2, value.z);
-	    result = AbstractConstRef of Tuple3 {
-		override function get to Tuple3 {
-		    tuple(fx.get(), fy.get(), fz.get());
-		}
-	    }
-	}
-	return result; 
+        var result is ConstRef of Tuple3;
+        for (c in n.connectionsToThis.get(attr)) {
+            if (c.sourceNode is MUtility of Tuple3) {
+                const src = c.sourceNode as MUtilityOfTuple3;
+                result = src.getOutput(this, c.sourcePath);
+            } else {
+                result = resolveSourcePointer(c) as ConstRef of Tuple3;
+            }
+        }
+        if (result == null) {
+            const fx = resolveInput(n, "{attr}", 0, value.x);
+            const fy = resolveInput(n, "{attr}", 1, value.y);
+            const fz = resolveInput(n, "{attr}", 2, value.z);
+            result = AbstractConstRef of Tuple3 {
+                override function get to Tuple3 {
+                    tuple(fx.get(), fy.get(), fz.get());
+                }
+            }
+        }
+        return result; 
     }
 
     function resolveTargetPointer from (c is Connection) to Ref of ?
     {
-	const target = c.targetNode;
-	var key = c.targetPath;
-	const attr = target.attrs.get(key); 
-	var attrType is String;
-	var parentAttrType is String;
-	if (attr <> null) {
-	    attrType = attr.type;
-	    if (attr.parent <> null) {
-		parentAttrType = attr.parent.type;
-		key = attr.parent.shortName;
-	    }
-	    for (c1 in target.connectionsFromThis.get(key)) {
-		const p = resolveTargetPointer(c1);
-		if (p <> null) {
-		    println("resolved {c} via {c1} to {p}");
-		    return p;
-		}
-	    }
-	}
-	var ptr = 
-	if (target instanceof MCharacter) {
-	    (target as MCharacter).resolveTargetPointer(this, c)
-	} else if (target instanceof MBlendShape) {
-	    (target as MBlendShape).resolveTargetPointer(this, c)
-	} else if (target instanceof MSpatial) {
-	    const resolved = toNode(target as MSpatial);
-	    target.getPointer(key, resolved);
-	} else if (target instanceof MAbstractShader) {
-	    const resolved = toShader(target as MAbstractShader);
-	    println("resolved shader {target.name} to {resolved}");
-	    target.getPointer(key, resolved);
-	} else if (target instanceof MAnimCurve) {
-	    const ch = toChannel(target as MAnimCurve, false) as Channel of ?;
-	    ch.targets[0];
-	} else null;
-	if (ptr == null and attr <> null) { // hack: assume user defined attr
-	    if (attr.parent <> null) {
-		ptr = &attr.parent.value as Ref of ?;
-	    } else {
-		ptr = &attr.value as Ref of ?;
-	    }
-	}
-	if (attr.parent <> null) {
-	    const v is Object = ptr.get();
-	    var t = parentAttrType; // can be wrong...
-	    if (v is Tuple4) {
-		t = "float4";
-	    }
-	    if (t == "float4") { // these hacks needed at least for cgfx shaders
-		const name = attr.shortName.toUpperCase();
-		const ptrv = ptr as Ref of Tuple4;
-		if (name.endsWith("X")) {
-		    ptr = AbstractRef of Number {
-			override function get to Number {
-			    ptrv.get().x;
-			}
-			override function set from (n is Number) to () {
-			    const t = ptrv.get();
-			    ptrv.set(tuple(n, t.y, t.z, t.w));
-			}
-		    } as Ref of ?;
-		} else if (name.endsWith("Y")) {
-		    ptr = AbstractRef of Number {
-			override function get to Number {
-			    ptrv.get().y;
-			}
-			override function set from (n is Number) to () {
-			    const t = ptrv.get();
-			    ptrv.set(tuple(t.x, n, t.z, t.w));
-			}
-		    } as Ref of ?;
-		} else if (name.endsWith("Z")) {
-		    ptr = AbstractRef of Number {
-			override function get to Number {
-			    ptrv.get().z;
-			}
-			override function set from (n is Number) to () {
-			    const t = ptrv.get();
-			    ptrv.set(tuple(t.x, t.y, n, t.w));
-			}
-		    } as Ref of ?;
-		} else if (name.endsWith("W")) {
-		    ptr = AbstractRef of Number {
-			override function get to Number {
-			    ptrv.get().w;
-			}
-			override function set from (n is Number) to () {
-			    const t = ptrv.get();
-			    ptrv.set(tuple(t.x, t.y, t.z, n));
-			}
-		    } as Ref of ?;
-		}
-	    }
-	}
-	return ptr;
+        const target = c.targetNode;
+        var key = c.targetPath;
+        const attr = target.attrs.get(key); 
+        var attrType is String;
+        var parentAttrType is String;
+        if (attr <> null) {
+            attrType = attr.type;
+            if (attr.parent <> null) {
+                parentAttrType = attr.parent.type;
+                key = attr.parent.shortName;
+            }
+            for (c1 in target.connectionsFromThis.get(key)) {
+                const p = resolveTargetPointer(c1);
+                if (p <> null) {
+                    println("resolved {c} via {c1} to {p}");
+                    return p;
+                }
+            }
+        }
+        var ptr = 
+        if (target instanceof MCharacter) {
+            (target as MCharacter).resolveTargetPointer(this, c)
+        } else if (target instanceof MBlendShape) {
+            (target as MBlendShape).resolveTargetPointer(this, c)
+        } else if (target instanceof MSpatial) {
+            const resolved = toNode(target as MSpatial);
+            target.getPointer(key, resolved);
+        } else if (target instanceof MAbstractShader) {
+            const resolved = toShader(target as MAbstractShader);
+            println("resolved shader {target.name} to {resolved}");
+            target.getPointer(key, resolved);
+        } else if (target instanceof MAnimCurve) {
+            const ch = toChannel(target as MAnimCurve, false) as Channel of ?;
+            ch.targets[0];
+        } else null;
+        if (ptr == null and attr <> null) { // hack: assume user defined attr
+            if (attr.parent <> null) {
+                ptr = &attr.parent.value as Ref of ?;
+            } else {
+                ptr = &attr.value as Ref of ?;
+            }
+        }
+        if (attr.parent <> null) {
+            const v is Object = ptr.get();
+            var t = parentAttrType; // can be wrong...
+            if (v is Tuple4) {
+                t = "float4";
+            }
+            if (t == "float4") { // these hacks needed at least for cgfx shaders
+                const name = attr.shortName.toUpperCase();
+                const ptrv = ptr as Ref of Tuple4;
+                if (name.endsWith("X")) {
+                    ptr = AbstractRef of Number {
+                        override function get to Number {
+                            ptrv.get().x;
+                        }
+                        override function set from (n is Number) to () {
+                            const t = ptrv.get();
+                            ptrv.set(tuple(n, t.y, t.z, t.w));
+                        }
+                    } as Ref of ?;
+                } else if (name.endsWith("Y")) {
+                    ptr = AbstractRef of Number {
+                        override function get to Number {
+                            ptrv.get().y;
+                        }
+                        override function set from (n is Number) to () {
+                            const t = ptrv.get();
+                            ptrv.set(tuple(t.x, n, t.z, t.w));
+                        }
+                    } as Ref of ?;
+                } else if (name.endsWith("Z")) {
+                    ptr = AbstractRef of Number {
+                        override function get to Number {
+                            ptrv.get().z;
+                        }
+                        override function set from (n is Number) to () {
+                            const t = ptrv.get();
+                            ptrv.set(tuple(t.x, t.y, n, t.w));
+                        }
+                    } as Ref of ?;
+                } else if (name.endsWith("W")) {
+                    ptr = AbstractRef of Number {
+                        override function get to Number {
+                            ptrv.get().w;
+                        }
+                        override function set from (n is Number) to () {
+                            const t = ptrv.get();
+                            ptrv.set(tuple(t.x, t.y, t.z, n));
+                        }
+                    } as Ref of ?;
+                }
+            }
+        }
+        return ptr;
     }
 
     function resolveSourcePointer
-	from (c is Connection) to Ref of ?
+        from (c is Connection) to Ref of ?
     {
-	const target = c.sourceNode;
-	if (target instanceof MCharacter) {
-	    (target as MCharacter).resolveSourcePointer(this, c)
-	} else if (target instanceof MSpatial) {
-	    const resolved = toNode(target as MSpatial);
-	    target.getPointer(c.sourcePath, resolved);
-	} else if (target instanceof MAbstractShader) {
-	    const resolved = toShader(target as MAbstractShader);
-	    target.getPointer(c.targetPath, resolved);
-	} else null
+        const target = c.sourceNode;
+        if (target instanceof MCharacter) {
+            (target as MCharacter).resolveSourcePointer(this, c)
+        } else if (target instanceof MSpatial) {
+            const resolved = toNode(target as MSpatial);
+            target.getPointer(c.sourcePath, resolved);
+        } else if (target instanceof MAbstractShader) {
+            const resolved = toShader(target as MAbstractShader);
+            target.getPointer(c.targetPath, resolved);
+        } else null
     }
 
     function getNumberTargets 
-	from (n is MNode, sourcePath is String) to (Ref of Number)[]
+        from (n is MNode, sourcePath is String) to (Ref of Number)[]
     {
-	println("attempting to resolve {n.name} {sourcePath} in {n.connectionsFromThis}");
-	foreach (c in n.connectionsFromThis.get(sourcePath)) {
-	    println(c);
-	    const ptr = resolveTargetPointer(c) as Ref of Number;
-	    println("resolved {n.name} {sourcePath} to {ptr}");
-	    ptr;
-	}
+        println("attempting to resolve {n.name} {sourcePath} in {n.connectionsFromThis}");
+        foreach (c in n.connectionsFromThis.get(sourcePath)) {
+            println(c);
+            const ptr = resolveTargetPointer(c) as Ref of Number;
+            println("resolved {n.name} {sourcePath} to {ptr}");
+            ptr;
+        }
     }
 
     function toParentNode from (n is MSpatial) to Group
     {
-	const node = toNode(n);
-	if (node == null) then spatialRoot else node as Group;
+        const node = toNode(n);
+        if (node == null) then spatialRoot else node as Group;
     }
 
     function toChannel from (n is MAnimCurve, clip is Boolean) to TimeNode
     {
         var ch is TimeNode;
-	if (temporalMap.containsKey(n)) {
+        if (temporalMap.containsKey(n)) {
             ch = temporalMap.get(n);
         } else {
             ch = n.toChannel(this, clip);
@@ -430,62 +431,62 @@ class MaModel
 
     function toShader from (n is MAbstractShader) to Shader
     {
-	if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
-		const shader = n.toShader(this);
-		shaderMap.put(n, shader);
-	    }
+        if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
+                const shader = n.toShader(this);
+                shaderMap.put(n, shader);
+            }
     }
 
     function toBlendShape from (n is MBlendShape) to BlendShape {
-	if (deformerMap.containsKey(n)) then deformerMap.get(n) as BlendShape else {
-		const blendShape = n.toBlendShape(this);
-		deformerMap.put(n, blendShape) as BlendShape;
-	    }
+        if (deformerMap.containsKey(n)) then deformerMap.get(n) as BlendShape else {
+                const blendShape = n.toBlendShape(this);
+                deformerMap.put(n, blendShape) as BlendShape;
+            }
     }
 
     function toSkinCluster from (n is MSkinCluster) to SkinCluster {
-	if (deformerMap.containsKey(n)) then deformerMap.get(n) as SkinCluster else {
-		const skinCluster = n.toSkinCluster(this);
-		deformerMap.put(n, skinCluster) as SkinCluster;
-	    }
+        if (deformerMap.containsKey(n)) then deformerMap.get(n) as SkinCluster else {
+                const skinCluster = n.toSkinCluster(this);
+                deformerMap.put(n, skinCluster) as SkinCluster;
+            }
     }
 
     function toLink from (n is MUtility) to Link of ?
     {
-	if (linkMap.containsKey(n)) then linkMap.get(n) else {
-		const link = n.toLink(this);
-		linkMap.put(n, link);
-	    }
+        if (linkMap.containsKey(n)) then linkMap.get(n) else {
+                const link = n.toLink(this);
+                linkMap.put(n, link);
+            }
     }
 
     function toClipLibrary from (n is MClipLibrary) to TimeNode 
     {
-	var r is TimeGroup = clipLibMap.get(n);
-	if (r == null) {
-	    println("converting clip library {n.name}");
-	    var clips is TimeGroup[];
-	    println("connections={n.connectionsToThis.get("sc")}");
-	    for (conn in n.connectionsToThis.get("sc")) {
-		const path = parsePath(conn.targetPath).path;
-		const i = (path[1] as Index).index;
-		const sourceClip = conn.sourceNode as MAnimClip;
-		const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode;
-		const start = 1s/24 * (sourceClip.ss-1);
-		const end = 1s/24 * (sourceClip.se);
-		println("creating clip {clip.name} {start}..{end}");
-		insert TimeGroup {
-		    id: clip.name;
+        var r is TimeGroup = clipLibMap.get(n);
+        if (r == null) {
+            println("converting clip library {n.name}");
+            var clips is TimeGroup[];
+            println("connections={n.connectionsToThis.get("sc")}");
+            for (conn in n.connectionsToThis.get("sc")) {
+                const path = parsePath(conn.targetPath).path;
+                const i = (path[1] as Index).index;
+                const sourceClip = conn.sourceNode as MAnimClip;
+                const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode;
+                const start = 1s/24 * (sourceClip.ss-1);
+                const end = 1s/24 * (sourceClip.se);
+                println("creating clip {clip.name} {start}..{end}");
+                insert TimeGroup {
+                    id: clip.name;
                     //playTime: -start;
-		    //playRange: Interval { start: start, end: end }
-		} into clips;
-	    }
-	    for (conn in n.connectionsToThis.get("cel")) {
-		const path = parsePath(conn.targetPath).path;
-		const celIndex = (path[1] as Index).index;
-		const clip = clips[celIndex];
-		//const cevIndex = (path[3] as Index).index;
-		const animCurve = conn.sourceNode as MAnimCurve;
-		const ch = toChannel(animCurve, true);
+                    //playRange: Interval { start: start, end: end }
+                } into clips;
+            }
+            for (conn in n.connectionsToThis.get("cel")) {
+                const path = parsePath(conn.targetPath).path;
+                const celIndex = (path[1] as Index).index;
+                const clip = clips[celIndex];
+                //const cevIndex = (path[3] as Index).index;
+                const animCurve = conn.sourceNode as MAnimCurve;
+                const ch = toChannel(animCurve, true);
                 if (ch <> null) {
                     println("adding channel {ch.id} {ch.bounds} to {clip.id}");
                     insert ch into clip.content;
@@ -493,48 +494,48 @@ class MaModel
                     println("can't create channel {animCurve.name} for {clip.id}");                    
                 }
             }
-	    for (clip in clips) {
-		println("created clip: {clip.id} with {clip.content.size()} channels");
-	    }
-	    r = TimeGroup {
-		id: n.name;
-		content: clips;
-	    }
-	    clipLibMap.put(n, r);
-	    insert r into clipLibs;
-	}
-	return r;
+            for (clip in clips) {
+                println("created clip: {clip.id} with {clip.content.size()} channels");
+            }
+            r = TimeGroup {
+                id: n.name;
+                content: clips;
+            }
+            clipLibMap.put(n, r);
+            insert r into clipLibs;
+        }
+        return r;
     }
 
     function generateScene 
     {
-	for (n in nodeMap.values() where n instanceof MCharacter) {
-	    (n as MCharacter).applyAlias(this);
-	}
-	spatialRoot = Group {id: url};
-	for (n in nodeMap.values()) {
-	    const r = 
-		if (n is MSpatial) {
-		    toNode(n as MSpatial)
-		} else if (n is MAnimCurve) {
-		    toChannel(n as MAnimCurve, false);
-		} else if (n instanceof MClipLibrary) {
-		    toClipLibrary(n as MClipLibrary);
-		} else if (n instanceof MUtility) {
-		    toLink(n as MUtility);
-		} else if (n instanceof MBlendShape) {
-		    toBlendShape(n as MBlendShape);
-		} else if (n instanceof MSkinCluster) {
-		    const skinCluster = toSkinCluster(n as MSkinCluster);
-		    skinCluster.root = spatialRoot;
-		    skinCluster;
-		} else null
-	}
+        for (n in nodeMap.values() where n instanceof MCharacter) {
+            (n as MCharacter).applyAlias(this);
+        }
+        spatialRoot = Group {id: url};
+        for (n in nodeMap.values()) {
+            const r = 
+                if (n is MSpatial) {
+                    toNode(n as MSpatial)
+                } else if (n is MAnimCurve) {
+                    toChannel(n as MAnimCurve, false);
+                } else if (n instanceof MClipLibrary) {
+                    toClipLibrary(n as MClipLibrary);
+                } else if (n instanceof MUtility) {
+                    toLink(n as MUtility);
+                } else if (n instanceof MBlendShape) {
+                    toBlendShape(n as MBlendShape);
+                } else if (n instanceof MSkinCluster) {
+                    const skinCluster = toSkinCluster(n as MSkinCluster);
+                    skinCluster.root = spatialRoot;
+                    skinCluster;
+                } else null
+        }
         const startFrame = this.startFrame;
         const endFrame = this.endFrame;
         const linkMap = this.linkMap;
-	const links = foreach (link in linkMap.values()) link;
-	const playRange = Interval { start: FPS * startFrame, end: FPS * endFrame };
+        const links = foreach (link in linkMap.values()) link;
+        const playRange = Interval { start: FPS * startFrame, end: FPS * endFrame };
         temporalRoot = finishGenerateScene(startFrame, endFrame, links, playRange, channels, url, spatialRoot);
     }
 
@@ -577,54 +578,54 @@ function finishGenerateScene from (startFrame is Number, endFrame is Number, lin
 function makeRefX from (ref is Ref of Number) to Ref of Tuple3 
 {
     AbstractRef of Tuple3 {
-	override public function get to Tuple3 {
-	    tuple(ref.get(), 0, 0);
-	}
-	override public function set from (tuple is Tuple3) to () {
-	    ref.set(tuple.x);
-	}
+        override public function get to Tuple3 {
+            tuple(ref.get(), 0, 0);
+        }
+        override public function set from (tuple is Tuple3) to () {
+            ref.set(tuple.x);
+        }
     }
 }
 
 function makeRefY from (ref is Ref of Number) to Ref of Tuple3 
 {
     AbstractRef of Tuple3 {
-	override public function get to Tuple3 {
-	    tuple(0, ref.get(), 0);
-	}
-	override public function set from (tuple is Tuple3) to () {
-	    ref.set(tuple.y);
-	}
+        override public function get to Tuple3 {
+            tuple(0, ref.get(), 0);
+        }
+        override public function set from (tuple is Tuple3) to () {
+            ref.set(tuple.y);
+        }
     }
 }
 
 function makeRefZ from (ref is Ref of Number) to Ref of Tuple3 
 {
     AbstractRef of Tuple3 {
-	override public function get to Tuple3 {
-	    tuple(0, 0, ref.get());
-	}
-	override public function set from (tuple is Tuple3) to () {
-	    ref.set(tuple.z);
-	}
+        override public function get to Tuple3 {
+            tuple(0, 0, ref.get());
+        }
+        override public function set from (tuple is Tuple3) to () {
+            ref.set(tuple.z);
+        }
     }
 }
 
 function makeRef of a from (name is String, ptr is String, result is Ref of a) to Ref of a 
 {
     AbstractRef of a {
-	override function toString to String 
-	{
-	    "{name}.{ptr} = {get()}";
-	}
-	override function get to a
-	{
-	    result.get();
-	}
-	override function set from (x is a) to () 
-	{
-	    result.set(x);
-	}
+        override function toString to String 
+        {
+            "{name}.{ptr} = {get()}";
+        }
+        override function get to a
+        {
+            result.get();
+        }
+        override function set from (x is a) to () 
+        {
+            result.set(x);
+        }
     }
 }
 
@@ -635,104 +636,104 @@ class Connection {
     const targetNode is MNode;
     const targetPath is String;
     override function toString to String {
-	"{sourceNode.name} {sourcePath} => {targetNode.name} {targetPath}"
+        "{sourceNode.name} {sourcePath} => {targetNode.name} {targetPath}"
     }
 }
 
 class MNode {
     const connectionsFromThis is java.util.Map of (String, Connection[]) =
-	new java.util.HashMap of (String, Connection[]);
+        new java.util.HashMap of (String, Connection[]);
     const connectionsToThis is java.util.Map of (String, Connection[]) =
-	new java.util.HashMap of (String, Connection[]);
+        new java.util.HashMap of (String, Connection[]);
     const attrs is java.util.Map of (String, MAttr) =
-	new java.util.HashMap of (String, MAttr);
+        new java.util.HashMap of (String, MAttr);
     const name is String;
     const parent is MNode;
     function getFullName to String {
-	"{if (parent == null) then "" else parent.getFullName()}|{name}";
+        "{if (parent == null) then "" else parent.getFullName()}|{name}";
     }
 
     function getPointer 
-	from (path is String, target is Object) 
-	to Ref of ?
+        from (path is String, target is Object) 
+        to Ref of ?
     {
-	null
+        null
     }
 
     function resolveInput from (m is MaModel, p is String) to ConstRef of ? {
-	println("{name} can't resolve: {p}");
-	null;
+        println("{name} can't resolve: {p}");
+        null;
     }
 
     function addConnectionTo from (c is Connection) to () 
     {
-	const field = parsePath(c.targetPath).path[0] as Field;
-	const conns = connectionsToThis.get(field.name);
-	connectionsToThis.put(field.name, [c, conns])
+        const field = parsePath(c.targetPath).path[0] as Field;
+        const conns = connectionsToThis.get(field.name);
+        connectionsToThis.put(field.name, [c, conns])
     }
 
     function addConnectionFrom from (c is Connection) to () 
     {
-	const field = parsePath(c.sourcePath).path[0] as Field;
-	const conns = connectionsFromThis.get(field.name);
-	connectionsFromThis.put(field.name, [c, conns])
+        const field = parsePath(c.sourcePath).path[0] as Field;
+        const conns = connectionsFromThis.get(field.name);
+        connectionsFromThis.put(field.name, [c, conns])
     }
 
     function addAttr from (cmd is Command) to () 
     {
-	const shortName = cmd.getString("sn");
-	const longName = cmd.getString("ln");
-	const t = cmd.getString("at");
-	const parent = cmd.getString("p");
-	const attr = MAttr {
-	    shortName: shortName;
-	    longName: longName;
-	    type: t;
-	    parent: attrs.get(parent);
-	}
-	attrs.put(attr.shortName, attr);
-	attrs.put(attr.longName, attr);
+        const shortName = cmd.getString("sn");
+        const longName = cmd.getString("ln");
+        const t = cmd.getString("at");
+        const parent = cmd.getString("p");
+        const attr = MAttr {
+            shortName: shortName;
+            longName: longName;
+            type: t;
+            parent: attrs.get(parent);
+        }
+        attrs.put(attr.shortName, attr);
+        attrs.put(attr.longName, attr);
     }
 
     function setAttr from (cmd is Command) to () 
     {
-	const attr = attrs.get(cmd.getAttr());
-	if (attr <> null) {
-	    const t = attr.type;
-	    const value = 
-		if (t == "bool") {
-		    cmd.getBoolean();
-		} else if (t == "float") {
-		    cmd.getFloat();
-		} else if (t == "float2") {
-		    cmd.getVec2();
-		} else if (t == "float3") {
-		    cmd.getVec3();
-		} else if (t == "int") {
-		    cmd.getInt()
-		} else if (t == "long") {
-		    cmd.getInt()
-		} else if (t == "fltMatrix" or t == "matrix") {
-		    cmd.getMatrix();
-		} else null;
-	    //println("setAttr {attr.shortName} {attr.type} = {value}");
-	    if (attr.parent <> null) {
-		const suffix = attr.shortName.substring(attr.parent.shortName.length()).toLowerCase();
-		if (attr.parent.type == "float3") {
-		    var v = attr.parent.value as Tuple3;
-		    var n = value as Number;
-		    if (suffix == "x") {
-			v = tuple(n, v.y, v.z);
-		    } else if (suffix == "y") {
-			v = tuple(v.x, n, v.z);
-		    } else if (suffix == "z") {
-			v = tuple(v.x, v.y, n);
-		    }
-		    attr.parent.value = v;
-		}
-	    }
-	    attr.value = value;
-	}
+        const attr = attrs.get(cmd.getAttr());
+        if (attr <> null) {
+            const t = attr.type;
+            const value = 
+                if (t == "bool") {
+                    cmd.getBoolean();
+                } else if (t == "float") {
+                    cmd.getFloat();
+                } else if (t == "float2") {
+                    cmd.getVec2();
+                } else if (t == "float3") {
+                    cmd.getVec3();
+                } else if (t == "int") {
+                    cmd.getInt()
+                } else if (t == "long") {
+                    cmd.getInt()
+                } else if (t == "fltMatrix" or t == "matrix") {
+                    cmd.getMatrix();
+                } else null;
+            //println("setAttr {attr.shortName} {attr.type} = {value}");
+            if (attr.parent <> null) {
+                const suffix = attr.shortName.substring(attr.parent.shortName.length()).toLowerCase();
+                if (attr.parent.type == "float3") {
+                    var v = attr.parent.value as Tuple3;
+                    var n = value as Number;
+                    if (suffix == "x") {
+                        v = tuple(n, v.y, v.z);
+                    } else if (suffix == "y") {
+                        v = tuple(v.x, n, v.z);
+                    } else if (suffix == "z") {
+                        v = tuple(v.x, v.y, n);
+                    }
+                    attr.parent.value = v;
+                }
+            }
+            attr.value = value;
+        }
     }
 }
 
@@ -741,17 +742,17 @@ class MSceneConfig is MNode {
     var max is Number;
     public var model is MaModel;
     override function setAttr from (cmd is Command) to () {
-	const n = cmd.getAttr();
-	if (n == "b") {
-	    const script = cmd.getString();
-	    const parser = MaParser {};
-	    for (c in parser.parseString(script)) {
-		min = c.getFloat("min");
-		max = c.getFloat("max");
-		model.startFrame = min-1;
-		model.endFrame = max-1;
-	    }
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "b") {
+            const script = cmd.getString();
+            const parser = MaParser {};
+            for (c in parser.parseString(script)) {
+                min = c.getFloat("min");
+                max = c.getFloat("max");
+                model.startFrame = min-1;
+                model.endFrame = max-1;
+            }
+        } else super.setAttr(cmd);
     }
 }
 
@@ -759,41 +760,41 @@ abstract class MSpatial is MNode {
     public var visible is Boolean = true;
     abstract function toNode from (m is MaModel) to Node;
     override function setAttr from (cmd is Command) to () {
-	const n = cmd.getAttr();
-	if (n == "v") {
-	    visible = cmd.getBoolean();
-	}
-	else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "v") {
+            visible = cmd.getBoolean();
+        }
+        else super.setAttr(cmd);
     }
 
     override function resolveInput from (m is MaModel, p is String) to ConstRef of ? 
     {
-	const ptr = getPointer(p, m.toNode(this));
-	if (ptr <> null) then ptr else super.resolveInput(m, p);
+        const ptr = getPointer(p, m.toNode(this));
+        if (ptr <> null) then ptr else super.resolveInput(m, p);
     }
 
     override function getPointer 
-	from (path is String, target is Object) 
-	to Ref of ?
+        from (path is String, target is Object) 
+        to Ref of ?
     {
-	if (path == "v") {
-	    const tn = target as Node;
-	    AbstractRef of Number {
-		override public function set from (n is Number) to () {
-		    tn.visible = n <> 0.0;
-		}
-		override public function get to Number {
-		    if tn.visible then 1.0 else 0.0
-		}
-	    }
-	} else super.getPointer(path, target);
+        if (path == "v") {
+            const tn = target as Node;
+            AbstractRef of Number {
+                override public function set from (n is Number) to () {
+                    tn.visible = n <> 0.0;
+                }
+                override public function get to Number {
+                    if tn.visible then 1.0 else 0.0
+                }
+            }
+        } else super.getPointer(path, target);
     }
 }
 
 abstract class MUtility is MNode
 {
     public function toLink from (m is MaModel) to Link of ? {
-	null
+        null
     }
 }
 
@@ -811,11 +812,11 @@ public class Link of a
     public const output is (Ref of a)[];
     public function apply from () to () 
     {
-	//println("applying input {input}");
-	for (o in output) {
-	    //println("applying {input} to {o}");
-	    o.set(input.get());
-	}
+        //println("applying input {input}");
+        for (o in output) {
+            //println("applying {input} to {o}");
+            o.set(input.get());
+        }
     }
 }
 
@@ -824,120 +825,120 @@ class MPlusMinusAverage is MUtilityOfTuple3 {
     var op is Integer = 1;
 
     override function toLink from (m is MaModel) to Link of ? {
-	const f = getOutput(m, "o3");
-	const name = this.name;
-	Link of Tuple3 {
-	    input: AbstractConstRef of Tuple3 { 
-		override function toString to String {
-		    "{name}.op {f.get()}"
-		}
-		override function get to Tuple3 { f.get() } 
-	    }
-	    output: foreach (conn in connectionsFromThis.get("o3")) {
-		const ptr = m.resolveTargetPointer(conn);
-		println("{conn} ==> {ptr}");
-		ptr as Ref of Tuple3;
-	    }
-	}
+        const f = getOutput(m, "o3");
+        const name = this.name;
+        Link of Tuple3 {
+            input: AbstractConstRef of Tuple3 { 
+                override function toString to String {
+                    "{name}.op {f.get()}"
+                }
+                override function get to Tuple3 { f.get() } 
+            }
+            output: foreach (conn in connectionsFromThis.get("o3")) {
+                const ptr = m.resolveTargetPointer(conn);
+                println("{conn} ==> {ptr}");
+                ptr as Ref of Tuple3;
+            }
+        }
     }
 
     override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
     {
-	//const conns1 = connectionsToThis.get("i1");
-	//const conns2 = connectionsToThis.get("i2");
-	const conns3 = connectionsToThis.get("i3");
-	println("conns3={conns3}");
-	if (attr == "o1") {
-	    if (op == 0) {
-		// select first
-		null
-	    } else if (op == 1) {
-		// sum
-		null
-	    } else if (op == 2) {
-		// subtract
-		null
-	    } else if (op == 3) {
-		// avg
-		null
-	    } else null
-	} else if (attr == "o2") {
-	    if (op == 0) {
-		// select first
-		null
-	    } else if (op == 1) {
-		// sum
-		null
-	    } else if (op == 2) {
-		// subtract
-		null
-	    } else if (op == 3) {
-		// avg
-		null
-	    } else null
-	} else if (attr == "o3") {
-	    const funs = 
-		foreach (c in conns3) 
-		{
-		    const g = c.sourceNode.resolveInput(m, c.sourcePath);
-		    g as ConstRef of Tuple3;
-		}
-	    if (op == 0) {
-		// select first
-		null
-	    } else if (op == 1) {
-		// sum
-		AbstractConstRef of Tuple3 {
-		    override function get to Tuple3 {
-			var x = 0.0;
-			var y = 0.0;
-			var z = 0.0;
-			for (f in funs) { const t = f.get(); x += t.x; y += t.y; z += t.z }
-			tuple(x, y, z);
-		    }
-		}
-	    } else if (op == 2) {
-		// subtract
-		AbstractConstRef of Tuple3 {
-		    override function get to Tuple3 {
-			const t0 = funs[0].get();
-			var x = t0.x;
-			var y = t0.y;
-			var z = t0.z;
-			for (f in funs[1..]) { 
-			    const t = f.get(); x -= t.x; y -= t.y; z -= t.z; 
-			}
-			tuple(x, y, z);
-		    }
-		}
-	    } else if (op == 3) {
-		// avg
-		AbstractConstRef of Tuple3 {
-		    override function get to Tuple3 {
-			var x = 0.0;
-			var y = 0.0;
-			var z = 0.0;
-			for (f in funs) { 
-			    const t = f.get(); 
-			    x += t.x; 
-			    y += t.y; 
-			    z += t.z; 
-			}
-			x /= funs.size();
-			y /= funs.size();
-			z /= funs.size();
-			tuple(x, y, z);
-		    }
-		}
-	    } else null
-	} else null
+        //const conns1 = connectionsToThis.get("i1");
+        //const conns2 = connectionsToThis.get("i2");
+        const conns3 = connectionsToThis.get("i3");
+        println("conns3={conns3}");
+        if (attr == "o1") {
+            if (op == 0) {
+                // select first
+                null
+            } else if (op == 1) {
+                // sum
+                null
+            } else if (op == 2) {
+                // subtract
+                null
+            } else if (op == 3) {
+                // avg
+                null
+            } else null
+        } else if (attr == "o2") {
+            if (op == 0) {
+                // select first
+                null
+            } else if (op == 1) {
+                // sum
+                null
+            } else if (op == 2) {
+                // subtract
+                null
+            } else if (op == 3) {
+                // avg
+                null
+            } else null
+        } else if (attr == "o3") {
+            const funs = 
+                foreach (c in conns3) 
+                {
+                    const g = c.sourceNode.resolveInput(m, c.sourcePath);
+                    g as ConstRef of Tuple3;
+                }
+            if (op == 0) {
+                // select first
+                null
+            } else if (op == 1) {
+                // sum
+                AbstractConstRef of Tuple3 {
+                    override function get to Tuple3 {
+                        var x = 0.0;
+                        var y = 0.0;
+                        var z = 0.0;
+                        for (f in funs) { const t = f.get(); x += t.x; y += t.y; z += t.z }
+                        tuple(x, y, z);
+                    }
+                }
+            } else if (op == 2) {
+                // subtract
+                AbstractConstRef of Tuple3 {
+                    override function get to Tuple3 {
+                        const t0 = funs[0].get();
+                        var x = t0.x;
+                        var y = t0.y;
+                        var z = t0.z;
+                        for (f in funs[1..]) { 
+                            const t = f.get(); x -= t.x; y -= t.y; z -= t.z; 
+                        }
+                        tuple(x, y, z);
+                    }
+                }
+            } else if (op == 3) {
+                // avg
+                AbstractConstRef of Tuple3 {
+                    override function get to Tuple3 {
+                        var x = 0.0;
+                        var y = 0.0;
+                        var z = 0.0;
+                        for (f in funs) { 
+                            const t = f.get(); 
+                            x += t.x; 
+                            y += t.y; 
+                            z += t.z; 
+                        }
+                        x /= funs.size();
+                        y /= funs.size();
+                        z /= funs.size();
+                        tuple(x, y, z);
+                    }
+                }
+            } else null
+        } else null
     }
 
     override function setAttr from (cmd is Command) to () {
-	const n = cmd.getAttr();
-	if (n == "op") {
-	    op = cmd.getInt();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "op") {
+            op = cmd.getInt();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -949,150 +950,150 @@ class MMultiplyDivide is MUtilityOfTuple3
 
     override function getPointer from (path is String, _ is Object) to Ref of ?
     {
-	null;
+        null;
     }
 
 
     override function toLink from (m is MaModel) to Link of ? 
     {
-	const f = getOutput(m, "o");
-	const name = this.name;
-	Link of Tuple3 {
-	    input: AbstractConstRef of Tuple3 { 
-		override function toString to String {
-		    "{name}.o3 {f.get()}"
-		}
-		override function get to Tuple3 { f.get() } 
-	    }
-	    output: 
-	    [foreach (conn in connectionsFromThis.get("ox")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefX(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("oy")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefY(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("oz")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefZ(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("o")) 
-	     {
-		const ptr = m.resolveTargetPointer(conn);
-		println("{conn} ==> {ptr}");
-		ptr as Ref of Tuple3;
-	    }]
-	}
+        const f = getOutput(m, "o");
+        const name = this.name;
+        Link of Tuple3 {
+            input: AbstractConstRef of Tuple3 { 
+                override function toString to String {
+                    "{name}.o3 {f.get()}"
+                }
+                override function get to Tuple3 { f.get() } 
+            }
+            output: 
+            [foreach (conn in connectionsFromThis.get("ox")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefX(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("oy")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefY(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("oz")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefZ(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("o")) 
+             {
+                const ptr = m.resolveTargetPointer(conn);
+                println("{conn} ==> {ptr}");
+                ptr as Ref of Tuple3;
+            }]
+        }
     }
 
     override function resolveInput from (m is MaModel, p is String) to ConstRef of ? 
     {
-	if (p.startsWith("i1")) {
-	    const t = m.resolveInput(this, "i1", i1);
-	    if (p == "i1x") {
-		AbstractConstRef of Number {
-		    override function get to Number {
-			t.get().x;
-		    }
-		}
-	    } else if (p == "i1y") {
-		AbstractConstRef of Number {
-		    override function get to Number {
-			t.get().y;
-		    }
-		}
-	    } else if (p == "i1z") {
-		AbstractConstRef of Number {
-		    override function get to Number {
-			t.get().z;
-		    }
-		}
-	    } else null
-	} else if (p.startsWith("i2")) {
-	    const t = m.resolveInput(this, "i2", i2);
-	    if (p == "i2x") {
-		AbstractConstRef of Number {
-		    override function get to Number {
-			t.get().x;
-		    }
-		}
-	    } else if (p == "i2y") {
-		AbstractConstRef of Number {
-		    override function get to Number {
-			t.get().y;
-		    }
-		}
-	    } else if (p == "i2z") {
-		AbstractConstRef of Number {
-		    override function get to Number {
-			t.get().z;
-		    }
-		}
-	    } else null
-	} else null;
+        if (p.startsWith("i1")) {
+            const t = m.resolveInput(this, "i1", i1);
+            if (p == "i1x") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().x;
+                    }
+                }
+            } else if (p == "i1y") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().y;
+                    }
+                }
+            } else if (p == "i1z") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().z;
+                    }
+                }
+            } else null
+        } else if (p.startsWith("i2")) {
+            const t = m.resolveInput(this, "i2", i2);
+            if (p == "i2x") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().x;
+                    }
+                }
+            } else if (p == "i2y") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().y;
+                    }
+                }
+            } else if (p == "i2z") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().z;
+                    }
+                }
+            } else null
+        } else null;
     }
 
     override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
     {
-	if (attr == "o") {
-	    const input1 = m.resolveInput(this, "i1", i1) as ConstRef of Tuple3;
-	    const input2 = m.resolveInput(this, "i2", i2) as ConstRef of Tuple3;
-	    if (op == 0) {
-		// select first
-		input1
-	    } else if (op == 1) {
-		// multiply
-		AbstractConstRef of Tuple3 {
-		    override function get to Tuple3 {
-			const t1 is Tuple3 = input1.get();
-			const t2 is Tuple3 = input2.get();
-			//println("multiply {input1} {input2} {t1} {t2}");
-			tuple(t1.x*t2.x, 
-			      t1.y*t2.y,
-			      t1.z*t2.z);
-		    }
-		}
-	    } else if (op == 2) {
-		// divide
-		AbstractConstRef of Tuple3 {
-		    override function get to Tuple3 {
-			const t1 is Tuple3 = input1.get();
-			const t2 is Tuple3 = input2.get();
-			tuple(t1.x/t2.x, 
-			      t1.y/t2.y,
-			      t1.z/t2.z);
-		    }
-		}
-	    } else if (op == 3) {
-		// pow
-		AbstractConstRef of Tuple3 {
-		    override function get to Tuple3 {
-			const t1 is Tuple3 = input1.get();
-			const t2 is Tuple3 = input2.get();
-			tuple(Math.pow(t1.x,t2.x), 
-			      Math.pow(t1.y,t2.y),
-			      Math.pow(t1.z,t2.z));
-		    }
-		}
-	    } else null
-	} else null
+        if (attr == "o") {
+            const input1 = m.resolveInput(this, "i1", i1) as ConstRef of Tuple3;
+            const input2 = m.resolveInput(this, "i2", i2) as ConstRef of Tuple3;
+            if (op == 0) {
+                // select first
+                input1
+            } else if (op == 1) {
+                // multiply
+                AbstractConstRef of Tuple3 {
+                    override function get to Tuple3 {
+                        const t1 is Tuple3 = input1.get();
+                        const t2 is Tuple3 = input2.get();
+                        //println("multiply {input1} {input2} {t1} {t2}");
+                        tuple(t1.x*t2.x, 
+                              t1.y*t2.y,
+                              t1.z*t2.z);
+                    }
+                }
+            } else if (op == 2) {
+                // divide
+                AbstractConstRef of Tuple3 {
+                    override function get to Tuple3 {
+                        const t1 is Tuple3 = input1.get();
+                        const t2 is Tuple3 = input2.get();
+                        tuple(t1.x/t2.x, 
+                              t1.y/t2.y,
+                              t1.z/t2.z);
+                    }
+                }
+            } else if (op == 3) {
+                // pow
+                AbstractConstRef of Tuple3 {
+                    override function get to Tuple3 {
+                        const t1 is Tuple3 = input1.get();
+                        const t2 is Tuple3 = input2.get();
+                        tuple(Math.pow(t1.x,t2.x), 
+                              Math.pow(t1.y,t2.y),
+                              Math.pow(t1.z,t2.z));
+                    }
+                }
+            } else null
+        } else null
     }
 
     override function setAttr from (cmd is Command) to () 
     {
-	super.setAttr(cmd);
-	const n = cmd.getAttr();
-	if (n == "i1") {
-	    i1 = cmd.getVec3();
-	} else if (n == "i2") {
-	    i2 = cmd.getVec3();
-	} else if (n == "op") {
-	    op = cmd.getInt();
-	}
+        super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "i1") {
+            i1 = cmd.getVec3();
+        } else if (n == "i2") {
+            i2 = cmd.getVec3();
+        } else if (n == "op") {
+            op = cmd.getInt();
+        }
     }
 }
 
@@ -1104,67 +1105,67 @@ class MClamp is MUtilityOfTuple3 {
 
     override function getPointer from (path is String, _ is Object) to Ref of ?
     {
-	null
+        null
     }
 
     override function toLink from (m is MaModel) to Link of ? 
     {
-	const name = this.name;
-	Link of Tuple3 {
-	    input: getOutput(m, "op");
-	    output: 
-	    [foreach (conn in connectionsFromThis.get("opr")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefX(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("opg")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefY(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("opb")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefZ(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("op")) 
-	     {
-		 m.resolveTargetPointer(conn) as Ref of Tuple3;
-	     }]
-	}
+        const name = this.name;
+        Link of Tuple3 {
+            input: getOutput(m, "op");
+            output: 
+            [foreach (conn in connectionsFromThis.get("opr")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefX(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("opg")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefY(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("opb")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefZ(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("op")) 
+             {
+                 m.resolveTargetPointer(conn) as Ref of Tuple3;
+             }]
+        }
     }
 
     override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
     {
-	if (attr == "op") {
-	    const mnp = m.resolveInput(this, "mn", mn);
-	    const mxp = m.resolveInput(this, "mx", mx);
-	    const ipp = m.resolveInput(this, "ip", ip);
-	    AbstractConstRef of Tuple3 {
-		override function get to Tuple3 {
-		    const minv = mnp.get();
-		    const maxv = mxp.get();
-		    const iv = ipp.get();
-		    println("clamp {minv} {maxv} {iv}");
-		    tuple(Math.min(maxv.x, Math.max(minv.x, iv.x)),
-			  Math.min(maxv.y, Math.max(minv.y, iv.y)),
-			  Math.min(maxv.z, Math.max(minv.z, iv.z)));
-		}
-	    }
-	} else null
+        if (attr == "op") {
+            const mnp = m.resolveInput(this, "mn", mn);
+            const mxp = m.resolveInput(this, "mx", mx);
+            const ipp = m.resolveInput(this, "ip", ip);
+            AbstractConstRef of Tuple3 {
+                override function get to Tuple3 {
+                    const minv = mnp.get();
+                    const maxv = mxp.get();
+                    const iv = ipp.get();
+                    println("clamp {minv} {maxv} {iv}");
+                    tuple(Math.min(maxv.x, Math.max(minv.x, iv.x)),
+                          Math.min(maxv.y, Math.max(minv.y, iv.y)),
+                          Math.min(maxv.z, Math.max(minv.z, iv.z)));
+                }
+            }
+        } else null
     }
 
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "mn") {
-	    mn = cmd.getVec3();
-	} else if (n == "mx") {
-	    mx = cmd.getVec3();
-	} else if (n == "ip") {
-	    ip = cmd.getVec3();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "mn") {
+            mn = cmd.getVec3();
+        } else if (n == "mx") {
+            mx = cmd.getVec3();
+        } else if (n == "ip") {
+            ip = cmd.getVec3();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -1174,53 +1175,53 @@ class MReverse is MUtilityOfTuple3 {
 
     override function toLink from (m is MaModel) to Link of ? 
     {
-	const name = this.name;
-	Link of Tuple3 {
-	    input: getOutput(m, "o");
-	    output: 
-	    [foreach (conn in connectionsFromThis.get("ox")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefX(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("oy")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefY(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("oz")) 
-	     {
-		 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
-		 makeRefZ(ptr)
-	     },
-	     foreach (conn in connectionsFromThis.get("o")) 
-	     {
-		 m.resolveTargetPointer(conn) as Ref of Tuple3;
-	     }]
-	}
+        const name = this.name;
+        Link of Tuple3 {
+            input: getOutput(m, "o");
+            output: 
+            [foreach (conn in connectionsFromThis.get("ox")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefX(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("oy")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefY(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("oz")) 
+             {
+                 const ptr = m.resolveTargetPointer(conn) as Ref of Number;
+                 makeRefZ(ptr)
+             },
+             foreach (conn in connectionsFromThis.get("o")) 
+             {
+                 m.resolveTargetPointer(conn) as Ref of Tuple3;
+             }]
+        }
     }
 
     override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
     {
-	if (attr == "o") {
-	    const ip = m.resolveInput(this, "i", i);
-	    //println("ip={ip}");
-	    AbstractConstRef of Tuple3 {
-		override function get to Tuple3 {
-		    const iv = ip.get();
-		    //println("reverse {iv}");
-		    tuple(1.0-iv.x, 1.0-iv.y, 1.0-iv.z);
-		}
-	    }
-	} else null
+        if (attr == "o") {
+            const ip = m.resolveInput(this, "i", i);
+            //println("ip={ip}");
+            AbstractConstRef of Tuple3 {
+                override function get to Tuple3 {
+                    const iv = ip.get();
+                    //println("reverse {iv}");
+                    tuple(1.0-iv.x, 1.0-iv.y, 1.0-iv.z);
+                }
+            }
+        } else null
     }
 
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "i") {
-	    i = cmd.getVec3();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "i") {
+            i = cmd.getVec3();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -1233,24 +1234,24 @@ class MAddDoubleLinear is MUtilityOfNumber
     override function getOutput from (m is MaModel, attr is String) to ConstRef of Number
     {
 
-	if (attr == "o") {
-	    const input1 = m.resolveInput(this, "i1", i1);
-	    const input2 = m.resolveInput(this, "i2", i2);
-	    AbstractConstRef of Number {
-		override function get to Number {
-		    input1.get() + input2.get();
-		}
-	    }
-	} else null
+        if (attr == "o") {
+            const input1 = m.resolveInput(this, "i1", i1);
+            const input2 = m.resolveInput(this, "i2", i2);
+            AbstractConstRef of Number {
+                override function get to Number {
+                    input1.get() + input2.get();
+                }
+            }
+        } else null
     }
 
     override function setAttr from (cmd is Command) to () {
-	const n = cmd.getAttr();
-	if (n == "i1") {
-	    i1 = cmd.getFloat();
-	} else if (n == "i2") {
-	    i2 = cmd.getFloat();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "i1") {
+            i1 = cmd.getFloat();
+        } else if (n == "i2") {
+            i2 = cmd.getFloat();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -1271,185 +1272,185 @@ class MTransform is MSpatial {
     
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "t") {
-	    t = cmd.getVec3();
-	} else if (n == "r") {
-	    r = cmd.getVec3();
-	} else if (n == "s") {
-	    s = cmd.getVec3();
-	} else if (n == "rp") {
-	    rp = cmd.getVec3();
-	} else if (n == "rpt") {
-	    rpt = cmd.getVec3();
-	} else if (n == "sp") {
-	    sp = cmd.getVec3();
-	} else if (n == "spt") {
-	    spt = cmd.getVec3();
-	} else if (n == "tmrp") {
-	    tmrp = cmd.getVec3();
-	} else if (n == "ro") {
-	    ro = cmd.getInt();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "t") {
+            t = cmd.getVec3();
+        } else if (n == "r") {
+            r = cmd.getVec3();
+        } else if (n == "s") {
+            s = cmd.getVec3();
+        } else if (n == "rp") {
+            rp = cmd.getVec3();
+        } else if (n == "rpt") {
+            rpt = cmd.getVec3();
+        } else if (n == "sp") {
+            sp = cmd.getVec3();
+        } else if (n == "spt") {
+            spt = cmd.getVec3();
+        } else if (n == "tmrp") {
+            tmrp = cmd.getVec3();
+        } else if (n == "ro") {
+            ro = cmd.getInt();
+        } else super.setAttr(cmd);
     }
 
     override public function getPointer
-	from (ptr is String, target is Object) 
-	to Ref of ?
+        from (ptr is String, target is Object) 
+        to Ref of ?
     {
-	println("get pointer {name} attr={ptr} target={target}");
+        println("get pointer {name} attr={ptr} target={target}");
 
-	const n = target as MaTransform;
+        const n = target as MaTransform;
 
-	if (ptr == "t") {
-	    return AbstractRef of Tuple3 {
-		override function toString to String {
-		    "{n.id}.t = {n.t}";
-		}
-		override public function get to Tuple3 {
-		    tuple(n.tx, n.ty, n.tz);
-		}
-		override public function set from (t is Tuple3) to () {
-		    n.tx = t.x; n.ty = t.y; n.tz = t.z;
-		}
-	    }
-	}
+        if (ptr == "t") {
+            return AbstractRef of Tuple3 {
+                override function toString to String {
+                    "{n.id}.t = {n.t}";
+                }
+                override public function get to Tuple3 {
+                    tuple(n.tx, n.ty, n.tz);
+                }
+                override public function set from (t is Tuple3) to () {
+                    n.tx = t.x; n.ty = t.y; n.tz = t.z;
+                }
+            }
+        }
 
-	if (ptr == "s") {
-	    return AbstractRef of Tuple3 {
-		override function toString to String {
-		    "{n.id}.s = {n.s}";
-		}
-		override public function get to Tuple3 {
-		    tuple(n.sx, n.sy, n.sz);
-		}
-		override public function set from (t is Tuple3) to () {
-		    n.sx = t.x; n.sy = t.y; n.sz = t.z;
-		}
-	    }
-	}
+        if (ptr == "s") {
+            return AbstractRef of Tuple3 {
+                override function toString to String {
+                    "{n.id}.s = {n.s}";
+                }
+                override public function get to Tuple3 {
+                    tuple(n.sx, n.sy, n.sz);
+                }
+                override public function set from (t is Tuple3) to () {
+                    n.sx = t.x; n.sy = t.y; n.sz = t.z;
+                }
+            }
+        }
 
-	if (ptr == "r") {
-	    return AbstractRef of Tuple3 {
-		override function toString to String {
-		    "{n.id}.r = {n.r}";
-		}
-		override public function get to Tuple3 {
-		    tuple(n.rx, n.ry, n.rz);
-		}
-		override public function set from (t is Tuple3) to () {
-		    n.rx = t.x; n.ry = t.y; n.rz = t.z;
-		}
-	    }
-	}
+        if (ptr == "r") {
+            return AbstractRef of Tuple3 {
+                override function toString to String {
+                    "{n.id}.r = {n.r}";
+                }
+                override public function get to Tuple3 {
+                    tuple(n.rx, n.ry, n.rz);
+                }
+                override public function set from (t is Tuple3) to () {
+                    n.rx = t.x; n.ry = t.y; n.rz = t.z;
+                }
+            }
+        }
 
-	const rptr =
-	if ptr == "tx" 
+        const rptr =
+        if ptr == "tx" 
         then &n.tx 
-	else if ptr == "ty"
+        else if ptr == "ty"
         then &n.ty 
-	else if ptr == "tz"
+        else if ptr == "tz"
         then &n.tz 
 
         else if ptr == "sx" 
         then &n.sx 
-	else if ptr == "sy"
+        else if ptr == "sy"
         then &n.sy 
-	else if ptr == "sz"
+        else if ptr == "sz"
         then &n.sz 
 
         else if ptr == "rx" 
         then &n.rx 
-	else if ptr == "ry"
+        else if ptr == "ry"
         then &n.ry 
-	else if ptr == "rz"
+        else if ptr == "rz"
         then &n.rz 
 
         else if ptr == "rpx" 
         then &n.rpx 
-	else if ptr == "rpy"
+        else if ptr == "rpy"
         then &n.rpy 
-	else if ptr == "rpz"
+        else if ptr == "rpz"
         then &n.rpz 
 
         else if ptr == "spx" 
         then &n.spx 
-	else if ptr == "spy"
+        else if ptr == "spy"
         then &n.spy 
-	else if ptr == "spz"
+        else if ptr == "spz"
         then &n.spz 
 
         else if ptr == "rptx" 
         then &n.rptx 
-	else if ptr == "rpty"
+        else if ptr == "rpty"
         then &n.rpty 
-	else if ptr == "rptz"
+        else if ptr == "rptz"
         then &n.rptz 
 
         else if ptr == "sptx" 
         then &n.sptx 
-	else if ptr == "spty"
+        else if ptr == "spty"
         then &n.spty 
-	else if ptr == "sptz"
+        else if ptr == "sptz"
         then &n.sptz 
 
         else if ptr == "tmrpx" 
         then &n.tmrpx 
-	else if ptr == "tmrpy"
+        else if ptr == "tmrpy"
         then &n.tmrpy 
-	else if ptr == "tmprz"
+        else if ptr == "tmprz"
         then &n.tmrpz 
         else null as Ref of Number;
-	if (rptr == null) then super.getPointer(ptr, target) as Ref of Number else makeRef(n.id, ptr, rptr as Ref of Number);
+        if (rptr == null) then super.getPointer(ptr, target) as Ref of Number else makeRef(n.id, ptr, rptr as Ref of Number);
     }
 
 
     override function toNode from (m is MaModel) to Node 
     {
-	const tn = MaTransform {
+        const tn = MaTransform {
 
-	    visible: visible;
+            visible: visible;
 
-	    id: name
+            id: name
 
-	    tx: t.x;
-	    ty: t.y;
-	    tz: t.z;
+            tx: t.x;
+            ty: t.y;
+            tz: t.z;
 
-	    sx: s.x;
-	    sy: s.y;
-	    sz: s.z;
+            sx: s.x;
+            sy: s.y;
+            sz: s.z;
 
-	    rx: r.x;
-	    ry: r.y;
-	    rz: r.z;
+            rx: r.x;
+            ry: r.y;
+            rz: r.z;
 
-	    ro: ro;
+            ro: ro;
 
-	    rpx: rp.x;
-	    rpy: rp.y;
-	    rpz: rp.z;
+            rpx: rp.x;
+            rpy: rp.y;
+            rpz: rp.z;
 
-	    spx: sp.x;
-	    spy: sp.y;
-	    spz: sp.z;
+            spx: sp.x;
+            spy: sp.y;
+            spz: sp.z;
 
-	    rptx: rpt.x;
-	    rpty: rpt.y;
-	    rptz: rpt.z;
+            rptx: rpt.x;
+            rpty: rpt.y;
+            rptz: rpt.z;
 
-	    sptx: spt.x;
-	    spty: spt.y;
-	    sptz: spt.z;
+            sptx: spt.x;
+            spty: spt.y;
+            sptz: spt.z;
 
-	    tmrpx: tmrp.x;
-	    tmrpy: tmrp.y;
-	    tmrpz: tmrp.z;
-	}
-	m.spatialMap.put(this, tn);
-	const p = m.toParentNode(parent as MSpatial);
-	insert tn into p.content;
-	return tn;
+            tmrpx: tmrp.x;
+            tmrpy: tmrp.y;
+            tmrpz: tmrp.z;
+        }
+        m.spatialMap.put(this, tn);
+        const p = m.toParentNode(parent as MSpatial);
+        insert tn into p.content;
+        return tn;
     }
 }
 
@@ -1467,68 +1468,68 @@ class MCamera is MSpatial
 
     override function setAttr from (cmd is Command) to () 
     {
-	const attr = cmd.getAttr();
-	if (attr == "o") {
-	    ortho = cmd.getBoolean();
-	} else if (attr == "cap") {
-	    const v = cmd.getVec3();
-	    vfa = v.x;
-	    hfa = v.y;
-	} else if (attr == "hfa") {
-	    hfa = cmd.getFloat();
-	} else if (attr == "vfa") {
-	    vfa = cmd.getFloat()
-	} else if (attr == "fcp") {
-	    fcp = cmd.getFloat()
-	} else if (attr == "ncp") {
-	    ncp = cmd.getFloat()
-	} else if (attr == "ow") {
-	    ow = cmd.getFloat()
-	} else if (attr == "fl") {
-	    fl = cmd.getFloat()
-	} else if (attr == "lsr") {
-	    lsr = cmd.getFloat()
-	} else if (attr == "ff") {
-	    ff = cmd.getFloat();
-	} else super.setAttr(cmd);
+        const attr = cmd.getAttr();
+        if (attr == "o") {
+            ortho = cmd.getBoolean();
+        } else if (attr == "cap") {
+            const v = cmd.getVec3();
+            vfa = v.x;
+            hfa = v.y;
+        } else if (attr == "hfa") {
+            hfa = cmd.getFloat();
+        } else if (attr == "vfa") {
+            vfa = cmd.getFloat()
+        } else if (attr == "fcp") {
+            fcp = cmd.getFloat()
+        } else if (attr == "ncp") {
+            ncp = cmd.getFloat()
+        } else if (attr == "ow") {
+            ow = cmd.getFloat()
+        } else if (attr == "fl") {
+            fl = cmd.getFloat()
+        } else if (attr == "lsr") {
+            lsr = cmd.getFloat()
+        } else if (attr == "ff") {
+            ff = cmd.getFloat();
+        } else super.setAttr(cmd);
     }
 
     override function toNode from (m is MaModel) to Node 
     {
-	const n is Camera = 
-	    if (ortho) {
-		const ow = this.ow;
-		OrthographicCamera {
-		    far: fcp; 
-		    near: ncp;
-		    id: name
+        const n is Camera = 
+            if (ortho) {
+                const ow = this.ow;
+                OrthographicCamera {
+                    far: fcp; 
+                    near: ncp;
+                    id: name
                     override var viewHeight = bind ow / aspectRatio;
-		}
-	    } else {
-		if (ff == 1) {
-		    const horizontalAngle = Math.toDegrees(2.0*Math.atan(25.4 * hfa*lsr / 2.0 / fl));
-		    PerspectiveCamera {
-			id: name;
-			near: ncp;
-			far: fcp;
-			override var widthAngle = horizontalAngle;
-			override var heightAngle = bind PerspectiveCamera.widthAngleToHeightAngle(widthAngle, aspectRatio);
-		    }
-		} else {
-		    const verticalAngle = Math.toDegrees(2.0*Math.atan(25.4 * vfa / 2.0 / fl));
-		    PerspectiveCamera {
-			id: name;
-			near: ncp;
-			far: fcp;
-			heightAngle: verticalAngle;
-		    }
-		}
-	    }
-	//println("camera {name} => {n}");
-	m.spatialMap.put(this, n);
-	const p = m.toParentNode(parent as MSpatial);
-	insert n into p.content;
-	return n;
+                }
+            } else {
+                if (ff == 1) {
+                    const horizontalAngle = Math.toDegrees(2.0*Math.atan(25.4 * hfa*lsr / 2.0 / fl));
+                    PerspectiveCamera {
+                        id: name;
+                        near: ncp;
+                        far: fcp;
+                        override var widthAngle = horizontalAngle;
+                        override var heightAngle = bind PerspectiveCamera.widthAngleToHeightAngle(widthAngle, aspectRatio);
+                    }
+                } else {
+                    const verticalAngle = Math.toDegrees(2.0*Math.atan(25.4 * vfa / 2.0 / fl));
+                    PerspectiveCamera {
+                        id: name;
+                        near: ncp;
+                        far: fcp;
+                        heightAngle: verticalAngle;
+                    }
+                }
+            }
+        //println("camera {name} => {n}");
+        m.spatialMap.put(this, n);
+        const p = m.toParentNode(parent as MSpatial);
+        insert n into p.content;
+        return n;
     }
 }
 
@@ -1540,89 +1541,89 @@ class MTweak is MNode {
 
 abstract class MMeshDeformer is MNode {
     protected function getGroupParts to MGroupParts {
-	for (c in connectionsToThis.get("ip")) {
-	    const path = parsePath(c.targetPath).path;
-	    if (path[1] is Index) {
-		const i = path[1] as Index;
-		if (i.index == 0) {
-		    if (path[2] is Field) {
-			const f = path[2] as Field;
-			if (f.name == "ig") {
-			    if (c.sourceNode is MGroupParts) {
-				return c.sourceNode as MGroupParts;
-			    }
-			}
-		    }
-		}
-	    }
-	}
-	return null;
+        for (c in connectionsToThis.get("ip")) {
+            const path = parsePath(c.targetPath).path;
+            if (path[1] is Index) {
+                const i = path[1] as Index;
+                if (i.index == 0) {
+                    if (path[2] is Field) {
+                        const f = path[2] as Field;
+                        if (f.name == "ig") {
+                            if (c.sourceNode is MGroupParts) {
+                                return c.sourceNode as MGroupParts;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     protected function getTweak from (gp is MGroupParts) to MTweak {
-	for (c in gp.connectionsToThis.get("ig")) {
-	    if (c.sourceNode is MTweak) {
-		return c.sourceNode as MTweak;
-	    }
-	}
-	return null;
+        for (c in gp.connectionsToThis.get("ig")) {
+            if (c.sourceNode is MTweak) {
+                return c.sourceNode as MTweak;
+            }
+        }
+        return null;
     }
     
     protected var sourceMesh is MMesh;
     protected var targetMesh is MMesh;
 
     protected function resolveSourceMesh from () to MMesh {
-	var gp = getGroupParts();
-	println("group parts {name} => {gp.name}");
-	const tweak = getTweak(gp);
-	if (tweak <> null) {
-	    println("tweak {name} => {tweak}");
-	    for (c in tweak.connectionsToThis.get("ip")) {
-		if (c.sourceNode instanceof MGroupParts and c.targetPath == "ip[0].ig") {
-		    gp = c.sourceNode as MGroupParts;
-		    break;
-		}	    
-	    }
-	}
-	println("gp {name} => {gp.name}");
-	var done = false;
-	while (not done) {
-	    for (c in gp.connectionsToThis.get("ig")) {
-		println(c);
-		const sp = parsePath(c.sourcePath).path;
-		const name = (sp[0] as Field).name;
-		if (c.sourceNode is MMesh and c.sourcePath == "w") {
-		    sourceMesh = c.sourceNode as MMesh;
-		    done = true;
-		} else if (c.sourceNode is MGroupParts and c.sourcePath == "og") {
-		    gp = c.sourceNode as MGroupParts;
-		    done = true;
-		    break;
-		} else if (c.sourceNode is MMeshDeformer and name == "og") {
-		    const d = c.sourceNode as MMeshDeformer;
-		    sourceMesh = d.resolveSourceMesh();
-		    done = true;
-		    break;
-		} else {
-		    done = true;
-		}
-	    }
-	}
-	return sourceMesh;
+        var gp = getGroupParts();
+        println("group parts {name} => {gp.name}");
+        const tweak = getTweak(gp);
+        if (tweak <> null) {
+            println("tweak {name} => {tweak}");
+            for (c in tweak.connectionsToThis.get("ip")) {
+                if (c.sourceNode instanceof MGroupParts and c.targetPath == "ip[0].ig") {
+                    gp = c.sourceNode as MGroupParts;
+                    break;
+                }            
+            }
+        }
+        println("gp {name} => {gp.name}");
+        var done = false;
+        while (not done) {
+            for (c in gp.connectionsToThis.get("ig")) {
+                println(c);
+                const sp = parsePath(c.sourcePath).path;
+                const name = (sp[0] as Field).name;
+                if (c.sourceNode is MMesh and c.sourcePath == "w") {
+                    sourceMesh = c.sourceNode as MMesh;
+                    done = true;
+                } else if (c.sourceNode is MGroupParts and c.sourcePath == "og") {
+                    gp = c.sourceNode as MGroupParts;
+                    done = true;
+                    break;
+                } else if (c.sourceNode is MMeshDeformer and name == "og") {
+                    const d = c.sourceNode as MMeshDeformer;
+                    sourceMesh = d.resolveSourceMesh();
+                    done = true;
+                    break;
+                } else {
+                    done = true;
+                }
+            }
+        }
+        return sourceMesh;
     }
 
     protected function resolveTargetMesh from () to MMesh {
-	for (c in connectionsFromThis.get("og")) {
-	    if (c.targetNode is MMesh and c.targetPath == "i") {
-		targetMesh = c.targetNode as MMesh;
-	    }
-	}
-	return targetMesh;
+        for (c in connectionsFromThis.get("og")) {
+            if (c.targetNode is MMesh and c.targetPath == "i") {
+                targetMesh = c.targetNode as MMesh;
+            }
+        }
+        return targetMesh;
     }
 
     function resolveMeshes {
-	resolveSourceMesh();
-	resolveTargetMesh();
+        resolveSourceMesh();
+        resolveTargetMesh();
     }
 }
 
@@ -1636,66 +1637,66 @@ class MSkinCluster is MMeshDeformer {
     var gm is Mat4;
     public override function setAttr from (cmd is Command) to ()
     {
-	const attr = cmd.getAttr();
-	if (attr == "wl") {
-	    const path = cmd.getPath();
-	    const values = cmd.getFloatArray();
-	    const i = (path.path[1] as Index).index;
-	    while (this.wl.size() <= i) {
-		insert WeightList {} into this.wl;
-	    }
-	    var wl = this.wl[i];
-	    const wi = path.path[3];
-	    if (wi instanceof Range) {
-		const r = wi as Range;
-		for (_ in [wl.w.size()..r.startIndex]) {
-		    insert 0.0 into wl.w;
-		}
-		wl.w[r.startIndex..r.endIndex] = values;
-	    } else if (wi instanceof Index) {
-		const j = (wi as Index).index;
-		for (_ in [wl.w.size()..j]) {
-		    insert 0.0 into wl.w;
-		}
-		wl.w[j] = values[0];
-	    }
-	    //println("weight list {i} = {wl.w}");
-	} else if (attr == "pm") {
-	    const path = cmd.getPath();
-	    const i = (path.path[1] as Index).index;
-	    while (pm.size() < i) {
-		insert Mat4.<<1>> into pm;
-	    }
-	    pm[i..i] = cmd.getMatrix();
-	} else if (attr == "gm") {
-	    gm = cmd.getMatrix();
-	} else super.setAttr(cmd);
+        const attr = cmd.getAttr();
+        if (attr == "wl") {
+            const path = cmd.getPath();
+            const values = cmd.getFloatArray();
+            const i = (path.path[1] as Index).index;
+            while (this.wl.size() <= i) {
+                insert WeightList {} into this.wl;
+            }
+            var wl = this.wl[i];
+            const wi = path.path[3];
+            if (wi instanceof Range) {
+                const r = wi as Range;
+                for (_ in [wl.w.size()..r.startIndex]) {
+                    insert 0.0 into wl.w;
+                }
+                wl.w[r.startIndex..r.endIndex] = values;
+            } else if (wi instanceof Index) {
+                const j = (wi as Index).index;
+                for (_ in [wl.w.size()..j]) {
+                    insert 0.0 into wl.w;
+                }
+                wl.w[j] = values[0];
+            }
+            //println("weight list {i} = {wl.w}");
+        } else if (attr == "pm") {
+            const path = cmd.getPath();
+            const i = (path.path[1] as Index).index;
+            while (pm.size() < i) {
+                insert Mat4.<<1>> into pm;
+            }
+            pm[i..i] = cmd.getMatrix();
+        } else if (attr == "gm") {
+            gm = cmd.getMatrix();
+        } else super.setAttr(cmd);
     }
 
     public function toSkinCluster from (m is MaModel) to SkinCluster {
-	resolveMeshes();
-	println("pm={this.pm.size()}");
-	println("gm={gm}");
-	println("Source Mesh={sourceMesh.name}");
-	println("Target Mesh={targetMesh.name}");
+        resolveMeshes();
+        println("pm={this.pm.size()}");
+        println("gm={gm}");
+        println("Source Mesh={sourceMesh.name}");
+        println("Target Mesh={targetMesh.name}");
 
-	const resolvedSource = m.toNode(sourceMesh) as MeshNode;
-	const resolvedTarget = m.toNode(targetMesh) as MeshNode;
-	println("Source Mesh={resolvedSource}");
-	println("Target Mesh={resolvedTarget}");
+        const resolvedSource = m.toNode(sourceMesh) as MeshNode;
+        const resolvedTarget = m.toNode(targetMesh) as MeshNode;
+        println("Source Mesh={resolvedSource}");
+        println("Target Mesh={resolvedTarget}");
         const jointMap = new java.util.TreeMap of (Integer, Node);
-	//var bps is Mat4[];
-	for (j in connectionsToThis.get("ma")) {
-	    println(j);
-	    if (j.sourcePath == "wm" and j.sourceNode instanceof MJoint) {
-		const mj = j.sourceNode as MJoint;
-		//insert mj.bps.inverse() into bps;
-		const jn = m.toNode(mj);
-		const p = parsePath(j.targetPath).path;
-		const i = (p[1] as Index).index;
-		jointMap.put(i, jn);
-	    }
-	}
+        //var bps is Mat4[];
+        for (j in connectionsToThis.get("ma")) {
+            println(j);
+            if (j.sourcePath == "wm" and j.sourceNode instanceof MJoint) {
+                const mj = j.sourceNode as MJoint;
+                //insert mj.bps.inverse() into bps;
+                const jn = m.toNode(mj);
+                const p = parsePath(j.targetPath).path;
+                const i = (p[1] as Index).index;
+                jointMap.put(i, jn);
+            }
+        }
         const jointIndexMap = new java.util.TreeMap of (Integer, Integer);
         var joints is Node[];
         var pm is Mat4[];
@@ -1706,49 +1707,49 @@ class MSkinCluster is MMeshDeformer {
             jointIndexMap.put(k, indexof ent); 
             insert this.pm[k] into pm;
         }
-	const vertIndices = sourceMesh.vertIndices;
-	var weights is Number[];
-	for (vertIndex in vertIndices) {
-	    const list = wl[vertIndex];
-	    //println("vert={vertIndex} wl={foreach (x in list.w) "{x},"}");
-	    if (list.w.size() > 0) {
-		var influences is Number[];
-		for (w in list.w) {
-		    if (w <> 0) {
-			insert jointIndexMap.get(indexof w) into influences;
-			insert w into influences;
-		    }
-		}
-		if (influences.size() > 0) {
-		    const vert = indexof vertIndex;
-		    insert vert into weights;
-		    insert influences.size() / 2 into weights;
-		    insert influences into weights;
-		}
-	    }
-	}
+        const vertIndices = sourceMesh.vertIndices;
+        var weights is Number[];
+        for (vertIndex in vertIndices) {
+            const list = wl[vertIndex];
+            //println("vert={vertIndex} wl={foreach (x in list.w) "{x},"}");
+            if (list.w.size() > 0) {
+                var influences is Number[];
+                for (w in list.w) {
+                    if (w <> 0) {
+                        insert jointIndexMap.get(indexof w) into influences;
+                        insert w into influences;
+                    }
+                }
+                if (influences.size() > 0) {
+                    const vert = indexof vertIndex;
+                    insert vert into weights;
+                    insert influences.size() / 2 into weights;
+                    insert influences into weights;
+                }
+            }
+        }
         if (resolvedSource == null or resolvedTarget == null) {
             return null;
         }
-	const sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
-	const sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
-	resolvedTarget.mesh = resolvedSource.mesh;
-	if (resolvedTarget.shader == null) {
-	    resolvedTarget.shader = resolvedSource.shader; // hack?
-	}
-	resolvedTarget.visible = true;
-	const result = SkinCluster {
-	    sourceVertices: sourceVertices;
-	    sourceNormals: sourceNormals;
-	    targetVertices: resolvedTarget.mesh.getVertexBuffer();
-	    targetNormals: resolvedTarget.mesh.getNormalBuffer();
-	    joints: joints;          
-	    weights: weights;
-	    bindPreMatrices: pm[0..<joints.size()];
-	    geomMatrix: gm;
-	}
-	insert result into resolvedTarget.deformers;
-	return result;
+        const sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
+        const sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
+        resolvedTarget.mesh = resolvedSource.mesh;
+        if (resolvedTarget.shader == null) {
+            resolvedTarget.shader = resolvedSource.shader; // hack?
+        }
+        resolvedTarget.visible = true;
+        const result = SkinCluster {
+            sourceVertices: sourceVertices;
+            sourceNormals: sourceNormals;
+            targetVertices: resolvedTarget.mesh.getVertexBuffer();
+            targetNormals: resolvedTarget.mesh.getNormalBuffer();
+            joints: joints;          
+            weights: weights;
+            bindPreMatrices: pm[0..<joints.size()];
+            geomMatrix: gm;
+        }
+        insert result into resolvedTarget.deformers;
+        return result;
     }
 }
 
@@ -1756,72 +1757,72 @@ class MBlendShape is MMeshDeformer {
 
     public override function setAttr from (cmd is Command) to ()
     {
-	super.setAttr(cmd);
+        super.setAttr(cmd);
     }
 
     public function resolveTargetPointer 
-	from (m is MaModel, 
-	      c is Connection) 
-	to Ref of Number 
+        from (m is MaModel, 
+              c is Connection) 
+        to Ref of Number 
     {
-	const p = parsePath(c.targetPath).path;
-	var resolved = m.toBlendShape(this);
-	if (p[0] is Field) {
-	    const f = p[0] as Field;
-	    if (f.name == "w") {
-		if (p[1] is Index) {
-		    const p1 = p[1] as Index;
-		    const i = p1.index;
-		    return AbstractRef of Number {
-			override function toString to String {
-			    "{name}.w[{i}]";
-			}
-			public override function get to Number {
-			    resolved.weights[i];
-			}
-			public override function set from (n is Number) to () {
-			    //println("setting {this} => {n}");
-			    resolved.weights[i] = n;
-			}
-		    }
-		}
-	    }
-	}
-	return null;
+        const p = parsePath(c.targetPath).path;
+        var resolved = m.toBlendShape(this);
+        if (p[0] is Field) {
+            const f = p[0] as Field;
+            if (f.name == "w") {
+                if (p[1] is Index) {
+                    const p1 = p[1] as Index;
+                    const i = p1.index;
+                    return AbstractRef of Number {
+                        override function toString to String {
+                            "{name}.w[{i}]";
+                        }
+                        public override function get to Number {
+                            resolved.weights[i];
+                        }
+                        public override function set from (n is Number) to () {
+                            //println("setting {this} => {n}");
+                            resolved.weights[i] = n;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public function toBlendShape from (m is MaModel) to BlendShape 
     {
-	resolveMeshes();
-	const blendMeshes = 
-	    foreach (c in connectionsToThis.get("it")) 
-	    {
-		if (c.sourceNode is MMesh) {
-		    c.sourceNode as MMesh;
-		} else null;
-	    };
-	const resolvedSource = m.toNode(sourceMesh) as MeshNode;
-	const resolvedTarget = m.toNode(targetMesh) as MeshNode;
-	const resolvedBlendShapes = foreach (mesh in blendMeshes) {
-	    m.toNode(mesh) as MeshNode;
-	}
-	const weights = foreach (x in resolvedBlendShapes) 1.0;
-	var sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
-	var sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
-	resolvedTarget.mesh = resolvedSource.mesh;
-	resolvedTarget.shader = resolvedBlendShapes[0].shader; // hack?
-	resolvedSource.visible = false;
-	var result = BlendShape {
-	    sourceVertices: sourceVertices;
-	    sourceNormals: sourceNormals;
-	    targetVertices: resolvedTarget.mesh.getVertexBuffer();
-	    targetNormals: resolvedTarget.mesh.getNormalBuffer();
-	    weights: weights;
-	    blendTargetVertices: foreach (n in resolvedBlendShapes) n.mesh.getVertexBuffer();
-	    blendTargetNormals: foreach (n in resolvedBlendShapes) n.mesh.getNormalBuffer();
-	}
-	insert result into resolvedTarget.deformers;
-	return result;
+        resolveMeshes();
+        const blendMeshes = 
+            foreach (c in connectionsToThis.get("it")) 
+            {
+                if (c.sourceNode is MMesh) {
+                    c.sourceNode as MMesh;
+                } else null;
+            };
+        const resolvedSource = m.toNode(sourceMesh) as MeshNode;
+        const resolvedTarget = m.toNode(targetMesh) as MeshNode;
+        const resolvedBlendShapes = foreach (mesh in blendMeshes) {
+            m.toNode(mesh) as MeshNode;
+        }
+        const weights = foreach (x in resolvedBlendShapes) 1.0;
+        var sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
+        var sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
+        resolvedTarget.mesh = resolvedSource.mesh;
+        resolvedTarget.shader = resolvedBlendShapes[0].shader; // hack?
+        resolvedSource.visible = false;
+        var result = BlendShape {
+            sourceVertices: sourceVertices;
+            sourceNormals: sourceNormals;
+            targetVertices: resolvedTarget.mesh.getVertexBuffer();
+            targetNormals: resolvedTarget.mesh.getNormalBuffer();
+            weights: weights;
+            blendTargetVertices: foreach (n in resolvedBlendShapes) n.mesh.getVertexBuffer();
+            blendTargetNormals: foreach (n in resolvedBlendShapes) n.mesh.getNormalBuffer();
+        }
+        insert result into resolvedTarget.deformers;
+        return result;
     }
 }
 
@@ -1837,84 +1838,84 @@ class MJoint is MTransform {
 
     override function setAttr from (cmd is Command) to () 
     {
-	const attr = cmd.getAttr();
-	if (attr == "jox") {
-	    jox = cmd.getFloat();
-	} else if (attr == "joy") {
-	    joy = cmd.getFloat();
-	} else if (attr == "joz") {
-	    joz = cmd.getFloat();
-	} else if (attr == "bps") {
-	    bps = cmd.getMatrix();
-	} else if (attr == "jo") {
-	    const jo = cmd.getFloat3();
-	    jox = jo.x;
-	    joy = jo.y;
-	    joz = jo.z;
-	} else if (attr == "jot") {
-	    const jot = cmd.getString();
-	    for (s in RotateOrders) {
-		if (s == jot) {
-		    jo = indexof s;
-		    println("jot={jot} jo={jo}");
-		    break;
-		}
-	    }
-	} else if (attr == "ssc") {
-	    ssc = cmd.getBoolean();
-	} else super.setAttr(cmd);
+        const attr = cmd.getAttr();
+        if (attr == "jox") {
+            jox = cmd.getFloat();
+        } else if (attr == "joy") {
+            joy = cmd.getFloat();
+        } else if (attr == "joz") {
+            joz = cmd.getFloat();
+        } else if (attr == "bps") {
+            bps = cmd.getMatrix();
+        } else if (attr == "jo") {
+            const jo = cmd.getFloat3();
+            jox = jo.x;
+            joy = jo.y;
+            joz = jo.z;
+        } else if (attr == "jot") {
+            const jot = cmd.getString();
+            for (s in RotateOrders) {
+                if (s == jot) {
+                    jo = indexof s;
+                    println("jot={jot} jo={jo}");
+                    break;
+                }
+            }
+        } else if (attr == "ssc") {
+            ssc = cmd.getBoolean();
+        } else super.setAttr(cmd);
     }
 
     override function toNode from (m is MaModel) to Node 
     {
-	const tn = Joint {
-	    visible: visible;
-	    id: name
+        const tn = Joint {
+            visible: visible;
+            id: name
 
-	    ssc: ssc;
-	    jox: jox;
-	    joy: joy;
-	    joz: joz;
-	    jo: jo;
+            ssc: ssc;
+            jox: jox;
+            joy: joy;
+            joz: joz;
+            jo: jo;
 
-	    tx: t.x;
-	    ty: t.y;
-	    tz: t.z;
+            tx: t.x;
+            ty: t.y;
+            tz: t.z;
 
-	    sx: s.x;
-	    sy: s.y;
-	    sz: s.z;
+            sx: s.x;
+            sy: s.y;
+            sz: s.z;
 
-	    rx: r.x;
-	    ry: r.y;
-	    rz: r.z;
+            rx: r.x;
+            ry: r.y;
+            rz: r.z;
 
-	    ro: ro;
+            ro: ro;
 
-	    rpx: rp.x;
-	    rpy: rp.y;
-	    rpz: rp.z;
+            rpx: rp.x;
+            rpy: rp.y;
+            rpz: rp.z;
 
-	    spx: sp.x;
-	    spy: sp.y;
-	    spz: sp.z;
+            spx: sp.x;
+            spy: sp.y;
+            spz: sp.z;
 
-	    rptx: rpt.x;
-	    rpty: rpt.y;
-	    rptz: rpt.z;
+            rptx: rpt.x;
+            rpty: rpt.y;
+            rptz: rpt.z;
 
-	    sptx: spt.x;
-	    spty: spt.y;
-	    sptz: spt.z;
+            sptx: spt.x;
+            spty: spt.y;
+            sptz: spt.z;
 
-	    tmrpx: tmrp.x;
-	    tmrpy: tmrp.y;
-	    tmrpz: tmrp.z;
-	}
-	m.spatialMap.put(this, tn);
-	const p = m.toParentNode(parent as MSpatial);
-	insert tn into p.content;
-	return tn;
+            tmrpx: tmrp.x;
+            tmrpy: tmrp.y;
+            tmrpz: tmrp.z;
+        }
+        m.spatialMap.put(this, tn);
+        const p = m.toParentNode(parent as MSpatial);
+        insert tn into p.content;
+        return tn;
     }
 }
 
@@ -1925,64 +1926,64 @@ class MCharacter is MNode {
 
     function resolveTargetPointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
-	// toThis connects to one of my inputs; forward to the corresponding connection 
-	//println("{name} trying to resolve {toThis} in {connectionsFromThis}");
-	const path = parsePath(toThis.targetPath).path[0] as Field;
-	for (conn in connectionsFromThis.get(path.name)) {
-	    if (conn.sourcePath == toThis.targetPath) {
-		const ptr = m.resolveTargetPointer(conn);
-		//println("conn={conn} ptr={ptr}");
-		if (ptr <> null) return ptr;
-		println("failed to resolve target {toThis.targetPath} using {conn}");
-	    }
-	}
+        // toThis connects to one of my inputs; forward to the corresponding connection 
+        //println("{name} trying to resolve {toThis} in {connectionsFromThis}");
+        const path = parsePath(toThis.targetPath).path[0] as Field;
+        for (conn in connectionsFromThis.get(path.name)) {
+            if (conn.sourcePath == toThis.targetPath) {
+                const ptr = m.resolveTargetPointer(conn);
+                //println("conn={conn} ptr={ptr}");
+                if (ptr <> null) return ptr;
+                println("failed to resolve target {toThis.targetPath} using {conn}");
+            }
+        }
         println("failed to resolve target {toThis.targetPath}");
-	return null;
+        return null;
     }
 
     function resolveSourcePointer from (m is MaModel, toThis is Connection) to Ref of ?
     {
-	// toThis connects to one of my inputs; forward to the corresponding connection 
-	const path = parsePath(toThis.targetPath).path[0] as Field;
-	for (conn in connectionsToThis.get(path.name)) {
-	    const ptr = m.resolveSourcePointer(conn);
-	    if (ptr <> null) return ptr;
-	    println("failed to resolve source {toThis.targetPath} using {conn}");
-	}
+        // toThis connects to one of my inputs; forward to the corresponding connection 
+        const path = parsePath(toThis.targetPath).path[0] as Field;
+        for (conn in connectionsToThis.get(path.name)) {
+            const ptr = m.resolveSourcePointer(conn);
+            if (ptr <> null) return ptr;
+            println("failed to resolve source {toThis.targetPath} using {conn}");
+        }
         println("failed to resolve source {toThis.targetPath}");
-	return null;
+        return null;
     }
 
     function applyAlias from (m is MaModel) to () 
     {
         if (true) return;
-	for (ent in aal.entrySet()) {
-	    const k = ent.getKey();
-	    const v = ent.getValue();
-	    var animCurve = m.findNode(k);
-	    if (animCurve == null) {
-		animCurve = m.findNode("{name}_{k}");
-	    }
-	    println("{name} applying alias {k} {v} => {animCurve}");
-	    animCurve.connectionsFromThis.put("o", 
-					      Connection { 
-						  sourceNode: animCurve;
-						  sourcePath: "o";
-						  targetNode: this;
-						  targetPath: v;
-					      });
-	}
+        for (ent in aal.entrySet()) {
+            const k = ent.getKey();
+            const v = ent.getValue();
+            var animCurve = m.findNode(k);
+            if (animCurve == null) {
+                animCurve = m.findNode("{name}_{k}");
+            }
+            println("{name} applying alias {k} {v} => {animCurve}");
+            animCurve.connectionsFromThis.put("o", 
+                                              Connection { 
+                                                  sourceNode: animCurve;
+                                                  sourcePath: "o";
+                                                  targetNode: this;
+                                                  targetPath: v;
+                                              });
+        }
     }
 
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "aal") {
-	    println("cmd={cmd}");
-	    aal = cmd.getAttributeAlias();
-	} else if (n == "am") {
-	    am = cmd.getCharacterMapping();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "aal") {
+            println("cmd={cmd}");
+            aal = cmd.getAttributeAlias();
+        } else if (n == "am") {
+            am = cmd.getCharacterMapping();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -1990,7 +1991,7 @@ class UVData {
     public var uvSet is Integer;
     public var uvIndices is Integer[]; 
     override function toString to String {
-	"UVData: {uvSet}, uvIndices: {uvIndices}";
+        "UVData: {uvSet}, uvIndices: {uvIndices}";
     }
 }
 
@@ -2000,13 +2001,13 @@ class PolyfaceData {
     public var mu is UVData[];
 
     function getUV from (uvIndex is Integer) to Integer[] {
-	foreach (m in mu) {
-	    m.uvIndices[uvIndex];
-	}
+        foreach (m in mu) {
+            m.uvIndices[uvIndex];
+        }
     }
 
     override function toString to String {
-	"faceEdges: {faceEdges}, holes: {holes}, mu: {mu}";
+        "faceEdges: {faceEdges}, holes: {holes}, mu: {mu}";
     }
 }
 
@@ -2017,14 +2018,14 @@ class PathNode {
 class Index is PathNode {
     const index is Integer;
     override function toString to String {
-	"[{index}]"
+        "[{index}]"
     }
 }
 
 class Field is PathNode {
     const name is String;
     override function toString to String {
-	".{name}"
+        ".{name}"
     }
 }
 
@@ -2032,14 +2033,14 @@ class Range is PathNode {
     const startIndex is Integer;
     const endIndex is Integer;
     override function toString to String {
-	"[{startIndex}:{endIndex}]"
+        "[{startIndex}:{endIndex}]"
     }
 }
 
 class Path {
     const path is PathNode[];
     override function toString to String {
-	"{path}"
+        "{path}"
     }
 }
 
@@ -2048,35 +2049,35 @@ function parsePath from (path is String) to Path
     const izer = new java.util.StringTokenizer(path, ".[]:", true);
     var result is PathNode[];
     while (izer.hasMoreTokens()) {
-	const elem = izer.nextToken();
-	var pnode is PathNode;
-	if (elem == "[") {
-	    const i1 = izer.nextToken();
-	    const t = izer.nextToken();
-	    var i2 is String = null;
-	    if (t == ":") { 
-		i2 = izer.nextToken();
-		pnode = Range {
-		    startIndex: Integer.parseInt(i1);
-		    endIndex: Integer.parseInt(i2);
-		}
-	    } else if (i1 == "*") {
-		continue;
-	    } else {
-		pnode = Index {
-		    index: Integer.parseInt(i1);
-		}
-	    }
-	} else if (elem == ".") {
-	    pnode = Field {
-		name: izer.nextToken()
-	    }
-	} else {
-	    pnode = Field {
-		name: elem;
-	    }
-	}
-	insert pnode into result;
+        const elem = izer.nextToken();
+        var pnode is PathNode;
+        if (elem == "[") {
+            const i1 = izer.nextToken();
+            const t = izer.nextToken();
+            var i2 is String = null;
+            if (t == ":") { 
+                i2 = izer.nextToken();
+                pnode = Range {
+                    startIndex: Integer.parseInt(i1);
+                    endIndex: Integer.parseInt(i2);
+                }
+            } else if (i1 == "*") {
+                continue;
+            } else {
+                pnode = Index {
+                    index: Integer.parseInt(i1);
+                }
+            }
+        } else if (elem == ".") {
+            pnode = Field {
+                name: izer.nextToken()
+            }
+        } else {
+            pnode = Field {
+                name: elem;
+            }
+        }
+        insert pnode into result;
     }
     return Path {path: result};
 }
@@ -2085,7 +2086,7 @@ class UVSet {
     public const uvIndex is Integer;
     public var uvs is Number[];
     override function toString to String {
-	"uvSet: {uvIndex}, uvs: {uvs}";
+        "uvSet: {uvIndex}, uvs: {uvs}";
     }
 }
 
@@ -2098,11 +2099,11 @@ class FaceVertex is java.lang.Comparable of FaceVertex {
     const face is Integer;
     const vertex is Integer;
     override function compareTo from (other is FaceVertex) to Integer {
-	var cmp = face - other.face;
-	if (cmp == 0) {
-	    cmp = vertex - other.vertex;
-	}
-	return cmp
+        var cmp = face - other.face;
+        if (cmp == 0) {
+            cmp = vertex - other.vertex;
+        }
+        return cmp
     }
 }
 
@@ -2120,426 +2121,427 @@ class MMesh is MSpatial
 
     function faceEdgeIndex from (i is Integer) to Integer 
     {
-	if (i < 0) then -i-1 else i;
+        if (i < 0) then -i-1 else i;
     }
     
     function edgeStart from (faceEdge is Integer) to Integer {
-	faceEdgeToEdge(faceEdge, true);
+        faceEdgeToEdge(faceEdge, true);
     }
 
     function edgeEnd from (faceEdge is Integer) to Integer {
-	faceEdgeToEdge(faceEdge, false);
+        faceEdgeToEdge(faceEdge, false);
     }
 
     function faceEdgeToEdge(faceEdge is Integer, 
-			    fromStart is Boolean) to Integer 
+                            fromStart is Boolean) to Integer 
     {
-	const bwd = faceEdge < 0;
-	const i = faceEdgeIndex(faceEdge); 
-	const j = if (bwd == fromStart) then 1 else 0;
-	edges[i*3+j];
+        const bwd = faceEdge < 0;
+        const i = faceEdgeIndex(faceEdge); 
+        const j = if (bwd == fromStart) then 1 else 0;
+        edges[i*3+j];
     }
     
     function isSmooth from (faceEdge is Integer) to Boolean 
     {
-	const i = faceEdgeIndex(faceEdge);
-	edges[i*3+2] <> 0
+        const i = faceEdgeIndex(faceEdge);
+        edges[i*3+2] <> 0
     }
 
     function uv from (uvSet is Integer, uvIndex is Integer) to Point2
     {
-	const uvs = uvSets[u | u.uvIndex == uvSet][0].uvs;
-	const i0 = uvIndex * 2;
-	const i1 = i0+1;
-	point(uvs[i0], uvs[i1]);
+        const uvs = uvSets[u | u.uvIndex == uvSet][0].uvs;
+        const i0 = uvIndex * 2;
+        const i1 = i0+1;
+        point(uvs[i0], uvs[i1]);
     }
     
     function vertex from (i is Integer) to Point3 
     {
-	const i0 = 3*i;
-	const i1 = i0+1;
-	const i2 = i1+1;
-	point(verts[i0] + pointTweaks[i0],
-	      verts[i1] + pointTweaks[i1],
-	      verts[i2] + pointTweaks[i2])
+        const i0 = 3*i;
+        const i1 = i0+1;
+        const i2 = i1+1;
+        point(verts[i0] + pointTweaks[i0],
+              verts[i1] + pointTweaks[i1],
+              verts[i2] + pointTweaks[i2])
     }
 
     function normal from (i is Integer) to Vec3 
     {
-	const i0 = 3*i;
-	const i1 = i0+1;
-	const i2 = i1+1;
-	const x = normals[i0];
-	const y = normals[i1];
-	const z = normals[i2];
-	const imag = 1.0/Math.sqrt(x*x+y*y+z*z);
-	vector(imag * x, imag * y, imag * z);
+        const i0 = 3*i;
+        const i1 = i0+1;
+        const i2 = i1+1;
+        const x = normals[i0];
+        const y = normals[i1];
+        const z = normals[i2];
+        const imag = 1.0/Math.sqrt(x*x+y*y+z*z);
+        vector(imag * x, imag * y, imag * z);
     }
 
     const edgeToNormal = new java.util.TreeMap of (Integer, Vec3);
 
     function buildMesh
     {
-	for (v in normals) {
-	    if (v > 1e10) { // bogus normals
-		normals = [];
-		break;
-	    }
-	}
-	if (normals <> []) {
-	   return;
-	}
-	for (polyface in polyfaces) {
-	    var norm = Vec3.<<0>>;
-	    const faceEdges = polyface.faceEdges;
-	    for (faceEdge in faceEdges) {
-		const i = indexof faceEdge;
-		const edge = edgeStart(faceEdge);
-		const next = edgeEnd(faceEdge);
-		const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
-		const v0 = vertex(edge);
-		const v1 = vertex(next);
-		const v2 = vertex(prev);
-		norm += (v1 - v0).cross(v2 - v0);
-	    }
-	    norm = norm.normalize();
-	    insert norm into faceNormals;
-	}
-	const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
-	for (f in polyfaces) {
-	    const faceIndex = indexof f;
-	    for (faceEdge in f.faceEdges) {
-		if (isSmooth(faceEdge)) {
-		    const e0 = edgeStart(faceEdge);
-		    const e1 = edgeEnd(faceEdge);
-		    edgeToFace1.put(e0, [faceEdge, faceIndex]);
-		    edgeToFace1.put(e1, [faceEdge, faceIndex]);
-		}
-	    }
-	}
-	const stack = new java.util.Stack of Integer;
-	const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
-	while (edgeToFace1.size() > 0) {
-	    const ent = edgeToFace1.pollFirstEntry();
-	    const edge1 = ent.getKey();
-	    const indices1 = ent.getValue();
-	    var faces is Integer[];
-	    const faceEdge = indices1[0];
-	    const faceIndex = indices1[1];
-	    stack.push(faceIndex);
-	    stack.push(faceEdge);
-	    while (not stack.isEmpty()) {
-		const faceEdge1 = stack.pop();
-		const faceIndex1 = stack.pop();
-		insert faceIndex1 into faces;
-		const iter = edgeToFace1.entrySet().iterator();
-		while (iter.hasNext()) {
-		    const n = iter.next();
-		    const edge2 = n.getKey();
-		    const indices2 = n.getValue();
-		    const faceEdge2 = indices2[0];
-		    const faceIndex2 = indices2[1];
-		    if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
-			stack.push(faceIndex2);
-			stack.push(faceEdge2);
-			iter.remove();
-		    }
-		}
-	    }
-	    edgeToFace2.put(edge1, faces);
-	}
-	for (f in polyfaces) {
-	    const faceIndex = indexof f;
-	    for (faceEdge in f.faceEdges) {
-		const edge = edgeStart(faceEdge);
-		const faces = edgeToFace2.get(edge);
-		if (faces == []) {
-		    //edgeToNormal.put(edge, this.normal(faceIndex));
-		} else {
-		    var norm = Vec3.<<0>>;
-		    for (j in faces) {
-			const faceNorm = faceNormals[j];
-			norm += faceNorm;
-		    }
-		    edgeToNormal.put(edge, norm);
-		}
-	    }
-	}
+        for (v in normals) {
+            if (v > 1e10) { // bogus normals
+                normals = [];
+                break;
+            }
+        }
+        if (normals <> []) {
+           return;
+        }
+        for (polyface in polyfaces) {
+            var norm = Vec3.<<0>>;
+            const faceEdges = polyface.faceEdges;
+            for (faceEdge in faceEdges) {
+                const i = indexof faceEdge;
+                const edge = edgeStart(faceEdge);
+                const next = edgeEnd(faceEdge);
+                const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
+                const v0 = vertex(edge);
+                const v1 = vertex(next);
+                const v2 = vertex(prev);
+                norm += (v1 - v0).cross(v2 - v0);
+            }
+            norm = norm.normalize();
+            insert norm into faceNormals;
+        }
+        const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
+        for (f in polyfaces) {
+            const faceIndex = indexof f;
+            for (faceEdge in f.faceEdges) {
+                if (isSmooth(faceEdge)) {
+                    const e0 = edgeStart(faceEdge);
+                    const e1 = edgeEnd(faceEdge);
+                    edgeToFace1.put(e0, [faceEdge, faceIndex]);
+                    edgeToFace1.put(e1, [faceEdge, faceIndex]);
+                }
+            }
+        }
+        const stack = new java.util.Stack of Integer;
+        const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
+        while (edgeToFace1.size() > 0) {
+            const ent = edgeToFace1.pollFirstEntry();
+            const edge1 = ent.getKey();
+            const indices1 = ent.getValue();
+            var faces is Integer[];
+            const faceEdge = indices1[0];
+            const faceIndex = indices1[1];
+            stack.push(faceIndex);
+            stack.push(faceEdge);
+            while (not stack.isEmpty()) {
+                const faceEdge1 = stack.pop();
+                const faceIndex1 = stack.pop();
+                insert faceIndex1 into faces;
+                const iter = edgeToFace1.entrySet().iterator();
+                while (iter.hasNext()) {
+                    const n = iter.next();
+                    const edge2 = n.getKey();
+                    const indices2 = n.getValue();
+                    const faceEdge2 = indices2[0];
+                    const faceIndex2 = indices2[1];
+                    if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
+                        stack.push(faceIndex2);
+                        stack.push(faceEdge2);
+                        iter.remove();
+                    }
+                }
+            }
+            edgeToFace2.put(edge1, faces);
+        }
+        for (f in polyfaces) {
+            const faceIndex = indexof f;
+            for (faceEdge in f.faceEdges) {
+                const edge = edgeStart(faceEdge);
+                const faces = edgeToFace2.get(edge);
+                if (faces == []) {
+                    //edgeToNormal.put(edge, this.normal(faceIndex));
+                } else {
+                    var norm = Vec3.<<0>>;
+                    for (j in faces) {
+                        const faceNorm = faceNormals[j];
+                        norm += faceNorm;
+                    }
+                    edgeToNormal.put(edge, norm);
+                }
+            }
+        }
     }
 
     function getMesh to AbstractMesh[]
     {
-	if (components == []) {
-	    components = [ComponentList 
-			  {
-			      faceStart: 0;
-			      faceEnd: polyfaces.size();
-			  }];
-	}
-	// for now we merge these
+        if (components == []) {
+            components = [ComponentList 
+                          {
+                              faceStart: 0;
+                              faceEnd: polyfaces.size();
+                          }];
+        }
+        // for now we merge these
 
 /*
-	foreach (comp in components) {
-	    this.ib.clear();
-	    this.vb.clear();
-	    this.nb.clear();
-	    this.uvbs = [];
+        foreach (comp in components) {
+            this.ib.clear();
+            this.vb.clear();
+            this.nb.clear();
+            this.uvbs = [];
 */
-	for (comp in components) {
-	    const startIndex = comp.faceStart;
-	    const endIndex = comp.faceEnd;
-	    for (i in [startIndex..<endIndex]) {
-		const f = polyfaces[i];
-		if (f == null) {
-		   continue;
-		}
-		const edge0 = edgeStart(f.faceEdges[0]);
-		const norm0 = i;
-		const uv0 = f.getUV(0);
-		var edge1 = edgeStart(f.faceEdges[1]);
-		var norm1 = i;
-		var uv1 = f.getUV(1);
-		for (j in [2..<f.faceEdges.size()]) {
-		    insertVertex(edge0, norm0, uv0);
-		    insertVertex(edge1, norm1, uv1);
-		    const edge2 = edgeStart(f.faceEdges[j]);
-		    const norm2 = i;
-		    const uv2 = f.getUV(j);
-		    insertVertex(edge2, norm2, uv2);
-		    edge1 = edge2;
-		    norm1 = norm2;
-		    uv1 = uv2;
-		}
+        for (comp in components) {
+            const startIndex = comp.faceStart;
+            const endIndex = comp.faceEnd;
+            for (i in [startIndex..<endIndex]) {
+                const f = polyfaces[i];
+                if (f == null) {
+                   continue;
+                }
+                const edge0 = edgeStart(f.faceEdges[0]);
+                const norm0 = i;
+                const uv0 = f.getUV(0);
+                var edge1 = edgeStart(f.faceEdges[1]);
+                var norm1 = i;
+                var uv1 = f.getUV(1);
+                for (j in [2..<f.faceEdges.size()]) {
+                    insertVertex(edge0, norm0, uv0);
+                    insertVertex(edge1, norm1, uv1);
+                    const edge2 = edgeStart(f.faceEdges[j]);
+                    const norm2 = i;
+                    const uv2 = f.getUV(j);
+                    insertVertex(edge2, norm2, uv2);
+                    edge1 = edge2;
+                    norm1 = norm2;
+                    uv1 = uv2;
+                }
+            }
+        }
+	const ib = this.ib.getBuffer();
+	const vb = this.vb.getBuffer();
+	const nb = this.nb.getBuffer();
+	if (uvbs <> []) {
+	    const tanb = BufferUtils.createVector3Buffer(ib.limit());
+	    const binb = BufferUtils.createVector3Buffer(ib.limit());
+	    const uvbb = foreach (uvb in uvbs) uvb.getBuffer();
+	    var additional is MeshBuffer.VertexAttributeBuffer[];
+	    if (ImportUtils.addTangentBinormalStreams(ib, vb, uvbb[0], nb, tanb, binb)) {
+		additional =
+		    [MeshBuffer.VertexAttributeBuffer {id: "TANGENT", coordsPerVertex: 3, buffer: tanb },
+		     MeshBuffer.VertexAttributeBuffer {id: "BINORMAL", coordsPerVertex: 3, buffer: binb }];
 	    }
-	}
-	    const ib = this.ib.getBuffer();
-	    const vb = this.vb.getBuffer();
-	    const nb = this.nb.getBuffer();
-	    if (uvbs <> []) {
-		const tanb = BufferUtils.createVector3Buffer(ib.limit());
-		const binb = BufferUtils.createVector3Buffer(ib.limit());
-		const uvbb = foreach (uvb in uvbs) uvb.getBuffer();
-		var additional is MeshBuffer.VertexAttributeBuffer[];
-		if (ImportUtils.addTangentBinormalStreams(ib, vb, uvbb[0], nb, tanb, binb)) {
-		    additional =
-			[MeshBuffer.VertexAttributeBuffer {id: "TANGENT", coordsPerVertex: 3, buffer: tanb },
-			 MeshBuffer.VertexAttributeBuffer {id: "BINORMAL", coordsPerVertex: 3, buffer: binb }];
-		}
-		MeshBuffer {
-		    indexBuffer: ib;
-		    vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
-		    normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
-		    textureBuffers: [foreach (uvb in uvbb) MeshBuffer.VertexAttributeBuffer {id: "TEXCOORD{indexof uvb}", coordsPerVertex: 2, buffer: uvb },
-				     additional];
-		}.toMesh();
-	    } else MeshBuffer {
-		    indexBuffer: ib;
-		    vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
-		    normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
-		}.toMesh()
+	    MeshBuffer {
+		indexBuffer: ib;
+		vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
+		normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
+		textureBuffers: [foreach (uvb in uvbb) MeshBuffer.VertexAttributeBuffer {id: "TEXCOORD{indexof uvb}", coordsPerVertex: 2, buffer: uvb },
+				 additional];
+	    }.toMesh();
+	} else MeshBuffer {
+		indexBuffer: ib;
+		vertexBuffer: MeshBuffer.VertexAttributeBuffer {id: "POSITION", coordsPerVertex: 3, buffer: vb };
+		normalBuffer: MeshBuffer.VertexAttributeBuffer {id: "NORMAL", coordsPerVertex: 3, buffer: nb };
+	    }.toMesh();
 	//}
     }
+
     const ib = new IntBufferBuilder();
     const vb = new FloatBufferBuilder();
     const nb = new FloatBufferBuilder();
     var uvbs is FloatBufferBuilder[];
     var normalIndex = 0;
     const faceVertexToNormal is java.util.Map of (FaceVertex, Vec3) = 
-	new java.util.TreeMap of (FaceVertex, Vec3);
+        new java.util.TreeMap of (FaceVertex, Vec3);
 
     function getFaceVertexNormal 
         from (face is Integer, vertex is Integer) 
-	to Vec3
-	{  
-	    const key = FaceVertex { face: face, vertex: vertex };
-	    var v = faceVertexToNormal.get(key);
-	    if ((v as Object) == null) {
-		v = this.normal(normalIndex++);
-		faceVertexToNormal.put(key, v);
-	    }
-	    return v;
-	}
+        to Vec3
+        {  
+            const key = FaceVertex { face: face, vertex: vertex };
+            var v = faceVertexToNormal.get(key);
+            if ((v as Object) == null) {
+                v = this.normal(normalIndex++);
+                faceVertexToNormal.put(key, v);
+            }
+            return v;
+        }
 
     public var vertIndices is Integer[];
 
     function insertVertex
-	from (edge is Integer, face is Integer, uvIndex is Integer[]) 
-	to ()
+        from (edge is Integer, face is Integer, uvIndex is Integer[]) 
+        to ()
     {
-	const v = this.vertex(edge);
-	insert edge into vertIndices;
-	const n = 
-	    if (this.normals <> []) 
-		then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
-		else if (edgeToNormal.containsKey(edge)) 
-		    then edgeToNormal.get(edge) 
-		    else faceNormals[face];
-	ib.add(ib.getBufferSize());
-	vb.add(v.x, v.y, v.z);
-	nb.add(n.x, n.y, n.z);
-	while (uvIndex.size() > uvbs.size()) {
-	    insert new FloatBufferBuilder into uvbs;
-	}
-	for (i in uvIndex) {
-	    const uvSet = indexof i;
-	    const uv = this.uv(uvSet, i);
-	    uvbs[uvSet].add(uv.x, uv.y);
-	}
+        const v = this.vertex(edge);
+        insert edge into vertIndices;
+        const n = 
+            if (this.normals <> []) 
+                then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
+                else if (edgeToNormal.containsKey(edge)) 
+                    then edgeToNormal.get(edge) 
+                    else faceNormals[face];
+        ib.add(ib.getBufferSize());
+        vb.add(v.x, v.y, v.z);
+        nb.add(n.x, n.y, n.z);
+        while (uvIndex.size() > uvbs.size()) {
+            insert new FloatBufferBuilder into uvbs;
+        }
+        for (i in uvIndex) {
+            const uvSet = indexof i;
+            const uv = this.uv(uvSet, i);
+            uvbs[uvSet].add(uv.x, uv.y);
+        }
     }
 
     override function setAttr from (cmd is Command) to () 
     {
-	super.setAttr(cmd);
-	const n = cmd.getAttr();
-	if (n == "vt") {
-	    const path = cmd.getPath();
-	    const values = cmd.getFlatFloat3Array();
-	    if (path.path[1] instanceof Range) {
-		const r = path.path[1] as Range;
-		verts[r.startIndex*3..r.endIndex*3] = values;
-	    } else {
-		verts = values;
-	    }
-	} else if (n == "pt") {
-	    const path = cmd.getPath();
-	    const values = cmd.getFlatFloat3Array();
-	    if (path.path[1] instanceof Range) {
-		const r = path.path[1] as Range;
-		pointTweaks[r.startIndex*3..r.endIndex*3] = values;
-	    } else {
-		pointTweaks = values;
-	    }
-	} else if (n == "n") {
-	    const path = cmd.getPath();
-	    const values = cmd.getFlatFloat3Array();
-	    if (path.path[1] instanceof Range) {
-		const r = path.path[1] as Range;
-		normals[r.startIndex*3..r.endIndex*3] = values;
-	    } else {
-		normals = values;
-	    }
-	} else if (n == "ed") {
-	    const path = cmd.getPath();
-	    const values = cmd.getFlatInt3Array();
-	    if (path.path[1] instanceof Range) {
-		const r = path.path[1] as Range;
-		edges[r.startIndex*3..r.endIndex*3] = values;
-	    } else {
-		edges = values;
-	    }
-	} else if (n == "fc") {
-	    const path = cmd.getPath();
-	    const values = cmd.getPolyfaceData();
-	    if (path.path[1] instanceof Range) {
-		const r = path.path[1] as Range;
-		polyfaces[r.startIndex..r.endIndex] = values;
-	    } else {
-		polyfaces = values;
-	    }
-	} else if (n == "iog") {
-	    const path = cmd.getPath();
-	    const index = path.path[1] as Index;
-	    const field = path.path[2] as Field;
-	    if (field.name == "og") {
-		const ogIndex = path.path[3] as Index;
-		const gcl = path.path[4] as Field;
-		if (gcl.name == "gcl") {
-		    const componentList = cmd.getStringArray();
-		    for (comp in componentList) {
-			const compPath = parsePath(comp);
-			if (compPath.path[0] is Field) {
-			    const f = compPath.path[0] as Field;
-			    if (f.name == "f") {
-				const compList is ComponentList = 
-				    if (compPath.path[1] instanceof Range) {
-					const fr = compPath.path[1] as Range;
-					ComponentList {
-					    faceStart: fr.startIndex;
-					    faceEnd: fr.endIndex;
-					} 
-				    } else {
-					const fi = compPath.path[1] as Index;
-					ComponentList {
-					    faceStart: fi.index;
-					    faceEnd: fi.index;
-					} 
-				    };
-				insert compList into components;
-			    }
-			}
-		    }
-		}
-	    }
-	} else if (n == "uvst") {
+        super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "vt") {
+            const path = cmd.getPath();
+            const values = cmd.getFlatFloat3Array();
+            if (path.path[1] instanceof Range) {
+                const r = path.path[1] as Range;
+                verts[r.startIndex*3..r.endIndex*3] = values;
+            } else {
+                verts = values;
+            }
+        } else if (n == "pt") {
+            const path = cmd.getPath();
+            const values = cmd.getFlatFloat3Array();
+            if (path.path[1] instanceof Range) {
+                const r = path.path[1] as Range;
+                pointTweaks[r.startIndex*3..r.endIndex*3] = values;
+            } else {
+                pointTweaks = values;
+            }
+        } else if (n == "n") {
+            const path = cmd.getPath();
+            const values = cmd.getFlatFloat3Array();
+            if (path.path[1] instanceof Range) {
+                const r = path.path[1] as Range;
+                normals[r.startIndex*3..r.endIndex*3] = values;
+            } else {
+                normals = values;
+            }
+        } else if (n == "ed") {
+            const path = cmd.getPath();
+            const values = cmd.getFlatInt3Array();
+            if (path.path[1] instanceof Range) {
+                const r = path.path[1] as Range;
+                edges[r.startIndex*3..r.endIndex*3] = values;
+            } else {
+                edges = values;
+            }
+        } else if (n == "fc") {
+            const path = cmd.getPath();
+            const values = cmd.getPolyfaceData();
+            if (path.path[1] instanceof Range) {
+                const r = path.path[1] as Range;
+                polyfaces[r.startIndex..r.endIndex] = values;
+            } else {
+                polyfaces = values;
+            }
+        } else if (n == "iog") {
+            const path = cmd.getPath();
+            const index = path.path[1] as Index;
+            const field = path.path[2] as Field;
+            if (field.name == "og") {
+                const ogIndex = path.path[3] as Index;
+                const gcl = path.path[4] as Field;
+                if (gcl.name == "gcl") {
+                    const componentList = cmd.getStringArray();
+                    for (comp in componentList) {
+                        const compPath = parsePath(comp);
+                        if (compPath.path[0] is Field) {
+                            const f = compPath.path[0] as Field;
+                            if (f.name == "f") {
+                                const compList is ComponentList = 
+                                    if (compPath.path[1] instanceof Range) {
+                                        const fr = compPath.path[1] as Range;
+                                        ComponentList {
+                                            faceStart: fr.startIndex;
+                                            faceEnd: fr.endIndex;
+                                        } 
+                                    } else {
+                                        const fi = compPath.path[1] as Index;
+                                        ComponentList {
+                                            faceStart: fi.index;
+                                            faceEnd: fi.index;
+                                        } 
+                                    };
+                                insert compList into components;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (n == "uvst") {
             // uv sets
-	    const path = cmd.getPath();
-	    const index = path.path[1] as Index;
-	    const field = path.path[2] as Field;
-	    if (field.name == "uvsp") {
-		var startIndex is Integer;
-		var endIndex is Integer;
-		if (path.path[3] is Range) {
-		    const range = path.path[3] as Range;
-		    startIndex = range.startIndex;
-		    endIndex = range.endIndex;
-		} else {
-		    const ind = path.path[3] as Index;
-		    startIndex = endIndex = ind.index;
-		}
-		const uvIndex = index.index;
-		const values = cmd.getFlatFloat2Array();
-		if (uvSets[uvIndex] == null) {
-		    insert UVSet {
-			uvIndex: uvIndex;
-			uvs: values;
-		    } into uvSets;
-		} else {
-		    uvSets[uvIndex].uvs[startIndex*2..endIndex*2] = values;
-		}
-	    }
-	}
+            const path = cmd.getPath();
+            const index = path.path[1] as Index;
+            const field = path.path[2] as Field;
+            if (field.name == "uvsp") {
+                var startIndex is Integer;
+                var endIndex is Integer;
+                if (path.path[3] is Range) {
+                    const range = path.path[3] as Range;
+                    startIndex = range.startIndex;
+                    endIndex = range.endIndex;
+                } else {
+                    const ind = path.path[3] as Index;
+                    startIndex = endIndex = ind.index;
+                }
+                const uvIndex = index.index;
+                const values = cmd.getFlatFloat2Array();
+                if (uvSets[uvIndex] == null) {
+                    insert UVSet {
+                        uvIndex: uvIndex;
+                        uvs: values;
+                    } into uvSets;
+                } else {
+                    uvSets[uvIndex].uvs[startIndex*2..endIndex*2] = values;
+                }
+            }
+        }
     }
 
     override function toNode from (m is MaModel) to Node 
     {
-	buildMesh();
-	var id = "";
-	var r0 is Node;
-	for (mesh in getMesh()) {
-	    const shaderConn = connectionsFromThis.get("iog");
-	    const mshaderNode = 
-		if (shaderConn <> null) {
-		    //println("shaderConn={shaderConn}");
-		    //println("shaderConn={shaderConn[0].targetNode}");
-		    //println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
-		    //println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
-		    shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
-		} else null;
-	    const shader = m.toShader(mshaderNode);
-	    //println("shaderNode={mshaderNode} for {name} => {shader}");
-	    for (i in [0..<shader.uvMap.size()]) {
-		const unit = shader.uvMap[i];
-		if (unit == -2) { // tangent
-		    shader.uvMap[i] = mesh.textureCoordinates.size()-2;
-		} else if (unit == -1) {// binormal 
-		    shader.uvMap[i] = mesh.textureCoordinates.size()-1;
-		}
-	    }
-	    for (pn in [parent, parents]) {
-		const p = m.toParentNode(pn as MSpatial);
-		const r = MeshNode {
-		    visible: visible;
-		    id: "{name}{id}";
-		    mesh: mesh;
-		    shader: shader;
-		}
-		id = "#{indexof mesh +1}";
-		insert r into p.content;
-		r0 = r;
-		m.spatialMap.put(this, r);
-	    }
-	}
-	return r0;
+        buildMesh();
+        var id = "";
+        var r0 is Node;
+        for (mesh in getMesh()) {
+            const shaderConn = connectionsFromThis.get("iog");
+            const mshaderNode = 
+                if (shaderConn <> null) {
+                    //println("shaderConn={shaderConn}");
+                    //println("shaderConn={shaderConn[0].targetNode}");
+                    //println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+                    //println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
+                    shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
+                } else null;
+            const shader = m.toShader(mshaderNode);
+            //println("shaderNode={mshaderNode} for {name} => {shader}");
+            for (i in [0..<shader.uvMap.size()]) {
+                const unit = shader.uvMap[i];
+                if (unit == -2) { // tangent
+                    shader.uvMap[i] = mesh.textureCoordinates.size()-2;
+                } else if (unit == -1) {// binormal 
+                    shader.uvMap[i] = mesh.textureCoordinates.size()-1;
+                }
+            }
+            for (pn in [parent, parents]) {
+                const p = m.toParentNode(pn as MSpatial);
+                const r = MeshNode {
+                    visible: visible;
+                    id: "{name}{id}";
+                    mesh: mesh;
+                    shader: shader;
+                }
+                id = "#{indexof mesh +1}";
+                insert r into p.content;
+                r0 = r;
+                m.spatialMap.put(this, r);
+            }
+        }
+        return r0;
     }
 }
 
@@ -2555,96 +2557,96 @@ class MCGFXShader is MAbstractShader
     var vas is String[];
 
     override public function getPointer
-	from (ptr is String, target is Object) 
-	to Ref of ?
+        from (ptr is String, target is Object) 
+        to Ref of ?
     {
-	const shader = target as Shader;
-	var result = shader.getParameter(ptr);
-	//println("result in {name} for {ptr} = {result}");
-	return result;
+        const shader = target as Shader;
+        var result = shader.getParameter(ptr);
+        //println("result in {name} for {ptr} = {result}");
+        return result;
     }
 
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "val") {
-	    vals = cmd.getStringArray();
-	} else if (n == "vas") {
-	    vas = cmd.getStringArray();
-	} else if (n == "s") {
-	    s = cmd.getString();
-	} else if (n == "t") {
-	    t = cmd.getString();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "val") {
+            vals = cmd.getStringArray();
+        } else if (n == "vas") {
+            vas = cmd.getStringArray();
+        } else if (n == "s") {
+            s = cmd.getString();
+        } else if (n == "t") {
+            t = cmd.getString();
+        } else super.setAttr(cmd);
     }
 
     override function toShader from (m is MaModel) to Shader
     {
-	const baseURL = new java.net.URL(m.url);
-	var shader = m.effectLoader.loadEffect(new java.net.URL(baseURL, s).toString(), t);
-	m.shaderMap.put(this, shader);
-	for (conns in connectionsToThis.values()) {
-	    for (conn in conns) {
-		if (conn.sourceNode instanceof MFile) {
-		    const file = conn.sourceNode as MFile;
-		    var fname = file.ftn;
-		    const slashslash = fname.indexOf("//");
-		    if (slashslash > 0) {
-			fname = "..{fname.substring(slashslash+1)}";
-		    }
-		    const paramName = conn.targetPath;
-		    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
-		    try {
-			const image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
-			//println("setting {paramName} to {file.ftn} p={p}");
-			p.set(image);
-		    } catch (e is java.lang.Exception) {
-			e.printStackTrace();
-		    }
-		}
-	    }
-	}
-	var uvs is Integer[];
-	for (i in [0..<vals.size() step 4]) {
-	    const n = vals[i];
-	    const t = vals[i+1];
-	    const sem = vals[i+3];
-	    if (sem.startsWith("TEXCOORD")) {
-		const unit = Integer.parseInt(sem.substring(8));
-		for (j in [uvs.size()..unit]) {
-		    insert 0 into uvs;
-		}
-		const name = vas[1+(i-1) / 4];
-		if (name.startsWith("uv:map")) {
-		    const uvIndex = Integer.parseInt(name.substring(6))-1;
-		    uvs[unit] = uvIndex;
-		} else if (name.startsWith("binormal:map")) {
-		    uvs[unit] = -1;
-		} else if (name.startsWith("tangent:map")) {
-		    uvs[unit] = -2;
-		}
-	    }
-	}
-	for (attr in attrs.values() where attr.parent == null) {
-	    if (attr.value <> null) {
-		var name = attr.shortName;
-		var value = attr.value;
-		//println("setting {name} {attr.type} to {value}");
-		try {
-		    shader.setParameter(name, value);
-		} catch (e is java.lang.Exception) {
-		    e.printStackTrace();
-		}
-	    }
-	}
-	const transparent = attrs.get("transparent");
-	if (transparent <> null) {
-	   if (transparent.value is Boolean) {
-	       shader.isTransparent = transparent.value as Boolean;
-	   }
-	}
-	shader.uvMap = uvs;
-	return shader;
+        const baseURL = new java.net.URL(m.url);
+        var shader = m.effectLoader.loadEffect(new java.net.URL(baseURL, s).toString(), t);
+        m.shaderMap.put(this, shader);
+        for (conns in connectionsToThis.values()) {
+            for (conn in conns) {
+                if (conn.sourceNode instanceof MFile) {
+                    const file = conn.sourceNode as MFile;
+                    var fname = file.ftn;
+                    const slashslash = fname.indexOf("//");
+                    if (slashslash > 0) {
+                        fname = "..{fname.substring(slashslash+1)}";
+                    }
+                    const paramName = conn.targetPath;
+                    const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
+                    try {
+                        const image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
+                        //println("setting {paramName} to {file.ftn} p={p}");
+                        p.set(image);
+                    } catch (e is java.lang.Exception) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        var uvs is Integer[];
+        for (i in [0..<vals.size() step 4]) {
+            const n = vals[i];
+            const t = vals[i+1];
+            const sem = vals[i+3];
+            if (sem.startsWith("TEXCOORD")) {
+                const unit = Integer.parseInt(sem.substring(8));
+                for (j in [uvs.size()..unit]) {
+                    insert 0 into uvs;
+                }
+                const name = vas[1+(i-1) / 4];
+                if (name.startsWith("uv:map")) {
+                    const uvIndex = Integer.parseInt(name.substring(6))-1;
+                    uvs[unit] = uvIndex;
+                } else if (name.startsWith("binormal:map")) {
+                    uvs[unit] = -1;
+                } else if (name.startsWith("tangent:map")) {
+                    uvs[unit] = -2;
+                }
+            }
+        }
+        for (attr in attrs.values() where attr.parent == null) {
+            if (attr.value <> null) {
+                var name = attr.shortName;
+                var value = attr.value;
+                //println("setting {name} {attr.type} to {value}");
+                try {
+                    shader.setParameter(name, value);
+                } catch (e is java.lang.Exception) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        const transparent = attrs.get("transparent");
+        if (transparent <> null) {
+           if (transparent.value is Boolean) {
+               shader.isTransparent = transparent.value as Boolean;
+           }
+        }
+        shader.uvMap = uvs;
+        return shader;
     }
 }
 
@@ -2660,52 +2662,52 @@ class MCGFXVector is MSpatial {
 
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "wv") {
-	    wv = cmd.getVec3();
-	} else if (n == "wvw") {
-	    wvw = cmd.getFloat();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "wv") {
+            wv = cmd.getVec3();
+        } else if (n == "wvw") {
+            wvw = cmd.getFloat();
+        } else super.setAttr(cmd);
     }
 
     override public function getPointer
-	from (ptr is String, target is Object) 
-	to Ref of ?
+        from (ptr is String, target is Object) 
+        to Ref of ?
     {
-	const n = target as CGFXVectorNode;
-	if (ptr == "wv") {
-	    return &n.wv;
-	} else if (ptr == "wvw") {
-	    return &n.wvw;
-	} else if (ptr == "m") {
-	    return &n.transform;
-	} else {
-	    return null
-	}
+        const n = target as CGFXVectorNode;
+        if (ptr == "wv") {
+            return &n.wv;
+        } else if (ptr == "wvw") {
+            return &n.wvw;
+        } else if (ptr == "m") {
+            return &n.transform;
+        } else {
+            return null
+        }
     }
 
     override function toNode from (m is MaModel) to Node {
-	var n is Node;
-	m.spatialMap.put(this, null);
-	for (conn in connectionsToThis.get("m")) {
-	    if (conn.sourcePath == "wm") {
-		n = (conn.sourceNode as MSpatial).toNode(m);
-	    }
-	}
-	const vecNode = CGFXVectorNode {
-	    id: name;
-	    wvw: wvw;
-	    wv: bind n.toSceneTransform.getTranslation();
-	}
-	m.spatialMap.put(this, vecNode);
-	for (conn in connectionsFromThis.get("wv")) {
-	    if (conn.targetNode instanceof MCGFXShader) {
-		var shader = m.toShader(conn.targetNode as MCGFXShader);
-		const p = shader.getParameter(conn.targetPath) as Shader.Parameter of Tuple3;
-		p.bindTo(&vecNode.wv);
-	    }
-	}
-	return vecNode;
+        var n is Node;
+        m.spatialMap.put(this, null);
+        for (conn in connectionsToThis.get("m")) {
+            if (conn.sourcePath == "wm") {
+                n = (conn.sourceNode as MSpatial).toNode(m);
+            }
+        }
+        const vecNode = CGFXVectorNode {
+            id: name;
+            wvw: wvw;
+            wv: bind n.toSceneTransform.getTranslation();
+        }
+        m.spatialMap.put(this, vecNode);
+        for (conn in connectionsFromThis.get("wv")) {
+            if (conn.targetNode instanceof MCGFXShader) {
+                var shader = m.toShader(conn.targetNode as MCGFXShader);
+                const p = shader.getParameter(conn.targetPath) as Shader.Parameter of Tuple3;
+                p.bindTo(&vecNode.wv);
+            }
+        }
+        return vecNode;
     }
     
 }
@@ -2724,140 +2726,140 @@ class MShader is MAbstractShader
     var it is Tuple3 = Tuple3.<<0>>;
 
     override public function getPointer
-	from (ptr is String, target is Object) 
-	to Ref of ?
+        from (ptr is String, target is Object) 
+        to Ref of ?
     {
-	const shader = target as Shader;
-	if (ptr == "c" or ptr == "cb" or ptr == "cg" or ptr == "cr") {
-	    const result = shader.getParameter("diffuse") as Shader.Parameter of Tuple4;
-	    if (ptr == "cb") {
-		AbstractRef of Number {
-		    override public function get to Number 
-		    {
-			result.get().z
-		    }
-		    override public function set from (b is Number) to () 
-		    {
-			const t = result.get();
-			result.set(tuple(t.x, t.y, b, t.w));
-		    }
-		}
-	    } else if (ptr == "cg") {
-		AbstractRef of Number {
-		    override public function get to Number 
-		    {
-			result.get().y
-		    }
-		    override public function set from (g is Number) to () 
-		    {
-			const t = result.get();
-			result.set(tuple(t.x, g, t.z, t.w));
-		    }
-		}
-	    } else if (ptr == "cr") {
-		AbstractRef of Number {
-		    override public function get to Number 
-		    {
-			result.get().x
-		    }
-		    override public function set from (r is Number) to () 
-		    {
-			const t = result.get();
-			result.set(tuple(r, t.y, t.z, t.w));
-		    }
-		}
-	    } else {
-		AbstractRef of Tuple3 {
-		    override public function get to Tuple3
-		    {
-			result.get().xyz();
-		    }
-		    override public function set from (c is Tuple3) to () 
-		    {
-			const t = result.get();
-			result.set(tuple(c.x, c.y, c.z, t.w));
-		    }
-		}
-	    }
-	} else null
+        const shader = target as Shader;
+        if (ptr == "c" or ptr == "cb" or ptr == "cg" or ptr == "cr") {
+            const result = shader.getParameter("diffuse") as Shader.Parameter of Tuple4;
+            if (ptr == "cb") {
+                AbstractRef of Number {
+                    override public function get to Number 
+                    {
+                        result.get().z
+                    }
+                    override public function set from (b is Number) to () 
+                    {
+                        const t = result.get();
+                        result.set(tuple(t.x, t.y, b, t.w));
+                    }
+                }
+            } else if (ptr == "cg") {
+                AbstractRef of Number {
+                    override public function get to Number 
+                    {
+                        result.get().y
+                    }
+                    override public function set from (g is Number) to () 
+                    {
+                        const t = result.get();
+                        result.set(tuple(t.x, g, t.z, t.w));
+                    }
+                }
+            } else if (ptr == "cr") {
+                AbstractRef of Number {
+                    override public function get to Number 
+                    {
+                        result.get().x
+                    }
+                    override public function set from (r is Number) to () 
+                    {
+                        const t = result.get();
+                        result.set(tuple(r, t.y, t.z, t.w));
+                    }
+                }
+            } else {
+                AbstractRef of Tuple3 {
+                    override public function get to Tuple3
+                    {
+                        result.get().xyz();
+                    }
+                    override public function set from (c is Tuple3) to () 
+                    {
+                        const t = result.get();
+                        result.set(tuple(c.x, c.y, c.z, t.w));
+                    }
+                }
+            }
+        } else null
     }
 
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "c") {
-	    c = cmd.getVec3();
-	} else if (n == "ambc") {
-	    ambc = cmd.getVec3();
-	} else if (n == "sc") {
-	    sc = cmd.getVec3();
-	} else if (n == "cp") {
-	    cp = cmd.getFloat();
-	} else if (n == "ic") {
-	    ic = cmd.getVec3();
-	} else if (n == "dc") {
-	    dc = cmd.getFloat();
-	} else if (n == "it") {
-	    it = cmd.getVec3();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "c") {
+            c = cmd.getVec3();
+        } else if (n == "ambc") {
+            ambc = cmd.getVec3();
+        } else if (n == "sc") {
+            sc = cmd.getVec3();
+        } else if (n == "cp") {
+            cp = cmd.getFloat();
+        } else if (n == "ic") {
+            ic = cmd.getVec3();
+        } else if (n == "dc") {
+            dc = cmd.getFloat();
+        } else if (n == "it") {
+            it = cmd.getVec3();
+        } else super.setAttr(cmd);
     }
 
     function toColor 
-	from (r is Number,
-	      g is Number,
-	      b is Number,
-	      a is Number) 
-	to Color 
+        from (r is Number,
+              g is Number,
+              b is Number,
+              a is Number) 
+        to Color 
     {
-	Color {
-	    red: r, green: g, blue: b, opacity: a 
-	}
+        Color {
+            red: r, green: g, blue: b, opacity: a 
+        }
     }
 
     override function toShader from (m is MaModel) to Shader 
     {
-	const alpha = 1.0 - it.x;
-	const diffuse = toColor(c.x * dc, c.y * dc, c.z * dc, alpha);
-	const ambient = toColor(ambc.x, ambc.y, ambc.z, alpha);
-	const emissive = toColor(ic.x, ic.y, ic.z, alpha);
-	const specular = toColor(sc.x, sc.y, sc.z, alpha);
-	const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100.0 - 99.0 * Math.sqrt(ec) else 0.0;
-	var image is AbstractTexture;
-	var uvMap is Integer[] = [];
-	for (conn in connectionsToThis.get("c")) {
-	    if (conn.sourceNode instanceof MFile) {
-		const file = conn.sourceNode as MFile;
-		const baseURL = new java.net.URL(m.url);
-		var fname = file.ftn;
-		const slashslash = fname.indexOf("//");
-		if (slashslash > 0) {
-		    fname = "..{fname.substring(slashslash+1)}";
-		}
-		try {
-		    image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
-		    uvMap = [0];
-		} catch (e is java.lang.Exception) {
-		    e.printStackTrace();
-		}
-		break;
-	    }
-	}
-	const shader = m.effectLoader.loadDefaultShader(image,
-							diffuse,
-							ambient,
-							emissive,
-							specular,
-							shininess);
-	m.shaderMap.put(this, shader);
-	shader.uvMap = uvMap;
-	return shader;
+        const alpha = 1.0 - it.x;
+        const diffuse = toColor(c.x * dc, c.y * dc, c.z * dc, alpha);
+        const ambient = toColor(ambc.x, ambc.y, ambc.z, alpha);
+        const emissive = toColor(ic.x, ic.y, ic.z, alpha);
+        const specular = toColor(sc.x, sc.y, sc.z, alpha);
+        const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100.0 - 99.0 * Math.sqrt(ec) else 0.0;
+        var image is AbstractTexture;
+        var uvMap is Integer[] = [];
+        for (conn in connectionsToThis.get("c")) {
+            if (conn.sourceNode instanceof MFile) {
+                const file = conn.sourceNode as MFile;
+                const baseURL = new java.net.URL(m.url);
+                var fname = file.ftn;
+                const slashslash = fname.indexOf("//");
+                if (slashslash > 0) {
+                    fname = "..{fname.substring(slashslash+1)}";
+                }
+                try {
+                    image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
+                    uvMap = [0];
+                } catch (e is java.lang.Exception) {
+                    e.printStackTrace();
+                }
+                break;
+            }
+        }
+        const shader = m.effectLoader.loadDefaultShader(image,
+                                                        diffuse,
+                                                        ambient,
+                                                        emissive,
+                                                        specular,
+                                                        shininess);
+        m.shaderMap.put(this, shader);
+        shader.uvMap = uvMap;
+        return shader;
     }
 }
 
 class MShadingEngine is MNode {
     override function setAttr from (cmd is Command) to () 
     {
-	super.setAttr(cmd)
+        super.setAttr(cmd)
     }
 }
 
@@ -2865,10 +2867,10 @@ class MFile is MNode {
     var ftn is String;
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "ftn") {
-	    ftn = cmd.getString();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "ftn") {
+            ftn = cmd.getString();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -2876,14 +2878,14 @@ class MLight is MSpatial {
     const type is String;
     override public function toNode from (m is MaModel) to Node 
     {
-	if (this.type == "pointLight") {
-	    const tn = PointLight {}
-	    m.spatialMap.put(this, tn);
-	    const p = m.toParentNode(parent as MSpatial);
-	    insert tn into p.content;
-	    return tn;
-	}
-	return null;
+        if (this.type == "pointLight") {
+            const tn = PointLight {}
+            m.spatialMap.put(this, tn);
+            const p = m.toParentNode(parent as MSpatial);
+            insert tn into p.content;
+            return tn;
+        }
+        return null;
     }
 }
 
@@ -2892,12 +2894,12 @@ class MAnimClip is MNode {
     var se is Integer;
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "ss") {
-	    ss = cmd.getInt();
-	} else if (n == "se") {
-	    se = cmd.getInt();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "ss") {
+            ss = cmd.getInt();
+        } else if (n == "se") {
+            se = cmd.getInt();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -2925,86 +2927,86 @@ abstract class MAnimCurve of a is MTemporal
 
     override function setAttr from (cmd is Command) to () 
     {
-	const n = cmd.getAttr();
-	if (n == "tan") {
-	    tan = cmd.getInt();
-	} else if (n == "kix") {
-	    const p = cmd.getPath().path;
-	    const values = cmd.getFloatArray();
-	    if (p[1] instanceof Range) {
-		const r = p[1] as Range;
-		while (kix.size() < r.startIndex) {
-		    insert 1.0 into kix;
-		}
-		kix[r.startIndex..r.endIndex] = values;
-	    } else {
-		kix = values;
-	    }
-	    println("kix={kix}");
-	} else if (n == "kiy") {
-	    const p = cmd.getPath().path;
-	    const values = cmd.getFloatArray();
-	    if (p[1] instanceof Range) {
-		const r = p[1] as Range;
-		while (kiy.size() < r.startIndex) {
-		    insert 0.0 into kiy;
-		}
-		kiy[r.startIndex..r.endIndex] = values;
-	    } else {
-		kiy = values;
-	    }
-	    println("kiy={kiy}");
-	} else if (n == "kox") {
-	    const p = cmd.getPath().path;
-	    const values = cmd.getFloatArray();
-	    if (p[1] instanceof Range) {
-		const r = p[1] as Range;
-		while (kox.size() < r.startIndex) {
-		    insert 1.0 into kox;
-		}
-		kox[r.startIndex..r.endIndex] = values;
-	    } else {
-		kox = values;
-	    }
-	    println("kox={kox}");
-	} else if (n == "koy") {
-	    const p = cmd.getPath().path;
-	    const values = cmd.getFloatArray();
-	    if (p[1] instanceof Range) {
-		const r = p[1] as Range;
-		while (koy.size() < r.startIndex) {
-		    insert 0.0 into koy;
-		}
-		koy[r.startIndex..r.endIndex] = values;
-	    } else {
-		koy = values;
-	    }
-	    println("koy={koy}");
-	} else if (n == "kit") {
-	    const p = cmd.getPath().path;
-	    const values = cmd.getIntArray();
-	    if (p[1] instanceof Range) {
-		const r = p[1] as Range;
-		while (kit.size() < r.startIndex) {
-		    insert 0 into kit;
-		}
-		kit[r.startIndex..r.endIndex] = values;
-	    } else {
-		kit = values;
-	    }
-	} else if (n == "kot") {
-	    const p = cmd.getPath().path;
-	    const values = cmd.getIntArray();
-	    if (p[1] instanceof Range) {
-		const r = p[1] as Range;
-		while (kot.size() < r.startIndex) {
-		    insert 0 into kot;
-		}
-		kot[r.startIndex..r.endIndex] = values;
-	    } else {
-		kot = values;
-	    }
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "tan") {
+            tan = cmd.getInt();
+        } else if (n == "kix") {
+            const p = cmd.getPath().path;
+            const values = cmd.getFloatArray();
+            if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (kix.size() < r.startIndex) {
+                    insert 1.0 into kix;
+                }
+                kix[r.startIndex..r.endIndex] = values;
+            } else {
+                kix = values;
+            }
+            println("kix={kix}");
+        } else if (n == "kiy") {
+            const p = cmd.getPath().path;
+            const values = cmd.getFloatArray();
+            if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (kiy.size() < r.startIndex) {
+                    insert 0.0 into kiy;
+                }
+                kiy[r.startIndex..r.endIndex] = values;
+            } else {
+                kiy = values;
+            }
+            println("kiy={kiy}");
+        } else if (n == "kox") {
+            const p = cmd.getPath().path;
+            const values = cmd.getFloatArray();
+            if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (kox.size() < r.startIndex) {
+                    insert 1.0 into kox;
+                }
+                kox[r.startIndex..r.endIndex] = values;
+            } else {
+                kox = values;
+            }
+            println("kox={kox}");
+        } else if (n == "koy") {
+            const p = cmd.getPath().path;
+            const values = cmd.getFloatArray();
+            if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (koy.size() < r.startIndex) {
+                    insert 0.0 into koy;
+                }
+                koy[r.startIndex..r.endIndex] = values;
+            } else {
+                koy = values;
+            }
+            println("koy={koy}");
+        } else if (n == "kit") {
+            const p = cmd.getPath().path;
+            const values = cmd.getIntArray();
+            if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (kit.size() < r.startIndex) {
+                    insert 0 into kit;
+                }
+                kit[r.startIndex..r.endIndex] = values;
+            } else {
+                kit = values;
+            }
+        } else if (n == "kot") {
+            const p = cmd.getPath().path;
+            const values = cmd.getIntArray();
+            if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (kot.size() < r.startIndex) {
+                    insert 0 into kot;
+                }
+                kot[r.startIndex..r.endIndex] = values;
+            } else {
+                kot = values;
+            }
+        } else super.setAttr(cmd);
     }
 
     abstract function toChannel from (m is MaModel, clip is Boolean) to Channel of a;
@@ -3021,71 +3023,71 @@ class MAnimCurve__ is MAnimCurve of Number
     override function setAttr from (cmd is Command) to () 
     {
 
-	const n = cmd.getAttr();
-	if (n == "ktv") {
-	    ktv = cmd.getFloat2Array();
-	} else super.setAttr(cmd);
+        const n = cmd.getAttr();
+        if (n == "ktv") {
+            ktv = cmd.getFloat2Array();
+        } else super.setAttr(cmd);
     }
 
     function getInterpolator from (i1 is Integer) to KeyFrame.NumberInterpolator 
     {
-	var tan0 = tan;
-	var tan1 = tan;
-	const i0 = i1-1;
-	if (i0 > 0 and i0 < kot.size()) {
-	    const t = kot[i0];
-	    if (t <> 0) {
-		tan0 = t;
-	    }
-	}
-	if (i1 < kit.size()) {
-	    const t = kit[i1];
-	    if (t <> 0) {
-		tan1 = t;
-	    }
-	}
-	if (tan0 == FIXED) {
-	    //return KeyFrame.Discrete;
-	    return KeyFrame.Linear;
-	}
-	if (tan0 == STEPPED or i1 >= kix.size()) {
-	    return KeyFrame.Linear;
-	}
-	var x0 is Number;
-	var y0 is Number;
-	var x1 is Number;
-	var y1 is Number;
-	if (i0 < 0) {
-	    x0 = 1.0;
-	    y0 = 0.0;
-	} else {
-	    x0 = kox[i0];
-	    y0 = koy[i0]
-	} 
-	if (i1 == kix.size()) {
-	    x1 = 1.0;
-	    y1 = 0.0;
-	} else {
-	    x1 = kix[i1];
-	    y1 = kiy[i1];
-	}
-	if (x0 == 0 or x1 == 0) {
-	    println("bad tangent interpolator {name} {x0},{y0} {x1},{y1}");
-	    if (x0 == 0) x0 = 1.0;
-	    if (x1 == 0) x1 = 1.0;
-	}
-	println("created interpolator {name} {x0},{y0} {x1},{y1}");
-	KeyFrame.Tangent {
-	    kix: x1;
-	    kiy: y1;
-	    kox: x0;
-	    koy: y0;
-	}
+        var tan0 = tan;
+        var tan1 = tan;
+        const i0 = i1-1;
+        if (i0 > 0 and i0 < kot.size()) {
+            const t = kot[i0];
+            if (t <> 0) {
+                tan0 = t;
+            }
+        }
+        if (i1 < kit.size()) {
+            const t = kit[i1];
+            if (t <> 0) {
+                tan1 = t;
+            }
+        }
+        if (tan0 == FIXED) {
+            //return KeyFrame.Discrete;
+            return KeyFrame.Linear;
+        }
+        if (tan0 == STEPPED or i1 >= kix.size()) {
+            return KeyFrame.Linear;
+        }
+        var x0 is Number;
+        var y0 is Number;
+        var x1 is Number;
+        var y1 is Number;
+        if (i0 < 0) {
+            x0 = 1.0;
+            y0 = 0.0;
+        } else {
+            x0 = kox[i0];
+            y0 = koy[i0]
+        } 
+        if (i1 == kix.size()) {
+            x1 = 1.0;
+            y1 = 0.0;
+        } else {
+            x1 = kix[i1];
+            y1 = kiy[i1];
+        }
+        if (x0 == 0 or x1 == 0) {
+            println("bad tangent interpolator {name} {x0},{y0} {x1},{y1}");
+            if (x0 == 0) x0 = 1.0;
+            if (x1 == 0) x1 = 1.0;
+        }
+        println("created interpolator {name} {x0},{y0} {x1},{y1}");
+        KeyFrame.Tangent {
+            kix: x1;
+            kiy: y1;
+            kox: x0;
+            koy: y0;
+        }
     }
 
     override function toChannel from (m is MaModel, clip is Boolean) to Channel of Number 
     {
-	var targets is (Ref of Number)[];
+        var targets is (Ref of Number)[];
         if (not clip) {
             targets = m.getNumberTargets(this, "o");
         } else {
@@ -3112,25 +3114,25 @@ class MAnimCurve__ is MAnimCurve of Number
         if (targets == []) {
             println("no targets { name } as clip {clip}");
             return null;
-	}
-	const keyTimesInSeconds = (this.type == "animCurveUA" or
-				   this.type == "animCurveUL" or
-				   this.type == "animCurveUT" or
-				   this.type == "animCurveUU"); 
-	const rate = if (keyTimesInSeconds) then 1s else FPS;
-	Channel of Number 
-	{
-	    id: name;
-	    targets: targets;
-	    keys: foreach (kt in ktv) {
-		const adjustment = if (not keyTimesInSeconds and kt.x <> 0.0) then -1 else 0;
-		KeyFrame.Key of Number {
-		    position: rate * (kt.x + adjustment);
-		    value: kt.y;
-		    interpolator: getInterpolator(indexof kt);
-		}
-	    }
-	}
+        }
+        const keyTimesInSeconds = (this.type == "animCurveUA" or
+                                   this.type == "animCurveUL" or
+                                   this.type == "animCurveUT" or
+                                   this.type == "animCurveUU"); 
+        const rate = if (keyTimesInSeconds) then 1s else FPS;
+        Channel of Number 
+        {
+            id: name;
+            targets: targets;
+            keys: foreach (kt in ktv) {
+                const adjustment = if (not keyTimesInSeconds and kt.x <> 0.0) then -1 else 0;
+                KeyFrame.Key of Number {
+                    position: rate * (kt.x + adjustment);
+                    value: kt.y;
+                    interpolator: getInterpolator(indexof kt);
+                }
+            }
+        }
     }
 }
 
@@ -3140,280 +3142,280 @@ class Command
     const name is String;
     readonly var args is String[];
     const namedArgs is java.util.Map of (String, String) 
-	= new java.util.HashMap of (String, String);
+        = new java.util.HashMap of (String, String);
 
     override function toString to String 
     {
-	"{name} {foreach (ent in namedArgs.entrySet()) " -{ent.getKey()} {ent.getValue()}"} {foreach (arg in args) " {arg}"}"
+        "{name} {foreach (ent in namedArgs.entrySet()) " -{ent.getKey()} {ent.getValue()}"} {foreach (arg in args) " {arg}"}"
     }
 
     public function getBoolean to Boolean {
-	const s = getString(1);
-	s == "yes" or s == "true" 
+        const s = getString(1);
+        s == "yes" or s == "true" 
     }
 
     public function getString to String {
-	getString(1)
+        getString(1)
     }
 
     public function getInt to Integer 
     {
-	getInt(1)
+        getInt(1)
     }
 
     public function getFloat to Number 
     {
-	getFloat(1)
+        getFloat(1)
     }
 
     public function getAttr to String 
     {
-	const attr = getString(0);
-	const bracket = attr.indexOf("[");
-	if (bracket > 0) {
-	    return attr.substring(1, bracket);
-	}
-	return attr.substring(1)
+        const attr = getString(0);
+        const bracket = attr.indexOf("[");
+        if (bracket > 0) {
+            return attr.substring(1, bracket);
+        }
+        return attr.substring(1)
     }
 
     public function getPath to Path 
     {
-	parsePath(getString(0))
+        parsePath(getString(0))
     }
     
     public function getFloatArray to Number[] 
     {
-	const count = getCount("s", 1);
-	foreach (k in [1..count]) getFloat(k)
+        const count = getCount("s", 1);
+        foreach (k in [1..count]) getFloat(k)
     }
 
     public function getStringArray to String[] 
     {
-	const count = getInt(1);
-	foreach (k in [0..<count]) getString(k+2);
+        const count = getInt(1);
+        foreach (k in [0..<count]) getString(k+2);
     }
 
     public function getIntArray to Integer[] 
     {
-	const count = getCount("s", 1);
-	foreach (k in [1..count]) getInt(k)
+        const count = getCount("s", 1);
+        foreach (k in [1..count]) getInt(k)
     }
 
     public function getFloat2Array to Vec2[] 
     {
-	const count = getCount("s", 2);
-	foreach (k in [1..count*2 step 2]) vector(getFloat(k), getFloat(k+1))
+        const count = getCount("s", 2);
+        foreach (k in [1..count*2 step 2]) vector(getFloat(k), getFloat(k+1))
     }
 
     public function getFlatFloat2Array to Number[] 
     {
-	const count = getCount("s", 2);
-	foreach (k in [1..count*2]) getFloat(k);
+        const count = getCount("s", 2);
+        foreach (k in [1..count*2]) getFloat(k);
     }
 
     public function getFloat3 to Vec3 {
-	vector(getFloat(1),
-	       getFloat(2),
-	       getFloat(3));
+        vector(getFloat(1),
+               getFloat(2),
+               getFloat(3));
     }
 
     public function getFloat3Array to Vec3[] 
     {
-	const count = getCount("s", 3);
-	foreach (k in [1..count*3 step 3]) vector(getFloat(k), getFloat(k+1), getFloat(k+2))
+        const count = getCount("s", 3);
+        foreach (k in [1..count*3 step 3]) vector(getFloat(k), getFloat(k+1), getFloat(k+2))
     }
 
     public function getFlatFloat3Array to Number[] 
     {
-	const count = getCount("s", 3);
-	foreach (k in [1..count*3]) getFloat(k)
+        const count = getCount("s", 3);
+        foreach (k in [1..count*3]) getFloat(k)
     }
 
     public function getFlatInt3Array to Integer[] 
     {
-	const count = getCount("s", 3);
-	foreach (k in [1..count*3]) getInt(k)
+        const count = getCount("s", 3);
+        foreach (k in [1..count*3]) getInt(k)
     }
 
     public function getPolyfaceData to PolyfaceData[] 
     {
-	const len = args.size();
-	var i = 1;
-	var faceData is PolyfaceData[];
-	while (i < len) {
-	    var cmd = getString(i++);
-	    var faceEdges is Integer[];
-	    var mu is UVData[];
-	    var holes is Integer[];
-	    var vals is Integer[];
-	    if (cmd == "f") {
-		const count = getInt(i++);
-		for (j in [0..<count]) {
-		    insert getInt(i++) into faceEdges;
-		}
-	    }
-	    cmd = getString(i);
-	    while (cmd == "mu") {
-		i++;
-		const uvSet = getInt(i++);
-		var uvs is Integer[];
-		const count = getInt(i++);
-		for (j in [0..<count]) {
-		    insert getInt(i++) into uvs;
-		}
-		insert UVData {
-		    uvSet: uvSet;
-		    uvIndices: uvs;
-		} into mu;
-		cmd = getString(i);
-	    }
-	    insert PolyfaceData {
-		faceEdges: faceEdges;
-		mu: mu;
-	    } into faceData;
-	}
-	//println("faceData={faceData}");
-	return faceData;
+        const len = args.size();
+        var i = 1;
+        var faceData is PolyfaceData[];
+        while (i < len) {
+            var cmd = getString(i++);
+            var faceEdges is Integer[];
+            var mu is UVData[];
+            var holes is Integer[];
+            var vals is Integer[];
+            if (cmd == "f") {
+                const count = getInt(i++);
+                for (j in [0..<count]) {
+                    insert getInt(i++) into faceEdges;
+                }
+            }
+            cmd = getString(i);
+            while (cmd == "mu") {
+                i++;
+                const uvSet = getInt(i++);
+                var uvs is Integer[];
+                const count = getInt(i++);
+                for (j in [0..<count]) {
+                    insert getInt(i++) into uvs;
+                }
+                insert UVData {
+                    uvSet: uvSet;
+                    uvIndices: uvs;
+                } into mu;
+                cmd = getString(i);
+            }
+            insert PolyfaceData {
+                faceEdges: faceEdges;
+                mu: mu;
+            } into faceData;
+        }
+        //println("faceData={faceData}");
+        return faceData;
     }
 
     const NEG = "-".charAt(0);
 
     function isInt from (idx is Integer) to Boolean 
     {
-	const str = getString(idx);
-	const len = str.length();
-	if (len == 0) {
-	    return false;
-	}
-	var ch = str.charAt(0);
-	var i = 0;
-	if (ch == NEG) {
-	    if (len == 1) {
-		return false;
-	    }
-	    ++i;
-	} 
-	while (i < len) {
-	    if (not Character.isDigit(str.charAt(i++))) {
-		return false;
-	    }
-	}
-	return true;
+        const str = getString(idx);
+        const len = str.length();
+        if (len == 0) {
+            return false;
+        }
+        var ch = str.charAt(0);
+        var i = 0;
+        if (ch == NEG) {
+            if (len == 1) {
+                return false;
+            }
+            ++i;
+        } 
+        while (i < len) {
+            if (not Character.isDigit(str.charAt(i++))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     const longNames = ["unitlessValues", "angularValues", "linearValues"];
     const shortNames = ["uv", "av", "lv"];
 
     public function getAttributeAlias to java.util.Map of (String, String) {
-	const map = new java.util.HashMap of (String, String);
-	var i = 2; // skip aal {
-	while (i < args.size()) {
-	    const k = trim(args[i++]); 
-	    i++; // skip ,
-	    var v = trim(args[i++]);
-	    i++; // skip ,
-	    //println("k={k} v={v} next={args[i]}");
-	    const p = parsePath(v);
-	    const f = p.path[0] as Field;
-	    const fi = p.path[1] as Index;
-	    for (j in longNames) {
-		if (j == f.name) {
-		    v = "{shortNames[indexof j]}[{fi.index}]";
-		    break;
-		}
-	    }
-	    map.put(k, v);
-	}
-	return map;
+        const map = new java.util.HashMap of (String, String);
+        var i = 2; // skip aal {
+        while (i < args.size()) {
+            const k = trim(args[i++]); 
+            i++; // skip ,
+            var v = trim(args[i++]);
+            i++; // skip ,
+            //println("k={k} v={v} next={args[i]}");
+            const p = parsePath(v);
+            const f = p.path[0] as Field;
+            const fi = p.path[1] as Index;
+            for (j in longNames) {
+                if (j == f.name) {
+                    v = "{shortNames[indexof j]}[{fi.index}]";
+                    break;
+                }
+            }
+            map.put(k, v);
+        }
+        return map;
     }
 
     public function getCharacterMapping to java.util.Map of (String, String) {
-	const map = new java.util.HashMap of (String, String);
-	var i = 1; // skip am {
-	const count = getInt(i++);
-	while (i < args.size()) {
-	    const k = trim(args[i++]); 
-	    const i1 = Integer.parseInt(args[i++]);
-	    const i2 = Integer.parseInt(args[i++]);
-	    const k1 = if (i1 == 0) then "uv" else if (i1 == 1) then "lv" else "av";
-	    map.put("{k1}[{i2}]", k);
-	}
-	return map;
+        const map = new java.util.HashMap of (String, String);
+        var i = 1; // skip am {
+        const count = getInt(i++);
+        while (i < args.size()) {
+            const k = trim(args[i++]); 
+            const i1 = Integer.parseInt(args[i++]);
+            const i2 = Integer.parseInt(args[i++]);
+            const k1 = if (i1 == 0) then "uv" else if (i1 == 1) then "lv" else "av";
+            map.put("{k1}[{i2}]", k);
+        }
+        return map;
     }
 
     public function getMatrix to Mat4 
     {
-	const arr = getFloatArray();
-	if (arr.size() <> 16) {
-	    return Mat4.<<1>>;
-	}
-	Mat4.fromColumns(arr);
+        const arr = getFloatArray();
+        if (arr.size() <> 16) {
+            return Mat4.<<1>>;
+        }
+        Mat4.fromColumns(arr);
     }
 
     public function getVec3 to Vec3 
     {
-	vector(getFloat(1), getFloat(2), getFloat(3))
+        vector(getFloat(1), getFloat(2), getFloat(3))
     }
 
     public function getVec2 to Vec2 
     {
-	vector(getFloat(1), getFloat(2));
+        vector(getFloat(1), getFloat(2));
     }
 
     public function getCount(size is String, width is Integer) to Integer 
     {
-	const c = (args.size()-1) / width; 
-	const s = getString(size);
-	if (s <> null) then Math.min(Integer.parseInt(s), c) else c;
+        const c = (args.size()-1) / width; 
+        const s = getString(size);
+        if (s <> null) then Math.min(Integer.parseInt(s), c) else c;
     }
 
     public function getInt from (key is String) to Integer 
     {
-	java.lang.Integer.parseInt(getString(key));
+        java.lang.Integer.parseInt(getString(key));
     }
 
     public function getInt from (i is Integer) to Integer 
     {
-	java.lang.Integer.parseInt(getString(i));
+        java.lang.Integer.parseInt(getString(i));
     }
 
     public function getFloat from (key is String) to Number 
     {
-	try {
-	    return java.lang.Double.parseDouble(getString(key)) as Number;
-	} catch (e) {
-	    println("error {this}, key={key}");
-	    return 0.0;
-	}
+        try {
+            return java.lang.Double.parseDouble(getString(key)) as Number;
+        } catch (e) {
+            println("error {this}, key={key}");
+            return 0.0;
+        }
     }
 
     public function getFloat from (i is Integer) to Number 
     {
-	try {
-	    const str = getString(i);
-	    if (str == "nan") {
-		return 0;
-	    }
-	    return java.lang.Double.parseDouble(str) as Number;
-	} catch (e) {
-	    println("error {this}, index={i}");
-	    return 0.0;
-	}
+        try {
+            const str = getString(i);
+            if (str == "nan") {
+                return 0;
+            }
+            return java.lang.Double.parseDouble(str) as Number;
+        } catch (e) {
+            println("error {this}, index={i}");
+            return 0.0;
+        }
     }
 
     public function getString from (key is String) to String 
     {
-	trim(namedArgs.get(key));
+        trim(namedArgs.get(key));
     }
 
     public function getString from (i is Integer) to String 
     {
-	trim(args[i]);
+        trim(args[i]);
     }
 
     public function trim from (s is String) to String 
     {
-	if (s.startsWith("\"")) then s.substring(1, s.length()-1) else s;
+        if (s.startsWith("\"")) then s.substring(1, s.length()-1) else s;
     }
 }
 
@@ -3427,133 +3429,133 @@ class MaParser
     const cmds = new java.util.ArrayList of Command;
 
     function flush {
-	if (buf.length() > 0) {
-	    tokens.add(buf.toString());
-	    buf.setLength(0);
-	}
+        if (buf.length() > 0) {
+            tokens.add(buf.toString());
+            buf.setLength(0);
+        }
     }
 
     function consumeUntil from (input is String, end is Character) to () 
     {
-	const len = input.length();
-	const backslash = "\\";
-	const escapes = "ntr";
-	const escaped = "\n\t\r";
-	while (pos < len) {
-	    var ch = input.charAt(pos++);
-	    var escape = false;
-	    if (backslash.indexOf(ch) == 0) {
-		escape = true;
-		ch = input.charAt(pos++);
-		const i = escapes.indexOf(ch);
-		if (i >= 0) {
-		    ch = escaped.charAt(i);
-		}
-	    }
-	    buf.append(ch);
-	    if (not escape and ch == end) {
-		break;
-	    }
-	}
-	flush()
+        const len = input.length();
+        const backslash = "\\";
+        const escapes = "ntr";
+        const escaped = "\n\t\r";
+        while (pos < len) {
+            var ch = input.charAt(pos++);
+            var escape = false;
+            if (backslash.indexOf(ch) == 0) {
+                escape = true;
+                ch = input.charAt(pos++);
+                const i = escapes.indexOf(ch);
+                if (i >= 0) {
+                    ch = escaped.charAt(i);
+                }
+            }
+            buf.append(ch);
+            if (not escape and ch == end) {
+                break;
+            }
+        }
+        flush()
     }
 
     function tokenize from (s is String) to () 
     {
-	const ws = " \r\n\t";
-	const quot = "\"";
-	const izer = new java.util.StringTokenizer(s, ";");
-	while (izer.hasMoreTokens()) {
-	    const tok = izer.nextToken();
-	    if (tok.startsWith("//")) {
-		continue;
-	    }
-	    buf.setLength(0);
-	    var len = tok.length();
-	    pos = 0;
-	    while (pos < len) {
-		const ch = tok.charAt(pos++);
-		if (ws.indexOf(ch) >= 0) {
-		    flush();
-		} else if (quot.indexOf(ch) == 0) {
-		    flush();
-		    buf.append(ch);
-		    consumeUntil(tok, quot.charAt(0));
-		} else {
-		    buf.append(ch);
-		}
-	    }
-	    flush();
-	    if (tokens.size() > 0) {
-		const cmd = parseCommand(tokens);
-		if (cmd <> null) {
-		    cmds.add(cmd);
-		}
-		tokens.clear();
-	    }
-	}
+        const ws = " \r\n\t";
+        const quot = "\"";
+        const izer = new java.util.StringTokenizer(s, ";");
+        while (izer.hasMoreTokens()) {
+            const tok = izer.nextToken();
+            if (tok.startsWith("//")) {
+                continue;
+            }
+            buf.setLength(0);
+            var len = tok.length();
+            pos = 0;
+            while (pos < len) {
+                const ch = tok.charAt(pos++);
+                if (ws.indexOf(ch) >= 0) {
+                    flush();
+                } else if (quot.indexOf(ch) == 0) {
+                    flush();
+                    buf.append(ch);
+                    consumeUntil(tok, quot.charAt(0));
+                } else {
+                    buf.append(ch);
+                }
+            }
+            flush();
+            if (tokens.size() > 0) {
+                const cmd = parseCommand(tokens);
+                if (cmd <> null) {
+                    cmds.add(cmd);
+                }
+                tokens.clear();
+            }
+        }
     }
 
     public function parse from (u is java.net.URL) to MaModel 
     {
-	const r = new java.io.BufferedReader(new java.io.InputStreamReader(u.openStream()));
-	const buf = java.lang.StringBuffer {};
-	while (true) {
-	    const ch is Integer = r.read();
-	    if (ch <= 0) {
-		break;
-	    }
-	    buf.append(ch as Character);
-	}
-	parse(u.toString(), buf.toString())
+        const r = new java.io.BufferedReader(new java.io.InputStreamReader(u.openStream()));
+        const buf = java.lang.StringBuffer {};
+        while (true) {
+            const ch is Integer = r.read();
+            if (ch <= 0) {
+                break;
+            }
+            buf.append(ch as Character);
+        }
+        parse(u.toString(), buf.toString())
     }
 
     public function parse from (url is String, input is String) to MaModel 
     {
-	tokenize(input);
-	const model = MaModel {
-	    effectLoader: effectLoader;
-	    imageLoader: imageLoader;
-	    url: url
-	}
-	model.url = url;
-	model.imageLoader = imageLoader;
-	for (cmd in cmds) {
-	    model.processCommand(cmd)
-	}
-	model.generateScene();
-	return model;
+        tokenize(input);
+        const model = MaModel {
+            effectLoader: effectLoader;
+            imageLoader: imageLoader;
+            url: url
+        }
+        model.url = url;
+        model.imageLoader = imageLoader;
+        for (cmd in cmds) {
+            model.processCommand(cmd)
+        }
+        model.generateScene();
+        return model;
     }
 
     public function parseString from (input is String) to Command[] 
     {
-	tokenize(input);
-	foreach (cmd in cmds) cmd;
+        tokenize(input);
+        foreach (cmd in cmds) cmd;
     }
 
     function parseCommand from (cmds is java.util.List of String) to Command 
     {
-	const cmd = Command {
-	    name: cmds.get(0);
-	}
-	var i = 1;
-	const len = cmds.size();
-	while (i < len) {
-	    const s = cmds.get(i++);
-	    if (s.length() > 1 and s.startsWith("-") and not java.lang.Character.isDigit(s.charAt(1))) {
-		var j = i;
-		var v is String = if (i < len) then cmds.get(j++) else "";
-		if (v.startsWith("-") and not java.lang.Character.isDigit(v.charAt(1))) {
-		    v = null;
-		}  else {
-		    i = j;
-		}
-		cmd.namedArgs.put(s.substring(1), v);
-	    } else {
-		insert s into cmd.args;
-	    }
-	}
-	return cmd
+        const cmd = Command {
+            name: cmds.get(0);
+        }
+        var i = 1;
+        const len = cmds.size();
+        while (i < len) {
+            const s = cmds.get(i++);
+            if (s.length() > 1 and s.startsWith("-") and not java.lang.Character.isDigit(s.charAt(1))) {
+                var j = i;
+                var v is String = if (i < len) then cmds.get(j++) else "";
+                if (v.startsWith("-") and not java.lang.Character.isDigit(v.charAt(1))) {
+                    v = null;
+                }  else {
+                    i = j;
+                }
+                cmd.namedArgs.put(s.substring(1), v);
+            } else {
+                insert s into cmd.args;
+            }
+        }
+        return cmd
     }
 }
 
@@ -3607,19 +3609,19 @@ public class MaTransform is Group
     public var ro is Integer;
 
     function rotate 
-	from (rx is Number, ry is Number, rz is Number, ro is Integer) 
-	to Mat4 
+        from (rx is Number, ry is Number, rz is Number, ro is Integer) 
+        to Mat4 
     {
-	const angles = [rx, ry, rz];
-	var q = Quat.<<1>>;
-	const rots = foreach (i in [0..2]) { 
-	    const j = RotateOrder[ro*3+i]; 
-	    Quat.Quat(angles[j], axes[j]);
-	}
-	for (r in rots.reverse()) {
-	    q *= r;
-	}
-	return q.toMat4();
+        const angles = [rx, ry, rz];
+        var q = Quat.<<1>>;
+        const rots = foreach (i in [0..2]) { 
+            const j = RotateOrder[ro*3+i]; 
+            Quat.Quat(angles[j], axes[j]);
+        }
+        for (r in rots.reverse()) {
+            q *= r;
+        }
+        return q.toMat4();
     }
 
     // translation
@@ -3631,17 +3633,17 @@ public class MaTransform is Group
     
     override var transform = 
         bind 
-	translate(tx+rpx+rptx, 
-		  ty+rpy+rpty, 
-		  tz+rpz+rptz) * 
-	r *
-	translate(-rpx+spx, 
-		  -rpy+spy, 
-		  -rpz+spz) *
-	scale(sx, sy, sz) *
-	translate(-spx, 
-		  -spy, 
-		  -spz);
+        translate(tx+rpx+rptx, 
+                  ty+rpy+rpty, 
+                  tz+rpz+rptz) * 
+        r *
+        translate(-rpx+spx, 
+                  -rpy+spy, 
+                  -rpz+spz) *
+        scale(sx, sy, sz) *
+        translate(-spx, 
+                  -spy, 
+                  -spz);
 }
 
 public class Joint is MaTransform {
@@ -3663,30 +3665,30 @@ public class Joint is MaTransform {
     var is_ik is Boolean = false;
 
     postinit {
-	ikr = jor;
+        ikr = jor;
     }
 
     var r0 = bind if (is_ik) then ikr else r;
 
     override var transform = 
-	bind translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
+        bind translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
         //bind computeTransform(tx, ty, tz, parentInverseScale, jor, r0, sx, sy, sz);
 
     function computeTransform
-	from (tx is Number,
-	      ty is Number,
-	      tz is Number,
-	      parentInverseScale is Tuple3,
-	      jor is Mat4,
-	      r0 is Mat4,
-	      sx is Number,
-	      sy is Number,
-	      sz is Number)
-	to Mat4 
+        from (tx is Number,
+              ty is Number,
+              tz is Number,
+              parentInverseScale is Tuple3,
+              jor is Mat4,
+              r0 is Mat4,
+              sx is Number,
+              sy is Number,
+              sz is Number)
+        to Mat4 
     {
-	
-	println("this={this.id}: tx={tx} this.tx={this.tx} ty={ty} this.ty={this.ty} tz={tz} parentInverseScale ={parentInverseScale} \njor={jor} \nr0={r0} \nsx={sx} sy={sy} sz={sz}");
-	translate(tx, ty, tz) * scale(parentInverseScale) * jor * r0 * scale(sx, sy, sz);
+        
+        println("this={this.id}: tx={tx} this.tx={this.tx} ty={ty} this.ty={this.ty} tz={tz} parentInverseScale ={parentInverseScale} \njor={jor} \nr0={r0} \nsx={sx} sy={sy} sz={sz}");
+        translate(tx, ty, tz) * scale(parentInverseScale) * jor * r0 * scale(sx, sy, sz);
     }
 
     var preferredRotation is Quat;
@@ -3708,8 +3710,8 @@ public class Joint is MaTransform {
     }
 
     function setPreferredRotation
-	from (x is Number, y is Number, z is Number, w is Number) 
-	to ()
+        from (x is Number, y is Number, z is Number, w is Number) 
+        to ()
     {
         const q = Quat { x: x, y: y, z: z, w: w };
         ikr = (Quat.Quat(toSceneTransform.inverse()) * q  * getPreferredRotation()).toMat4();
@@ -3721,11 +3723,11 @@ public class Joint is MaTransform {
 function dumpScene from (spatialRoot is Node) to ()
 {
     println(spatialRoot.foldLeft("", function from (y is String, x is Node) to String 
-				 {
-				     if (y == "") 
-					 then "{x.id} =\n{x.transform}" 
-					 else "{y}\n{x.id} {x.getClass()} =\n{x.transform}";
-				 }));
+                                 {
+                                     if (y == "") 
+                                         then "{x.id} =\n{x.transform}" 
+                                         else "{y}\n{x.id} {x.getClass()} =\n{x.transform}";
+                                 }));
 }
 
 public class ModelContent {
@@ -3745,44 +3747,44 @@ public class Model {
     
     public function observeModelContent to Observable of ModelContent 
     {
-	subject
+        subject
     }
 
     public bound function getClipLibraries to TimeGroup[] 
     {
-	modelContent.clipLibraries;
+        modelContent.clipLibraries;
     }
 
     public bound function getCameras to Camera[]
     {
-	modelContent.cameras;
+        modelContent.cameras;
     }
 
     public bound function getSpatialRoot to Node 
     {
-	modelContent.spatial;
+        modelContent.spatial;
     }
 
     public bound function getTemporalRoot to TimeNode 
     {
-	modelContent.temporal;
+        modelContent.temporal;
     }
 
-    readonly var modelContent is ModelContent = bind load(url, effectLoader, imageLoader); 
+    public readonly var modelContent is ModelContent = bind load(url, effectLoader, imageLoader); 
 
     function load from (url is String, effectLoader is CGEffectLoader, imageLoader is ImageLoader) to ModelContent 
     {
-	const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader};
-	const m = p.parse(new java.net.URL(url));
-	m.spatialRoot.updateParent();
-	const mc = ModelContent {
-	    spatial: m.spatialRoot;
-	    temporal: m.temporalRoot;
-	    cameras: m.getCameras();
-	    clipLibraries: m.clipLibs;
-	}
-	subject.onNext(mc);
-	return mc;
+        const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader};
+        const m = p.parse(new java.net.URL(url));
+        m.spatialRoot.updateParent();
+        const mc = ModelContent {
+            spatial: m.spatialRoot;
+            temporal: m.temporalRoot;
+            cameras: m.getCameras();
+            clipLibraries: m.clipLibs;
+        }
+        subject.onNext(mc);
+        return mc;
     }
 }
 

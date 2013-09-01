@@ -63,14 +63,17 @@ class VideoTexture is HTML {
 }
 
 var frc = new java.awt.font.FontRenderContext(null, true, false);
+const families = 
+    java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames() on replace {
+    for (x in families) println(x);
+}
+
 function getFont from (spec is String) to java.awt.Font 
 {
     const props = spec.split(";");
     var size = 12;
     var style = 0;
-    var name = "Lucida Sans";
-    const families = 
-	java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    var name = "Lucida Grande";
     for (i in props) {
         const prop = i.trim().split(":");
         const attr = prop[0].trim();
