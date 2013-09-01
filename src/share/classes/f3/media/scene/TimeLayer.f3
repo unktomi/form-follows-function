@@ -10,7 +10,8 @@ class Blender {
     const end is Duration;
     const target is TimeNode;
     var w is Number;
-    function update from (now is Duration) to () {
+    function update from (now is Duration) to () 
+    {
         var t = (now - start) / (end - start);
         if (t > 1) t = 1;
         w = 1.0 - t;

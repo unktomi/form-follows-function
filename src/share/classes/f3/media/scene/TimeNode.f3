@@ -105,6 +105,7 @@ public abstract class TimeNode is Foldable of TimeNode
 	now = now mod dur;
 	now += contentPlayRange.start.toMillis();
         localTime = Duration.valueOf(now);
+	playing = picked;
 	const f =  { if (picked) then add else null } as function from TimeNode to ();
         pickChildren(sceneTime, 
 		     localTime, 
@@ -171,4 +172,10 @@ public abstract class TimeNode is Foldable of TimeNode
     {
 	completed
     }
+    
+    public bound function isPlaying to Boolean {
+	playing and not paused
+    }
+    
+    var playing is Boolean;
 }

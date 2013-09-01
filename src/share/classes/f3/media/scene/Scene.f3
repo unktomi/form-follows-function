@@ -16,11 +16,11 @@ public class Scene
     public readonly var height is Number = bind getStageHeight();
     bound function getStageWidth to Number 
     {
-	stage.width;
+        stage.width;
     }
     bound function getStageHeight to Number 
     {
-	stage.height;
+        stage.height;
     }
 
     public var camera is Camera = PerspectiveCamera {};
@@ -30,46 +30,46 @@ public class Scene
     public readonly var focus is Focusable;
 
     public readonly var root is Node = {
-	const scene = this;
-	Group {
-	    override var visibleInScene = true;
-	    override var parentToSceneTransform = Mat4.<<1>>;
-	    override var pickableInScene = true;
-	    override var content = bind scene.content;
-	    override public function toFront from (n is Node) to ()
-	    {
-		if (n.parent == this and content[content.size()-1] <> n) {
-		    delete n from scene.content;
-		    insert n into scene.content;
-		}
-	    }
-	    override public function toBack from (n is Node) to ()
-	    {
-		if (n.parent == this and n <> content[0]) {
-		    delete n from scene.content;
-		    insert n before scene.content[0];
-		}
-	    }
-	}
+        const scene = this;
+        Group {
+            override var visibleInScene = true;
+            override var parentToSceneTransform = Mat4.<<1>>;
+            override var pickableInScene = true;
+            override var content = bind scene.content;
+            override public function toFront from (n is Node) to ()
+            {
+                if (n.parent == this and content[content.size()-1] <> n) {
+                    delete n from scene.content;
+                    insert n into scene.content;
+                }
+            }
+            override public function toBack from (n is Node) to ()
+            {
+                if (n.parent == this and n <> content[0]) {
+                    delete n from scene.content;
+                    insert n before scene.content[0];
+                }
+            }
+        }
     }
 
     public function pick
-	from (screenx is Number, screeny is Number)
-	to Pick[]
+        from (screenx is Number, screeny is Number)
+        to Pick[]
     {
         pick(camera.getPickRay(screenx, screeny))
     }
 
     public function pick from (ray is Ray3) to Pick[] 
     {
-	var result is Pick[];
-	const pickedMeshes = pickGeometry(ray);
-	const picked = new java.util.HashSet of Node;
+        var result is Pick[];
+        const pickedMeshes = pickGeometry(ray);
+        const picked = new java.util.HashSet of Node;
         for (p in pickedMeshes) {
-	    if (picked.contains(p.node)) {
-		continue;
-	    }
-	    picked.add(p.node);
+            if (picked.contains(p.node)) {
+                continue;
+            }
+            picked.add(p.node);
             var par = p.node.parent;
             var toAdd is Pick[];
             while (par <> null) {
@@ -78,7 +78,7 @@ public class Scene
                 }
                 picked.add(par);
                 insert Pick 
-		{
+                {
                     scenePoint: p.scenePoint;
                     node: par;
                     t: p.t;
@@ -97,135 +97,136 @@ public class Scene
     public readonly var visibleMeshes is MeshNode[];
 
     public function pickGeometry 
-	from (ray is Ray3) to Pick[]
+        from (ray is Ray3) to Pick[]
     {
         var result is Pick[];
-	visibleMeshes = [];
+        visibleMeshes = [];
         root.foldLeft((), 
-		      function from (_ is (), n is Node) to () 
-		       {
-			   if (n is MeshNode and n.visibleInScene and 
-			       camera.contains(n.boundsInScene)) {
-			       insert n as MeshNode into visibleMeshes;
-			   }
-		       });
-	for (n in visibleMeshes) {
-	    if (n is MeshNode and 
-		n.visibleInScene and
-		n.pickableInScene and
-		n.boundsInScene.intersects(ray)) 
-		{
-		    const mesh = (n as MeshNode).mesh;
-		    const localRay = n.toSceneTransform.inverse() * ray;
-		    var point is Point3;
-		    var t is Number;
-		    var tri is Integer;
-		    var w is Tuple3;
-		    if (n is Shape2D.MeshNode2D) {
-			const plane = Plane{};
-			const int = plane.intersectRay(localRay);
-			point = int.point;
-			tri = 0;
-			t = int.t;
-			w = Tuple3.<<1>>;
-		    } else {
-			const points = mesh.intersect(localRay);
-			var nearest is Tuple4[];
-			for (i in points) {
-			    if (nearest == [] or i.x < nearest[0].x) {
-				nearest = [i];
-			    }
-			}
-			if (nearest <> []) {
-			    const pt = nearest[0];
-			    const verts = mesh.vertices;
-			    tri = pt.w as Integer;
-			    const j = tri * 3;
-			    const x0 = verts.getX(j);
-			    const y0 = verts.getY(j);
-			    const z0 = verts.getZ(j);
-			    const x1 = verts.getX(j+1);
-			    const y1 = verts.getY(j+1);
-			    const z1 = verts.getZ(j+1);
-			    const x2 = verts.getX(j+2);
-			    const y2 = verts.getY(j+2);
-			    const z2 = verts.getZ(j+2);
-			    w = tuple(1.0-(pt.y+pt.z), 
-				      pt.y, 
-				      pt.z);
-			    const v0 = vector(x0, y0, z0);
-			    const v1 = vector(x1, y1, z1);
-			    const v2 = vector(x2, y2, z2);
-			    const v = 
-				v0 * w.x + 
-				v1 * w.y + 
-				v2 * w.z;
-			    point = Point3.<<0>> + v;
-			    t = pt.x;
-			}
-		    }
-		    //				      println("picked {n}");
-		    const worldPoint = n.toSceneTransform * point;
-		    if (t <> 0) insert Pick 
-			{
-			    node: n;
-			    scenePoint: worldPoint;
-			    t: t;
-			    mesh: mesh;
-			    tri: tri;
-			    w: w;
-			} into result;
-		}
-	}
-	result = f3.util.Sequences.sort(result.reverse(), java.util.Comparator of Pick {
-		override function compare from (p0 is Pick , p1 is Pick) to Integer 
-		{
-		    java.lang.Math.signum(p0.t - p1.t) as Integer;
-		}
-	});
-//	for (i in result) {
-	//    println("picked {i.node} => {i.t}");
-//	}
-	for (i in [0..<result.size()]) {
-	    if (result[i].node.blocksPointer) {
-		result = result[i..i];
-		break;
-	    }
-	}
-	//for (i in result) {
-	 //   println("picked {i.node} blocks={i.node.blocksPointer}");
-	//}
-	return result;
+                      function from (_ is (), n is Node) to () 
+                       {
+                           if (n is MeshNode and n.visibleInScene and 
+                               camera.contains(n.boundsInScene)) {
+                               insert n as MeshNode into visibleMeshes;
+                           }
+                       });
+        for (n in visibleMeshes) {
+            if (n is MeshNode and 
+                n.visibleInScene and
+                n.pickableInScene and
+                n.boundsInScene.intersects(ray)) 
+                {
+                    const mesh = (n as MeshNode).mesh;
+                    const localRay = n.toSceneTransform.inverse() * ray;
+                    var point is Point3;
+                    var t is Number;
+                    var tri is Integer;
+                    var w is Tuple3;
+                    if (n is Shape2D.MeshNode2D) {
+                        const plane = Plane{};
+                        const int = plane.intersectRay(localRay);
+                        point = int.point;
+                        tri = 0;
+                        t = int.t;
+                        w = Tuple3.<<1>>;
+                    } else {
+                        const points = mesh.intersect(localRay);
+                        var nearest is Tuple4[];
+                        for (i in points) {
+                            if (nearest == [] or i.x < nearest[0].x) {
+                                nearest = [i];
+                            }
+                        }
+                        if (nearest <> []) {
+                            const pt = nearest[0];
+                            const verts = mesh.vertices;
+                            tri = pt.w as Integer;
+                            const j = tri * 3;
+                            const x0 = verts.getX(j);
+                            const y0 = verts.getY(j);
+                            const z0 = verts.getZ(j);
+                            const x1 = verts.getX(j+1);
+                            const y1 = verts.getY(j+1);
+                            const z1 = verts.getZ(j+1);
+                            const x2 = verts.getX(j+2);
+                            const y2 = verts.getY(j+2);
+                            const z2 = verts.getZ(j+2);
+                            w = tuple(1.0-(pt.y+pt.z), 
+                                      pt.y, 
+                                      pt.z);
+                            const v0 = vector(x0, y0, z0);
+                            const v1 = vector(x1, y1, z1);
+                            const v2 = vector(x2, y2, z2);
+                            const v = 
+                                v0 * w.x + 
+                                v1 * w.y + 
+                                v2 * w.z;
+                            point = Point3.<<0>> + v;
+                            t = pt.x;
+                        }
+                    }
+                    //                                      println("picked {n}");
+                    const worldPoint = n.toSceneTransform * point;
+                    if (t <> 0) insert Pick 
+                        {
+                            node: n;
+                            scenePoint: worldPoint;
+                            t: t;
+                            mesh: mesh;
+                            tri: tri;
+                            w: w;
+                        } into result;
+                }
+        }
+        result = f3.util.Sequences.sort(result.reverse(), java.util.Comparator of Pick {
+                override function compare from (p0 is Pick , p1 is Pick) to Integer 
+                {
+                    java.lang.Math.signum(p0.t - p1.t) as Integer;
+                }
+        });
+//        for (i in result) {
+        //    println("picked {i.node} => {i.t}");
+//        }
+        for (i in [0..<result.size()]) {
+            if (result[i].node.blocksPointer) {
+                result = result[i..i];
+                break;
+            }
+        }
+        //for (i in result) {
+         //   println("picked {i.node} blocks={i.node.blocksPointer}");
+        //}
+        return result;
     }
 
     var mouseX is Number;
     var mouseY is Number;
     public readonly var underMouse is Pick[];
     public readonly var pressed is Pick[];
+    public readonly var mousePosition is Point3;
 
     public function update to () 
     {
-	try {
-	    updateCamera();
-	    updateMouse(this.mouseX, this.height-this.mouseY);
-	    root.updateParent();
-	} catch (e is java.lang.Throwable) {
-	    e.printStackTrace();
-	}
+        try {
+            updateCamera();
+            updateMouse(this.mouseX, this.height-this.mouseY);
+            root.updateParent();
+        } catch (e is java.lang.Throwable) {
+            e.printStackTrace();
+        }
     }
 
     var lastCamera is Camera = null;
 
     public function updateCamera to () 
     {
-	if (camera.parent == null) {
-	    camera.setParent(root);
-	}
-	//println("stage={stage} dim={width} {height}");
-	camera.resize(width, height);
-	if (camera <> lastCamera) {
-	    lastCamera = camera;
-	}
+        if (camera.parent == null) {
+            camera.setParent(root);
+        }
+        //println("stage={stage} dim={width} {height}");
+        camera.resize(width, height);
+        if (camera <> lastCamera) {
+            lastCamera = camera;
+        }
     }
 
     function updateMouse from (mouseX is Number, mouseY is Number) to ()
@@ -240,7 +241,8 @@ public class Scene
         updateCamera();
         const nowUnderMouse = pick(mouseX, mouseY);
         const mouseV = camera.toScene(mouseX, mouseY, 0);
-	/*
+	mousePosition = mouseV;
+        /*
         root.foldLeft((), function from (_ is(), n is Node) to () {
 
                 if (n instanceof MeshNode) {
@@ -249,48 +251,48 @@ public class Scene
                     var texUnit = 0;
                     var texCoords = mesh.textureCoordinates;
                     for (p in mn.shader.parameters) {
-			const value = p.get() as Object;
-			if (value is StageNode) {
-			    var picked is Pick; 
-			    for (x in nowUnderMouse) {
-				if (x.node == n) {
-				    picked = x;
-				    break;
-				}
-			    }
-			    var stageNode = value as StageNode;
-			    if (stageNode.width <> 0 
-				and stageNode.height <> 0) {
-				var mx: Number;
-				var my: Number;
-				if (picked <> null) {
-				    var tri = picked.tri;
-				    var w = picked.w;
-				    var st = texCoords[texUnit];
-				    var s0 = st.getX(tri);
-				    var t0 = st.getY(tri);
-				    var s1 = st.getX(tri+1);
-				    var t1 = st.getY(tri+1);
-				    var s2 = st.getX(tri+2);
-				    var t2 = st.getY(tri+2);
-				    var s = s0*w.x + s1*w.y + s2*w.z;
-				    var t = t0*w.x + t1*w.y + t2*w.z;
-				    mx = s * stageNode.width;
-				    my = t * stageNode.height;
-				}
-				var me = MouseEvent {
-				    screenx: mx;
-				    screeny: my;
-				}
-				stageNode.injectMouseMove(me);
-			    }
-			    texUnit++;
-			}
+                        const value = p.get() as Object;
+                        if (value is StageNode) {
+                            var picked is Pick; 
+                            for (x in nowUnderMouse) {
+                                if (x.node == n) {
+                                    picked = x;
+                                    break;
+                                }
+                            }
+                            var stageNode = value as StageNode;
+                            if (stageNode.width <> 0 
+                                and stageNode.height <> 0) {
+                                var mx: Number;
+                                var my: Number;
+                                if (picked <> null) {
+                                    var tri = picked.tri;
+                                    var w = picked.w;
+                                    var st = texCoords[texUnit];
+                                    var s0 = st.getX(tri);
+                                    var t0 = st.getY(tri);
+                                    var s1 = st.getX(tri+1);
+                                    var t1 = st.getY(tri+1);
+                                    var s2 = st.getX(tri+2);
+                                    var t2 = st.getY(tri+2);
+                                    var s = s0*w.x + s1*w.y + s2*w.z;
+                                    var t = t0*w.x + t1*w.y + t2*w.z;
+                                    mx = s * stageNode.width;
+                                    my = t * stageNode.height;
+                                }
+                                var me = MouseEvent {
+                                    screenx: mx;
+                                    screeny: my;
+                                }
+                                stageNode.injectMouseMove(me);
+                            }
+                            texUnit++;
                         }
-		}
+                        }
+                }
 
-	    });
-		*/
+            });
+                */
         const event = MouseEvent {
             sceneLocation: mouseV;
             screenx: mouseX;
@@ -298,7 +300,7 @@ public class Scene
             screenDrag: tuple(this.mouseX - oldMouseX, this.mouseY - oldMouseY);
         }
         for (x in underMouse) 
-	    oldUnderMouse.put(x.node, x);
+            oldUnderMouse.put(x.node, x);
         underMouse = nowUnderMouse;
         for (i in nowUnderMouse) {
             const old = oldUnderMouse.remove(i.node);
@@ -314,19 +316,19 @@ public class Scene
         for (i in underMouse) 
             doMouseMove(i, event);
         if (event.screenDrag <> Vec2.<<0>>) {
-	    for (i in pressed) doMouseDrag(i, event);
-	}
-	var cursorPick is Pick = null;
-	//for (i in underMouse) {
-	//    println("picked {i.node}");
-	//}
-	for (i in underMouse) {
-	    if (i.node.blocksPointer or i.node.cursor <> null) {
-		cursorPick = i;
-		break;
-	    }
-	}
-	cursor = cursorPick.node.cursor;
+            for (i in pressed) doMouseDrag(i, event);
+        }
+        var cursorPick is Pick = null;
+        //for (i in underMouse) {
+        //    println("picked {i.node}");
+        //}
+        for (i in underMouse) {
+            if (i.node.blocksPointer or i.node.cursor <> null) {
+                cursorPick = i;
+                break;
+            }
+        }
+        cursor = cursorPick.node.cursor;
     }
 
     public readonly var cursor is Cursor;
@@ -334,19 +336,19 @@ public class Scene
     public function injectKeyDown from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyDown(event);
-	focus.observeKeyDown().onNext(event);
+        focus.observeKeyDown().onNext(event);
     }
 
     public function injectKeyUp from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyUp(event);
-	focus.observeKeyUp().onNext(event);
+        focus.observeKeyUp().onNext(event);
     }
 
     public function injectKeyInput from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyInput(event);
-	focus.observeKeyInput().onNext(event);
+        focus.observeKeyInput().onNext(event);
     }
 
     public function injectMouseMove from (event is MouseEvent) to () 
@@ -356,7 +358,7 @@ public class Scene
 
     public function injectMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
-	var focusSet = false;
+        var focusSet = false;
         for (p in underMouse) {
             doMouseDown(p, event);
             if (not focusSet and (p.node instanceof Focusable)) {
@@ -369,8 +371,8 @@ public class Scene
                     focusSet = true;
                 }
             }
-	    var n = p.node;
-	    if (not focusSet and (p.node instanceof Focuser)) {
+            var n = p.node;
+            if (not focusSet and (p.node instanceof Focuser)) {
                 const f = (p.node as Focuser).getTargetOfFocus();
                 if (f == focus or f.acceptFocus()) {
                     if (f <> focus) {
@@ -379,18 +381,18 @@ public class Scene
                     }
                     focusSet = true;
                 }
-	    }
+            }
         }
         if (not focusSet) {
-	    loseFocus()
+            loseFocus()
         }
     }
 
     protected function loseFocus from () to Boolean {
-	if (not focus.loseFocus()) {
-	    focus = null;
-	}
-	focus <> null
+        if (not focus.loseFocus()) {
+            focus = null;
+        }
+        focus <> null
     }
 
     public function injectMouseUp from (event is MouseEvent) to ()
@@ -475,10 +477,10 @@ public class Scene
                 }
             }
         }
-	if (p.node.mouseUp <> null) {	
+        if (p.node.mouseUp <> null) {        
             const e = makeMouseEvent(null, p, sceneEvent);
-	    p.node.mouseUp.onNext(e);
-	}
+            p.node.mouseUp.onNext(e);
+        }
     }
 
     function doMouseWheel from (p is Pick, sceneEvent is MouseWheelEvent) to ()
@@ -487,22 +489,22 @@ public class Scene
         if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
-	    const we = MouseWheelEvent { // this sucks
-		clickCount: e.clickCount;
-		stage: e.stage;
-		scene: this;
-		altKey: e.altKey;
-		ctrlKey: e.ctrlKey;
-		shiftKey: e.shiftKey;
-		metaKey: e.metaKey;
-		screenx: e.screenx;
-		screeny: e.screeny;
-		screenDrag: e.screenDrag;
-		sceneLocation: p.scenePoint;
-		buttons: e.buttons;
-		picked: p;
-		scroll: sceneEvent.scroll;
-	    }
+            const we = MouseWheelEvent { // this sucks
+                clickCount: e.clickCount;
+                stage: e.stage;
+                scene: this;
+                altKey: e.altKey;
+                ctrlKey: e.ctrlKey;
+                shiftKey: e.shiftKey;
+                metaKey: e.metaKey;
+                screenx: e.screenx;
+                screeny: e.screeny;
+                screenDrag: e.screenDrag;
+                sceneLocation: p.scenePoint;
+                buttons: e.buttons;
+                picked: p;
+                scroll: sceneEvent.scroll;
+            }
             for (h in hs) {
                 h.onMouseWheel(we);
                 if (not we.propagate) {
@@ -510,33 +512,33 @@ public class Scene
                 }
             }
         }
-	if (p.node.mouseWheel <> null) {	
+        if (p.node.mouseWheel <> null) {        
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
-	    const we = MouseWheelEvent { // this sucks
-		clickCount: e.clickCount;
-		stage: e.stage;
-		scene: this;
-		altKey: e.altKey;
-		ctrlKey: e.ctrlKey;
-		shiftKey: e.shiftKey;
-		metaKey: e.metaKey;
-		screenx: e.screenx;
-		screeny: e.screeny;
-		screenDrag: e.screenDrag;
-		sceneLocation: p.scenePoint;
-		buttons: e.buttons;
-		picked: p;
-		scroll: sceneEvent.scroll;
-	    }
-	    p.node.mouseWheel.onNext(we);
-	}
+            const we = MouseWheelEvent { // this sucks
+                clickCount: e.clickCount;
+                stage: e.stage;
+                scene: this;
+                altKey: e.altKey;
+                ctrlKey: e.ctrlKey;
+                shiftKey: e.shiftKey;
+                metaKey: e.metaKey;
+                screenx: e.screenx;
+                screeny: e.screeny;
+                screenDrag: e.screenDrag;
+                sceneLocation: p.scenePoint;
+                buttons: e.buttons;
+                picked: p;
+                scroll: sceneEvent.scroll;
+            }
+            p.node.mouseWheel.onNext(we);
+        }
     }
 
 
     function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to ()
     {
-	const hs = getMouseInputHandlers(p);
+        const hs = getMouseInputHandlers(p);
         if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
@@ -547,10 +549,10 @@ public class Scene
                 }
             }
         }
-	if (p.node.mouseDown <> null) {	
+        if (p.node.mouseDown <> null) {        
             const e = makeMouseEvent(null, p, sceneEvent);
-	    p.node.mouseDown.onNext(e);
-	}
+            p.node.mouseDown.onNext(e);
+        }
     }
 
     function doMouseMove from (p is Pick, sceneEvent is MouseEvent) to () 
@@ -566,52 +568,52 @@ public class Scene
                 }
             }
         }
-	if (p.node.mouseMove <> null) {	
+        if (p.node.mouseMove <> null) {        
             const e = makeMouseEvent(null, p, sceneEvent);
-	    p.node.mouseMove.onNext(e);
-	}
+            p.node.mouseMove.onNext(e);
+        }
     }
 
     function doMouseDrag from (p is Pick, sceneEvent is MouseEvent) to () 
     {   
-	//println("do mouse drag {p.node}");
+        //println("do mouse drag {p.node}");
         const hs = getMouseInputHandlers(p);
         if (hs <> [] or p.node.mouseDrag <> null) {
             const translation = p.node.toSceneTransform.getTranslation();
             const ray = camera.getPickRay(sceneEvent.screenx, sceneEvent.screeny);
-	    const normal = ray.direction.negate();
+            const normal = ray.direction.negate();
             const plane = Plane { 
                 normal: normal;
                 point: translation;
             }
             const hit = plane.intersectRay(ray);
             p.dragPoint0 = p.dragPoint1;
-	    if (p.dragPoint0 == null) {
-		p.dragPoint0 = hit.point;
-	    }
+            if (p.dragPoint0 == null) {
+                p.dragPoint0 = hit.point;
+            }
             p.dragPoint1 = hit.point;
-	    const scenePt = p.node.toSceneTransform * hit.point;
+            const scenePt = p.node.toSceneTransform * hit.point;
             for (h in hs) {
                 h.onMouseDrag(makeMouseEvent(p, sceneEvent, scenePt));
             }
-	    if (p.node.mouseDrag <> null) {	
-		//println("mouse drag {p.node}");
-		const e = makeMouseEvent(p, sceneEvent, scenePt);
-		p.node.mouseDrag.onNext(e);
-	    }
-	}
+            if (p.node.mouseDrag <> null) {        
+                //println("mouse drag {p.node}");
+                const e = makeMouseEvent(p, sceneEvent, scenePt);
+                p.node.mouseDrag.onNext(e);
+            }
+        }
     }
 
     function makeMouseEvent
-	from (dragStart is Pick, p is Pick, sceneEvent is MouseEvent) 
-	to MouseEvent 
+        from (dragStart is Pick, p is Pick, sceneEvent is MouseEvent) 
+        to MouseEvent 
     {
-	makeMouseEvent(p, sceneEvent, p.scenePoint);
+        makeMouseEvent(p, sceneEvent, p.scenePoint);
     }
 
     function makeMouseEvent
-	from (p is Pick, sceneEvent is MouseEvent, sceneLocation is Point3) 
-	to MouseEvent 
+        from (p is Pick, sceneEvent is MouseEvent, sceneLocation is Point3) 
+        to MouseEvent 
     {
         const e = sceneEvent;
         MouseEvent {

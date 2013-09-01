@@ -53,9 +53,14 @@ PixelShaderInput vertexShaderFunction(VertexShaderInput input) {
   return output;
 }
 
-float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
+float4 pixelShaderFunctionTransp(PixelShaderInput input) : COLOR {
   float4 c = tex2D(texSampler0, input.tex);
   return float4(c.xyz * c.w, c.w);
+}
+
+float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
+  float4 c = tex2D(texSampler0, input.tex);
+  return c;
 }
 
 technique Transparent {
@@ -66,7 +71,7 @@ technique Transparent {
         BlendEnable = true;
         BlendFunc = int2(One, OneMinusSrcAlpha);
         VertexShader = compile latest vertexShaderFunction();
-        PixelShader  = compile latest pixelShaderFunction();
+        PixelShader  = compile latest pixelShaderFunctionTransp();
     }
 }
 

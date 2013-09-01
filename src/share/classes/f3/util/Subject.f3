@@ -40,6 +40,7 @@ public class Subject of a is Observable of a, Observer of a {
 	Disposable {
 	    override function dispose
 	    {
+	    println("DISPOSING {x}");
 		observers.remove(x)
 	    }
 	}

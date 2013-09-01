@@ -42,6 +42,11 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
         event.stopPropagation();
     }
 
+    override public function onMouseDrag from (event is MouseEvent) to ()  {
+        injectMouseMove(convert(event));
+        event.stopPropagation();
+    }
+
     function convert from (e is MouseEvent) to MouseEvent
     {
        const e1 = MouseEvent {

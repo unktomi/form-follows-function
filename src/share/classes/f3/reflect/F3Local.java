@@ -65,6 +65,7 @@ public class F3Local {
 	static F3Type[] boxedPrimitives =  
 	{
 	    F3PrimitiveType.voidType, instance.makeClassRef(F3PrimitiveType.voidType.getBoxed()),
+	    F3PrimitiveType.booleanType, instance.makeClassRef(F3PrimitiveType.booleanType.getBoxed()),
 	    F3PrimitiveType.byteType, instance.makeClassRef(F3PrimitiveType.byteType.getBoxed()),
 	    F3PrimitiveType.charType, instance.makeClassRef(F3PrimitiveType.charType.getBoxed()),
 	    F3PrimitiveType.shortType, instance.makeClassRef(F3PrimitiveType.shortType.getBoxed()),
