@@ -143,17 +143,20 @@ public abstract class TimeNode is Foldable of TimeNode
     public function advanceToPlayhead to () 
     {
         const cur = currentTime / playRate;
+	println("advance to playhead cur={cur} playTime={playTime}");
         if (playTime > cur or cur - playTime > bounds.end) { // must advance to playhead
             playFromStart();
         } else { // already intersecting playhead
             paused = false;
         }
+	println("advance to playhead' cur={cur} playTime={playTime}");
     }
 
     public function playFromStart to () 
     {
         paused = false;
         playTime = currentTime / playRate; // advance to playhead
+	println("playFromStart playTime={playTime}");
     }
 
     public function reverse to ()
@@ -178,4 +181,13 @@ public abstract class TimeNode is Foldable of TimeNode
     }
     
     var playing is Boolean;
+
+    public function lookup from (id is String) to TimeNode {
+	var r is TimeNode;
+	visit(function from (t is TimeNode) to ()
+	      {
+		  if (r == null and t.id == id) { r = t }
+	      });
+	return r;
+    }
 }
