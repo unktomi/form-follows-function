@@ -86,6 +86,7 @@ public class TimeLayer is TimeGroup, Player
     override var contentBounds = null;
 
     override function play from (clip is TimeNode) to () {
+	clip.advanceToPlayhead();
         if (clip == blendIn) {
             return;
         }

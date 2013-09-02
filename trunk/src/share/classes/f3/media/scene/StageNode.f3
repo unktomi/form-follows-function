@@ -7,7 +7,8 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
     const _2 = observeKeyUp().subscribe(injectKeyUp);
     const _3 = observeKeyInput().subscribe(injectKeyInput);
 
-    override public function acceptFocus to Boolean {
+    override public function acceptFocus to Boolean 
+    {
 	if (getFocusedScene() <> null) {
 	    Focusable.acceptFocus();
 	} else {

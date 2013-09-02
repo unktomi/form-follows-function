@@ -2034,7 +2034,7 @@ public class F3Attr implements F3Visitor {
 					       typeCons,
 					       bodyType,
 					       tree.isBound());
-			//System.err.println(map);
+			System.err.println(map);
 		    }
 		}
 	    }

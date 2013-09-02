@@ -348,6 +348,7 @@ public class ScriptShell implements DiagnosticListener<JavaFileObject> {
         String classPath = System.getProperty("java.class.path"); // FIXME
         Writer err = null; // FIXME
         String fileName = "f3" + counter;
+	counter++;
         F3CompiledScript compiled = context.compiler.compile(fileName, script,
                 err, sourcePath, classPath, getDiagnosticListener());
         if (compiled == null)

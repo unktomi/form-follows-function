@@ -207,7 +207,8 @@ public interface Stage
 	const target = getFocusedScene();
 	if (target.focus <> null) {
 	    target.injectKeyDown(event);
-	} else {
+	} 
+	if (event.propagate) {
 	    for (h in keyboardHandlers) {
 		h.onKeyDown(event);
 	    }
@@ -219,7 +220,8 @@ public interface Stage
 	const target = getFocusedScene();
 	if (target.focus <> null) {
 	    target.injectKeyInput(event);
-	} else {
+	} 
+	if (event.propagate) {
 	    for (h in keyboardHandlers) {
 		h.onKeyInput(event);
 	    }
@@ -232,7 +234,8 @@ public interface Stage
 	const target = getFocusedScene();
 	if (target.focus <> null) {
 	    target.injectKeyUp(event);
-	} else {
+	} 
+	if (event.propagate) {
 	    for (h in keyboardHandlers) {
 		h.onKeyUp(event);
 	    }
