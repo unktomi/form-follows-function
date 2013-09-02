@@ -203,28 +203,40 @@ public interface Stage
     const keysDown = new java.util.TreeSet of Integer;
 
     public function injectKeyDown from (event is KeyboardEvent)to () {
-        getFocusedScene().injectKeyDown(event);
-        keysDown.add(event.keyCode);
-        for (h in keyboardHandlers) {
-            h.onKeyDown(event);
-        }
+	keysDown.add(event.keyCode);
+	const target = getFocusedScene();
+	if (target.focus <> null) {
+	    target.injectKeyDown(event);
+	} else {
+	    for (h in keyboardHandlers) {
+		h.onKeyDown(event);
+	    }
+	}
     }
 
     public function injectKeyInput from (event is KeyboardEvent) to () 
     {
-        getFocusedScene().injectKeyInput(event);
-        for (h in keyboardHandlers) {
-            h.onKeyInput(event);
-        }
+	const target = getFocusedScene();
+	if (target.focus <> null) {
+	    target.injectKeyInput(event);
+	} else {
+	    for (h in keyboardHandlers) {
+		h.onKeyInput(event);
+	    }
+	}
     }
 
     public function injectKeyUp from (event is KeyboardEvent) to () 
     {
         keysDown.remove(event.keyCode);
-        getFocusedScene().injectKeyUp(event);
-        for (h in keyboardHandlers) {
-            h.onKeyUp(event);
-        }
+	const target = getFocusedScene();
+	if (target.focus <> null) {
+	    target.injectKeyUp(event);
+	} else {
+	    for (h in keyboardHandlers) {
+		h.onKeyUp(event);
+	    }
+	}
     }
 
     public function addKeyboardInputHandler from (h is KeyboardInputHandler) to () 

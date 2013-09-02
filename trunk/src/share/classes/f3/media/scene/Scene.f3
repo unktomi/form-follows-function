@@ -587,20 +587,22 @@ public class Scene
                 point: translation;
             }
             const hit = plane.intersectRay(ray);
-            p.dragPoint0 = p.dragPoint1;
-            if (p.dragPoint0 == null) {
-                p.dragPoint0 = hit.point;
-            }
-            p.dragPoint1 = hit.point;
-            const scenePt = p.node.toSceneTransform * hit.point;
-            for (h in hs) {
-                h.onMouseDrag(makeMouseEvent(p, sceneEvent, scenePt));
-            }
-            if (p.node.mouseDrag <> null) {        
-                //println("mouse drag {p.node}");
-                const e = makeMouseEvent(p, sceneEvent, scenePt);
-                p.node.mouseDrag.onNext(e);
-            }
+	    if (hit <> null) {
+		p.dragPoint0 = p.dragPoint1;
+		if (p.dragPoint0 == null) {
+		    p.dragPoint0 = hit.point;
+		}
+		p.dragPoint1 = hit.point;
+		const scenePt = hit.point;
+		for (h in hs) {
+		    h.onMouseDrag(makeMouseEvent(p, sceneEvent, scenePt));
+		}
+		if (p.node.mouseDrag <> null) {        
+		    //println("mouse drag {p.node}");
+		    const e = makeMouseEvent(p, sceneEvent, scenePt);
+		    p.node.mouseDrag.onNext(e);
+		}
+	    }
         }
     }
 

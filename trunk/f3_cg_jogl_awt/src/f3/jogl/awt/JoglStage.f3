@@ -1310,10 +1310,10 @@ class OffscreenSurface is JoglTexture
 	}
 	if (tex == null) {
 	    tex = genTexture(gl, pot_width, pot_height);
-	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
-	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
-	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
-	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
+	    //tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+	    //tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 	    const textureId = tex.getTextureObject(gl);
 	    println("textureId={textureId} gl={gl}");
             var ibuf = BufferUtils.createIntBuffer(1);
@@ -1827,6 +1827,8 @@ class SceneRenderer {
     var lastWidth = 0.0;
     var lastHeight = 0.0;
 
+    var lastVisible = true;
+
     function checkNeedsDraw
 	from (gl is GL2, 
 	      width is Number, 
@@ -1846,6 +1848,12 @@ class SceneRenderer {
         var transparentTris = 0;
         var lights is PointLight[];
         var dirty = lastWidth <> width or lastHeight <> height;
+	if (scene.visible <> lastVisible) {
+	    dirty = true;
+	    lastVisible = scene.visible;
+	} else if (not scene.visible) {
+	    return false;
+	}
 	lastWidth = width;
 	lastHeight = height;
 	//println("scene.root={scene.root} => {scene.content}");
@@ -2120,6 +2128,7 @@ class SceneRenderer {
 	      height is Number)
 	to ()
     {
+	if (not scene.visible) return;
 	if (ENABLE_2D_RENDERER and scene.camera is Camera2D) {
 	    var canUse2d = true;
 	    for (x in  transparentToDraw) {
@@ -2254,6 +2263,7 @@ class SceneRenderer {
 	    }
 	    //println("drawing {n}");
 	    var toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
+            const mesh = mn.mesh;
 	    if (((mn is Text.TextMeshNode) and (camera is Camera2D))) {
 		if (toSceneTransform.getRotation() == Quat.<<1>>) {
 		    const t = mn.toSceneTransform.getTranslation();
@@ -2267,9 +2277,18 @@ class SceneRenderer {
 						 0);
 		    //println("{tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
 		}
+	    } else if (camera is Camera2D) {
+		if (mesh.polygonMode == PolygonMode.Line) {
+		    if (toSceneTransform.getRotation() == Quat.<<1>>) {
+			const t = mn.toSceneTransform.getTranslation();
+			toSceneTransform = translate(Math.round(t.x),
+						     Math.round(t.y),
+						     0);
+		    }
+		}
 	    }
 	    if (DEBUG_MESHES) println("drawing {mn.id}");
-            const mesh = mn.mesh;
+
             const indexBuffer = mesh.getIndexBuffer();
             const vertexBuffer = mesh.getVertexBuffer();
             const normalBuffer = mesh.getNormalBuffer();
