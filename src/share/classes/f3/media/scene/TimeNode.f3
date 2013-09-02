@@ -84,37 +84,43 @@ public abstract class TimeNode is Foldable of TimeNode
     protected function doPick
 	from (sceneTime is Duration, 
 	      parentTime is Duration, 
+	      parentLocalTime is Duration,
 	      add is function from TimeNode to ())
 	to ()
     {
         var picked = false;
         if (pickableInScene) {
-            picked = bounds.intersects(parentTime);
+            picked = bounds.intersects(parentLocalTime);
             if (picked) {
                 add(this);
             }
         }
 	if (Channel.DEBUG) {
-	    println("parentTime {parentTime}, bounds {bounds}, pickable {pickableInScene}, picked {picked} {this}");
+	    println("parentLocalTime {parentLocalTime}, parentTime {parentTime}, bounds {bounds}, pickable {pickableInScene}, picked {picked} {this}");
 	}
         currentTime = parentTime; 
 	// hack: avoid boxing
-        var now = ((parentTime.toMillis() - playTime.toMillis()) * playRate) ;
-	now -= contentPlayRange.start.toMillis();
-	const dur = contentPlayRange.duration().toMillis();
-	now = now mod dur;
-	now += contentPlayRange.start.toMillis();
+        var now = ((parentLocalTime.toMillis() - playTime.toMillis()) * playRate);
+	const now0 = 1ms * now;
+	if (playCount <> 1.0) {
+	    now -= contentPlayRange.start.toMillis();
+	    const dur = contentPlayRange.duration().toMillis();
+	    now = now mod dur;
+	    now += contentPlayRange.start.toMillis();
+	}
         localTime = Duration.valueOf(now);
 	playing = picked;
 	const f =  { if (picked) then add else null } as function from TimeNode to ();
-        pickChildren(sceneTime, 
-		     localTime, 
+        pickChildren(sceneTime,
+		     now0,
+		     localTime,
 		     f);
     }
 
     protected function pickChildren
 	from (sceneTime is Duration, 
 	      parentTime is Duration, 
+	      parentLocalTime is Duration,
 	      add is function from TimeNode to ())
 	to () 
     {
@@ -143,8 +149,8 @@ public abstract class TimeNode is Foldable of TimeNode
     public function advanceToPlayhead to () 
     {
         const cur = currentTime / playRate;
-	println("advance to playhead cur={cur} playTime={playTime}");
-        if (playTime > cur or cur - playTime > bounds.end) { // must advance to playhead
+	println("advance to playhead cur={cur} playTime={playTime} bounds ={bounds}");
+        if (not isPlaying()) { //playTime > cur or cur - playTime > bounds.end) { // must advance to playhead
             playFromStart();
         } else { // already intersecting playhead
             paused = false;

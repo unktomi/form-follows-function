@@ -104,6 +104,7 @@ public class Timeline
         var result is TimeNode[];
         root.doPick(point, 
 		    point, 
+		    point,
 		    function from (n is TimeNode) to ()
 		    {
 			insert n into result;

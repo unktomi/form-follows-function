@@ -1,7 +1,8 @@
 package f3.media.input;
 import f3.util.*;
 
-public interface Focusable {
+public interface Focusable is Focuser {
+    override function getTargetOfFocus to Focusable { this }
     public readonly var focused is Boolean;
     public function acceptFocus to Boolean { focused = true }
     public function loseFocus to Boolean { focused = false }
