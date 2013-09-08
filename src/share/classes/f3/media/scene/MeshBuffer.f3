@@ -100,6 +100,15 @@ public function quad
          height is Number) 
     to AbstractMesh
 {
+    quad(width, height, width, height);
+}
+public function quad
+   from (width is Number, 
+         height is Number,
+	 uw is Number,
+	 uh is Number) 
+    to AbstractMesh
+{
     const indices = [0, 1, 2, 0, 2, 3];
     const ibuf = BufferUtils.createIntBuffer(sizeof indices);
     for (i in indices) ibuf.put(i);
@@ -113,10 +122,12 @@ public function quad
     for (i in [0..<4]) {
         nb.put(0).put(0).put(1);
     }
-    tb.put(0).put(1);
+    const tx = uw / width;
+    const ty = uh / height;
+    tb.put(0).put(1.0);
     tb.put(0).put(0);
-    tb.put(1).put(0);
-    tb.put(1).put(1);
+    tb.put(1.0).put(0);
+    tb.put(1.0).put(1.0);
     MeshBuffer {
         indexBuffer: ibuf;
         vertexBuffer: VertexAttributeBuffer {

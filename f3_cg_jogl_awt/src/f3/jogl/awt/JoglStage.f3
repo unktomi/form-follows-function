@@ -48,20 +48,6 @@ public var ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl
 
 var DISABLE_DEFORMERS = false;
 
-class VideoTexture is HTML {
-      public var url is String;
-      override var content = bind
-      "<html><head><style>#video_background \{"
-            "  position: fixed;"
-	    "  top: 0;"
-	    "  left: 0;"
-	    "  bottom: 0;"
-	    "  right: 0;"
-	    "  z-index: -1000;"
-	    "\}"
-	    "</style></head><body><video id=\"video_background\" src=\"{url}\" autoplay></body></html>" on replace { println("content={content}") };
-}
-
 var frc = new java.awt.font.FontRenderContext(null, true, false);
 const families = 
     java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames() on replace {
@@ -179,20 +165,26 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
         while (measurer.getPosition() < text.length()) {
             const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
             const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline+1;
-            const layout = measurer.nextLayout(wrapWidth, limit, false);
-	    y += layout.getAscent();
-	    if (y > clipHeight) {
+	    try {
+		const layout = measurer.nextLayout(wrapWidth, limit, false);
+		y += layout.getAscent();
+		if (y > clipHeight) {
+		    break;
+		}
+		if (layout <> null) {
+		    var dx = 
+			if (rightJustify or not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
+		    dx -= w;
+		    y += layout.getDescent() + layout.getLeading();
+		    insert dx into xs;
+		    insert y into ys;
+		    insert layout into layouts;
+		}
+	    } catch (e is java.lang.Exception) {
+		println("TEXT={text0} wrapWidth={wrapWidth}");
+		e.printStackTrace();
 		break;
 	    }
-	    if (layout <> null) {
-		var dx = 
-		    if (rightJustify or not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
-                dx -= w;
-                y += layout.getDescent() + layout.getLeading();
-                insert dx into xs;
-                insert y into ys;
-                insert layout into layouts;
-            }
         }
 	JoglTextLayout {
 	    shapeExtrusion: shapeExtrusion;
@@ -542,16 +534,18 @@ class TextRenderer2D {
 	const h = pot(bounds.height());
 	if (target.getWidth() <> w or target.getHeight() <> h) {
 	    target = new TextureRenderer(w, h, true);
+	    target.setSmoothing(false);
 	}
 	//println("camera={camera.bounds}");
 	const g = target.createGraphics();
-	g.setBackground(new java.awt.Color(0, 0, 0, 0.0));
-	g.clearRect(0, 0, w, h);
 	const bgc = new java.awt.Color(bg.red,
 				       bg.green,
 				       bg.blue,
 				       bg.opacity);
+	g.setBackground(new java.awt.Color(0, 0, 0, 0));
+	g.clearRect(0, 0, bounds.width(), bounds.height());
 	g.setBackground(bgc);
+	g.clearRect(bounds.left(), bounds.top(), bounds.width(), bounds.height());
 	g.setColor(bgc);
 	println("layout bounds = {layout.getShape().getBounds()}");
 	const tx = AffineTransform.getTranslateInstance(Math.round(w/2.0), Math.round(h/2.0));
@@ -583,6 +577,8 @@ class TextRenderer2D {
 	}
 	target.markDirty(0, 0, w, h);	
 	const tex = target.getTexture();
+	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
 	const id = "{text.id}#texture";
 	const texture = JoglTexture {
 	    gl: this.gl;
@@ -599,10 +595,6 @@ class TextRenderer2D {
 		tex: texture;
 	    }
 	    transform: bind translate(bounds.center.x, bounds.center.y);
-	    /*
-	    transform: bind 
-		translate(bounds.extent.x-p.width/2+p.indent, bounds.bottom()+p.height/2);
-	    */
 	}
     }
 }
@@ -1796,10 +1788,10 @@ class SceneRenderer {
 	    scene.stage = stageNode;
 	}
         var result = surface.stageRenderer.renderScenes(gl, surface.pot_width, surface.pot_height);
-	if (result) {
-	    println("rendering stage node {gl} {stageNode}");
-	    println("done rendering stage node => {result}");
-	}
+	//if (result) {
+	    //println("rendering stage node {gl} {stageNode}");
+	    // println("done rendering stage node => {result}");
+	//}
 	return result;
     }
 
@@ -1971,7 +1963,9 @@ class SceneRenderer {
 				info = DrawInfo {
 				}
 			    }
-			    println("created draw info {info} for {mn}");
+			    if (DEBUG_DRAW) {
+				println("created draw info {info} for {mn}");
+			    }
 			} else {
 			    if (not dirty) {
 				if (info.mesh <> mn.mesh or
@@ -2015,7 +2009,7 @@ class SceneRenderer {
 				ti.foreground <> tn.paint) {
 				dirty = true;
 				ti.tex = ti.renderer.render(mn as Text.TextMeshNode);
-				println("rendered {mn}");
+				//println("rendered {mn}");
 				ti.layout = tn.getLayout();
 				ti.background = tn.background;
 				ti.foreground = tn.paint;
@@ -3078,6 +3072,18 @@ public const THE_MENU_FACTORY = AWTMenuFactoryImpl {}
 
 public class JoglStage is Stage
 {
+
+    public function setFullscreen from (b is Boolean) to ()
+    {
+	const ge = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment();
+	const vc = ge.getDefaultScreenDevice();
+	if (b) {
+	    vc.setFullScreenWindow(frame);
+	} else {
+	    vc.setFullScreenWindow(null);
+	}
+    }
+
     var listener is  Listener;
     public var title is String;
     var todo is (function from () to ())[];
@@ -3370,14 +3376,6 @@ public function run from (args is String[]) to ()
 	    override var height = bind font.height() * 24;
 	} else null;
 
-    readonly var videoTexture = 
-       bind if (playerUrl.endsWith(".mp4")) then Movie
-       { 
-       	    url: bind playerUrl 
-	    paused: false;
-       } else null;
-
-
     function doDrop from (url is String) to () 
     {
 	stage.title = url;
@@ -3388,9 +3386,6 @@ public function run from (args is String[]) to ()
 	    viewer.focusCamera(currentModel = svgModel.root)
 	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith(".tif") or url.endsWith(".tiff") or url.endsWith(".tga")) {
 	    viewer.focusCamera(currentModel = imageModel)
-	} else if (url.endsWith(".mp4")) {
-	    viewer.focusCamera(currentModel = videoTexture);
-	    println("set video texture {videoTexture.url}");
 	} else if (url.endsWith(".txt")) {
 	    textModel.setText(readTextFile(url).first);
 	    viewer.focusCamera(currentModel = TransformNode {
@@ -3408,6 +3403,7 @@ public function run from (args is String[]) to ()
     }
     
     currentCamera = camera;
+
     const mainScene = Scene {
 	id: "Main Scene";
 	background: Color.GRAY;
