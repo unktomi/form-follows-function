@@ -2660,6 +2660,10 @@ public class Listener is GLEventListener, DropTargetListener {
 
     const self = this;
 
+    public function resizeWindow from (w is Integer, h is Integer) to () {
+        frame.setSize(w, h);
+    }
+
     function render from (gl is GL2, width is Integer, height is Integer) to () {
 	if (false) {
 	    const rt = java.lang.Runtime.getRuntime();
@@ -3158,6 +3162,13 @@ public class JoglStage is Stage
     var frame is Frame;
     var canvas is GLCanvas;
 
+    public var onClose is function from () to Boolean = function { yes };
+
+    public function resizeWindow (w is Integer, h is Integer) to ()
+    {
+        frame.resize(w, h);
+    }
+
     function setup {
         const glp = GLProfile.get("GL2");
         const caps = new GLCapabilities(glp);
@@ -3173,7 +3184,9 @@ public class JoglStage is Stage
         frame.add(canvas);
         frame.addWindowListener(java.awt.event.WindowAdapter {
                 override public function windowClosing from (e is java.awt.event.WindowEvent) to () {
-                    java.lang.System.exit(0);
+                    if (onClose()) {
+                       java.lang.System.exit(0);
+                    }
                 }
             });
         buildKeyMap();
