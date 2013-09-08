@@ -63,6 +63,14 @@ float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
   return c;
 }
 
+float4 pixelShaderFunctionLcd(PixelShaderInput input) : COLOR {
+  float4 c0 = tex2D(texSampler0, input.tex);
+  float4 c1 = tex2D(texSampler0, input.tex + float2(-1, 0));
+  return float4(c.xyz * c.w, c.w);
+}
+
+
+
 technique Transparent {
     pass P {
 	DepthTestEnable = false;

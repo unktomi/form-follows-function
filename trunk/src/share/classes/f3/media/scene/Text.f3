@@ -125,7 +125,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         fillPaint: bind background;
     };
     readonly var layoutInstance = bind layoutEngine.createLayoutInstance();
-    public readonly var layout = bind layoutInstance.createLayout(text, font, width-indent, height, rightJustified);
+    public readonly var layout = bind layoutInstance.createLayout(text, font, Math.max(width-indent, 0), height, rightJustified);
     public readonly var textShape = bind layout.getShape();
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
     public readonly var caretShape = bind if (editable) then layout.getCaretShape(caretPosition) else null;

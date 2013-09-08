@@ -41,6 +41,38 @@ public function rect
     return path;
 }
 
+public function roundRect 
+    from (fac is Path2DFactory,
+          x is Number, y is Number,
+          w is Number, h is Number, 
+          arcWidth is Number, arcHeight is Number)
+    to Path2D
+{
+    if (arcWidth == 0 and arcHeight == 0) {
+        return rect(fac, x, y, w, h);
+    }
+    const u = 0.5 - 2.0 / 3.0 * (java.lang.Math.sqrt(2.0) - 1.0);
+    const path = fac.createPath();
+    path.moveTo(x + 0.0 * w + 0.5 * arcWidth, y);
+    path.lineTo(x + 1.0 * w + -0.5 * arcWidth, y);
+    path.cubicTo(x + 1.0 * w + -u  * arcWidth, y,
+                 x + 1.0 * w, y + u * arcHeight,
+                 x + 1.0 * w, y + 0.5 * arcHeight);
+    path.lineTo(x + 1.0 * w, y + 1.0 * h + -0.5 *arcHeight);
+    path.cubicTo(x + 1.0 * w +  0.0  *arcWidth, y + 1.0 *h +  -u *arcHeight,
+                 x + 1.0 * w + -u    *arcWidth, y + 1.0 *h + 0.0 *arcHeight,
+                 x + 1.0 * w + -0.5  *arcWidth, y + 1.0 *h + 0.0 *arcHeight);
+    path.lineTo(x + 0.0 * w + 0.5 *arcWidth, y + 1.0 * h + -0.0 *arcHeight);
+    path.cubicTo(x + 0.0 * w +  u    *arcWidth, y + 1.0 *h +  0.0 *arcHeight,
+                 x + 0.0 * w +  0.0  *arcWidth, y + 1.0 *h +   -u *arcHeight,
+                 x + 0.0 * w +  0.0  *arcWidth, y + 1.0 *h + -0.5 *arcHeight);
+    path.lineTo(x + 0.0 * w + 0.0 *arcWidth, y + 0.0 * h + 0.5 *arcHeight);
+    path.cubicTo(x + 0.0 * w +  0.0  *arcWidth, y + 0.0 *h +  u *arcHeight,
+                 x + 0.0 * w +  u    *arcWidth, y + 0.0 *h + 0.0 *arcHeight,
+                 x + 0.0 * w +  0.5  *arcWidth, y + 0.0 *h + 0.0 *arcHeight);
+    return path;
+}
+
 
 public function ellipse
     from (fac is Path2DFactory, 
@@ -274,10 +306,97 @@ public class Rectangle is Shape2D
 {
     public var width is Number = 1;
     public var height is Number = 1;
-    override var path = bind rect(factory, centerX-width/2, centerY-height/2, width, height);
+    public var arcWidth is Number = 0.0;
+    public var arcHeight is Number = 0.0;
+    override var path = bind roundRect(factory, centerX-width/2, centerY-height/2, width, height, arcWidth, arcHeight);
 }
 
 public class Polygon is Shape2D {
     public var points is Number[];
     override var path = bind makePolygon(factory, points);
+}
+
+public abstract class PathElement {
+    public abstract function apply from (p is Path2D) to ();
+}
+
+public class MoveTo is PathElement {
+    public const x is Number;
+    public const y is Number;
+    override public function equals from (obj is Object) to Boolean
+    {
+        (obj is MoveTo) and {
+            const p = obj as MoveTo;
+            p.x == x and p.y == y;
+        }
+    }
+
+    public override function apply from (p is Path2D) to ()
+    {
+        p.moveTo(x, y);
+    }
+
+}
+
+public class LineTo is PathElement {
+    public const x is Number;
+    public const y is Number;
+    override public function equals from (obj is Object) to Boolean
+    {
+        (obj is LineTo) and {
+            const p = obj as LineTo;
+            p.x == x and p.y == y;
+        }
+    }
+
+    public override function apply from (p is Path2D) to ()
+    {
+        p.lineTo(x, y);
+    }
+}
+
+public class CubicTo is PathElement {
+    public const cx1 is Number;
+    public const cy1 is Number;
+    public const cx2 is Number;
+    public const cy2 is Number;
+    public const x is Number;
+    public const y is Number;
+    override public function equals from (obj is Object) to Boolean
+    {
+        (obj is CubicTo) and {
+            const p = obj as CubicTo;
+            p.x == x and p.y == y and p.cx2 == cx2 and p.cy2 == cy2 and p.cx1 == cy1;
+        }
+    }
+    public override function apply from (p is Path2D) to ()
+    {
+        p.cubicTo(cx1, cy1, cx2, cy2, x, y);
+    }
+}
+
+public const ClosePath = PathElement {
+    public override function apply from (p is Path2D) to ()
+    {
+        p.closePath();
+    }
+}
+
+public class Path is Shape2D {
+
+    public var content is PathElement[];
+
+    override var path = bind buildPath(content);
+
+    function buildPath from (content is PathElement[]) to Path2D
+    {
+        const path = factory.createPath();
+        for (x in content) {
+            x.apply(path);
+        }
+        return path;
+    }
+}
+
+public class Line is Shape2D {
 }
