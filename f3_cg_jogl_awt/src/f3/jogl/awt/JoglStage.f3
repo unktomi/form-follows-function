@@ -48,7 +48,7 @@ public var ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl
 
 var DISABLE_DEFORMERS = false;
 
-var frc = new java.awt.font.FontRenderContext(null, true, false);
+var frc = new java.awt.font.FontRenderContext(null, true, true);
 const families = 
     java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames() on replace {
     for (x in families) println(x);
@@ -87,6 +87,7 @@ function getFont from (spec is String) to java.awt.Font
             for (x in fams, y in families) {
                 if (x == y) {
                     name = x;
+                    println("FOUND FONT FAMILY: {x}");
                     break;
                 }
             }
@@ -2258,19 +2259,28 @@ class SceneRenderer {
 	    //println("drawing {n}");
 	    var toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
             const mesh = mn.mesh;
-	    if (((mn is Text.TextMeshNode) and (camera is Camera2D))) {
-		if (toSceneTransform.getRotation() == Quat.<<1>>) {
-		    const t = mn.toSceneTransform.getTranslation();
-		    const tn = mn as Text.TextMeshNode;
-		    const b = tn.getLayout().getShape().getBounds();
-		    const x = if (tn.getText().rightJustified) then b.right() else b.left();
-		    const dx = x - Math.round(x);
-		    const dy = b.bottom() - Math.round(b.bottom());
-		    toSceneTransform = translate(Math.round(t.x)-dx,
-						 Math.round(t.y)-dy,
-						 0);
-		    //println("{tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
-		}
+	    if (mn is Text.TextMeshNode)  {
+                if (camera is Camera2D) {
+                    if (toSceneTransform.getRotation() == Quat.<<1>>) {
+                        const t = mn.toSceneTransform.getTranslation();
+                        const tn = mn as Text.TextMeshNode;
+                        const b = tn.getLayout().getShape().getBounds();
+                        const x = if (tn.getText().rightJustified) then b.right() else b.left();
+                        const dx = x - Math.round(x);
+                        const dy = b.center.y - Math.round(b.center.y);
+                        const vm = camera.viewMatrix;
+                        println("viewMatrix={vm.getTranslation()}");
+                        println("scene={scene.width}, {scene.height}");
+                        toSceneTransform = translate(Math.round(t.x)-dx,
+                                                     Math.round(t.y)-dy,
+                                                     0);
+                        println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
+                    } else {
+                        println("text was rotated {toSceneTransform.getTranslation()}");
+                    }
+                } else {
+                    println("camera is : {camera}");
+                }
 	    } else if (camera is Camera2D) {
 		if (mesh.polygonMode == PolygonMode.Line) {
 		    if (toSceneTransform.getRotation() == Quat.<<1>>) {
