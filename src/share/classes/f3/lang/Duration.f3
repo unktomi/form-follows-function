@@ -219,8 +219,8 @@ public class Duration extends Comparable of Duration {
         return if (isIndefinite()) INDEFINITE else valueOf(-millis);
     }
 
-    function isIndefinite() : Boolean {
-        return millis == java.lang.Float.POSITIVE_INFINITY;
+    public function isIndefinite() : Boolean {
+        return millis == java.lang.Double.POSITIVE_INFINITY;
     }
 
     /**

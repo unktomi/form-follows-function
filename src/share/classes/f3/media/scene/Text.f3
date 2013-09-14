@@ -4,6 +4,7 @@ import f3.media.input.*;
 import f3.math.*;
 import f3.math.LinearMath.*;
 import java.lang.Math;
+import f3.util.*;
 
 public class Pick 
 {
@@ -145,15 +146,21 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     var isLeading is Boolean;
     var dirty = true;
 
+    postinit {
+        setText(text);
+    }
+
     function markDirty {
 	dirty = true;
     }
 
     public function setText from (text is String) to () 
     {
-	selectAll();
-	deleteSelection();
-	insertText(text);
+        if (this.text <> text) {
+            selectAll();
+            deleteSelection();
+            insertText(text);
+        }
     }
 
     readonly var contentGroup is Group = Group {
@@ -190,7 +197,11 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     override function update 
     {
 	if (dirty) {
+            var old = text;
 	    text = buffer.toString();
+            if (old <> text) {
+                textSubject.onNext(text);
+            }
 	    dirty = false;
 	}
 	if (editable) {
@@ -373,6 +384,13 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     function updateColumn 
     {
 	column = caretShape.getBounds().center.x;
+    }
+    
+    var textSubject is Subject of String;
+
+    public function observeText to Observable of String
+    {
+        if (textSubject == null) then textSubject = Subject of String {} else textSubject;
     }
 
 }

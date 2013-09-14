@@ -235,8 +235,8 @@ public abstract class Shape2D is Node, MouseInputHandler
     public var stroke is Stroke;
     public var strokePaint is Paint;
     public var fillPaint is Paint;
-    public var centerX is Number;
-    public var centerY is Number;
+    public var cx is Number;
+    public var cy is Number;
     public readonly var path is Path2D;
 
     public readonly var fillMesh is MeshNode = bind createMeshNode(path, 
@@ -292,14 +292,14 @@ public class MeshNode2D is MeshNode
 public class Circle is Shape2D 
 {
     public var radius is Number = 1; 
-    override var path = bind ellipse(factory, centerX-radius, centerY-radius, radius*2, radius*2);
+    override var path = bind ellipse(factory, cx-radius, cy-radius, radius*2, radius*2);
 }
 
 public class Ellipse is Shape2D 
 {
     public var radiusX is Number = 1;
     public var radiusY is Number = 1;
-    override var path = bind ellipse(factory, centerY-radiusX, centerX-radiusY, radiusX*2, radiusY*2);
+    override var path = bind ellipse(factory, cy-radiusX, cx-radiusY, radiusX*2, radiusY*2);
 }
 
 public class Rectangle is Shape2D 
@@ -308,7 +308,7 @@ public class Rectangle is Shape2D
     public var height is Number = 1;
     public var arcWidth is Number = 0.0;
     public var arcHeight is Number = 0.0;
-    override var path = bind roundRect(factory, centerX-width/2, centerY-height/2, width, height, arcWidth, arcHeight);
+    override var path = bind roundRect(factory, cx-width/2, cy-height/2, width, height, arcWidth, arcHeight);
 }
 
 public class Polygon is Shape2D {
