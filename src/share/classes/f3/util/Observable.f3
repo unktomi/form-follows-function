@@ -7,10 +7,12 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     public function toggle from (p is Ref of Boolean) to Disposable
     {
 	accumulate(p.get(),
-		   function from (b is Boolean, _ is a) to Boolean
+                   |x, _| not x
+		   /*function from (b is Boolean, _ is a) to Boolean
 		   {
 		       not b;
-		   }).subscribe(p);
+                       }*/
+                   ).subscribe(p);
     }
 
     public function subscribe 
@@ -62,7 +64,6 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 			override public function onNext from (x is a) to () 
 			{
 			    const y = f(x);
-			    println("{self} map {f}: {x} => {y}");
 			    observer.onNext(y);
 			}
 			override public function onError from (e is java.lang.Exception) to () 
@@ -703,12 +704,13 @@ public function run
 	foreach (x in Observable.return(1), y in Observable.return(2)) x + y;
     const d = j.subscribe(Println of Integer());
     d.dispose();
-    /*    
+
     const k = observe([1..10]);
     k.take(6).subscribe(new Println of Integer());
 
     const l = foreach (x in observe(List.asList([1..10]))) "#{x}";
     l.drop(3).subscribe(Println of String());
+    /*    
     const e = every(1s);
     e.subscribe(Println of Integer());
 

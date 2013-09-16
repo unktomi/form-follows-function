@@ -66,8 +66,12 @@ public abstract class F3ClassType extends F3Type implements F3Member {
         return "class "+n;
     }
 
-    public boolean equals (F3ClassType other) {
-        return context.equals(other.context) && name.equals(other.name);
+    public boolean equals (Object obj) {
+        if (obj instanceof F3ClassType) {
+            F3ClassType other = (F3ClassType)obj;
+            return context.equals(other.context) && name.equals(other.name);
+        }
+        return false;
     }
 
     public int hashCode() {

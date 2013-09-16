@@ -1841,6 +1841,9 @@ class SceneRenderer {
         var transparentTris = 0;
         var lights is PointLight[];
         var dirty = lastWidth <> width or lastHeight <> height;
+        if (dirty) {
+            firstTime = true;
+        }
 	if (scene.visible <> lastVisible) {
 	    dirty = true;
 	    lastVisible = scene.visible;
@@ -1851,7 +1854,6 @@ class SceneRenderer {
 	lastHeight = height;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
-	//scene.update(); // hack!!!!
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
 
@@ -2117,6 +2119,8 @@ class SceneRenderer {
 
     public var scene is Scene;
 
+    var firstTime = true;
+
     function renderScene
 	from (gl is GL2, 
 	      width is Number, 
@@ -2146,8 +2150,14 @@ class SceneRenderer {
             gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
             gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
         } else {
-	    //println("clearing depth");
-	    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
+            if (firstTime) {
+                firstTime = false;
+                gl.glClearColor(.5, .5, .5, 1);
+                gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
+            } else {
+                //println("clearing depth");
+                gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
+            }
         }
 	const camera = scene.camera;
 	camera.update();
@@ -2271,8 +2281,8 @@ class SceneRenderer {
                         const vm = camera.viewMatrix;
 //                        println("viewMatrix={vm.getTranslation()}");
 //                        println("scene={scene.width}, {scene.height}");
-                        toSceneTransform = translate(Math.round(t.x)-dx,
-                                                     Math.round(t.y)-dy,
+                        toSceneTransform = translate(Math.round(t.x)-0.5,//-dx,
+                                                     Math.round(t.y)-0.5,//-dy,
                                                      0);
 //                        println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {
@@ -2463,6 +2473,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	from (e is java.awt.dnd.DropTargetDropEvent) 
 	to DropEvent
     {
+        wakeup();
         var getData = function from () to String
 	    {
 		e.acceptDrop(DnDConstants.ACTION_COPY_OR_MOVE);
@@ -2516,6 +2527,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	from (e is java.awt.dnd.DropTargetEvent) 
 	to DragEvent
     {
+        wakeup();
         DragEvent {
             screenx: screenx;
             screeny: screeny;
@@ -2536,6 +2548,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	      shiftDown is Boolean)
 	to ()
     {
+        wakeup();
         try {
             ctx.makeCurrent();
 	    stage.injectMouseMove(MouseEvent {
@@ -2604,8 +2617,11 @@ public class Listener is GLEventListener, DropTargetListener {
             });
     }
 
+    var dragging = false;
 
     override function dragEnter from (e is DropTargetDragEvent) to () {
+        dragging = true;
+        println("drag over: {java.lang.Thread.currentThread()}");
         try {
             ctx.makeCurrent();
             stage.injectDragEnter(makeDragEvent(e));
@@ -2624,6 +2640,7 @@ public class Listener is GLEventListener, DropTargetListener {
     }
 
     override function dragExit from (e is DropTargetEvent) to () {
+        dragging = false;
         try {
             ctx.makeCurrent();
             stage.injectDragLeave(makeDragEvent(e));
@@ -2636,6 +2653,8 @@ public class Listener is GLEventListener, DropTargetListener {
     }
 
     override function drop from (e is DropTargetDropEvent) to () {
+        println("drop: {java.lang.Thread.currentThread()}");
+        dragging = false;
         try {
             ctx.makeCurrent();
             stage.injectDrop(makeDropEvent(e));
@@ -2648,7 +2667,7 @@ public class Listener is GLEventListener, DropTargetListener {
         ctx = GLContext.getCurrent();
 	ImageLoader_INSTANCE.gl = gl; // hack
 	stage.resize(width, height);
-	gl.setSwapInterval(1);
+        wakeup();
     }
 
     var mouseX is Number;
@@ -2675,8 +2694,21 @@ public class Listener is GLEventListener, DropTargetListener {
     }
 
     function render from (gl is GL2, width is Integer, height is Integer) to () {
-        if (not frame.isActive()) {
+        const now = java.lang.System.currentTimeMillis();
+        if (startTime == 0) {
+	    startTime = now;
+	    prevTime = now;
+	}
+        if (wakeupFrames > 0) {
+            wakeupFrames--;
+            trig = true;
+        }
+        if (not dragging and not trig and not frame.isActive()) {
+            java.lang.Thread.sleep(128);
             return;
+        }
+        if (not frame.isActive()) {
+            prevTime = now;
         }
 	if (false) {
 	    const rt = java.lang.Runtime.getRuntime();
@@ -2687,11 +2719,6 @@ public class Listener is GLEventListener, DropTargetListener {
 	    if (stageTitle <> stage.title) {
 		setTitle(stageTitle = stage.title);
 	    }
-	}
-        const now = java.lang.System.currentTimeMillis();
-        if (startTime == 0) {
-	    startTime = now;
-	    prevTime = now;
 	}
         const delta = 1ms * (now - prevTime);
 	//	println("delta={delta}");
@@ -2727,7 +2754,7 @@ public class Listener is GLEventListener, DropTargetListener {
         for (scene in stage.content) {
 	    scene.stage = stage;
 	}
-	var skip = true;
+	skip = wakeupFrames == 0;
 	if (stageRenderer.renderScenes(gl, stage.width, stage.height)) {
 	    if (lastOpaque <> opaque or lastTransp <> transp) {
 		lastTransp = transp;
@@ -2735,6 +2762,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	    }
 	    skip = false;
 	}
+        trig = not skip;
 	setTitle("{opaque}/{opaque_tris}, {transp}/{transp_tris} - {stage.title}");
 	stage.flush();
         setCursor(stage.cursor);
@@ -2758,8 +2786,15 @@ public class Listener is GLEventListener, DropTargetListener {
         }
     }
 
+    var skip = false;
+    var trig = false;
+
+    public var wakeupFrames = 0;
+
     function wakeup {
+        trig = true;
         sleepFrames = 0;
+        wakeupFrames = 120;
     }
     
     var sleepFrames = 32;
@@ -2776,7 +2811,7 @@ public class Listener is GLEventListener, DropTargetListener {
         render(drawable.getGL().getGL2(), drawable.getWidth(), drawable.getHeight());
     }
 
-    var animator is com.jogamp.opengl.util.AnimatorBase;
+    var animator is com.jogamp.opengl.util.FPSAnimator;
 
     override function init from (drawable is GLAutoDrawable) to () {
         animator = new com.jogamp.opengl.util.FPSAnimator(drawable, 60);
@@ -3106,7 +3141,7 @@ public class JoglStage is Stage
 	}
     }
 
-    var listener is  Listener;
+    public var listener is  Listener;
     public var title is String;
     var todo is (function from () to ())[];
     public function invoke from (fun is function from () to ()) to () {
