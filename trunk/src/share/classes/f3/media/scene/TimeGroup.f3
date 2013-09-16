@@ -105,12 +105,9 @@ Interval.merge(bnds12,
     }
 
     override protected function updateParent to () {
-	if (contentInvalid) {
-	    contentInvalid = false;
-	    for (n in content) {
-		n.parent = this;
-		n.updateParent();
-	    }
+        for (n in content) {
+            n.parent = this;
+            n.updateParent();
 	}
     }
 
