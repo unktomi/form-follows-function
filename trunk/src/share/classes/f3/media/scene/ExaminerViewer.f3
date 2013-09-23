@@ -85,7 +85,7 @@ public abstract class ExaminerViewer is MouseInputHandler {
 
     override function onMouseMove from (event is MouseEvent) to () {
         if (mouseEnabled) mouseMove(event.screenx, event.screeny,
-		                  event.ctrlKey, event.altKey);
+                                    event.ctrlKey, event.altKey);
     }
 
     public function mouseDown from (button is Integer, isControlDown is Boolean, isAltDown is Boolean) to () {

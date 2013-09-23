@@ -21,6 +21,6 @@ public class MouseEvent is PointerEvent
     public readonly var sceneDrag = bind picked.dragPoint0 - picked.dragPoint1;
 
     override function toString to String {
-        "Mouse Event screen {screenx}, {screeny} button {buttons} scene {sceneLocation} location {location}";
+        "Mouse Event button {buttons}, clickCount {clickCount}, screenDrag {screenDrag}, {PointerEvent.toString()}";
     }
 }
