@@ -204,6 +204,7 @@ public class Scene
     public readonly var pressed is Pick[];
     public readonly var mousePosition is Point3;
 
+    var moveEvent is MouseEvent;
     public function update to () 
     {
         try {
@@ -298,6 +299,10 @@ public class Scene
             screenx: mouseX;
             screeny: mouseY;
             screenDrag: tuple(this.mouseX - oldMouseX, this.mouseY - oldMouseY);
+            altKey: moveEvent.altKey;
+            ctrlKey: moveEvent.ctrlKey;
+            metaKey: moveEvent.metaKey;
+            shiftKey: moveEvent.shiftKey;
         }
         for (x in underMouse) 
             oldUnderMouse.put(x.node, x);
@@ -353,6 +358,7 @@ public class Scene
 
     public function injectMouseMove from (event is MouseEvent) to () 
     {
+        moveEvent = event;
         updateMouse(event.screenx, event.screeny);
     }
 

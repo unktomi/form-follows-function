@@ -488,7 +488,7 @@ class Size is Measurer of Integer
 
 const SIZE = Size {};
 
-public class Seq of a is Monad of (Seq, a) {
+public class Seq of a, is Monad of (Seq, a) {
 
     protected var t is FingerTree of (Integer, a) = 
 	Empty of (Integer, a) 

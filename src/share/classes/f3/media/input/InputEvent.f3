@@ -15,4 +15,8 @@ public interface InputEvent
     public function stopPropagation to () {
         propagate = false
     }
+
+    override function toString to String {
+        "InputEvent altKey {altKey}, ctrlKey {ctrlKey}, shiftKey {shiftKey}, metaKey {metaKey}, propagate {propagate}";
+    }
 }
