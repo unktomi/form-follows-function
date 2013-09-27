@@ -1,0 +1,23 @@
+package f3.media.scene;
+
+public class TransitionLayer is TimeGroup, Player {
+
+    override var content on replace deleted[i..j] = inserted 
+    {
+	for (x in inserted) x.blendWeight = 0.0;
+    }
+
+    override function play from (clip is TimeNode) to () 
+    {
+	var t = 1.0;
+	for (c in content where c <> clip) {
+	    if (c.blendWeight > 0 and c.isPlaying()) {
+		t = (currentTime - c.playTime) / c.bounds.duration();
+	    }
+	    c.blendWeight = 0;
+	}
+	clip.blendWeight = 1.0;
+	clip.playTime = clip.currentTime - clip.bounds.duration() * (1.0-t);
+    }
+
+}
