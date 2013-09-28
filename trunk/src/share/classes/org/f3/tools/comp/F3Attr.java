@@ -2470,17 +2470,46 @@ public class F3Attr implements F3Visitor {
 
             // Protect against erroneous tress called for attribution from the IDE
             //
+	    Type x = memberType;
+	    if (x instanceof FunctionType) {
+		x = ((FunctionType)x).asMethodOrForAll();
+	    }
             if (part.getExpression() != null) {
+                boolean infer = false;
+                if (part.getExpression() instanceof F3FunctionValue) {
+                    F3FunctionValue val = (F3FunctionValue)part.getExpression();
+                    if (val.infer) {
+                        val.infer = false;
+                        Type exprType = memberType;
+                        if (exprType instanceof ForAll) {
+                            exprType = syms.makeFunctionType((ForAll)exprType);
+                        } else if (exprType instanceof MethodType) { // hack
+                            exprType = syms.makeFunctionType((MethodType)exprType);
+                        }
+                        List<Type> ps = exprType.getParameterTypes();
+			for (F3Var var: val.funParams) {
+                            if (ps != null) {
+                                Type old = var.type;
+                                var.type = ps.head;
+                                System.err.println(old + " => "+var.type);
+                            }
+                            ps = ps.tail;
+                        }
+                        /*
+                        System.err.println("memberType=>"+exprType);
+                        val.type = exprType;
+                        finishFunctionDefinition(val.definition, env);
+                        val.type = val.definition.type;
+                        val.definition.sym.type = val.type; // hack
+                        */
+                    }
+                }
                 attribExpr(part.getExpression(), initEnv, memberType);
                 if (types.isArray(part.getExpression().type) &&
                     part.isBound()) {
                     log.warning(part.pos(), MsgSym.MESSAGE_F3_UNSUPPORTED_TYPE_IN_BIND);
                 }
             }
-	    Type x = memberType;
-	    if (x instanceof FunctionType) {
-		x = ((FunctionType)x).asMethodOrForAll();
-	    }
 	    if (memberSym instanceof MethodSymbol) {
 		if (cdef == null) {
 		    long innerClassFlags = Flags.SYNTHETIC | Flags.FINAL; // to enable, change to Flags.FINAL
@@ -2580,7 +2609,7 @@ public class F3Attr implements F3Visitor {
 		    }
 		}
 	    }
-	    tree.parts = tree.parts.appendList(newParts);
+	    tree.parts = tree.parts.prependList(newParts);
 	}
 	long flags = clazztype.tsym.flags();
 	if ((cdef == null &&

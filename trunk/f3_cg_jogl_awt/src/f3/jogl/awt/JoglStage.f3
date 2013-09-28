@@ -971,7 +971,7 @@ class ColorPaintShader is CGFXShader
 class TexturePaintShader is CGFXShader 
 {
     public var colorPaint is ColorPaint;
-    public var tex is  AbstractTexture;
+    public var tex is AbstractTexture;
     public readonly var color = bind colorPaint.color;
     override var url =  "{__DIR__}flat-textured.cgfx";
     override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
@@ -1884,13 +1884,16 @@ class SceneRenderer {
 		par = n.parent;
 		while (par <> null and not (par is Stage)) {
 		    if (par is Scissored) {
-			const sb = par.toSceneTransform * (par as Scissored).scissorBounds;
-			if (Bounds.intersect(sb, n.boundsInScene) == null) {
-			    if (false and debug) {
-				println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
-			    }
-			    return;
-			}
+                        const sciss = (par as Scissored).scissorBounds;
+                        if (sciss != null) {
+                            const sb = par.toSceneTransform * sciss;
+                            if (Bounds.intersect(sb, n.boundsInScene) == null) {
+                                if (debug) {
+                                    println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
+                                }
+                                return;
+                            }
+                        }
 		    }
 		    par = par.parent;
 		}
