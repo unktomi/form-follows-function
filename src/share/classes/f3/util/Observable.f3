@@ -8,11 +8,69 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     {
 	accumulate(p.get(),
                    |x, _| not x
-		   /*function from (b is Boolean, _ is a) to Boolean
+		   /*function from (x is Boolean, _ is a) to Boolean
 		   {
-		       not b;
+		       not x;
                        }*/
                    ).subscribe(p);
+    }
+
+    public function filter from (p is function from a to Boolean) to Observable of a
+    {
+        const self = this;
+        DefaultObservable of a {
+            override function subscribe from (y is Observer of a) to Disposable {
+                self.subscribe(DefaultObserver of a {
+                        override function onNext from (x is a) to () {
+                            if (p(x)) y.onNext(x)
+                        }
+                        override function onError from (e is java.lang.Exception) to ()
+                        {
+                            y.onError(e);
+                        }
+                        override function onCompleted from () to () 
+                        {
+                            y.onCompleted();
+                        }
+                    });
+            }
+        }
+    }
+
+    public function repeat from (count is Integer) to Observable of a 
+    {
+        const self = this;
+        DefaultObservable of a {
+            override function subscribe from (y is Observer of a) to Disposable {
+                var d is Disposable = 
+                    self.subscribe(DefaultObserver of a {
+                            var n = count-1;
+                            override function onNext from (x is a) to ()
+                            {
+                                y.onNext(x);
+                            }
+                            override function onCompleted to ()
+                            {
+                                if (n-- >= 0) {
+                                    d.dispose();
+                                    d = self.subscribe(this);
+                                } else {
+                                    y.onCompleted();
+                                }
+                            }
+                            override function onError from (e is java.lang.Exception) to ()
+                            {
+                                n = -1;
+                                y.onError(e);
+                            }
+                        });
+                Disposable {
+                    override function dispose {
+                        d.dispose();
+                    }
+                }
+            }
+        }
     }
 
     public function subscribe 
@@ -79,34 +137,54 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	}
     }
 
-    public function flatmap of b from (f is function from a to Observable of b) to Observable of b 
+    public function flatmap of b 
+        from (f is function from a to Observable of b) 
+        to Observable of b 
     {
 	const self = this;
 	DefaultObservable of b 
 	{
 	    override function subscribe from (observer is Observer of b) to Disposable 
 	    {
-		var toDispose is Disposable[];
 		function terminateWithError from (e is java.lang.Exception) to () {
-		    alive = -1;
-		    observer.onError(e);
+                    if (alive > 0) {
+                        alive = -1;
+                        observer.onError(e);
+                    }
 		    terminate();
 		}
-		var alive = 0;
+		var alive = 1;
 		function terminate {
 		    if (--alive == 0) {
 			observer.onCompleted();
 		    }
-		    var tmp = toDispose;
-		    toDispose = [];
-		    for (x in tmp) x.dispose();
 		}
 		const d = self.subscribe(DefaultObserver of a {
 			override public function onNext from (x is a) to () 
 			{
 			    const observable = f(x);
-			    insert observable.subscribe(observer) into toDispose; // !!
 			    alive++;
+			    const d1 is Disposable = observable.subscribe(DefaultObserver of b {
+                                    override function onNext from (y is b) to () {
+                                        if (alive > 0) {
+                                            observer.onNext(y);
+                                        } else {
+                                            d1.dispose();
+                                        }
+                                    }
+                                    override function onError from (e is java.lang.Exception) to () {
+                                        if (alive > 0) {
+                                            terminateWithError();
+                                        }
+                                        d1.dispose();
+                                    }
+                                    override function onCompleted from () to () {
+                                        if (alive > 0) {
+                                            terminate();
+                                        }
+                                        d1.dispose();
+                                    }
+                                });
 			}
 			override public function onError from (e is java.lang.Exception) to () 
 			{
@@ -117,11 +195,10 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 			    terminate();
 			}
 		    });
-		insert d into toDispose;
 		Disposable {
 		    override function dispose to () 
 		    {
-			for (x in toDispose) x.dispose()
+                        d.dispose();
 		    }
 		}
 	    }
@@ -301,8 +378,10 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    }
 		    override function onError from (e is java.lang.Exception) to ()
 		    {
-			completed = 2;
-			observer.onError(e);
+                        if (completed < 2) {
+                            completed = 2;
+                            observer.onError(e);
+                        }
 		    }
 		    override function onCompleted from () to ()
 		    {
@@ -375,6 +454,43 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    });
 	    }
 	}
+    }
+
+    public function zipLatestTo of (b1, c1)
+        from (xs is Observable of b1, 
+              f is function from (a, b1) to c1) 
+        to Observable of c1 
+    {
+        xs.zipLatestFrom(this, f.flip());
+    }
+
+    public function zipLatestFrom of (b, c)
+        from (xs is Observable of b, 
+              f is function from (a, b) to c) 
+        to Observable of c 
+    {
+        var latest is b;
+        var d1 = xs.subscribe(DefaultObserver of b {
+                override function onNext from (x is b) to ()
+                {
+                    latest = x;
+                }
+            });
+        const self = this;
+        DefaultObservable of c {
+            override function subscribe from (y is Observer of c) to Disposable 
+            {
+                self.subscribe(DefaultObserver of a {
+                        onError: y.onError;
+                        onCompleted: y.onCompleted;
+                        //onNext: |x| y.onNext(f(x, latest));
+                        override function onNext from (x is b) to ()
+                        {
+                            y.onNext(f(x, latest))
+                        }
+                    });
+            }
+        }
     }
 
     public function zip of b 
@@ -704,13 +820,13 @@ public function run
 	foreach (x in Observable.return(1), y in Observable.return(2)) x + y;
     const d = j.subscribe(Println of Integer());
     d.dispose();
-
+    /*    
     const k = observe([1..10]);
     k.take(6).subscribe(new Println of Integer());
 
     const l = foreach (x in observe(List.asList([1..10]))) "#{x}";
     l.drop(3).subscribe(Println of String());
-    /*    
+
     const e = every(1s);
     e.subscribe(Println of Integer());
 

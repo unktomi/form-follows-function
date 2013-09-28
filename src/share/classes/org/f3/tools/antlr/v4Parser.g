@@ -3283,7 +3283,7 @@ boundExpression
                 //TODO: warning
             }
       )?
-      e1=expression 
+      e1=expressionOrInferredExpression 
 
         {
             errNodes.append($e1.value); // For erroneous node
@@ -3313,7 +3313,7 @@ boundExpression
                 $status = isBidirectional? BIDIBIND : UNIDIBIND;
             }
          
-            | e2=expression
+            | e2=expressionOrInferredExpression
     
         {
             // Unbound expression AST
