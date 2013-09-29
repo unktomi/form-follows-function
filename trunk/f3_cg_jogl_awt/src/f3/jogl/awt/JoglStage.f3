@@ -1862,7 +1862,7 @@ class SceneRenderer {
         var lights is PointLight[];
         var dirty = lastWidth <> width or lastHeight <> height;
         if (dirty) {
-            firstTime = true;
+        //            firstTime = true;
         }
 	if (scene.visible <> lastVisible) {
 	    dirty = true;
@@ -2172,6 +2172,10 @@ class SceneRenderer {
 	    //println("clearing {bg}");
             gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
             gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
+        } else if (firstTime) {
+            gl.glClearColor(.5, .5, .5, 1);
+            gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
+            firstTime = false;
         } else {
             gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
         }
@@ -2298,8 +2302,8 @@ class SceneRenderer {
                         const vm = camera.viewMatrix;
 //                        println("viewMatrix={vm.getTranslation()}");
 //                        println("scene={scene.width}, {scene.height}");
-                        toSceneTransform = translate(Math.round(t.x)-0.5,//-dx,
-                                                     Math.round(t.y)-0.5,//-dy,
+                        toSceneTransform = translate(Math.round(t.x),//-0.5,//-dx,
+                                                     Math.round(t.y),//-0.5,//-dy,
                                                      0);
                         //println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {
