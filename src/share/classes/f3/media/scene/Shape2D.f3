@@ -22,6 +22,7 @@ public interface Path2D {
     abstract public function closePath to ();
     abstract public function reset to ();
     abstract public function createMesh to AbstractMesh;
+    abstract public function setTextureMatrix from (mat is Mat4) to ();
     abstract public function getBounds to Bounds;
     abstract public function createStrokedShape from (stroke is Stroke) to Path2D;
     abstract public function apply from (output is Path2D) to ();
@@ -32,7 +33,15 @@ public function rect
     from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number) 
     to Path2D
 {
+    rect(fac, x, y, width, height, Mat4.<<1>>);
+}
+
+public function rect
+    from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number, textureMatrix is Mat4) 
+    to Path2D
+{
     const path = fac.createPath();
+    path.setTextureMatrix(textureMatrix);
     path.moveTo(x, y);
     path.lineTo(x+width, y);
     path.lineTo(x+width, y+height);
@@ -148,10 +157,6 @@ public class TexturePaint is ColorPaint
 {
     override var color = Color.color(1, 1, 1, 0);
     public var texture is AbstractTexture;
-    public var x is Number;
-    public var y is Number;
-    public var width is Number;
-    public var height is Number;
 }
 
 public function TexturePaint

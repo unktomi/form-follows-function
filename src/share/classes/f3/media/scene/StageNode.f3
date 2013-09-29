@@ -1,5 +1,17 @@
 package f3.media.scene;
 import f3.media.input.*;
+import f3.math.LinearMath.*;
+import f3.math.*;
+
+function pot from (n is Integer) to Integer 
+{
+    var result = 2;
+    while (result < n) {
+        result *= 2;
+    }
+    return result;
+}
+
 
 public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInputHandler, Focusable {
 
@@ -91,7 +103,19 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
     public var drawingSurface is AbstractTexture;
     public const factory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
     public const imageLoader is ImageLoader = the ImageLoader;
-    override var path = bind Shape2D.rect(factory, -width/2, -height/2, width, height);
+    var w = bind pot(width); 
+    var h = bind pot(height);
+    override var path = bind Shape2D.rect(factory, -width/2, -height/2, width, height, textureMatrix);
+
+    var textureMatrix = bind getTextureMatrix(width, height, w, h);
+
+    function getTextureMatrix from (width is Number, height is Number, w is Number, h is Number) to Mat4 {
+        var r = scale(width / w, height / h);
+        println("TEX MATRIX {width},{height} {w}, {h} => {r}");
+        if (width == 0 or height == 0 or w == 0 or h == 0) return Mat4.<<1>>;
+        return r;
+    }
+                                          
     public var background is Color = Color.TRANSPARENT;
     override var paint = {
 	const self = this;

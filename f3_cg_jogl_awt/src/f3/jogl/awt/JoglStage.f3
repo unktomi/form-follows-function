@@ -48,7 +48,7 @@ public var ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl
 
 var DISABLE_DEFORMERS = false;
 
-var frc = new java.awt.font.FontRenderContext(null, true, true);
+var frc = new java.awt.font.FontRenderContext(null, true, false);
 const families = 
     java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames() on replace {
     for (x in families) println(x);
@@ -384,7 +384,8 @@ class JoglPath2D is Path2D
 {
     public var path is GeneralPath = new GeneralPath();
     public const extrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
-
+    var textureMatrix is Mat4 = Mat4.<<1>>;
+    override public function setTextureMatrix from (m is Mat4) to () { textureMatrix = m; }
     override public function apply from (output is Path2D) to () 
     {
         const pi = path.getPathIterator(null);
@@ -483,6 +484,7 @@ class JoglPath2D is Path2D
     override public function createMesh to AbstractMesh 
     {
 	extrusion.resetShape(path);
+        extrusion.setTextureMatrix(toAffineTransform(textureMatrix));
         const md = extrusion.createMeshData();
         const mb = MeshBuffer {
             indexBuffer: md.getIndexBuffer();
@@ -492,6 +494,17 @@ class JoglPath2D is Path2D
         }
         return mb.toMesh();
     }
+}
+
+function toAffineTransform from (m is Mat4) to java.awt.geom.AffineTransform {
+    const r = if (m == Mat4.<<0>> or m == Mat4.<<1>>) 
+        then null else 
+            new java.awt.geom.AffineTransform(m.xx, m.yx, m.xy,
+                                              m.yy, m.xw, m.yw);
+    if (r <> null) {
+        println("{m} ====> {r}");
+    }
+    return r;
 }
 
 class JoglPath2DFactory is Shape2D.Path2DFactory 
@@ -521,6 +534,10 @@ function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to S
 }
 
 
+public class TexturedTextMeshNode is MeshNode {
+       public const tn is Text.TextMeshNode;
+}
+
 class TextRenderer2D {
     var target is TextureRenderer;
     const gl is GL2;
@@ -531,8 +548,8 @@ class TextRenderer2D {
 	const bounds = layout.getShape().getBounds();
 	const bg = (text.background as ColorPaint).color;
 	const fg = (text.paint as ColorPaint).color;
-	const w = pot(bounds.width());
-	const h = pot(bounds.height());
+	const w = pot(bounds.width()+4);
+	const h = pot(bounds.height()+4);
 	if (target.getWidth() <> w or target.getHeight() <> h) {
 	    target = new TextureRenderer(w, h, true);
 	    target.setSmoothing(false);
@@ -543,56 +560,59 @@ class TextRenderer2D {
 				       bg.green,
 				       bg.blue,
 				       bg.opacity);
-	g.setBackground(new java.awt.Color(0, 0, 0, 0));
-	g.clearRect(0, 0, bounds.width(), bounds.height());
 	g.setBackground(bgc);
-	g.clearRect(bounds.left(), bounds.top(), bounds.width(), bounds.height());
-	g.setColor(bgc);
+	g.clearRect(0, 0, w, h);
 	println("layout bounds = {layout.getShape().getBounds()}");
 	const tx = AffineTransform.getTranslateInstance(Math.round(w/2.0), Math.round(h/2.0));
 	g.setTransform(tx);
 	const b = p.bounds;
+        /*
+	g.setColor(bgc);
 	g.fillRect(-b.extent.x-1,
 		   b.extent.y+1,
 	           b.width()+2, 
 		   b.height()+2);
+        */                 
 	g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
 	g.setRenderingHint(java.awt.RenderingHints.KEY_TEXT_ANTIALIASING,
 			   java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 	g.setRenderingHint(java.awt.RenderingHints.KEY_FRACTIONALMETRICS,
-			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-	const hints = java.awt.Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints") as java.util.Map of (String, String);
-	g.addRenderingHints(hints);
+			   java.awt.RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+	
 	const fgc = new java.awt.Color(fg.red, fg.green, fg.blue, fg.opacity);
 	g.setColor(fgc);
 	tx.scale(1, -1);
-	tx.translate(Math.round(-bounds.center.x), Math.round(bounds.center.y));
+	tx.translate(-bounds.center.x, bounds.center.y);
 	g.setTransform(tx);
+        println("transform={tx}");
+        println("drawing: {p.text}");
 	for (tl in layout.layouts) {
 	    const i = indexof tl;
-	    const x = Math.round(layout.xs[i]);
-	    const y = Math.round(layout.ys[i]);
-	    println("drawing {x},{y} t={g.getTransform()}");
+	    const x = layout.xs[i];
+	    const y = layout.ys[i];
+            println("drawing line {indexof tl + 1} at {x}, {y}");
 	    tl.draw(g, x, y);
 	}
 	target.markDirty(0, 0, w, h);	
 	const tex = target.getTexture();
-	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
-	tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
+        tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NONE);
+        tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NONE);
+	//tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
+	//tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
 	const id = "{text.id}#texture";
 	const texture = JoglTexture {
 	    gl: this.gl;
 	    tex: tex;
 	    id: id;
 	}
-	println("text={p.text} => bounds={bounds} w={w} h={h}");
-	MeshNode {
+	println("text={p.text} => bounds={bounds.left()}, {bounds.top()}, {bounds.width()}, {bounds.height()} w={w} h={h}");
+	TexturedTextMeshNode {
 	    parent: text;
 	    id: id;
-	    mesh: MeshBuffer.quad(w, h);
+	    mesh: MeshBuffer.quad(bounds.width(), bounds.height(), w, h);
 	    shader: TexturePaintShader {
-		color: Color.TRANSPARENT;
+		color: Color.WHITE;
 		tex: texture;
 	    }
 	    transform: bind translate(bounds.center.x, bounds.center.y);
@@ -976,6 +996,7 @@ class TexturePaintShader is CGFXShader
     override var url =  "{__DIR__}flat-textured.cgfx";
     override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
     override var uvMap = [0];
+    public var transform is Mat4 = Mat4.<<1>>;
 
     override function updateParameters to ()
     {
@@ -1305,8 +1326,8 @@ class OffscreenSurface is JoglTexture
 	    tex = genTexture(gl, pot_width, pot_height);
 	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
 	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-	    //tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
-	    //tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
 	    const textureId = tex.getTextureObject(gl);
 	    println("textureId={textureId} gl={gl}");
             var ibuf = BufferUtils.createIntBuffer(1);
@@ -1447,7 +1468,6 @@ class OffscreenSurface is JoglTexture
             gl.glBlitFramebuffer(0, 0, pot_width, pot_height, 
                                  0, 0, pot_width, pot_height, 
                                  bits, GL.GL_NEAREST);
-
             //println("blitting framebuffer {_msfboID} {_fboID} {_width} {_height} {pot_width} {pot_height}");
         }
         if (false) {
@@ -1788,7 +1808,7 @@ class SceneRenderer {
         for (scene in stageNode.content) {
 	    scene.stage = stageNode;
 	}
-        var result = surface.stageRenderer.renderScenes(gl, surface.pot_width, surface.pot_height);
+        var result = surface.stageRenderer.renderScenes(gl, surface.width, surface.height);
 	//if (result) {
 	    //println("rendering stage node {gl} {stageNode}");
 	    // println("done rendering stage node => {result}");
@@ -2153,14 +2173,7 @@ class SceneRenderer {
             gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
             gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
         } else {
-            if (firstTime) {
-                firstTime = false;
-                gl.glClearColor(.5, .5, .5, 1);
-                gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
-            } else {
-                //println("clearing depth");
-                gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
-            }
+            gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
         }
 	const camera = scene.camera;
 	camera.update();
@@ -2269,6 +2282,7 @@ class SceneRenderer {
 		    gl.glDisable(GL.GL_SCISSOR_TEST);
 		}
 	    }
+
 	    //println("drawing {n}");
 	    var toSceneTransform = if (sceneParent == null) then mn.toSceneTransform else sceneParentInverse * mn.toSceneTransform;
             const mesh = mn.mesh;
@@ -2287,7 +2301,7 @@ class SceneRenderer {
                         toSceneTransform = translate(Math.round(t.x)-0.5,//-dx,
                                                      Math.round(t.y)-0.5,//-dy,
                                                      0);
-//                        println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
+                        //println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {
                         println("text was rotated {toSceneTransform.getTranslation()}");
                     }
@@ -2707,8 +2721,8 @@ public class Listener is GLEventListener, DropTargetListener {
             trig = true;
         }
         if (not dragging and not trig and not frame.isActive()) {
-            java.lang.Thread.sleep(128);
-            return;
+           java.lang.Thread.sleep(128);
+           return;
         }
         if (not frame.isActive()) {
             prevTime = now;
@@ -3233,7 +3247,7 @@ public class JoglStage is Stage
         caps.setSampleBuffers(SAMPLE_BUFFERS);
         caps.setNumSamples(NUM_SAMPLES);
         canvas = new GLCanvas(caps);
-        frame = new Frame();
+        frame = Frame {};
 	TheDialogFactory.frame = frame;
         frame.setSize(width, height);
 	canvas.setAutoSwapBufferMode(false);
@@ -3450,6 +3464,7 @@ public function run from (args is String[]) to ()
 	    //pathFactory: ThePath2DFactory;
 	    //layoutEngine: TheLayoutEngine;
 	    override var height = bind font.height() * 24;
+            font: bind TheLayoutEngine.createFont("font-family:Lucida Grande;font-size:10;font-weight:bold");
 	} else null;
 
     function doDrop from (url is String) to () 

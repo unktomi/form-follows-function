@@ -33,7 +33,6 @@ uniform float4x4 worldViewProjection : WORLDVIEWPROJECTION;
 sampler2D texSampler0;
 uniform float4 xywh;
 
-
 struct VertexShaderInput {
   float4 position : POSITION;
   float2 tex : TEXCOORD0;  
@@ -49,7 +48,7 @@ PixelShaderInput vertexShaderFunction(VertexShaderInput input) {
   PixelShaderInput output;
   output.position = mul(worldViewProjection, input.position); 
   output.objPos = input.position.xy;
-  output.tex = input.tex;  
+  output.tex = input.tex;
   return output;
 }
 
@@ -60,16 +59,8 @@ float4 pixelShaderFunctionTransp(PixelShaderInput input) : COLOR {
 
 float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
   float4 c = tex2D(texSampler0, input.tex);
-  return c;
+  return float4(c.xyz, 1.0);
 }
-
-float4 pixelShaderFunctionLcd(PixelShaderInput input) : COLOR {
-  float4 c0 = tex2D(texSampler0, input.tex);
-  float4 c1 = tex2D(texSampler0, input.tex + float2(-1, 0));
-  return float4(c.xyz * c.w, c.w);
-}
-
-
 
 technique Transparent {
     pass P {

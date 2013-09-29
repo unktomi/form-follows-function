@@ -56,10 +56,24 @@ public class Jogl2DExtruder {
 
         public boolean gridFit = false;
 
+        AffineTransform textureMatrix;
+
+        Point2D pt = new Point2D.Float();
+        Point2D pt2 = new Point2D.Float();
+
         void glVertex3f(float x, float y, float z) {
             normals.add(glNormal[0], glNormal[1], glNormal[2]);
-            texCoords.add((x - (float)bounds.getX()) / (float)bounds.getWidth(), 
-                          (y - (float)bounds.getY()) / (float)bounds.getHeight());
+            float stx = (x - (float)bounds.getX()) / (float)bounds.getWidth();
+            float sty = (y - (float)bounds.getY()) / (float)bounds.getHeight();
+            if (textureMatrix != null) {
+                System.err.println("textureMatrix="+textureMatrix);
+                pt.setLocation(stx, sty);
+                textureMatrix.transform(pt, pt2);
+                System.err.println(pt + " => "+ pt2);
+                stx = (float)pt2.getX(); 
+                sty = (float)pt2.getY();
+            }
+            texCoords.add(stx, sty);
             if (gridFit) {
                 x = Math.round(x);
                 y = Math.round(y);
@@ -67,6 +81,10 @@ public class Jogl2DExtruder {
             }
             vertices.add(x, y, z+translateZ);
             indices.add(index++);
+        }
+
+        public void setTextureMatrix(AffineTransform tx) {
+            textureMatrix = tx;
         }
 
         public MeshData createMeshData() {

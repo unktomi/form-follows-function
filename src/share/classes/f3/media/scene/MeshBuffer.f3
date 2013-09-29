@@ -122,12 +122,14 @@ public function quad
     for (i in [0..<4]) {
         nb.put(0).put(0).put(1);
     }
-    const tx = uw / width;
-    const ty = uh / height;
-    tb.put(0).put(1.0);
-    tb.put(0).put(0);
-    tb.put(1.0).put(0);
-    tb.put(1.0).put(1.0);
+    const sx = width/uw;
+    const sy = height/uh;
+    const tx = (1.0-sx)/2;
+    const ty = (1.0-sy)/2;
+    tb.put(tx).put(1.0-ty);
+    tb.put(tx).put(ty);
+    tb.put(1.0-tx).put(ty);
+    tb.put(1.0-tx).put(1.0-ty);
     MeshBuffer {
         indexBuffer: ibuf;
         vertexBuffer: VertexAttributeBuffer {
