@@ -4,6 +4,19 @@ import f3.lang.Ref;
 
 public interface Observable of a, is org.f3.runtime.Monad of (Observable, a) 
 {
+
+    public function latest from (initialValue is a) to f3.lang.ConstRef of a 
+    {
+        const self = this;
+        Sampler of a {
+            var disp is Disposable;
+            override function initialize to a {
+                disp = self.subscribe(this);
+                initialValue;
+            }
+        }
+    }
+
     public function toggle from (p is Ref of Boolean) to Disposable
     {
 	accumulate(p.get(),
@@ -455,7 +468,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	    }
 	}
     }
-
+    /*
     public function zipLatestTo of (b1, c1)
         from (xs is Observable of b1, 
               f is function from (a, b1) to c1) 
@@ -469,22 +482,23 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
               f is function from (a, b) to c) 
         to Observable of c 
     {
-        var latest is b;
-        var d1 = xs.subscribe(DefaultObserver of b {
-                override function onNext from (x is b) to ()
-                {
-                    latest = x;
-                }
-            });
         const self = this;
         DefaultObservable of c {
+            var latest is b;
+            var d1 = xs.subscribe(DefaultObserver of b {
+                    override function onNext from (x is b) to ()
+                    {
+                        latest = x;
+                    }
+                });
             override function subscribe from (y is Observer of c) to Disposable 
             {
+                d1;
                 self.subscribe(DefaultObserver of a {
                         onError: y.onError;
                         onCompleted: y.onCompleted;
                         //onNext: |x| y.onNext(f(x, latest));
-                        override function onNext from (x is b) to ()
+                        override function onNext from (x is a) to ()
                         {
                             y.onNext(f(x, latest))
                         }
@@ -492,10 +506,11 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
             }
         }
     }
+    */
 
     public function zip of b 
 	from (xs is Observable of b) to
-	Observable of ((a, b))
+	Observable of ( (a, b) )
     {
 	zip(xs, function from (x is a, y is b) to (a, b) { (x, y) })
     }

@@ -133,7 +133,7 @@ public abstract class TimeNode is Foldable of TimeNode
     }
 
 
-    protected function updateParent to () 
+    public function updateParent to () 
     {
     }
 
