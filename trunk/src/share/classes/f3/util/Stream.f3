@@ -9,7 +9,7 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
     public readonly var now is a;
     public readonly var later is Stream of a;
 
-    public bound function fold of b
+    public function fold of b
 	from (z is b, f is function from (b, a) to b) 
 	to Stream of b 
     {
@@ -36,6 +36,11 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
     public bound function interleave from (xs is Stream of a) to Stream of a 
     {
 	xs.prepend(now).followedBy(xs.interleave(later));
+    }
+
+    public function + from (this is Stream of Integer, xs is Stream of Integer) to Stream of Integer 
+    {
+        this.zip(function from (x is Integer, y is Integer) to Integer { x + y }, xs)
     }
 
     // map lifts a unary operator to one over Streams
@@ -83,13 +88,6 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	now
     }
 
-    public bound function coextract of b 
-	from (x is b) 
-	to Stream of b 
-    {
-	repeat(x)
-    }
-
     public bound function next to Stream of a 
     {
 	later
@@ -121,6 +119,18 @@ public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a)
 	    now: bind x;
 	    later: this;
 	}
+    }
+
+    public function take
+        from (n is Integer) 
+        to a[] 
+    {
+        var later = this;
+        foreach (i in [0..<n]) { 
+            const now = later.now;
+            later = later.later;
+            now;
+        }
     }
 }
 
@@ -320,53 +330,19 @@ bound function <<every other>> of a
     xs.followedBy(<<every other>>(xs.later.later))
 }
 
-readonly var fib is Stream of Number = bind repeat(0.0).followedBy(fib1);
-readonly var fib1 is Stream of Number = bind repeat(1.0).followedBy(fib2);
-readonly var fib2 is Stream of Number = bind fib + fib1;
-/*
-var ns is Stream of Number = bind repeat(1.0).followedBy(ns)+repeat(1.0);
+bound var fib is Stream of Integer = repeat(0).followedBy(fib1);
+bound var fib1 is Stream of Integer = repeat(1).followedBy(fib2);
+bound var fib2 is Stream of Integer = fib + fib1;
 
-bound function avg from (xs is Stream of Number) to Stream of Number 
-{
-    var running_avg = sum(xs).prepend(0.0) / ns;
-}
+/*
+bound var fib is Stream of Integer = fib1.prepend(0);
+bound var fib1 is Stream of Integer = fib2.prepend(1);
+bound var fib2 is Stream of Integer = fib + fib1;
 */
 
 function run 
 {
-    println(take(10, fib));
-    println(take(10, toStream(foreach (n in [1..200]) n as Number)));
-    println(take(10, sum(toStream(foreach (n in [1..200]) n as Number))));
-    //println(take(20, avg(toStream(foreach (n in [1..200]) n as Number))));
-
-    if (true) {
-	println(take(10, repeat(1.0)));
-	println(take(10, sum(repeat(1.0))));
-	println(take(10, diff(sum(repeat(1.0)))));
-	println(take(10, repeat(1.0) + repeat(1.0)));
-	println(take(10, repeat(-1.0).followedBy(repeat(2.0))));
-	var j = 1.0;
-	var xs = bind foreach (x in repeat(j), y in repeat(2.0))  x + y;
-	var xss = bind foreach (x in repeat(j), y in repeat(2.0), z in repeat(10.0)) z + x + y;
-	println(take(10, xs));
-	println(take(10, xss));
-	j = 20.0;
-	println(take(10, xss));
-	println("xs={take(10, xs)}");
-	var gs = bind(sum(xs));
-	println(take(1000, gs));
-	foreach (x in toStream([1.2])) {
-	    println(x);
-	}
-    }
-    println(take(10, X));
-    println(take(10, mul(X, X)));
-    println(take(10, mul(mul(X, X), X)));
-    println(take(10, mul(mul(mul(X, X), X), X)));
-    println(take(10, sum(repeat(1.0))));
-    println(take(1000, <<every other>>(sum(repeat(1.0)))));
-
-    println(take(10, repeat("a").interleave(repeat("b"))));
+    println(fib.take(100));
 }
 
 

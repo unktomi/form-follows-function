@@ -678,6 +678,10 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 
     @Override
     public void visitVar(F3Var tree) {
+        if ((tree.mods.flags & F3Flags.BOUND) != 0) {
+            tree.mods.flags &= ~F3Flags.BOUND;
+            tree.markBound(org.f3.api.F3BindStatus.UNIDIBIND);
+        }
         F3Env<F3AttrContext> localEnv = env;
         if ((tree.mods.flags & STATIC) != 0
                 || (env.info.scope.owner.flags() & INTERFACE) != 0) {

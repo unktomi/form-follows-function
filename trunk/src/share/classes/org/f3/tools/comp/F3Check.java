@@ -1055,16 +1055,16 @@ public class F3Check {
                 boolean isDef = ((flags & IS_DEF) != 0);
                 thing = isDef? "def" : "var";
                 if (!vsym.isMember()) {
-                    mask = F3LocalVarFlags;
+                    mask = F3LocalVarFlags | BOUND;
                     msg = MsgSym.MESSAGE_F3_MOD_NOT_ALLOWED_ON_LOCAL;
                 } else if (isDef) {
-                    mask = F3MemberDefFlags;
+                    mask = F3MemberDefFlags | BOUND;
                     msg = MsgSym.MESSAGE_F3_MOD_NOT_ALLOWED_ON;
                 } else if (isScriptLevel) {
-                    mask = F3ScriptVarFlags;
+                    mask = F3ScriptVarFlags | BOUND;
                     msg = MsgSym.MESSAGE_F3_MOD_NOT_ALLOWED_ON_SCRIPT;
                 } else {
-                    mask = F3InstanceVarFlags;
+                    mask = F3InstanceVarFlags | BOUND;
                     msg = MsgSym.MESSAGE_F3_MOD_NOT_ALLOWED_ON_INSTANCE;
                 }
                 break;

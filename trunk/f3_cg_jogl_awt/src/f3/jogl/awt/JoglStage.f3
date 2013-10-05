@@ -1874,6 +1874,7 @@ class SceneRenderer {
 	lastHeight = height;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
+        scene.update();
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
 
