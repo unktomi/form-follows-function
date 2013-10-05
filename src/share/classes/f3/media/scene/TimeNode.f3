@@ -109,7 +109,11 @@ public abstract class TimeNode is Foldable of TimeNode
 	    now += contentPlayRange.start.toMillis();
 	}
         localTime = Duration.valueOf(now);
+        const wasPlaying = playing;
 	playing = picked;
+        if (wasPlaying and not playing) {
+            completed.onNext(());
+        }
 	const f =  { if (picked) then add else null } as function from TimeNode to ();
         pickChildren(sceneTime,
 		     now0,

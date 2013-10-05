@@ -5,6 +5,60 @@ import f3.lang.Ref;
 public interface Observable of a, is org.f3.runtime.Monad of (Observable, a) 
 {
 
+    public function or of b from (xs is Observable of b) to Observable of <a, b> {
+        const self = this;
+        DefaultObservable of <a, b> {
+            override function subscribe from (ys is Observer of <a, b>) to Disposable
+            {
+                var completed = 0;
+                const d1 is Disposable = self.subscribe(DefaultObserver of a {
+                        override function onNext from (x is a) to ()
+                        {
+                            ys.onNext(Former of (a, b)(x));
+                        }
+                        override function onCompleted to () {
+                            if (++completed == 2) {
+                                ys.onCompleted();
+                            }
+                        }
+                        override function onError from (e is java.lang.Exception) to ()
+                        {
+                            if (completed < 2) {
+                                completed = 2;
+                                ys.onError(e);
+                                d2.dispose();
+                            }
+                        }
+                    });
+                const d2 is Disposable = xs.subscribe(DefaultObserver of b {
+                        override function onNext from (y is b) to ()
+                        {
+                            ys.onNext(Latter of (a, b)(y));
+                        }
+                        override function onCompleted to () {
+                            if (++completed == 2) {
+                                ys.onCompleted();
+                            }
+                        }
+                        override function onError from (e is java.lang.Exception) to ()
+                        {
+                            if (completed < 2) {
+                                completed = 2;
+                                ys.onError(e);
+                                d1.dispose();
+                            }
+                        }
+                    });
+                Disposable {
+                    override function dispose {
+                        d1.dispose();
+                        d2.dispose();
+                    }
+                }
+            }
+        }
+    }
+
     public function latest from (initialValue is a) to f3.lang.ConstRef of a 
     {
         const self = this;

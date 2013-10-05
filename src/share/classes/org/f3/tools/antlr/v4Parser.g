@@ -1565,6 +1565,9 @@ variableDeclaration [ F3Modifiers mods, int pos ]
                 {
                     bValue  = $boundExpression.value;
                     bStatus = $boundExpression.status;
+                    if (bStatus == UNBOUND && (mods.flags & F3Flags.BOUND) != 0) {
+                        bStatus = UNIDIBIND;
+                    }
                     errNodes.append($boundExpression.value);
                 }
             | // Missing initializer. This is fine for var, but cannot be
