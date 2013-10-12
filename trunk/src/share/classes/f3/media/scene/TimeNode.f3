@@ -89,7 +89,7 @@ public abstract class TimeNode is Foldable of TimeNode
 	to ()
     {
         var picked = false;
-        if (pickableInScene) {
+        if (not paused and pickableInScene) {
             picked = bounds.intersects(parentLocalTime);
             if (picked) {
                 add(this);

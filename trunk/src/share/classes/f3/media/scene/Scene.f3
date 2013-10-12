@@ -362,6 +362,19 @@ public class Scene
         updateMouse(event.screenx, event.screeny);
     }
 
+    public function setFocus from (f is Focusable) to Boolean
+    {
+        var focusSet = false;
+        if (f == focus or f.acceptFocus()) {
+            if (f <> focus) {
+                focus.loseFocus();
+                focus = f;
+            }
+            focusSet = true;
+        }
+        return focusSet;
+    }
+
     public function injectMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
         var focusSet = false;
@@ -369,24 +382,12 @@ public class Scene
             doMouseDown(p, event);
             if (not focusSet and (p.node instanceof Focusable)) {
                 const f = p.node as Focusable;
-                if (f == focus or f.acceptFocus()) {
-                    if (f <> focus) {
-                        focus.loseFocus();
-                        focus = f;
-                    }
-                    focusSet = true;
-                }
+                focusSet = setFocus(f);
             }
             var n = p.node;
             if (not focusSet and (p.node instanceof Focuser)) {
                 const f = (p.node as Focuser).getTargetOfFocus();
-                if (f == focus or f.acceptFocus()) {
-                    if (f <> focus) {
-                        focus.loseFocus();
-                        focus = f;
-                    }
-                    focusSet = true;
-                }
+                focusSet = setFocus(f);
             }
         }
         if (not focusSet) {

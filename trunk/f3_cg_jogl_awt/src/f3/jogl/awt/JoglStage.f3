@@ -2323,7 +2323,7 @@ class SceneRenderer {
 		    }
 		}
 	    }
-	    if (DEBUG_MESHES) println("drawing {mn.id}");
+	    if (DEBUG_MESHES) println("drawing {mn}");
 
             const indexBuffer = mesh.getIndexBuffer();
             const vertexBuffer = mesh.getVertexBuffer();

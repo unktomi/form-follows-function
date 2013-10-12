@@ -4,6 +4,34 @@ import f3.math.*;
 
 public class TransformNode is Group//, Transform 
 {
+    public function setTranslation from (point is Point3) to () 
+    {
+        tx = point.x; 
+        ty = point.y; 
+        tz = point.z;
+    }
+
+    public function setScale from (t is Tuple3) to () 
+    {
+        sx = t.x; 
+        sy = t.y; 
+        sz = t.z;
+    }
+
+    public function setPivot from (point is Point3) to () 
+    {
+        px = point.x; 
+        py = point.y; 
+        pz = point.z;
+    }
+
+    public function setRotation from (t is Tuple3) to () 
+    {
+        rx = t.x; 
+        ry = t.y; 
+        rz = t.z;
+    }
+
     // translation
     public var tx is Number;
     public var ty is Number;
