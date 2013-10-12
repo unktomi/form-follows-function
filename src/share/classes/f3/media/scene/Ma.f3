@@ -471,13 +471,12 @@ class MaModel
                 const i = (path[1] as Index).index;
                 const sourceClip = conn.sourceNode as MAnimClip;
                 const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode;
-                const start = 1s/24 * (sourceClip.ss-1);
+                const start = 1s/24 * (sourceClip.sf-1);
                 const end = 1s/24 * (sourceClip.se);
                 println("creating clip {clip.name} {start}..{end}");
                 insert TimeGroup {
+                    playTime: start;
                     id: clip.name;
-                    //playTime: -start;
-                    //playRange: Interval { start: start, end: end }
                 } into clips;
             }
             for (conn in n.connectionsToThis.get("cel")) {
@@ -491,7 +490,7 @@ class MaModel
                     println("adding channel {ch.id} {ch.bounds} to {clip.id}");
                     insert ch into clip.content;
                 } else {
-                    println("can't create channel {animCurve.name} for {clip.id}");                    
+                    println("didn't create channel {animCurve.name} for {clip.id}: {ch}");                    
                 }
             }
             for (clip in clips) {
@@ -2890,12 +2889,15 @@ class MLight is MSpatial {
 }
 
 class MAnimClip is MNode {
-    var ss is Integer;
+    var sf is Integer = 1;
+    var ss is Integer = 1;
     var se is Integer;
     override function setAttr from (cmd is Command) to () 
     {
         const n = cmd.getAttr();
         if (n == "ss") {
+            ss = cmd.getInt();
+        } else if (n == "sf") {
             ss = cmd.getInt();
         } else if (n == "se") {
             se = cmd.getInt();
