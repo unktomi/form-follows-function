@@ -2,6 +2,7 @@ package f3.media.scene;
 import f3.math.*;
 import f3.math.LinearMath.*;
 import f3.media.input.*;
+import f3.util.*;
 
 public class RootNode {
 }
@@ -27,7 +28,16 @@ public class Scene
 
     public var content is Node[];
 
-    public readonly var focus is Focusable;
+    var focusObserver is Disposable; 
+
+    public readonly var focus is Focusable on replace old {
+        focusObserver.dispose();
+        focusObserver = focus.observeFocused().subscribe(function from (x is Boolean) to () {
+                if (not x) {
+                    setFocus(null);
+                }
+            }); 
+    }
 
     public readonly var root is Node = {
         const scene = this;
@@ -88,7 +98,7 @@ public class Scene
                 } into toAdd;
                 par = par.parent;
             }
-            insert toAdd.reverse() into result;
+            insert toAdd/*.reverse()*/ into result;
             insert p into result;
         }
         return result;
@@ -369,6 +379,7 @@ public class Scene
             if (f <> focus) {
                 focus.loseFocus();
                 focus = f;
+                println("set focus to {focus}");
             }
             focusSet = true;
         }
@@ -380,6 +391,7 @@ public class Scene
         var focusSet = false;
         for (p in underMouse) {
             doMouseDown(p, event);
+            println("p={p.node}");
             if (not focusSet and (p.node instanceof Focusable)) {
                 const f = p.node as Focusable;
                 focusSet = setFocus(f);

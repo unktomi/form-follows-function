@@ -87,6 +87,7 @@ abstract public class AbstractText is AbstractNode {
 }
 
 public class Label is AbstractText {
+    public var singleLine is Boolean = false;
     public readonly var content is Text.Area = Text.Area {
 	width: bind width;
 	height: bind height;
@@ -96,6 +97,7 @@ public class Label is AbstractText {
 	foreground: bind foreground;
 	selectionForeground: bind selectionForeground;
 	selectionBackground: bind selectionBackground;
+        singleLine: bind singleLine;
 	pickable: bind pickable;
 	indent: bind indent;
 	editable: false;
@@ -108,17 +110,20 @@ public class Label is AbstractText {
     }
 }
 
+
 public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHandler 
 {
     public var editable is Boolean = true;
     override var cursor = Cursor.IBeam;
     public readonly var text is String = "";
+    var lastValue is String;
     const buffer = new java.lang.StringBuffer;
     var selectionStart is Integer;
     var selectionEnd is Integer;
     var caretPosition is Integer;
     readonly var start = bind Math.min(selectionStart, selectionEnd);
     readonly var end = bind Math.max(selectionStart, selectionEnd);
+    protected const singleLine is Boolean = false;
     const rect = Rectangle {
 	factory: pathFactory;
         height: bind height;
@@ -159,7 +164,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         if (this.text <> text) {
             selectAll();
             deleteSelection();
-            insertText(text);
+            insertText(lastValue = text);
         }
     }
 
@@ -206,7 +211,6 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	}
 	if (editable) {
 	    const now = java.lang.System.currentTimeMillis();
-	    
 	    if (not focused) {
 		caretMesh.visible = false;
 	    } else {
@@ -254,8 +258,17 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	    moveCaretDown(event.shiftKey);
 	} else if (code == Keys.Home) {
 	    moveCaret(0, event.shiftKey, true);
+	} else if (code == Keys.Esc) {
+            if (singleLine) {
+                cancel();
+            }
 	} else if (code == Keys.End) {
 	    moveCaret(buffer.length(), event.shiftKey, true);
+	} else if (code == Keys.Enter) {
+            if (singleLine) {
+                commit();
+                return;
+            }
 	} else if (code == Keys.Backspace or code == Keys.Delete) {
 	    deleteChars();
 	}
@@ -268,6 +281,11 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	if (code == Keys.Backspace) {
 	    backspace();
 	} else {
+            if (keyChar == "\n") {
+               if (singleLine) {
+                  return;
+               }
+            }
 	    if (keyChar.length() > 0) {
 		insertText(keyChar);
 	    }
@@ -385,6 +403,20 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
 	column = caretShape.getBounds().center.x;
     }
+
+    function cancel
+    {
+        loseFocus();
+        setText(lastValue);
+    }
+
+    function commit
+    {
+        update();
+        lastValue = text;
+        commitSubject.onNext(());
+        loseFocus();
+    }
     
     var textSubject is Subject of String;
     var commitSubject is Subject of (());
@@ -399,4 +431,8 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         if (commitSubject == null) then commitSubject = Subject of (()) {} else commitSubject;
     }
 
+}
+
+public class Field extends Area {
+    override const singleLine is Boolean = true;
 }

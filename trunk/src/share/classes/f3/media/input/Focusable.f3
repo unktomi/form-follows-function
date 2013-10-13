@@ -4,8 +4,8 @@ import f3.util.*;
 public interface Focusable is Focuser {
     override function getTargetOfFocus to Focusable { this }
     public readonly var focused is Boolean;
-    public function acceptFocus to Boolean { focused = true }
-    public function loseFocus to Boolean { focused = false }
+    public function acceptFocus to Boolean { obFocus.onNext(focused = true); focused }
+    public function loseFocus to Boolean { obFocus.onNext(focused = false); focused }
     public function getKeyboardInputHandler to KeyboardInputHandler 
     {
 	if (this is KeyboardInputHandler) {
@@ -17,6 +17,8 @@ public interface Focusable is Focuser {
     var keyDown is Subject of KeyboardEvent;
     var keyUp is Subject of KeyboardEvent;
     var keyInput is Subject of KeyboardEvent;
+
+    var obFocus is Subject of Boolean;
 
     public function observeKeyDown to Subject of KeyboardEvent 
     {
@@ -37,5 +39,9 @@ public interface Focusable is Focuser {
 	if (keyInput == null) 
 	    then keyInput = Subject of KeyboardEvent {}
 	else keyInput;
+    }
+
+    public function observeFocused to Observable of Boolean {
+        if (obFocus == null) then obFocus = Subject of Boolean {} else obFocus;
     }
 }
