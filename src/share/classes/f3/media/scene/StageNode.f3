@@ -12,7 +12,6 @@ function pot from (n is Integer) to Integer
     return result;
 }
 
-
 public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInputHandler, Focusable {
 
     const _1 = observeKeyDown().subscribe(injectKeyDown);
