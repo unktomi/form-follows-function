@@ -383,6 +383,9 @@ public class Scene
             }
             focusSet = true;
         }
+        if (focusSet) {
+            stage.setFocusedScene(this);
+        }
         return focusSet;
     }
 

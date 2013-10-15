@@ -101,6 +101,7 @@ public class Label is AbstractText {
 	pickable: bind pickable;
 	indent: bind indent;
 	editable: false;
+        cursor: bind cursor;
     };
     override var blocksPointer = true;
     override var pickable = false;

@@ -200,6 +200,11 @@ public interface Stage
         return focusedScene;
     }
 
+    package function setFocusedScene from (scene is Scene) to ()
+    {
+        focusedScene = scene;
+    }
+
     const keysDown = new java.util.TreeSet of Integer;
 
     public function injectKeyDown from (event is KeyboardEvent)to () {
