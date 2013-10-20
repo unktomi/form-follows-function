@@ -31,4 +31,6 @@ public interface AbstractWebBrowser {
 
     public CursorType getCursorType();
 
+    public Object executeJavascript(String script);
+
 }

@@ -1685,6 +1685,7 @@ public class TextDrawInfo is DrawInfo {
 
 
 class StageRenderer {
+    public var topLevel is Boolean = false;
     public var parent is StageRenderer;
     public var activate is function from () to ();
     public var cursor is Cursor;
@@ -1714,7 +1715,7 @@ class StageRenderer {
 
     public function renderScenes from (gl is GL2, width is Integer, height is Integer) to Boolean
     {
-	var dirty = cursor <> stage.cursor;
+	var dirty = topLevel or cursor <> stage.cursor;
 	if (lastWidth <> width) {
 	    dirty = true;
 	    lastWidth = width;
@@ -1753,7 +1754,7 @@ class StageRenderer {
 	}
 	if (dirty) {
 	    startDraw();
-	    gl.glViewport(0, 0, width, height);
+            gl.glViewport(0, 0, width, height);
 	    for (sceneRenderer in sceneRenderers) {
 		sceneRenderer.renderScene(gl, width, height);
 	    }
@@ -2152,6 +2153,8 @@ class SceneRenderer {
 	to ()
     {
 	if (not scene.visible) return;
+	const camera = scene.camera;
+	camera.update();
 	if (ENABLE_2D_RENDERER and scene.camera is Camera2D) {
 	    var canUse2d = true;
 	    for (x in  transparentToDraw) {
@@ -2180,8 +2183,6 @@ class SceneRenderer {
         } else {
             gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
         }
-	const camera = scene.camera;
-	camera.update();
 	if (not (camera is Camera2D)) {
 	    // sort opaque front to back      
 	    java.util.Collections.sort(opaqueToDraw, java.util.Comparator of MeshNode {
@@ -2725,10 +2726,10 @@ public class Listener is GLEventListener, DropTargetListener {
             wakeupFrames--;
             trig = true;
         }
-        if (not dragging and not trig and not frame.isActive()) {
-           java.lang.Thread.sleep(128);
-           return;
-        }
+        //        if (not dragging and not trig and not frame.isActive()) {
+          // java.lang.Thread.sleep(128);
+           //return;
+//        }
         if (not frame.isActive()) {
             prevTime = now;
         }
@@ -2749,6 +2750,7 @@ public class Listener is GLEventListener, DropTargetListener {
 
         if (stageRenderer == null) {
 	    stageRenderer = StageRenderer {
+                topLevel: true;
 		stage: stage;
 		activate: function from () to () {
 		    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
@@ -2794,11 +2796,15 @@ public class Listener is GLEventListener, DropTargetListener {
                 lastFrame = end;
             } 
             const d = lastFrame + sleepFrames - end;
-            if (skip and d > 0) {
+            if (skip) {
                 gl.setSwapInterval(0);
                 //println("sleeping {d}");
-                java.lang.Thread.sleep(d);
-                sleepFrames = Math.min(sleepFrames*2, 32);
+                if (d > 0) {
+                    java.lang.Thread.sleep(d);
+                    sleepFrames = Math.min(sleepFrames*2, 32);
+                } else {
+                    sleepFrames = 16;
+                }
             } else {
                 gl.setSwapInterval(1);
                 canvas.swapBuffers();
@@ -3434,13 +3440,18 @@ public function run from (args is String[]) to ()
     }
 
 
-    var currentModel is Node = HTML {
+    const wb is WebBrowser = WebBrowser {
     	transform: translate(512, 0, 0);
-    	content: "<html><body><div contenteditable='true'><h1>Welcome to F3</h1></div></body></html>";
+        url: "http://www.google.com";
 	//factory: TheWebBrowserFactory;
 	//effectLoader: CGEffectLoader_INSTANCE;
 	//pathFactory: ThePath2DFactory;
-    }
+    };
+    const www = wb.observePageLoaded().subscribe(function from (url is String) to () {
+            println("page loaded: {url}");
+            println(wb.executeJavascript("window"));
+    });
+    var currentModel is Node = wb;
 
     const prog = function from (mouseDown is Observable of MouseEvent) to Disposable
     {

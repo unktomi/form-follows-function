@@ -608,8 +608,19 @@ public class Browser implements AbstractWebBrowser {
         buildKeyMap();
     }
 
+    public void onMethodCall(int id, String methodName,
+                             JSArray args) {
+    }
+
+    public Object onMethodCallWithReturn(int id, 
+                                         String methodName,
+                                         JSArray args) 
+    {
+        return null;
+    }
+
     static native void updateAll();
-    static native long create(int width, int height);
+    native long create(int width, int height);
     static native void resize(long handle, int width, int height);
     static native void destroy(long handle);
     static native int getCursor(long handle);
@@ -763,6 +774,7 @@ public class Browser implements AbstractWebBrowser {
     }
 
     public void resize(int width, int height) {
+        JSObject foo = new JSObject(0);
         this.width = width;
         this.height = height;
         int w = potWidth = pot(width);
@@ -792,6 +804,7 @@ public class Browser implements AbstractWebBrowser {
 
     public boolean update() {
         if (handle != 0) {
+            getWindow();
             if (render(handle, buffer, potWidth * 4, 4, rect)) {
                 int x = rect[0];
                 int y = rect[1];
@@ -870,18 +883,30 @@ public class Browser implements AbstractWebBrowser {
     public void injectKeyInput(int keyCode, int mods, char keyChar) {
         injectKeyInput(handle, mods, mapKeyCode(keyCode), keyChar);
     }
-    /*
+
     JSObject window = null;
 
     public JSObject getWindow() {
 	if (window == null) {
 	    if (handle != 0) {
 		window = (JSObject)execute_js(handle, "window");
+                org.mozilla.javascript.ScriptableObject rhinoObj = (org.mozilla.javascript.ScriptableObject)
+                    AwesomiumRhino.convert(window);
+                for (Object x: rhinoObj.getIds()) {
+                    System.err.println(x);
+                }
 	    }
 	}
 	return window;
     }
-    */
+
+    public Object executeJavascript(String script) {
+        if (handle != 0) {
+            return execute_js(handle, script);
+        }
+        return null;
+    }
+
     static native Object execute_js(long handle, String script);
     static native long create_js_array();
     static native long create_js_object();
