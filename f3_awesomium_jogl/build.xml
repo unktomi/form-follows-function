@@ -8,7 +8,6 @@
   <import file="jni-cpptasks.xml"/>
 
   <target name="init" depends="jni.cpptasks.detect.os,jni.cpptasks.setup.compiler">
-    <mkdir dir="lib"/>
     <copy todir="lib">
       <fileset dir="../dist/lib/shared" includes="*.jar"/>
       <fileset dir="../f3_cg_jogl_awt/lib/" includes="jogl-all.jar"/>
@@ -20,7 +19,6 @@
 
   <target name="clean">
     <delete dir="build"/>
-    <delete dir="lib"/>
   </target>
 
   <target name="java-compile" depends="init">

@@ -14,6 +14,7 @@
     <copy todir="lib">
       <fileset dir="../dist/lib/shared" includes="*.jar"/>
       <fileset dir="../f3_svg_awt/build/" includes="*.jar"/>
+      <fileset  erroronmissingdir="false" dir="../f3_awesomium_jogl/lib/" includes="js.jar"/>
       <fileset  erroronmissingdir="false" dir="../f3_awesomium_jogl/build/" includes="*.jar"/>
       <fileset  erroronmissingdir="false" dir="../f3_awesomium_jogl/lib/" includes="js.jar"/>
       <fileset dir="../f3_corevideo/build/" includes="*.jar"/>

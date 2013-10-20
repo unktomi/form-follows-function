@@ -1,6 +1,8 @@
 package f3.media.scene;
 import f3.media.input.*;
 import f3.util.Bits;
+import f3.util.Observable;
+import f3.util.Subject;
 
 public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture, 
        MouseInputHandler, KeyboardInputHandler, Focusable 
@@ -23,6 +25,11 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
     public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
 
     protected var tex is AbstractWebBrowser;
+
+    public function executeJavascript from (script is String) to Object
+    {
+        tex.executeJavascript(script);
+    }
 
     override function getTextureId to Integer 
     {
@@ -50,6 +57,18 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
             cursor = Cursor { type: ctype };
 	    needsDraw = true;
         }
+        var u = tex.getURL();
+        loadedURL = u;
+    }
+
+    const loadSubject = Subject of String {};
+    
+    public readonly var loadedURL is String on replace {
+        loadSubject.onNext(loadedURL);
+    }
+    
+    public function observePageLoaded to Observable of String {
+        loadSubject;
     }
 
     public function updateTexture to Boolean {
