@@ -1,0 +1,15 @@
+package f3.util;
+
+public abstract class Sampler of a is Observer of a, f3.lang.AbstractConstRef of a {
+
+    public readonly var last is a = initialize();
+
+    override public function get to a { last }
+
+    public override function onNext from (x is a) to ()
+    {
+        last = x;
+    }
+
+    protected function initialize to a;
+}
