@@ -2680,7 +2680,8 @@ public class Listener is GLEventListener, DropTargetListener {
         dragging = false;
         try {
             ctx.makeCurrent();
-            stage.injectDrop(makeDropEvent(e));
+            const event = makeDropEvent(e);
+            stage.injectDrop(event);
         } finally {
             ctx.release();
         }
@@ -2787,7 +2788,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	    skip = false;
 	}
         trig = not skip;
-	setTitle("{opaque}/{opaque_tris}, {transp}/{transp_tris} - {stage.title}");
+        justInit = false;
 	stage.flush();
         setCursor(stage.cursor);
         if (true) {
@@ -2837,13 +2838,16 @@ public class Listener is GLEventListener, DropTargetListener {
     override function dispose from (drawable is GLAutoDrawable) to () {}
     override function display from (drawable is GLAutoDrawable) to () {
         render(drawable.getGL().getGL2(), drawable.getWidth(), drawable.getHeight());
+        canvas.repaint();
     }
 
     var animator is com.jogamp.opengl.util.FPSAnimator;
 
+    var justInit = true;
     override function init from (drawable is GLAutoDrawable) to () {
         animator = new com.jogamp.opengl.util.FPSAnimator(drawable, 60);
-        animator.start();
+        //animator.start();
+        justInit = true;
     }
 
     override function reshape 
@@ -3273,7 +3277,7 @@ public class JoglStage is Stage
         buildKeyMap();
         listener = Listener { stage: this }
         listener.setTitle = function from (title is String) to () {
-            frame.setTitle(title);
+            //frame.setTitle(title);
         }
         listener.setCursor = function from (cursor is Cursor) to () {
             if (cursor.type == CursorType.POINTER) {
@@ -3442,7 +3446,7 @@ public function run from (args is String[]) to ()
 
     const wb is WebBrowser = WebBrowser {
     	transform: translate(512, 0, 0);
-        url: "http://www.google.com";
+        url: "chrome://plugins/";
 	//factory: TheWebBrowserFactory;
 	//effectLoader: CGEffectLoader_INSTANCE;
 	//pathFactory: ThePath2DFactory;
@@ -3492,7 +3496,9 @@ public function run from (args is String[]) to ()
 	} else if (url.endsWith(".svg")) {
 	    viewer.focusCamera(currentModel = svgModel.root)
 	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith(".tif") or url.endsWith(".tiff") or url.endsWith(".tga")) {
-	    viewer.focusCamera(currentModel = imageModel)
+	    viewer.focusCamera(currentModel = imageModel);
+        } else if (url.endsWith(".mp4")) {
+            viewer.focusCamera(currentModel = Movie {url: url});
 	} else if (url.endsWith(".txt")) {
 	    textModel.setText(readTextFile(url).first);
 	    viewer.focusCamera(currentModel = TransformNode {
@@ -3600,7 +3606,10 @@ public function run from (args is String[]) to ()
 		const url = event.url;
 		event.accept();
 		try {
-		    const checkProtocol = new java.net.URL(url);
+                    if (not url.startsWith("chrome:") and
+                        not url.startsWith("javascript:")) {
+                        const checkProtocol = new java.net.URL(url);
+                    }
 		    doDrop(url);
 		} catch (exception is java.lang.Exception) {
 		    exception.printStackTrace();

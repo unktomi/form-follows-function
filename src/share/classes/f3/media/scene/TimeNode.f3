@@ -113,6 +113,8 @@ public abstract class TimeNode is Foldable of TimeNode
 	playing = picked;
         if (wasPlaying and not playing) {
             completed.onNext(());
+        } else if (not wasPlaying and playing) {
+            started.onNext(());
         }
 	const f =  { if (picked) then add else null } as function from TimeNode to ();
         pickChildren(sceneTime,
@@ -180,10 +182,16 @@ public abstract class TimeNode is Foldable of TimeNode
     }
 
     readonly var completed = bind Subject of (()) {};
+    readonly var started = bind Subject of (()) {};
 
     public function observeCompletion to Observable of (()) 
     {
 	completed
+    }
+    
+    public function observeStart to Observable of (()) 
+    {
+	started
     }
     
     public bound function isPlaying to Boolean {
