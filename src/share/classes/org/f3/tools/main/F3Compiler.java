@@ -595,7 +595,7 @@ public class F3Compiler implements ClassReader.SourceCompleter {
                 FileWriter fw = new FileWriter(outFile);
                 BufferedWriter out = new BufferedWriter(fw);
                 try {
-                    new DartPretty(out, true, context).printUnit(env.translatedToplevel, null);
+                    //                   new DartPretty(out, true, context).printUnit(env.translatedToplevel, null);
                 } finally {
                     out.close();
                 }
