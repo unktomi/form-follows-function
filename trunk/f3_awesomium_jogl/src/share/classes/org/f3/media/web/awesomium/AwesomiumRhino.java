@@ -93,8 +93,11 @@ public class AwesomiumRhino {
 	    this.target = target;
             JSArray methods = target.getMethodIds();
             for (Object obj: methods) {
+                System.err.println("Method: "+obj);
+                /*
                 super.put(obj.toString(), this, 
                           new AweFunction(this, obj.toString()));
+                */
             }
 	}
 

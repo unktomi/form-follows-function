@@ -1,4 +1,5 @@
 package f3.media.scene;
+import f3.math.*;
 
 public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     public var url is String;
@@ -8,8 +9,16 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     public var tex is AbstractTexture;
     public var paused is Boolean = false;
     public readonly var position is Duration = 0s;
+    public readonly var duration = bind 1ms * movie.getEndPosition();
+    public function setPosition from (pos is Duration) to ()
+    {
+        movie.setPosition(pos.toMillis() as Long);
+    }
     function getMovieIfLoaded to AbstractMovie { tex as AbstractMovie }
     override function update {
+        if (movieLoader == null) {
+            throw new java.lang.RuntimeException("No movie loader");
+        }
 	if (tex <> movie) {
 	    tex = movie;
 	    movie.setVolume(volume);
@@ -31,7 +40,7 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
 	if (pos <> position.toMillis()) {
 	    position = Duration.valueOf(pos);
 	}
-	println("movie update {movie} {position} w={tex.getWidth()} h={tex.getHeight()} texId={getTextureId()}");
+	//println("movie update {movie} {position} w={tex.getWidth()} h={tex.getHeight()} texId={getTextureId()}");
     }    
     override function getTextureId to Integer {
         return tex.getTextureId();
@@ -48,4 +57,24 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     public var volume is Number = 1.0 on replace { getMovieIfLoaded().setVolume(volume) }
     public var rate is Number = 1.0 on replace { getMovieIfLoaded().setRate(volume) }
 
+}
+
+public class Clip is TimeNode {
+    public var movie is Movie;
+    override var contentBounds = bind Interval { end: movie.duration };
+    override var pausedInScene on replace {
+        movie.paused = pausedInScene;
+    }
+    override var currentTime on replace {
+        if (pausedInScene) {
+            movie.setPosition(currentTime);
+        }
+    }
+    var disp1 = observeStart().subscribe(function from (_ is()) to () {
+            movie.setPosition(currentTime);
+            movie.paused = false;
+        });
+    var disp2 = observeCompletion().subscribe(function from (_ is()) to () {
+            movie.paused = true;
+        });
 }

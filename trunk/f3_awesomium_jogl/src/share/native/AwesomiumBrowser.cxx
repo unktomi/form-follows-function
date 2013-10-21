@@ -36,11 +36,23 @@ static jmethodID MOnMethodCall = 0;
 static jmethodID MOnMethodCallWithReturn = 0;
 
 static Awesomium::WebCore *webCore = 0;
+static Awesomium::WebSession *webSession = 0;
 static void ensureWebCore() {
   if (webCore == 0) {
     Awesomium::WebConfig config;
     //config.setEnablePlugins(true);
+    config.log_level = kLogLevel_Verbose;
+    config.plugin_path = WSLit("/Library/Internet Plug-ins/");
+    WebStringArray arr;
+    arr.Push(WSLit("--allow-file_access-from-files"));
+    config.additional_options = arr;
     webCore = Awesomium::WebCore::Initialize(config);
+    WebPreferences prefs;
+    prefs.enable_plugins = true;
+    prefs.enable_web_gl = true;
+    prefs.allow_universal_access_from_file_url = true;
+    prefs.allow_file_access_from_file_url = true;
+    webSession = webCore->CreateWebSession(WSLit(""), prefs);
     //webCore->set_surface_factory(new BitmapSurfaceFactory());
   }
 }
@@ -87,7 +99,7 @@ public:
     this->width = width;
     this->height = height;
     if (webView == 0) {
-      webView = webCore->CreateWebView(width, height, 0, kWebViewType_Offscreen);
+      webView = webCore->CreateWebView(width, height, webSession, kWebViewType_Offscreen);
       webView->set_view_listener(this);
       webView->set_load_listener(this);
       webView->set_js_method_handler(this);
@@ -209,6 +221,7 @@ public:
                                     const Awesomium::Rect& initial_pos,
                                     bool is_popup) 
   {
+    fprintf(stderr, "POPUP\n");
   }
 
   virtual void OnMethodCall(Awesomium::WebView* caller,
