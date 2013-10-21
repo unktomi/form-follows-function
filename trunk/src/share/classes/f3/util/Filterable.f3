@@ -1,0 +1,6 @@
+package f3.util;
+
+public interface Filterable of (class F of _) {
+    public abstract function filter of a from (xs is F of a, f is function from a to Boolean) to F of a;
+}
+
