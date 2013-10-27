@@ -7,6 +7,11 @@ import f3.util.*;
 public class RootNode {
 }
 
+public class Target {
+    public var camera is Camera;
+    public var stage is Stage;
+}
+
 public class Scene 
 {
     public var stage is Stage;
@@ -25,6 +30,8 @@ public class Scene
     }
 
     public var camera is Camera = PerspectiveCamera {};
+
+    public var targets is Target[];
 
     public var content is Node[];
 

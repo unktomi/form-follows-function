@@ -1683,8 +1683,7 @@ public class TextDrawInfo is DrawInfo {
     public var foreground is Paint;
 }
 
-
-class StageRenderer {
+public class StageRenderer {
     public var topLevel is Boolean = false;
     public var parent is StageRenderer;
     public var activate is function from () to ();
@@ -1729,23 +1728,12 @@ class StageRenderer {
 	if ((foreach (r in sceneRenderers) r.scene) <> stage.content) {
 	    dirty = true;
 	    sceneRenderers = 
-		foreach (scene in stage.content) SceneRenderer {
-		scene: scene, parent: this
-		override function onDraw 
-		from (transparent is Integer, 
-		      transpTris is Integer, 
-		      opaque is Integer, 
-		      opaqueTris is Integer)
-		to ()
-		{
-		    //println("draw  {scene} {transparent}/{transpTris}, {opaque}/{opaqueTris}");
-		    m1 += transparent;
-		    t1 += transpTris;
-		    m2 += opaque;
-		    t2 += opaqueTris;
-		}
-	    };
-
+		foreach (scene in stage.content) {
+                var s = SceneRenderer {};
+                s.scene = scene;
+                s.parent = parent;
+                s
+            }
 	}
         for (sceneRenderer in sceneRenderers) {
 	    if (sceneRenderer.checkNeedsDraw(gl, width, height)) {
@@ -1756,7 +1744,7 @@ class StageRenderer {
 	    startDraw();
             gl.glViewport(0, 0, width, height);
 	    for (sceneRenderer in sceneRenderers) {
-		sceneRenderer.renderScene(gl, width, height);
+		sceneRenderer.renderScene(gl, width, height, sceneRenderer.scene.camera);
 	    }
 	    endDraw();
 	    onDraw(m1, t1, m2, t2);
@@ -1769,7 +1757,19 @@ class StageRenderer {
     }
 }
 
-class SceneRenderer {
+class SurfaceRenderer is StageRenderer {
+    public var surface is OffscreenSurface;
+    override function startDraw {
+        surface.push();
+        surface.setupForDraw();
+    }
+    override function endDraw {
+        surface.blitMSFBO();
+        surface.pop();
+    }
+}
+
+public class SceneRenderer {
 
     var phongShader is Shader;
     var transparentToDraw = new java.util.ArrayList of MeshNode;
@@ -1782,7 +1782,6 @@ class SceneRenderer {
 	from (gl is GL2, stageNode is StageNode)
 	to Boolean
     {
-
         var surface = stageNode.drawingSurface as OffscreenSurface;
         if (surface == null) {
             surface = OffscreenSurface {
@@ -1790,16 +1789,9 @@ class SceneRenderer {
                 override var width = bind stageNode.width;
                 override var height = bind stageNode.height;
             }
-	    surface.stageRenderer = StageRenderer {
+	    surface.stageRenderer = SurfaceRenderer {
 		stage: stageNode;
-		override function startDraw {
-		    surface.push();
-		    surface.setupForDraw();
-		}
-		override function endDraw {
-		    surface.blitMSFBO();
-		    surface.pop();
-		}
+                surface: surface;
 	    };
             surface.stageRenderer.activate = surface.activate;
             stageNode.drawingSurface = surface;
@@ -2149,13 +2141,13 @@ class SceneRenderer {
     function renderScene
 	from (gl is GL2, 
 	      width is Number, 
-	      height is Number)
+	      height is Number,
+              camera is Camera)
 	to ()
     {
 	if (not scene.visible) return;
-	const camera = scene.camera;
 	camera.update();
-	if (ENABLE_2D_RENDERER and scene.camera is Camera2D) {
+	if (ENABLE_2D_RENDERER and camera is Camera2D) {
 	    var canUse2d = true;
 	    for (x in  transparentToDraw) {
 		if (not (x is Shape2D.MeshNode2D)) {
@@ -2164,7 +2156,7 @@ class SceneRenderer {
 		}
 	    }
 	    if (canUse2d) {
-		const cam = scene.camera as Camera2D;
+		const cam = camera as Camera2D;
 		const r = getRenderer2D(scene, gl);
 		r.render2d(cam, scene);
 		transparentToDraw.clear();
@@ -2218,13 +2210,17 @@ class SceneRenderer {
     }
 
     function onDraw 
-	from (transparent is Integer, 
-	      transpTris is Integer, 
-	      opaque is Integer, 
-	      opaqueTris is Integer)
-	to ()
+        from (transparent is Integer, 
+              transpTris is Integer, 
+              opaque is Integer, 
+              opaqueTris is Integer)
+        to ()
     {
-	//println("draw {transparent}/{transpTris}, {opaque}/{opaqueTris}");
+        //println("draw  {scene} {transparent}/{transpTris}, {opaque}/{opaqueTris}");
+        parent.m1 += transparent;
+        parent.t1 += transpTris;
+        parent.m2 += opaque;
+        parent.t2 += opaqueTris;
     }
 
     var polygonMode = PolygonMode.Fill;
@@ -2754,6 +2750,7 @@ public class Listener is GLEventListener, DropTargetListener {
                 topLevel: true;
 		stage: stage;
 		activate: function from () to () {
+                    var dummy = prevTime;
 		    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
 		}
 		override function onDraw 
@@ -3242,6 +3239,9 @@ public class JoglStage is Stage
 	    });
 	buildMenus(frame);
 	updateCursor();
+        if (updateSubject <> null) {
+            updateSubject.onNext(());
+        }
     }
 
     var frame is Frame;
