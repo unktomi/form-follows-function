@@ -2516,6 +2516,8 @@ public class Listener is GLEventListener, DropTargetListener {
 		dataList[0];
 	    }
         DropEvent {
+            screenx: e.getLocation().x;
+            screeny: e.getLocation().y;
             url: bind getData();
             override function reject to () {
                 e.rejectDrop();
@@ -2639,6 +2641,8 @@ public class Listener is GLEventListener, DropTargetListener {
     var dragging = false;
 
     override function dragEnter from (e is DropTargetDragEvent) to () {
+        screenx = e.getLocation().x;
+        screeny = e.getLocation().y;
         dragging = true;
         println("drag over: {java.lang.Thread.currentThread()}");
         try {
@@ -2650,6 +2654,8 @@ public class Listener is GLEventListener, DropTargetListener {
     }
 
     override function dragOver from (e is DropTargetDragEvent) to () {
+        screenx = e.getLocation().x;
+        screeny = e.getLocation().y;
         try {
             ctx.makeCurrent();
             stage.injectDragOver(makeDragEvent(e));
@@ -2672,6 +2678,8 @@ public class Listener is GLEventListener, DropTargetListener {
     }
 
     override function drop from (e is DropTargetDropEvent) to () {
+        screenx = e.getLocation().x;
+        screeny = e.getLocation().y;
         println("drop: {java.lang.Thread.currentThread()}");
         dragging = false;
         try {

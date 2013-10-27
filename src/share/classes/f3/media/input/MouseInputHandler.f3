@@ -10,3 +10,14 @@ public interface MouseInputHandler
     public function onMouseLeave from (event is MouseEvent) to () {}
     public function onMouseWheel from (event is MouseWheelEvent) to () {}
 }
+
+public class Delegate is MouseInputHandler {
+    public var delegate is MouseInputHandler;
+    override function onMouseUp from (event is MouseEvent) to () {delegate.onMouseUp(event)}
+    override function onMouseDown from (event is MouseEvent) to () {delegate.onMouseDown(event)}
+    override function onMouseMove from (event is MouseEvent) to () {delegate.onMouseMove(event)}
+    override function onMouseDrag from (event is MouseEvent) to () {delegate.onMouseDrag(event)}
+    override function onMouseEnter from (event is MouseEvent) to () {delegate.onMouseEnter(event)}
+    override function onMouseLeave from (event is MouseEvent) to () {delegate.onMouseLeave(event)}
+    override function onMouseWheel from (event is MouseWheelEvent) to () {delegate.onMouseWheel(event)}
+}
