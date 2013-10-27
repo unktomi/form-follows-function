@@ -1,6 +1,6 @@
 package f3.media.scene;
 import f3.media.input.*;
-
+import f3.util.*;
 
 public interface Stage
 {
@@ -256,6 +256,12 @@ public interface Stage
     public function removeKeyboardInputHandler from (h is KeyboardInputHandler) to () 
     {
         delete h from keyboardHandlers;
+    }
+
+    protected var updateSubject is Subject of (());
+    
+    public function observeUpdate to Observable of (()) {
+        if (updateSubject == null) updateSubject = Subject of (()) {} else updateSubject;
     }
 }
  

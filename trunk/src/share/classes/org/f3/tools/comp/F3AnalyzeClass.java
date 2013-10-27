@@ -1351,7 +1351,8 @@ class F3AnalyzeClass {
     //
     public void checkMixinOverride(MixinClassVarInfo varInfo) {
         for (TranslatedOverrideClassVarInfo tai : translatedOverrideAttrInfo) {
-            if (tai.getSymbol() == varInfo.getSymbol()) {
+            //if (tai.getSymbol() == varInfo.getSymbol()) { 
+            if (tai.getSymbol().name == varInfo.getSymbol().name) { // hack...
                 varInfo.setOverride(tai);
                 tai.setProxyVar(varInfo);
                 break;
@@ -1738,13 +1739,12 @@ class F3AnalyzeClass {
                     // Add var to map.
                     Name varName = initBuilder.attributeValueName(var);
                     mixinVarMap.put(varName, newVarInfo);
-                    
+                    System.err.println("adding: " +newVarInfo);
                     // Don't add mixin vars to mixin classes.
                     if (!isMixinClass()) {
                         // Add the new mixin VarInfo to the result list.
                         addVarToList(newVarInfo);
                     }
-                    
                     // Map the fact we've seen this var.
                     visitedAttributes.put(initBuilder.attributeValueName(var), newVarInfo);
                 } else if (oldVarInfo != null) {
