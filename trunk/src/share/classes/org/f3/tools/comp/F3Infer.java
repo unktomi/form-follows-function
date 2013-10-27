@@ -168,7 +168,7 @@ public class F3Infer {
                         that.inst = types.fromUnknownFun.apply(bs.head);
                 }
                 if (that.inst == null || !types.isSubtypeUnchecked(that.inst, that.hibounds, warn)) {
-		    System.err.println("not a subtype': "+ that.inst +" " +that.hibounds);
+		    //System.err.println("not a subtype': "+ that.inst +" " +that.hibounds);
                     throw ambiguousNoInstanceException
                         .setMessage("no.unique.maximal.instance.exists",
                                     that.qtype, that.hibounds);
@@ -217,7 +217,7 @@ public class F3Infer {
             else {
                 that.inst = types.lub(that.lobounds);
                 if (that.inst == null) {
-		    System.err.println("no minimal instance: "+that.qtype+": "+that.lobounds);
+		    //System.err.println("no minimal instance: "+that.qtype+": "+that.lobounds);
                     throw ambiguousNoInstanceException
                         .setMessage("no.unique.minimal.instance.exists",
                                     that.qtype, that.lobounds);
@@ -275,8 +275,8 @@ public class F3Infer {
 	    //System.err.println("v="+v);
 	    //System.err.println("v.qtype="+v.qtype);
             for (List<Type> l1 = types.getBounds((TypeVar) v.qtype); l1.nonEmpty(); l1 = l1.tail) {
-		System.err.println("l1.head="+l1.head);
-		System.err.println("v.qtype="+(v.qtype));
+		//System.err.println("l1.head="+l1.head);
+		//System.err.println("v.qtype="+(v.qtype));
 		//System.err.println("that.tvars="+that.tvars);
                 if (!l1.head.containsSome(that.tvars)) {
                     hibounds.append(l1.head);

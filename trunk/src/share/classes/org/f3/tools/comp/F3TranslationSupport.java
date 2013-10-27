@@ -386,7 +386,7 @@ public abstract class F3TranslationSupport {
 			}
 		    }
 		    JCTypeParameter exp = make.at(diagPos).TypeParameter(t.tsym.name, bb.toList());
-		    System.err.println(t + " => "+exp + ": "+exp.type);
+		    //System.err.println(t + " => "+exp + ": "+exp.type);
 		    exp.type = null;
 		    buf.append(exp);
 		}
@@ -508,7 +508,7 @@ public abstract class F3TranslationSupport {
 	    int i = types.isTypeConsType(t);
 	    if (i >= 0) {
 		Type site = t;
-		System.err.println("expanding'': "+ t);
+		//System.err.println("expanding'': "+ t);
 		//Thread.currentThread().dumpStack();
 		List<Type> targs = site.getTypeArguments();
 		if (ERASE_BACK_END) {
@@ -535,16 +535,16 @@ public abstract class F3TranslationSupport {
 		    }
 		    if (!(ctor instanceof TypeVar)) {
 			Type r = types.applySimpleGenericType(ctor, targs.tail);
-			System.err.println("not expanding: " +t+ " => " +r);
+			//System.err.println("not expanding: " +t+ " => " +r);
 		    }
 		}
 	    } else {
 		if (t.isParameterized()) {
 		    Type base = t.tsym.type;
 		    if (base.getTypeArguments().size() > t.getTypeArguments().size()) {
-			System.err.println("wrong # of type args: "+ t + " <> "+ base);
+			//System.err.println("wrong # of type args: "+ t + " <> "+ base);
 			t = types.makeTypeCons(types.erasure(t), t.getTypeArguments());
-			System.err.println("translated to: "+t);
+			//System.err.println("translated to: "+t);
 		    }
 		}
 	    }
@@ -552,8 +552,8 @@ public abstract class F3TranslationSupport {
 	if (ERASE_BACK_END) t = types.erasure(t);
 	if (t instanceof ForAll) {
 	    ForAll fa = (ForAll)t;
-	    System.err.println("fa.qtype="+fa.qtype.getClass());
-	    System.err.println("fa.qtype="+fa.qtype);
+	    //System.err.println("fa.qtype="+fa.qtype.getClass());
+	    //System.err.println("fa.qtype="+fa.qtype);
 	    if (fa.qtype instanceof MethodType) {
 		Type ftyp = syms.makeFunctionType(fa.asMethodType());
 		t = new ForAll(ftyp.getTypeArguments(), ftyp);
@@ -941,7 +941,7 @@ public abstract class F3TranslationSupport {
                 List<Type> argtypes = ((MethodType) mtype).getParameterTypes();
 		if (argtypes == null) {
 		    argtypes = ((MethodType)mtype).argtypes = List.<Type>nil();
-		    System.err.println("argtypes null: "+sym);
+		    //System.err.println("argtypes null: "+sym);
 		}
                 int argtypesCount = argtypes.length();
                 int counter = 0;
@@ -958,7 +958,7 @@ public abstract class F3TranslationSupport {
             }
         }
         String r = sb.toString();
-	System.err.println("sym="+sym+" => "+r);
+	//System.err.println("sym="+sym+" => "+r);
 	return r;
     }
 

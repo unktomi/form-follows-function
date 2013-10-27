@@ -621,9 +621,9 @@ public class F3ClassReader extends ClassReader {
 		typevars = typevars.dup(res);
 		enterTypevars(owner.type);
 		enterTypevars(res.type);
-		System.err.println("typevars="+typevars);
+		//System.err.println("typevars="+typevars);
 		thisType = sigToType(names.fromString(sig));
-		System.err.println("thisType="+thisType);
+		//System.err.println("thisType="+thisType);
 		typevars = typevars.leave();
 	    }
 	    catch (Exception e) {
@@ -913,7 +913,7 @@ public class F3ClassReader extends ClassReader {
             } else if (a.type.tsym.flatName() == f3Syms.f3_scriptPrivateAnnotationType.tsym.flatName()) {
                 accessFlags = F3Flags.SCRIPT_PRIVATE;
             } else if (a.type.tsym.flatName() == f3Syms.f3_implicitAnnotationType.tsym.flatName()) {
-		System.err.println("implicit sym="+sym);
+		//System.err.println("implicit sym="+sym);
                 nonAccessFlags |= F3Flags.IMPLICIT_PARAMETER;
             }
         }

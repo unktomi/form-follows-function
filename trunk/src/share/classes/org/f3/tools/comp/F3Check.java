@@ -245,12 +245,12 @@ public class F3Check {
     Type typeError(DiagnosticPosition pos, Object problem, Type found, Type req) {
         String foundAsF3Type = types.toF3String(found);
         String requiredAsF3Type = types.toF3String(req);
-	System.err.println("found="+found.getClass()+": "+found);
-	System.err.println("req="+req.getClass()+": "+req);
+	//System.err.println("found="+found.getClass()+": "+found);
+	//System.err.println("req="+req.getClass()+": "+req);
 	if (req instanceof TypeVar) {
 	    TypeVar tv = (TypeVar)req;
-	    System.err.println("tv.lower="+tv.lower);
-	    System.err.println("tv.bound="+tv.bound);
+	    //System.err.println("tv.lower="+tv.lower);
+	    //System.err.println("tv.bound="+tv.bound);
 	}
 	//Thread.currentThread().dumpStack();
 	log.error(pos, MsgSym.MESSAGE_PROB_FOUND_REQ, problem, foundAsF3Type, requiredAsF3Type);
@@ -446,7 +446,7 @@ public class F3Check {
 	    }
             if (true || (req == syms.f3_UnspecifiedType || req == Type.noType)) {
                 // Is this the right thing to do?  FIXME
-		System.err.println("not instantiating: "+ found);
+		//System.err.println("not instantiating: "+ found);
 		if (!found.getTypeArguments().nonEmpty()) {
 		    return ((ForAll)found).qtype;
 		}
@@ -549,8 +549,8 @@ public class F3Check {
 	    if (true || wc.type instanceof F3Attr.TypeVarDefn) {
 		return found;
 	    }
-	    System.err.println("found="+found);
-	    System.err.println("req="+req);
+	    //System.err.println("found="+found);
+	    //System.err.println("req="+req);
             log.error(pos, MsgSym.MESSAGE_ASSIGNMENT_TO_EXTENDS_BOUND, req);
 	    //Thread.currentThread().dumpStack();
             return syms.errType;
@@ -929,7 +929,7 @@ public class F3Check {
 	if (noBounds && t.isParameterized()) {
 	    List<Type> args = t.getTypeArguments();
 	    if (false) while (args.nonEmpty()) {
-		System.err.println("args="+types.toF3String(args));
+                    //System.err.println("args="+types.toF3String(args));
 		if (args.head.tag == WILDCARD)
 		    return typeTagError(pos,
 					Log.getLocalizedString(MsgSym.MESSAGE_TYPE_REQ_EXACT),
@@ -1645,7 +1645,7 @@ public class F3Check {
 			 e2 = e2.next()) {
 			Symbol s2 = e2.sym;
 			if (s2.type == null) {
-			    System.err.println("s2.type is null: "+s2+", s1="+s1);
+			    //System.err.println("s2.type is null: "+s2+", s1="+s1);
 			    continue;
 			}
 			if (s2 == s1 ||

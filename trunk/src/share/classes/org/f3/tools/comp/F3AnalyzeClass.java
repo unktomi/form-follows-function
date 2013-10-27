@@ -1739,7 +1739,7 @@ class F3AnalyzeClass {
                     // Add var to map.
                     Name varName = initBuilder.attributeValueName(var);
                     mixinVarMap.put(varName, newVarInfo);
-                    System.err.println("adding: " +newVarInfo);
+                    //System.err.println("adding: " +newVarInfo);
                     // Don't add mixin vars to mixin classes.
                     if (!isMixinClass()) {
                         // Add the new mixin VarInfo to the result list.

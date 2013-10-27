@@ -233,7 +233,7 @@ public class F3TreeMaker implements F3TreeFactory {
     }
 
     public F3Expression Tuple(List<F3Expression> expr) {
-	System.err.println("tuple: "+ expr);
+	//System.err.println("tuple: "+ expr);
 	if (expr.size() == 1) {
 	    return expr.head;
 	}
@@ -256,7 +256,7 @@ public class F3TreeMaker implements F3TreeFactory {
 	    result.immutable = true;
 	    expr = expr.tail;
 	}
-	System.err.println("tuple: "+ expr + " => "+ result);
+	//System.err.println("tuple: "+ expr + " => "+ result);
         return result;
     }
 
@@ -1345,9 +1345,9 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3Expression TupleType(F3Expression first, F3Expression second) {
 	// hack...
-	System.err.println("TupleType: "+ first+ ", "+ second);
-	System.err.println(first.getClass());
-	System.err.println(second.getClass());
+	//System.err.println("TupleType: "+ first+ ", "+ second);
+	//System.err.println(first.getClass());
+	//System.err.println(second.getClass());
 	if (!(first instanceof F3Type)) {
 	    first = TypeClass(first, Cardinality.SINGLETON);
 	}
@@ -1366,9 +1366,9 @@ public class F3TreeMaker implements F3TreeFactory {
 
     public F3Expression CoTupleType(F3Expression first, F3Expression second) {
 	// hack...
-	System.err.println("CoTupleType: "+ first+ ", "+ second);
-	System.err.println(first.getClass());
-	System.err.println(second.getClass());
+	///System.err.println("CoTupleType: "+ first+ ", "+ second);
+	//System.err.println(first.getClass());
+	//System.err.println(second.getClass());
 	/*
 	if (!(first instanceof F3Type)) {
 	    first = TypeClass(first, Cardinality.SINGLETON);
