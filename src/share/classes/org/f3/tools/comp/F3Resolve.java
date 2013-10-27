@@ -517,8 +517,8 @@ public class F3Resolve {
         try {
 
 	    Type memtype = types.memberType(site, m);
-	    System.err.println("site: "+ types.toF3String(site));
-	    System.err.println("member type: "+types.toF3String(memtype));
+	    //System.err.println("site: "+ types.toF3String(site));
+	    //System.err.println("member type: "+types.toF3String(memtype));
             Type r = rawInstantiateDebug(env, m, memtype, argtypes, typeargtypes,
 					 allowBoxing, useVarargs, warn);
 	    //System.err.println("instantiated "+m+" to "+ r);
@@ -945,7 +945,7 @@ public class F3Resolve {
         Type mt = sym.type;
         mt = reader.translateType(mt);
 	if (mt == null) {
-	    System.err.println("mt=null: "+sym+": "+sym.type);
+	    //System.err.println("mt=null: "+sym+": "+sym.type);
 	    return wrongMethod.setWrongSym(sym);
 	}
         if (mt instanceof FunctionType) {
@@ -971,7 +971,7 @@ public class F3Resolve {
 	    if (x.owner == y.owner) {
 		return true;
 	    }
-	    System.err.println("different owners: "+ x.owner + " " + y.owner);
+	    //System.err.println("different owners: "+ x.owner + " " + y.owner);
 	}
 	return false;
     }
@@ -1114,7 +1114,7 @@ public class F3Resolve {
                 !noteWarner.unchecked;
             if (m1SignatureMoreSpecific && m2SignatureMoreSpecific) {
                 if (!types.overrideEquivalent(mt1, mt2)) {
-		    System.err.println("not override eq "+ mt1 + ", "+mt2);
+		    //System.err.println("not override eq "+ mt1 + ", "+mt2);
                     return new AmbiguityError(m1, m2);
 		}
                 // same signature; select (a) the non-bridge method, or
@@ -1309,10 +1309,10 @@ public class F3Resolve {
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
 	    if (c.members() == null) {
-		System.err.println("ct="+ct);
-		System.err.println("site="+site);
-		System.err.println("members null: "+ c);
-		System.err.println("intype="+intype);
+		//System.err.println("ct="+ct);
+		//System.err.println("site="+site);
+		//System.err.println("members null: "+ c);
+		//System.err.println("intype="+intype);
 		//Thread.currentThread().dumpStack();
 		continue;
 	    }
@@ -1473,7 +1473,7 @@ public class F3Resolve {
 		ClassSymbol mixin = ((F3ClassSymbol)c).mixinSymbol;
 		if (mixin != null) {
 		    c = mixin;
-		    System.err.println("resolved mixin: "+ c);
+		    //System.err.println("resolved mixin: "+ c);
 		}
 	    }
             return isAccessible(env, c) ? c : new AccessError(c);
@@ -1508,7 +1508,7 @@ public class F3Resolve {
 		if (bestSoFar.type != syms.unknownType) {
 		    bestSoFar = bestSoFar.type.tsym;
 		}
-		System.err.println(name + " => "+bestSoFar.type.getClass()+": "+types.toF3String(bestSoFar.type));
+		//System.err.println(name + " => "+bestSoFar.type.getClass()+": "+types.toF3String(bestSoFar.type));
 	    }
 	}
 	return bestSoFar;
@@ -1639,7 +1639,7 @@ public class F3Resolve {
 		if (bestSoFar.type != syms.unknownType) {
 		    //bestSoFar = bestSoFar.type.tsym;
 		}
-		System.err.println(name + " => "+types.toF3String(bestSoFar.type));
+		//System.err.println(name + " => "+types.toF3String(bestSoFar.type));
 	    }
 	}
 	return bestSoFar;
@@ -1934,7 +1934,7 @@ public class F3Resolve {
 	    }
 	}
         if (sym.kind >= AMBIGUOUS) {
-	    System.err.println("resolveIdent " +name+" "+((pt == null) ? null : pt.getClass())+": "+pt + " => "+ sym);
+	    //System.err.println("resolveIdent " +name+" "+((pt == null) ? null : pt.getClass())+": "+pt + " => "+ sym);
             return access(sym, pos, env.getEnclosingClassType(), name, false, pt);
         } else
             return sym;
@@ -1958,7 +1958,7 @@ public class F3Resolve {
 		List<Type> targs = site.getTypeArguments();
 		Type origSite = site;
 		site = types.applySimpleGenericType(targs.head, targs.tail);
-		System.err.println("site "+origSite + " ==> "+site);
+		//System.err.println("site "+origSite + " ==> "+site);
 		sym = resolveQualifiedMethod0(pos, env, site, name, expected);
 	    }
 	}
@@ -2978,8 +2978,8 @@ public class F3Resolve {
             super(AMBIGUOUS, sym1, "ambiguity error");
             this.sym1 = sym1;
             this.sym2 = sym2;
-	    System.err.println(this);
-	    Thread.currentThread().dumpStack();
+	    //System.err.println(this);
+	    //Thread.currentThread().dumpStack();
         }
 
         /** Report error.

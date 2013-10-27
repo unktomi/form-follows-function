@@ -96,15 +96,21 @@ public class F3BackendLog extends Log {
         } else {
             f3Log.note(MsgSym.MESSAGE_F3_NOTE_INTERNAL_ERROR, crashFileName);
         }
-        Log.printLines(crashFileWriter, Main.getF3LocalizedString(
-                                    "compiler.note." + MsgSym.MESSAGE_F3_NOTE_INTERNAL_ERROR1,
-                                    F3Compiler.fullVersion(), 
-                                    System.getProperty("java.vm.version"),
-                                    System.getProperty("java.runtime.version"),
-                                    System.getProperty("os.name"),
-                                    System.getProperty("os.arch"),
-                                    extra));
-        crashFileWriter.flush();
+        try {
+            Log.printLines(crashFileWriter, Main.getF3LocalizedString(
+                                                                      "compiler.note." + MsgSym.MESSAGE_F3_NOTE_INTERNAL_ERROR1,
+                                                                      F3Compiler.fullVersion(), 
+                                                                      System.getProperty("java.vm.version"),
+                                                                      System.getProperty("java.runtime.version"),
+                                                                      System.getProperty("os.name"),
+                                                                      System.getProperty("os.arch"),
+                                                                      extra));
+        } catch (Throwable t) {
+            System.err.println(extra);
+            t.printStackTrace();
+        } finally {
+            crashFileWriter.flush();
+        }
     }
 
     private void errorPreface() {

@@ -110,9 +110,9 @@ public class F3Types extends Types {
     public Type makeTypeCons(Type thisType, List<Type> args) {
 	int i = isTypeConsType(thisType);
 	if (i > 0) {
-	    System.err.println("thisType="+thisType);
-	    System.err.println("args="+args);
-	    Thread.currentThread().dumpStack();
+	    //System.err.println("thisType="+thisType);
+	    //System.err.println("args="+args);
+	    //Thread.currentThread().dumpStack();
 	    if (thisType.getTypeArguments().head instanceof TypeCons) {
 		thisType = thisType.getTypeArguments().head;
 	    }
@@ -122,7 +122,7 @@ public class F3Types extends Types {
 	    if (thisType instanceof TypeCons) {
 		TypeCons cons = (TypeCons)thisType;
 		if (cons.ctor != null) {
-		    System.err.println("ctor="+cons.ctor.getClass()+": "+cons.ctor);
+		    //System.err.println("ctor="+cons.ctor.getClass()+": "+cons.ctor);
 		    list.head = cons.ctor;
 		    args = cons.args.appendList(args);
 		} else {
@@ -685,7 +685,7 @@ public class F3Types extends Types {
 	    //System.err.println("base="+base.getClass()+": "+base + " / " + base.tsym.type);
 	}
 	if (base.getEnclosingType() == null) {
-	    System.err.println("base is "+base.getClass()+ ": "+base);
+	    //System.err.println("base is "+base.getClass()+ ": "+base);
 	}
         return newClassType(base.getEnclosingType(), actuals, base.tsym);
     }
@@ -831,8 +831,8 @@ public class F3Types extends Types {
 	    } catch (AssertionError err) {
 		if (!WARNED_BUG) {
 		    WARNED_BUG = true;
-		    System.err.println("t="+t+", s="+s);
-		    System.err.println(err);
+		    //System.err.println("t="+t+", s="+s);
+		    //System.err.println(err);
 		    //Thread.currentThread().dumpStack();
 		}
 	    }
@@ -1276,13 +1276,13 @@ public class F3Types extends Types {
 
     public boolean hasSameBounds(ForAll t, ForAll s) {
 	boolean result = hasSameBounds0(t, s);
-	System.err.println("has same bounds: "+ t.getClass()+ " and " +s.getClass()+": "+result);
-	System.err.println("has same bounds: "+ t+ " and " +s+": "+result);
+	//System.err.println("has same bounds: "+ t.getClass()+ " and " +s.getClass()+": "+result);
+	//System.err.println("has same bounds: "+ t+ " and " +s+": "+result);
 	if (result) {
 	    Type q = t.qtype;
 	    Type r = subst(s.qtype, s.tvars, t.tvars);
-	    System.err.println("q="+q);
-	    System.err.println("r="+r);
+	    //System.err.println("q="+q);
+	    //System.err.println("r="+r);
 	    return hasSameArgs(q, r);
 	}
 	return result;
@@ -1303,10 +1303,10 @@ public class F3Types extends Types {
 	for (int i = 0; i < ts.size(); i++) {
 	    Type x = ts.get(i);
 	    Type y = ss.get(i);
-	    System.err.println("x="+x+", y="+y);
-	    System.err.println("isSameType: "+ isSameType(x, y));
-	    System.err.println("x contains y: "+ containsType(x, y));
-	    System.err.println("y contains x: "+ containsType(y, x));
+	    //System.err.println("x="+x+", y="+y);
+	    //System.err.println("isSameType: "+ isSameType(x, y));
+	    //System.err.println("x contains y: "+ containsType(x, y));
+	    //System.err.println("y contains x: "+ containsType(y, x));
 	    if (!isSameType(x, y) && !containsType(x, y)) {
 		return false;
 	    }
@@ -2177,13 +2177,13 @@ public class F3Types extends Types {
             public Type visitTypeVar(TypeVar t0, Boolean preserveWildcards) 
 	    {
 		if (t0 instanceof TypeCons) {
-		    System.err.println("NORMALIZE': "+ t0);
+		    //System.err.println("NORMALIZE': "+ t0);
 		    TypeCons c = (TypeCons)t0;
 		    if (c.ctor == null) {
 			return c;
 		    }
 		    Type x = applySimpleGenericType(t0, visit(t0.getTypeArguments(), preserveWildcards));
-		    System.err.println("returning: "+ x);
+		    //System.err.println("returning: "+ x);
 		    return x;
 		}
 		if (t0 instanceof ConstI) {
@@ -2315,7 +2315,7 @@ public class F3Types extends Types {
 		    if (xt != null) {
 			buf.append(xt);
 		    } else {
-			System.err.println("normalized to null: "+ t);
+			//System.err.println("normalized to null: "+ t);
 		    }
                 }
                 return buf.toList();
@@ -2390,7 +2390,7 @@ public class F3Types extends Types {
         private SimpleVisitor<Type,Symbol> memberType = new SimpleVisitor<Type,Symbol>() {
 
             public Type visitType(Type t, Symbol sym) {
-		System.err.println("VISIT: "+t+" in "+sym);
+		//System.err.println("VISIT: "+t+" in "+sym);
                 return sym.type;
             }
 
@@ -2407,7 +2407,7 @@ public class F3Types extends Types {
 		    return sym.type;
 		}
 		if (owner.type == null) {
-		    System.err.println("owner.type of "+sym+" is null: "+ owner.name);
+		    //System.err.println("owner.type of "+sym+" is null: "+ owner.name);
 		    return sym.type;
 		}
                 if (((flags & STATIC) == 0) && owner.type.isParameterized()) {
@@ -2423,7 +2423,7 @@ public class F3Types extends Types {
                                 return erasure(sym.type);
                             } else {
 				if (false) {
-				    System.err.println("sym="+sym+", sym.type="+sym.type);
+				    //System.err.println("sym="+sym+", sym.type="+sym.type);
 				    for (Type t1: sym.type.getTypeArguments()) {
 					System.err.println("sym.type.param="+t1.getClass()+"@"+System.identityHashCode(t1) + ": "+t1);
 				    }
@@ -2452,8 +2452,8 @@ public class F3Types extends Types {
 
             @Override
             public Type visitTypeVar(TypeVar t, Symbol sym) {
-		System.err.println("member type "+ toF3String(t));
-		System.err.println("bound="+toF3String(t.bound));
+		//System.err.println("member type "+ toF3String(t));
+		//System.err.println("bound="+toF3String(t.bound));
 		if (t instanceof TypeCons) {
 		}
                 return memberType(t.bound, sym);
@@ -2516,8 +2516,8 @@ public class F3Types extends Types {
 
         Type subst(Type t) {
 	    if (t == null) {
-		System.err.println("type is null");
-		Thread.currentThread().dumpStack();
+		//System.err.println("type is null");
+		//Thread.currentThread().dumpStack();
 		return syms.botType;
 	    }
             if (from.tail == null)
@@ -2613,7 +2613,7 @@ public class F3Types extends Types {
 		Type lower = visit(t.lower, null);
 		if (t.bound == null) {
 		    t.bound = syms.objectType;
-		    System.err.println("bound was null: "+ t);
+		    //System.err.println("bound was null: "+ t);
 		} 
 		Type upper = visit(t.bound, null);
 		t1.bound = upper;
@@ -2740,7 +2740,7 @@ public class F3Types extends Types {
 
     public ClassType newClassType(Type enclosing, List<Type> targs, TypeSymbol sym) {
 	if (enclosing == null) {
-	    System.err.println(sym.name + " "+targs);
+	    //System.err.println(sym.name + " "+targs);
 	    throw new NullPointerException("enclosing is null: "+sym.name);
 	}
 	return new ClassType(enclosing, targs, sym);
@@ -2959,7 +2959,7 @@ public class F3Types extends Types {
 	    if (x.owner == y.owner) {
 		return true;
 	    }
-	    System.err.println("different owners: "+ x.owner + " " + y.owner);
+	    //System.err.println("different owners: "+ x.owner + " " + y.owner);
 	}
 	return false;
     }

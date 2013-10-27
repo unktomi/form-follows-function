@@ -740,8 +740,8 @@ public class F3Lower implements F3Visitor {
 	if (expr != null) {
 	    expr = preTrans.makeCast(expr, tree.type);
 	} else {
-	    System.err.println("tree.expr="+tree.getExpression());
-	    System.err.println("expr'="+expr+", type="+tree.type);
+	    //System.err.println("tree.expr="+tree.getExpression());
+	    //System.err.println("expr'="+expr+", type="+tree.type);
 	}
         F3ObjectLiteralPart res = m.at(tree.pos).ObjectLiteralPart(tree.name, expr, tree.getExplicitBindStatus());
         res.markBound(tree.getBindStatus());
@@ -1706,8 +1706,8 @@ public class F3Lower implements F3Visitor {
     F3Expression accessThe(Symbol sym, Type expectedType) {
 	if (sym == null) return null;
 	F3Expression exp = m.QualIdent(sym);
-	System.err.println("sym.type="+sym.type);
-	System.err.println("expectedType="+expectedType);
+	//System.err.println("sym.type="+sym.type);
+	//System.err.println("expectedType="+expectedType);
 	exp.type = sym.type;
 	if (!types.isSubtype(sym.type, expectedType)) {
 	    exp = m.Apply(List.<F3Expression>nil(), exp, List.<F3Expression>nil());

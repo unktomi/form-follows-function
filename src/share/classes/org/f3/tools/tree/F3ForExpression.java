@@ -269,8 +269,8 @@ public class F3ForExpression extends F3Expression implements ForExpressionTree {
         // bind foreach ([1, 2, 3] into xs, [4, 5, 6] into ys) f(xs, ys)
         // into
         // xs.coflatmap(function(xs) { ys.coflatmap(function(ys) { f(xs, ys)}) })
-	System.err.println("argType="+argType);
-	System.err.println("resultType="+resultType);
+	//System.err.println("argType="+argType);
+	//System.err.println("resultType="+resultType);
 	Name map = names.fromString("coflatmap");
         F3Modifiers mods = F.Modifiers(F3Flags.BOUND);
         F3Var var = clause.intoVar;

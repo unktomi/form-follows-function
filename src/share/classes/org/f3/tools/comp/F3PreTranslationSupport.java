@@ -342,7 +342,7 @@ public class F3PreTranslationSupport {
                 makeCast(target, type) :
                 tree;
 	    if (target != tree) {
-		System.err.println("cast: "+ newTree);
+		//System.err.println("cast: "+ newTree);
 	    }
 	    if (newTree != tree) {
 		//System.err.println("make cast: "+ newTree);

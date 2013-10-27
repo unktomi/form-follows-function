@@ -562,8 +562,8 @@ public class F3Compiler implements ClassReader.SourceCompleter {
 		} else {
 		    outFile = new File(dir, fn);
 		}
-		System.err.println("dirName="+dirName);
-		System.err.println("outFile="+outFile);
+		//System.err.println("dirName="+dirName);
+		//System.err.println("outFile="+outFile);
 		outFile.getParentFile().mkdirs();
                 FileWriter fw = new FileWriter(outFile);
                 BufferedWriter out = new BufferedWriter(fw);

@@ -56,7 +56,7 @@ public class FunctionType extends Type.ClassType {
 	if (false) {
 	    for (Type t:  typarams) {
 		if (!(t instanceof WildcardType)) {
-		    System.err.println("not a wildcard: "+ t + " in "+ mtype);
+		    //System.err.println("not a wildcard: "+ t + " in "+ mtype);
 		    Thread.currentThread().dumpStack();
 		}
 	    }

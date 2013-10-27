@@ -315,7 +315,7 @@ public class F3LocalToClass {
                 if (types.isSyntheticPointerFunction(msym)) {
                     Symbol sym = F3TreeInfo.symbol(tree.args.head);
                     if (sym.isLocal()) {
-			System.err.println("inflate due to "+sym);
+			//System.err.println("inflate due to "+sym);
                         needed = true;
                     }
                 } else if (msym != null && (msym.flags() & F3Flags.BOUND) != 0L) {

@@ -493,16 +493,16 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    final F3TypeAlias ta = (F3TypeAlias)tx;
 	    final F3Env<F3AttrContext> env1 = env;
 	    Scope toScope = env1.toplevel.scriptScope;//env.toplevel.namedImportScope;
-	    System.err.println("env.info.scope.owner="+env.info.scope.owner);
+	    //System.err.println("env.info.scope.owner="+env.info.scope.owner);
 	    ta.tsym = new F3Resolve.TypeAliasSymbol(ta.getIdentifier(), 
 						    syms.unknownType,
 						    toScope.owner);
 
 	    toScope.enter(ta.tsym);
-	    System.err.println(toScope);
+	    //System.err.println(toScope);
 	    ta.tsym.completer = new Completer() {
 		    public void complete(Symbol m) throws CompletionFailure {
-			System.err.println("completing alias: "+ m);
+			//System.err.println("completing alias: "+ m);
 			attr.attribType(ta, env1);
 		    }
 		};
@@ -527,7 +527,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 			}
 		    };
 		env1.info.scope.enter(ta.tsym);
-		System.err.println(env1.info.scope);
+		//System.err.println(env1.info.scope);
 	    }
 	}
     }    
@@ -867,7 +867,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		if (t instanceof TypeVar) {
 		    localEnv.info.scope.enter(((TypeVar)t).tsym);
 		} else {
-		    System.err.println("not a type var: "+ t + " in "+tree.typeArgs);
+		    //System.err.println("not a type var: "+ t + " in "+tree.typeArgs);
 		}
 	    }
 	}
@@ -1047,7 +1047,7 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		if (t instanceof TypeVar) {
 		    typaramScope.enter(((TypeVar)t).tsym);
 		} else {
-		    System.err.println("not a type var: "+ t + " in "+tree.typeArgs);
+		    //System.err.println("not a type var: "+ t + " in "+tree.typeArgs);
 		}
 	    }
             int count = tree.typeArgs.size();
@@ -1082,8 +1082,8 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 		    targs = targs0;
 		    dargs = dargs.tail;
 		    F3Expression arg0 = f3make.at(tree.pos()).TypeApply(f3make.Type(syms.f3_TypeConsErasure[count]), nargs);
-		    System.err.println("supertype="+arg0.getClass()+arg0);
-		    System.err.println("dargs="+dargs);
+		    //System.err.println("supertype="+arg0.getClass()+arg0);
+		    //System.err.println("dargs="+dargs);
 		    if (false) {
 			typ = f3make.TypeClass(arg0, Cardinality.SINGLETON);
 			typ.boundKind = BoundKind.EXTENDS;

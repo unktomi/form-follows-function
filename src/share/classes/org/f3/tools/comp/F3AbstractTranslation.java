@@ -1566,7 +1566,7 @@ public abstract class F3AbstractTranslation
 				   m().Apply(typeArgs.toList(),
 					     //translateExprs(typeargs), 
 					     tMeth, determineArgs()));
-		System.err.println("app="+app);
+		//System.err.println("app="+app);
 	    } else {
 		//System.err.println("typeargs="+typeargs);
 		for (F3Expression exp: typeargs) {
@@ -1576,15 +1576,15 @@ public abstract class F3AbstractTranslation
 			exp.type = types.boxedTypeOrType(exp.type);
 		    }
 		    JCExpression te = translateExpr(exp, exp.type);
-		    System.err.println("exp="+exp.getClass() + ": "+ exp);
-		    System.err.println("te="+te);
+		    //System.err.println("exp="+exp.getClass() + ": "+ exp);
+		    //System.err.println("te="+te);
 		    */
 		    if (exp == null) {
-			System.err.println("exp is null: "+ typeargs + " of "+mungedToCheckTranslated);
+			//System.err.println("exp is null: "+ typeargs + " of "+mungedToCheckTranslated);
 			continue;
 		    }
 		    if (exp.type == null) {
-			System.err.println("exp.type is null: "+ exp);
+			//System.err.println("exp.type is null: "+ exp);
 		    }
 		    JCExpression te = makeType(types.boxedTypeOrType(exp.type), false);
 		    if (exp.type instanceof Type.TypeVar) { // hack
@@ -2097,10 +2097,10 @@ public abstract class F3AbstractTranslation
 		if (sym instanceof F3VarSymbol) {
 		    F3VarSymbol fsym = (F3VarSymbol)sym;
 		    if (fsym.refinedThis != null) {
-			System.err.println("this.type="+sym.type);
-			System.err.println("refinedThis="+fsym.refinedThis);
-			System.err.println("acc="+result);
-			System.err.println("enclosing: "+getEnclosingClassSymbol());
+			//System.err.println("this.type="+sym.type);
+			//System.err.println("refinedThis="+fsym.refinedThis);
+			//System.err.println("acc="+result);
+			//System.err.println("enclosing: "+getEnclosingClassSymbol());
 			result = make.TypeCast(makeType(sym.type, true), result);
 		    }
 		}
@@ -3075,7 +3075,7 @@ public abstract class F3AbstractTranslation
 		Name paramName = f3Var.getName();
 		//Type paramType = f3Var.sym.type;
 		Type paramType = f3Var.type; // hack
-		if (f3Var.sym.type == null) {
+		if (false && f3Var.sym.type == null) {
 		    System.err.println("var="+f3Var);
 		    System.err.println("var.sym="+f3Var.sym);
 		    System.err.println("var.sym.type="+f3Var.sym.type);
@@ -3140,7 +3140,7 @@ public abstract class F3AbstractTranslation
 		    Type paramType = types.boxedTypeOrType(argType);
 		    typeArgs.append(makeType(paramType));
 		}
-		System.err.println("typeargs="+typeArgs.toList());
+		//System.err.println("typeargs="+typeArgs.toList());
 		funcClassType = m().TypeApply(functionTypeExpr, typeArgs.toList());
 	    } else {
 		Type ftype = syms.asFunctionType(mtype);

@@ -421,7 +421,7 @@ public class F3InitializationBuilder extends F3TranslationSupport {
 		    if (types.isTypeConsType(iface) >= 0) {
 			JCExpression exp = makeTypeTreeInner01(diagPos, iface, true, false);
 			implementing.append(exp);
-			System.err.println("ADDING: "+cDecl.sym.name+": "+ iface +": "+exp);
+			//System.err.println("ADDING: "+cDecl.sym.name+": "+ iface +": "+exp);
 			break;
 		    }
 		}
@@ -3569,16 +3569,16 @@ however this is what we need */
                         for (F3VarSymbol referenceVar : instanceMap.keySet()) {
                             if (instanceVar.isSpecial()) {
                                 // Dependent on var referenced via "this"
-				System.err.println("is special "+ instanceVar+ ": "+referenceVar);
+				//System.err.println("is special "+ instanceVar+ ": "+referenceVar);
                                 addFixedDependent(instanceVar, referenceVar);
                             } else if (referenceVar.isStatic()) {
-				System.err.println("ref is static "+ instanceVar+ ": "+referenceVar);
+				//System.err.println("ref is static "+ instanceVar+ ": "+referenceVar);
                                 // Dependent on a script-level var, reference via the script-level var
                                 F3ClassSymbol classSym = (F3ClassSymbol) referenceVar.owner;
                                 F3VarSymbol scriptAccess = f3make.ScriptAccessSymbol(classSym);
                                 addFixedDependent(scriptAccess, referenceVar);
                             } else {
-				System.err.println("not init var: "+ instanceVar+ ": "+referenceVar);
+				//System.err.println("not init var: "+ instanceVar+ ": "+referenceVar);
 			    }
                         }
                     }
