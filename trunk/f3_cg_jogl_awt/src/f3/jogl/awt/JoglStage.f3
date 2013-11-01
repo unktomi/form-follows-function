@@ -62,6 +62,9 @@ function getFont from (spec is String) to java.awt.Font
     var name = "Lucida Grande";
     for (i in props) {
         const prop = i.trim().split(":");
+        if (prop.length < 2) {
+            throw new java.lang.IllegalArgumentException(spec);
+        }
         const attr = prop[0].trim();
         const value = prop[1].trim();
         if (attr == "font-size") {
@@ -3262,6 +3265,8 @@ public class JoglStage is Stage
         frame.resize(w, h);
     }
 
+    var cursors = new java.util.HashMap of (String, java.awt.Cursor);
+
     function setup {
         const glp = GLProfile.get("GL2");
         const caps = new GLCapabilities(glp);
@@ -3294,10 +3299,20 @@ public class JoglStage is Stage
                 frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             } else if (cursor.type == CursorType.IBEAM) {
                 frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.TEXT_CURSOR));
+            } else if (cursor is Cursor.CustomCursor) {
+                var cc = cursor as Cursor.CustomCursor;
+                var u = cc.image.url;
+                var c = cursors.get(u);
+                if (c == null) {
+                    c = java.awt.Toolkit.getDefaultToolkit().createCustomCursor(new javax.swing.ImageIcon(new java.net.URL(u)).getImage(), new java.awt.Point(cc.x, cc.y), cc.id);
+                    cursors.put(u, c);
+                }
+                frame.setCursor(c);
             } else {
                 frame.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
             }
         }
+
 	
 	var x = Integer.MAX_VALUE;
 	var y = Integer.MAX_VALUE;
