@@ -819,8 +819,10 @@ public class F3TreeMaker implements F3TreeFactory {
                 localVar.sym = f3Var.sym;
                 stmts.append(localVar);
             }
-            stmts.appendList(bodyExpression.stats);
-            bodyExpression.stats = stmts.toList();
+            if (bodyExpression != null) {
+                stmts.appendList(bodyExpression.stats);
+                bodyExpression.stats = stmts.toList();
+            }
             params = newParams.toList();
         }
         F3FunctionDefinition tree = new F3FunctionDefinition(

@@ -15,4 +15,12 @@ public static const Default = Cursor {type: CursorType.POINTER};
 public static const Hand = Cursor {type: CursorType.HAND};
 public static const IBeam = Cursor {type: CursorType.IBEAM};
 
+public class CustomCursor is Cursor {
+    public var image is Image;
+    public var id is String = bind image.id;
+    public var x is Integer;
+    public var y is Integer;
+    override var type = CursorType.CUSTOM;
+}
+
 

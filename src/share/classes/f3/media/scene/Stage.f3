@@ -177,14 +177,16 @@ public interface Stage
         }
     }
 
+    public var defaultCursor is Cursor;
+
     public readonly var cursor is Cursor;
 
     protected function updateCursor to () 
     {
-	var sceneCursor is Cursor = null;
+	var sceneCursor is Cursor = defaultCursor;
 	for (scene in content.reverse()) {
-	    sceneCursor = scene.cursor;
-	    if (sceneCursor <> null) {
+	    if (scene.cursor <> null) {
+                sceneCursor = scene.cursor;
 		break;
 	    }
 	}
