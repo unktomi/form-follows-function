@@ -105,6 +105,11 @@ public class Point3 is Tuple3
         }
     }
 
+    public function translate(x is Number, y is Number, z is Number) to Point3
+    {
+        new Point3(this.x+x, this.y+y, this.z+z)
+    }
+
     override function toString from () to String 
     {
 	"\{ x: {x}, y: {y}, z: {z} \}"
