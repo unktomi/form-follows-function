@@ -9,6 +9,6 @@ public class Pick
     public const mesh is AbstractMesh;
     public const tri is Integer;
     public const scenePoint is Point3;
-    public var dragPoint0 is Point3;
-    public var dragPoint1 is Point3;
+    public var dragPoint0 is Point3; // in scene space
+    public var dragPoint1 is Point3; // in scene space
 }

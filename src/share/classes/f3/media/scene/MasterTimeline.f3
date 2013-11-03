@@ -15,3 +15,16 @@ public function advancePlayhead from (worldTime is Duration) to ()
 	}
     }
 }
+
+// just for testing
+public function play to () {
+    var start is Long = java.lang.System.currentTimeMillis();
+    var delay = 16;
+    new javax.swing.Timer(delay, java.awt.event.ActionListener {
+            override function actionPerformed(event is java.awt.event.ActionEvent) to () {
+                var now = java.lang.System.currentTimeMillis();
+                advancePlayhead(1ms * (now - start));
+                start = now;
+            }    
+    }).start()
+}

@@ -498,7 +498,7 @@ public class Scene
         const hs = getMouseInputHandlers(p);
         if (hs <> []) {
             sceneEvent.stopPropagation();
-            const e = makeMouseEvent(null, p, sceneEvent);
+            const e = makeMouseEvent(p, sceneEvent, p.dragPoint1);
             for (h in hs) {
                 h.onMouseUp(e);
                 if (not e.propagate) {
@@ -507,7 +507,7 @@ public class Scene
             }
         }
         if (p.node.mouseUp <> null) {        
-            const e = makeMouseEvent(null, p, sceneEvent);
+            const e = makeMouseEvent(p, sceneEvent, p.dragPoint1);
             p.node.mouseUp.onNext(e);
         }
     }
