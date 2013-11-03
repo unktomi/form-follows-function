@@ -1,5 +1,12 @@
 package f3.util;
 
+public const filterable = Filterable of [] {
+    override public function filter of a from (xs is a[], f is function from a to Boolean) to a[] 
+    {
+        foreach (x in xs where f(x)) x;
+    }
+}
+
 public function of b indexOf from (xs is (..b)[], y is b) to Integer {
     for (x in xs) {
 	if (x == y) {

@@ -314,6 +314,14 @@ public class F3Local {
         public Class getJavaImplementationClass() { return refClass; }
         public Class getJavaInterfaceClass() { return refInterface; }
 
+        public boolean isTypeVariable() {
+            return type instanceof TypeVariable;
+        }
+
+        public String getTypeVariable() {
+            return ((TypeVariable)type).getName();
+        }
+
         @Override
         public Context getReflectionContext() {
             return (Context) super.getReflectionContext();

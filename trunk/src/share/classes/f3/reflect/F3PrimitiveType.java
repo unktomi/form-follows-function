@@ -40,7 +40,7 @@ public class F3PrimitiveType extends F3Type {
     public String getName() { return name; }
 
     static final F3PrimitiveType voidType =
-        new F3PrimitiveType(Void.TYPE, "Void", Void.class);
+        new F3PrimitiveType(Void.TYPE, "()", Void.class);
 
     static final F3PrimitiveType byteType =
 	new F3PrimitiveType(Byte.TYPE, "Byte", Byte.class);
@@ -55,7 +55,7 @@ public class F3PrimitiveType extends F3Type {
         new F3PrimitiveType(Byte.TYPE, "Long", Long.class);
 
     static final F3PrimitiveType floatType =
-        new F3PrimitiveType(Float.TYPE, "Float", Float.class);
+        new F3PrimitiveType(Float.TYPE, "Number", Float.class);
     
     static final F3PrimitiveType doubleType =
         new F3PrimitiveType(Double.TYPE, "Double", Double.class);

@@ -235,4 +235,153 @@ public class Builtins {
 	return Pair.<java.lang.Float, a>both(x, y);
     }
     */
+
+    public final static class NumberOperators {
+        public static float negate(float x) {
+            return -x;
+        }
+        public Function1<Float, Float> add(final float x) {
+            return new Function1<Float,Float>() {
+                public Float invoke(Float y) {
+                    return x + y;
+                }
+            };
+        }
+        public Function1<Float, Float> subtract(final float x) {
+            return new Function1<Float,Float>() {
+                public Float invoke(Float y) {
+                    return x - y;
+                }
+            };
+        }
+        public Function1<Float, Float> multiply(final float x) {
+            return new Function1<Float,Float>() {
+                public Float invoke(Float y) {
+                    return x * y;
+                }
+            };
+        }
+        public Function1<Float, Float> divide(final float x) {
+            return new Function1<Float,Float>() {
+                public Float invoke(Float y) {
+                    return x / y;
+                }
+            };
+        }
+        public Function1<Float, Float> remainder(final float x) {
+            return new Function1<Float,Float>() {
+                public Float invoke(Float y) {
+                    return x % y;
+                }
+            };
+        }
+        public static float add(float x, float y) {
+            return x + y;
+        }
+        public static float subtract(float x, float y) {
+            return x - y;
+        }
+        public static float multiply(float x, float y) {
+            return x * y;
+        }
+        public static float divide(float x, float y) {
+            return x / y;
+        }
+        public static float remainder(float x, float y) {
+            return x % y;
+        }
+    }
+
+    public final static class IntegerOperators {
+        public Function1<Integer, Integer> add(final int x) {
+            return new Function1<Integer,Integer>() {
+                public Integer invoke(Integer y) {
+                    return x + y;
+                }
+            };
+        }
+        public Function1<Integer, Integer> subtract(final int x) {
+            return new Function1<Integer,Integer>() {
+                public Integer invoke(Integer y) {
+                    return x - y;
+                }
+            };
+        }
+        public Function1<Integer, Integer> multiply(final int x) {
+            return new Function1<Integer,Integer>() {
+                public Integer invoke(Integer y) {
+                    return x * y;
+                }
+            };
+        }
+        public Function1<Integer, Integer> divide(final int x) {
+            return new Function1<Integer,Integer>() {
+                public Integer invoke(Integer y) {
+                    return x / y;
+                }
+            };
+        }
+        public Function1<Integer, Integer> remainder(final int x) {
+            return new Function1<Integer,Integer>() {
+                public Integer invoke(Integer y) {
+                    return x % y;
+                }
+            };
+        }
+        public static int negate(int x) {
+            return -x;
+        }
+        public static int add(int x, int y) {
+            return x + y;
+        }
+        public static int subtract(int x, int y) {
+            return x - y;
+        }
+        public static int multiply(int x, int y) {
+            return x * y;
+        }
+        public static int divide(int x, int y) {
+            return x / y;
+        }
+        public static int remainder(int x, int y) {
+            return x % y;
+        }
+    }
+
+
+
+    public final static class BooleanOperators {
+
+        public static <a, b> b If(boolean value, b Then, b Else) {
+            return value ? Then : Else; 
+        }
+
+        public static boolean not(boolean value) {
+            return !value;
+        }
+
+        public static boolean and(final boolean x, final boolean y) {
+            return x && y;
+        }
+
+        public static Function1<Boolean, Boolean> and(final boolean x) {
+            return new Function1<Boolean, Boolean>() {
+                public Boolean invoke(Boolean y) {
+                    return x && y;
+                }
+            };
+        }
+
+        public static boolean or(final boolean x, final boolean y) {
+            return x || y;
+        }
+
+        public static Function1<Boolean, Boolean> or(final boolean x) {
+            return new Function1<Boolean, Boolean>() {
+                public Boolean invoke(Boolean y) {
+                    return x || y;
+                }
+            };
+        }
+    }
 }

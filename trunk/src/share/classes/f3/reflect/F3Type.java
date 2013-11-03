@@ -84,4 +84,12 @@ public abstract class F3Type {
             return ((F3ClassType) this).isAssignableFrom((F3ClassType) cls);
         return this == cls;
     }
+
+    public boolean isTypeVariable() {
+        return false;
+    }
+
+    public String getTypeVariable() {
+        return null;
+    }
 }

@@ -55,7 +55,7 @@ class PlatformUtils {
     }
 
     static String getCanonicalName(Class cls) {
-        return cls.getCanonicalName();
+        return cls.isArray() ? getCanonicalName(cls.getComponentType())+"[]" : cls.getCanonicalName();
     }
 
     static String getSourceNameFromAnnotation(Field fld) {

@@ -30,7 +30,7 @@ package f3.reflect;
  * @profile desktop
  */
 public class F3JavaArrayType extends F3Type {
-F3Type componentType;
+    F3Type componentType;
     public F3Type getComponentType() { return componentType; }
     F3JavaArrayType(F3Type componentType) { this.componentType = componentType; }
 
@@ -38,5 +38,8 @@ F3Type componentType;
         sb.append("JavaArray<");
         componentType.toStringTerse(sb);
         sb.append(">");
+    }
+    public String getName() {
+        return componentType.getName()+"[]";
     }
 }
