@@ -1,5 +1,5 @@
 package f3.util;
 
 public abstract class ObservableDebugger {
-    public function debug from (xs is Observable of ?) to Observable of ?;
+    public function debug of a from (xs is Observable of a, id is Object) to Observable of a;
 }
