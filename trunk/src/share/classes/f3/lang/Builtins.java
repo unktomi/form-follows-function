@@ -290,6 +290,24 @@ public class Builtins {
         public static float remainder(float x, float y) {
             return x % y;
         }
+        public static boolean lessThan(float x, float y) {
+            return x < y;
+        }
+        public static boolean greaterThan(float x, float y) {
+            return x > y;
+        }
+        public static boolean lessOrEqual(float x, float y) {
+            return x <= y;
+        }
+        public static boolean greaterOrEqual(float x, float y) {
+            return x >= y;
+        }
+        public static boolean equal(float x, float y) {
+            return x == y;
+        }
+        public static boolean notEqual(float x, float y) {
+            return x != y;
+        }
     }
 
     public final static class IntegerOperators {
@@ -346,9 +364,25 @@ public class Builtins {
         public static int remainder(int x, int y) {
             return x % y;
         }
+        public static boolean lessThan(int x, int y) {
+            return x < y;
+        }
+        public static boolean greaterThan(int x, int y) {
+            return x > y;
+        }
+        public static boolean lessOrEqual(int x, int y) {
+            return x <= y;
+        }
+        public static boolean greaterOrEqual(int x, int y) {
+            return x >= y;
+        }
+        public static boolean equal(int x, int y) {
+            return x == y;
+        }
+        public static boolean notEqual(int x, int y) {
+            return x != y;
+        }
     }
-
-
 
     public final static class BooleanOperators {
 
@@ -382,6 +416,12 @@ public class Builtins {
                     return x || y;
                 }
             };
+        }
+        public static boolean equal(boolean x, boolean y) {
+            return x == y;
+        }
+        public static boolean notEqual(boolean x, boolean y) {
+            return x != y;
         }
     }
 }
