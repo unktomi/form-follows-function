@@ -1,0 +1,688 @@
+package f3.media.xhtml;
+import org.xhtmlrenderer.extend.*;
+import f3.media.scene.*;
+import f3.media.scene.Shape2D.Path2DFactory;
+import f3.media.scene.Shape2D.Path2D;
+import f3.media.scene.Shape2D.ColorPaint;
+import java.awt.geom.Area;
+import java.awt.geom.PathIterator;
+import java.awt.Shape;
+import org.xhtmlrenderer.render.JustificationInfo;
+import org.xhtmlrenderer.render.*;
+import org.xhtmlrenderer.swing.AWTFSFont;
+import org.xhtmlrenderer.context.AWTFontResolver;
+import org.xhtmlrenderer.css.parser.*;
+import org.xhtmlrenderer.layout.*;
+import org.xhtmlrenderer.css.style.*;
+import org.xhtmlrenderer.resource.ImageResource;
+import org.xhtmlrenderer.resource.XMLResource;
+import org.xhtmlrenderer.layout.BoxBuilder;
+import java.awt.RenderingHints.Key;
+import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
+import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
+import org.xhtmlrenderer.util.ImageUtil;
+
+const userAgentCallback = UserAgentImpl {
+    public override function getImageResource from (uri is String) to ImageResource 
+    {
+        null
+    }
+};
+
+const fontContext is FontContext = FontContextImpl {
+}
+
+
+public abstract class AbstractXHTMLNode is AbstractNode {
+
+    public var width is Number = 800;
+    public var height is Number = 600;
+    abstract bound function loadDocument to org.w3c.dom.Document;
+    readonly var document is org.w3c.dom.Document = bind loadDocument();
+    readonly var rootBox = bind layoutDocument(document, width, height);
+    override var internalContent = bind renderDocument(rootBox);
+    const sharedContext is SharedContextImpl = new SharedContextImpl(); 
+    function renderDocument from (root is BlockBox) to Node
+    {
+        const rc = sharedContext.newRenderingContextInstance();
+        rc.setFontContext(fontContext);
+        const outputDevice = OutputDeviceImpl { 
+            width: width;
+            height: height;
+        }
+        rc.setOutputDevice(outputDevice);
+        sharedContext.getTextRenderer().setup(rc.getFontContext());
+        rc.setRootLayer(root.getLayer());
+        println("RENDERING {root} rc={rc}");
+        root.getLayer().paint(rc);
+        return outputDevice.getNode();
+    }
+
+    const replacedElementFactory = ReplacedElementFactoryImpl {};
+
+    const dotsPerPoint = 1;
+    const dotsPerPixel = 1;
+
+    function initContext from (sharedContext is SharedContext, doc is org.w3c.dom.Document) to ()
+    {
+        sharedContext.reset();
+        if (sharedContext.getNamespaceHandler() == null) {
+            sharedContext.setDPI(72 * this.dotsPerPoint);
+            sharedContext.setDotsPerPixel(dotsPerPixel);
+            sharedContext.setUserAgentCallback(userAgentCallback);
+            sharedContext.setFontResolver(new AWTFontResolver());
+            sharedContext.setTextRenderer(TextRendererImpl {});
+            sharedContext.setNamespaceHandler(new XhtmlNamespaceHandler());
+            sharedContext.setReplacedElementFactory(replacedElementFactory);
+            //            sharedContext.setDebug_draw_boxes(true);
+            //            sharedContext.setDebug_draw_line_boxes(true);
+            //            sharedContext.setDebug_draw_font_metrics(true);
+        }
+        sharedContext.getCss().setDocumentContext(sharedContext,
+                                                  sharedContext.getNamespaceHandler(),
+                                                  document,
+                                                  UserInterface {
+                                                      override function isHover from (e is org.w3c.dom.Element) to Boolean
+                                                      {
+                                                          false
+                                                      }
+                                                      override function isActive from (e is org.w3c.dom.Element) to Boolean
+                                                      {
+                                                          false
+                                                      }
+                                                      override function isFocus from (e is org.w3c.dom.Element) to Boolean
+                                                      {
+                                                          false
+                                                      }
+                                                  });
+    }
+
+    function layoutDocument from (doc is org.w3c.dom.Document, width is Integer, height is Integer) to BlockBox 
+    {
+        sharedContext.setBounds(0, 0, width, height);
+        initContext(sharedContext, doc);
+        const c = sharedContext.newLayoutContextInstance();
+        c.setFontContext(fontContext);
+        sharedContext.getTextRenderer().setup(c.getFontContext());
+        const root = BoxBuilder.createRootBox(c, doc);
+        println("width={width}, height={height}");
+        root.setContainingBlock(new ViewportBox(new java.awt.Rectangle(0, 0, width, height)));
+        println("LAYOUT doc={doc}");
+        root.layout(c);
+        println("dim={root.getLayer().getPaintingDimension(c)}");
+        return root;
+    }
+
+    override var contentBounds = bind Bounds.boundsFromRect(-width/2, -height/2, width, height);
+}
+
+const prefix = 
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
+    "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
+    "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>";
+const suffix = "</body></html>";
+
+public class Text is AbstractXHTMLNode {
+    public var content is String;
+    override bound function loadDocument to org.w3c.dom.Document 
+    {
+        createDocument(content)
+    }
+
+    function createDocument from (content is String) to org.w3c.dom.Document 
+    {
+        const string = "{prefix}{content}{suffix}";
+        const input = new org.xml.sax.InputSource(new java.io.BufferedReader(new java.io.StringReader(string)));
+        XMLResource.load(input).getDocument()
+    }
+}
+
+public class Document is AbstractXHTMLNode {
+    public var url is String;
+
+    override function initContext from (sharedContext is SharedContext, doc is org.w3c.dom.Document) to ()
+    {
+        super.initContext(sharedContext, doc);
+        sharedContext.setBaseURL(url);
+    }
+
+    override bound function loadDocument to org.w3c.dom.Document 
+    {
+        createDocument(url)
+    }
+
+    function createDocument from (url is String) to org.w3c.dom.Document 
+    {
+        userAgentCallback.getXMLResource(url).getDocument()
+    }
+}
+
+class FSGlyphVectorImpl is FSGlyphVector {
+    const outputDevice is OutputDevice;
+    const font is FSFont;
+    const text is String;
+    readonly var vec is java.awt.font.GlyphVector = bind (font as AWTFSFont).getAWTFont().createGlyphVector(frc, text);
+}
+
+class FSImageImpl is FSImage {
+    var w is Integer;
+    var h is Integer;
+    
+    override public function getWidth to Integer {
+        w
+    }
+    override public function getHeight to Integer {
+        h
+    }
+    override public function scale from (w is Integer, h is Integer) to () 
+    {
+    }
+
+}
+
+class FontContextImpl is FontContext {
+} 
+
+class OutputDeviceImpl is AbstractOutputDevice {
+    var target is Group = Group {}
+    var content is Group = Group {};
+    public const pathFactory is Path2DFactory = the Path2DFactory;
+    public var font is FSFont = new AWTFSFont(new java.awt.Font("Lucida Grande", java.awt.Font.PLAIN, 12));
+    public var color is FSColor;
+    public var tx is Number;
+    public var ty is Number;
+    public var clipShape is Shape;
+    public var awtStroke is java.awt.Stroke = new java.awt.BasicStroke(1);
+    public var width is Number;
+    public var height is Number;
+    public readonly var stroke is Stroke;// = bind computeStroke(); 
+    public readonly var paint is Shape2D.Paint;// = computePaint(); 
+    bound function computeStroke to Stroke {
+        convertStroke(awtStroke);
+    }
+    bound function computePaint to Shape2D.Paint {
+        convertPaint(color);
+    }
+    function getNode to Node
+    {
+        println("GET NODE {width}, {height} => {content} {content.contentBounds}");
+        /*
+        TransformNode {
+            tx: -width/2;
+            ty: -height/2;
+            content: content;
+        }
+        */
+        content;
+    }
+
+    function add from (n is Node) to ()
+    {
+        if (content == null) {
+            target = Group {}
+            content = Group {content: target};
+        }
+        println("ADDING: {n} bounds={n.contentBounds}");
+        insert n into target.content;
+        if (target.content.size() == 10) {
+            target = Group {
+            }
+            insert target into content.content;
+        }
+    }
+
+    function convertPaint from (color is FSColor) to Shape2D.Paint
+    {
+        if (color is FSRGBColor) then { 
+                const rgb = color as FSRGBColor;
+                const col = Color.color(rgb.getRed()/255.0, rgb.getGreen()/255.0, rgb.getBlue()/255.0);
+                println("converted {rgb} => {col}");
+                ColorPaint(col);
+            } else Shape2D.ColorPaint(Color.WHITE)
+    }
+
+    function convertStroke from (s is java.awt.Stroke) to Stroke {
+        // @TODO
+        if (s == null) then null else Stroke {};
+    }
+    
+    override public function setFont from (font is FSFont) to ()
+    {
+        this.font = font;
+    }
+
+    public function getFont to FSFont {
+        font
+    }
+    
+    override public function setColor from (color is FSColor) to ()
+    {
+        if (this.color <> color) {
+            this.color = color;
+            println("SET COLOR {color} => paint {paint}");
+            paint = convertPaint(color);
+        }
+    }
+    public override function paintBackground from (c is RenderingContext, box is Box) to () 
+    {
+        if (not box.getStyle().isVisible()) {
+            return;
+        }
+        const backgroundBounds = box.getPaintingBorderEdge(c);
+        paintBackground(c, box.getStyle(), backgroundBounds, null);
+    }
+
+    public override function paintBackground from (
+                                                   c is RenderingContext, style is CalculatedStyle, 
+                                                   bounds is java.awt.Rectangle, bgImageContainer is java.awt.Rectangle) to ()
+    {
+        const backgroundColor = style.getBackgroundColor();
+        setColor(backgroundColor);
+        fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
+
+    public override function drawSelection from (rc is org.xhtmlrenderer.render.RenderingContext, t is org.xhtmlrenderer.render.InlineText) to ()
+    {
+    }
+
+    public override function paintReplacedElement
+        from (rc is org.xhtmlrenderer.render.RenderingContext, box is org.xhtmlrenderer.render.BlockBox) to ()
+    {
+    }
+
+    public override function drawLine from (x1 is Integer, y1 is Integer, x2 is Integer, y2 is Integer) to ()
+    {
+    }
+    
+    override public function drawRect from (x is Integer, y is Integer, width is Integer, height is Integer) to ()
+    {
+        println("DRAW RECT {x}, {y}, {width}, {height}");
+        const rect = Shape2D.rect(pathFactory, tx+x, this.height-ty-y-height, width, height);
+        add(Shape2D.createMeshNode(rect, stroke, paint));
+    }
+
+    override public function drawOval from (x is Integer, y is Integer, width is Integer, height is Integer) to ()
+    {
+        const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
+        add(Shape2D.createMeshNode(oval, stroke, paint));
+    }
+    
+    override public function drawBorderLine from (bounds is java.awt.Rectangle, side is Integer, width is Integer, solid is Boolean) to ()
+    {
+    }
+    
+    override public function drawImage from (image is FSImage, x is Integer, y is Integer) to ()
+    {
+    }
+
+    function convertPath from (fac is Path2DFactory,
+                               h is Number,
+                               worldMatrix is java.awt.geom.AffineTransform,
+                               shape0 is java.awt.Shape) to Path2D 
+    {
+        //    println("converting path {shape}");
+        if (shape0 == null) {
+            return null;
+        }
+        const shape = if (clipShape <> null) then {
+                const a = new Area(shape0);
+                a.intersect(getClipArea());
+                a;
+        } else shape0;
+        const iter = shape.getPathIterator(worldMatrix);
+        const coords = 
+            java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 6) as nativearray of Number;
+        const p = fac.createPath();
+        //    println("created path {p}");
+        while (not iter.isDone()) {
+            const t = iter.currentSegment(coords);
+            //	println("t={t} isDone={iter.isDone()}");
+            if (t == PathIterator.SEG_MOVETO) {
+                p.moveTo(coords[0], h-coords[1]);
+            } else if (t == PathIterator.SEG_LINETO) {
+                p.lineTo(coords[0], h-coords[1]);
+            } else if (t == PathIterator.SEG_QUADTO) {
+                p.quadTo(coords[0], h-coords[1], coords[2], h-coords[3]);
+            } else if (t == PathIterator.SEG_CUBICTO) {
+                p.cubicTo(coords[0], h-coords[1], coords[2], h-coords[3], coords[4], h-coords[5]);
+            } else if (t == PathIterator.SEG_CLOSE) {
+                p.closePath();
+            }
+            iter.next();
+        }
+        return p;
+    }
+    
+    override public function fill from (s is Shape) to ()
+    {
+        println("FILL {s} paint={paint}");
+        var shape = Shape2D.createMeshNode("", convertPath(pathFactory, height, null, s), null, paint);
+        add(shape);
+    }
+
+    override public function fillRect from (x is Integer, y is Integer, width is Integer, height is Integer) to ()
+    {
+        println("FILLRECT {x}, {y}, {width}, {height} paint={paint} factory={pathFactory}");
+        const rect = Shape2D.rect(pathFactory, tx+x, this.height-ty-y-height, width, height);
+        add(Shape2D.createMeshNode(rect, null, paint));
+    }
+
+    override public function fillOval from (x is Integer, y is Integer, w is Integer, h is Integer) to ()
+    {
+        const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
+        add(Shape2D.createMeshNode(oval, null, paint));
+    }
+
+    function getClipArea to Area {
+        if (clipShape is Area) then clipShape as Area else { var a is Area; clipShape = a = new Area(clipShape); a }
+    }
+    
+    override public function clip from (s is Shape) to ()
+    {
+        println("CLIP {s}");
+        if (clipShape == null) clipShape = s else getClipArea().intersect(new Area(s));
+    }
+
+    public override function getClip to Shape
+    {
+        clipShape
+    }
+
+    override public function setClip from (s is Shape) to ()
+    {
+        println("SETCLIP {s}");
+        clipShape = s;
+    }
+    
+    override public function translate(tx is Double, ty is Double)
+    {
+        this.tx += tx; this.ty += ty;
+    }
+    
+    override public function setStroke from (s is java.awt.Stroke) to ()
+    {
+        awtStroke = s;
+        stroke = convertStroke(s);
+    }
+
+    public override function getStroke to java.awt.Stroke 
+    {
+        awtStroke
+    }
+
+    public override function getRenderingHint(key is Key) to Object
+    {
+        null
+    }
+
+    override public function setRenderingHint(key is Key, value is Object)
+    {
+    }
+    
+    public override function isSupportsSelection to Boolean 
+    {
+        false;
+    }
+    
+    public override function isSupportsCMYKColors to Boolean 
+    {
+        false
+    }
+}
+
+const dummyImage = ImageUtil.createCompatibleBufferedImage(10, 10, java.awt.image.BufferedImage.TYPE_INT_RGB);
+const frc = {
+    const g = dummyImage.createGraphics();
+    g.getFontRenderContext();
+};
+const dummy = new javax.swing.JPanel();
+function getFontMetrics from (font is java.awt.Font) to java.awt.FontMetrics
+{
+    dummy.getFontMetrics(font)
+}
+
+class TextRendererImpl is TextRenderer {
+    var fontScale is Number = 1.0;
+    var fontContext is FontContext;
+
+    public override function setup from (context is FontContext) to ()
+    {
+        fontContext = context;
+    }
+
+    public override function drawString from (outputDevice is OutputDevice, string is String, x is Number, y is Number) to ()
+    {
+        drawString(outputDevice, string, x, y, null);
+    }
+
+    public override function drawString from (outputDevice is OutputDevice, 
+                                              string is String, 
+                                              x is Number, 
+                                              y is Number, 
+                                              info is JustificationInfo) 
+        to ()
+    {
+        const font = ((outputDevice as OutputDeviceImpl).getFont() as AWTFSFont).getAWTFont();
+        const vector = font.createGlyphVector(frc, string);
+        if (info <> null) { adjustGlyphPositions(string, info, vector) }
+        const shape = vector.getOutline(x, y);
+        println("Draw string {string} @{x},{y} font={font} vector={vector}=> {shape} {shape.getBounds2D()}");
+        outputDevice.fill(shape);
+    }
+
+    function adjustGlyphPositions from (
+                                        string is String, 
+                                        info is JustificationInfo, 
+                                        vector is java.awt.font.GlyphVector) to () 
+    {
+        var adjust = 0.0;
+        for (i in [0..<string.length()]) {
+            const c = string.charAt(i);
+            if (i != 0) {
+                const point = vector.getGlyphPosition(i);
+                vector.setGlyphPosition(
+                                        i, new java.awt.geom.Point2D.Double(point.getX() + adjust, point.getY()));
+            }
+            if (c == " ".charAt(0) or c == "\u00a0".charAt(0) or c == "\u3000".charAt(0)) {
+                adjust += info.getSpaceAdjust();
+            } else {
+                adjust += info.getNonSpaceAdjust();
+            }
+        }
+    }
+
+    
+    public override function drawGlyphVector from (outputDevice is OutputDevice, 
+                                                   vector is FSGlyphVector, 
+                                                   x is Number, 
+                                                   y is Number) 
+        to ()
+    {
+        const shape = (vector as FSGlyphVectorImpl).vec.getOutline(x, y);
+        println("Draw glyphVector {shape} {shape.getBounds2D()}");
+        outputDevice.fill(shape);
+    }
+    
+    public override function getGlyphVector from (outputDevice is OutputDevice, font is FSFont, string is String) to FSGlyphVector
+    {
+        var r = FSGlyphVectorImpl {
+            outputDevice: outputDevice;
+            font: font;
+            text: string;
+        }
+        println("get glyph vec {string} {font} => {r.vec}");
+        return r;
+    }
+    
+    public override function getGlyphPositions from (outputDevice is OutputDevice, 
+                                                     font is FSFont , 
+                                                     fsGlyphVector is FSGlyphVector) to nativearray of Number
+    {
+        const vec = fsGlyphVector as FSGlyphVectorImpl;
+        return vec.vec.getGlyphPositions(0, vec.vec.getNumGlyphs(), null)
+    }
+
+    public override function getGlyphBounds from (outputDevice is OutputDevice, font is FSFont, fsGlyphVector is FSGlyphVector,
+                                                  index is Integer, x is Number, y is Number) to java.awt.Rectangle 
+    {
+        const vec = fsGlyphVector as FSGlyphVectorImpl;
+        vec.vec.getGlyphPixelBounds(index, frc, x, y);
+    }
+
+    public override function getFSFontMetrics(context is FontContext, 
+                                              font is FSFont, 
+                                              string is String) to FSFontMetrics 
+    {
+        return new LineMetricsAdapter((font as AWTFSFont).getAWTFont().getLineMetrics(string, frc));
+    }
+
+    public override function getWidth from (context is FontContext, font is FSFont, string is String) to Integer 
+    {
+        const awtFont = (font as AWTFSFont).getAWTFont();
+        return java.lang.Math.ceil(getFontMetrics(awtFont).stringWidth(string)) as Integer;
+    }
+
+    public override function setFontScale from (scale is Number) to ()
+    {
+        fontScale = scale
+    }
+
+    public override function getFontScale to Number {
+        fontScale
+    }
+
+    /**
+     * Set the smoothing threashold. This is a font size above which
+     * all text will be anti-aliased. Text below this size will not be antialiased. 
+     * Set to -1 for no antialiasing. 
+     * Set to 0 for all antialising.
+     * Else, set to the threshold font size. does not take font scaling
+     * into account.
+     */
+    public override function setSmoothingThreshold from (fontsize is Number) to ()
+    {
+    }
+
+    public override function getSmoothingLevel to Integer
+    {
+        0
+    }
+
+    /**
+     * @deprecated no-op, will be removed in a future release. Anti-aliasing is now controlled via the smoothing
+     * threshhold.
+     * @param level no-op
+     */
+    public override function setSmoothingLevel from (level is Integer) to ()
+    {
+    }
+    
+}
+
+class ReplacedElementImpl is ReplacedElement {
+    public var x is Integer;
+    public var y is Integer;
+    public var w is Integer;
+    public var h is Integer;
+    /**
+     *
+     */
+    override public function getIntrinsicWidth to Integer {
+        w
+    }
+
+    /**
+     *
+     */
+    override public function getIntrinsicHeight to Integer {
+        h
+    }
+    
+    /**
+     * Returns the current location where the element will be rendered on the canvas
+     * @return see desc
+     */
+    override public function getLocation to java.awt.Point
+    {
+        new java.awt.Point(x, y);
+    }
+    /**
+     * Assigns the new locations where the element will be rendered.
+     * @param x new horizontal pos
+     * @param y new vertical pos
+     */
+    override public function setLocation from (x is Integer, y is Integer) to ()
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
+     *
+     * @param c
+     */
+    override public function detach from (c is LayoutContext) to ()
+    {
+        
+    }
+
+    /**
+     *
+     */
+    override public function isRequiresInteractivePaint to Boolean
+    {
+        true
+    }
+    
+    override public function hasBaseline to Boolean {
+        false
+    }
+    
+    override public function getBaseline to Integer {
+        0
+    }
+}
+
+
+class ReplacedElementFactoryImpl is ReplacedElementFactory {
+    
+    public override function createReplacedElement from (c is LayoutContext, 
+                                                         box is BlockBox,
+                                                         uac is UserAgentCallback, 
+                                                         cssWidth is Integer, 
+                                                         cssHeight is Integer) 
+        to ReplacedElement 
+    {
+        if (true) then null else
+        ReplacedElementImpl {
+            w: cssWidth;
+            h: cssHeight;
+        }
+    }
+    
+    /**
+     * Instructs the <code>ReplacedElementFactory</code> to discard any cached
+     * data (typically because a new page is about to be loaded).
+     */
+    public override function reset to ()
+    {
+    }
+    
+    /**
+     * Removes any reference to <code>Element</code> <code>e</code>.
+     * @param e
+     */
+    public override function remove from (e is org.w3c.dom.Element) to ()
+    {
+    }
+    /**
+     * Identifies the FSL which will be used for callbacks when a form submit action is executed; you can use a
+     * {@link org.xhtmlrenderer.simple.extend.DefaultFormSubmissionListener} if you don't want any action to be taken.
+     *
+     * @param listener the listener instance to receive callbacks on form submission.
+     */
+    public override function setFormSubmissionListener(listener is FormSubmissionListener) to ()
+    {
+    }
+}
