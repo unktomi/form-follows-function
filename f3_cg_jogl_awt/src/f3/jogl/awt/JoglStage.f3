@@ -37,6 +37,7 @@ import f3.media.scene.Shape2D.Path2D;
 import f3.media.scene.Shape2D.Path2DFactory;
 import f3.media.scene.MeshBuffer.*;
 import f3.media.svg.SVG;
+import f3.media.xhtml.XHTML;
 import com.jogamp.opengl.util.awt.TextureRenderer;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
@@ -2322,7 +2323,7 @@ public class SceneRenderer {
 						     0);
 		    }
 		}
-	    }
+	    } 
 	    if (DEBUG_MESHES) println("drawing {mn}");
 
             const indexBuffer = mesh.getIndexBuffer();
@@ -3478,8 +3479,9 @@ public function run from (args is String[]) to ()
             println("page loaded: {url}");
             println(wb.executeJavascript("window"));
     });
-    var currentModel is Node = wb;
-
+    var currentModel is Node = XHTML.Text {
+        content: "<div style='color:green;'><p>This text contains <sup>superscript</sup> text.</p></div>";
+    };
     const prog = function from (mouseDown is Observable of MouseEvent) to Disposable
     {
 	mouseDown.toggle(&currentModel.visible);
@@ -3491,6 +3493,10 @@ public function run from (args is String[]) to ()
     readonly var svgModel = bind if (not playerUrl.endsWith(".svg")) then null else SVG {
 		url: playerUrl;
 		factory: ThePath2DFactory
+	    };
+
+    readonly var xhtmlModel = bind if (not playerUrl.endsWith(".xhtml")) then null else XHTML.Document {
+		url: playerUrl;
 	    };
 
     readonly var imageModel = bind if (playerUrl.endsWith(".jpg") or 
@@ -3518,6 +3524,8 @@ public function run from (args is String[]) to ()
 	    viewer.focusCamera(currentModel = model.getSpatialRoot());
 	} else if (url.endsWith(".svg")) {
 	    viewer.focusCamera(currentModel = svgModel.root)
+	} else if (url.endsWith(".xhtml")) {
+	    viewer.focusCamera(currentModel = xhtmlModel)
 	} else if (url.endsWith(".png") or url.endsWith(".jpg") or url.endsWith(".tif") or url.endsWith(".tiff") or url.endsWith(".tga")) {
 	    viewer.focusCamera(currentModel = imageModel);
         } else if (url.endsWith(".mp4")) {

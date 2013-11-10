@@ -207,6 +207,8 @@ public class Entry {
         return "f3$run$";
     }
 
+    public static Thread uiThread;
+
     private static class NoRuntimeDefault extends Thread implements RuntimeProvider {
 
         private final Queue<Runnable> tasks = new ConcurrentLinkedQueue<Runnable>();

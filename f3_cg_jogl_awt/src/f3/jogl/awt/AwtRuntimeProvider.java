@@ -16,6 +16,7 @@ public class AwtRuntimeProvider implements org.f3.runtime.RuntimeProvider {
         deferAction(new Runnable() {
                 public void run() {
                     try {
+                        org.f3.runtime.Entry.uiThread = Thread.currentThread();
                         System.out.println("AWT running "+Thread.currentThread()+": "+entryPoint);
 			System.err.println("args="+args);
 			org.f3.runtime.sequence.Sequence seq = 

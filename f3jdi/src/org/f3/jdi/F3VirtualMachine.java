@@ -382,7 +382,11 @@ public class F3VirtualMachine extends F3Mirror implements VirtualMachine {
     public F3ThreadReference uiThread() {
         if (cacheUiThread == null) {
             F3Field uiThreadField = f3EntryType().fieldByName("uiThread");
-            cacheUiThread = (F3ThreadReference) ((F3ReferenceType)f3EntryType()).getValue(uiThreadField);
+            if (uiThreadField != null) {
+                cacheUiThread = (F3ThreadReference) ((F3ReferenceType)f3EntryType()).getValue(uiThreadField);
+            } else {
+                throw new RuntimeException("org.f3.runtime.Entry.uiThread not found");
+            }
         }
         return cacheUiThread;
     }
