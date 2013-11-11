@@ -17,23 +17,51 @@ import org.xhtmlrenderer.css.style.*;
 import org.xhtmlrenderer.resource.ImageResource;
 import org.xhtmlrenderer.resource.XMLResource;
 import org.xhtmlrenderer.layout.BoxBuilder;
+import org.xhtmlrenderer.render.Box;
 import java.awt.RenderingHints.Key;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
 import org.xhtmlrenderer.util.ImageUtil;
 
-const userAgentCallback = UserAgentImpl {
-    public override function getImageResource from (uri is String) to ImageResource 
-    {
-        null
+
+
+public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
+
+    var underMouse is Box;
+    var pressed is Box;
+
+    public override function onMouseUp from (event is MouseEvent) to () {
+        if (underMouse == pressed) {
+            const elem = underMouse.getElement();
+        }
     }
-};
+    public override function onMouseDown from (event is MouseEvent) to () {
+        pressed = underMouse;
+    }
+    public override function onMouseMove from (event is MouseEvent) to () {
+        const x = event.location.x as Integer;
+        const y = event.location.y as Integer;
+        underMouse = root.getLayer().find(layoutContext, x, y, false)
+    }
+    public override function onMouseDrag from (event is MouseEvent) to () {
+    }
+    public override function onMouseEnter from (event is MouseEvent) to () {
+    }
+    public override function onMouseLeave from (event is MouseEvent) to () {
+        underMouse = null;
+    }
+    public override function onMouseWheel from (event is MouseWheelEvent) to () {
+    }
 
-const fontContext is FontContext = FontContextImpl {
-}
-
-
-public abstract class AbstractXHTMLNode is AbstractNode {
+    const userAgentCallback is UserAgentImpl = UserAgentImpl {
+        public override function getImageResource from (uri is String) to ImageResource 
+        {
+            new ImageResource(FSImageImpl { image: Image { url: uri } });
+        }
+    };
+    
+    const fontContext is FontContext = FontContextImpl {
+    }
 
     public var width is Number = 800;
     public var height is Number = 600;
@@ -42,23 +70,26 @@ public abstract class AbstractXHTMLNode is AbstractNode {
     readonly var rootBox = bind layoutDocument(document, width, height);
     override var internalContent = bind renderDocument(rootBox);
     const sharedContext is SharedContextImpl = new SharedContextImpl(); 
+    var layoutWidth is Number;
+    var layoutHeight is Number;
     function renderDocument from (root is BlockBox) to Node
     {
         const rc = sharedContext.newRenderingContextInstance();
         rc.setFontContext(fontContext);
         const outputDevice = OutputDeviceImpl { 
-            width: width;
-            height: height;
+            width: layoutWidth;
+            height: layoutHeight;
         }
         rc.setOutputDevice(outputDevice);
         sharedContext.getTextRenderer().setup(rc.getFontContext());
         rc.setRootLayer(root.getLayer());
         println("RENDERING {root} rc={rc}");
         root.getLayer().paint(rc);
+
         return outputDevice.getNode();
     }
 
-    const replacedElementFactory = ReplacedElementFactoryImpl {};
+    protected const replacedElementFactory = ReplacedElementFactoryImpl {};
 
     const dotsPerPoint = 1;
     const dotsPerPixel = 1;
@@ -74,9 +105,11 @@ public abstract class AbstractXHTMLNode is AbstractNode {
             sharedContext.setTextRenderer(TextRendererImpl {});
             sharedContext.setNamespaceHandler(new XhtmlNamespaceHandler());
             sharedContext.setReplacedElementFactory(replacedElementFactory);
-            //            sharedContext.setDebug_draw_boxes(true);
-            //            sharedContext.setDebug_draw_line_boxes(true);
-            //            sharedContext.setDebug_draw_font_metrics(true);
+            if (debug) {
+                sharedContext.setDebug_draw_boxes(true);
+                sharedContext.setDebug_draw_line_boxes(true);
+                sharedContext.setDebug_draw_font_metrics(true);
+            }
         }
         sharedContext.getCss().setDocumentContext(sharedContext,
                                                   sharedContext.getNamespaceHandler(),
@@ -84,42 +117,45 @@ public abstract class AbstractXHTMLNode is AbstractNode {
                                                   UserInterface {
                                                       override function isHover from (e is org.w3c.dom.Element) to Boolean
                                                       {
-                                                          false
+                                                          underMouse.getElement() == e
                                                       }
                                                       override function isActive from (e is org.w3c.dom.Element) to Boolean
                                                       {
-                                                          false
+                                                          pressed.getElement() == e
                                                       }
                                                       override function isFocus from (e is org.w3c.dom.Element) to Boolean
                                                       {
-                                                          false
+                                                          pressed.getElement() == e
                                                       }
                                                   });
     }
+
+    var layoutContext is LayoutContext;
 
     function layoutDocument from (doc is org.w3c.dom.Document, width is Integer, height is Integer) to BlockBox 
     {
         sharedContext.setBounds(0, 0, width, height);
         initContext(sharedContext, doc);
-        const c = sharedContext.newLayoutContextInstance();
-        c.setFontContext(fontContext);
+        const c = layoutContext = sharedContext.newLayoutContextInstance();
         sharedContext.getTextRenderer().setup(c.getFontContext());
         const root = BoxBuilder.createRootBox(c, doc);
         println("width={width}, height={height}");
         root.setContainingBlock(new ViewportBox(new java.awt.Rectangle(0, 0, width, height)));
         println("LAYOUT doc={doc}");
         root.layout(c);
-        println("dim={root.getLayer().getPaintingDimension(c)}");
+        const dim = root.getLayer().getPaintingDimension(c);
+        layoutWidth = dim.width;
+        layoutHeight = dim.height;
         return root;
     }
 
-    override var contentBounds = bind Bounds.boundsFromRect(-width/2, -height/2, width, height);
+    //override var contentBounds = bind Bounds.boundsFromRect(-width/2, -height/2, width, height);
 }
 
 const prefix = 
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\""
-    "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">"
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
+    "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
     "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>";
 const suffix = "</body></html>";
 
@@ -145,6 +181,7 @@ public class Document is AbstractXHTMLNode {
     {
         super.initContext(sharedContext, doc);
         sharedContext.setBaseURL(url);
+        replacedElementFactory.baseURL = url;
     }
 
     override bound function loadDocument to org.w3c.dom.Document 
@@ -166,17 +203,23 @@ class FSGlyphVectorImpl is FSGlyphVector {
 }
 
 class FSImageImpl is FSImage {
-    var w is Integer;
-    var h is Integer;
+    public const imageLoader is ImageLoader = the ImageLoader;
+    public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
+    public var image is Image;
+    public var sx = 1.0;
+    public var sy = 1.0;
     
     override public function getWidth to Integer {
-        w
+        image.getWidth();
+        
     }
     override public function getHeight to Integer {
-        h
+        image.getHeight();
     }
     override public function scale from (w is Integer, h is Integer) to () 
     {
+        sy *= h;
+        sx *= w;
     }
 
 }
@@ -197,7 +240,7 @@ class OutputDeviceImpl is AbstractOutputDevice {
     public var width is Number;
     public var height is Number;
     public readonly var stroke is Stroke;// = bind computeStroke(); 
-    public readonly var paint is Shape2D.Paint;// = computePaint(); 
+    public readonly var paint is Shape2D.Paint = ColorPaint(Color.WHITE);// = computePaint(); 
     bound function computeStroke to Stroke {
         convertStroke(awtStroke);
     }
@@ -207,13 +250,10 @@ class OutputDeviceImpl is AbstractOutputDevice {
     function getNode to Node
     {
         println("GET NODE {width}, {height} => {content} {content.contentBounds}");
-        /*
+        var bounds = content.contentBounds;
         TransformNode {
-            tx: -width/2;
-            ty: -height/2;
-            content: content;
+             content: content;
         }
-        */
         content;
     }
 
@@ -239,7 +279,7 @@ class OutputDeviceImpl is AbstractOutputDevice {
                 const col = Color.color(rgb.getRed()/255.0, rgb.getGreen()/255.0, rgb.getBlue()/255.0);
                 println("converted {rgb} => {col}");
                 ColorPaint(col);
-            } else Shape2D.ColorPaint(Color.WHITE)
+            } else Shape2D.ColorPaint(Color.TRANSPARENT)
     }
 
     function convertStroke from (s is java.awt.Stroke) to Stroke {
@@ -264,6 +304,8 @@ class OutputDeviceImpl is AbstractOutputDevice {
             paint = convertPaint(color);
         }
     }
+
+
     public override function paintBackground from (c is RenderingContext, box is Box) to () 
     {
         if (not box.getStyle().isVisible()) {
@@ -278,6 +320,7 @@ class OutputDeviceImpl is AbstractOutputDevice {
                                                    bounds is java.awt.Rectangle, bgImageContainer is java.awt.Rectangle) to ()
     {
         const backgroundColor = style.getBackgroundColor();
+        println("PAINT BACKGROUND {backgroundColor}");
         setColor(backgroundColor);
         fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
@@ -289,6 +332,17 @@ class OutputDeviceImpl is AbstractOutputDevice {
     public override function paintReplacedElement
         from (rc is org.xhtmlrenderer.render.RenderingContext, box is org.xhtmlrenderer.render.BlockBox) to ()
     {
+        const replaced = box.getReplacedElement() as ReplacedElementImpl;
+        if (replaced <> null) {
+            const contentBounds = box.getContentAreaEdge(box.getAbsX(), box.getAbsY(), rc);
+            const n = TransformNode {
+                tx: contentBounds.x;
+                ty: height-contentBounds.y-contentBounds.height;
+                tz: -.000001
+                content: replaced.n;
+            }
+            add(n)
+        }
     }
 
     public override function drawLine from (x1 is Integer, y1 is Integer, x2 is Integer, y2 is Integer) to ()
@@ -304,8 +358,8 @@ class OutputDeviceImpl is AbstractOutputDevice {
 
     override public function drawOval from (x is Integer, y is Integer, width is Integer, height is Integer) to ()
     {
-        const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
-        add(Shape2D.createMeshNode(oval, stroke, paint));
+      //  const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
+       // add(Shape2D.createMeshNode(oval, stroke, paint));
     }
     
     override public function drawBorderLine from (bounds is java.awt.Rectangle, side is Integer, width is Integer, solid is Boolean) to ()
@@ -314,6 +368,12 @@ class OutputDeviceImpl is AbstractOutputDevice {
     
     override public function drawImage from (image is FSImage, x is Integer, y is Integer) to ()
     {
+        const n = TransformNode {
+            tx: tx+x;
+            ty: height-ty-y;
+            content: (image as FSImageImpl).image;
+        }
+        add(n)
     }
 
     function convertPath from (fac is Path2DFactory,
@@ -370,8 +430,8 @@ class OutputDeviceImpl is AbstractOutputDevice {
 
     override public function fillOval from (x is Integer, y is Integer, w is Integer, h is Integer) to ()
     {
-        const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
-        add(Shape2D.createMeshNode(oval, null, paint));
+      //  const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
+      //  add(Shape2D.createMeshNode(oval, null, paint));
     }
 
     function getClipArea to Area {
@@ -585,18 +645,19 @@ class ReplacedElementImpl is ReplacedElement {
     public var y is Integer;
     public var w is Integer;
     public var h is Integer;
+    public var n is Node;
     /**
      *
      */
     override public function getIntrinsicWidth to Integer {
-        w
+        return n.contentBounds.width();
     }
 
     /**
      *
      */
     override public function getIntrinsicHeight to Integer {
-        h
+        return n.contentBounds.height();
     }
     
     /**
@@ -646,6 +707,11 @@ class ReplacedElementImpl is ReplacedElement {
 
 
 class ReplacedElementFactoryImpl is ReplacedElementFactory {
+
+    public var baseURL is String;
+    public const imageLoader is ImageLoader = the ImageLoader;
+    public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
+    
     
     public override function createReplacedElement from (c is LayoutContext, 
                                                          box is BlockBox,
@@ -654,10 +720,19 @@ class ReplacedElementFactoryImpl is ReplacedElementFactory {
                                                          cssHeight is Integer) 
         to ReplacedElement 
     {
-        if (true) then null else
+        const elem = box.getElement();
+        var n is Node;
+        if (c.getNamespaceHandler().isImageElement(elem)) {
+            const imageSrc = c.getNamespaceHandler().getImageSourceURI(elem);
+            n = Image {
+                url: if baseURL == null then imageSrc else new java.net.URL(new java.net.URL(baseURL), imageSrc).toString()
+            }
+        }
+        if (n == null) then null else
         ReplacedElementImpl {
             w: cssWidth;
             h: cssHeight;
+            n: n;
         }
     }
     

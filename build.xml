@@ -861,6 +861,10 @@
         <ant dir="f3_svg_awt" antfile="build.xml" inheritAll="false" target="jar">
         </ant>
       </target>
+    <target name="f3.xhtml.awt" depends="jar">
+        <ant dir="f3_xhtml" antfile="build.xml" inheritAll="false" target="jar">
+        </ant>
+      </target>
     <target name="f3.cg.jogl.awt" depends="f3.svg.awt">
         <ant dir="f3_cg_jogl_awt" antfile="build.xml" inheritAll="false" target="jar">
         </ant>
