@@ -1,6 +1,7 @@
 package f3.media.xhtml;
 import org.xhtmlrenderer.extend.*;
 import f3.media.scene.*;
+import f3.media.input.*;
 import f3.media.scene.Shape2D.Path2DFactory;
 import f3.media.scene.Shape2D.Path2D;
 import f3.media.scene.Shape2D.ColorPaint;
@@ -24,7 +25,6 @@ import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
 import org.xhtmlrenderer.util.ImageUtil;
 
 
-
 public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
 
     var underMouse is Box;
@@ -41,7 +41,7 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
     public override function onMouseMove from (event is MouseEvent) to () {
         const x = event.location.x as Integer;
         const y = event.location.y as Integer;
-        underMouse = root.getLayer().find(layoutContext, x, y, false)
+        underMouse = rootBox.getLayer().find(layoutContext, x, y, false)
     }
     public override function onMouseDrag from (event is MouseEvent) to () {
     }
@@ -65,6 +65,7 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
 
     public var width is Number = 800;
     public var height is Number = 600;
+    public var font is f3.media.scene.Text.Font; 
     abstract bound function loadDocument to org.w3c.dom.Document;
     readonly var document is org.w3c.dom.Document = bind loadDocument();
     readonly var rootBox = bind layoutDocument(document, width, height);
@@ -79,6 +80,11 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
         const outputDevice = OutputDeviceImpl { 
             width: layoutWidth;
             height: layoutHeight;
+        }
+        if (font <> null) {
+            const weight = if (font.weight == "bold") then java.awt.Font.BOLD else 0;
+            const style = if (font.style == "italic") then java.awt.Font.ITALIC else 0;
+            outputDevice.font = new AWTFSFont(new java.awt.Font(font.name, weight+style, font.size));
         }
         rc.setOutputDevice(outputDevice);
         sharedContext.getTextRenderer().setup(rc.getFontContext());
@@ -160,15 +166,18 @@ const prefix =
 const suffix = "</body></html>";
 
 public class Text is AbstractXHTMLNode {
+    public var style is String;
     public var content is String;
+
+    readonly var fullContent = "{prefix}<div style='{style}'>{content}</div>{suffix}";
+
     override bound function loadDocument to org.w3c.dom.Document 
     {
-        createDocument(content)
+        createDocument(fullContent)
     }
 
-    function createDocument from (content is String) to org.w3c.dom.Document 
+    function createDocument from (string is String) to org.w3c.dom.Document 
     {
-        const string = "{prefix}{content}{suffix}";
         const input = new org.xml.sax.InputSource(new java.io.BufferedReader(new java.io.StringReader(string)));
         XMLResource.load(input).getDocument()
     }
@@ -289,6 +298,7 @@ class OutputDeviceImpl is AbstractOutputDevice {
     
     override public function setFont from (font is FSFont) to ()
     {
+        println("set Font {font}");
         this.font = font;
     }
 
@@ -358,8 +368,8 @@ class OutputDeviceImpl is AbstractOutputDevice {
 
     override public function drawOval from (x is Integer, y is Integer, width is Integer, height is Integer) to ()
     {
-      //  const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
-       // add(Shape2D.createMeshNode(oval, stroke, paint));
+       const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
+       add(Shape2D.createMeshNode(oval, stroke, paint));
     }
     
     override public function drawBorderLine from (bounds is java.awt.Rectangle, side is Integer, width is Integer, solid is Boolean) to ()
@@ -430,8 +440,8 @@ class OutputDeviceImpl is AbstractOutputDevice {
 
     override public function fillOval from (x is Integer, y is Integer, w is Integer, h is Integer) to ()
     {
-      //  const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
-      //  add(Shape2D.createMeshNode(oval, null, paint));
+      const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
+      add(Shape2D.createMeshNode(oval, null, paint));
     }
 
     function getClipArea to Area {
@@ -726,6 +736,11 @@ class ReplacedElementFactoryImpl is ReplacedElementFactory {
             const imageSrc = c.getNamespaceHandler().getImageSourceURI(elem);
             n = Image {
                 url: if baseURL == null then imageSrc else new java.net.URL(new java.net.URL(baseURL), imageSrc).toString()
+            }
+            n = TransformNode {
+                tx: bind n.contentBounds.extent.x;
+                ty: bind n.contentBounds.extent.y;
+                content: n;
             }
         }
         if (n == null) then null else

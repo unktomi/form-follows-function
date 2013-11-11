@@ -128,6 +128,9 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
         const lineMetrics = font.getLineMetrics("A", 0, 1, frc);
         JoglFont {
             name: font.getName();
+            weight: if (f3.util.Bits.contains(font.getStyle(), java.awt.Font.BOLD)) then "bold" else "plain";
+            style: if (f3.util.Bits.contains(font.getStyle(), java.awt.Font.ITALIC)) then "italic" else "normal";
+            size: font.getSize2D();
             ascent: lineMetrics.getAscent();
             descent: lineMetrics.getDescent();
             leading: lineMetrics.getLeading();
@@ -2315,6 +2318,14 @@ public class SceneRenderer {
 //                    println("camera is : {camera}");
                 }
 	    } else if (camera is Camera2D) {
+                if (mn is Shape2D.MeshNode2D and (mn as Shape2D.MeshNode2D).gridFit) {
+                    if (toSceneTransform.getRotation() == Quat.<<1>>) {
+                        const t = mn.toSceneTransform.getTranslation();
+                        toSceneTransform = translate(Math.round(t.x),
+                                                     Math.round(t.y),
+                                                     0);
+                    }
+                }
 		if (mesh.polygonMode == PolygonMode.Line) {
 		    if (toSceneTransform.getRotation() == Quat.<<1>>) {
 			const t = mn.toSceneTransform.getTranslation();

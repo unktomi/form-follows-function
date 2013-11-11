@@ -16,4 +16,5 @@ public class Image is AbstractTexture, Shape2D.MeshNode2D {
 					  tex.getWidth(), tex.getHeight());
     override var paint = bind Shape2D.TexturePaint { texture: getThis() }
     function getThis to Image { this } // workaround for compiler bug with bound "this"
+    override var gridFit = false;
 }

@@ -36,6 +36,9 @@ public interface Layout
 public interface Font 
 {
     public const name is String;
+    public const size is Number;
+    public const weight is String;
+    public const style is String;
     public const ascent is Number;
     public const descent is Number;
     public const leading is Number;
