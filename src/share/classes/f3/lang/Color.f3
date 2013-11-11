@@ -555,6 +555,21 @@ public class Color extends Comparable of Object, Formattable {
         }
     }
 
+    public function toCss to String
+    {
+        def sb = StringBuilder {};
+        const uppercase = false;
+        sb.append("#");
+        sb.append(toHex(Math.round(red * 255), 2, uppercase));
+        sb.append(toHex(Math.round(green * 255), 2, uppercase));
+        sb.append(toHex(Math.round(blue * 255), 2, uppercase));
+        if (opacity != 1) {
+            sb.append("|");
+            sb.append(toHex(Math.round(opacity * 255), 2, uppercase));
+        }
+        sb.toString()
+    }
+
     /**
      * Prints out a string representation of the color in the following format:
      * <p>

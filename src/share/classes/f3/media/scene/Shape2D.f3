@@ -292,6 +292,7 @@ public class MeshNode2D is MeshNode
     public readonly var path is Path2D;
     override var mesh = bind path.createMesh();
     override var contentBounds = bind path.getBounds();
+    public var gridFit is Boolean = true;
 }
 
 public class Circle is Shape2D 

@@ -85,7 +85,7 @@
 
     <!-- Here are popular targets for building in this dir -->
     <target name="help"       depends="-do-help" description="Show help on targets"/>
-    <target name="binaries"   depends="jar,f3.svg.awt,f3.cg.jogl.awt,f3doc,launcher" description="Build compiler and compiler runtime binaries"/>
+    <target name="binaries"   depends="jar,f3.svg.awt,f3.xhtml.awt,f3.cg.jogl.awt,f3doc,launcher" description="Build compiler and compiler runtime binaries"/>
 
 <!-- jjh: temporarily changed to dev-test until the tests on the exclude lists can be fixed
     <target name="test"       depends="binaries,-do-test" description="Build binaries and run tests"/>
@@ -1546,6 +1546,8 @@
         <delete quiet="true" dir="${dist.dir}"/>
         <delete quiet="true" file="cobertura.ser" />
         <ant dir="f3_svg_awt" antfile="build.xml" inheritAll="false" target="clean">
+        </ant>
+        <ant dir="f3_xhtml" antfile="build.xml" inheritAll="false" target="clean">
         </ant>
         <ant dir="f3_cg_jogl_awt" antfile="build.xml" inheritAll="false" target="clean">
         </ant>
