@@ -198,7 +198,7 @@ public abstract class TimeNode is Foldable of TimeNode
 	playing and not paused
     }
     
-    var playing is Boolean;
+    readonly var playing is Boolean;
 
     public function lookup from (id is String) to TimeNode {
 	var r is TimeNode;

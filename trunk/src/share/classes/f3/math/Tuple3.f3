@@ -5,7 +5,7 @@ import java.lang.Math;
 public const <<0>> = new Tuple3(0, 0, 0);
 public const <<1>> = new Tuple3(1, 1, 1);
 
-public class Tuple3 is F3Value
+public class Tuple3 is F3Value, java.lang.Comparable of Tuple3 
 {
     public const x is Number;
     public const y is Number;
@@ -105,6 +105,16 @@ public class Tuple3 is F3Value
     public function max from (v is Tuple3) to Tuple3 
     {
 	if (v == this) v else new Tuple3(Math.max(x, v.x), Math.max(y, v.y), Math.max(z, v.z))
+    }
+
+    public override function compareTo from (v is Tuple3) to Integer {
+        var cmp = x - v.x;
+        if (cmp <> 0) return Math.signum(cmp) as Integer;
+        cmp = y - v.y;
+        if (cmp <> 0) return Math.signum(cmp) as Integer;
+        cmp = z - v.z;
+        if (cmp <> 0) return Math.signum(cmp) as Integer;
+        return 0;
     }
 }
 

@@ -2,6 +2,8 @@ package f3.media.scene;
 
 package var timelines = new java.util.WeakHashMap of (Timeline, ());
 
+public var paused is Boolean;
+
 public function getTimelines to Timeline[] 
 {
     foreach (x in timelines.keySet()) x;
@@ -10,9 +12,7 @@ public function getTimelines to Timeline[]
 public function advancePlayhead from (worldTime is Duration) to () 
 {
     for (t in getTimelines()) {
-	if (not t.paused) {
-	    t.advancePlayhead(worldTime);
-	}
+        t.advancePlayhead(worldTime);
     }
 }
 

@@ -1,0 +1,35 @@
+package f3.media.scene;
+
+public abstract class RigidBodyConstraint {
+    
+    public const node1 is Collidable;
+    public const node2 is Collidable;
+
+    protected var applied is Boolean;
+    
+    public readonly var collider1 is Collider = bind node1.collider on replace {
+        insert this into collider1.constraints;
+    }
+
+    public readonly var collider2 is Collider = bind node2.collider on replace {
+        insert this into collider2.constraints;
+    }
+
+    public function apply to () 
+    {
+        if (not applied) {
+            applied = node1.collider.applyConstraint(node2.collider, this);
+        }
+    }
+
+    protected function remove to () 
+    {
+        if (applied) {
+            applied = false;
+            onRemove();
+        }
+    }
+
+    protected function onRemove to () {
+    } 
+}
