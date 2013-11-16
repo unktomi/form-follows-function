@@ -68,7 +68,7 @@ public class Timeline
 	TimeGroup { 
 	    content: bind content; 
 	    override var toSceneTransform = TimeMat.<<1>>;
-	    override var pausedInScene = bind timeline.paused;
+	    override var pausedInScene = bind timeline.paused or MasterTimeline.paused;
 	}
     }
 
@@ -76,7 +76,11 @@ public class Timeline
 
     public function advancePlayhead from (delta is Duration) to ()
     {
-	setPlayhead(playhead + delta);
+        if (not paused) {
+            setPlayhead(playhead+delta);
+        } else {
+            setPlayhead(playhead);
+        }
     }
 
     public function setPlayhead

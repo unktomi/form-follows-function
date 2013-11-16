@@ -24,19 +24,16 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
 	    movie.setVolume(volume);
 	    movie.setRate(rate);
 	}
-	movie.update();
-	width = movie.getWidth();
-	height = movie.getHeight();
-	if (not movie.isPlaying()) {
-	    movie.play();
-	}
-	var pos is Long;
 	if (paused) {
 	    pos = movie.pause();
 	} else {
 	    movie.play();
 	    pos = movie.getPosition();
 	}
+	movie.update();
+	width = movie.getWidth();
+	height = movie.getHeight();
+	var pos is Long;
 	if (pos <> position.toMillis()) {
 	    position = Duration.valueOf(pos);
 	}
@@ -62,19 +59,27 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
 public class Clip is TimeNode {
     public var movie is Movie;
     override var contentBounds = bind Interval { end: movie.duration };
-    override var pausedInScene on replace {
-        movie.paused = pausedInScene;
-    }
+
     override var currentTime on replace {
         if (pausedInScene) {
             movie.setPosition(currentTime);
         }
     }
-    var disp1 = observeStart().subscribe(function from (_ is()) to () {
+
+    override protected function update 
+	from (sceneTime is Duration) 
+	to () 
+    {
+        super.update(sceneTime);
+        movie.paused = pausedInScene or not isPlaying();
+    }
+
+    const disp1 = observeStart().subscribe(function from (_ is ()) to () {
             movie.setPosition(currentTime);
             movie.paused = false;
         });
-    var disp2 = observeCompletion().subscribe(function from (_ is()) to () {
+
+    const disp2 = observeCompletion().subscribe(function from (_ is ()) to () {
             movie.paused = true;
         });
 }

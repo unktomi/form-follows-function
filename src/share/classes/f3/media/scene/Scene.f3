@@ -378,6 +378,8 @@ public class Scene
         moveEvent = event;
         updateMouse(event.screenx, event.screeny);
     }
+    
+    var focusCount is Integer;
 
     public function setFocus from (f is Focusable) to Boolean
     {
@@ -388,6 +390,7 @@ public class Scene
                 focus = f;
                 println("set focus to {focus}");
             }
+            focusCount++;
             focusSet = true;
         }
         if (focusSet) {
@@ -399,9 +402,10 @@ public class Scene
     public function injectMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
         var focusSet = false;
+        var origFocus = focusCount;
         for (p in underMouse) {
             doMouseDown(p, event);
-            println("p={p.node}");
+            focusSet = origFocus <> focusCount;
             if (not focusSet and (p.node instanceof Focusable)) {
                 const f = p.node as Focusable;
                 focusSet = setFocus(f);
@@ -565,23 +569,27 @@ public class Scene
     }
 
 
-    function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to ()
+    function doMouseDown from (p is Pick, sceneEvent is MouseEvent) to Boolean
     {
         const hs = getMouseInputHandlers(p);
+        var result = true;
         if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
             for (h in hs) {
                 h.onMouseDown(e);
                 if (not e.propagate) {
+                    result = false;
                     break;
                 }
             }
         }
-        if (p.node.mouseDown <> null) {        
+        if (result and p.node.mouseDown <> null) {        
             const e = makeMouseEvent(null, p, sceneEvent);
             p.node.mouseDown.onNext(e);
+            result = e.propagate;
         }
+        return result;
     }
 
     function doMouseMove from (p is Pick, sceneEvent is MouseEvent) to () 

@@ -1,0 +1,292 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+
+public class ContactPoint is java.lang.Comparable of ContactPoint {
+
+    public const point is Vec3;
+    public const normal is Vec3;
+    public const thisCollider is Collider;
+    public const otherCollider is Collider;
+
+    override public function equals(other is Object) to Boolean 
+    {
+        if (other instanceof ContactPoint) {
+            var o = other as ContactPoint;
+            return 
+                point == o.point and 
+                normal == o.normal and
+                thisCollider == o.thisCollider and
+                otherCollider == o.otherCollider;
+        }
+        return false;
+    }
+
+    override public function toString to String
+    {
+        return "Contact Point {point} normal {normal} with {otherCollider}";
+    }
+
+    override public function compareTo from (p is ContactPoint) to Integer 
+    {
+        var hc1 = java.lang.System.identityHashCode(thisCollider);
+        var hc2 = java.lang.System.identityHashCode(p.thisCollider);
+        var cmp = hc1 - hc2;
+        if (cmp <> 0) {
+            return cmp;
+        }
+        hc1 = java.lang.System.identityHashCode(otherCollider);
+        hc2 = java.lang.System.identityHashCode(p.otherCollider);
+        cmp = hc1 - hc2;
+        if (cmp <> 0) {
+            return cmp;
+        }
+        cmp = point.compareTo(p.point);
+        if (cmp <> 0) {
+            return cmp;
+        }
+        cmp = normal.compareTo(p.normal);
+        return cmp;
+    }
+}
+
+public class Collision {
+    public var collider is Collider;
+    public var contacts is ContactPoint[];
+}
+
+public abstract class Collider {
+    public var mass is Number = 1.0;
+    public var dynamic is Boolean = false on replace {
+        reactivate();
+    }
+    public var friction is Number = 0.5;
+    public var tracksCollisions: Boolean = false;
+    public var collisionInitialVelocity is Vec3 = Vec3.<<0>>;
+    public var collisionInitialSpin is Vec3 = Vec3.<<0>>;
+    public var collisionInitialOrientation is Tuple3 = Tuple3.<<0>>;
+    public var collisionInitialPosition is Point3 = Point3.<<0>>;
+    public var centerOfMass is Vec3 = Vec3.<<0>>;
+    public var active: Boolean = true on replace 
+    {
+        activate();
+    }
+    public readonly var linearFactor is Vec3 = Vec3.<<1>>;
+    public readonly var angularFactor is Vec3 = Vec3.<<1>>;
+
+    public var angularDamping is Number = 0.5;
+    public var linearDamping is Number = 0.0;
+
+    public var constraints is RigidBodyConstraint[];
+
+    protected function needsCollisions to Boolean 
+    {
+        return tracksCollisions or
+            onCollisionEnter <> null or 
+            onCollisionLeave <> null;
+    }
+
+    public function applyForce from (v is Vec3) to () 
+    {
+        applyForce(v.x, v.y, v.z);
+    }
+
+    public abstract function applyForce from (x is Number, y is Number, z is Number) to ();
+
+    public function applyTarque from (v is Vec3) to () 
+    {
+        applyTorque(v.x, v.y, v.z);
+    }
+
+    public abstract function applyTorque from (x is Number, y is Number, z is Number) to ();
+    public abstract function setAngularFactor from (v is Vec3) to ();
+    public abstract function setLinearFactor from (v is Vec3) to ();
+    public abstract function getLinearVelocit to Vec3; 
+    public abstract function getAngularVelocity to Vec3;
+
+    public function setLinearVelocity from (v is Vec3) to ()
+    {
+        setLinearVelocity(v.x, v.y, v.z);
+    }
+
+    public abstract function setLinearVelocity from (x is Number, y is Number, z is Number) to ();
+
+    public function setAngularVelocity from (v is Vec3) to ()
+    {
+        setAngularVelocity(v.x, v.y, v.z);
+    }
+
+    public abstract function setAngularVelocity from (x is Number, y is Number, z is Number) to ();
+
+    public function applyImpulse from (v is Vec3) to ()
+    {
+        applyImpulse(v.x, v.y, v.z);
+    }
+
+    public abstract function applyImpulse from (x is Number, y is Number, z is Number) to ();
+
+    public function applyTarqueImpulse from (v is Vec3) to () 
+    {
+        applyTorqueImpulse(v.x, v.y, v.z);
+    }
+
+    public abstract function applyTorqueImpulse from (x is Number, y is Number, z is Number) to ();
+
+    protected function addContact from (pt is ContactPoint) to ()
+    {
+        for (c in collisions) {
+            if (c.collider == pt.otherCollider) {
+                var found = false;
+                for (cp in c.contacts) {
+                    if (pt == cp) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (not found) {
+                    insert pt into c.contacts;
+                }
+                return;
+            }
+        }
+        var collision = Collision { 
+            collider: pt.otherCollider;
+            contacts: [pt] 
+        };
+        insert collision into collisions;
+        if (onCollisionEnter <> null) {
+            onCollisionEnter(collision);
+        }
+    }
+
+    protected function removeContact from (pt is ContactPoint) to ()
+    {
+        for (c in collisions) {
+            if (c.collider == pt.otherCollider) {
+                if (sizeof c.contacts == 1) {
+                    var collision = c;
+                    delete this.collisions[indexof c];
+                    if (onCollisionLeave <> null) {
+                        onCollisionLeave(collision);
+                    }
+                } else {
+                    delete pt from c.contacts;
+                }
+                break;
+            }
+        }
+    }
+
+    protected function mergeCollisions from (map is java.util.Map of (Collider, java.util.Set of ContactPoint)) to ()
+    {
+        // Map<Collider, Set<ContactPoint> >
+        if (collisionMap == map) {
+            return;
+        }
+        var toBeAdded = new java.util.HashSet of Collider;
+        var toBeRemoved = new java.util.HashSet of Collider;
+        var all = new java.util.HashSet of Collider;
+        if (collisionMap <> null) {
+            all.addAll(collisionMap.keySet());
+        }
+        if (map <> null) {
+            all.addAll(map.keySet());
+        }
+        var iter = all.iterator();
+        var enter is Collision[];
+        var leave is Collision[];
+        while (iter.hasNext()) {
+            var collider = iter.next();
+            var curPts = collisionMap.get(collider);
+            var newPts = map.get(collider);
+            if (curPts == null) {
+                var qi = newPts.iterator();
+                var nc = Collision {
+                    collider: collider;
+                    contacts: foreach (j in [0..<newPts.size()]) {
+                        qi.next() 
+                    }
+                };
+                insert nc into collisions;
+                if (onCollisionEnter <> null) {
+                    insert nc into enter;
+                }
+            } else if (newPts == null) {
+                var js is Integer[];
+                for (i in collisions) {
+                    if (i.collider == collider) {
+                        insert indexof i into js;
+                    }
+                }
+                for (i in js.reverse()) {
+                    if (onCollisionLeave <> null) {
+                        insert collisions[i] into leave;
+                    }
+                    delete collisions[i];
+                }
+            } else {
+                for (i in collisions) {
+                    if (i.collider == collider) {
+                        var q = newPts.iterator();
+                        i.contacts = 
+                            foreach (j in [0..<newPts.size()]) {
+                                q.next() 
+                            };
+                        break;
+                    }
+                }
+            }
+        }
+        if (onCollisionLeave <> null) {
+            for (i in leave) {
+                onCollisionLeave(i);
+            }
+        }
+        if (onCollisionEnter <> null) {
+            for (i in enter) {
+                onCollisionEnter(i);
+            }
+        }
+        collisionMap = map;
+    }
+
+    // Map<Collider, Set<ContactPoint> >
+    var collisionMap is java.util.Map;
+
+    public readonly var collisions is Collision[];
+    public var onCollisionEnter is function from Collision to ();
+    public var onCollisionLeave is function from Collision to ();
+
+    public var collidable is Collidable;
+    public readonly var initialTransform = bind lazy 
+        translate(collisionInitialPosition + centerOfMass) *
+        (if (collisionInitialOrientation <> Vec3.<<0>>) 
+        then Quat.Quat(collisionInitialOrientation).toMat4()
+        else Mat4.<<1>>);
+
+    public readonly var initialTransformInverse = bind lazy initialTransform.inverse();
+
+    public abstract function applyConstraint from (other is Collider, c is RigidBodyConstraint) to Boolean;
+
+    public readonly var shape is Collidable;
+
+    var _currentlyActive: Boolean;   
+
+    public bound function isActive() { _currentlyActive }
+      
+    protected abstract function activate to ();
+
+    protected abstract function reactivate to ();
+
+    protected function update to () 
+    {
+        for (c in constraints) c.apply();
+    }
+
+    protected function getDynamicsWorld to DynamicsWorld { collidable.dynamicsWorld }
+
+    public function getCollisionWorldTransform to Mat4 
+    {
+        return collidable.getCollisionWorldTransform();
+    }
+}
