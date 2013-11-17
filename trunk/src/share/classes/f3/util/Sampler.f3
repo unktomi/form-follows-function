@@ -2,7 +2,7 @@ package f3.util;
 
 public abstract class Sampler of a is Observer of a, f3.lang.AbstractConstRef of a {
 
-    public readonly var last is a = initialize();
+    public readonly var last is a;
 
     override public function get to a { last }
 
@@ -11,5 +11,6 @@ public abstract class Sampler of a is Observer of a, f3.lang.AbstractConstRef of
         last = x;
     }
 
-    protected function initialize to a;
+    protected var subscription is Disposable;
+
 }

@@ -63,11 +63,8 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     {
         const self = this;
         Sampler of a {
-            var disp is Disposable;
-            override function initialize to a {
-                disp = self.subscribe(this);
-                initialValue;
-            }
+            last: initialValue;
+            override var subscription = self.subscribe(this);
         }
     }
 
@@ -202,6 +199,23 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    });
 	    }
 	}
+    }
+
+    // Returns an Observable whose flatmap acts like "Switch" in rx (i.e subscribes to the latest observed Observable)
+
+    public function observeLatest to Observable of a 
+    {
+        const self = this;
+        DefaultObservable of a {
+            override function subscribe from (observer is Observer of a) to Disposable
+            {
+                self.subscribe(observer);
+            }
+            override function flatmap of b from (f is function from a to Observable of b) to Observable of b 
+            {
+                subscribeToLatest(map(f));
+            }
+        }
     }
 
     public function flatmap of b 
@@ -530,34 +544,16 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     {
         xs.zipLatestFrom(this, f.flip());
     }
-
+    
     public function zipLatestFrom of (b, c)
         from (xs is Observable of b, 
               f is function from (a, b) to c) 
         to Observable of c 
     {
-        const self = this;
-        DefaultObservable of c {
-            var latest is b;
-            var d1 = xs.subscribe(DefaultObserver of b {
-                    override function onNext from (x is b) to ()
-                    {
-                        latest = x;
-                    }
-                });
-            override function subscribe from (y is Observer of c) to Disposable 
-            {
-                d1;
-                self.subscribe(DefaultObserver of a {
-                        onError: y.onError;
-                        onCompleted: y.onCompleted;
-                        //onNext: |x| y.onNext(f(x, latest));
-                        override function onNext from (x is a) to ()
-                        {
-                            y.onNext(f(x, latest))
-                        }
-                    });
-            }
+        ZipLatestFrom of (c, a, b) {
+            self: this;
+            xs: xs;
+            f: f;
         }
     }
     */
@@ -740,7 +736,31 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 public abstract class DefaultObservable of a is Observable of a //, org.f3.runtime.Monad of (Observable, a) 
 {
 }
-
+/*
+class ZipLatestFrom of (c, a, b) is DefaultObservable of c {
+    public const self is Observable of a;
+    public const xs is Observable of b;
+    public const f is function from (a, b) to c;
+    var latest_b is b;
+    const d1 = xs.subscribe(DefaultObserver of b {
+            override function onNext from (x is b) to ()
+            {
+                latest_b = x;
+            }
+        });
+    override function subscribe from (z is Observer of c) to Disposable 
+    {
+        self.subscribe(DefaultObserver of a {
+                onError: z.onError;
+                onCompleted: z.onCompleted;
+                override function onNext from (x is a) to ()
+                {
+                    z.onNext(f(x, latest_b));
+                }
+            });
+    }
+}
+*/
 
 public function observe of a
     from (xs is (..a)[]) 
@@ -882,6 +902,40 @@ function Println of a to Println of a
 {
     Println of a {}
 }
+
+class SwitchToLatest of a is Observer of Observable of a
+{
+    public const observer is Observer of a;
+    var target is Disposable;
+    override public function onNext from (x is Observable of a) to () 
+    {
+        target.dispose();
+        target = x.subscribe(observer);
+    }
+    override public function onError from (e is java.lang.Exception) to () 
+    {
+        observer.onError(e);
+    }
+    override public function onCompleted from () to () 
+    {
+        observer.onCompleted();
+    }
+}
+
+public function subscribeToLatest of a from (self is Observable of Observable of a) to Observable of a 
+{
+    DefaultObservable of a 
+    {
+        override function subscribe from (observer is Observer of a) to Disposable 
+        {
+            self.subscribe(SwitchToLatest of a 
+                           {
+                               observer: observer;
+                           })
+        }
+    }
+}
+
 
 public function run 
 {
