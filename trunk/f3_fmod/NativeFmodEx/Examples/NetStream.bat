@@ -1,0 +1,1 @@
+start javaw -Djava.library.path=../lib -classpath ./;NativeFmodEx-Examples.jar;../lib/NativeFmodEx.jar org.jouvieje.FmodEx.Examples.NetStream http://127.0.0.1/jouvieje/downloads/NativeFmod/jules.mp3
