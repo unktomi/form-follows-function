@@ -192,11 +192,12 @@ public class Float4x4Parameter is Parameter of Mat4
 
 public class SamplerParameter is Parameter of AbstractTexture
 {
-    override public function apply(effect is CGFX.Effect, 
-                                   world is Mat4, 
-                                   view is Mat4, 
-                                   projection is Mat4)
-    to ()
+    override public function apply
+        from (effect is CGFX.Effect, 
+              world is Mat4, 
+              view is Mat4, 
+              projection is Mat4)
+        to ()
     {
 	const value = get();
         const id = value.getTextureId();
@@ -359,11 +360,13 @@ public class CGFXShader is Shader
 
     public readonly var parameters is Parameter[] = bind getParameters(effect);
 
-    override public function getParameters to (Parameter of ?)[] {
+    override public function getParameters to (Parameter of ?)[] 
+    {
 	parameters
     }
 
-    override public function getParameter from (name is String) to Parameter  of ? {
+    override public function getParameter from (name is String) to Parameter  of ? 
+    {
 	for (p in parameters) {
 	    if (p.name == name) {
 		return p
