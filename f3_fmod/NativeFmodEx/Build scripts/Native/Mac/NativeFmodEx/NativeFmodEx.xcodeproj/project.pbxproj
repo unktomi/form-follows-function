@@ -1,0 +1,458 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 44;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D59E15900ED28235001787AE /* BufferPointerUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E155A0ED28235001787AE /* BufferPointerUtils.cpp */; };
+		D59E15910ED28235001787AE /* CallbackManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E155B0ED28235001787AE /* CallbackManager.cpp */; };
+		D59E15920ED28235001787AE /* CallbackManager.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E155C0ED28235001787AE /* CallbackManager.h */; };
+		D59E15930ED28235001787AE /* Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E155D0ED28235001787AE /* Channel.cpp */; };
+		D59E15940ED28235001787AE /* ChannelGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E155E0ED28235001787AE /* ChannelGroup.cpp */; };
+		D59E15950ED28235001787AE /* DSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E155F0ED28235001787AE /* DSP.cpp */; };
+		D59E15960ED28235001787AE /* DSPConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15600ED28235001787AE /* DSPConnection.cpp */; };
+		D59E15970ED28235001787AE /* Enumeration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15610ED28235001787AE /* Enumeration.cpp */; };
+		D59E15980ED28235001787AE /* fmod.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15620ED28235001787AE /* fmod.h */; };
+		D59E15990ED28235001787AE /* fmod.hpp in Headers */ = {isa = PBXBuildFile; fileRef = D59E15630ED28235001787AE /* fmod.hpp */; };
+		D59E159A0ED28235001787AE /* FMOD_ADVANCEDSETTINGS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15640ED28235001787AE /* FMOD_ADVANCEDSETTINGS.cpp */; };
+		D59E159B0ED28235001787AE /* FMOD_CDTOC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15650ED28235001787AE /* FMOD_CDTOC.cpp */; };
+		D59E159C0ED28235001787AE /* fmod_codec.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15660ED28235001787AE /* fmod_codec.h */; };
+		D59E159D0ED28235001787AE /* FMOD_CODEC_DESCRIPTION.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15670ED28235001787AE /* FMOD_CODEC_DESCRIPTION.cpp */; };
+		D59E159E0ED28235001787AE /* FMOD_CODEC_STATE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15680ED28235001787AE /* FMOD_CODEC_STATE.cpp */; };
+		D59E159F0ED28235001787AE /* FMOD_CODEC_WAVEFORMAT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15690ED28235001787AE /* FMOD_CODEC_WAVEFORMAT.cpp */; };
+		D59E15A00ED28235001787AE /* FMOD_CREATESOUNDEXINFO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E156A0ED28235001787AE /* FMOD_CREATESOUNDEXINFO.cpp */; };
+		D59E15A10ED28235001787AE /* fmod_dsp.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E156B0ED28235001787AE /* fmod_dsp.h */; };
+		D59E15A20ED28235001787AE /* FMOD_DSP_DESCRIPTION.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E156C0ED28235001787AE /* FMOD_DSP_DESCRIPTION.cpp */; };
+		D59E15A30ED28235001787AE /* FMOD_DSP_PARAMETERDESC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E156D0ED28235001787AE /* FMOD_DSP_PARAMETERDESC.cpp */; };
+		D59E15A40ED28235001787AE /* FMOD_DSP_STATE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E156E0ED28235001787AE /* FMOD_DSP_STATE.cpp */; };
+		D59E15A50ED28235001787AE /* fmod_errors.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E156F0ED28235001787AE /* fmod_errors.h */; };
+		D59E15A60ED28235001787AE /* FMOD_GUID.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15700ED28235001787AE /* FMOD_GUID.cpp */; };
+		D59E15A70ED28235001787AE /* fmod_output.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15710ED28235001787AE /* fmod_output.h */; };
+		D59E15A80ED28235001787AE /* FMOD_REVERB_CHANNELPROPERTIES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15720ED28235001787AE /* FMOD_REVERB_CHANNELPROPERTIES.cpp */; };
+		D59E15A90ED28235001787AE /* FMOD_REVERB_PRESETS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15730ED28235001787AE /* FMOD_REVERB_PRESETS.cpp */; };
+		D59E15AA0ED28235001787AE /* FMOD_REVERB_PROPERTIES.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15740ED28235001787AE /* FMOD_REVERB_PROPERTIES.cpp */; };
+		D59E15AB0ED28235001787AE /* FMOD_TAG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15750ED28235001787AE /* FMOD_TAG.cpp */; };
+		D59E15AC0ED28235001787AE /* FMOD_VECTOR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15760ED28235001787AE /* FMOD_VECTOR.cpp */; };
+		D59E15AD0ED28235001787AE /* FmodEx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15770ED28235001787AE /* FmodEx.cpp */; };
+		D59E15AE0ED28235001787AE /* Geometry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15780ED28235001787AE /* Geometry.cpp */; };
+		D59E15AF0ED28235001787AE /* Includes.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15790ED28235001787AE /* Includes.h */; };
+		D59E15B00ED28235001787AE /* JavaObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E157A0ED28235001787AE /* JavaObject.cpp */; };
+		D59E15B10ED28235001787AE /* JavaObject.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E157B0ED28235001787AE /* JavaObject.h */; };
+		D59E15B20ED28235001787AE /* Native2Java_Types.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E157C0ED28235001787AE /* Native2Java_Types.h */; };
+		D59E15B30ED28235001787AE /* NativeFmodEx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E157D0ED28235001787AE /* NativeFmodEx.cpp */; };
+		D59E15B40ED28235001787AE /* NativeFmodEx.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E157E0ED28235001787AE /* NativeFmodEx.h */; };
+		D59E15B50ED28235001787AE /* org_jouvieje_FmodEx_Defines_DefineJNI.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E157F0ED28235001787AE /* org_jouvieje_FmodEx_Defines_DefineJNI.h */; };
+		D59E15B60ED28235001787AE /* org_jouvieje_FmodEx_Enumerations_EnumerationJNI.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15800ED28235001787AE /* org_jouvieje_FmodEx_Enumerations_EnumerationJNI.h */; };
+		D59E15B70ED28235001787AE /* org_jouvieje_FmodEx_FmodExJNI.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15810ED28235001787AE /* org_jouvieje_FmodEx_FmodExJNI.h */; };
+		D59E15B80ED28235001787AE /* org_jouvieje_FmodEx_Init.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15820ED28235001787AE /* org_jouvieje_FmodEx_Init.h */; };
+		D59E15B90ED28235001787AE /* org_jouvieje_FmodEx_Misc_BufferUtilsJNI.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15830ED28235001787AE /* org_jouvieje_FmodEx_Misc_BufferUtilsJNI.h */; };
+		D59E15BA0ED28235001787AE /* org_jouvieje_FmodEx_Misc_PointerUtilsJNI.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15840ED28235001787AE /* org_jouvieje_FmodEx_Misc_PointerUtilsJNI.h */; };
+		D59E15BB0ED28235001787AE /* org_jouvieje_FmodEx_Structures_StructureJNI.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15850ED28235001787AE /* org_jouvieje_FmodEx_Structures_StructureJNI.h */; };
+		D59E15BC0ED28235001787AE /* Pointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15860ED28235001787AE /* Pointer.cpp */; };
+		D59E15BD0ED28235001787AE /* Pointer.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E15870ED28235001787AE /* Pointer.h */; };
+		D59E15BE0ED28235001787AE /* Reverb.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15880ED28235001787AE /* Reverb.cpp */; };
+		D59E15BF0ED28235001787AE /* Sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E15890ED28235001787AE /* Sound.cpp */; };
+		D59E15C00ED28235001787AE /* SoundGroup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E158A0ED28235001787AE /* SoundGroup.cpp */; };
+		D59E15C10ED28235001787AE /* System.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E158B0ED28235001787AE /* System.cpp */; };
+		D59E15C20ED28235001787AE /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E158C0ED28235001787AE /* Utils.cpp */; };
+		D59E15C30ED28235001787AE /* Utils.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E158D0ED28235001787AE /* Utils.h */; };
+		D59E15C40ED28235001787AE /* WindowHandle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D59E158E0ED28235001787AE /* WindowHandle.cpp */; };
+		D59E15C50ED28235001787AE /* WindowHandle.h in Headers */ = {isa = PBXBuildFile; fileRef = D59E158F0ED28235001787AE /* WindowHandle.h */; };
+		D59E16970ED28406001787AE /* JavaVM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D59E16960ED28406001787AE /* JavaVM.framework */; };
+		F69648D10ED4F1440095823F /* libfmodex.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D59E16BA0ED29144001787AE /* libfmodex.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		32BAE0B70371A74B00C91783 /* NativeFmodEx_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeFmodEx_Prefix.pch; sourceTree = "<group>"; };
+		5073E0C609E734A800EC74B6 /* NativeFmodExProj.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = NativeFmodExProj.xcconfig; sourceTree = "<group>"; };
+		5073E0C709E734A800EC74B6 /* NativeFmodExTarget.xcconfig */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xcconfig; path = NativeFmodExTarget.xcconfig; sourceTree = "<group>"; };
+		D2AAC09D05546B4700DB518D /* libNativeFmodEx.jnilib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libNativeFmodEx.jnilib; sourceTree = BUILT_PRODUCTS_DIR; };
+		D59E155A0ED28235001787AE /* BufferPointerUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BufferPointerUtils.cpp; path = ../../../../Src/NativeFmodEx/Native/BufferPointerUtils.cpp; sourceTree = SOURCE_ROOT; };
+		D59E155B0ED28235001787AE /* CallbackManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = CallbackManager.cpp; path = ../../../../Src/NativeFmodEx/Native/CallbackManager.cpp; sourceTree = SOURCE_ROOT; };
+		D59E155C0ED28235001787AE /* CallbackManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CallbackManager.h; path = ../../../../Src/NativeFmodEx/Native/CallbackManager.h; sourceTree = SOURCE_ROOT; };
+		D59E155D0ED28235001787AE /* Channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Channel.cpp; path = ../../../../Src/NativeFmodEx/Native/Channel.cpp; sourceTree = SOURCE_ROOT; };
+		D59E155E0ED28235001787AE /* ChannelGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ChannelGroup.cpp; path = ../../../../Src/NativeFmodEx/Native/ChannelGroup.cpp; sourceTree = SOURCE_ROOT; };
+		D59E155F0ED28235001787AE /* DSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DSP.cpp; path = ../../../../Src/NativeFmodEx/Native/DSP.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15600ED28235001787AE /* DSPConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DSPConnection.cpp; path = ../../../../Src/NativeFmodEx/Native/DSPConnection.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15610ED28235001787AE /* Enumeration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Enumeration.cpp; path = ../../../../Src/NativeFmodEx/Native/Enumeration.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15620ED28235001787AE /* fmod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fmod.h; path = ../../../../Src/NativeFmodEx/Native/fmod.h; sourceTree = SOURCE_ROOT; };
+		D59E15630ED28235001787AE /* fmod.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = fmod.hpp; path = ../../../../Src/NativeFmodEx/Native/fmod.hpp; sourceTree = SOURCE_ROOT; };
+		D59E15640ED28235001787AE /* FMOD_ADVANCEDSETTINGS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_ADVANCEDSETTINGS.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_ADVANCEDSETTINGS.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15650ED28235001787AE /* FMOD_CDTOC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_CDTOC.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_CDTOC.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15660ED28235001787AE /* fmod_codec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fmod_codec.h; path = ../../../../Src/NativeFmodEx/Native/fmod_codec.h; sourceTree = SOURCE_ROOT; };
+		D59E15670ED28235001787AE /* FMOD_CODEC_DESCRIPTION.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_CODEC_DESCRIPTION.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_CODEC_DESCRIPTION.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15680ED28235001787AE /* FMOD_CODEC_STATE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_CODEC_STATE.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_CODEC_STATE.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15690ED28235001787AE /* FMOD_CODEC_WAVEFORMAT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_CODEC_WAVEFORMAT.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_CODEC_WAVEFORMAT.cpp; sourceTree = SOURCE_ROOT; };
+		D59E156A0ED28235001787AE /* FMOD_CREATESOUNDEXINFO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_CREATESOUNDEXINFO.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_CREATESOUNDEXINFO.cpp; sourceTree = SOURCE_ROOT; };
+		D59E156B0ED28235001787AE /* fmod_dsp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fmod_dsp.h; path = ../../../../Src/NativeFmodEx/Native/fmod_dsp.h; sourceTree = SOURCE_ROOT; };
+		D59E156C0ED28235001787AE /* FMOD_DSP_DESCRIPTION.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_DSP_DESCRIPTION.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_DSP_DESCRIPTION.cpp; sourceTree = SOURCE_ROOT; };
+		D59E156D0ED28235001787AE /* FMOD_DSP_PARAMETERDESC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_DSP_PARAMETERDESC.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_DSP_PARAMETERDESC.cpp; sourceTree = SOURCE_ROOT; };
+		D59E156E0ED28235001787AE /* FMOD_DSP_STATE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_DSP_STATE.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_DSP_STATE.cpp; sourceTree = SOURCE_ROOT; };
+		D59E156F0ED28235001787AE /* fmod_errors.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fmod_errors.h; path = ../../../../Src/NativeFmodEx/Native/fmod_errors.h; sourceTree = SOURCE_ROOT; };
+		D59E15700ED28235001787AE /* FMOD_GUID.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_GUID.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_GUID.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15710ED28235001787AE /* fmod_output.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fmod_output.h; path = ../../../../Src/NativeFmodEx/Native/fmod_output.h; sourceTree = SOURCE_ROOT; };
+		D59E15720ED28235001787AE /* FMOD_REVERB_CHANNELPROPERTIES.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_REVERB_CHANNELPROPERTIES.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_REVERB_CHANNELPROPERTIES.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15730ED28235001787AE /* FMOD_REVERB_PRESETS.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_REVERB_PRESETS.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_REVERB_PRESETS.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15740ED28235001787AE /* FMOD_REVERB_PROPERTIES.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_REVERB_PROPERTIES.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_REVERB_PROPERTIES.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15750ED28235001787AE /* FMOD_TAG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_TAG.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_TAG.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15760ED28235001787AE /* FMOD_VECTOR.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FMOD_VECTOR.cpp; path = ../../../../Src/NativeFmodEx/Native/FMOD_VECTOR.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15770ED28235001787AE /* FmodEx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FmodEx.cpp; path = ../../../../Src/NativeFmodEx/Native/FmodEx.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15780ED28235001787AE /* Geometry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Geometry.cpp; path = ../../../../Src/NativeFmodEx/Native/Geometry.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15790ED28235001787AE /* Includes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Includes.h; path = ../../../../Src/NativeFmodEx/Native/Includes.h; sourceTree = SOURCE_ROOT; };
+		D59E157A0ED28235001787AE /* JavaObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = JavaObject.cpp; path = ../../../../Src/NativeFmodEx/Native/JavaObject.cpp; sourceTree = SOURCE_ROOT; };
+		D59E157B0ED28235001787AE /* JavaObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = JavaObject.h; path = ../../../../Src/NativeFmodEx/Native/JavaObject.h; sourceTree = SOURCE_ROOT; };
+		D59E157C0ED28235001787AE /* Native2Java_Types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Native2Java_Types.h; path = ../../../../Src/NativeFmodEx/Native/Native2Java_Types.h; sourceTree = SOURCE_ROOT; };
+		D59E157D0ED28235001787AE /* NativeFmodEx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = NativeFmodEx.cpp; path = ../../../../Src/NativeFmodEx/Native/NativeFmodEx.cpp; sourceTree = SOURCE_ROOT; };
+		D59E157E0ED28235001787AE /* NativeFmodEx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NativeFmodEx.h; path = ../../../../Src/NativeFmodEx/Native/NativeFmodEx.h; sourceTree = SOURCE_ROOT; };
+		D59E157F0ED28235001787AE /* org_jouvieje_FmodEx_Defines_DefineJNI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = org_jouvieje_FmodEx_Defines_DefineJNI.h; path = ../../../../Src/NativeFmodEx/Native/org_jouvieje_FmodEx_Defines_DefineJNI.h; sourceTree = SOURCE_ROOT; };
+		D59E15800ED28235001787AE /* org_jouvieje_FmodEx_Enumerations_EnumerationJNI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = org_jouvieje_FmodEx_Enumerations_EnumerationJNI.h; path = ../../../../Src/NativeFmodEx/Native/org_jouvieje_FmodEx_Enumerations_EnumerationJNI.h; sourceTree = SOURCE_ROOT; };
+		D59E15810ED28235001787AE /* org_jouvieje_FmodEx_FmodExJNI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = org_jouvieje_FmodEx_FmodExJNI.h; path = ../../../../Src/NativeFmodEx/Native/org_jouvieje_FmodEx_FmodExJNI.h; sourceTree = SOURCE_ROOT; };
+		D59E15820ED28235001787AE /* org_jouvieje_FmodEx_Init.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = org_jouvieje_FmodEx_Init.h; path = ../../../../Src/NativeFmodEx/Native/org_jouvieje_FmodEx_Init.h; sourceTree = SOURCE_ROOT; };
+		D59E15830ED28235001787AE /* org_jouvieje_FmodEx_Misc_BufferUtilsJNI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = org_jouvieje_FmodEx_Misc_BufferUtilsJNI.h; path = ../../../../Src/NativeFmodEx/Native/org_jouvieje_FmodEx_Misc_BufferUtilsJNI.h; sourceTree = SOURCE_ROOT; };
+		D59E15840ED28235001787AE /* org_jouvieje_FmodEx_Misc_PointerUtilsJNI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = org_jouvieje_FmodEx_Misc_PointerUtilsJNI.h; path = ../../../../Src/NativeFmodEx/Native/org_jouvieje_FmodEx_Misc_PointerUtilsJNI.h; sourceTree = SOURCE_ROOT; };
+		D59E15850ED28235001787AE /* org_jouvieje_FmodEx_Structures_StructureJNI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = org_jouvieje_FmodEx_Structures_StructureJNI.h; path = ../../../../Src/NativeFmodEx/Native/org_jouvieje_FmodEx_Structures_StructureJNI.h; sourceTree = SOURCE_ROOT; };
+		D59E15860ED28235001787AE /* Pointer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Pointer.cpp; path = ../../../../Src/NativeFmodEx/Native/Pointer.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15870ED28235001787AE /* Pointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Pointer.h; path = ../../../../Src/NativeFmodEx/Native/Pointer.h; sourceTree = SOURCE_ROOT; };
+		D59E15880ED28235001787AE /* Reverb.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Reverb.cpp; path = ../../../../Src/NativeFmodEx/Native/Reverb.cpp; sourceTree = SOURCE_ROOT; };
+		D59E15890ED28235001787AE /* Sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Sound.cpp; path = ../../../../Src/NativeFmodEx/Native/Sound.cpp; sourceTree = SOURCE_ROOT; };
+		D59E158A0ED28235001787AE /* SoundGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SoundGroup.cpp; path = ../../../../Src/NativeFmodEx/Native/SoundGroup.cpp; sourceTree = SOURCE_ROOT; };
+		D59E158B0ED28235001787AE /* System.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = System.cpp; path = ../../../../Src/NativeFmodEx/Native/System.cpp; sourceTree = SOURCE_ROOT; };
+		D59E158C0ED28235001787AE /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Utils.cpp; path = ../../../../Src/NativeFmodEx/Native/Utils.cpp; sourceTree = SOURCE_ROOT; };
+		D59E158D0ED28235001787AE /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Utils.h; path = ../../../../Src/NativeFmodEx/Native/Utils.h; sourceTree = SOURCE_ROOT; };
+		D59E158E0ED28235001787AE /* WindowHandle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WindowHandle.cpp; path = ../../../../Src/NativeFmodEx/Native/WindowHandle.cpp; sourceTree = SOURCE_ROOT; };
+		D59E158F0ED28235001787AE /* WindowHandle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WindowHandle.h; path = ../../../../Src/NativeFmodEx/Native/WindowHandle.h; sourceTree = SOURCE_ROOT; };
+		D59E16960ED28406001787AE /* JavaVM.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaVM.framework; path = /System/Library/Frameworks/JavaVM.framework; sourceTree = "<absolute>"; };
+		D59E16BA0ED29144001787AE /* libfmodex.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfmodex.dylib; path = "FMOD Programmers API/api/lib/libfmodex.dylib"; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D2AAC09B05546B4700DB518D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F69648D10ED4F1440095823F /* libfmodex.dylib in Frameworks */,
+				D59E16970ED28406001787AE /* JavaVM.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		034768DDFF38A45A11DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D2AAC09D05546B4700DB518D /* libNativeFmodEx.jnilib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* NativeFmodEx */ = {
+			isa = PBXGroup;
+			children = (
+				5073E0CA09E734BC00EC74B6 /* Configuration Files */,
+				08FB77ACFE841707C02AAC07 /* Source */,
+				0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */,
+				034768DDFF38A45A11DB9C8B /* Products */,
+			);
+			name = NativeFmodEx;
+			sourceTree = "<group>";
+		};
+		0867D69AFE84028FC02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				D59E16BA0ED29144001787AE /* libfmodex.dylib */,
+				D59E16960ED28406001787AE /* JavaVM.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		08FB77ACFE841707C02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				32BAE0B70371A74B00C91783 /* NativeFmodEx_Prefix.pch */,
+				D59E155A0ED28235001787AE /* BufferPointerUtils.cpp */,
+				D59E155B0ED28235001787AE /* CallbackManager.cpp */,
+				D59E155C0ED28235001787AE /* CallbackManager.h */,
+				D59E155D0ED28235001787AE /* Channel.cpp */,
+				D59E155E0ED28235001787AE /* ChannelGroup.cpp */,
+				D59E155F0ED28235001787AE /* DSP.cpp */,
+				D59E15600ED28235001787AE /* DSPConnection.cpp */,
+				D59E15610ED28235001787AE /* Enumeration.cpp */,
+				D59E15620ED28235001787AE /* fmod.h */,
+				D59E15630ED28235001787AE /* fmod.hpp */,
+				D59E15640ED28235001787AE /* FMOD_ADVANCEDSETTINGS.cpp */,
+				D59E15650ED28235001787AE /* FMOD_CDTOC.cpp */,
+				D59E15660ED28235001787AE /* fmod_codec.h */,
+				D59E15670ED28235001787AE /* FMOD_CODEC_DESCRIPTION.cpp */,
+				D59E15680ED28235001787AE /* FMOD_CODEC_STATE.cpp */,
+				D59E15690ED28235001787AE /* FMOD_CODEC_WAVEFORMAT.cpp */,
+				D59E156A0ED28235001787AE /* FMOD_CREATESOUNDEXINFO.cpp */,
+				D59E156B0ED28235001787AE /* fmod_dsp.h */,
+				D59E156C0ED28235001787AE /* FMOD_DSP_DESCRIPTION.cpp */,
+				D59E156D0ED28235001787AE /* FMOD_DSP_PARAMETERDESC.cpp */,
+				D59E156E0ED28235001787AE /* FMOD_DSP_STATE.cpp */,
+				D59E156F0ED28235001787AE /* fmod_errors.h */,
+				D59E15700ED28235001787AE /* FMOD_GUID.cpp */,
+				D59E15710ED28235001787AE /* fmod_output.h */,
+				D59E15720ED28235001787AE /* FMOD_REVERB_CHANNELPROPERTIES.cpp */,
+				D59E15730ED28235001787AE /* FMOD_REVERB_PRESETS.cpp */,
+				D59E15740ED28235001787AE /* FMOD_REVERB_PROPERTIES.cpp */,
+				D59E15750ED28235001787AE /* FMOD_TAG.cpp */,
+				D59E15760ED28235001787AE /* FMOD_VECTOR.cpp */,
+				D59E15770ED28235001787AE /* FmodEx.cpp */,
+				D59E15780ED28235001787AE /* Geometry.cpp */,
+				D59E15790ED28235001787AE /* Includes.h */,
+				D59E157A0ED28235001787AE /* JavaObject.cpp */,
+				D59E157B0ED28235001787AE /* JavaObject.h */,
+				D59E157C0ED28235001787AE /* Native2Java_Types.h */,
+				D59E157D0ED28235001787AE /* NativeFmodEx.cpp */,
+				D59E157E0ED28235001787AE /* NativeFmodEx.h */,
+				D59E157F0ED28235001787AE /* org_jouvieje_FmodEx_Defines_DefineJNI.h */,
+				D59E15800ED28235001787AE /* org_jouvieje_FmodEx_Enumerations_EnumerationJNI.h */,
+				D59E15810ED28235001787AE /* org_jouvieje_FmodEx_FmodExJNI.h */,
+				D59E15820ED28235001787AE /* org_jouvieje_FmodEx_Init.h */,
+				D59E15830ED28235001787AE /* org_jouvieje_FmodEx_Misc_BufferUtilsJNI.h */,
+				D59E15840ED28235001787AE /* org_jouvieje_FmodEx_Misc_PointerUtilsJNI.h */,
+				D59E15850ED28235001787AE /* org_jouvieje_FmodEx_Structures_StructureJNI.h */,
+				D59E15860ED28235001787AE /* Pointer.cpp */,
+				D59E15870ED28235001787AE /* Pointer.h */,
+				D59E15880ED28235001787AE /* Reverb.cpp */,
+				D59E15890ED28235001787AE /* Sound.cpp */,
+				D59E158A0ED28235001787AE /* SoundGroup.cpp */,
+				D59E158B0ED28235001787AE /* System.cpp */,
+				D59E158C0ED28235001787AE /* Utils.cpp */,
+				D59E158D0ED28235001787AE /* Utils.h */,
+				D59E158E0ED28235001787AE /* WindowHandle.cpp */,
+				D59E158F0ED28235001787AE /* WindowHandle.h */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		5073E0CA09E734BC00EC74B6 /* Configuration Files */ = {
+			isa = PBXGroup;
+			children = (
+				5073E0C609E734A800EC74B6 /* NativeFmodExProj.xcconfig */,
+				5073E0C709E734A800EC74B6 /* NativeFmodExTarget.xcconfig */,
+			);
+			name = "Configuration Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		D2AAC09905546B4700DB518D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D59E15920ED28235001787AE /* CallbackManager.h in Headers */,
+				D59E15980ED28235001787AE /* fmod.h in Headers */,
+				D59E15990ED28235001787AE /* fmod.hpp in Headers */,
+				D59E159C0ED28235001787AE /* fmod_codec.h in Headers */,
+				D59E15A10ED28235001787AE /* fmod_dsp.h in Headers */,
+				D59E15A50ED28235001787AE /* fmod_errors.h in Headers */,
+				D59E15A70ED28235001787AE /* fmod_output.h in Headers */,
+				D59E15AF0ED28235001787AE /* Includes.h in Headers */,
+				D59E15B10ED28235001787AE /* JavaObject.h in Headers */,
+				D59E15B20ED28235001787AE /* Native2Java_Types.h in Headers */,
+				D59E15B40ED28235001787AE /* NativeFmodEx.h in Headers */,
+				D59E15B50ED28235001787AE /* org_jouvieje_FmodEx_Defines_DefineJNI.h in Headers */,
+				D59E15B60ED28235001787AE /* org_jouvieje_FmodEx_Enumerations_EnumerationJNI.h in Headers */,
+				D59E15B70ED28235001787AE /* org_jouvieje_FmodEx_FmodExJNI.h in Headers */,
+				D59E15B80ED28235001787AE /* org_jouvieje_FmodEx_Init.h in Headers */,
+				D59E15B90ED28235001787AE /* org_jouvieje_FmodEx_Misc_BufferUtilsJNI.h in Headers */,
+				D59E15BA0ED28235001787AE /* org_jouvieje_FmodEx_Misc_PointerUtilsJNI.h in Headers */,
+				D59E15BB0ED28235001787AE /* org_jouvieje_FmodEx_Structures_StructureJNI.h in Headers */,
+				D59E15BD0ED28235001787AE /* Pointer.h in Headers */,
+				D59E15C30ED28235001787AE /* Utils.h in Headers */,
+				D59E15C50ED28235001787AE /* WindowHandle.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		D2AAC09C05546B4700DB518D /* NativeFmodEx */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1DEB916008733D950010E9CD /* Build configuration list for PBXNativeTarget "NativeFmodEx" */;
+			buildPhases = (
+				D2AAC09905546B4700DB518D /* Headers */,
+				D2AAC09B05546B4700DB518D /* Frameworks */,
+				D2AAC09A05546B4700DB518D /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NativeFmodEx;
+			productName = libNativeFmodEx;
+			productReference = D2AAC09D05546B4700DB518D /* libNativeFmodEx.jnilib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB916408733D950010E9CD /* Build configuration list for PBXProject "NativeFmodEx" */;
+			compatibilityVersion = "Xcode 3.0";
+			hasScannedForEncodings = 1;
+			mainGroup = 0867D691FE84028FC02AAC07 /* NativeFmodEx */;
+			productRefGroup = 034768DDFF38A45A11DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D2AAC09C05546B4700DB518D /* NativeFmodEx */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D2AAC09A05546B4700DB518D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D59E15900ED28235001787AE /* BufferPointerUtils.cpp in Sources */,
+				D59E15910ED28235001787AE /* CallbackManager.cpp in Sources */,
+				D59E15930ED28235001787AE /* Channel.cpp in Sources */,
+				D59E15940ED28235001787AE /* ChannelGroup.cpp in Sources */,
+				D59E15950ED28235001787AE /* DSP.cpp in Sources */,
+				D59E15960ED28235001787AE /* DSPConnection.cpp in Sources */,
+				D59E15970ED28235001787AE /* Enumeration.cpp in Sources */,
+				D59E159A0ED28235001787AE /* FMOD_ADVANCEDSETTINGS.cpp in Sources */,
+				D59E159B0ED28235001787AE /* FMOD_CDTOC.cpp in Sources */,
+				D59E159D0ED28235001787AE /* FMOD_CODEC_DESCRIPTION.cpp in Sources */,
+				D59E159E0ED28235001787AE /* FMOD_CODEC_STATE.cpp in Sources */,
+				D59E159F0ED28235001787AE /* FMOD_CODEC_WAVEFORMAT.cpp in Sources */,
+				D59E15A00ED28235001787AE /* FMOD_CREATESOUNDEXINFO.cpp in Sources */,
+				D59E15A20ED28235001787AE /* FMOD_DSP_DESCRIPTION.cpp in Sources */,
+				D59E15A30ED28235001787AE /* FMOD_DSP_PARAMETERDESC.cpp in Sources */,
+				D59E15A40ED28235001787AE /* FMOD_DSP_STATE.cpp in Sources */,
+				D59E15A60ED28235001787AE /* FMOD_GUID.cpp in Sources */,
+				D59E15A80ED28235001787AE /* FMOD_REVERB_CHANNELPROPERTIES.cpp in Sources */,
+				D59E15A90ED28235001787AE /* FMOD_REVERB_PRESETS.cpp in Sources */,
+				D59E15AA0ED28235001787AE /* FMOD_REVERB_PROPERTIES.cpp in Sources */,
+				D59E15AB0ED28235001787AE /* FMOD_TAG.cpp in Sources */,
+				D59E15AC0ED28235001787AE /* FMOD_VECTOR.cpp in Sources */,
+				D59E15AD0ED28235001787AE /* FmodEx.cpp in Sources */,
+				D59E15AE0ED28235001787AE /* Geometry.cpp in Sources */,
+				D59E15B00ED28235001787AE /* JavaObject.cpp in Sources */,
+				D59E15B30ED28235001787AE /* NativeFmodEx.cpp in Sources */,
+				D59E15BC0ED28235001787AE /* Pointer.cpp in Sources */,
+				D59E15BE0ED28235001787AE /* Reverb.cpp in Sources */,
+				D59E15BF0ED28235001787AE /* Sound.cpp in Sources */,
+				D59E15C00ED28235001787AE /* SoundGroup.cpp in Sources */,
+				D59E15C10ED28235001787AE /* System.cpp in Sources */,
+				D59E15C20ED28235001787AE /* Utils.cpp in Sources */,
+				D59E15C40ED28235001787AE /* WindowHandle.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1DEB916108733D950010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5073E0C709E734A800EC74B6 /* NativeFmodExTarget.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				COPY_PHASE_STRIP = NO;
+				EXECUTABLE_EXTENSION = jnilib;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = NativeFmodEx_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"_GLIBCXX_DEBUG=1",
+					"_GLIBCXX_DEBUG_PEDANTIC=1",
+				);
+				HEADER_SEARCH_PATHS = /System/Library/Frameworks/JavaVM.framework/Headers;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\"$(DEVELOPER_DIR)/FMOD\\ Programmers\\ API/api/lib\\\"",
+					"\\\"$(SRCROOT)/../../../../Src/NativeFmodEx/Native\\\"",
+					"\"$(DEVELOPER_DIR)/FMOD Programmers API/api/lib\"",
+				);
+			};
+			name = Debug;
+		};
+		1DEB916208733D950010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5073E0C709E734A800EC74B6 /* NativeFmodExTarget.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_EXTENSION = jnilib;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = NativeFmodEx_Prefix.pch;
+				HEADER_SEARCH_PATHS = /System/Library/Frameworks/JavaVM.framework/Headers;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\"$(DEVELOPER_DIR)/FMOD\\ Programmers\\ API/api/lib\\\"",
+					"\\\"$(SRCROOT)/../../../../Src/NativeFmodEx/Native\\\"",
+					"\"$(DEVELOPER_DIR)/FMOD Programmers API/api/lib\"",
+				);
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = "non-global";
+			};
+			name = Release;
+		};
+		1DEB916508733D950010E9CD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5073E0C609E734A800EC74B6 /* NativeFmodExProj.xcconfig */;
+			buildSettings = {
+				ARCHS = "$(ONLY_ACTIVE_ARCH_PRE_XCODE_3_1)";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH)";
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
+			};
+			name = Debug;
+		};
+		1DEB916608733D950010E9CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5073E0C609E734A800EC74B6 /* NativeFmodExProj.xcconfig */;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1DEB916008733D950010E9CD /* Build configuration list for PBXNativeTarget "NativeFmodEx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB916108733D950010E9CD /* Debug */,
+				1DEB916208733D950010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1DEB916408733D950010E9CD /* Build configuration list for PBXProject "NativeFmodEx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1DEB916508733D950010E9CD /* Debug */,
+				1DEB916608733D950010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

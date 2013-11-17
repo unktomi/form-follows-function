@@ -1,0 +1,1 @@
+start javaw -Djava.library.path=../lib;./Jogl-JSR231 -classpath ./;NativeFmodDesigner-Examples.jar;../lib/NativeFmodEx.jar;../lib/NativeFmodDesigner.jar;./Jogl-JSR231/jogl.jar;./Jogl-JSR231/gluegen-rt.jar org.jouvieje.FmodDesigner.Examples.Demo3D

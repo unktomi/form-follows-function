@@ -1,0 +1,1 @@
+start javaw -Djava.library.path=../lib;./Jogl-JSR231 -classpath ./;NativeFmodEx-Examples.jar;../lib/NativeFmodEx.jar;./Jogl-JSR231/jogl.jar;./Jogl-JSR231/gluegen-rt.jar org.jouvieje.FmodEx.Examples.Geometry_

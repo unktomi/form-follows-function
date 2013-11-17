@@ -1,0 +1,78 @@
+<project name="jni-project" default="jar">
+
+  <target name="jni.properties.load.user">
+    <property name="macosx32" value="true"/>
+    <property name="macosx64" value="false"/>
+  </target>
+
+  <import file="jni-cpptasks.xml"/>
+
+  <target name="init" depends="jni.cpptasks.detect.os,jni.cpptasks.setup.compiler">
+    <property name="build.classes.dir" value="build/classes"/>
+    <mkdir dir="build/native/include"/>
+    <mkdir dir="build/native/obj"/>
+    <mkdir dir="build/classes"/>
+    <copy todir="lib">
+      <fileset dir="../dist/lib/shared" includes="*.jar"/>
+      </copy>
+  <taskdef name="f3c" classname="org.f3.tools.ant.F3AntTask" >
+    <classpath>
+      <pathelement location="lib/f3c.jar"/>
+    </classpath>
+  </taskdef>
+  </target>
+
+  <target name="clean">
+    <delete dir="build"/>
+    <delete dir="lib" includes="f3*.jar"/>
+  </target>
+
+  <target name="service" depends="init">
+    <copy todir="${build.classes.dir}">
+      <fileset dir="service"/>
+    </copy>
+  </target>
+
+  <target name="java-compile" depends="init">
+    <javac includeantruntime="false" fork="true" debug="true" srcdir="src/share/classes" destdir="build/classes">
+      <classpath>
+        <pathelement location="lib/f3rt.jar"/>
+      </classpath>
+      <src path="NativeFmodEx/Src/NativeFmodEx/Java/"/>
+    </javac>
+    <!--f3c debug="yes" deprecation="no"
+             destdir="${build.classes.dir}"
+             excludes="${excludes}" includeantruntime="false"
+             includes="**/*.f3" source="${javac.source}" sourcepath=""
+             srcdir="${src.classes.dir}" target="${javac.target}"
+             compilerclasspath="${javac.classpath}">
+	  
+            <classpath>
+            </classpath>
+    </f3c-->
+  </target>
+
+  <target name="native-library" depends="java-compile">
+    <cc outtype="shared" subsystem="console" outfile="build/native/NativeFmodEx" objdir="build/native/obj">
+      <compiler extends="${compiler.cfg.id.base}" name="gcc">
+        <includepath path="build/native/include"/>
+        <includepath path="stub_includes/jni"/>
+        <includepath path="stub_includes/jni/macosx"/>
+        <includepath path="${java.home}/include"/>
+        <includepath path="."/>
+        <fileset dir="NativeFmodEx/Src/NativeFmodEx/Native" includes="**.cpp"/>
+      </compiler>
+      <linker extends="${linker.cfg.id.base}">
+        <linkerarg value="-L../../lib"/>
+        <linkerarg value="-lfmodex"/>
+      </linker>
+    </cc>
+  </target>
+  <target name="jar" depends="native-library, service">
+    <jar compress="true" destfile="build/org.f3.media.audio.impl.fmod.jar">
+      <fileset dir="build/classes"/>
+    </jar>
+  </target>
+
+
+</project>

@@ -1,0 +1,6 @@
+//
+// Prefix header for all source files of the 'NativeFmodEx' target in the 'NativeFmodEx' project.
+//
+
+
+#include <iostream>
