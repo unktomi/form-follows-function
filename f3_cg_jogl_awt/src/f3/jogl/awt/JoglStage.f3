@@ -1581,9 +1581,9 @@ class JoglImageLoader is ImageLoader {
 	from (url is String)
 	to AbstractTexture 
     {
-        //if (url.endsWith(".mp4") or url.endsWith(".mov") or url.endsWith(".wmv")) {
-        //    return Movie {url: url};
-	// }
+        if (url.endsWith(".mp4") or url.endsWith(".mov") or url.endsWith(".wmv")) {
+            return Movie { url: url };
+	}
         const ref = loaded.get(url) as java.lang.ref.WeakReference;
         var texture is Texture = ref.get() as Texture;
         if (texture == null) {
