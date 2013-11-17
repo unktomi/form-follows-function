@@ -1663,6 +1663,17 @@ class F3AnalyzeClass {
             String nameSig =  methodSignature(currentClassSym, origSym);
             // Look to see if we've seen a method like this before.
             FuncInfo oldMethod = visitedMethods.get(nameSig0);
+            if (oldMethod == null) {
+                // signature match doesn't handle specializations of generic parameters...
+                for (FuncInfo info: visitedMethods.values()) {
+                    if (sym.name.equals(info.getSymbol().name) && types.overrides(sym, info.getSymbol(), currentClassSym, false)) {
+                        //System.err.println("found override for: " +sym);
+                        //System.err.println("override is: "+info.getSymbol());
+                        oldMethod = info;
+                        break;
+                    }
+                }
+            }
 	    if (false && needsCloning && !nameSig.contains("$")) {
 		System.err.println("processMethod: "+ sym);
 		if (impl != null) {
@@ -1696,6 +1707,8 @@ class F3AnalyzeClass {
 		    } else {
 			// Add to the methods needing $impl dispatch.
 			//System.err.println("needs dispatch: "+memberSym+" in "+currentClassSym);
+                        //System.err.println("nameSig0="+nameSig0);
+                        //System.err.println("nameSig="+nameSig);
 			needDispatchMethods.put(nameSig, newMethod);
 		    }
 		}
@@ -1774,6 +1787,8 @@ class F3AnalyzeClass {
 	}
         nameSigBld.append(meth.name.toString());
 	nameSigBld.append(types.erasure(meth.type));
+        //String typeStr = meth.type.toString().replaceAll("<>", "");
+        //nameSigBld.append(typeStr);
         return nameSigBld.toString();
     }
 
