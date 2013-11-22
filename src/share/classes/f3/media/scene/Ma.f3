@@ -2510,11 +2510,12 @@ class MMesh is MSpatial
             const shaderConn = connectionsFromThis.get("iog");
             const mshaderNode = 
                 if (shaderConn <> null) {
-                    //println("shaderConn={shaderConn}");
-                    //println("shaderConn={shaderConn[0].targetNode}");
-                    //println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
-                    //println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode}");
-                    shaderConn[0].targetNode.connectionsToThis.get("ss")[0].sourceNode as MAbstractShader;
+                    println("shaderConn={shaderConn}");
+                    println("shaderConn={shaderConn[0].targetNode}");
+                    println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+                    println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")}");
+                    const shaderNode = shaderConn[0].targetNode.connectionsToThis.get("ss");
+                    if shaderNode == null then null else shaderNode[0].sourceNode as MAbstractShader;
                 } else null;
             const shader = m.toShader(mshaderNode);
             //println("shaderNode={mshaderNode} for {name} => {shader}");
