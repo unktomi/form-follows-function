@@ -1,0 +1,87 @@
+package f3.media.scene;
+import f3.math.*;
+
+public abstract class Sound is Node {
+    public var url is String;
+    public var duration is Duration;
+    public var location is Point3;
+    public var velocity is Vec3;
+    public var paused is Boolean;
+    public const soundLoader is SoundLoader = the SoundLoader;
+    public readonly var sound is AbstractSound;
+    public var position is Duration;
+    public var volume is Number = 1.0;
+    public var frequency is Number = 44100;
+    public var mute is Boolean;
+    public var is3D is Boolean = true;
+    public function setPosition from (pos is Duration) to ()
+    {
+        sound.setPosition(pos.toMillis() as Integer);
+    }
+
+    override function update to ()
+    {
+        if (soundLoader == null) {
+            throw new java.lang.RuntimeException("No sound loader");
+        }
+        duration = 1ms*sound.getDuration();
+        if (volume <> sound.getVolume()) {
+            sound.setVolume(volume);
+        }
+	var pos is Long;
+        if (paused <> sound.isPaused()) {
+            sound.setPaused(paused);
+        }
+        if (mute <> sound.isMute()) {
+            sound.setMute(mute);
+        }
+        if (not sound.isPlaying()) {
+            sound.set3D(is3D);
+            sound.play();
+        }
+        pos = sound.getPosition();
+	if (pos <> position.toMillis()) {
+	    position = Duration.valueOf(pos);
+	}
+        const worldPos = toSceneTransform.getTranslation();
+        sound.setLocation(worldPos);
+    }
+}
+
+public class Sample is Sound {
+    override var sound = bind soundLoader.loadSample(url);
+}
+
+public class Stream is Sound {
+    override var sound = bind soundLoader.loadStream(url);
+}
+
+public class Clip is TimeNode {
+
+    public var sound is Sound;
+
+    override var contentBounds = bind Interval { end: sound.duration };
+
+    override var currentTime on replace {
+        if (pausedInScene) {
+            sound.setPosition(currentTime);
+        }
+    }
+
+    override protected function update 
+	from (sceneTime is Duration) 
+	to () 
+    {
+        super.update(sceneTime);
+        sound.paused = pausedInScene or not isPlaying();
+    }
+
+    const disp1 = observeStart().subscribe(function from (_ is ()) to () {
+            sound.setPosition(currentTime);
+            sound.paused = false;
+        });
+
+    const disp2 = observeCompletion().subscribe(function from (_ is ()) to () {
+            sound.paused = true;
+        });
+}
