@@ -3034,6 +3034,9 @@ class AWTDialogFactory is DialogFactory {
 	fd.setDirectory(f.getParentFile().toString());
 	fd.setFile(f.getName());
 	fd.setVisible(true); 
+        if (fd.getFile() == null) {
+            return null;
+        }
 	new java.io.File(fd.getDirectory(), fd.getFile()).toString();
     }
 
@@ -3205,7 +3208,11 @@ public class JoglStage is Stage
         var funs = todo;
         todo = [];
         for (fun in funs) fun();
-	doUpdate();
+        java.awt.EventQueue.invokeLater(java.lang.Runnable {
+                override function run {
+                    doUpdate();
+                }
+            });
     }
 
     postinit {

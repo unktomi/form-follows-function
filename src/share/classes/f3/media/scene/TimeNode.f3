@@ -81,6 +81,8 @@ public abstract class TimeNode is Foldable of TimeNode
 	f(this, z)
     }
 
+    public var debug is Boolean;
+
     protected function doPick
 	from (sceneTime is Duration, 
 	      parentTime is Duration, 
@@ -95,7 +97,7 @@ public abstract class TimeNode is Foldable of TimeNode
                 add(this);
             }
         }
-	if (Channel.DEBUG) {
+	if (debug or Channel.DEBUG) {
 	    println("parentLocalTime {parentLocalTime}, parentTime {parentTime}, bounds {bounds}, pickable {pickableInScene}, picked {picked} {this}");
 	}
         currentTime = parentTime; 
