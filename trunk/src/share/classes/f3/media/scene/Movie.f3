@@ -12,6 +12,7 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     public readonly var duration = bind 1ms * movie.getEndPosition();
     public function setPosition from (pos is Duration) to ()
     {
+        if (paused) position = pos;
         movie.setPosition(pos.toMillis() as Long);
     }
     function getMovieIfLoaded to AbstractMovie { tex as AbstractMovie }
@@ -19,22 +20,28 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
         if (movieLoader == null) {
             throw new java.lang.RuntimeException("No movie loader");
         }
+        const longPos = position.toMillis() as Long;
 	if (tex <> movie) {
 	    tex = movie;
 	    movie.setVolume(volume);
 	    movie.setRate(rate);
+            movie.setPosition(longPos);
 	}
+	var pos is Long;
 	if (paused) {
+            if (not movie.isPlaying()) {
+                movie.setPosition(longPos);
+                movie.play();
+            }
 	    pos = movie.pause();
+            movie.setPosition(longPos);
 	} else {
-	    movie.play();
-	    pos = movie.getPosition();
+            movie.play();
 	}
 	movie.update();
 	width = movie.getWidth();
 	height = movie.getHeight();
-	var pos is Long;
-	if (pos <> position.toMillis()) {
+	if (not paused and pos <> position.toMillis()) {
 	    position = Duration.valueOf(pos);
 	}
 	//println("movie update {movie} {position} w={tex.getWidth()} h={tex.getHeight()} texId={getTextureId()}");
@@ -57,13 +64,22 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
 }
 
 public class Clip is TimeNode {
+
     public var movie is Movie;
+
     override var contentBounds = bind Interval { end: movie.duration };
+    
+    //override var debug = true;
 
     override var currentTime on replace {
-        if (pausedInScene) {
+        //println("movie current time: {currentTime}");
+        if (pausedInScene and isPlaying()) {
             movie.setPosition(currentTime);
         }
+    }
+
+    var moviePaused = bind movie.paused on replace oldValue {
+        if (isPlaying()) movie.setPosition(currentTime);
     }
 
     override protected function update 
@@ -72,14 +88,19 @@ public class Clip is TimeNode {
     {
         super.update(sceneTime);
         movie.paused = pausedInScene or not isPlaying();
+        if (paused) {
+            movie.setPosition(currentTime);
+        }
     }
 
-    const disp1 = observeStart().subscribe(function from (_ is ()) to () {
-            movie.setPosition(currentTime);
-            movie.paused = false;
-        });
+    const disp1 = observeStart().subscribe(function from (_ is ()) to () 
+                                           {
+                                               movie.setPosition(currentTime); 
+                                               movie.paused = false;
+                                           });
 
-    const disp2 = observeCompletion().subscribe(function from (_ is ()) to () {
-            movie.paused = true;
-        });
+    const disp2 = observeCompletion().subscribe(function from (_ is ()) to () 
+                                                {
+                                                    movie.paused = true;
+                                                });
 }

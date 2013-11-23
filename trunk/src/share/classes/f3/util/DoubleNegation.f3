@@ -18,10 +18,10 @@ package f3.util;
 // However, rather than representing just a truth value, "false" is abstracted as an 
 // existentially quantified type variable, thus:
 //
-//    function of _ from (function from a to _) to _
+//    function of b from (function from a to b) to b
 // 
 
-public static const monad = Monad of DoubleNegation {
+public const monad = Monad of DoubleNegation {
     override function map of (a, b) 
 	from (xs is DoubleNegation of a,
 	      f is function from a to b) 
@@ -196,7 +196,7 @@ public function cojoin of a
 }
 
 public function callCC of (a, _)
-    from (f is function from (function from a to _) to _) 
+    from (f is function /* of _ */ from (function from a to _) to _) 
     to DoubleNegation of a 
 {
     DoubleNegation of a 
