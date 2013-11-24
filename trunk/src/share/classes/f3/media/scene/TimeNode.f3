@@ -168,9 +168,10 @@ public abstract class TimeNode is Foldable of TimeNode
 
     public function playFromStart to () 
     {
-        paused = false;
+        paused = true;
         playTime = currentTime / playRate; // advance to playhead
-	println("playFromStart playTime={playTime}");
+        currentTime = playTime * playRate;
+        paused = false;
     }
 
     public function reverse to ()

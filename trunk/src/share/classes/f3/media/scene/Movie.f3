@@ -15,6 +15,7 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
         if (paused) position = pos;
         movie.setPosition(pos.toMillis() as Long);
     }
+
     function getMovieIfLoaded to AbstractMovie { tex as AbstractMovie }
     override function update {
         if (movieLoader == null) {
@@ -80,6 +81,18 @@ public class Clip is TimeNode {
 
     var moviePaused = bind movie.paused on replace oldValue {
         if (isPlaying()) movie.setPosition(currentTime);
+    };
+
+    override public function playFromStart to ()
+    {
+        playMovieFromStart();
+    }
+
+    public function playMovieFromStart to ()
+    {
+        movie.paused = true;
+        movie.setPosition(0s);
+        movie.update();
     }
 
     override protected function update 
