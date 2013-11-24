@@ -476,8 +476,8 @@ public class F3Local {
         };
 
         protected void getFunctions(F3MemberFilter filter, SortedMemberArray<? super F3FunctionMember> result) {
-            Class cls = refClass;
-            Context context = getReflectionContext();
+            final Class cls = refClass;
+            final Context context = getReflectionContext();
             Method[] methods;
             try {
                 methods = cls.getDeclaredMethods();
@@ -490,8 +490,22 @@ public class F3Local {
                     continue;
                 if (PlatformUtils.checkInherited(m) > 0)
                     continue;
-                String mname = m.getName();
-                    
+                if (isMixin()) {
+                    try {
+                        final int dollar = m.getName().lastIndexOf("$impl");
+                        if (dollar > 0) {
+                            m = refInterface.getDeclaredMethod(m.getName().substring(0, dollar), 
+                                                               java.util.Arrays.copyOfRange(m.getParameterTypes(), 
+                                                                                            1, 
+                                                                                            m.getParameterTypes().length));
+                        }
+                    }
+                    catch (Exception ex) {
+                        // Just ignore ???
+                        ex.printStackTrace();
+                    }
+                }
+                final String mname = m.getName();
                 for (String exclude : SYSTEM_METHOD_EXCLUDES) {
                     if (mname.equals(exclude))
                         continue skip;
@@ -504,18 +518,10 @@ public class F3Local {
                     if (mname.endsWith(suffix))
                         continue skip;
                 }
-
-                if (isMixin()) {
-                    try {
-                        m = refInterface.getDeclaredMethod(m.getName(), m.getParameterTypes());
-                    }
-                    catch (Exception ex) {
-                        // Just ignore ???
-                    }
-                }
-                F3FunctionMember mref = asFunctionMember(m, context);
-                if (filter != null && filter.accept(mref))
+                final F3FunctionMember mref = asFunctionMember(m, context);
+                if (filter != null && filter.accept(mref)) {
                     result.insert(mref);
+                }
            }
         }
     
