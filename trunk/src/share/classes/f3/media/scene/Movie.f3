@@ -1,6 +1,8 @@
 package f3.media.scene;
 import f3.math.*;
 
+
+
 public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     public var url is String;
     public const movieLoader is MovieLoader = the MovieLoader;
@@ -10,6 +12,8 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     public var paused is Boolean = false;
     public readonly var position is Duration = 0s;
     public readonly var duration = bind 1ms * movie.getEndPosition();
+    var lastUpdate is Long;
+
     public function setPosition from (pos is Duration) to ()
     {
         if (paused) position = pos;
@@ -17,6 +21,7 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     }
 
     function getMovieIfLoaded to AbstractMovie { tex as AbstractMovie }
+
     override function update {
         if (movieLoader == null) {
             throw new java.lang.RuntimeException("No movie loader");
@@ -27,13 +32,10 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
 	    movie.setVolume(volume);
 	    movie.setRate(rate);
             movie.setPosition(longPos);
+            movie.play();
 	}
 	var pos is Long;
 	if (paused) {
-            if (not movie.isPlaying()) {
-                movie.setPosition(longPos);
-                movie.play();
-            }
 	    pos = movie.pause();
             movie.setPosition(longPos);
 	} else {
@@ -70,17 +72,16 @@ public class Clip is TimeNode {
 
     override var contentBounds = bind Interval { end: movie.duration };
     
-    //override var debug = true;
+    override var debug = true;
 
-    override var currentTime on replace {
-        //println("movie current time: {currentTime}");
+    override var localTime on replace {
         if (pausedInScene and isPlaying()) {
-            movie.setPosition(currentTime);
+            movie.setPosition(localTime);
         }
     }
 
     var moviePaused = bind movie.paused on replace oldValue {
-        if (isPlaying()) movie.setPosition(currentTime);
+        if (isPlaying()) movie.setPosition(localTime);
     };
 
     override public function playFromStart to ()
@@ -101,14 +102,18 @@ public class Clip is TimeNode {
     {
         super.update(sceneTime);
         movie.paused = pausedInScene or not isPlaying();
+        movie.update();
+        if (pausedInScene) {
+            println("paused movie at {localTime}");
+        }
         if (paused) {
-            movie.setPosition(currentTime);
+            movie.setPosition(localTime);
         }
     }
 
     const disp1 = observeStart().subscribe(function from (_ is ()) to () 
                                            {
-                                               movie.setPosition(currentTime); 
+                                               movie.setPosition(localTime); 
                                                movie.paused = false;
                                            });
 
