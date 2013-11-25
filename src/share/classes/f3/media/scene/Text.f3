@@ -285,6 +285,12 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	if (code == Keys.Backspace) {
 	    backspace();
 	} else {
+            if (event.metaKey) {
+                if (code == Keys.A) {
+                    selectAll();
+                    return;
+                }
+            }
             if (keyChar == "\n") {
                if (singleLine) {
                   return;
