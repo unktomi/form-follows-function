@@ -478,7 +478,7 @@
                   destdir="${build.generated.dir}"
                   includes="**/*.properties"/>
         <javac compiler="modern" fork="true"
-               destdir="${build.classes.dir}" includes="${includes}" excludes="${excludes}"
+               destdir="${build.classes.dir}" includes="${includes}" excludes="f3/media/scene/**.java"
                debug="${javac.debug}" deprecation="${javac.deprecation}"
                source="${javac.source}" target="${javac.target}" includeantruntime="false">
             <src path="${src.classes.dir}"/>
@@ -513,6 +513,29 @@
                 <pathelement path="${javac.classpath}"/>
             </classpath>
         </taskdef>
+
+        <f3c enableAssertions="true" debug="${javac.debug}" deprecation="${javac.deprecation}"
+                 destdir="${build.classes.dir}"
+                 excludes="${excludes}" includeantruntime="false"
+                 includes="f3/lang/*.f3,f3/math/*.f3" source="${javac.source}" sourcepath=""
+                 srcdir="${src.classes.dir}" target="${javac.target}"
+                 classpath="${build.classes.dir}:${javac.test.classpath}"
+                 compilerclasspath="${build.classes.dir}:${javac.classpath}">
+	  <compilerarg value="-XDdumpjava"/>
+	  <!--compilerarg value="-XDdumpvarinfo"/-->
+        </f3c>
+
+        <javac compiler="modern" fork="true"
+               destdir="${build.classes.dir}" includes="f3/media/scene/**.java"
+               debug="${javac.debug}" deprecation="${javac.deprecation}"
+               source="${javac.source}" target="${javac.target}" includeantruntime="false">
+            <src path="${src.classes.dir}"/>
+            <src path="${build.generated.dir}"/>
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+            <compilerarg line="${javac.compilerargs} -Xmaxerrs 10000"/>
+        </javac>
 
         <f3c enableAssertions="true" debug="${javac.debug}" deprecation="${javac.deprecation}"
                  destdir="${build.classes.dir}"
