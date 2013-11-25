@@ -118,6 +118,9 @@ public abstract class TimeNode is Foldable of TimeNode
         } else if (not wasPlaying and playing) {
             started.onNext(());
         }
+        if (debug) {
+            println("{id} => currentTime={currentTime} localTime={localTime} playing={playing}");
+        }
 	const f =  { if (picked) then add else null } as function from TimeNode to ();
         pickChildren(sceneTime,
 		     now0,

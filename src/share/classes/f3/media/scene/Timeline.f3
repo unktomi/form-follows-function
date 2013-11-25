@@ -83,10 +83,15 @@ public class Timeline
         }
     }
 
+    public var debug is Boolean;
+
     public function setPlayhead
 	from (sceneTime is Duration) 
 	to () 
     {
+        if (debug) {
+            println("setting playhead {sceneTime}");
+        }
 	playhead = sceneTime;
 	root.updateParent();
         underPlayhead = pick(sceneTime);

@@ -403,6 +403,7 @@ public class Scene
         pressed = underMouse;
         var focusSet = false;
         var origFocus = focusCount;
+        //        println("mouseDown => {underMouse}");
         for (p in underMouse) {
             doMouseDown(p, event);
             focusSet = origFocus <> focusCount;
@@ -586,6 +587,7 @@ public class Scene
         }
         if (result and p.node.mouseDown <> null) {        
             const e = makeMouseEvent(null, p, sceneEvent);
+            //            println("MOUSE DOWN on => {p.node}");
             p.node.mouseDown.onNext(e);
             result = e.propagate;
         }
