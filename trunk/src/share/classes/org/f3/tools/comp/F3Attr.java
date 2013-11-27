@@ -725,6 +725,19 @@ public class F3Attr implements F3Visitor {
             F3Var var = varSymToTree.get(sym);
 	    //System.err.println("tree="+tree);
 	    //System.err.println("sym="+sym);
+            // handle case such as:
+            // var foo = Foo { ... foo ... }
+            if (var.getInitializer() instanceof F3Instanciate) {
+                F3Instanciate inst = (F3Instanciate)var.getInitializer();
+                sym.type = var.type = inst.getIdentifier().type;
+                //System.err.println("sym.type => "+ sym.type);
+                if (sym.type == null) {
+                    sym.type = var.type = attribExpr(inst.getIdentifier(), env);
+                }
+                if (sym.type != null) {
+                    return;
+                }
+            }
             if (var != null) {
 		JavaFileObject prevSource = log.currentSource();
 		try {
