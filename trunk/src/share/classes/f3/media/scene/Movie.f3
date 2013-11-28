@@ -72,8 +72,6 @@ public class Clip is TimeNode {
 
     override var contentBounds = bind Interval { end: movie.duration };
     
-    override var debug = true;
-
     override var localTime on replace {
         if (pausedInScene and isPlaying()) {
             movie.setPosition(localTime);
@@ -103,9 +101,6 @@ public class Clip is TimeNode {
         super.update(sceneTime);
         movie.paused = pausedInScene or not isPlaying();
         movie.update();
-        if (pausedInScene) {
-            println("paused movie at {localTime}");
-        }
         if (paused) {
             movie.setPosition(localTime);
         }
