@@ -35,4 +35,5 @@ public abstract class AbstractNode is Node
 	    internalContent.foldRight(z, f);
 	f(this, r);
     }
+
 }

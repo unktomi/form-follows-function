@@ -112,6 +112,15 @@ Interval.merge(bnds12,
     }
 
     override function toString to String {
-	"TimeGroup ({content})";
+	"{super.toString()} TimeGroup ({content})";
+    }
+
+    public override function lookup from (id is String) to TimeNode {
+        if (id == this.id) return this;
+        for (x in content) {
+            const y = x.lookup(id);
+            if (y <> null) return y;
+        }
+        return null;
     }
 }

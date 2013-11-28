@@ -3048,7 +3048,7 @@ class AWTDialogFactory is DialogFactory {
 	fd.setMode(fd.SAVE);
 	fd.setFile(dialog.fileName);
 	fd.setVisible(true); 
-	new java.io.File(fd.getDirectory(), fd.getFile()).toString();
+        if fd.getFile() == null then null else new java.io.File(fd.getDirectory(), fd.getFile()).toString();
     }
 }
 

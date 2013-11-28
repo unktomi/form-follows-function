@@ -62,9 +62,9 @@ public class Clip is TimeNode {
 
     override var contentBounds = bind Interval { end: sound.duration };
 
-    override var currentTime on replace {
+    override var localTime on replace {
         if (pausedInScene) {
-            sound.setPosition(currentTime);
+            sound.setPosition(localTime);
         }
     }
 
@@ -77,7 +77,7 @@ public class Clip is TimeNode {
     }
 
     const disp1 = observeStart().subscribe(function from (_ is ()) to () {
-            sound.setPosition(currentTime);
+            sound.setPosition(localTime);
             sound.paused = false;
         });
 
