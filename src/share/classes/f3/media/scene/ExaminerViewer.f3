@@ -70,25 +70,30 @@ public abstract class ExaminerViewer is MouseInputHandler {
 
     var mouseEnabled = false;
 
-    override function onMouseDown from (event is MouseEvent) to () {
+    override function onMouseDown from (event is MouseEvent) to () 
+    {
+        dragging = button1Down = button2Down = button3Down = false;
     	mouseEnabled = event.scene.pressed == [];
         if (mouseEnabled) for (b in event.buttons) {
             mouseDown(b, event.ctrlKey, event.altKey);
-        }
+        } 
     }
 
-    override function onMouseUp from (event is MouseEvent) to () {
+    override function onMouseUp from (event is MouseEvent) to () 
+    {
         if (mouseEnabled) for (b in event.buttons) {
             mouseUp(b);
         }
     }
 
-    override function onMouseMove from (event is MouseEvent) to () {
+    override function onMouseMove from (event is MouseEvent) to () 
+    {
         if (mouseEnabled) mouseMove(event.screenx, event.screeny,
                                     event.ctrlKey, event.altKey);
     }
 
-    public function mouseDown from (button is Integer, isControlDown is Boolean, isAltDown is Boolean) to () {
+    public function mouseDown from (button is Integer, isControlDown is Boolean, isAltDown is Boolean) to () 
+    {
         if (button == 1) {
             button1Down = true;
         } else if (button == 2) {
@@ -99,7 +104,8 @@ public abstract class ExaminerViewer is MouseInputHandler {
         dragging = button1Down or button2Down or button3Down;
     }
 
-    public function mouseUp from (button is Integer) to () {
+    public function mouseUp from (button is Integer) to () 
+    {
         if (button == 1) {
             button1Down = false;
         } else if (button == 2) {

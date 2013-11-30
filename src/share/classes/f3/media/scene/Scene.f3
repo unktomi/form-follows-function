@@ -320,6 +320,7 @@ public class Scene
             ctrlKey: moveEvent.ctrlKey;
             metaKey: moveEvent.metaKey;
             shiftKey: moveEvent.shiftKey;
+            buttons: moveEvent.buttons;
         }
         for (x in underMouse) 
             oldUnderMouse.put(x.node, x);
@@ -404,6 +405,7 @@ public class Scene
         var focusSet = false;
         var origFocus = focusCount;
         //        println("mouseDown => {underMouse}");
+        moveEvent = event;
         for (p in underMouse) {
             doMouseDown(p, event);
             focusSet = origFocus <> focusCount;
@@ -481,6 +483,11 @@ public class Scene
                 }
             }
         } 
+        if (p.node.mouseEnter <> null) {
+            const e = makeMouseEvent(p, sceneEvent, p.dragPoint1);
+            println("Mouse enter { p.node}");
+            p.node.mouseEnter.onNext(e);
+        }
     }
 
     function doMouseLeave from (p is Pick, sceneEvent is MouseEvent) to ()
@@ -495,6 +502,11 @@ public class Scene
                     break;
                 }
             }
+        }
+        if (p.node.mouseLeave <> null) {
+            const e = makeMouseEvent(p, sceneEvent, p.dragPoint1);
+            println("Mouse leave { p.node}");
+            p.node.mouseLeave.onNext(e);
         }
     }
 
@@ -512,6 +524,7 @@ public class Scene
             }
         }
         if (p.node.mouseUp <> null) {        
+            println("Mouse up { p.node}");
             const e = makeMouseEvent(p, sceneEvent, p.dragPoint1);
             p.node.mouseUp.onNext(e);
         }
@@ -588,6 +601,7 @@ public class Scene
         if (result and p.node.mouseDown <> null) {        
             const e = makeMouseEvent(null, p, sceneEvent);
             //            println("MOUSE DOWN on => {p.node}");
+            println("Mouse downx { p.node}");
             p.node.mouseDown.onNext(e);
             result = e.propagate;
         }

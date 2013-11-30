@@ -7,13 +7,23 @@ public class MouseEvent is PointerEvent
     public const screenDrag is Tuple2;
     public const buttons is Integer[];
     public const clickCount is Integer;
+    public function isMouseButton1Down to Boolean {
+        isMouseButtonDown(1)
+    }
+    public function isMouseButton2Down to Boolean {
+        isMouseButtonDown(2)
+    }
+    public function isMouseButton3Down to Boolean {
+        isMouseButtonDown(3)
+    }
     public function isMouseButtonDown
 	from (buttons is Integer[]) to Boolean 
     {
+        println("isMouseButtonDown {this.buttons} : {buttons}");
         for (x in this.buttons, y in buttons) {
-            if (x == y) {return true}
+            if (x == y) { return true }
         }
-        return false;
+        return false
     }
 
     public readonly var dragStart = bind sceneToLocal(picked.node.toSceneTransform, picked.dragPoint0);

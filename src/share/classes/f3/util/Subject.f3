@@ -2,32 +2,88 @@ package f3.util;
 
 public class Subject of a is Observable of a, Observer of a {
 
+    public var debug is String;
+
+    override function toString to String {
+        "{debug}{super.toString}"
+    }
+
     var observers is java.util.Map of (Observer of a, ());
     var last is a;
 
     public override function onNext from (x is a) to ()
     {
-    //    println("subject on next {x}, obs={observers}");
+        if (debug <> null) println("{debug} subject on next {x}, obs={observers}");
 	last = x;
-	if (observers <> null) 
-	    for (ob in observers.keySet()) 
-		ob.onNext(x)
+	if (observers <> null) {
+            beginFlush();
+	    for (ob in observers.keySet()) {
+		ob.onNext(x);
+            }
+            endFlush();
+        }
     }
 
     public bound function extract to a { last }
 
     public override function onError from (x is java.lang.Exception) to ()
     {
-	if (observers <> null) 
-	    for (ob in observers.keySet()) 
+	if (observers <> null) {
+            beginFlush();
+	    for (ob in observers.keySet()) {
 		ob.onError(x);
+            }
+            endFlush();
+        }
     }
 
     public override function onCompleted from () to ()
     {
-	if (observers <> null) 
-	    for (ob in observers.keySet()) 
-		ob.onCompleted();
+	if (observers <> null) {
+            beginFlush();
+	    for (ob in observers.keySet()) {
+		ob.onCompleted()
+            }
+            endFlush();
+        }
+    }
+
+    var flushing is Boolean;
+    var todo is (function from () to ())[];
+
+    function addSubscriber from (x is Observer of a) to ()
+    {
+        if (flushing) {
+            insert function {
+                observers.put(x, null);
+            } into todo;
+        } else {
+            observers.put(x, null);
+        }
+    }
+
+    function removeSubscriber from (x is Observer of a) to ()
+    {
+        if (flushing) {
+            insert function {
+                observers.remove(x);
+            } into todo;
+        } else {
+            observers.remove(x);
+        }
+    }
+
+    function beginFlush to ()
+    {
+        flushing = true;
+    }
+
+    function endFlush to () 
+    {
+        var xs = todo;
+        todo = [];
+        for (x in xs) x();
+        flushing = false;
     }
 
     public override function subscribe from (x is Observer of a) to Disposable 
@@ -35,13 +91,34 @@ public class Subject of a is Observable of a, Observer of a {
 	if (observers == null) {
 	    observers = new java.util.WeakHashMap of (Observer of a, ());
 	}
-	//	println("subject subscribe {x}, obs={observers}"); 
-	observers.put(x, ());
+        if (debug <> null) {
+            println("{debug} subscribe {x}, obs={observers}"); 
+        }
+        //java.lang.Thread.currentThread().dumpStack();
+        addSubscriber(x);
+        if (debug <> null) {
+            println("{debug} (post) subscribe {x}, obs={observers}"); 
+        }
 	Disposable {
+            var disposed is Boolean;
+            override function finalize to ()
+            {
+                if (not disposed) {
+                    println("finalizing {this}");
+                }
+            }
 	    override function dispose
 	    {
-	    println("DISPOSING {x}");
-		observers.remove(x)
+                if (not disposed) {
+                    disposed = true;
+                    if (debug <> null) {
+                        println("{debug} DISPOSING {x}");
+                    }
+                    removeSubscriber(x);
+                } else {
+                    println("MULTIPLY DISPOSED {this}");
+                    java.lang.Thread.currentThread().dumpStack();
+                }
 	    }
 	}
     }

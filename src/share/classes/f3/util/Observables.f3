@@ -5,9 +5,10 @@ import f3.lang.*;
 
 public class Println of a is DefaultObserver of a
 {
+    public var prefix is String;
     override function onNext from (x is a) to () 
     {
-	println(x);
+	println("{prefix}{x}");
     }
 }
 
@@ -29,4 +30,26 @@ public function observe of a
     }
 }
 
+public function If from (xs is Observable of Boolean) to Observable of (()) 
+{
+    foreach (x in xs.filter(id of Boolean)) ()
+}
+
+public function IfNot from (xs is Observable of Boolean) to Observable of (()) 
+{
+    foreach (x in xs.filter(function from (y is Boolean) to Boolean { not y })) ()
+}
+
+public class ThenElse {
+    public const Then is Observable of (());
+    public const Else is Observable of (());
+}
+
+public function IfThenElse from (xs is Observable of Boolean) to ThenElse
+{
+    ThenElse {
+        Then: If(xs);
+        Else: IfNot(xs);
+    }
+}
 
