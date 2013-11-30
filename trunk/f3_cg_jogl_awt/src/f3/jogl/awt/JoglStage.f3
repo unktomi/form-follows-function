@@ -2498,6 +2498,7 @@ public class SceneRenderer {
 
 public class Listener is GLEventListener, DropTargetListener {
 
+    var currentButtons is Integer[];
     var screenx is Number;
     var screeny is Number;
     //    var gl is GL2;
@@ -2594,6 +2595,7 @@ public class Listener is GLEventListener, DropTargetListener {
 		    ctrlKey: controlDown;
 		    metaKey: metaDown;
 		    shiftKey: shiftDown;
+                    buttons: currentButtons;
 		});
 	} finally {
 	    ctx.release();
@@ -2609,18 +2611,21 @@ public class Listener is GLEventListener, DropTargetListener {
 	      clickCount is Integer)
 	to ()
     {
+        insert button into currentButtons;
         stage.injectMouseDown(MouseEvent {
                 screenx:  screenx;
                 screeny:  screeny;
                 altKey:  altDown;
                 ctrlKey:  controlDown;
                 metaKey:  metaDown;
-                buttons:  button;
                 clickCount:  clickCount;
+                buttons: button;
             });
     }
 
+
     function mouseUp from (button is Integer, controlDown is Boolean, altDown is Boolean, metaDown is Boolean, shiftDown is Boolean) to () {
+        delete button from currentButtons;
         stage.injectMouseUp(MouseEvent {
                 screenx:  screenx;
                 screeny:  screeny;
@@ -2650,6 +2655,7 @@ public class Listener is GLEventListener, DropTargetListener {
                 metaKey: metaDown;
                 shiftKey: shiftDown;
 		scroll: tuple(0, rot);
+                buttons: currentButtons;
             });
     }
 

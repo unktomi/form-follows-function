@@ -74,6 +74,9 @@ public abstract class F3ClassType extends F3Type implements F3Member {
         return false;
     }
 
+    public abstract F3Type[] getTypeArguments();
+    public abstract F3Type[] getTypeParameters();
+
     public int hashCode() {
         return name.hashCode();
     }

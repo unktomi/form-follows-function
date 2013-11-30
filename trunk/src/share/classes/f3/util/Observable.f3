@@ -4,6 +4,12 @@ import f3.lang.Ref;
 
 public interface Observable of a, is org.f3.runtime.Monad of (Observable, a) 
 {
+    public var debugString is String;
+
+    public function prepend from (x is a) to Observable of a 
+    {
+        observe(x).followedBy(this);
+    }
 
     public function or of b from (xs is Observable of b) to Observable of <a, b> {
         const self = this;
@@ -86,7 +92,12 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
             override function subscribe from (y is Observer of a) to Disposable {
                 self.subscribe(DefaultObserver of a {
                         override function onNext from (x is a) to () {
-                            if (p(x)) y.onNext(x)
+                            if (p(x)) {
+                                //println("filter succeeded on {x}");
+                                y.onNext(x);
+                            } else {
+                                //println("filter failed on {x}");
+                            }
                         }
                         override function onError from (e is java.lang.Exception) to ()
                         {
@@ -225,65 +236,157 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	const self = this;
 	DefaultObservable of b 
 	{
+            override function toString to String {
+                "flatmap observable {f}";
+            }
 	    override function subscribe from (observer is Observer of b) to Disposable 
 	    {
-		function terminateWithError from (e is java.lang.Exception) to () {
-                    if (alive > 0) {
-                        alive = -1;
-                        observer.onError(e);
-                    }
-		    terminate();
-		}
-		var alive = 1;
-		function terminate {
-		    if (--alive == 0) {
-			observer.onCompleted();
-		    }
-		}
-		const d = self.subscribe(DefaultObserver of a {
+                var j = 0;
+                var alive = 0;
+                var mainCompleted is Boolean;
+                var mainErrored is Boolean;
+                var queue is java.util.LinkedList of Observable of b = new java.util.LinkedList of Observable of b;
+                var d1 is Disposable;
+		var d is Disposable = self.subscribe(DefaultObserver of a {
+                        override function toString to String {
+                            "flatmap observer {f} for {observer}"
+                        }
+                        function terminateWithError(e is java.lang.Exception) {
+                            if (not mainCompleted) {
+                                mainCompleted = true;
+                                d1.dispose();
+                                d1 = null;
+                                d.dispose();
+                                d = null;
+                                observer.onError(e);
+                            }
+                        }
+
 			override public function onNext from (x is a) to () 
 			{
-			    const observable = f(x);
-			    alive++;
-			    const d1 is Disposable = observable.subscribe(DefaultObserver of b {
+                            const ob = f(x);
+                            if (queue.size() == 0) {
+                                performNext(ob);
+                            } else {
+                                queue.addLast(ob);
+                            }
+                        }
+
+                        function performNext from (observable is Observable of b) to () {
+                            const j1 = j;
+                            //println("FLATMAP {j1} {queue.size()} {observable} mainCompleted {mainCompleted}");
+                            //java.lang.Thread.currentThread().dumpStack();
+                            j++;
+			    d1 = observable.subscribe(DefaultObserver of b {
+                                    override function toString to String {
+                                        "flatmap {f} / {observable}";
+                                    }
                                     override function onNext from (y is b) to () {
-                                        if (alive > 0) {
-                                            observer.onNext(y);
-                                        } else {
+                                        if (mainCompleted or mainErrored) {
                                             d1.dispose();
+                                            return;
                                         }
+                                        observer.onNext(y);
                                     }
                                     override function onError from (e is java.lang.Exception) to () {
-                                        if (alive > 0) {
-                                            terminateWithError();
-                                        }
-                                        d1.dispose();
+                                        terminateWithError(e);
                                     }
                                     override function onCompleted from () to () {
-                                        if (alive > 0) {
-                                            terminate();
+                                        d1 = null;
+                                        //println("FLATMAP COMPLETED {j1}");
+                                        if (queue.size() > 0) {
+                                            const fx = queue.removeFirst();
+                                            //println("PERFORMING NEXT AFTER COMPLETION OF {j1}");
+                                            performNext(fx);
+                                        } else {
+                                            if (mainCompleted and not mainErrored) {
+                                                observer.onCompleted();
+                                            }
                                         }
-                                        d1.dispose();
                                     }
                                 });
 			}
 			override public function onError from (e is java.lang.Exception) to () 
 			{
+                            mainErrored = true;
 			    terminateWithError(e);
 			}
 			override public function onCompleted from () to () 
 			{
-			    terminate();
+                            if (not mainCompleted) {
+                                //println("main completed {this}");
+                                mainCompleted = true;
+                                if (d1 == null and queue.size() == 0) {
+                                    observer.onCompleted();
+                                }
+                            }
 			}
 		    });
 		Disposable {
+                    override function toString to String {
+                        "flatmap disposal";
+                    }
 		    override function dispose to () 
 		    {
                         d.dispose();
+                        d1.dispose();
 		    }
 		}
 	    }
 	}
+    }
+
+    public function terminateWith from (sig is Observable of a) to Observable of a 
+    {
+        const self = this;
+        DefaultObservable of a {
+	    override function subscribe from (ob is Observer of a) to Disposable {
+                const sub1 is Disposable = self.subscribe(DefaultObserver of a {
+                        override function onNext from (x is a) to ()
+                        {
+                            //println("NOT TERMINATED {x}");
+                            ob.onNext(x);
+                        }
+                        override function onCompleted from () to ()
+                        {
+                            d.dispose();
+                            ob.onCompleted();
+                        }
+                        override function onError from (x is java.lang.Exception) to ()
+                        {
+                            d.dispose();
+                            ob.onError(x);
+                        }
+                    });
+                const d is Disposable = sig.subscribe(DefaultObserver of a {
+                        override function onNext from (x is a) to ()
+                        {
+                            //println("TERMINATE WITH {x}");
+                            ob.onNext(x);
+                            ob.onCompleted();
+                            sub1.dispose();
+                            d.dispose();
+                        }
+                        override function onCompleted from () to ()
+                        {
+                            sub1.dispose();
+                            ob.onCompleted();
+                        }
+                        override function onError from (x is java.lang.Exception) to ()
+                        {
+                            sub1.dispose();
+                            ob.onError(x);
+                        }
+                    });
+                Disposable {
+                    override function dispose to ()
+                    {
+                        sub1.dispose();
+                        d.dispose();
+                    }
+                }
+            }
+        }
     }
 
     public function takeUntil of b (sig is Observable of b) to Observable of a 
@@ -302,19 +405,25 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	DefaultObservable of a {
 	    override function subscribe from (ob is Observer of a) to Disposable {
 		var enabled is Boolean = taking;
-		const sub1 = self.subscribe(Observer of a {
+		const sub1 is Disposable = self.subscribe(Observer of a {
+                        override function toString to String {
+                            "take until {taking} self {self}"
+                        }
 			override public function onNext from (x is a) to () 
 			{
 			    if (enabled) {
+                                //println("TAKING {x}");
 				ob.onNext(x)
 			    }
 			}
 			override public function onError from (e is java.lang.Exception) to () 
 			{
+                            unSub2();
 			    ob.onError(e);
 			}
 			override public function onCompleted from () to () 
 			{
+                            unSub2();
 			    ob.onCompleted();
 			}
 		    });
@@ -326,8 +435,16 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    sub2 = null;
 		}
 		sub2 = sig.subscribe(DefaultObserver of b {
+                        override function toString to String {
+                            "take until {taking} {sig}"
+                        }
 			override public function onNext from (x is b) to () {
 			    enabled = not taking;
+                            if (taking) {
+                                //println("{this}: DONE TAKING due to {x}");
+                                ob.onCompleted();
+                                sub1.dispose();
+                            }
 			    unSub2();
 			}
 			override public function onError from (e is java.lang.Exception) to () {
@@ -338,9 +455,12 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 			}
 		    });
 		Disposable {
+                    override function toString to String {
+                        "take until disposal";
+                    }
 		    override function dispose {
 			sub1.dispose();
-			unSub2();
+			sub2.dispose();
 		    }
 		}
 	    }
@@ -352,7 +472,8 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	const self = this;
 	DefaultObservable of a {
 	    override function subscribe from (observer is Observer of a) to Disposable {
-		self.subscribe(Observer of a {
+                //println("TAKE {n} subscribing {observer}");
+		var d is Disposable = self.subscribe(DefaultObserver of a {
 			var taken = 0;
 			var completed = false;
 			override function onNext from (x is a) to () {
@@ -360,8 +481,11 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 				observer.onNext(x);
 			    }
 			    if (not completed) {
-				if (completed = taken > n) {
+				if (completed = (taken == n)) {
 				    observer.onCompleted();
+                                    ////println("TAKE {n} FINISHED");
+                                    d.dispose();
+                                    d = null;
 				}
 			    }
 			}
@@ -377,6 +501,13 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 			    }
 			}
 		    });
+                Disposable {
+                    override function dispose to () 
+                    {
+                        d.dispose();
+                        d = null;
+                    }
+                }
 	    }
 	}
     }
@@ -417,23 +548,21 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	DefaultObservable of a {
 	    override function subscribe from (observer is Observer of a) to Disposable {
 		var d2 is Disposable;
-		const d1 = self.subscribe (Observer of a {
-			/*
+		var d1 is Disposable = self.subscribe (Observer of a {
 			override function onNext from (x is a) to () {
 			    observer.onNext(x);
 			}
 			override function onError from (e is java.lang.Exception) to ()
 			{
+                            d1 = null;
 			    observer.onError(e);
 			}
 			override function onCompleted from () to ()
 			{
+                            //println("CONCAT FINISHED FIRST");
+                            d1 = null;
 			    d2 = xs.subscribe(observer);
 			}
-			*/
-			onNext: observer.onNext;
-			onError: observer.onError;
-			onCompleted: function { xs.subscribe(observer) }
 		    });
 		Disposable {
 		    override function dispose {
@@ -453,6 +582,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		const ob = Observer of a {
 		    var completed is Integer = 0;
 		    override function onNext from (x is a) to () {
+                        //println("FROM MERGE {x}");
 			if (completed < 2) {
 			    observer.onNext(x);
 			}
@@ -466,15 +596,18 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    }
 		    override function onCompleted from () to ()
 		    {
-			if (++completed == 2) {
+                        ++completed;
+                        //println("MERGE COMPLETED {completed}");
+			if (completed == 2) {
 			    observer.onCompleted();
 			}
 		    }
 		}
 		const d1 = self.subscribe(ob);
-		const d2 = xs.subscribe (ob);
+		const d2 = xs.subscribe(ob);
 		Disposable {
 		    override function dispose {
+                        ob;
 			d1.dispose();
 			d2.dispose();
 		    }
@@ -943,19 +1076,5 @@ public function run
 	foreach (x in Observable.return(1), y in Observable.return(2)) x + y;
     const d = j.subscribe(Println of Integer());
     d.dispose();
-    /*    
-    const k = observe([1..10]);
-    k.take(6).subscribe(new Println of Integer());
-
-    const l = foreach (x in observe(List.asList([1..10]))) "#{x}";
-    l.drop(3).subscribe(Println of String());
-
-    const e = every(1s);
-    e.subscribe(Println of Integer());
-
-    for (i in [1..100]) {
-	f3.media.scene.MasterTimeline.setPlayhead(0.5s * i);
-    }
-    */
 }
 

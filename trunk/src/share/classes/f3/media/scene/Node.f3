@@ -2,6 +2,7 @@ package f3.media.scene;
 import f3.math.*;
 import org.f3.runtime.*;
 import f3.util.*;
+import f3.util.Observable.*;
 import f3.media.input.*;
 
 // A Node in the 3d spatial affine transform hierarchy
@@ -63,6 +64,8 @@ public abstract class Node is Foldable of Node
     protected var mouseMove is Subject of MouseEvent;
     protected var mouseDrag is Subject of MouseEvent;
     protected var mouseWheel is Subject of MouseWheelEvent;
+    protected var mouseEnter is Subject of MouseEvent;
+    protected var mouseLeave is Subject of MouseEvent;
 
     public bound function getPivot { Mat4.<<1>> }
     public bound function getScalePivot { Mat4.<<1>> }
@@ -70,12 +73,48 @@ public abstract class Node is Foldable of Node
     public bound function getPivotInScene to Mat4 { parentToSceneTransform * getPivot() }
     public bound function getScalePivotInScene to Mat4 { parentToSceneTransform * getScalePivot() }
 
+    var armed is Observable of MouseEvent;
+    var disarmed is Observable of MouseEvent;
+
+    public function observeArmed to Observable of MouseEvent 
+    {
+        if (armed == null) then {
+                // armed if mouse down or mouse enter after mouse down until mouse up
+                armed = foreach (press in observeMouseDown()) {
+                    const reentersWhilePressed = observeMouseEnter().takeUntil(observeMouseUp());
+                    observe(press).followedBy(reentersWhilePressed);
+                }
+            } else armed;
+    }
+
+    public function observeDisarmed to Observable of MouseEvent 
+    {
+        if (disarmed == null) then {
+                // disarmed if mouse up or mouse leave after armed
+                disarmed = 
+                    foreach (armEvent in observeArmed()) observeMouseLeave().merge(observeMouseUp()).take(1)
+            } else disarmed;
+    }
+
+    public function observeMouseEnter to Observable of MouseEvent 
+    {
+	if (mouseEnter == null) 
+	    then mouseEnter = Subject of MouseEvent {}
+	else mouseEnter;
+    }
+
+    public function observeMouseLeave to Observable of MouseEvent 
+    {
+	if (mouseLeave == null) 
+	    then mouseLeave = Subject of MouseEvent {}
+	else mouseLeave;
+    }
+
     public function observeMouseDown to Observable of MouseEvent 
     {
 	if (mouseDown == null) 
 	    then mouseDown = Subject of MouseEvent {}
 	else mouseDown;
-	
     }
 
     public function observeMouseUp to Observable of MouseEvent 

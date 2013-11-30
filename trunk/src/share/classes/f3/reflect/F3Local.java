@@ -178,23 +178,23 @@ public class F3Local {
                 if (ptype != null)
                     return ptype;
             }
-            if (typ == Byte.TYPE)
+            if (typ == Byte.TYPE || typ == Byte.class)
                 return F3PrimitiveType.byteType;
-            if (typ == Short.TYPE)
+            if (typ == Short.TYPE || typ == Short.class)
                 return F3PrimitiveType.shortType;
-            if (typ == Integer.TYPE)
+            if (typ == Integer.TYPE || typ == Integer.class)
                 return F3PrimitiveType.integerType;
-            if (typ == Long.TYPE)
+            if (typ == Long.TYPE || typ == Long.class)
                 return F3PrimitiveType.longType;
-            if (typ == Float.TYPE)
+            if (typ == Float.TYPE || typ == Float.class)
                 return F3PrimitiveType.floatType;
-            if (typ == Double.TYPE)
+            if (typ == Double.TYPE || typ == Double.class)
                 return F3PrimitiveType.doubleType;
-            if (typ == Character.TYPE)
+            if (typ == Character.TYPE || typ == Character.class)
                 return F3PrimitiveType.charType;
-            if (typ == Boolean.TYPE)
+            if (typ == Boolean.TYPE || typ == Boolean.class)
                 return F3PrimitiveType.booleanType;
-            if (typ == Void.TYPE)
+            if (typ == Void.TYPE || typ == Void.class)
                 return F3PrimitiveType.voidType;
             return makeClassRef(clas, typ);
         }
@@ -309,6 +309,29 @@ public class F3Local {
 	    }
 	    return isAssignableFrom(typ);
 	}
+
+        static final F3Type[] EMPTY_TYPE_ARRAY = new F3Type[0];
+
+        public F3Type[] getTypeArguments() {
+            if (type instanceof ParameterizedType) {
+                Type[] tvars = ((ParameterizedType)type).getActualTypeArguments();
+                F3Type[] result = new F3Type[tvars.length];
+                for (int i = 0; i < tvars.length; i++) {
+                    result[i] = F3Local.getContext().makeTypeRef(tvars[i]);
+                }
+                return result;
+            } 
+            return getTypeParameters();
+        }
+
+        public F3Type[] getTypeParameters() {
+            TypeVariable<?>[] tvars = refClass.getTypeParameters();
+            F3Type[] result = new F3Type[tvars.length];
+            for (int i = 0; i < tvars.length; i++) {
+                result[i] = F3Local.getContext().makeTypeRef(tvars[i]);
+            }
+            return result;
+        }
 
 	public Type getType() { return type; }
         public Class getJavaImplementationClass() { return refClass; }
