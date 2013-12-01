@@ -381,6 +381,7 @@ class MaModel
         from (c is Connection) to Ref of ?
     {
         const target = c.sourceNode;
+        println("resolve source pointer {c} in {target}");
         if (target instanceof MCharacter) {
             (target as MCharacter).resolveSourcePointer(this, c)
         } else if (target instanceof MSpatial) {
@@ -388,7 +389,8 @@ class MaModel
             target.getPointer(c.sourcePath, resolved);
         } else if (target instanceof MAbstractShader) {
             const resolved = toShader(target as MAbstractShader);
-            target.getPointer(c.targetPath, resolved);
+            println("resolved shader: {resolved}");
+            target.getPointer(c.sourcePath, resolved);
         } else null
     }
 
@@ -3097,15 +3099,21 @@ class MAnimCurve__ is MAnimCurve of Number
             for (conn in connectionsFromThis.get("a")) {
                 const path = parsePath(conn.targetPath).path;
                 const cev = (path[3] as Index).index;
+                println("cev={cev}");
                 const lib = conn.targetNode as MClipLibrary;
+                println("lib={lib}");
                 for (conn2 in lib.connectionsToThis.get("cd")) {
                     if (conn2.sourceNode is MCharacter) {
+                        println("conn2={conn2}");
                         const char = conn2.sourceNode as MCharacter;
                         for (conn3 in char.connectionsToThis.get("dnsm")) {
                             const path2 = parsePath(conn3.targetPath).path;
                             const ind = (path2[1] as Index).index;
+                            println("conn3={conn3} ind={ind}");
                             if (ind == cev) {
-                                insert m.resolveSourcePointer(conn3) as Ref of Number into targets;
+                                const p = m.resolveSourcePointer(conn3);
+                                println("resolved source pointer {conn3} in {m} => {p}");
+                                insert p as Ref of Number into targets;
                                 break;
                             }
                         }

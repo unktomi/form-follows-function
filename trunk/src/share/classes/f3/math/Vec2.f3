@@ -55,6 +55,50 @@ public class Vec2 is Tuple2
 	} 
     }
 
+    public function mul 
+	from (s is Tuple2) 
+	to Vec2
+    {
+	Vec2 
+        { 
+	    x: x*s.x;
+	    y: y*s.y;
+	} 
+    }
+
+    public function div
+	from (s is Tuple2) 
+	to Vec2
+    {
+	Vec2 
+        { 
+	    x: x/s.x;
+	    y: y/s.y;
+	} 
+    }
+
+    public function add
+	from (s is Tuple2) 
+	to Vec2
+    {
+	Vec2 
+        { 
+	    x: x+s.x;
+	    y: y+s.y;
+	} 
+    }
+
+    public function sub
+	from (s is Tuple2) 
+	to Vec2
+    {
+	Vec2 
+        { 
+	    x: x-s.x;
+	    y: y-s.y;
+	} 
+    }
+
     public function div 
 	from (n is Number) 
 	to Vec2
