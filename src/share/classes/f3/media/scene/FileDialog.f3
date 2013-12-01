@@ -1,7 +1,6 @@
 package f3.media.scene;
 
 abstract public class AbstractFileDialog is Dialog {
-    public var title is String;
     public var filterPath is String;
     public var filterExtensions is String[];
     public var filterNames is String[];

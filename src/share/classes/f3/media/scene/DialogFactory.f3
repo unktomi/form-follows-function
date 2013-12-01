@@ -3,4 +3,5 @@ package f3.media.scene;
 public interface DialogFactory {
     public function openFileOpenDialog from (dialog is FileDialog.FileOpen) to String;
     public function openFileSaveDialog from (dialog is FileDialog.FileSave) to String;
+    public function openYesNoCancelDialog from (dialog is Dialog.YesNoCancel) to ();
 }
