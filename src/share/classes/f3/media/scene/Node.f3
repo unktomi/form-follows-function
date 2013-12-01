@@ -76,6 +76,11 @@ public abstract class Node is Foldable of Node
     var armed is Observable of MouseEvent;
     var disarmed is Observable of MouseEvent;
 
+    public function observeTrigger to Observable of MouseEvent 
+    {
+        foreach (e in observeArmed()) observeMouseUp().takeUntil(observeMouseLeave());
+    }   
+
     public function observeArmed to Observable of MouseEvent 
     {
         if (armed == null) then {

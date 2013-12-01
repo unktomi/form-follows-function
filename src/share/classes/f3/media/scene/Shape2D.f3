@@ -404,5 +404,25 @@ public class Path is Shape2D {
     }
 }
 
-public class Line is Shape2D {
+public function moveTo(p is Vec2) to MoveTo 
+{
+    MoveTo { x: p.x, y: p.y }
 }
+
+public function lineTo(p is Vec2) to LineTo 
+{
+    LineTo { x: p.x, y: p.y }
+}
+
+public function cubicTo(c1 is Vec2, c2 is Vec2, p2 is Vec2) to CubicTo 
+{
+    CubicTo {
+        cx1: c1.x;
+        cy1: c1.y;
+        cx2: c2.x;
+        cy2: c2.y;
+        x: p2.x;
+        y: p2.y;
+    }
+}
+

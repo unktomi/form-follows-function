@@ -34,7 +34,7 @@ public class Channel of a is TimeNode
     readonly var sortedKeys = bind KeyFrame.sortKeys(keys);
 
     override var contentBounds = bind getKeyBounds(sortedKeys);
-
+    
     function getKeyBounds from (keys is (Key of a)[]) to Interval 
     {
 	const k0 = keys[0];

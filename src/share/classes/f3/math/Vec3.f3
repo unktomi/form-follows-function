@@ -52,7 +52,7 @@ public class Buffer
 	x *= n;  y *= n;   z * n;
 	return this
     }
-    
+
     public function cross from (v is Buffer) to Buffer {
 	const x = this.x;
 	const y = this.y;
@@ -146,7 +146,7 @@ public class Vec3 is Tuple3
 	} 
     }
 
-    public function negate 
+    override public function negate 
 	to Vec3
     {
 	Vec3 
