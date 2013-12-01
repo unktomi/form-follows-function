@@ -1,6 +1,16 @@
 package f3.media.scene;
 
-
 public abstract class Dialog {
+    public var title is String;
     public const dialogFactory is DialogFactory = the DialogFactory;
+}
+
+public class YesNoCancel is Dialog {
+    public var message is String;
+    public var onCancel is function from () to ();
+    public var onYes is function from () to ();
+    public var onNo is function from () to ();
+    public function open to () {
+        dialogFactory.openYesNoCancelDialog(this);
+    }
 }

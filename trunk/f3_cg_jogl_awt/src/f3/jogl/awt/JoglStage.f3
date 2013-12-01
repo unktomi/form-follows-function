@@ -39,6 +39,7 @@ import f3.media.scene.MeshBuffer.*;
 import f3.media.svg.SVG;
 import f3.media.xhtml.XHTML;
 import com.jogamp.opengl.util.awt.TextureRenderer;
+import javax.swing.JOptionPane;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
@@ -3055,6 +3056,19 @@ class AWTDialogFactory is DialogFactory {
 	fd.setFile(dialog.fileName);
 	fd.setVisible(true); 
         if fd.getFile() == null then null else new java.io.File(fd.getDirectory(), fd.getFile()).toString();
+    }
+
+    public function openYesNoCancelDialog from (dialog is Dialog.YesNoCancel) to ()
+    {
+        const r = 
+            JOptionPane.showConfirmDialog(frame, dialog.message, dialog.title, JOptionPane.YES_NO_CANCEL_OPTION);     
+        if (r == JOptionPane.YES_OPTION) {
+            dialog.onYes();
+        } else if (r == JOptionPane.NO_OPTION) {
+            dialog.onNo();
+        } else {
+            dialog.onCancel();
+        }
     }
 }
 
