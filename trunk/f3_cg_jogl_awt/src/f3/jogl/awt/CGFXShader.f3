@@ -171,6 +171,7 @@ public class Float4x4Parameter is Parameter of Mat4
 		    println("world={world}");
 		    println("view={view}");
 		    println("proj={projection}");
+                    throw new java.lang.Error("bad matrix");
 		}
 	    }
 	    if (DEBUG) {

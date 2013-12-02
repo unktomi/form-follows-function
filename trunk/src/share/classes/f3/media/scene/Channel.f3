@@ -28,8 +28,8 @@ function binarySearch of a from (keys is (Key of a)[], t is Duration) to Integer
 
 public class Channel of a is TimeNode 
 {
-    public const targets is (Ref of a)[];
-    public const keys is (Key of a)[];
+    public var targets is (Ref of a)[];
+    public var keys is (Key of a)[];
 
     readonly var sortedKeys = bind KeyFrame.sortKeys(keys);
 
@@ -43,13 +43,36 @@ public class Channel of a is TimeNode
 	return r;
     }
 
-    public function pickKey from (point is Duration) to Key of a 
+    public function createKey from (t is Duration, value is a) to Key of a {
+        Key of a {
+            position: t;
+            value: value;
+        }
+    }
+
+    public function setKey to () 
+    {
+        const value = targets[0].get();
+        const t = localTime;
+        const k = pickKey(t);
+        if (k <> null) {
+            delete k from keys;
+        }
+        insert createKey(t, value) into keys;
+    }
+
+    public function pickKeyIndex from (point is Duration) to Integer
     {
         var pos = binarySearch(sortedKeys, point);
         if (pos < 0) {
             pos = -(pos + 1);
         }
         pos = Math.min(sortedKeys.size()-1, pos);
+    }
+
+    public function pickKey from (point is Duration) to Key of a 
+    {
+        const pos = pickKeyIndex(point);
         const key = sortedKeys[pos];
         return key;
     }
