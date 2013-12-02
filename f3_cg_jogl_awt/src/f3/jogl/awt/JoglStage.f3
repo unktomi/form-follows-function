@@ -493,14 +493,19 @@ class JoglPath2D is Path2D
     {
 	extrusion.resetShape(path);
         extrusion.setTextureMatrix(toAffineTransform(textureMatrix));
-        const md = extrusion.createMeshData();
-        const mb = MeshBuffer {
-            indexBuffer: md.getIndexBuffer();
-            vertexBuffer: VertexAttributeBuffer { coordsPerVertex: 3, buffer: md.getVertexBuffer() }
-            textureBuffers: VertexAttributeBuffer { coordsPerVertex: 2, buffer: md.getTextureBuffer(0) }
-            normalBuffer: VertexAttributeBuffer { coordsPerVertex: 3, buffer: md.getNormalBuffer() }
+        try {
+            const md = extrusion.createMeshData();
+            const mb = MeshBuffer {
+                indexBuffer: md.getIndexBuffer();
+                vertexBuffer: VertexAttributeBuffer { coordsPerVertex: 3, buffer: md.getVertexBuffer() }
+                textureBuffers: VertexAttributeBuffer { coordsPerVertex: 2, buffer: md.getTextureBuffer(0) }
+                normalBuffer: VertexAttributeBuffer { coordsPerVertex: 3, buffer: md.getNormalBuffer() }
+            }
+            return mb.toMesh();
+        } catch (e is java.lang.Exception) {
+            e.printStackTrace()
         }
-        return mb.toMesh();
+        return null;
     }
 }
 
@@ -2461,12 +2466,12 @@ public class SceneRenderer {
 		}
             } catch (e is java.lang.Throwable) {
 		println("Error drawing: {mn}");
+                if (true) return;
                 e.printStackTrace();
                 (shader = phongShader).apply(mesh,
                                              mn.toSceneTransform,
                                              camera.viewMatrix,
                                              camera.projectionMatrix);
-
             }
             if (mesh.polygonMode <> polygonMode) {
                 polygonMode = mesh.polygonMode;
@@ -3072,10 +3077,14 @@ class AWTDialogFactory is DialogFactory {
     }
 }
 
+// hack...
+var TODO is (function from () to ())[];
+
 public const TheDialogFactory = AWTDialogFactory {
 }
 
 class AwtMenuItem is MenuFactory.MenuItemImpl {
+    public var ctx is GLContext;
     public var item is MenuItem;
     public var awtItem = new java.awt.MenuItem();
     
@@ -3100,7 +3109,7 @@ class AwtMenuItem is MenuFactory.MenuItemImpl {
 		    from (e is java.awt.event.ActionEvent) 
 		    to () 
 		{
-		    action();
+                    insert action into TODO;
 		}
 	    });
     }
@@ -3219,14 +3228,14 @@ public class JoglStage is Stage
 
     public var listener is  Listener;
     public var title is String;
-    var todo is (function from () to ())[];
+
     public function invoke from (fun is function from () to ()) to () {
-        insert fun into todo;
+        insert fun into TODO;
     }
 
     function flush {
-        var funs = todo;
-        todo = [];
+        var funs = TODO;
+        TODO = [];
         for (fun in funs) fun();
         java.awt.EventQueue.invokeLater(java.lang.Runnable {
                 override function run {
