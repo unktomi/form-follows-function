@@ -1,0 +1,14 @@
+package f3.media.scene;
+import f3.media.scene.KeyFrame.*;
+
+public class NumberChannel is Channel of Number {
+
+    public override function createKey from (t is Duration, value is Number) to Key of Number 
+    {
+        Key of Number {
+            position: t;
+            value: value;
+            interpolator: KeyFrame.Linear;
+        }
+    }
+}
