@@ -2309,12 +2309,12 @@ public class SceneRenderer {
                         const b = tn.getLayout().getShape().getBounds();
                         const x = if (tn.getText().rightJustified) then b.right() else b.left();
                         const dx = x - Math.round(x);
-                        const dy = b.center.y - Math.round(b.center.y);
+                        const dy = b.bottom() - Math.round(b.bottom());
                         const vm = camera.viewMatrix;
 //                        println("viewMatrix={vm.getTranslation()}");
 //                        println("scene={scene.width}, {scene.height}");
                         toSceneTransform = translate(Math.round(t.x),//-0.5,//-dx,
-                                                     Math.round(t.y),//-0.5,//-dy,
+                                                     Math.round(t.y)-dy,//-0.5,//-dy,
                                                      0);
                         //println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {

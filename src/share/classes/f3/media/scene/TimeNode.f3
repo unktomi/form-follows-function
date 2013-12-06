@@ -114,10 +114,10 @@ public abstract class TimeNode is Foldable of TimeNode
         const wasPlaying = playing;
 	playing = picked;
         if (wasPlaying and not playing) {
-            println("COMPLETED {this}");
+            if (debug) println("COMPLETED {this}");
             completed.onNext(());
         } else if (not wasPlaying and playing) {
-            println("STARTED {this}");
+            if (debug) println("STARTED {this}");
             started.onNext(());
         }
         if (debug) {

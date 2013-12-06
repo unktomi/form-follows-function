@@ -427,14 +427,14 @@ public class F3Local {
             }
         }
     
-        private Method[] filter(Method[] methods, Class declaringClass) {
-            List<Method> result = new ArrayList<Method>();
-            for (Method m : methods) {
+        private <M extends Member> M[] filter(M[] methods, Class declaringClass) {
+            List<M> result = new ArrayList<M>();
+            for (M m : methods) {
                 if (m.getDeclaringClass() == declaringClass) {
                     result.add(m);
                 }
             }
-            return result.toArray(new Method[0]);
+            return result.toArray(methods);
         }
         
         static final String[] SYSTEM_METHOD_EXCLUDES = {
@@ -501,51 +501,68 @@ public class F3Local {
         protected void getFunctions(F3MemberFilter filter, SortedMemberArray<? super F3FunctionMember> result) {
             final Class cls = refClass;
             final Context context = getReflectionContext();
-            Method[] methods;
-            try {
-                methods = cls.getDeclaredMethods();
-            } catch (SecurityException e) {
-                methods = filter(cls.getMethods(), cls);
-            }
-            skip: for (int i = 0;  i < methods.length;  i++) {
-                Method m = methods[i];
-                if (PlatformUtils.isSynthetic(m))
-                    continue;
-                if (PlatformUtils.checkInherited(m) > 0)
-                    continue;
-                if (isMixin()) {
-                    try {
-                        final int dollar = m.getName().lastIndexOf("$impl");
-                        if (dollar > 0) {
-                            m = refInterface.getDeclaredMethod(m.getName().substring(0, dollar), 
-                                                               java.util.Arrays.copyOfRange(m.getParameterTypes(), 
-                                                                                            1, 
-                                                                                            m.getParameterTypes().length));
+            {
+                Method[] methods;
+                try {
+                    methods = cls.getDeclaredMethods();
+                } catch (SecurityException e) {
+                    methods = filter(cls.getMethods(), cls);
+                }
+                skip: for (int i = 0;  i < methods.length;  i++) {
+                    Method m = methods[i];
+                    if (PlatformUtils.isSynthetic(m))
+                        continue;
+                    if (PlatformUtils.checkInherited(m) > 0)
+                        continue;
+                    if (isMixin()) {
+                        try {
+                            final int dollar = m.getName().lastIndexOf("$impl");
+                            if (dollar > 0) {
+                                m = refInterface.getDeclaredMethod(m.getName().substring(0, dollar), 
+                                                                   java.util.Arrays.copyOfRange(m.getParameterTypes(), 
+                                                                                                1, 
+                                                                                                m.getParameterTypes().length));
+                            }
+                        }
+                        catch (Exception ex) {
+                            // Just ignore ???
+                            ex.printStackTrace();
                         }
                     }
-                    catch (Exception ex) {
-                        // Just ignore ???
-                        ex.printStackTrace();
+                    final String mname = m.getName();
+                    for (String exclude : SYSTEM_METHOD_EXCLUDES) {
+                        if (mname.equals(exclude))
+                            continue skip;
+                    }
+                    for (String prefix : SYSTEM_METHOD_PREFIXES) {
+                        if (mname.startsWith(prefix))
+                            continue skip;
+                    }
+                    for (String suffix : SYSTEM_METHOD_SUFFIXES) {
+                        if (mname.endsWith(suffix))
+                            continue skip;
+                    }
+                    final F3FunctionMember mref = asFunctionMember(m, context);
+                    if (filter != null && filter.accept(mref)) {
+                        result.insert(mref);
                     }
                 }
-                final String mname = m.getName();
-                for (String exclude : SYSTEM_METHOD_EXCLUDES) {
-                    if (mname.equals(exclude))
-                        continue skip;
+            }
+            if (!isF3Type()) {
+                Constructor[] methods;
+                try {
+                    methods = cls.getDeclaredConstructors();
+                } catch (SecurityException e) {
+                    methods = filter(cls.getConstructors(), cls);
                 }
-                for (String prefix : SYSTEM_METHOD_PREFIXES) {
-                    if (mname.startsWith(prefix))
-                        continue skip;
+                skip: for (int i = 0;  i < methods.length;  i++) {
+                    final Constructor m = methods[i];
+                    final F3FunctionMember mref = asFunctionMember(m, context);
+                    if (filter != null && filter.accept(mref)) {
+                        result.insert(mref);
+                    }
                 }
-                for (String suffix : SYSTEM_METHOD_SUFFIXES) {
-                    if (mname.endsWith(suffix))
-                        continue skip;
-                }
-                final F3FunctionMember mref = asFunctionMember(m, context);
-                if (filter != null && filter.accept(mref)) {
-                    result.insert(mref);
-                }
-           }
+            }
         }
     
         F3FunctionMember asFunctionMember(Method m, Context context) {
@@ -560,7 +577,17 @@ public class F3Local {
                 prtypes[j] = context.makeTypeRef(ptypes[j]);
             java.lang.reflect.Type gret = PlatformUtils.getGenericReturnType(m);
             F3FunctionType type = new F3FunctionType(prtypes, context.makeTypeRef(gret));
-            return new F3Local.FunctionMember(m, this, type);
+            return new F3Local.MethodFunctionMember(m, this, type);
+        }
+    
+        F3FunctionMember asFunctionMember(Constructor m, Context context) {
+            java.lang.reflect.Type[] ptypes = PlatformUtils.getGenericParameterTypes(m);
+            F3Type[] prtypes = new F3Type[ptypes.length];
+            for (int j = 0; j < ptypes.length;  j++)
+                prtypes[j] = context.makeTypeRef(ptypes[j]);
+            java.lang.reflect.Type gret = PlatformUtils.getGenericReturnType(m);
+            F3FunctionType type = new F3FunctionType(prtypes, context.makeTypeRef(gret));
+            return new F3Local.CtorMember(m, this, type);
         }
     
         private Field[] filter(Field[] fields, Class declaringClass) {
@@ -1075,26 +1102,26 @@ public class F3Local {
 
     }
 
-    static class FunctionMember extends F3FunctionMember {
-        Method method;
+    static abstract class FunctionMember<M extends Member> extends F3FunctionMember {
+        M method;
         F3ClassType owner;
         String name;
         F3FunctionType type;
-    
-        FunctionMember(Method method, ClassType owner, F3FunctionType type) {
+
+        abstract public Annotation getAnnotation(Class clazz);
+
+        FunctionMember(M method, ClassType owner, F3FunctionType type, String name) {
             this.method = method;
             this.owner = owner;
-            this.name = method.getName();
             this.type = type;
+            this.name = name;
         }
 
         public String getName() { return name; }
 
         public F3ClassType getDeclaringClass() { return owner; }
     
-        public boolean isStatic() {
-            return (method.getModifiers() &  Modifier.STATIC) != 0;
-        }
+        public abstract boolean isStatic();
 
         public F3FunctionType getType() {
             return type;
@@ -1106,6 +1133,8 @@ public class F3Local {
             return ((Value) value).asObject();
         }
 
+        abstract protected Object invoke(Object target, Object[] args) throws Exception;
+
         /** Invoke this method on the given receiver and arguments. */
         public F3Value invoke(F3ObjectValue obj, F3Value... arg) {
             int alen = arg.length;
@@ -1114,7 +1143,7 @@ public class F3Local {
                 rargs[i] = unwrap(arg[i]);
             }
             try {
-                Object result = method.invoke(unwrap(obj), rargs);
+                Object result = invoke(unwrap(obj), rargs);
                 Context context =
                         (Context) owner.getReflectionContext();
                 if (result == null && getType().getReturnType() == F3PrimitiveType.voidType)
@@ -1152,6 +1181,58 @@ public class F3Local {
             int mods = method.getModifiers();
             int mask = Modifier.PUBLIC|Modifier.PROTECTED|Modifier.PRIVATE;
             return (mods & mask) == 0;
+        }
+    }
+    
+    static class MethodFunctionMember extends FunctionMember<Method> {
+        MethodFunctionMember(Method method, ClassType owner, F3FunctionType type) {
+            super(method, owner, type, method.getName());
+        }
+
+        @Override
+        public boolean isStatic() {
+            return (method.getModifiers() &  Modifier.STATIC) != 0;
+        }
+
+        @Override 
+        protected Object invoke(Object target, Object[] args) throws Exception {
+            return method.invoke(target, args);
+        }
+
+        @Override
+        public Annotation getAnnotation(Class clazz) {
+            return method.getAnnotation(clazz);
+        }
+
+    }
+
+    static String shortName(Constructor clazz) {
+        final String name = clazz.getName();
+        int p = name.lastIndexOf('$');
+        if (p < 0) {
+            p = name.lastIndexOf('.');
+        }
+        return p < 0 ? name: name.substring(p+1);
+    }
+
+    static class CtorMember extends FunctionMember<Constructor> {
+        CtorMember(Constructor method, ClassType owner, F3FunctionType type) {
+            super(method, owner, type, "new "+shortName(method));
+        }
+
+        @Override
+        public boolean isStatic() {
+            return true;
+        }
+
+        @Override 
+            protected Object invoke(Object target, Object[] args) throws Exception {
+            return method.newInstance(args);
+        }
+
+        @Override
+        public Annotation getAnnotation(Class clazz) {
+            return method.getAnnotation(clazz);
         }
     }
 

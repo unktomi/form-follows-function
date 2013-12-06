@@ -38,8 +38,16 @@ class PlatformUtils {
         return m.getGenericParameterTypes();
     }
 
+    static Type[] getGenericParameterTypes(Constructor m) {
+        return m.getGenericParameterTypes();
+    }
+
     static Type getGenericReturnType(Method m) {
         return m.getGenericReturnType();
+    }
+
+    static Type getGenericReturnType(Constructor m) {
+        return m.getDeclaringClass();
     }
 
     static boolean isSynthetic(Field fld) {
@@ -121,7 +129,7 @@ class PlatformUtils {
     static int checkAccess(F3Local.FunctionMember fmem, Class ann) {
         if (! fmem.getDeclaringClass().isF3Type())
            return -1;
-       return fmem.method.getAnnotation(ann) != null ? 1 : 0;
+       return fmem.getAnnotation(ann) != null ? 1 : 0;
     }
 
     static int checkPublic(F3Local.FunctionMember fmem) {
