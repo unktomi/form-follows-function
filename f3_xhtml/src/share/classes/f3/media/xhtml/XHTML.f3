@@ -2,6 +2,7 @@ package f3.media.xhtml;
 import org.xhtmlrenderer.extend.*;
 import f3.media.scene.*;
 import f3.media.input.*;
+import f3.util.*;
 import f3.media.scene.Shape2D.Path2DFactory;
 import f3.media.scene.Shape2D.Path2D;
 import f3.media.scene.Shape2D.ColorPaint;
@@ -30,18 +31,56 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
     var underMouse is Box;
     var pressed is Box;
 
+    var linkClickedSubject = Subject of String {};
+
+    public function observeLinkClicked to Observable of String {
+         linkClickedSubject;
+    }
+
     public override function onMouseUp from (event is MouseEvent) to () {
         if (underMouse == pressed) {
             const elem = underMouse.getElement();
+            var uri is Object;
+            var node is org.w3c.dom.Node = elem;
+            while (node <> null) {
+                if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    uri = sharedContext.getNamespaceHandler().getLinkUri(node as org.w3c.dom.Element);
+                    if (uri != null) {
+                        linkClickedSubject.onNext(uri.toString());
+                        return;
+                    }
+                }
+                node = node.getParentNode();
+            }
         }
     }
+
+    function isHyperlink to Boolean {
+        const elem = underMouse.getElement();
+        var uri is Object;
+        var node is org.w3c.dom.Node = elem;
+        while (node <> null) {
+            if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                uri = sharedContext.getNamespaceHandler().getLinkUri(node as org.w3c.dom.Element);
+                if (uri != null) {
+                    return true;
+                }
+            }
+            node = node.getParentNode();
+        }
+        return false;
+    }
+
     public override function onMouseDown from (event is MouseEvent) to () {
         pressed = underMouse;
     }
+
     public override function onMouseMove from (event is MouseEvent) to () {
-        const x = event.location.x as Integer;
-        const y = event.location.y as Integer;
-        underMouse = rootBox.getLayer().find(layoutContext, x, y, false)
+        println("location = {event.location}");
+        const x = event.location.x;
+        const y = layoutHeight-event.location.y;
+        underMouse = rootBox.getLayer().find(layoutContext, x, y, false);
+        cursor = if isHyperlink() then Cursor.Hand else null;
     }
     public override function onMouseDrag from (event is MouseEvent) to () {
     }
@@ -169,7 +208,7 @@ public class Text is AbstractXHTMLNode {
     public var style is String;
     public var content is String;
 
-    readonly var fullContent = "{prefix}<div style='{style}'>{content}</div>{suffix}";
+    readonly var fullContent = bind "{prefix}<div style='{style}'>{content}</div>{suffix}";
 
     override bound function loadDocument to org.w3c.dom.Document 
     {

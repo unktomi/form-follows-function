@@ -10,7 +10,16 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     {
         observe(x).followedBy(this);
     }
-
+    /*
+    public function asObserver to Observer of Observer of a {
+        DefaultObserver of Observer of a {
+            override function onNext from (x is Observer of a) to ()
+            {
+                subscribe(x)
+            }
+        }
+    }
+    */
     public function or of b from (xs is Observable of b) to Observable of <a, b> {
         const self = this;
         DefaultObservable of <a, b> {
