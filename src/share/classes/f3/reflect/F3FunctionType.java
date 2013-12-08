@@ -44,6 +44,43 @@ public class F3FunctionType extends F3Type {
         this.returnType = returnType;
     }
 
+    public boolean isAssignableFrom(F3Type cls) {
+        if (equals(cls)) {
+            return true;
+        }
+        if (!(cls instanceof F3FunctionType)) {
+            return false;
+        }
+        F3FunctionType ftype = (F3FunctionType)cls;
+        if (minArgs != ftype.minArgs || varArgs != ftype.varArgs
+              || ! returnType.isAssignableFrom(ftype.returnType))
+            return false;
+        for (int i = minArgs; --i >= 0; ) {
+            if (! (ftype.argTypes[i]).isAssignableFrom(argTypes[i]))
+                return false;
+        }
+        return true;
+    }
+
+    public boolean isConvertibleFrom(F3Type cls) {
+        if (equals(cls)) {
+            return true;
+        }
+        if (!(cls instanceof F3FunctionType)) {
+            return false;
+        }
+        F3FunctionType ftype = (F3FunctionType)cls;
+        if (minArgs != ftype.minArgs || varArgs != ftype.varArgs
+              || ! returnType.isConvertibleFrom(ftype.returnType))
+            return false;
+        for (int i = minArgs; --i >= 0; ) {
+            if (! (ftype.argTypes[i]).isConvertibleFrom(argTypes[i]))
+                return false;
+        }
+        return true;
+    }
+
+
     /** The fixed (minimum) number of arguments needed.
      * Does not count varargs, and (possible future) optional args.
      */
