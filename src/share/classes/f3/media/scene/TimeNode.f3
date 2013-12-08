@@ -115,10 +115,10 @@ public abstract class TimeNode is Foldable of TimeNode
 	playing = picked;
         if (wasPlaying and not playing) {
             if (debug) println("COMPLETED {this}");
-            completed.onNext(());
+            markCompleted();
         } else if (not wasPlaying and playing) {
             if (debug) println("STARTED {this}");
-            started.onNext(());
+            markStarted();
         }
         if (debug) {
             println("{id} => currentTime={currentTime} localTime={localTime} playing={playing}");
@@ -130,6 +130,21 @@ public abstract class TimeNode is Foldable of TimeNode
 		     f);
     }
 
+    function markStarted to () 
+    {
+        insert function to () {
+            started.onNext(());
+        } into todo;
+    }
+
+    function markCompleted to () 
+    {
+        insert function to () {
+            started.onNext(());
+        } into todo;
+    }
+    
+
     protected function pickChildren
 	from (sceneTime is Duration, 
 	      parentTime is Duration, 
@@ -139,10 +154,20 @@ public abstract class TimeNode is Foldable of TimeNode
     {
     }
 
+    var todo is (function from () to ())[];
+
+    function flush to () 
+    {
+        const xs = todo;
+        todo = [];
+        for (x in xs) x();
+    }
+
     protected function update 
 	from (sceneTime is Duration) 
 	to () 
     {
+        flush();
     }
 
 
