@@ -1499,7 +1499,33 @@ public class F3Pretty implements F3Visitor {
         }
         return s.toString();
     }
+    /*
+    public static class F3Observe extends F3Pretty {
+        public static void visitBlockExpression(F3Pretty pretty, F3Block tree) {
+            try {
+                pretty.printFlags(tree.flags);
+                pretty.print("{");
+                pretty.println();
+                pretty.indent();
+                int i = 0;
+                pretty.print("const ob$"+i+" = ");
+                pretty.println();
+                pretty.indent();
+                if (tree.value != null) {
+                    pretty.align();
+                    pretty.printExpr(tree.value);
+                    pretty.println();
+                }
+                pretty.undent();
+                pretty.align();
+                pretty.print("}");
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
+    }
+    */
     public void visitTimeLiteral(F3TimeLiteral tree) {
         try {
             Double d = ((Number)tree.value.value).doubleValue();
