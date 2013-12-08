@@ -707,10 +707,10 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	DefaultObservable of c {
 	    var ys is (..a)[];
 	    var zs is (..b)[];
-	    var completed = false;
+	    var completed = 0;
 	    override function subscribe from (observer is Observer of c) to Disposable {
 		function flush {
-		    if (not completed) {
+		    if (completed < 2) {
 			const j = java.lang.Math.min(ys.size(), zs.size());
 			const left = ys[0..<j];
 			const right = zs[0..<j];
@@ -722,49 +722,51 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		    }
 		}
 		function err from (e is java.lang.Exception) to () {
-		    completed = true;
+		    completed = 2;
 		    observer.onError(e);
 		}
 		function complete {
-		    completed = true;
-		    observer.onCompleted();
+		    completed++;
+                    if (completed == 2) {
+                        observer.onCompleted();
+                    }
 		}
 		const d1 = self.subscribe(DefaultObserver of a {
 			override function onNext from (x is a) to () {
-			    if (not completed) {
+			    if (completed < 2) {
 				insert x into ys;
 				flush();
 			    }
 			}
 			override function onError from (e is java.lang.Exception) to ()
 			{
-			    if (not completed) {
+			    if (completed < 2) {
 				err(e);
 			    }
 			}
 			override function onCompleted from () to ()
 			{
-			    if (not completed) {
-				complete();
-			    }
+			    if (completed < 2) {
+                                complete();
+                            }
 			}
 		    });
 		const d2 = xs.subscribe(DefaultObserver of b {
 			override function onNext from (x is b) to () {
-			    if (not completed) {
+			    if (completed < 2) {
 				insert x into zs;
 				flush();
 			    }
 			}
 			override function onError from (e is java.lang.Exception) to ()
 			{
-			    if (not completed) {
+			    if (completed < 2) {
 				err(e);
 			    }
 			}
 			override function onCompleted from () to ()
 			{
-			    if (not completed) {
+			    if (completed < 2) {
 				complete();
 			    }
 			}

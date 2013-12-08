@@ -30,6 +30,25 @@ public function observe of a
     }
 }
 
+public function observe of a
+    from (xs is (..a)[]) 
+    to Observable of a 
+{
+    DefaultObservable of a {
+	override public function subscribe 
+	    from (observer is Observer of a) 
+	    to Disposable 
+	{
+	    foreach (x in xs) {
+		observer.onNext(x);
+	    }
+	    observer.onCompleted();
+	    Disposable.empty();
+	}
+    }
+}
+
+
 public function If from (xs is Observable of Boolean) to Observable of (()) 
 {
     foreach (x in xs.filter(id of Boolean)) ()
