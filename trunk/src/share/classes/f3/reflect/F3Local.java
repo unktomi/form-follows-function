@@ -79,6 +79,71 @@ public class F3Local {
         /** Get the default instance. */
         public static Context getInstance() { return instance; }
 
+        public F3ClassType instantiateType(final F3ClassType base, final F3Type[] typeParams) {
+            return new F3ClassType(base.getReflectionContext(), base.modifiers) {
+                { 
+                    name = base.getName();
+                }
+                public boolean isGenericInstance() {
+                    return true;
+                }
+                public F3ClassType getGenericBase() {
+                    return base;
+                }
+                public F3Type[] getTypeArguments() {
+                    return base.getTypeArguments();
+                }
+                public F3Type[] getTypeParameters() {
+                    return typeParams;
+                }
+                public List<F3ClassType> getSuperClasses(boolean all) {
+                    return base.getSuperClasses(all);
+                }
+                protected void getFunctions(F3MemberFilter filter, SortedMemberArray<? super F3FunctionMember> result) 
+                {
+                    base.getFunctions(filter, result);
+                }
+                protected void getVariables(F3MemberFilter filter, SortedMemberArray<? super F3VarMember> result)
+                {
+                    base.getVariables(filter, result);
+                }
+                public F3FunctionMember getFunction(String name, F3Type... argType) {
+                    return base.getFunction(name, argType);
+                }
+                public F3ObjectValue allocate () {
+                    return base.allocate();
+                }
+                public F3ClassType getDeclaringClass() {
+                    return base.getDeclaringClass();
+                }
+                public boolean isStatic() {
+                    return base.isStatic();
+                }
+                public boolean isPublic() {
+                    return base.isPublic();
+                }
+                public boolean isPackage() {
+                    return base.isPackage();
+                }
+                public boolean isProtected() {
+                    return base.isProtected();
+                }
+                public boolean equals(Object obj) {
+                    if (!base.equals(obj)) {
+                        return false;
+                    }
+                    final F3ClassType other = (F3ClassType)obj;
+                    final F3Type[] otherParams = other.getTypeParameters();
+                    for (int i = 0; i < typeParams.length; i++) {
+                        if (!otherParams[i].equals(typeParams[i])) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            };
+        }
+
 	public F3FunctionType makeFunctionType(F3Type[] argTypes, F3Type returnType) 
 	{
 	    return new F3FunctionType(argTypes, returnType);
@@ -360,8 +425,8 @@ public class F3Local {
     
         @Override
         public boolean equals (Object obj) {
-            return obj instanceof ClassType
-                && refClass == ((ClassType) obj).refClass;
+            return (obj instanceof ClassType
+                    && refClass == ((ClassType) obj).refClass)  || super.equals(obj);
         }
 
         void getSuperClasses(boolean all, SortedClassArray result) {

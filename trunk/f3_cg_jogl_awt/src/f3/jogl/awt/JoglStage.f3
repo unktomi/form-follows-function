@@ -1880,7 +1880,7 @@ public class SceneRenderer {
 	lastHeight = height;
 	//println("scene.root={scene.root} => {scene.content}");
 	scene.update();
-        scene.update();
+        scene.update(); // hack: necessary to prevent flashing
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
 
@@ -2143,7 +2143,7 @@ public class SceneRenderer {
 	//println("check {scene} dirty={dirty}");
 	if (dirty) {
 	    onDraw(transparentToDraw.size(), transparentTris, opaqueToDraw.size(), opaqueTris);
-	}
+	}        
 	return dirty;
     }
 

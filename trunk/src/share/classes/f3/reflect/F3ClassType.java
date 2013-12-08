@@ -63,7 +63,22 @@ public abstract class F3ClassType extends F3Type implements F3Member {
         String n = getName();
         if (n == null)
             n = "<anonymous>";
-        return "class "+n;
+        n = "class "+n;
+        F3Type[] targs = getTypeParameters();
+        if (targs == null || targs.length == 0) {
+            targs = getTypeArguments();
+        }
+        if (targs != null && targs.length > 0) {
+            n += " of (";
+            String sep = "";
+            for (int i = 0; i < targs.length; i++) {
+                n += sep;
+                n += targs[i];
+                sep = ", ";
+            }
+            n += ")";
+        }
+        return n;
     }
 
     public boolean equals (Object obj) {
@@ -72,6 +87,14 @@ public abstract class F3ClassType extends F3Type implements F3Member {
             return context.equals(other.context) && name.equals(other.name);
         }
         return false;
+    }
+
+    public boolean isGenericInstance() {
+        return false;
+    }
+
+    public F3ClassType getGenericBase() {
+        return this;
     }
 
     public abstract F3Type[] getTypeArguments();
