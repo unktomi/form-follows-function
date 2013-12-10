@@ -255,8 +255,11 @@ public class Jogl2DExtruder {
 
         public void draw(Shape gp, AffineTransform t) {
             this.shape = shape;
-            tess = glu.gluNewTess();
             bounds = gp.getBounds2D();
+            if (bounds.getWidth() == 0 || bounds.getHeight() == 0) {
+                throw new RuntimeException("empty bounds: "+ bounds);
+            }
+            tess = glu.gluNewTess();
             AffineTransform transform = new AffineTransform();
             if (t != null) {
                 transform.concatenate(t);
