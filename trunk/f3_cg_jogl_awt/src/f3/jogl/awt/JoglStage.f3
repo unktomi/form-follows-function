@@ -45,12 +45,12 @@ import javax.swing.JOptionPane;
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
 
-public var ENABLE_TEXTURED_TEXT is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.textured.text");;
-public var ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.2d.renderer");;
+public const ENABLE_TEXTURED_TEXT is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.textured.text");;
+public const ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.2d.renderer");;
 
 var DISABLE_DEFORMERS = false;
 
-var frc = new java.awt.font.FontRenderContext(null, true, false);
+const frc = new java.awt.font.FontRenderContext(null, true, false);
 const families = 
     java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames() on replace {
     for (x in families) println(x);
@@ -461,18 +461,16 @@ class JoglPath2D is Path2D
 
     override public function createStrokedShape from (stroke is Stroke) to Path2D 
     {
-        var cap is Integer;
-        var join is Integer;
-        cap = 
+        const cap = 
             if (stroke.cap == Stroke.Cap.BUTT) then BasicStroke.CAP_BUTT 
                 else if (stroke.cap == Stroke.Cap.SQUARE) then BasicStroke.CAP_SQUARE
                     else BasicStroke.CAP_ROUND;
-        join = 
+        const join = 
             if (stroke.join == Stroke.Join.BEVEL) then BasicStroke.JOIN_BEVEL 
                 else if (stroke.join == Stroke.Join.MITER) then BasicStroke.JOIN_MITER
                     else BasicStroke.JOIN_ROUND;
-        var bs = new BasicStroke(stroke.width, cap, join);
-        var ss = bs.createStrokedShape(path);
+        const bs = new BasicStroke(stroke.width, cap, join);
+        const ss = bs.createStrokedShape(path);
         var gp is GeneralPath;
         if (ss instanceof GeneralPath){
             gp = ss as GeneralPath;
@@ -509,7 +507,8 @@ class JoglPath2D is Path2D
     }
 }
 
-function toAffineTransform from (m is Mat4) to java.awt.geom.AffineTransform {
+function toAffineTransform from (m is Mat4) to java.awt.geom.AffineTransform 
+{
     const r = if (m == Mat4.<<0>> or m == Mat4.<<1>>) 
         then null else 
             new java.awt.geom.AffineTransform(m.xx, m.yx, m.xy,
@@ -1217,7 +1216,7 @@ class MeshVBO {
     }
 }
 
-var meshToVBO = new java.util.HashMap of (AbstractMesh, MeshVBO);
+const meshToVBO = new java.util.HashMap of (AbstractMesh, MeshVBO);
 
 function bufferData
     from (gl is GL2, 
@@ -2314,7 +2313,7 @@ public class SceneRenderer {
 //                        println("viewMatrix={vm.getTranslation()}");
 //                        println("scene={scene.width}, {scene.height}");
                         toSceneTransform = translate(Math.round(t.x),//-0.5,//-dx,
-                                                     Math.round(t.y)-dy,//-0.5,//-dy,
+                                                     Math.round(t.y),//-0.5,//-dy,
                                                      0);
                         //println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {
@@ -3427,8 +3426,8 @@ public class JoglStage is Stage
     }
 }
 
-public static const CGEffectLoader_INSTANCE = JoglCGEffectLoader{};
-public static const ImageLoader_INSTANCE = JoglImageLoader {};
+public const CGEffectLoader_INSTANCE = JoglCGEffectLoader{};
+public const ImageLoader_INSTANCE = JoglImageLoader {};
 
 var currentCamera is Camera on replace {
     println("currentCamera=>{currentCamera}");
