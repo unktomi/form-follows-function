@@ -5,6 +5,8 @@ import org.f3.runtime.Foldable;
 
 // A Node in the 1d temporal affine transform hierarchy
 
+const MAX_COUNT = 100000;
+
 public abstract class TimeNode is Foldable of TimeNode
 {
     override function toString to String {
@@ -20,6 +22,11 @@ public abstract class TimeNode is Foldable of TimeNode
     public var playTime is Duration = 0s;
     public var playRate is Number = 1.0;
     public var playCount is Number = 1.0;
+
+    public bound function hasIndefiniteDuration to Boolean 
+    {
+        (parent <> null and parent.hasIndefiniteDuration()) or playCount < 0 or contentBounds.duration() == 0s;
+    }
 
     public var blendWeight is Number = 1.0;
 
@@ -38,7 +45,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public readonly var loopedPlayRange = 
 	bind if (contentPlayRange == null) 
 	then null 
-	else contentPlayRange * { if (playCount < 0) then Number.MAX_VALUE else playCount };
+	else contentPlayRange * { if (playCount < 0) then MAX_COUNT else playCount };
 
     public readonly var contentPlayRange is Interval = 
         bind if (playRange == null) then contentBounds else Interval.intersect(contentBounds, playRange);

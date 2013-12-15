@@ -37,8 +37,8 @@ public class Timeline
 	    var r;
 	    var first = true;
 	    for (ch in chs) {
-		const w = ch.blendWeight / weight;
-		r = interpolateChannel(ch, sceneTime, r, w);
+		const w = ch.sceneBlendWeight / weight;
+                r = interpolateChannel(ch, sceneTime, r, w);
 	    }
 	    target.set(r);
 	}

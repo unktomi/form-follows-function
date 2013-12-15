@@ -1,0 +1,55 @@
+package f3.media.scene;
+
+public class BlendLayer is TimeGroup, Player {
+
+    public var fadeDuration is Duration = 1s/24 * 8;
+
+    var lastClip is TimeNode;
+    var lastPlayTime is Duration;
+
+    override public function play from (clip is TimeNode) to ()
+    {
+        lastClip = clip;
+        lastPlayTime = currentTime;
+    }
+
+    override protected function update 
+	from (sceneTime is Duration) 
+	to () 
+    {
+        super.update(sceneTime);
+        doFade();
+    }
+
+    public function doFade to () 
+    {
+        if (lastClip == null) {
+            return;
+        }
+        const fadeOut is TimeNode[] = foreach (c in content where c <> lastClip and c.isPlaying() and c.pickable and c.blendWeight != 0) c;
+        if (fadeOut == []) {
+            lastClip.blendWeight = 1.0;
+            lastClip = null;
+        } else {
+            const d = currentTime - lastPlayTime;
+            var t is Number;
+            if (d == 0s) {
+                t = 0.0;
+            } else {
+                t = d / fadeDuration;
+            }
+            if (t >= 0.0 and t <= 1.0) {
+                lastClip.blendWeight = t;
+                for (c in fadeOut) {
+                    c.blendWeight = 1.0-t;
+                }
+            } else {
+                lastClip.blendWeight = 1.0;
+                lastClip = null;
+                for (c in fadeOut) {
+                    c.blendWeight = 0.0;
+                }
+            }
+        }
+    }
+}

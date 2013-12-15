@@ -1,5 +1,7 @@
 package f3.math;
 
+public const <<0>> = Interval {};
+
 // Temporal Bounds
 
 public class Interval 
