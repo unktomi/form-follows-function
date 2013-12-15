@@ -426,7 +426,7 @@ class OutputDeviceImpl is AbstractOutputDevice {
     }
 
     function convertPath from (fac is Path2DFactory,
-                               h is Number,
+                               h0 is Number,
                                worldMatrix is java.awt.geom.AffineTransform,
                                shape0 is java.awt.Shape) to Path2D 
     {
@@ -440,10 +440,11 @@ class OutputDeviceImpl is AbstractOutputDevice {
                 a;
         } else shape0;
         const iter = shape.getPathIterator(worldMatrix);
-        const coords = 
+        var coords = 
             java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 6) as nativearray of Number;
         const p = fac.createPath();
         //    println("created path {p}");
+        const h = java.lang.Math.round(h0) as Number;
         while (not iter.isDone()) {
             const t = iter.currentSegment(coords);
             //	println("t={t} isDone={iter.isDone()}");
@@ -540,11 +541,12 @@ class OutputDeviceImpl is AbstractOutputDevice {
     }
 }
 
-const dummyImage = ImageUtil.createCompatibleBufferedImage(10, 10, java.awt.image.BufferedImage.TYPE_INT_RGB);
-const frc = {
-    const g = dummyImage.createGraphics();
-    g.getFontRenderContext();
-};
+//const dummyImage = ImageUtil.createCompatibleBufferedImage(10, 10, java.awt.image.BufferedImage.TYPE_INT_RGB);
+const frc = new java.awt.font.FontRenderContext(null, true, false);
+// = {
+//    const g = dummyImage.createGraphics();
+//    g.getFontRenderContext();
+//};
 const dummy = new javax.swing.JPanel();
 function getFontMetrics from (font is java.awt.Font) to java.awt.FontMetrics
 {

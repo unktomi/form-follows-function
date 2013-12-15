@@ -114,7 +114,7 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
         if (width == 0 or height == 0 or w == 0 or h == 0) return Mat4.<<1>>;
         return r;
     }
-                                          
+    override var gridFit = false;
     public var background is Color = Color.TRANSPARENT;
     override var paint = {
 	const self = this;
