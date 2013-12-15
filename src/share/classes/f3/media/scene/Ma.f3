@@ -31,6 +31,13 @@ class MaModel
         nodeMap.get(name);
     }
 
+    function recordResource from (url is String) to ()
+    {
+        resourceUrls.add(url);
+    }
+
+    var resourceUrls = new java.util.HashSet of (String);
+
     var current is MNode; 
 
     var effectLoader is CGEffectLoader;
@@ -2593,7 +2600,9 @@ class MCGFXShader is MAbstractShader
     override function toShader from (m is MaModel) to Shader
     {
         const baseURL = new java.net.URL(m.url);
-        var shader = m.effectLoader.loadEffect(new java.net.URL(baseURL, s).toString(), t);
+        const shaderURL = new java.net.URL(baseURL, s).toString();
+        m.recordResource(shaderURL);
+        var shader = m.effectLoader.loadEffect(shaderURL, t);
         m.shaderMap.put(this, shader);
         for (conns in connectionsToThis.values()) {
             for (conn in conns) {
@@ -2607,7 +2616,9 @@ class MCGFXShader is MAbstractShader
                     const paramName = conn.targetPath;
                     const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
                     try {
-                        const image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
+                        const u = new java.net.URL(baseURL, fname).toString();
+                        const image = m.imageLoader.loadImage(u);
+                        m.recordResource(u);
                         //println("setting {paramName} to {file.ftn} p={p}");
                         p.set(image);
                     } catch (e is java.lang.Exception) {
@@ -3749,6 +3760,7 @@ public class ModelContent {
     public var temporal is TimeNode;
     public var clipLibraries is TimeGroup[];
     public var cameras is Camera[];
+    public var resources is String[];
 }
 
 public class Model {
@@ -3756,6 +3768,11 @@ public class Model {
     public var url is String;
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
+
+    public bound function getResources to String[] 
+    {
+        return modelContent.resources;
+    }
 
     const subject = Subject of ModelContent {};
     
@@ -3792,6 +3809,7 @@ public class Model {
         const m = p.parse(new java.net.URL(url));
         m.spatialRoot.updateParent();
         const mc = ModelContent {
+            resources: foreach (u in m.resourceUrls) u;
             spatial: m.spatialRoot;
             temporal: m.temporalRoot;
             cameras: m.getCameras();
