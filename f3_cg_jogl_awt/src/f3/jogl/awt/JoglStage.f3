@@ -1976,8 +1976,12 @@ public class SceneRenderer {
 		    if (not DISABLE_DEFORMERS) {
 			for (deformer in mn.deformers) {
 			    //println("applying deformer {deformer} to {mn}");
-			    deformer.apply(mn)(); // fix me: opt
-			    mn.mesh.updateBounds();
+                            try {
+                                deformer.apply(mn)(); // fix me: opt
+                                mn.mesh.updateBounds();
+                            } catch (e is java.lang.Throwable) {
+                                e.printStackTrace();
+                            }
 			    //println("bounds is now {mn.mesh.bounds}");
 			}
 		    }
@@ -1999,7 +2003,18 @@ public class SceneRenderer {
 				}
 			    }
 			} 
-			const tris = mn.mesh.getIndexBuffer().limit() / 3;
+			var tris is Integer;
+                        try {
+                            tris = mn.mesh.getIndexBuffer().limit() / 3;
+                        } catch (e is java.lang.Throwable) {
+                            var p = mn.parent;
+                            while (p <> null) {
+                                println(p);
+                                p = p.parent;
+                            }
+                            println(e);
+                            return;
+                        }
 			var info = lastDrawn.get(mn);
 			const cgfx = mn.shader as CGFXShader;
 			cgfx.updateParameters();

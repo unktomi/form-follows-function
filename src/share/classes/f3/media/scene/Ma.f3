@@ -466,25 +466,32 @@ class MaModel
         var r is TimeGroup = clipLibMap.get(n);
         if (r == null) {
             println("converting clip library {n.name}");
-            var clips is TimeGroup[];
+            const clipMap = new java.util.TreeMap of (Integer, TimeGroup);
             println("connections={n.connectionsToThis.get("sc")}");
             for (conn in n.connectionsToThis.get("sc")) {
                 const path = parsePath(conn.targetPath).path;
                 const i = (path[1] as Index).index;
                 const sourceClip = conn.sourceNode as MAnimClip;
-                const clip = sourceClip.connectionsFromThis.get("cl")[0].targetNode;
+                var clip is MNode; 
+                for (targ in sourceClip.connectionsFromThis.get("cl")) {
+                    if (targ.targetNode is MAnimClip) {
+                        clip = targ.targetNode;
+                        break;
+                    }
+                }
                 const start = 1s/24 * (sourceClip.sf-1);
                 const end = 1s/24 * (sourceClip.se);
                 println("creating clip {clip.name} {start}..{end}");
-                insert TimeGroup {
+                const tg = TimeGroup {
                     playTime: start;
                     id: clip.name;
-                } into clips;
+                }
+                clipMap.put(i, tg);
             }
             for (conn in n.connectionsToThis.get("cel")) {
                 const path = parsePath(conn.targetPath).path;
                 const celIndex = (path[1] as Index).index;
-                const clip = clips[celIndex];
+                const clip = clipMap.get(celIndex);
                 //const cevIndex = (path[3] as Index).index;
                 const animCurve = conn.sourceNode as MAnimCurve;
                 const ch = toChannel(animCurve, true);
@@ -495,6 +502,7 @@ class MaModel
                     println("didn't create channel {animCurve.name} for {clip.id}: {ch}");                    
                 }
             }
+            const clips = foreach (clip in clipMap.values()) clip;
             for (clip in clips) {
                 println("created clip: {clip.id} with {clip.content.size()} channels");
             }
