@@ -1727,18 +1727,38 @@ public class StageRenderer {
     public function renderScenes from (gl is GL2, width is Integer, height is Integer) to Boolean
     {
 	var dirty = topLevel or cursor <> stage.cursor;
+        if (dirty) {
+            if (topLevel) {
+                if (DEBUG_DRAW) {
+                    println("dirty due to top level");
+                }
+            }  else {
+                if (DEBUG_DRAW) {
+                    println("dirty due to cursor");
+                }
+            }
+        }
 	if (lastWidth <> width) {
 	    dirty = true;
 	    lastWidth = width;
+            if (DEBUG_DRAW) {
+                println("dirty due to width change");
+            }
 	}
 	if (lastHeight <> height){
 	    dirty = true;
 	    lastHeight = height;
+            if (DEBUG_DRAW) {
+                println("dirty due to height change");
+            }
 	}
 	const self = this;
 	cursor = stage.cursor;
 	if ((foreach (r in sceneRenderers) r.scene) <> stage.content) {
 	    dirty = true;
+            if (DEBUG_DRAW) {
+                println("dirty due to scenes changed");
+            }
 	    sceneRenderers = 
 		foreach (scene in stage.content) {
                 var s = SceneRenderer {};
@@ -1750,6 +1770,9 @@ public class StageRenderer {
         for (sceneRenderer in sceneRenderers) {
 	    if (sceneRenderer.checkNeedsDraw(gl, width, height)) {
 		dirty = true;
+                if (DEBUG_DRAW) {
+                    println("dirty due to scene {sceneRenderer.scene}");
+                }
 	    }
 	}
 	if (dirty) {
@@ -2062,6 +2085,9 @@ public class SceneRenderer {
 			if (scene.camera is Camera2D and not dirty) {
 			    if (not iter.hasNext() or iter.next() <> mn) {
 				dirty = true;
+                                if (DEBUG_DRAW) {
+                                    println("dirty due to hierarchy change {mn}");
+                                }
 			    }
 			}
 			//println("thisDraw {mn}: {thisDraw.size()}");
@@ -2091,7 +2117,10 @@ public class SceneRenderer {
 	}
 	for (i in offscreenToRender) {
 	    if (renderStageNode(gl, i as StageNode)) {
-		dirty = true;
+                dirty = true;
+                if (DEBUG_DRAW) {
+                    println("dirty due to stage node {i}");
+                }
 	    }
 	}	
         offscreenToRender.clear();
@@ -2305,15 +2334,15 @@ public class SceneRenderer {
                     if (toSceneTransform.getRotation() == Quat.<<1>>) {
                         const t = mn.toSceneTransform.getTranslation();
                         const tn = mn as Text.TextMeshNode;
-                        const b = tn.getLayout().getShape().getBounds();
-                        const x = if (tn.getText().rightJustified) then b.right() else b.left();
-                        const dx = x - Math.round(x);
-                        const dy = b.bottom() - Math.round(b.bottom());
+                        //const b = tn.getLayout().getShape().getBounds();
+                        //const x = if (tn.getText().rightJustified) then b.right() else b.left();
+                        //const dx = x - Math.round(x);
+                        //const dy = b.bottom() - Math.round(b.bottom());
                         const vm = camera.viewMatrix;
 //                        println("viewMatrix={vm.getTranslation()}");
 //                        println("scene={scene.width}, {scene.height}");
-                        toSceneTransform = translate(Math.round(t.x),//-0.5,//-dx,
-                                                     Math.round(t.y),//-0.5,//-dy,
+                        toSceneTransform = translate(Math.round(t.x),
+                                                     Math.round(t.y),
                                                      0);
                         //println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {
@@ -2329,6 +2358,14 @@ public class SceneRenderer {
                         toSceneTransform = translate(Math.round(t.x),
                                                      Math.round(t.y),
                                                      0);
+                        /*
+                        println("grid fit {mn} => {toSceneTransform.getTranslation()}");
+                        var p = mn.parent;
+                        while (p <> null) {
+                              println(p);
+                              p = p.parent;
+                        }
+                        */
                     }
                 }
 		if (mesh.polygonMode == PolygonMode.Line) {
@@ -2719,7 +2756,7 @@ public class Listener is GLEventListener, DropTargetListener {
 
     function setup from (gl is GL2, width is Integer, height is Integer) to () {
         ctx = GLContext.getCurrent();
-	ImageLoader_INSTANCE.gl = gl; // hack
+	(ImageLoader_INSTANCE as JoglImageLoader).gl = gl; // hack
 	stage.resize(width, height);
         wakeup();
     }
@@ -3252,7 +3289,6 @@ public class JoglStage is Stage
     }
 
     var awt_menubar is java.awt.MenuBar = new java.awt.MenuBar();
-;
 
     var awt_menus = bind createMenus(awt_menubar, menubar.menus);
     
@@ -3426,8 +3462,8 @@ public class JoglStage is Stage
     }
 }
 
-public const CGEffectLoader_INSTANCE = JoglCGEffectLoader{};
-public const ImageLoader_INSTANCE = JoglImageLoader {};
+public const CGEffectLoader_INSTANCE is CGEffectLoader = JoglCGEffectLoader{};
+public const ImageLoader_INSTANCE is ImageLoader = JoglImageLoader {};
 
 var currentCamera is Camera on replace {
     println("currentCamera=>{currentCamera}");
