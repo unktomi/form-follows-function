@@ -642,6 +642,14 @@ function makeRef of a from (name is String, ptr is String, result is Ref of a) t
         {
             result.set(x);
         }
+        override function hashCode to Integer 
+        {
+            result.hashCode();
+        }
+        override function equals from (obj is Object) to Boolean
+        {
+            super.equals(obj) or obj.equals(result)
+        }
     }
 }
 

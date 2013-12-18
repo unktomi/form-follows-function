@@ -38,4 +38,7 @@ public final class F3SequenceType extends F3Type {
         componentType.toStringTerse(sb);
         sb.append("[]");
     }
+    public String getName() {
+        return getComponentType().getName() + "[]";
+    }
 }

@@ -42,6 +42,24 @@ import com.jogamp.opengl.util.awt.TextureRenderer;
 import javax.swing.JOptionPane;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
+function checkMesh from (mn is MeshNode) to Boolean 
+{
+    var result = true;
+    try {
+        mn.mesh.getIndexBuffer();
+    } catch (e is java.lang.RuntimeException) {
+        var p = mn.parent;
+        while (p <> null) {
+            println(p);
+            p = p.parent;
+        }
+        println(e);
+        result = false;
+    }
+    return result;
+}
+
+
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
 
@@ -1870,6 +1888,7 @@ public class SceneRenderer {
 
     var lastVisible = true;
 
+
     function checkNeedsDraw
 	from (gl is GL2, 
 	      width is Number, 
@@ -2004,17 +2023,10 @@ public class SceneRenderer {
 			    }
 			} 
 			var tris is Integer;
-                        try {
-                            tris = mn.mesh.getIndexBuffer().limit() / 3;
-                        } catch (e is java.lang.Throwable) {
-                            var p = mn.parent;
-                            while (p <> null) {
-                                println(p);
-                                p = p.parent;
-                            }
-                            println(e);
+                        if (not checkMesh(mn)) {
                             return;
                         }
+                        tris = mn.mesh.getIndexBuffer().limit() / 3;        
 			var info = lastDrawn.get(mn);
 			const cgfx = mn.shader as CGFXShader;
 			cgfx.updateParameters();
