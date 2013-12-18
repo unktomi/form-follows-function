@@ -63,6 +63,10 @@ public abstract class F3Context {
     /** Get the {@code F3Type} for the "any" type. */
     public F3Type getAnyType() { return anyType; }
 
+    public F3Type subst(F3Type type) {
+        return type;
+    }
+
     public F3PrimitiveType getPrimitiveType(String typeName) {
         if (typeName.startsWith("java.lang."))
             typeName = typeName.substring(10);

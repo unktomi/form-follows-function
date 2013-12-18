@@ -2,7 +2,7 @@ package f3.util;
 import org.f3.runtime.Monad;
 import org.f3.runtime.Comonad;
 
-// Lazy infinite streams
+// Lazy infinite streams (now AND later)
 
 public class Stream of a is Comonad of (Stream, a), Monad of (Stream, a) 
 {
