@@ -42,7 +42,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public readonly var bounds is Interval = bind transform * loopedPlayRange;
     public readonly var boundsInScene is Interval = bind parent.toSceneTransform * bounds;
 
-    public readonly var loopedPlayRange = 
+    public readonly var loopedPlayRange is Interval = 
 	bind if (contentPlayRange == null) 
 	then null 
 	else contentPlayRange * { if (playCount < 0) then MAX_COUNT else playCount };
@@ -219,6 +219,7 @@ public abstract class TimeNode is Foldable of TimeNode
     public function pause to ()
     {
 	paused = true;
+        update(currentTime);
     }
 
     readonly var completed = bind Subject of (()) {};

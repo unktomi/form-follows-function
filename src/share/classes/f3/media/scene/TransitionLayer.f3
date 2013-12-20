@@ -19,5 +19,4 @@ public class TransitionLayer is TimeGroup, Player {
 	clip.blendWeight = 1.0;
 	clip.playTime = clip.currentTime - clip.bounds.duration() * (1.0-t);
     }
-
 }
