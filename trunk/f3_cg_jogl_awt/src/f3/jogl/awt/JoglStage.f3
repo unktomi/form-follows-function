@@ -53,7 +53,7 @@ function checkMesh from (mn is MeshNode) to Boolean
             println(p);
             p = p.parent;
         }
-        println(e);
+        e.printStackTrace();
         result = false;
     }
     return result;
@@ -2305,7 +2305,6 @@ public class SceneRenderer {
     {
         const cameraLight = camera.toSceneTransform.getTranslation();
 	const sceneParentInverse = if (sceneParent == null) Mat4.<<1>> else sceneParent.toSceneTransform.inverse();
-	var disableDepth = false;
 	/*
 	gl.glPolygonOffset(1, 1);
 	gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
@@ -2320,6 +2319,25 @@ public class SceneRenderer {
         for (n in toDraw) {
 	    prev = n;
             const mn = n as MeshNode;
+            try {
+                draw1(gl, sceneParent, camera, prev, cameraLight, lights, sceneParentInverse, mn);
+            } catch (e is java.lang.Exception) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    function draw1 from (gl is GL2,
+                         sceneParent is Node,
+                         camera is Camera, 
+                         prev is Node, 
+                         cameraLight is Point3,
+                         lights is Point3[],
+                         sceneParentInverse is Mat4, 
+                         mn is MeshNode) to () 
+    {
+	var disableDepth = false;
+        var n = mn;
 	    if (mn instanceof Shape2D.MeshNode2D) {
 		if (prev instanceof Shape2D.MeshNode2D) {
 		    const t0 = mn.toSceneTransform.getTranslation().z;
@@ -2417,7 +2435,7 @@ public class SceneRenderer {
 		}
 	    }
 	    if (badtex) {
-		continue;
+		return;
 	    }
             var shader = mn.shader;
 	    //println("shader={shader}");
@@ -2517,7 +2535,7 @@ public class SceneRenderer {
                 }
 		if (mn.toSceneTransform == null or camera.viewMatrix == null or camera.projectionMatrix == null) {
 		    println("bad transform {mn} {mn.id} or {camera} {camera.id}");
-		    continue;
+                    return;
 		}
 		///println("applying shader {shader} to {mn.id}");
 		shader.apply(mesh,
@@ -2562,7 +2580,7 @@ public class SceneRenderer {
             //mn.needsDraw = false;
             //shader.validate();
         }
-    }
+    
 }
 
 public class Listener is GLEventListener, DropTargetListener {
@@ -2836,8 +2854,9 @@ public class Listener is GLEventListener, DropTargetListener {
 	    setTitle("mem({%,d mem-free}/{%,d mem}) {stage.title}");
 	} else {
 	    if (stageTitle <> stage.title) {
-		setTitle(stageTitle = stage.title);
-	    }
+                stageTitle = stage.title;
+            }
+            setTitle("{(stageTitle = stage.title)} draw: {transp+opaque}");
 	}
         const delta = 1ms * (now - prevTime);
 	//	println("delta={delta}");

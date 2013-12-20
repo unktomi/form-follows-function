@@ -320,7 +320,7 @@ public class Duration extends Comparable of Duration {
         if (x == null) {
             x = 0s;
         }
-        if (millis < this.millis) then x else this;
+        valueOf(Math.max(millis, x.millis));
     }
 
     public function min(x0:Duration):Duration {
@@ -328,7 +328,7 @@ public class Duration extends Comparable of Duration {
         if (x == null) {
             x = 0s;
         }
-        if (millis < this.millis) then this else x;
+        valueOf(Math.min(millis, x.millis));
     }
 
     public function rem(d:Duration):Duration {
