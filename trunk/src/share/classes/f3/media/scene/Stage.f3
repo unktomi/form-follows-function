@@ -13,16 +13,23 @@ public interface Stage
     public var width is Integer = 640;
     public var height is Integer = 480;
     public var content is Scene[];
+
+    public function resize 
+	from (width is Integer, height is Integer, outsideWidth is Integer, outsideHeight is Integer) 
+	to () 
+    {
+	this.width = width; this.height = height;
+        this.outsideHeight = outsideHeight;
+        this.outsideWidth = outsideWidth;
+    }
     
     public function resize 
 	from (width is Integer, height is Integer) 
 	to () 
     {
 	this.width = width; this.height = height;
-	println("resize {width} {height}");
-	for (scene in content) {
-	    println("scene {scene} {scene.width} {scene.height}");
-	}
+        outsideHeight = height;
+        outsideWidth = width;
     }
 
     public bound function getStageWidth to Number 
@@ -265,5 +272,8 @@ public interface Stage
     public function observeUpdate to Observable of (()) {
         if (updateSubject == null) updateSubject = Subject of (()) {} else updateSubject;
     }
+
+    public readonly var outsideWidth is Integer;
+    public readonly var outsideHeight is Integer;
 }
  

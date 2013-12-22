@@ -35,7 +35,16 @@ public class Interval
 	    start == i.start and end == i.end;
 	}
     }
+
+    public function add from (pt is Duration) to Interval 
+    {
+        Interval {
+            start: start.min(pt);
+            end: end.max(pt)
+        }
+    }
 }
+
 
 public function merge
     from (x is Interval, 
