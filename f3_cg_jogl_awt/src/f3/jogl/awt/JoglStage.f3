@@ -2098,7 +2098,7 @@ public class SceneRenderer {
 			    }
 			    mn = ti.tex;
 			}
-			if ((scene.camera is Camera2D) or shader.isTransparent) {
+			if ((scene.camera is Camera2D) or shader.isTransparent or (mn is Shape2D.MeshNode2D)) {
 			    transparentToDraw.add(mn);
 			    transparentTris += tris;
 			} else {
@@ -2264,8 +2264,8 @@ public class SceneRenderer {
 		    {
 			const xz = camera.distanceTo(x.toSceneTransform.getTranslation());
 			const yz = camera.distanceTo(y.toSceneTransform.getTranslation());
-			const cmp = -(xz - yz);
-			return if (cmp < 0) then -1 else if (cmp > 0) then 1 else 0;
+			const cmp = xz - yz;
+			return if (cmp < 0) then 1 else if (cmp > 0) then -1 else 0;
 		    }
 		});
 	} 
@@ -2855,8 +2855,9 @@ public class Listener is GLEventListener, DropTargetListener {
 	} else {
 	    if (stageTitle <> stage.title) {
                 stageTitle = stage.title;
+                setTitle(stageTitle);
             }
-            setTitle("{(stageTitle = stage.title)} draw: {transp+opaque}");
+
 	}
         const delta = 1ms * (now - prevTime);
 	//	println("delta={delta}");

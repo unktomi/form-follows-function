@@ -1,5 +1,6 @@
 package f3.media.input;
 import f3.util.*;
+import f3.media.scene.*;
 
 public interface Focusable is Focuser {
     override function getTargetOfFocus to Focusable { this }
@@ -41,7 +42,18 @@ public interface Focusable is Focuser {
 	else keyInput;
     }
 
-    public function observeFocused to Observable of Boolean {
+    public function observeFocused to Observable of Boolean 
+    {
         if (obFocus == null) then obFocus = Subject of Boolean {} else obFocus;
+    }
+
+    var attachment is Disposable;
+
+    public function attachTo from (n is Node) to ()
+    {
+        attachment.dispose();
+        attachment = n.observeMouseDown().subscribe(function from (e is MouseEvent) to () {
+                e.scene.setFocus(this);
+            });
     }
 }

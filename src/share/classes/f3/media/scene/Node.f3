@@ -148,7 +148,6 @@ public abstract class Node is Foldable of Node
 	if (mouseWheel == null) 
 	    then mouseWheel = Subject of MouseWheelEvent {}
 	else mouseWheel;
-	
     }
     /*
     var mouseDrag1 is Observable of MouseEvent = 
@@ -177,6 +176,11 @@ public abstract class Node is Foldable of Node
     public function toBack from () to () 
     {
     	(parent as Group).toBack(this)
+    }
+
+    public function attachFocus from (focus is Focusable) to ()
+    {
+        focus.attachTo(this);
     }
     
 }
