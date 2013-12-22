@@ -2802,7 +2802,7 @@ public class Listener is GLEventListener, DropTargetListener {
     function setup from (gl is GL2, width is Integer, height is Integer) to () {
         ctx = GLContext.getCurrent();
 	(ImageLoader_INSTANCE as JoglImageLoader).gl = gl; // hack
-	stage.resize(width, height);
+	stage.resize(width, height, frame.getWidth(), frame.getHeight());
         wakeup();
     }
 
