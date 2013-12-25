@@ -1,7 +1,7 @@
 package f3.util;
 
-public class Subject of a is Observable of a, Observer of a {
-
+public class Subject of a is Observable of a, Observer of a 
+{
     public var debug is String;
 
     override function toString to String {
@@ -9,12 +9,13 @@ public class Subject of a is Observable of a, Observer of a {
     }
 
     var observers is java.util.Map of (Observer of a, ());
-    var last is a;
+
+    public readonly var last is a;
 
     public override function onNext from (x is a) to ()
     {
         if (debug <> null) println("{debug} subject on next {x}, obs={observers}");
-	last = x;
+        last = x;
 	if (observers <> null) {
             beginFlush();
 	    for (ob in observers.keySet()) {
@@ -23,8 +24,6 @@ public class Subject of a is Observable of a, Observer of a {
             endFlush();
         }
     }
-
-    public bound function extract to a { last }
 
     public override function onError from (x is java.lang.Exception) to ()
     {
