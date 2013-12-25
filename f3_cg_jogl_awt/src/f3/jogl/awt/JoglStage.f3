@@ -1744,7 +1744,7 @@ public class StageRenderer {
 
     public function renderScenes from (gl is GL2, width is Integer, height is Integer) to Boolean
     {
-	var dirty = topLevel or cursor <> stage.cursor;
+	var dirty = /*topLevel or*/ cursor <> stage.cursor;
         if (dirty) {
             if (topLevel) {
                 if (DEBUG_DRAW) {
@@ -2839,10 +2839,13 @@ public class Listener is GLEventListener, DropTargetListener {
             wakeupFrames--;
             trig = true;
         }
-        //        if (not dragging and not trig and not frame.isActive()) {
-          // java.lang.Thread.sleep(128);
-           //return;
-//        }
+        if (not dragging and not trig and not frame.isActive()) {
+            java.lang.Thread.sleep(128);
+            gl.setSwapInterval(0);
+            canvas.swapBuffers();
+            canvas.swapBuffers();
+            return;
+        }
         MasterTimeline.paused = not frame.isActive();
         if (not frame.isActive()) {
             prevTime = now;
@@ -2922,6 +2925,8 @@ public class Listener is GLEventListener, DropTargetListener {
                 } else {
                     sleepFrames = 16;
                 }
+                canvas.swapBuffers();
+                canvas.swapBuffers();
             } else {
                 gl.setSwapInterval(1);
                 canvas.swapBuffers();

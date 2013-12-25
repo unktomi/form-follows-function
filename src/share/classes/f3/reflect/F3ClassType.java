@@ -297,4 +297,100 @@ public abstract class F3ClassType extends F3Type implements F3Member {
             return true;
         }
     }
+
+    public F3VarMember getThis() {
+
+        return new F3VarMember() {
+
+            public F3Type getType() {
+                return F3ClassType.this;
+            }
+
+            /** Get the offset of the attribute. */
+            public int getOffset() {
+                return -1;
+            }
+
+            /** Get the value of the attribute in a specified object. */
+            public F3Value getValue(F3ObjectValue obj) {
+                return obj;
+            }
+
+            /** Set the value of the attribute in a specified object. */
+            public void setValue(F3ObjectValue obj, F3Value newValue) {
+                throw new UnsupportedOperationException();
+            }
+
+            /** Get a handle for the attribute in a specific object. */
+            public F3Location getLocation(final F3ObjectValue obj) {
+                return new F3Location() {
+                    public F3Value getValue() {
+                        return obj;
+                    }
+
+                    public void setValue(F3Value newValue) {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+
+            protected void initVar(F3ObjectValue instance, F3Value value) {
+            }
+            public void initValue(F3ObjectValue obj, F3Value ref) {
+            }
+    
+            /** Add an on replace listener to the objects var. **/
+            public F3ChangeListenerID addChangeListener(F3ObjectValue instance, F3ChangeListener listener) {
+                return null;
+            }
+            
+            /** Remove an on replace listener from the objects var. **/
+            public void removeChangeListener(F3ObjectValue instance, F3ChangeListenerID id) {
+
+            }
+            /** True if {@code public-read} was specified. */
+            public boolean isPublicRead() {
+                return false;
+            }
+            
+            /** True if {@code public-init} was specified. */
+            public boolean isPublicInit() {
+                return false;
+            }
+            
+            /** True if if the variable is defined with {@code def} rather than {@code var}. */
+            public boolean isDef() {
+                return true;
+            }
+
+            public String getName() {
+                return "this";
+            }
+            
+            public F3ClassType getDeclaringClass() {
+                return F3ClassType.this;
+            }
+
+            public boolean isStatic() {
+                return false;
+            }
+
+            /** The member was specified to have public access. */
+            public boolean isPublic() {
+                return true;
+            }
+
+            /** The member was specified to have package access.
+             * For a member of a Java class, returns true if the member has default (blank) access.
+             */
+            public boolean isPackage() {
+                return false;
+            }
+
+            /** The member was specified to have protected access. */
+            public boolean isProtected() {
+                return false;
+            }
+        };
+    }
 }
