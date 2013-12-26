@@ -86,6 +86,7 @@ public class ErrorHandler {
             System.err.println("Exception in binding:");
             e.printStackTrace();
         }
+        throw new RuntimeException(e);
     }
 
     public static void triggerException(RuntimeException e) {
@@ -93,6 +94,7 @@ public class ErrorHandler {
             System.err.println("Exception in trigger:");
             e.printStackTrace();
         }
+        throw new RuntimeException(e);
     }
 
     /** Called when attempting to coerce a null numeric or boolean value to a primitive */

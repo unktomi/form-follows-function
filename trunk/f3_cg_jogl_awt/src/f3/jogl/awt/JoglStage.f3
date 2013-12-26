@@ -507,9 +507,9 @@ class JoglPath2D is Path2D
 
     override public function createMesh to AbstractMesh 
     {
-	extrusion.resetShape(path);
-        extrusion.setTextureMatrix(toAffineTransform(textureMatrix));
         try {
+            extrusion.resetShape(path);
+            extrusion.setTextureMatrix(toAffineTransform(textureMatrix));
             const md = extrusion.createMeshData();
             const mb = MeshBuffer {
                 indexBuffer: md.getIndexBuffer();
@@ -519,9 +519,8 @@ class JoglPath2D is Path2D
             }
             return mb.toMesh();
         } catch (e is java.lang.Exception) {
-            e.printStackTrace()
+            return null;
         }
-        return null;
     }
 }
 

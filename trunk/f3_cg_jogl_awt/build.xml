@@ -66,6 +66,7 @@
              srcdir="${src.classes.dir}" target="${javac.target}"
              compilerclasspath="${javac.classpath}">
 	  <!--compilerarg value="-XDdumpjava"/-->
+            <compilerarg value="-XDdumpjava"/>
             <classpath>
                 <path path="lib/jogl-all.jar"/>
                 <path path="lib/gluegen-rt.jar"/>
