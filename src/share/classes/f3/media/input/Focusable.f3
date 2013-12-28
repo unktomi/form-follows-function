@@ -2,11 +2,11 @@ package f3.media.input;
 import f3.util.*;
 import f3.media.scene.*;
 
-public interface Focusable is Focuser {
+public interface Focusable is Focuser, KeyboardFocusTarget {
     override function getTargetOfFocus to Focusable { this }
     public readonly var focused is Boolean;
-    public function acceptFocus to Boolean { obFocus.onNext(focused = true); focused }
-    public function loseFocus to Boolean { obFocus.onNext(focused = false); focused }
+    public function acceptFocus to Boolean { focusedSubject.onNext(focused = true); focused }
+    public function loseFocus to Boolean { focusedSubject.onNext(focused = false); focused }
     public function getKeyboardInputHandler to KeyboardInputHandler 
     {
 	if (this is KeyboardInputHandler) {
@@ -15,36 +15,29 @@ public interface Focusable is Focuser {
         return null;
     }
 
-    var keyDown is Subject of KeyboardEvent;
-    var keyUp is Subject of KeyboardEvent;
-    var keyInput is Subject of KeyboardEvent;
+    public const keyDown is Subject of KeyboardEvent = Subject of KeyboardEvent {};
+    public const keyUp is Subject of KeyboardEvent = Subject of KeyboardEvent {};
+    public const keyInput is Subject of KeyboardEvent = Subject of KeyboardEvent {};
 
-    var obFocus is Subject of Boolean;
+    public const focusedSubject is Subject of Boolean;
 
-    public function observeKeyDown to Subject of KeyboardEvent 
+    override public function observeKeyDown to Observable of KeyboardEvent 
     {
-	if (keyDown == null) 
-	    then keyDown = Subject of KeyboardEvent {}
-	else keyDown;
-	
+        keyDown;
     }
-    public function observeKeyUp to Subject of KeyboardEvent 
+    override public function observeKeyUp to Observable of KeyboardEvent 
     {
-	if (keyUp == null) 
-	    then keyUp = Subject of KeyboardEvent {}
-	else keyUp;
+        keyUp;
     }
 
-    public function observeKeyInput to Subject of KeyboardEvent 
+    override public function observeKeyInput to Observable of KeyboardEvent 
     {
-	if (keyInput == null) 
-	    then keyInput = Subject of KeyboardEvent {}
-	else keyInput;
+        keyInput;
     }
 
-    public function observeFocused to Observable of Boolean 
+    override public function observeFocused to Observable of Boolean 
     {
-        if (obFocus == null) then obFocus = Subject of Boolean {} else obFocus;
+        focusedSubject;
     }
 
     var attachment is Disposable;

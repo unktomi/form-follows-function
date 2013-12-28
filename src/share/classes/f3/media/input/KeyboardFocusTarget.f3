@@ -1,0 +1,9 @@
+package f3.media.input;
+import f3.util.*;
+
+public interface KeyboardFocusTarget {
+    public function observeKeyDown to Observable of KeyboardEvent; 
+    public function observeKeyUp to Observable of KeyboardEvent; 
+    public function observeKeyInput to Observable of KeyboardEvent; 
+    public function observeFocused to Observable of Boolean; 
+}

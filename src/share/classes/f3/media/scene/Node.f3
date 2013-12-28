@@ -5,9 +5,11 @@ import f3.util.*;
 import f3.util.Observable.*;
 import f3.media.input.*;
 
+class NodeFocus is Focusable {}
+
 // A Node in the 3d spatial affine transform hierarchy
 
-public abstract class Node is Foldable of Node
+public abstract class Node is Foldable of Node, KeyboardFocusTarget
 {
     override function toString to String {
 	"{super.toString()} {id}"
@@ -149,6 +151,36 @@ public abstract class Node is Foldable of Node
 	    then mouseWheel = Subject of MouseWheelEvent {}
 	else mouseWheel;
     }
+
+    var focusHandler is Focusable;
+
+    function getFocusable() to Focusable 
+    {
+        if (this is Focusable) then this as Focusable 
+            else 
+                if (focusHandler == null) then { focusHandler = NodeFocus {}; focusHandler.attachTo(this); focusHandler } else focusHandler;
+    }
+
+    public function observeKeyDown to Observable of KeyboardEvent
+    {
+        getFocusable().keyDown;
+    }
+
+    public function observeKeyUp to Observable of KeyboardEvent
+    {
+        getFocusable().keyUp;
+    }
+
+    public function observeKeyInput to Observable of KeyboardEvent
+    {
+        getFocusable().keyInput;
+    }
+
+    public function observeFocused to Observable of Boolean
+    {
+        getFocusable().focusedSubject;
+    }
+
     /*
     var mouseDrag1 is Observable of MouseEvent = 
          foreach (press in observeMouseDown()) observeMouseMove().takeUntil(observeMouseUp());
