@@ -359,19 +359,19 @@ public class Scene
     public function injectKeyDown from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyDown(event);
-        focus.observeKeyDown().onNext(event);
+        focus.keyDown.onNext(event);
     }
 
     public function injectKeyUp from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyUp(event);
-        focus.observeKeyUp().onNext(event);
+        focus.keyUp.onNext(event);
     }
 
     public function injectKeyInput from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyInput(event);
-        focus.observeKeyInput().onNext(event);
+        focus.keyInput.onNext(event);
     }
 
     public function injectMouseMove from (event is MouseEvent) to () 

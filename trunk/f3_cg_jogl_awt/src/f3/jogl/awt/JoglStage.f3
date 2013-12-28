@@ -2800,6 +2800,7 @@ public class Listener is GLEventListener, DropTargetListener {
 
     function setup from (gl is GL2, width is Integer, height is Integer) to () {
         ctx = GLContext.getCurrent();
+        gl.setSwapInterval(1);
 	(ImageLoader_INSTANCE as JoglImageLoader).gl = gl; // hack
 	stage.resize(width, height, frame.getWidth(), frame.getHeight());
         wakeup();
@@ -2840,9 +2841,6 @@ public class Listener is GLEventListener, DropTargetListener {
         }
         if (not dragging and not trig and not frame.isActive()) {
             java.lang.Thread.sleep(128);
-            gl.setSwapInterval(0);
-            canvas.swapBuffers();
-            canvas.swapBuffers();
             return;
         }
         MasterTimeline.paused = not frame.isActive();
@@ -2916,7 +2914,6 @@ public class Listener is GLEventListener, DropTargetListener {
             } 
             const d = lastFrame + sleepFrames - end;
             if (skip) {
-                gl.setSwapInterval(0);
                 //println("sleeping {d}");
                 if (d > 0) {
                     java.lang.Thread.sleep(d);
@@ -2924,10 +2921,7 @@ public class Listener is GLEventListener, DropTargetListener {
                 } else {
                     sleepFrames = 16;
                 }
-                canvas.swapBuffers();
-                canvas.swapBuffers();
             } else {
-                gl.setSwapInterval(1);
                 canvas.swapBuffers();
                 sleepFrames = 16;
             }

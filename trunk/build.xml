@@ -516,6 +516,7 @@
 
         <f3c enableAssertions="true" debug="${javac.debug}" deprecation="${javac.deprecation}"
                  destdir="${build.classes.dir}"
+             memoryMaximumSize="1G"
                  excludes="${excludes}" includeantruntime="false"
                  includes="f3/lang/*.f3,f3/math/*.f3" source="${javac.source}" sourcepath=""
                  srcdir="${src.classes.dir}" target="${javac.target}"
@@ -538,6 +539,7 @@
         </javac>
 
         <f3c enableAssertions="true" debug="${javac.debug}" deprecation="${javac.deprecation}"
+             memoryMaximumSize="1G"
                  destdir="${build.classes.dir}"
                  excludes="${excludes}" includeantruntime="false"
                  includes="**/*.f3" source="${javac.source}" sourcepath=""

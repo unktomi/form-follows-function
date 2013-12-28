@@ -49,12 +49,12 @@ public class TransformNode is Group//, Transform
     public var py is Number;
     public var pz is Number;
 
-    public bound function getPivot to Mat4 
+    override public bound function getPivot to Mat4 
     { 
 	translate(tx+px, ty+py, tz+pz);
     }
 
-    public bound function getScalePivot to Mat4 {
+    override public bound function getScalePivot to Mat4 {
 	getPivot() * rotate(rx, ry, rz) 
     }
 
