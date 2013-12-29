@@ -42,6 +42,8 @@ import com.jogamp.opengl.util.awt.TextureRenderer;
 import javax.swing.JOptionPane;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
+const ALWAYS_SWAP_BUFFERS is Boolean = Boolean.getBoolean("always.swap.buffers");
+
 function checkMesh from (mn is MeshNode) to Boolean 
 {
     var result = true;
@@ -1985,7 +1987,7 @@ public class SceneRenderer {
 			    const gradient = shape.paint as Shape2D.GradientPaint;
 			    shape.shader = makeGradientShader(gl, gradient);
 			}
-			println("creating shader for {shape} => {shape.shader}");
+                        //			println("creating shader for {shape} => {shape.shader}");
 			dirty = true;
 		    }
 		} 
@@ -2839,7 +2841,7 @@ public class Listener is GLEventListener, DropTargetListener {
             wakeupFrames--;
             trig = true;
         }
-        if (not dragging and not trig and not frame.isActive()) {
+        if (not ALWAYS_SWAP_BUFFERS and not dragging and not trig and not frame.isActive()) {
             java.lang.Thread.sleep(128);
             return;
         }
@@ -2895,7 +2897,7 @@ public class Listener is GLEventListener, DropTargetListener {
         for (scene in stage.content) {
 	    scene.stage = stage;
 	}
-	skip = wakeupFrames == 0;
+	skip = true;
 	if (stageRenderer.renderScenes(gl, stage.width, stage.height)) {
 	    if (lastOpaque <> opaque or lastTransp <> transp) {
 		lastTransp = transp;

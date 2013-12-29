@@ -359,19 +359,19 @@ public class Scene
     public function injectKeyDown from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyDown(event);
-        focus.keyDown.onNext(event);
+        if (event.propagate) { focus.keyDown.onNext(event) }
     }
 
     public function injectKeyUp from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyUp(event);
-        focus.keyUp.onNext(event);
+        if (event.propagate) { focus.keyUp.onNext(event) }     
     }
 
     public function injectKeyInput from (event is KeyboardEvent) to () 
     {
         focus.getKeyboardInputHandler().onKeyInput(event);
-        focus.keyInput.onNext(event);
+        if (event.propagate) { focus.keyInput.onNext(event) }     
     }
 
     public function injectMouseMove from (event is MouseEvent) to () 
@@ -524,7 +524,7 @@ public class Scene
             }
         }
         if (p.node.mouseUp <> null) {        
-            println("Mouse up { p.node}");
+        //            println("Mouse up { p.node}");
             const e = makeMouseEvent(p, sceneEvent, p.dragPoint1);
             p.node.mouseUp.onNext(e);
         }
@@ -601,7 +601,7 @@ public class Scene
         if (result and p.node.mouseDown <> null) {        
             const e = makeMouseEvent(null, p, sceneEvent);
             //            println("MOUSE DOWN on => {p.node}");
-            println("Mouse downx { p.node}");
+//            println("Mouse downx { p.node}");
             p.node.mouseDown.onNext(e);
             result = e.propagate;
         }

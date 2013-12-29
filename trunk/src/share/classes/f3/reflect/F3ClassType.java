@@ -23,6 +23,7 @@
 
 package f3.reflect;
 import java.util.*;
+import org.f3.runtime.Checks;
 
 /** A run-time representation of a F3 class.
  * Corresponds to {@code java.lang.Class}.
@@ -84,7 +85,7 @@ public abstract class F3ClassType extends F3Type implements F3Member {
     public boolean equals (Object obj) {
         if (obj instanceof F3ClassType) {
             F3ClassType other = (F3ClassType)obj;
-            return context.equals(other.context) && name.equals(other.name);
+            return Checks.equals(context, other.context) && Checks.equals(name, other.name);
         }
         return false;
     }
