@@ -591,7 +591,7 @@ public class F3Local {
                         }
                         catch (Exception ex) {
                             // Just ignore ???
-                            ex.printStackTrace();
+                            //ex.printStackTrace();
                         }
                     }
                     final String mname = m.getName();
