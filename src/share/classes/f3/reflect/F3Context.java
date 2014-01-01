@@ -63,8 +63,83 @@ public abstract class F3Context {
     /** Get the {@code F3Type} for the "any" type. */
     public F3Type getAnyType() { return anyType; }
 
+    final java.util.Map<F3Type, F3Type> typeMap = new java.util.WeakHashMap();
+
     public F3Type subst(F3Type type) {
+        F3Type r = typeMap.get(type);
+        if (r != null) return r;
+        if (type instanceof F3FunctionType) {
+            F3FunctionType funType = (F3FunctionType)type;
+            boolean needSubst = false;
+            F3Type s = null;
+            int k = -1;
+            for (int i = 0, count = funType.minArgs(); i < count; i++) {
+                F3Type t = funType.getArgumentType(i);
+                s = subst(t);
+                if (s != t) {
+                    needSubst = true;
+                    k = i;
+                    break;
+                }
+            }
+            if (!needSubst) {
+                s = subst(funType.getReturnType());
+                if (s != funType.getReturnType()) {
+                    needSubst = true;
+                }
+            }
+            if (needSubst) {
+                F3Type[] args = new F3Type[funType.minArgs()];
+                for (int i = 0, count = funType.minArgs(); i < count; i++) {
+                    F3Type t = funType.getArgumentType(i);
+                    args[i] = i == k ? s : subst(t);
+                }
+                F3Type ret = k == -1 ? s : subst(funType.getReturnType());
+                F3Type newType = makeFunctionType(args, ret);
+                typeMap.put(type, newType);
+                return newType;
+            }
+        }
+        if (type instanceof F3ClassType) {
+            final F3ClassType clazzType = (F3ClassType)type;
+            if (clazzType.isParameterized()) {
+                final F3Type[] typeParams = clazzType.getTypeParameters();
+                final F3Type[] typeArgs = clazzType.getTypeArguments();
+                for (int i = 0; i < typeParams.length; i++) {
+                    final F3Type s = subst(typeParams[i]);
+                    if (s != typeParams[i] && typeArgs.length == 0 || s != typeArgs[i]) {
+                        type = instantiateType(clazzType, subst(typeParams));
+                        typeMap.put(clazzType, type);
+                        break;
+                    }
+                }
+            }
+        }
         return type;
+    }
+
+    public abstract F3ClassType instantiateType(final F3ClassType base, final F3Type[] typeParams);
+    public abstract F3FunctionType makeFunctionType(F3Type[] argTypes, F3Type returnType);
+
+    public F3Type[] subst(F3Type[] params) {
+        boolean needSubst = false;
+        F3Type substituted = null;
+        int k = -1;
+        for (int i = 0; i < params.length; i++) {
+            if ((substituted = subst(params[i])) != params[i]) {
+                k = i;
+                needSubst = true;
+                break;
+            }
+        }
+        if (needSubst) {
+            F3Type[] result = new F3Type[params.length];
+            for (int i = 0; i < params.length; i++) {
+                result[i] = k == i ? substituted : subst(params[i]);
+            }
+            return result;
+        }
+        return params;
     }
 
     public F3PrimitiveType getPrimitiveType(String typeName) {

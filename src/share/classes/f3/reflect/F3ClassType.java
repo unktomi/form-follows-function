@@ -65,9 +65,9 @@ public abstract class F3ClassType extends F3Type implements F3Member {
         if (n == null)
             n = "<anonymous>";
         n = "class "+n;
-        F3Type[] targs = getTypeParameters();
+        F3Type[] targs = getTypeArguments();
         if (targs == null || targs.length == 0) {
-            targs = getTypeArguments();
+            targs = getTypeParameters();
         }
         if (targs != null && targs.length > 0) {
             n += " of (";
@@ -97,6 +97,8 @@ public abstract class F3ClassType extends F3Type implements F3Member {
     public F3ClassType getGenericBase() {
         return this;
     }
+
+    public abstract boolean isParameterized();
 
     public abstract F3Type[] getTypeArguments();
     public abstract F3Type[] getTypeParameters();

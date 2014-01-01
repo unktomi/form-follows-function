@@ -80,9 +80,27 @@ public class F3Local {
         public static Context getInstance() { return instance; }
 
         public F3ClassType instantiateType(final F3ClassType base, final F3Type[] typeParams) {
-            return new F3ClassType(base.getReflectionContext(), base.modifiers) {
+            final F3Type[] orig = base.getTypeParameters();
+            return new F3ClassType(new F3Local.Context() {
+                    {
+                        for (int i = 0; i < orig.length; i++) {
+                            F3Type t = orig[i];
+                            typeMap.put(t, typeParams[i]);
+                        }
+                    }
+                    public F3Type subst(F3Type type) {
+                        F3Type mapped = typeMap.get(type);
+                        if (mapped == null) {
+                            return base.getReflectionContext().subst(type);
+                        }
+                        return mapped;
+                    }
+                }, base.modifiers) {
                 { 
                     name = base.getName();
+                }
+                public boolean isParameterized() {
+                    return true;
                 }
                 public boolean isGenericInstance() {
                     return true;
@@ -91,10 +109,10 @@ public class F3Local {
                     return base;
                 }
                 public F3Type[] getTypeArguments() {
-                    return base.getTypeArguments();
+                    return typeParams;
                 }
                 public F3Type[] getTypeParameters() {
-                    return typeParams;
+                    return base.getTypeParameters();
                 }
                 public List<F3ClassType> getSuperClasses(boolean all) {
                     return base.getSuperClasses(all);
@@ -304,7 +322,6 @@ public class F3Local {
                         if (clsInterface == null) throw new RuntimeException("Missing mixin interface " + intfName);
                     }
                 }
- 
                 return new ClassType(this, modifiers, cls, clsInterface, type);
             }
             catch (RuntimeException ex) {
@@ -396,6 +413,10 @@ public class F3Local {
                 result[i] = F3Local.getContext().makeTypeRef(tvars[i]);
             }
             return result;
+        }
+
+        public boolean isParameterized() {
+            return (type instanceof ParameterizedType);
         }
 
 	public Type getType() { return type; }
