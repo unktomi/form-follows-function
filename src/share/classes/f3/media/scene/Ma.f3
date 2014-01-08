@@ -441,7 +441,16 @@ class MaModel
     function toShader from (n is MAbstractShader) to Shader
     {
         if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
-                const shader = n.toShader(this);
+                var shader = n.toShader(this);
+                if (shader == null) {
+                    shader = 
+                        effectLoader.loadDefaultShader(null,
+                                                       Color.GRAY,
+                                                       Color.BLACK,
+                                                       Color.BLACK,
+                                                       Color.BLACK,
+                                                       0);
+                }
                 shaderMap.put(n, shader);
             }
     }
@@ -1740,8 +1749,11 @@ class MSkinCluster is MMeshDeformer {
                 var influences is Number[];
                 for (w in list.w) {
                     if (w <> 0) {
-                        insert jointIndexMap.get(indexof w) into influences;
-                        insert w into influences;
+                        const v = jointIndexMap.get(indexof w);
+                        if (v <> null) {
+                            insert v into influences;
+                            insert w into influences;
+                        }
                     }
                 }
                 if (influences.size() > 0) {

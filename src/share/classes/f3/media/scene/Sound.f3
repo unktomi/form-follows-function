@@ -74,6 +74,7 @@ public class Clip is TimeNode {
     {
         super.update(sceneTime);
         sound.paused = pausedInScene or not isPlaying();
+        sound.update();
     }
 
     const disp1 = observeStart().subscribe(function from (_ is ()) to () {

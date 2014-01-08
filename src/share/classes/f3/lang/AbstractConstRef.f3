@@ -1,7 +1,7 @@
 package f3.lang;
 
-public abstract class AbstractConstRef of a is ConstRef of a {
-
+public abstract class AbstractConstRef of a is ConstRef of a 
+{
     public override function map of b 
 	from (f is function from a to b) 
 	to ConstRef of b 

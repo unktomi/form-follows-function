@@ -60,15 +60,15 @@ public function IfNot from (xs is Observable of Boolean) to Observable of (())
 }
 
 public class ThenElse {
-    public const Then is Observable of (());
-    public const Else is Observable of (());
+    public const Yes is Observable of (());
+    public const No is Observable of (());
 }
 
 public function IfThenElse from (xs is Observable of Boolean) to ThenElse
 {
     ThenElse {
-        Then: If(xs);
-        Else: IfNot(xs);
+        Yes: If(xs);
+        No: IfNot(xs);
     }
 }
 
