@@ -1702,6 +1702,7 @@ class JoglImageLoader is ImageLoader {
 public class DrawInfo {
     public var shader is Shader;
     public var worldBounds is Bounds;
+    public var scissorBounds is Bounds;
     public const shaderParams = new java.util.HashMap of (String, Object);
     public var mesh is AbstractMesh;
 }
@@ -1780,7 +1781,7 @@ public class StageRenderer {
             }
 	    sceneRenderers = 
 		foreach (scene in stage.content) {
-                var s = SceneRenderer {};
+                var s = SceneRenderer {gl:gl};
                 s.scene = scene;
                 s.parent = parent;
                 s
@@ -1824,7 +1825,7 @@ class SurfaceRenderer is StageRenderer {
 }
 
 public class SceneRenderer {
-
+    var gl is GL2;
     var phongShader is Shader;
     var transparentToDraw = new java.util.ArrayList of MeshNode;
     var last2DDraw = new java.util.ArrayList of MeshNode;
@@ -1951,7 +1952,8 @@ public class SceneRenderer {
 		    par = par.parent;
 		}
 		par = n.parent;
-		while (par <> null and not (par is Stage)) {
+                var scissorBounds is Bounds = null;
+		if (scene.camera is Camera2D) while (par <> null and not (par is Stage)) {
 		    if (par is Scissored) {
                         const sciss = (par as Scissored).scissorBounds;
                         if (sciss != null) {
@@ -1960,7 +1962,15 @@ public class SceneRenderer {
                                 if (debug) {
                                     println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
                                 }
+                                if (lastDrawn.containsKey(n)) {
+                                    dirty = true;
+                                }
                                 return;
+                            }
+                            if (scissorBounds == null) {
+                                scissorBounds = sb;
+                            } else {
+                                scissorBounds = Bounds.intersect(sb, scissorBounds);
                             }
                         }
 		    }
@@ -2058,6 +2068,9 @@ public class SceneRenderer {
 					println("is dirty: {mn}");
 				    }
 				}
+                                if (info.scissorBounds <> scissorBounds) {
+                                    dirty = true;
+                                }
 				if (info.shader <> mn.shader) {
 				    dirty = true;
 				    if (DEBUG_DRAW) {
@@ -2082,6 +2095,7 @@ public class SceneRenderer {
 			info.mesh = mn.mesh;
 			info.shader = mn.shader;
 			info.worldBounds = mn.boundsInScene;
+                        info.scissorBounds = scissorBounds;
 			const key = mn;
 			if (info is TextDrawInfo) {
 			    const ti = info as TextDrawInfo;
@@ -2106,6 +2120,7 @@ public class SceneRenderer {
 			    opaqueToDraw.add(mn);
 			    opaqueTris += tris;
 			}
+                        info.scissorBounds = scissorBounds;
 			for (i in (mn.shader as CGFXShader).parameters) {
 			    info.shaderParams.put(i.name, i.get());
 			}
@@ -2232,6 +2247,7 @@ public class SceneRenderer {
 		transparentToDraw.add(r.meshNode);
 	    } 
 	}
+        disableScissorTest();
         if (scene.background.opacity <> 0) {
             const bg = scene.background;
 	    //println("clearing {bg}");
@@ -2316,6 +2332,7 @@ public class SceneRenderer {
 	*/
 	var prev is Node = null;
 	gl.glDisable(GL.GL_SCISSOR_TEST);
+        currentScissor = null;
 	gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
         for (n in toDraw) {
 	    prev = n;
@@ -2327,6 +2344,26 @@ public class SceneRenderer {
             }
         }
     }
+    
+    var scissoring is Boolean;
+
+    function enableScissorTest to ()
+    {
+        if (not scissoring) {
+            scissoring = true;
+            gl.glEnable(GL.GL_SCISSOR_TEST);
+        }
+    }
+
+    function disableScissorTest to ()
+    {
+        if (scissoring) {
+            scissoring = false;
+            gl.glDisable(GL.GL_SCISSOR_TEST);
+        }
+    }
+        
+
 
     function draw1 from (gl is GL2,
                          sceneParent is Node,
@@ -2350,25 +2387,31 @@ public class SceneRenderer {
 	    }
 	    var scissor is Node = null;
 	    var mp = n.parent;
+            var sbounds is Bounds = null;
 	    while (mp <> null and not (mp is Stage)) {
 		if (mp instanceof Scissored and (mp as Scissored).scissorBounds <> null) {
-		    scissor = mp;
-		    break;
+                    if (scissor <> null) {
+                        sbounds = Bounds.intersect(sbounds, mp.toSceneTransform * (scissor as Scissored).scissorBounds);                        
+                    } else {
+                        scissor = mp;
+                        sbounds = mp.toSceneTransform * (scissor as Scissored).scissorBounds;
+                    }
 		}
 		mp = mp.parent;
 	    }
 	    if (scissor <> currentScissor) {
 		currentScissor = scissor;
-		if (false and scissor <> null) {
-		    const bounds = scissor.toSceneTransform  * (scissor as Scissored).scissorBounds;
+		if (camera is Camera2D and scissor <> null) {
+		    const bounds = sbounds;
 		    const sb = camera.toScreen(bounds);
-		    gl.glEnable(GL.GL_SCISSOR_TEST);
+                    //println("scissoring: {scissor} => {sb}");
+		    enableScissorTest();
 		    gl.glScissor(sb.center.x - sb.extent.x,
 				 camera.height-sb.center.y-sb.extent.y,
 				 sb.extent.x*2,
 				 sb.extent.y*2);
 		} else {
-		    gl.glDisable(GL.GL_SCISSOR_TEST);
+		    disableScissorTest();
 		}
 	    }
 
