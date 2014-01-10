@@ -5,6 +5,7 @@ import f3.lang.Ref;
 import java.lang.Math;
 //import org.f3.runtime.*;
 import f3.media.scene.KeyFrame.Key;
+import f3.media.scene.KeyFrame.Interpolator;
 
 package var DEBUG = java.lang.Boolean.getBoolean("f3.debug.anim");
 
@@ -43,22 +44,40 @@ public class Channel of a is TimeNode
 	return r;
     }
 
-    public function createKey from (t is Duration, value is a) to Key of a {
+    public function createKey from (t is Duration, value is a, interpolator is Interpolator of a) to Key of a 
+    {
         Key of a {
             position: t;
             value: value;
+            interpolator: interpolator;
         }
     }
 
-    public function setKey to () 
+    public function setKey from (interpolator is Interpolator of a) to Key of a
+    {
+        setKey(localTime, interpolator)
+    }
+
+    public function moveKey from (k is Key of a, delta is Duration) to Key of a
+    {
+        delete k from keys;
+        const newKey = createKey(k.position + delta, k.value, k.interpolator);
+        insert newKey into keys;
+        return newKey;
+    }
+
+    public function setKey from (localTime is Duration, interpolator is Interpolator of a) to Key of a
     {
         const value = targets[0].get();
         const t = localTime;
         const k = pickKey(t);
-        if (k <> null) {
+        if (k <> null and k.position == t) {
             delete k from keys;
         }
-        insert createKey(t, value) into keys;
+        println("creating key: {id} {t} => {value}");
+        const newKey = createKey(t, value, interpolator); 
+        insert newKey into keys;
+        return newKey;
     }
 
     public function pickKeyIndex from (point is Duration) to Integer

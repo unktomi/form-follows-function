@@ -19,7 +19,7 @@ public class Timeline
 	if (Channel.DEBUG) {
 	    println("interpolating {foreach (x in channels) "{x}, "}");
 	}
-	for (ch in channels where ch.sceneBlendWeight > 0.0) 
+	for (ch in channels where ch.sceneBlendWeight > 0.0 and ch.keys.size() > 1) 
 	{
 	    for (target0 in ch.targets) {
 		const target = target0 as Ref of Object;
@@ -85,6 +85,8 @@ public class Timeline
 
     public var debug is Boolean;
 
+    public var enabled is Boolean = true;
+
     public function setPlayhead
 	from (sceneTime is Duration) 
 	to () 
@@ -95,8 +97,10 @@ public class Timeline
 	playhead = sceneTime;
 	root.updateParent();
         underPlayhead = pick(sceneTime);
-	const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
-	interpolateChannels(chs, sceneTime);
+        if (enabled) {
+            const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
+            interpolateChannels(chs, sceneTime);
+        }
         root.visit(function from (n is TimeNode) to () 
 		   { 
 		       n.update(sceneTime);
