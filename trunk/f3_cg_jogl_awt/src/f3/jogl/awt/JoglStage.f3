@@ -50,6 +50,18 @@ function checkMesh from (mn is MeshNode) to Boolean
     var result = true;
     try {
         mn.mesh.getIndexBuffer();
+        const b = mn.boundsInScene;
+        if (Number.isNaN(b.center.x) or
+            Number.isNaN(b.center.y) or
+            Number.isNaN(b.center.z) or
+            Number.isNaN(b.extent.x) or
+            Number.isNaN(b.extent.y) or
+            Number.isNaN(b.extent.z)) 
+            {
+                println("invalid bounds: {mn}: {b}");
+                return false;
+            }
+            
     } catch (e is java.lang.RuntimeException) {
         var p = mn.parent;
         while (p <> null) {
@@ -2066,7 +2078,11 @@ public class SceneRenderer {
 				    info.worldBounds <> mn.boundsInScene) {
 				    dirty = true;
 				    if (DEBUG_DRAW) {
-					println("is dirty: {mn}");
+                                        if (info.mesh <> mn.mesh) {
+                                            println("dirty due to new mesh {mn}");
+                                        } else {
+                                            println("dirty due to bounds change {mn}, {info.worldBounds} {mn.boundsInScene}");
+                                        }
 				    }
 				}
                                 if (info.scissorBounds <> scissorBounds) {
