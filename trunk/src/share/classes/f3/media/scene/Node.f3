@@ -154,7 +154,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget
 
     var focusHandler is Focusable;
 
-    function getFocusable() to Focusable 
+    protected function getFocusable to Focusable 
     {
         if (this is Focusable) then this as Focusable 
             else 
