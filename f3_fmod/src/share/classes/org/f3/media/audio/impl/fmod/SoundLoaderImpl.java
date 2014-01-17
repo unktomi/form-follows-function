@@ -10,6 +10,56 @@ public class SoundLoaderImpl implements SoundLoader {
     FmodAudioSystemFactory fac = new FmodAudioSystemFactory();
     AudioSystem sys;
 
+    
+    final AbstractSoundListener listener = new AbstractSoundListener() {
+            public void setLocation(Point3 pos) {
+                sys.getListener().setLocation(pos);
+            }
+            public void setLocation(float x, float y, float z) {
+                sys.getListener().setLocation(x, y, z);
+            }
+            public Point3 getLocation() {
+                return sys.getListener().getLocation();
+            }
+            public void setVelocity(Vec3 velocity) {
+                sys.getListener().setVelocity(velocity);
+            }
+            public void setVelocity(float x, float y, float z) {
+                sys.getListener().setVelocity(x, y, z);
+            }
+            public Vec3 getVelocity() {
+                return sys.getListener().getVelocity();
+            }
+            public void setForwardOrientation(Vec3 vec) {
+                sys.getListener().setForwardOrientation(vec);
+            }
+            public void setForwardOrientation(float x, float y, float z) {
+                sys.getListener().setForwardOrientation(x, y, z);
+            }
+            public Vec3 getForwardOrientation() {
+                return sys.getListener().getForwardOrientation();
+            }
+            public void setUpwardOrientation(Vec3 vec) {
+                sys.getListener().setUpwardOrientation(vec);
+            }
+            public void setUpwardOrientation(float x, float y, float z) {
+                sys.getListener().setUpwardOrientation(x, y, z);
+            }
+            public Vec3 getUpwardOrientation() {
+                return sys.getListener().getUpwardOrientation();
+            }
+            public void setWorldScale(float x, float y, float z) {
+                sys.getListener().setWorldScale(x, y, z);
+            }
+            public Tuple3 getWorldScale() {
+                return sys.getListener().getWorldScale();
+            }
+        };
+
+    public AbstractSoundListener getListener() {
+        return listener;
+    }
+
     AudioSystem getAudioSystem() {
         if (sys == null) {
             sys = fac.createAudioSystem();

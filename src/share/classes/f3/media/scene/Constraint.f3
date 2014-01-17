@@ -1,0 +1,136 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+
+public class Source 
+{
+    public var weight is Number = 1.0;
+    public var node is Node;
+}
+
+public abstract class Constraint 
+{
+    public var sources is Source[];
+    public readonly var transform is Mat4 = Mat4.<<1>>;
+}
+
+public class PointConstraint is Constraint 
+{
+    public readonly var translation is Point3 = bind sum(sources, Point3.<<0>>, 0.0);
+    override var transform = bind translate(translation);
+
+    bound function sum 
+	from (sources is Source[], pt is Point3, w is Number) 
+	to Point3 
+    {
+	if (sources == []) then pt / w else {
+		var x = sources[0];
+		var xs = sources[1..];
+		var xw = x.weight;
+		var dummy = sum(xs, 
+				pt + x.node.toSceneTransform.getTranslation() * xw, 
+				w + xw);
+	    }
+    }
+}
+
+public class OrientConstraint is Constraint 
+{
+    public readonly var rotation is Quat = bind sum(sources, [], [], 0.0);
+    override var transform = bind rotation.toMat4();
+
+    bound function sum 
+	from (sources is Source[], 
+	      acc is Quat[], 
+	      ws is Number[], 
+	      w is Number) 
+	to Quat 
+    {
+	if (sources == []) then sum(acc, ws, w) else {
+		var x = sources[0];
+		var xs = sources[1..];
+		var dummy = sum(xs, 
+				[acc, x.node.toSceneTransform.getRotation()], 
+				[ws, x.weight], 
+				w + x.weight);
+	    }
+    }
+    
+    function sum 
+	from (acc is Quat[], ws is Number[], w is Number) 
+	to Quat
+    {
+	var q0 = acc[0];
+	for (q1 in acc[1..]) {
+	    q0 = q0.slerp(q1, ws[indexof q1] / w);
+	}
+	return q0;
+    }
+}
+
+public class ParentConstraint is Constraint 
+{
+    override var transform = bind {
+	var source0 = sources[0];
+	var n0 = source0.node;
+	var m0 = n0.toSceneTransform;
+	var t0 = m0.getTranslation();
+	var q0 = m0.getRotation();
+	var dummy = sum(sources[1..], t0, q0);
+    }
+
+    bound function sum 
+	from (sources is Source[], t is Point3, rot is Quat) 
+	to Mat4 
+    {
+        if (sources == []) {
+            matrix(rot, t);
+        }  else {
+            var x = sources[0];
+            var xs = sources[1..];
+            var m = x.node.toSceneTransform;
+            var w = x.weight;
+	    var dummy = sum(xs, 
+			    t + m.getTranslation() * w,
+			    rot.slerp(m.getRotation(), w));
+	}
+    }
+}
+
+public class AimConstraint is Constraint 
+{
+    public var pivot is Point3 = Point3.<<0>>;
+    public var aimVector is Vec3 = Vec3.Z_AXIS;
+    public var localUpVector is Vec3 = Vec3.Y_AXIS;
+    public var sceneUpVector is Vec3 = Vec3.Y_AXIS;
+    public var toSceneTransform is Mat4 = Mat4.<<1>>;
+    const pointConstraint = PointConstraint {
+	sources: bind sources;
+    }
+    public override var transform = bind 
+	toSceneTransform.inverse() * aim(toSceneTransform,
+					 pivot,
+					 pointConstraint.transform.getTranslation(),
+					 aimVector,
+					 localUpVector,
+					 sceneUpVector);
+    function aim 
+	from (toSceneTransform is Mat4,
+	      pivot is Point3, // in local space
+	      target is Point3, // in scene space
+	      aimVector is Vec3, // in local space
+	      localUpVector is Vec3, // in local space
+	      sceneUpVector is Vec3)
+	to Mat4
+    {
+	const targetDir = target - toSceneTransform * pivot;
+	const aimInScene = toSceneTransform * aimVector;
+	const rot = aimInScene.rotationTo(targetDir);
+	const preferredUp = rot * (toSceneTransform * localUpVector);
+	const origin = Point3.<<0>>;
+	const p0 = origin + preferredUp;
+	const p1 = origin + preferredUp.project(targetDir);
+	const p2 = origin + sceneUpVector.project(targetDir);
+	return (rot * (p0-p1).rotationTo(p0-p2)).toMat4();
+    }
+}

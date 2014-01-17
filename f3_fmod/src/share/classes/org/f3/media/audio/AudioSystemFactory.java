@@ -15,6 +15,5 @@ public interface AudioSystemFactory {
 
     public AudioSystem createAudioSystem();
 
-
     public AudioDriver[] getAudioDrivers();
 }

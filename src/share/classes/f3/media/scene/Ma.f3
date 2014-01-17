@@ -94,6 +94,14 @@ class MaModel
                 then MSkinCluster {name: name}
             else if (nodeType == "groupParts") 
                 then MGroupParts {name: name}
+            else if (nodeType == "pointConstraint") 
+                then MPointConstraint {name: name}
+            else if (nodeType == "parentConstraint") 
+                then MParentConstraint {name: name}
+            else if (nodeType == "orientConstraint") 
+                then MOrientConstraint {name: name}
+            else if (nodeType == "aimConstraint") 
+                then MAimConstraint {name: name}
             else if (nodeType == "tweak") 
                 then MTweak {name: name}
             else if (nodeType == "script") {
@@ -181,6 +189,9 @@ class MaModel
     const spatialMap is java.util.Map of (MNode, Node) = 
         new java.util.HashMap of (MNode, Node) ();
 
+    const constraintMap is java.util.Map of (MNode, Constraint) = 
+        new java.util.HashMap of (MNode, Constraint) ();
+
     const temporalMap is java.util.Map of (MNode, TimeNode) = 
         new java.util.HashMap of (MNode, TimeNode) ();
 
@@ -216,6 +227,13 @@ class MaModel
         if spatialMap.containsKey(n)
             then spatialMap.get(n) 
             else spatialMap.put(n, n.toNode(this))
+    }
+
+    function toConstraint from (n is MConstraint) to Constraint 
+    {
+        if constraintMap.containsKey(n)
+            then constraintMap.get(n) 
+            else constraintMap.put(n, n.toConstraint(this))
     }
 
     function resolveInput 
@@ -289,7 +307,7 @@ class MaModel
     {
         const target = c.targetNode;
         var key = c.targetPath;
-        const attr = target.attrs.get(key); 
+        const attr = if (target is MConstraint) then null else target.attrs.get(key); 
         var attrType is String;
         var parentAttrType is String;
         if (attr <> null) {
@@ -313,6 +331,9 @@ class MaModel
             (target as MBlendShape).resolveTargetPointer(this, c)
         } else if (target instanceof MSpatial) {
             const resolved = toNode(target as MSpatial);
+            target.getPointer(key, resolved);
+        } else if (target instanceof MConstraint) {
+            const resolved = toConstraint(target as MConstraint);
             target.getPointer(key, resolved);
         } else if (target instanceof MAbstractShader) {
             const resolved = toShader(target as MAbstractShader);
@@ -393,6 +414,9 @@ class MaModel
             (target as MCharacter).resolveSourcePointer(this, c)
         } else if (target instanceof MSpatial) {
             const resolved = toNode(target as MSpatial);
+            target.getPointer(c.sourcePath, resolved);
+        } else if (target instanceof MConstraint) {
+            const resolved = toConstraint(target as MConstraint);
             target.getPointer(c.sourcePath, resolved);
         } else if (target instanceof MAbstractShader) {
             const resolved = toShader(target as MAbstractShader);
@@ -542,6 +566,8 @@ class MaModel
             const r = 
                 if (n is MSpatial) {
                     toNode(n as MSpatial)
+                } else if (n is MConstraint) {
+                    toConstraint(n as MConstraint)
                 } else if (n is MAnimCurve) {
                     toChannel(n as MAnimCurve, false);
                 } else if (n instanceof MClipLibrary) {
@@ -3402,6 +3428,16 @@ class Command
         vector(getFloat(1), getFloat(2), getFloat(3))
     }
 
+    public function getTuple3 to Tuple3
+    {
+        tuple(getFloat(1), getFloat(2), getFloat(3))
+    }
+
+    public function getPoint3 to Point3 
+    {
+        point(getFloat(1), getFloat(2), getFloat(3))
+    }
+
     public function getVec2 to Vec2 
     {
         vector(getFloat(1), getFloat(2));
@@ -3670,14 +3706,14 @@ public class MaTransform is Group
     }
 
     // translation
-    public readonly var t is Tuple3 = bind tuple(tx, ty, tz);
+    public readonly var t is Point3 = bind point(tx, ty, tz);
     // rotation
     public readonly var r is Mat4 = bind rotate(rx, ry, rz, ro);
     // scale
     public readonly var s is Tuple3 = bind tuple(sx, sy, sz);
     
     override var transform = 
-        bind 
+        bind if (constraint <> null) then constraint.transform else
         translate(tx+rpx+rptx, 
                   ty+rpy+rpty, 
                   tz+rpz+rptz) * 
@@ -3689,6 +3725,9 @@ public class MaTransform is Group
         translate(-spx, 
                   -spy, 
                   -spz);
+
+   public var constraint is Constraint;
+
 }
 
 public class Joint is MaTransform {
@@ -3760,6 +3799,178 @@ public class Joint is MaTransform {
     {
         const q = Quat { x: x, y: y, z: z, w: w };
         ikr = (Quat.Quat(toSceneTransform.inverse()) * q  * getPreferredRotation()).toMat4();
+    }
+}
+
+abstract class MConstraint is MNode {
+    var targets is MTransform[];
+    var erp is Boolean;
+    var rst is Vec3;
+
+    protected const sourceMap = new java.util.HashMap of (String, Constraint.Source);
+
+    abstract function toConstraint from (m is MaModel) to Constraint;
+
+    public override function getPointer from (ptr is String, resolved is Object) to Ref of ?
+    {
+        println("GET POINTER {ptr} => {sourceMap.get(ptr)}");
+        println("source map: {sourceMap}");
+        &sourceMap.get(ptr).weight;
+    }
+}
+
+class MPointConstraint is MConstraint {
+
+    override function toConstraint from (m is MaModel) to Constraint 
+    {
+        var contextNode is MNode;
+        for (c in connectionsFromThis.get("ctx")) {
+            contextNode = c.targetNode;
+        }
+        const constraint = Constraint.PointConstraint {}
+        println("toConstraint: {connectionsToThis}");
+        for (i in [0..<10]) {
+            var sourceNode is MNode;
+            var w is String;
+            for (conn in connectionsToThis.get("tg")) {
+                if (conn.targetPath == "tg[{i}].tw") {
+                    w = conn.sourcePath;
+                } else if (conn.targetPath == "tg[{i}].tt") {
+                    sourceNode = conn.sourceNode;
+                }
+            }
+            if (sourceNode == null) break;
+            const source = Constraint.Source {
+                weight: 1.0;// @TODO
+            }
+            sourceMap.put(w, source);
+            source.node = m.toNode(sourceNode as MSpatial);
+            insert source into constraint.sources;
+        }
+        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
+        tn.constraint = constraint;
+        return constraint;
+    }
+}
+
+class MOrientConstraint is MConstraint {
+    override function toConstraint from (m is MaModel) to Constraint 
+    {
+        var contextNode is MNode;
+        for (c in connectionsFromThis.get("crx")) {
+            contextNode = c.targetNode;
+        }
+        const constraint = Constraint.OrientConstraint {}
+        for (i in [0..<10]) {
+            var sourceNode is MNode;
+            var w is String;
+            for (conn in connectionsToThis.get("tg")) {
+                if (conn.targetPath == "tg[{i}].tw") {
+                    w = conn.sourcePath;
+                } else if (conn.targetPath == "tg[{i}].tr") {
+                    sourceNode = conn.sourceNode;
+                }
+            }
+            if (sourceNode == null) break;
+            const source = Constraint.Source {
+                weight: 1.0;// @TODO
+            }
+            sourceMap.put(w, source);
+            source.node = m.toNode(sourceNode as MSpatial);
+            insert source into constraint.sources;
+        }
+        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
+        tn.constraint = constraint;
+        return constraint;
+    }
+}
+
+class MParentConstraint is MConstraint {
+    override function toConstraint from (m is MaModel) to Constraint 
+    {
+        var contextNode is MNode;
+        for (c in connectionsFromThis.get("crx")) {
+            contextNode = c.targetNode;
+        }
+        const constraint = Constraint.ParentConstraint {}
+        for (i in [0..<10]) {
+            var sourceNode is MNode;
+            var w is String;
+            for (conn in connectionsToThis.get("tg")) {
+                if (conn.targetPath == "tg[{i}].tw") {
+                    w = conn.sourcePath;
+                } else if (conn.targetPath == "tg[{i}].tr") {
+                    sourceNode = conn.sourceNode;
+                }
+            }
+            if (sourceNode == null) break;
+            const source = Constraint.Source {
+                weight: 1.0;// @TODO
+            }
+            sourceMap.put(w, source);
+            source.node = m.toNode(sourceNode as MSpatial);
+            insert source into constraint.sources;
+        }
+        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
+        tn.constraint = constraint;
+        return constraint;
+    }
+}
+
+class MAimConstraint is MConstraint {
+    var a is Vec3 = new Vec3(1, 0, 0);
+    var u is Vec3 = new Vec3(0, 1, 0);
+    var wu is Vec3 = new Vec3(0, 1, 0);
+    var rsrr is Tuple3;
+    var o is Tuple3;
+    override function setAttr from (cmd is Command) to () {
+        const n = cmd.getAttr();
+        if (n == "a") {
+            a = cmd.getVec3();
+        } else if (n == "u") {
+            u = cmd.getVec3();
+        } else if (n == "wu") { 
+            wu = cmd.getVec3();
+        } else if (n == "rsrr") {
+            rsrr = cmd.getTuple3();
+        } else if (n == "o") {
+            o = cmd.getTuple3();
+        } else super.setAttr(cmd);
+    }
+    override function toConstraint from (m is MaModel) to Constraint 
+    {
+        var contextNode is MNode;
+        for (c in connectionsFromThis.get("crx")) {
+            contextNode = c.targetNode;
+        }
+        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
+        const constraint = Constraint.AimConstraint {
+            toSceneTransform: bind tn.parent.toSceneTransform;
+            aimVector: a;
+            localUpVector: u;
+            sceneUpVector: wu;
+        }
+        for (i in [0..<10]) {
+            var sourceNode is MNode;
+            var w is String;
+            for (conn in connectionsToThis.get("tg")) {
+                if (conn.targetPath == "tg[{i}].tw") {
+                    w = conn.sourcePath;
+                } else if (conn.targetPath == "tg[{i}].tt") {
+                    sourceNode = conn.sourceNode;
+                }
+            }
+            if (sourceNode == null) break;
+            const source = Constraint.Source {
+                weight: 1.0;// @TODO
+            }
+            sourceMap.put(w, source);
+            source.node = m.toNode(sourceNode as MSpatial);
+            insert source into constraint.sources;
+        }
+        println("aim constraint => {sourceMap}");
+        tn.constraint = constraint;
+        return constraint;
     }
 }
 

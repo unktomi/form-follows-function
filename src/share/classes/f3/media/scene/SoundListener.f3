@@ -1,0 +1,17 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class SoundListener is AbstractNode {
+    public const soundLoader is SoundLoader;
+    public var listener = bind soundLoader.getListener();
+    override function update to ()
+    {
+        super.update();
+        const t = toSceneTransform;
+        listener.setLocation(t.getTranslation());
+        listener.setForwardOrientation(t * Vec3.Z_AXIS);
+        listener.setUpwardOrientation(t * Vec3.Y_AXIS);
+        const s = t.getScale();
+        listener.setWorldScale(s.x, s.y, s.z);
+    }
+}
