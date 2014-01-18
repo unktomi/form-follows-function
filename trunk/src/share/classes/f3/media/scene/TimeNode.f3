@@ -25,7 +25,7 @@ public abstract class TimeNode is Foldable of TimeNode
 
     public bound function hasIndefiniteDuration to Boolean 
     {
-        (parent <> null and parent.hasIndefiniteDuration()) or playCount < 0 or contentBounds.duration() == 0s;
+         playCount < 0 or contentBounds.duration() == 0s or (parent <> null and parent.hasIndefiniteDuration())
     }
 
     public var blendWeight is Number = 1.0;

@@ -215,7 +215,7 @@ function createParameter
     const name = p.getName();
     const ptype = p.getType();
     const sem = p.getSemantic().toUpperCase();
-    //println("creating parameter {name} {ptype} {sem} in {shader}");
+    println("creating parameter {name} {ptype} {sem} in {shader}");
     if (ptype == "bool") {
         BoolParameter {
             parameter: p;
@@ -334,7 +334,7 @@ public class CGFXShader is Shader
     }
 
     override function toString to String {
-        "CGFXShader {url} {technique}";
+        "{super.toString()} {url} {technique}";
     }
 
     protected readonly var effect is CGFX.Effect = bind createEffect(url, technique);

@@ -76,8 +76,10 @@ public class ParentConstraint is Constraint
 	var m0 = n0.toSceneTransform;
 	var t0 = m0.getTranslation();
 	var q0 = m0.getRotation();
-	var dummy = sum(sources[1..], t0, q0);
+	var dummy = toSceneTransform.inverse() * sum(sources[1..], t0, q0);
     }
+
+    public var toSceneTransform is Mat4;
 
     bound function sum 
 	from (sources is Source[], t is Point3, rot is Quat) 
@@ -104,16 +106,19 @@ public class AimConstraint is Constraint
     public var localUpVector is Vec3 = Vec3.Y_AXIS;
     public var sceneUpVector is Vec3 = Vec3.Y_AXIS;
     public var toSceneTransform is Mat4 = Mat4.<<1>>;
+
     const pointConstraint = PointConstraint {
 	sources: bind sources;
     }
+
     public override var transform = bind 
-	toSceneTransform.inverse() * aim(toSceneTransform,
-					 pivot,
-					 pointConstraint.transform.getTranslation(),
-					 aimVector,
-					 localUpVector,
-					 sceneUpVector);
+	aim(toSceneTransform,
+            pivot,
+            pointConstraint.transform.getTranslation(),
+            aimVector,
+            localUpVector,
+            sceneUpVector);
+
     function aim 
 	from (toSceneTransform is Mat4,
 	      pivot is Point3, // in local space
@@ -123,14 +128,26 @@ public class AimConstraint is Constraint
 	      sceneUpVector is Vec3)
 	to Mat4
     {
-	const targetDir = target - toSceneTransform * pivot;
-	const aimInScene = toSceneTransform * aimVector;
+	const targetDir is Vec3 = target - toSceneTransform * pivot;
+	const aimInScene = (toSceneTransform * aimVector).normalize();
 	const rot = aimInScene.rotationTo(targetDir);
-	const preferredUp = rot * (toSceneTransform * localUpVector);
-	const origin = Point3.<<0>>;
-	const p0 = origin + preferredUp;
-	const p1 = origin + preferredUp.project(targetDir);
-	const p2 = origin + sceneUpVector.project(targetDir);
-	return (rot * (p0-p1).rotationTo(p0-p2)).toMat4();
+	const preferredUp is Vec3 = (rot * (toSceneTransform * localUpVector)).normalize();
+        const targetDirectionLengthSquared = targetDir.lengthSquared();
+        // Component of desiredWorldUp orthogonal to direction vector
+        const dot1 = preferredUp.dot(targetDir);
+        const vecS is Vec3 = preferredUp - (targetDir * (dot1 /  targetDirectionLengthSquared));
+        // Component of targetWorldUp orthogonal to direction vector
+        const dot2 = preferredUp.dot(targetDir);
+        const vecD is Vec3 = preferredUp - (targetDir * (dot2 /  targetDirectionLengthSquared));
+        // Rotation bringing these two into alignment
+        // Note use of targetDirection as preferred axis for stable results
+        // if vecS and vecD are nearly parallel but pointing in opposite directions
+        const qTwist = vecS.rotationTo(vecD, targetDir);
+        // Compute composition
+        const qTot = qTwist * rot;
+        // Transform quaternion from world space to local space for result
+        const aa = qTot.toAngleAxis();
+        const axis = aa.second;
+        Quat.Quat(aa.first, toSceneTransform.inverse() * axis).toMat4();
     }
 }

@@ -97,6 +97,11 @@ public class Timeline
 	playhead = sceneTime;
 	root.updateParent();
         underPlayhead = pick(sceneTime);
+	if (Channel.DEBUG) {
+            for (x in underPlayhead) {
+                println(x);
+            }
+        }
         if (enabled) {
             const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
             interpolateChannels(chs, sceneTime);

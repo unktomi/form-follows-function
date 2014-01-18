@@ -59,51 +59,51 @@ class MaModel
             else if (nodeType == "mesh") 
                 then MMesh {name: name, parent: findNode(parent)}
             else if (nodeType == "phong" or nodeType == "blinn" or nodeType == "lambert") 
-                then MShader {type: nodeType, name: name}
+                then MShader {type: nodeType, name: name  parent: findNode(parent)}
             else if (nodeType == "cgfxShader") 
-                then MCGFXShader {name: name}
+                then MCGFXShader {name: name parent: findNode(parent) }
             else if (nodeType == "cgfxVector") 
-                then MCGFXVector {name: name}
+                then MCGFXVector {name: name parent: findNode(parent) }
             else if (nodeType == "file") 
-                then MFile {name: name}
+                then MFile {name: name parent: findNode(parent) }
             else if (nodeType == "shadingEngine") 
-                then MShadingEngine {name: name}
+                then MShadingEngine {name: name parent: findNode(parent) }
             else if (nodeType == "pointLight") 
                 then MLight { name: name, parent: findNode(parent), type: nodeType }
             else if (nodeType.startsWith("animCurve")) 
                 then MAnimCurve__ {type: nodeType, name: name, parent: findNode(parent)}
             else if (nodeType == "character") 
-                then MCharacter {name: name}
+                then MCharacter {name: name parent: findNode(parent) }
             else if (nodeType == "animClip") 
-                then MAnimClip {name: name}
+                then MAnimClip {name: name  parent: findNode(parent)}
             else if (nodeType == "clipLibrary") 
-                then MClipLibrary {name: name}
+                then MClipLibrary {name: name  parent: findNode(parent)}
             else if (nodeType == "addDoubleLinear") 
-                then MAddDoubleLinear {name: name}
+                then MAddDoubleLinear {name: name  parent: findNode(parent)}
             else if (nodeType == "plusMinusAverage") 
-                then MPlusMinusAverage {name: name}
-            else if (nodeType == "multiplyDivide") 
-                then MMultiplyDivide {name: name}
+                then MPlusMinusAverage {name: name parent: findNode(parent)}
+            else if (nodeType == "multiplyDivide" ) 
+                then MMultiplyDivide {name: name parent: findNode(parent)}
             else if (nodeType == "clamp") 
-                then MClamp {name: name}
+                then MClamp {name: name  parent: findNode(parent)}
             else if (nodeType == "reverse") 
-                then MReverse {name: name}
+                then MReverse {name: name  parent: findNode(parent)}
             else if (nodeType == "blendShape") 
-                then MBlendShape {name: name}
+                then MBlendShape {name: name  parent: findNode(parent)}
             else if (nodeType == "skinCluster") 
-                then MSkinCluster {name: name}
+                then MSkinCluster {name: name  parent: findNode(parent)}
             else if (nodeType == "groupParts") 
-                then MGroupParts {name: name}
+                then MGroupParts {name: name  parent: findNode(parent)}
             else if (nodeType == "pointConstraint") 
-                then MPointConstraint {name: name}
+                then MPointConstraint {name: name  parent: findNode(parent)}
             else if (nodeType == "parentConstraint") 
-                then MParentConstraint {name: name}
+                then MParentConstraint {name: name  parent: findNode(parent)}
             else if (nodeType == "orientConstraint") 
-                then MOrientConstraint {name: name}
+                then MOrientConstraint {name: name  parent: findNode(parent)}
             else if (nodeType == "aimConstraint") 
-                then MAimConstraint {name: name}
+                then MAimConstraint {name: name  parent: findNode(parent)}
             else if (nodeType == "tweak") 
-                then MTweak {name: name}
+                then MTweak {name: name  parent: findNode(parent)}
             else if (nodeType == "script") {
                 if (name == "sceneConfigurationScriptNode") then MSceneConfig {model: this} else null
             }
@@ -173,7 +173,8 @@ class MaModel
         const targetPath = target.substring(dot+1);
         const sourceNode = findNode(sourceName);
         const targetNode = findNode(targetName);
-        //println("connectAttr {sourceNode} => {targetNode} from {sourcePath} to {targetPath}");
+        if (sourceNode == null or targetNode == null) return;
+        println("connectAttr {sourceNode} => {targetNode} from {sourceName}.{sourcePath} to {targetName}.{targetPath}");
         const conn = 
             Connection 
             {
@@ -456,6 +457,7 @@ class MaModel
                 } else {
                     delete ch from channels;
                 }
+                println("created channel: {ch}");
                 temporalMap.put(n, ch);
             }
         }
@@ -2573,15 +2575,15 @@ class MMesh is MSpatial
             const shaderConn = connectionsFromThis.get("iog");
             const mshaderNode = 
                 if (shaderConn <> null) {
-                    println("shaderConn={shaderConn}");
-                    println("shaderConn={shaderConn[0].targetNode}");
-                    println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
-                    println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")}");
+                    //println("shaderConn={shaderConn}");
+                    //println("shaderConn={shaderConn[0].targetNode}");
+                    //println("shaderConn={shaderConn[0].targetNode.connectionsToThis}");
+                    // println("shader = {shaderConn[0].targetNode.connectionsToThis.get("ss")}");
                     const shaderNode = shaderConn[0].targetNode.connectionsToThis.get("ss");
                     if shaderNode == null then null else shaderNode[0].sourceNode as MAbstractShader;
                 } else null;
             const shader = m.toShader(mshaderNode);
-            //println("shaderNode={mshaderNode} for {name} => {shader}");
+            println("shaderNode for {this.getFullName()} ={mshaderNode.getFullName()} for {name} => {shader}");
             for (i in [0..<shader.uvMap.size()]) {
                 const unit = shader.uvMap[i];
                 if (unit == -2) { // tangent
@@ -2786,7 +2788,7 @@ class MShader is MAbstractShader
     var c is Tuple3 = tuple(0.8, 0.8, 0.8);
     var ambc is Tuple3 = Tuple3.<<0>>;
     var ic is Tuple3 = Tuple3.<<0>>;
-    var sc is Tuple3 = Tuple3.<<0>>;
+    var sc is Tuple3 = tuple(.5, .5, .5);
     var dc is Number = 0.8;
     var ec is Number = 0.3;
     var cp is Number = 20.0;
@@ -2859,7 +2861,7 @@ class MShader is MAbstractShader
         } else if (n == "ambc") {
             ambc = cmd.getVec3();
         } else if (n == "sc") {
-            sc = cmd.getVec3();
+            sc = cmd.getTuple3();
         } else if (n == "cp") {
             cp = cmd.getFloat();
         } else if (n == "ic") {
@@ -2889,8 +2891,9 @@ class MShader is MAbstractShader
         const diffuse = toColor(c.x * dc, c.y * dc, c.z * dc, alpha);
         const ambient = toColor(ambc.x, ambc.y, ambc.z, alpha);
         const emissive = toColor(ic.x, ic.y, ic.z, alpha);
-        const specular = toColor(sc.x, sc.y, sc.z, alpha);
+        const specular = if (this.type == "lambert") Color.BLACK else toColor(sc.x, sc.y, sc.z, alpha);
         const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100.0 - 99.0 * Math.sqrt(ec) else 0.0;
+        println("toShader {this.type} shininess => {shininess}");
         var image is AbstractTexture;
         var uvMap is Integer[] = [];
         for (conn in connectionsToThis.get("c")) {
@@ -3191,18 +3194,20 @@ class MAnimCurve__ is MAnimCurve of Number
                                    this.type == "animCurveUT" or
                                    this.type == "animCurveUU"); 
         const rate = if (keyTimesInSeconds) then 1s else FPS;
-        NumberChannel
-        {
-            id: name;
-            targets: targets;
-            keys: foreach (kt in ktv) {
+        const keys = foreach (kt in ktv) {
                 const adjustment = if (not keyTimesInSeconds and kt.x <> 0.0) then -1 else 0;
                 KeyFrame.Key of Number {
                     position: rate * (kt.x + adjustment);
                     value: kt.y;
                     interpolator: getInterpolator(indexof kt);
                 }
-            }
+        }
+        println("creating channel with {keys.size()} keys");
+        if (keys.size() == 0) then null else NumberChannel
+        {
+            id: name;
+            targets: targets;
+            keys: keys
         }
     }
 }
@@ -3892,7 +3897,10 @@ class MParentConstraint is MConstraint {
         for (c in connectionsFromThis.get("crx")) {
             contextNode = c.targetNode;
         }
-        const constraint = Constraint.ParentConstraint {}
+        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
+        const constraint = Constraint.ParentConstraint {
+            toSceneTransform: bind tn.parent.toSceneTransform;
+        }
         for (i in [0..<10]) {
             var sourceNode is MNode;
             var w is String;
@@ -3911,7 +3919,6 @@ class MParentConstraint is MConstraint {
             source.node = m.toNode(sourceNode as MSpatial);
             insert source into constraint.sources;
         }
-        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
         tn.constraint = constraint;
         return constraint;
     }
