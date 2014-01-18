@@ -8,7 +8,6 @@ public class TimeGroup is TimeNode
     public var content is TimeNode[] inverse parent on invalidate {
 	contentInvalid = true;
     }
-
     override var contentBounds = bind
 	Interval.merge(bnds0, 
 		       Interval.merge(bnds1, 
@@ -54,7 +53,7 @@ Interval.merge(bnds12,
     var bnds18 = bind mergeBounds(content[900..<950], null);
     var bnds19 = bind mergeBounds(content[1000..], null);
 
-    bound function mergeBounds
+    protected bound function mergeBounds
 	from (content0 is TimeNode[], 
 	      b0 is Interval)
 	to Interval 

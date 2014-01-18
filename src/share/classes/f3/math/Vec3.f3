@@ -146,6 +146,18 @@ public class Vec3 is Tuple3
 	} 
     }
 
+    public function -
+	from (v is Vec3) 
+	to Vec3
+    {
+	Vec3 
+	{ 
+	    x: x - v.x;
+	    y: y - v.y;
+	    z: z - v.z;
+	} 
+    }
+
     override public function negate 
 	to Vec3
     {
@@ -272,6 +284,7 @@ public class Vec3 is Tuple3
 	    const dot = s.dot(t) / factor;
 	    const theta = Math.acos(Math.max(-1, Math.min(dot, 1.0)));
 	    var pivot = s.cross(t);
+            println("rotation to {s} {t} dot {dot}, theta {theta} pivot {pivot}"); 
 	    if (pivot.length() > LinearMath.EPSILON) {
 		if (dot < 0.0) {
                     // Vectors parallel and opposite direction, therefore a rotation
@@ -302,8 +315,8 @@ public class Vec3 is Tuple3
                         // Use the preferred axis
                         pivot = preferredAxis;
                     }
-		    Quat.Quat(Math.toDegrees(theta), pivot);
-		} else Quat.<<1>>;
+                }
+                Quat.Quat(Math.toDegrees(theta), pivot);
 	    } else Quat.<<1>>;
 	} else Quat.<<1>>;
     }
