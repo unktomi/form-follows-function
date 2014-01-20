@@ -58,7 +58,7 @@ float fraction(float dist) {
 float computeDist(float4 pos) {
     float4 fragCoord = pos;
     fragCoord = mul(objectSpaceToUnitCircle, fragCoord);
-    float dist = length(fragCoord.xyz - focus);
+    float dist = length(fragCoord.xyz-focus);
     return dist;
 }
 
@@ -110,12 +110,10 @@ float4 pixelShaderFunctionRepeat(PixelShaderInput input) : COLOR {
 
 technique Opaque {
     pass P0 {
-	DepthTestEnable = false;
+	DepthTestEnable = true;
         DepthFunc = Less;
         DepthMask = true;
         CullFaceEnable  = false; 
-        BlendEnable = true;
-        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
     }
@@ -123,11 +121,10 @@ technique Opaque {
 
 technique Transparent {
     pass P1 {
-	DepthTestEnable = false;
         DepthMask = true;
         CullFaceEnable  = false; 
         BlendEnable = true;
-        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
+        BlendFunc = int2(One, OneMinusSrcAlpha);
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
     }

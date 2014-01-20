@@ -47,6 +47,55 @@ public class Subject of a is Observable of a, Observer of a
         }
     }
 
+    public function bindTo from (xs is Subject of a) to Disposable
+    {
+        const self = this;
+        const sub1 = subscribe(function from (x is a) to () {
+                if (x <> xs.last) {
+                    xs.onNext(x);
+                }
+            });
+        const sub2 = xs.subscribe(function from (x is a) to () {
+                if (x <> self.last) {
+                    self.onNext(x);
+                }
+            });
+        Disposable {
+            override function dispose to ()
+            {
+                sub1.dispose();
+                sub2.dispose();
+            }
+        }
+    }
+
+    public function bindTo of b 
+        from (xs is Subject of b, f is function from a to b, g is function from b to a) to Disposable
+    {
+        const self = this;
+        const sub1 = subscribe(function from (x is a) to () {
+                const y = f(x);
+                if (y <> xs.last) {
+                    xs.onNext(y);
+                }
+            });
+        const sub2 = xs.subscribe(DefaultObserver of b {
+                override function onNext from (x is b) to () {
+                    const y = g(x);
+                    if (y <> self.last) {
+                        self.onNext(y);
+                    }
+                }
+            });
+        Disposable {
+            override function dispose to ()
+            {
+                sub1.dispose();
+                sub2.dispose();
+            }
+        }
+    }
+
     var flushing is Boolean;
     var todo is (function from () to ())[];
 

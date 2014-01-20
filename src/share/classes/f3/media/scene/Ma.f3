@@ -464,21 +464,30 @@ class MaModel
         return ch;
     }
 
+    var defaultShader is Shader;
+    function getDefaultShader to Shader {
+        if (defaultShader == null) {
+            defaultShader = 
+                effectLoader.loadDefaultShader(null,
+                                               Color.GRAY,
+                                               Color.BLACK,
+                                               Color.BLACK,
+                                               Color.BLACK,
+                                               0);
+        }
+        return defaultShader;
+    }
+
     function toShader from (n is MAbstractShader) to Shader
     {
-        if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
-                var shader = n.toShader(this);
-                if (shader == null) {
-                    shader = 
-                        effectLoader.loadDefaultShader(null,
-                                                       Color.GRAY,
-                                                       Color.BLACK,
-                                                       Color.BLACK,
-                                                       Color.BLACK,
-                                                       0);
+        if (n == null) {
+            getDefaultShader();
+        } else {
+            if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
+                    var shader = n.toShader(this);
+                    shaderMap.put(n, shader);
                 }
-                shaderMap.put(n, shader);
-            }
+        }
     }
 
     function toBlendShape from (n is MBlendShape) to BlendShape {
@@ -2200,9 +2209,12 @@ class MMesh is MSpatial
                             fromStart is Boolean) to Integer 
     {
         const bwd = faceEdge < 0;
-        const i = faceEdgeIndex(faceEdge); 
-        const j = if (bwd == fromStart) then 1 else 0;
-        edges[i*3+j];
+        if (bwd) {
+            const i = faceEdgeIndex(faceEdge); 
+            edges[i*3+(if fromStart then 1 else 0)];
+        } else {
+            edges[faceEdge*3+(if fromStart then 0 else 1)];
+        }
     }
     
     function isSmooth from (faceEdge is Integer) to Boolean 
@@ -2273,44 +2285,64 @@ class MMesh is MSpatial
         const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
         for (f in polyfaces) {
             const faceIndex = indexof f;
-            for (faceEdge in f.faceEdges) {
+            for (faceEdge0 in f.faceEdges) {
+                const faceEdge = faceEdgeIndex(faceEdge0);
                 if (isSmooth(faceEdge)) {
+                    //println("found smooth edge {faceEdge}");
                     const e0 = edgeStart(faceEdge);
                     const e1 = edgeEnd(faceEdge);
-                    edgeToFace1.put(e0, [faceEdge, faceIndex]);
-                    edgeToFace1.put(e1, [faceEdge, faceIndex]);
+                    const xs = if (edgeToFace1.containsKey(e0)) then edgeToFace1.get(e0) else [];
+                    const ys = if (edgeToFace1.containsKey(e1)) then edgeToFace1.get(e1) else [];
+                    edgeToFace1.put(e0, [xs, faceEdge, faceIndex]);
+                    edgeToFace1.put(e1, [ys, faceEdge, faceIndex]);
                 }
             }
         }
+        //println("edgeToFace1  => {edgeToFace1}");
         const stack = new java.util.Stack of Integer;
         const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
+        var faceSet = new java.util.TreeSet of Integer;
         while (edgeToFace1.size() > 0) {
             const ent = edgeToFace1.pollFirstEntry();
             const edge1 = ent.getKey();
             const indices1 = ent.getValue();
-            var faces is Integer[];
-            const faceEdge = indices1[0];
-            const faceIndex = indices1[1];
-            stack.push(faceIndex);
-            stack.push(faceEdge);
-            while (not stack.isEmpty()) {
-                const faceEdge1 = stack.pop();
-                const faceIndex1 = stack.pop();
-                insert faceIndex1 into faces;
-                const iter = edgeToFace1.entrySet().iterator();
-                while (iter.hasNext()) {
-                    const n = iter.next();
-                    const edge2 = n.getKey();
-                    const indices2 = n.getValue();
-                    const faceEdge2 = indices2[0];
-                    const faceIndex2 = indices2[1];
-                    if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
-                        stack.push(faceIndex2);
-                        stack.push(faceEdge2);
-                        iter.remove();
+            edgeToFace1.remove(edge1);
+            faceSet.clear();
+            for (i in [0..<indices1.size() step 2]) {
+                const faceEdge = indices1[i+0];
+                const faceIndex = indices1[i+1];
+                stack.push(faceIndex);
+                stack.push(faceEdge);
+                while (not stack.isEmpty()) {
+                    const faceEdge1 = stack.pop();
+                    const faceIndex1 = stack.pop();
+                    //println("adding {faceIndex1} for {faceEdge1} to {faceEdge}");
+                    faceSet.add(faceIndex1);
+                    const iter = edgeToFace1.entrySet().iterator();
+                    while (iter.hasNext()) {
+                        const n = iter.next();
+                        const edge2 = n.getKey();
+                        const indices2 = n.getValue();
+                        var remaining = indices2;
+                        for (j in [0..<indices2.size() step 2]) {
+                            const faceEdge2 = indices2[j+0];
+                            const faceIndex2 = indices2[i+1];
+                            if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
+                                stack.push(faceIndex2);
+                                stack.push(faceEdge2);
+                                delete remaining[j..j+1];
+                            }
+                        }
+                        if (remaining.size() == 0) {
+                            iter.remove();
+                        } else {
+                            edgeToFace1.put(edge2, remaining);
+                        }
                     }
                 }
             }
+            const faces = foreach (i in faceSet) i;
+            //println("faces for edge1 {edge1} => {foreach (x in faces) "{x},"}");
             edgeToFace2.put(edge1, faces);
         }
         for (f in polyfaces) {
@@ -2318,6 +2350,7 @@ class MMesh is MSpatial
             for (faceEdge in f.faceEdges) {
                 const edge = edgeStart(faceEdge);
                 const faces = edgeToFace2.get(edge);
+                //println("faces for {faceEdge} = { foreach (x in faces) "{x}," }");
                 if (faces == []) {
                     //edgeToNormal.put(edge, this.normal(faceIndex));
                 } else {
@@ -2326,7 +2359,7 @@ class MMesh is MSpatial
                         const faceNorm = faceNormals[j];
                         norm += faceNorm;
                     }
-                    edgeToNormal.put(edge, norm);
+                    edgeToNormal.put(edge, norm.normalize());
                 }
             }
         }
@@ -2583,7 +2616,7 @@ class MMesh is MSpatial
                     if shaderNode == null then null else shaderNode[0].sourceNode as MAbstractShader;
                 } else null;
             const shader = m.toShader(mshaderNode);
-            println("shaderNode for {this.getFullName()} ={mshaderNode.getFullName()} for {name} => {shader}");
+            println("model {m}, shaderNode [{mshaderNode}] for {this.getFullName()} ={mshaderNode.getFullName()} for {name} => {shader}");
             for (i in [0..<shader.uvMap.size()]) {
                 const unit = shader.uvMap[i];
                 if (unit == -2) { // tangent
@@ -3759,8 +3792,8 @@ public class Joint is MaTransform {
 
     var r0 = bind if (is_ik) then ikr else r;
 
-    override var transform = 
-        bind translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
+    override var transform =  bind if (constraint <> null) then constraint.transform else
+        translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
         //bind computeTransform(tx, ty, tz, parentInverseScale, jor, r0, sx, sy, sz);
 
     function computeTransform
@@ -3832,7 +3865,10 @@ class MPointConstraint is MConstraint {
         for (c in connectionsFromThis.get("ctx")) {
             contextNode = c.targetNode;
         }
-        const constraint = Constraint.PointConstraint {}
+        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
+        const constraint = Constraint.PointConstraint {
+            toSceneTransform: bind tn.parent.toSceneTransform;
+        }
         println("toConstraint: {connectionsToThis}");
         for (i in [0..<10]) {
             var sourceNode is MNode;
@@ -3852,7 +3888,6 @@ class MPointConstraint is MConstraint {
             source.node = m.toNode(sourceNode as MSpatial);
             insert source into constraint.sources;
         }
-        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
         tn.constraint = constraint;
         return constraint;
     }
@@ -3865,7 +3900,10 @@ class MOrientConstraint is MConstraint {
         for (c in connectionsFromThis.get("crx")) {
             contextNode = c.targetNode;
         }
-        const constraint = Constraint.OrientConstraint {}
+        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
+        const constraint = Constraint.OrientConstraint {
+            toSceneTransform: bind tn.parent.toSceneTransform;
+        }
         for (i in [0..<10]) {
             var sourceNode is MNode;
             var w is String;
@@ -3884,7 +3922,6 @@ class MOrientConstraint is MConstraint {
             source.node = m.toNode(sourceNode as MSpatial);
             insert source into constraint.sources;
         }
-        const tn = m.toNode(contextNode as MSpatial) as MaTransform;
         tn.constraint = constraint;
         return constraint;
     }
@@ -3976,6 +4013,7 @@ class MAimConstraint is MConstraint {
             insert source into constraint.sources;
         }
         println("aim constraint => {sourceMap}");
+        println("aim constraint => tn={tn}");
         tn.constraint = constraint;
         return constraint;
     }

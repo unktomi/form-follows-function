@@ -192,8 +192,10 @@ public class LinearGradient is GradientPaint
 
 public class RadialGradient is GradientPaint 
 {
-    public var focusX is Number = 0.0;
-    public var focusY is Number = 0.0;
+    public var focusX is Number = 0.5;
+    public var focusY is Number = 0.5;
+    public var centerX is Number = 0.5;
+    public var centerY is Number = 0.5;
     public var radius is Number = 1.0;
     override public function toString to String 
     {

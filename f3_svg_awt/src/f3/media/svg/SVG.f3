@@ -117,7 +117,7 @@ function convertPaint
         if (a <> 1.0) {
             println("gradient with opacity {a}");
         }
-        println("radial gradient {grad.x} {grad.y} {grad.radius} {grad.userSpace}");
+        println("radial gradient {grad.x} {grad.y} {grad.fx} {grad.fy} {grad.radius} {grad.userSpace}");
         const t = Mat4.<<1>> * convertTransform(grad.matrix.at);
 	var colors is Color[];
 	var stops is Number[];
@@ -127,9 +127,14 @@ function convertPaint
 	for (i in grad.offsets) {
 	    insert i into stops;
 	}
+        for (color in colors) {
+            println("stop color: {color}");
+        }
         return Shape2D.RadialGradient {
-            focusX: grad.x;
-            focusY: grad.y;
+            focusX: grad.fx;
+            focusY: grad.fy;
+            centerX: grad.x;
+            centerY: grad.y;
             radius: grad.radius;
             transform: t;
             proportional: not grad.userSpace;

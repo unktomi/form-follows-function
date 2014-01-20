@@ -832,15 +832,11 @@ abstract class JoglGradientShader is CGFXShader
 		buf.put(j+2, z);
 		buf.put(j+3, w);
 	    }
-            if (color.opacity <> 1.0) {
-                hasTransparency = true;
-            }
         }
         if (textureDirty) {
-            isTransparent = hasTransparency;
             textureDirty = false;
             const glp = GLProfile.get("GL2");
-            println("updating gradient colors {tex}");
+            println("updating gradient colors {tex} transparent={isTransparent}");
             tex.updateImage(gl, 
                             new TextureData(glp, 
                                             GL.GL_RGBA8, 
@@ -870,7 +866,6 @@ abstract class JoglGradientShader is CGFXShader
             h = bounds.extent.y * 2;
 	    println("bounds={bounds} => {x} {y} {w} {h}");
             if (w == 0 or h == 0)  {
-
                 w = h = 1;
             }
         } else {
@@ -897,9 +892,6 @@ abstract class JoglGradientShader is CGFXShader
         }
     }
 
-    override function updateParameters {
-    }
-
     protected abstract function updateParams
 	from (x is Number, y is Number, w is Number, h is Number) to ();
 
@@ -908,7 +900,14 @@ abstract class JoglGradientShader is CGFXShader
 				  viewMatrix is  Mat4,
 				  projectionMatrix is  Mat4) to ()
     {
-
+        var t = false;
+        for (color in grad.colors) {
+            if (color.opacity <> 1.0) {
+                t = true;
+                break;
+            }
+        }
+        isTransparent = t;
         updateTexture();
         updateParams(mesh);
         super.apply(mesh, worldTransform, viewMatrix, projectionMatrix);
@@ -929,14 +928,16 @@ class JoglRadialGradientShader is JoglGradientShader
         const fy = grad.focusY;
         const cx = fx;
         const cy = fy;
+        const r = grad.radius;
+        const tr  = r * Math.max(rw, rh);
         const tcx = rx + cx * rw;
         const tcy = ry + cy * rh;
         const tfx = rx + fx * rw;
         const tfy = ry + fy * rh;
-        const r = grad.radius;
-        const tr  = r * Math.max(rw, rh);
-        const gradientTransform = grad.transform;
-        var focus = gradientTransform * vector(tfx, tfy, 0);
+        println("center={tcx},{tcy}");
+        var focus = new Vec3(tfx, tfy, 0);
+        const gradientTransform = Mat4.<<1>> * grad.transform;
+        println("focus={focus}");
         var t = 
             (gradientTransform * 
              translate(tcx, tcy) * 
@@ -944,13 +945,14 @@ class JoglRadialGradientShader is JoglGradientShader
              scale(tr, tr));
         try {
             t = t.inverse(); // t now maps from object space to unit circle
-        } catch (e) {
-	    e.printStackTrace();
+        } catch (e is java.lang.Exception) {
+            e.printStackTrace();
             t = Mat4.<<1>>;
         }
-        focus = t * focus;
+        const focusPt = (t * gradientTransform).getTranslation();
+        println("FOCUS => {focusPt}");
         setParameter("objectSpaceToUnitCircle", t);
-        setParameter("focus", focus);
+        setParameter("focus", focusPt);
     }
 }
 

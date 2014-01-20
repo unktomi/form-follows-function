@@ -900,6 +900,8 @@ public class SVGParser {
             } else {
                 gradient.x = getFloatAttr("cx", atts, 0.5f);
                 gradient.y = getFloatAttr("cy", atts, 0.5f);
+                gradient.x1 = getFloatAttr("fx", atts, gradient.x);
+                gradient.y1 = getFloatAttr("fy", atts, gradient.y);
                 gradient.radius = getFloatAttr("r", atts, 0.5f);
             }
             String units = getStringAttr("gradientUnits", atts);
@@ -1311,7 +1313,7 @@ public class SVGParser {
                     for (int i = 0; i < positions.length; i++) {
                         positions[i] = gradient.positions.get(i);
                     }
-                    RadialGradient g = new RadialGradient(gradient.x, gradient.y, gradient.radius, colors, positions, Shader.TileMode.CLAMP);
+                    RadialGradient g = new RadialGradient(gradient.x, gradient.y, gradient.x1, gradient.y1, gradient.radius, colors, positions, Shader.TileMode.CLAMP);
                     if (gradient.matrix != null) {
                         g.setLocalMatrix(gradient.matrix);
                     }
