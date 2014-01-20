@@ -6,24 +6,37 @@ public class Source
 {
     public var weight is Number = 1.0;
     public var node is Node;
+
+    override function toString to String 
+    {
+        "Source {weight} {node}"
+    }
 }
 
 public abstract class Constraint 
 {
     public var sources is Source[];
     public readonly var transform is Mat4 = Mat4.<<1>>;
+    public var toSceneTransform is Mat4; // parent
 }
 
 public class PointConstraint is Constraint 
 {
     public readonly var translation is Point3 = bind sum(sources, Point3.<<0>>, 0.0);
+
     override var transform = bind translate(translation);
+
+    function result from (pt is Point3, w is Number) to Point3 
+    {
+        println("point constraint {pt} {w}");
+        return pt / w;
+    }
 
     bound function sum 
 	from (sources is Source[], pt is Point3, w is Number) 
 	to Point3 
     {
-	if (sources == []) then pt / w else {
+	if (sources == []) then result(pt, w) else {
 		var x = sources[0];
 		var xs = sources[1..];
 		var xw = x.weight;
@@ -79,8 +92,6 @@ public class ParentConstraint is Constraint
 	var dummy = toSceneTransform.inverse() * sum(sources[1..], t0, q0);
     }
 
-    public var toSceneTransform is Mat4;
-
     bound function sum 
 	from (sources is Source[], t is Point3, rot is Quat) 
 	to Mat4 
@@ -102,33 +113,36 @@ public class ParentConstraint is Constraint
 public class AimConstraint is Constraint 
 {
     public var pivot is Point3 = Point3.<<0>>;
-    public var aimVector is Vec3 = Vec3.Z_AXIS;
+    public var aimVector is Vec3 = Vec3.X_AXIS;
     public var localUpVector is Vec3 = Vec3.Y_AXIS;
     public var sceneUpVector is Vec3 = Vec3.Y_AXIS;
-    public var toSceneTransform is Mat4 = Mat4.<<1>>;
 
     const pointConstraint = PointConstraint {
+        toSceneTransform: bind toSceneTransform;
 	sources: bind sources;
     }
 
-    public override var transform = bind 
-	aim(toSceneTransform,
+    var target = bind pointConstraint.translation;
+
+    public override var transform = bind {
+        aim(toSceneTransform,
             pivot,
-            pointConstraint.transform.getTranslation(),
+            target,
             aimVector,
             localUpVector,
-            sceneUpVector);
+            sceneUpVector)
+    }
 
     function aim 
 	from (toSceneTransform is Mat4,
 	      pivot is Point3, // in local space
-	      target is Point3, // in scene space
+	      target is Point3, // in local space
 	      aimVector is Vec3, // in local space
 	      localUpVector is Vec3, // in local space
 	      sceneUpVector is Vec3)
 	to Mat4
     {
-	const targetDir is Vec3 = target - toSceneTransform * pivot;
+	const targetDir is Vec3 = toSceneTransform * (target - pivot);
 	const aimInScene = (toSceneTransform * aimVector).normalize();
 	const rot = aimInScene.rotationTo(targetDir);
 	const preferredUp is Vec3 = (rot * (toSceneTransform * localUpVector)).normalize();
@@ -142,12 +156,16 @@ public class AimConstraint is Constraint
         // Rotation bringing these two into alignment
         // Note use of targetDirection as preferred axis for stable results
         // if vecS and vecD are nearly parallel but pointing in opposite directions
+        println("aim at {targetDir} up={localUpVector}" );
         const qTwist = vecS.rotationTo(vecD, targetDir);
         // Compute composition
         const qTot = qTwist * rot;
         // Transform quaternion from world space to local space for result
-        const aa = qTot.toAngleAxis();
-        const axis = aa.second;
-        Quat.Quat(aa.first, toSceneTransform.inverse() * axis).toMat4();
+        var t = Mat4.<<1>>;
+        try {
+            t = toSceneTransform.inverse();
+        } catch (e is java.lang.Exception) {
+        }
+        t * qTot.toMat4();
     }
 }
