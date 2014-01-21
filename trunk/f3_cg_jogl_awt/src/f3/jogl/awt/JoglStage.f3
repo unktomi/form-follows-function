@@ -3208,7 +3208,7 @@ class AWTDialogFactory is DialogFactory {
         if fd.getFile() == null then null else new java.io.File(fd.getDirectory(), fd.getFile()).toString();
     }
 
-    public function openYesNoCancelDialog from (dialog is Dialog.YesNoCancel) to ()
+    override public function openYesNoCancelDialog from (dialog is Dialog.YesNoCancel) to ()
     {
         const r = 
             JOptionPane.showConfirmDialog(frame, dialog.message, dialog.title, JOptionPane.YES_NO_CANCEL_OPTION);     

@@ -2254,8 +2254,98 @@ class MMesh is MSpatial
     }
 
     const edgeToNormal = new java.util.TreeMap of (Integer, Vec3);
-
     function buildMesh
+    {
+	for (v in normals) {
+	    if (v > 1e10) { // bogus normals
+		normals = [];
+		break;
+	    }
+	}
+	if (normals <> []) {
+	   return;
+	}
+	for (polyface in polyfaces) {
+	    var norm = Vec3.<<0>>;
+	    const faceEdges = polyface.faceEdges;
+	    for (faceEdge in faceEdges) {
+		const i = indexof faceEdge;
+		const edge = edgeStart(faceEdge);
+		const next = edgeEnd(faceEdge);
+		const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
+		const v0 = vertex(edge);
+		const v1 = vertex(next);
+		const v2 = vertex(prev);
+		norm += (v1 - v0).cross(v2 - v0);
+	    }
+	    norm = norm.normalize();
+	    insert norm into faceNormals;
+	}
+	const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
+	for (f in polyfaces) {
+	    const faceIndex = indexof f;
+	    for (faceEdge0 in f.faceEdges) {
+                const faceEdge = faceEdgeIndex(faceEdge0);
+		if (isSmooth(faceEdge)) {
+		    const e0 = edgeStart(faceEdge);
+		    const e1 = edgeEnd(faceEdge);
+		    edgeToFace1.put(e0, [faceEdge, faceIndex]);
+		    edgeToFace1.put(e1, [faceEdge, faceIndex]);
+		}
+	    }
+	}
+	const stack = new java.util.Stack of Integer;
+	const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
+	while (edgeToFace1.size() > 0) {
+	    const ent = edgeToFace1.pollFirstEntry();
+	    const edge1 = ent.getKey();
+	    const indices1 = ent.getValue();
+	    var faces is Integer[];
+	    const faceEdge = indices1[0];
+	    const faceIndex = indices1[1];
+	    stack.push(faceIndex);
+	    stack.push(faceEdge);
+            edgeToFace1.remove(edge1);
+	    while (not stack.isEmpty()) {
+		const faceEdge1 = stack.pop();
+		const faceIndex1 = stack.pop();
+		insert faceIndex1 into faces;
+		const iter = edgeToFace1.entrySet().iterator();
+		while (iter.hasNext()) {
+		    const n = iter.next();
+		    const edge2 = n.getKey();
+		    const indices2 = n.getValue();
+		    const faceEdge2 = indices2[0];
+		    const faceIndex2 = indices2[1];
+		    if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
+			stack.push(faceIndex2);
+			stack.push(faceEdge2);
+			iter.remove();
+		    }
+		}
+	    }
+	    edgeToFace2.put(edge1, faces);
+	}
+	for (f in polyfaces) {
+	    const faceIndex = indexof f;
+	    for (faceEdge in f.faceEdges) {
+		const edge = edgeStart(faceEdge);
+		const faces = edgeToFace2.get(edge);
+		if (faces == []) {
+		    //edgeToNormal.put(edge, this.normal(faceIndex));
+		} else {
+		    var norm = Vec3.<<0>>;
+		    for (j in faces) {
+			const faceNorm = faceNormals[j];
+			norm += faceNorm;
+		    }
+		    edgeToNormal.put(edge, norm);
+		}
+	    }
+	}
+    }
+
+    function buildMesh1
     {
         for (v in normals) {
             if (v > 1e10) { // bogus normals
@@ -2285,8 +2375,7 @@ class MMesh is MSpatial
         const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
         for (f in polyfaces) {
             const faceIndex = indexof f;
-            for (faceEdge0 in f.faceEdges) {
-                const faceEdge = faceEdgeIndex(faceEdge0);
+            for (faceEdge in f.faceEdges) {
                 if (isSmooth(faceEdge)) {
                     //println("found smooth edge {faceEdge}");
                     const e0 = edgeStart(faceEdge);
@@ -2333,7 +2422,7 @@ class MMesh is MSpatial
                                 delete remaining[j..j+1];
                             }
                         }
-                        if (remaining.size() == 0) {
+                        if (true or remaining.size() == 0) {
                             iter.remove();
                         } else {
                             edgeToFace1.put(edge2, remaining);

@@ -161,22 +161,22 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget
                 if (focusHandler == null) then { focusHandler = NodeFocus {}; focusHandler.attachTo(this); focusHandler } else focusHandler;
     }
 
-    public function observeKeyDown to Observable of KeyboardEvent
+    override public function observeKeyDown to Observable of KeyboardEvent
     {
         getFocusable().keyDown;
     }
 
-    public function observeKeyUp to Observable of KeyboardEvent
+    override public function observeKeyUp to Observable of KeyboardEvent
     {
         getFocusable().keyUp;
     }
 
-    public function observeKeyInput to Observable of KeyboardEvent
+    override public function observeKeyInput to Observable of KeyboardEvent
     {
         getFocusable().keyInput;
     }
 
-    public function observeFocused to Observable of Boolean
+    override public function observeFocused to Observable of Boolean
     {
         getFocusable().focusedSubject;
     }

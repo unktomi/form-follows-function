@@ -611,6 +611,17 @@ public class Scene
     function doMouseMove from (p is Pick, sceneEvent is MouseEvent) to () 
     {
         const hs = getMouseInputHandlers(p);
+        const translation = p.node.toSceneTransform.getTranslation();
+        const ray = camera.getPickRay(sceneEvent.screenx, sceneEvent.screeny);
+        const normal = ray.direction.negate();
+        const plane = Plane { 
+            normal: normal;
+            point: translation;
+        }
+        const hit = plane.intersectRay(ray);
+        if (hit <> null) {
+            p.dragPoint0 = p.dragPoint1 = hit.point;
+        }
         if (hs <> []) {
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
@@ -683,6 +694,7 @@ public class Scene
             screeny: e.screeny;
             screenDrag: e.screenDrag;
             sceneLocation: sceneLocation;
+            location: p.node.toSceneTransform.inverse() * sceneLocation;
             buttons: e.buttons;
             picked: p;
         }
