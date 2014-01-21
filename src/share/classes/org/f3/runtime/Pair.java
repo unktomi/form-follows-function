@@ -22,6 +22,15 @@ public class Pair<a, b> implements Monad<Pair, a>, Comonad<Pair, a>, TypeCons2<P
 	second = y;
     }
 
+    public int hashCode() {
+        int hashCode = 1;
+        Object e = first;
+        hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
+        e = second;
+        hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
+        return hashCode;
+    }
+
     public boolean equals(Object obj) {
 	if (obj instanceof Pair) {
 	    Pair p = (Pair)obj;

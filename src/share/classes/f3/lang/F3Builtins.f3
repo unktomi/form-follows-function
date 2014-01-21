@@ -1,6 +1,6 @@
 package f3.lang;
 import f3.lang.Either;
-import f3.util.Filterable;
+//import f3.util.Filterable;
 
 public function Former of (a, b) from (x is a) to Either of (a, b) 
 {
@@ -11,10 +11,11 @@ public function Latter of (a, b) from (y is b) to Either of (a, b)
 {
     Either.Latter of (a, b) (y)
 }
-
+/*
 public const THE_FILTERABLE_OF_SEQUENCE = Filterable of [] {
     public override function filter of a from (xs is a[], f is function from a to Boolean) to a[]
     {
         xs[x | f(x)]
     }
 }
+*/
