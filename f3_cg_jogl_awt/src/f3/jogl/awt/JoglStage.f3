@@ -2106,7 +2106,24 @@ public class SceneRenderer {
 					    }
 					    dirty = true;
 					    break;
-					}
+					} else {
+                                            if (x is Movie) {
+                                                const movie = x as Movie;
+                                                const frameValue = info.shaderParams.get("movie.position");
+                                                //println("checking movie: {frameValue} {movie.position}");
+                                                if (frameValue == null or {
+                                                        const frame = frameValue as Duration;
+                                                        frame <> movie.position;
+                                                    }) {
+                                                    info.shaderParams.put("movie.position", movie.position);
+                                                    if (DEBUG_DRAW) {
+                                                        println("is dirty: {mn}: {p.name}");
+                                                    }
+                                                    dirty = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
 				    }
 				}
 			    }
@@ -2543,6 +2560,10 @@ public class SceneRenderer {
 	    //println("mesh={mn.id}");
 	    //println("shader={shader.id} uvMap={shader.uvMap.size()}");
 	    //println("coords={mesh.textureCoordinates.size()}");
+            if (shader.uvMap <> null and mesh.textureCoordinates == null) {
+                println("uvMap={shader.uvMap}, coords={mesh.textureCoordinates}");
+                return;
+            }
 	    const coords = foreach (i in shader.uvMap) mesh.textureCoordinates[i];
 	    for (unit in [0..<texUnits]) {
 		const textureBuffer = mesh.getTextureBuffers()[shader.uvMap[unit]];
@@ -2905,6 +2926,7 @@ public class Listener is GLEventListener, DropTargetListener {
         }
         if (not ALWAYS_SWAP_BUFFERS and not dragging and not trig and not frame.isActive()) {
             java.lang.Thread.sleep(128);
+            trig = true;
             return;
         }
         MasterTimeline.paused = not frame.isActive();

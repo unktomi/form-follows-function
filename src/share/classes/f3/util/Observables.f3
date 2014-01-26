@@ -48,7 +48,6 @@ public function observe of a
     }
 }
 
-
 public function If from (xs is Observable of Boolean) to Observable of (()) 
 {
     foreach (x in xs.filter(id of Boolean)) ()

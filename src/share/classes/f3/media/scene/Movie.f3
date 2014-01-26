@@ -37,6 +37,7 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
 	    pos = movie.pause();
             movie.setPosition(longPos);
 	} else {
+            pos = movie.getPosition();
             movie.play();
 	}
 	movie.update();

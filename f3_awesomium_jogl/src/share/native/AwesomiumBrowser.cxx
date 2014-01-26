@@ -21,11 +21,13 @@ static WebString toWebString(JNIEnv *env, jstring value);
 static jstring newString(JNIEnv *env, const WebString &str);
 static void initMethodIds(JNIEnv *env);
 static jobject fromJSValue(JNIEnv *env, const JSValue &v);
+static jobject newJSArray(JNIEnv *env, const JSArray *value);
 static jclass Integer = 0;
 static jclass Double = 0;
 static jclass Boolean = 0;
 static jclass JSArrayClazz = 0;
 static jclass JSObjectClazz = 0;
+static jclass BrowserClazz = 0;
 static jmethodID NewInteger = 0;
 static jmethodID NewDouble = 0;
 static jmethodID NewBoolean = 0;
@@ -95,6 +97,8 @@ public:
 
   Awesomium::Cursor cursorType;
 
+  JSObject *callbackObject;
+
   void setSize(int width, int height) {
     this->width = width;
     this->height = height;
@@ -102,7 +106,10 @@ public:
       webView = webCore->CreateWebView(width, height, webSession, kWebViewType_Offscreen);
       webView->set_view_listener(this);
       webView->set_load_listener(this);
+      JSValue result = webView->CreateGlobalJavascriptObject(WSLit("f3"));
+      callbackObject = &result.ToObject();
       webView->set_js_method_handler(this);
+      callbackObject->SetCustomMethod(WSLit("handleEvent"), false);
       if (currentURL.length() > 0) {
         webView->LoadURL(WebURL(currentURL));
       }
@@ -145,10 +152,11 @@ public:
                                const Awesomium::WebURL& url)
   {
     currentURL = url.spec();
-    fprintf(stderr, "webView=%p, caller=%p\n", webView, caller);
+    //fprintf(stderr, "webView=%p, caller=%p\n", webView, caller);
     JSValue result = caller->ExecuteJavascriptWithResult(WSLit("window"), WSLit(""));
     fprintf(stderr, "window.isNull %d\n", result.IsNull());
-    fprintf(stderr, "thread=%p\n", pthread_self());
+    //fprintf(stderr, "thread=%p\n", pthread_self());
+    webView->ExecuteJavascript(WSLit("document.addEventListener('mouseover', f3);"), WSLit(""));
   }
 
 
@@ -229,12 +237,36 @@ public:
                             const Awesomium::WebString& method_name,
                             const Awesomium::JSArray& args) 
   {
-    JNIEnv *env = 0;
-    jvm->GetEnv((void **)&env, JNI_VERSION_1_6);
-    env->CallVoidMethod(target, 
-                        MOnMethodCall,
-                        newString(env, method_name),
-                        fromJSValue(env, JSValue(args)));
+    JNIEnv * g_env = 0;
+    JavaVM * g_vm = jvm;
+    // double check it's all ok
+    int getEnvStat = g_vm->GetEnv((void **)&g_env, JNI_VERSION_1_6);
+    bool wasAttached = true;
+    if (getEnvStat == JNI_EDETACHED) {
+      std::cout << "GetEnv: not attached" << std::endl;
+      if (g_vm->AttachCurrentThread((void **) &g_env, NULL) != 0) {
+        std::cout << "Failed to attach" << std::endl;
+      }
+      wasAttached = false;
+    } else if (getEnvStat == JNI_OK) {
+      //
+    } else if (getEnvStat == JNI_EVERSION) {
+      std::cout << "GetEnv: version not supported" << std::endl;
+    }
+    jstring methodName = newString(g_env, method_name);
+    jobject local = g_env->NewGlobalRef(target);
+    g_env->CallStaticVoidMethod(BrowserClazz,
+                                MOnMethodCall,
+                                local,
+                                methodName,
+                                newJSArray(g_env, new JSArray(args)));
+    g_env->DeleteGlobalRef(local);
+    if (g_env->ExceptionCheck()) {
+      g_env->ExceptionDescribe();
+    }
+    if (!wasAttached) {
+      g_vm->DetachCurrentThread();
+    }
   }
 
   virtual Awesomium::JSValue 
@@ -243,6 +275,12 @@ public:
                               const Awesomium::WebString& method_name,
                               const Awesomium::JSArray& args) 
   {
+    JNIEnv *env = 0;
+    jvm->GetEnv((void **)&env, JNI_VERSION_1_6);
+    jobject result = env->CallObjectMethod(target, 
+                                           MOnMethodCallWithReturn,
+                                           newString(env, method_name),
+                                           fromJSValue(env, JSValue(args)));
     return JSValue();
   }
 };
@@ -263,12 +301,13 @@ extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_updateAll
  * Signature: (II)I
  */
 extern "C" jlong JNICALL Java_org_f3_media_web_awesomium_Browser_create
-(JNIEnv *env, jobject obj, jint w, jint h) {
+(JNIEnv *env, jobject none, jobject target, jint w, jint h) {
   ensureWebCore();
   initMethodIds(env);
   JavaVM *jvm = 0;
   env->GetJavaVM(&jvm);
-  MyWebViewListener *p = new MyWebViewListener(jvm, obj); 
+  std::cout << "target => " << target << std::endl;
+  MyWebViewListener *p = new MyWebViewListener(jvm, env->NewGlobalRef(target)); 
   p->setSize(w, h);
   return (jlong)p;
 }
@@ -293,6 +332,9 @@ extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_resize
 extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_destroy
 (JNIEnv *env, jclass clazz, jlong handle) {
   MyWebViewListener *p = (MyWebViewListener*)handle;
+  if (p->target != 0) {
+    env->DeleteGlobalRef(p->target);
+  }
   delete p;
 }
 
@@ -322,7 +364,9 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
   if (p->resized) {
     p->webView->Resize(p->width, p->height);
   }
+  //std::cout << "updating" << std::endl;
   updateAll();
+  //std::cout << "done updating" << std::endl;
   Awesomium::BitmapSurface *s = (Awesomium::BitmapSurface*) p->webView->surface();
   //fprintf(stderr, "surface %p\n", s);
   //fprintf(stderr, "bufPtr %p\n", bufPtr);
@@ -603,13 +647,16 @@ void initMethodIds(JNIEnv *env) {
   if (Integer != 0) return;
   jclass cls = env->FindClass("java/lang/Integer");
   jmethodID methodId = env->GetMethodID(cls, "<init>", "(I)V");
+  cls = (jclass)env->NewGlobalRef(cls);
   Integer = cls;
   NewInteger = methodId;
   cls = env->FindClass("java/lang/Double");
+  cls = (jclass)env->NewGlobalRef(cls);
   methodId = env->GetMethodID(cls, "<init>", "(D)V");
   NewDouble = methodId;
   Double = cls;
   cls = env->FindClass("java/lang/Boolean");
+  cls = (jclass)env->NewGlobalRef(cls);
   methodId = env->GetMethodID(cls, "<init>", "(Z)V");
   NewBoolean = methodId;
   Boolean = cls;
@@ -625,9 +672,10 @@ void initMethodIds(JNIEnv *env) {
   NewJSObject = methodId;
   JSObjectClazz = cls;
   cls = env->FindClass("org/f3/media/web/awesomium/Browser");
-  methodId = env->GetMethodID(cls, "onMethodCall", "(ILjava/lang/String;Lorg/f3/media/web/awesomium/JSArray;)V");
+  BrowserClazz = (jclass)env->NewGlobalRef(cls);
+  methodId = env->GetStaticMethodID(cls, "onMethodCall", "(Ljava/lang/Object;Ljava/lang/String;Lorg/f3/media/web/awesomium/JSArray;)V");
   MOnMethodCall = methodId;
-  methodId = env->GetMethodID(cls, "onMethodCallWithReturn", "(ILjava/lang/String;Lorg/f3/media/web/awesomium/JSArray;)Ljava/lang/Object;");
+  methodId = env->GetMethodID(cls, "onMethodCallWithReturn", "(Ljava/lang/String;Lorg/f3/media/web/awesomium/JSArray;)Ljava/lang/Object;");
   MOnMethodCallWithReturn = methodId;
 }
 
@@ -650,7 +698,7 @@ static jobject newJSArray(JNIEnv *env, const JSArray *value) {
 }
 
 static jobject newJSObject(JNIEnv *env, const JSObject *value) {
-  fprintf(stderr, "newJSObject clss=%p meth=%p val=%p\n", JSObjectClazz, NewJSObject, value);
+  //fprintf(stderr, "newJSObject clss=%p meth=%p val=%p\n", JSObjectClazz, NewJSObject, value);
   return env->CallStaticObjectMethod(JSObjectClazz, NewJSObject, (long)value);
 }
 
@@ -667,7 +715,7 @@ static jstring newString(JNIEnv *env, const WebString &str) {
 static WebString toWebString(JNIEnv *env, jstring value) {
   jboolean iscopy;
   const char *chs = env->GetStringUTFChars(value, &iscopy);
-  fprintf(stderr, "to web string %s\n", chs);
+  //fprintf(stderr, "to web string %s\n", chs);
   WebString str = WebString::CreateFromUTF8(chs, strlen(chs));
   env->ReleaseStringUTFChars(value, (const char*)chs);
   return str;
