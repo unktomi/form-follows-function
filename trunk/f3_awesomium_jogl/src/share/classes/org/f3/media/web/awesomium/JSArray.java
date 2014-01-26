@@ -22,6 +22,7 @@ public class JSArray implements Iterable<Object> {
     protected void finalize() {
         org.f3.runtime.Entry.deferAction(new java.lang.Runnable() {
                 public void run() {
+                    System.err.println("deleting js array handle: "+handle);
 		    Browser.destroy_js_array(handle);
 		}
 	    });

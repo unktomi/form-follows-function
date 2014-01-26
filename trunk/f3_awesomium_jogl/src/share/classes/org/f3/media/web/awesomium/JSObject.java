@@ -4,6 +4,25 @@ public class JSObject {
 
     long handle;
 
+    public String toString() {
+	StringBuffer result = new StringBuffer();
+	String sep = "{";
+        for (Object id: getIds()) {
+            result.append(sep);
+            result.append(id);
+            result.append(": ");
+            Object value = get((String)id);
+            if (value instanceof JSObject) {
+                result.append("[Object]");
+            } else {
+                result.append(value);
+            }
+            sep = ", ";
+        }
+        result.append("}");
+        return result.toString();
+    }
+
     public static JSObject createFromHandle(long handle) {
         return new JSObject(handle);
     }

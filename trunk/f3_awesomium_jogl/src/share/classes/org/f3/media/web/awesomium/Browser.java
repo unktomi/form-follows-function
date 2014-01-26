@@ -608,19 +608,21 @@ public class Browser implements AbstractWebBrowser {
         buildKeyMap();
     }
 
-    public void onMethodCall(int id, String methodName,
-                             JSArray args) {
+    public static void onMethodCall(Object target,
+                                    String methodName,
+                                    JSArray args) {
+        System.err.println("on method call: "+methodName+": "+args);
     }
 
-    public Object onMethodCallWithReturn(int id, 
-                                         String methodName,
+    public Object onMethodCallWithReturn(String methodName,
                                          JSArray args) 
     {
+        System.err.println("on method call with return: "+methodName+": "+args);
         return null;
     }
 
     static native void updateAll();
-    native long create(int width, int height);
+    native long create(Object target, int width, int height);
     static native void resize(long handle, int width, int height);
     static native void destroy(long handle);
     static native int getCursor(long handle);
@@ -780,7 +782,7 @@ public class Browser implements AbstractWebBrowser {
         int w = potWidth = pot(width);
         int h = potHeight = pot(height);
         if (handle == 0) {
-            handle = create(w, h);
+            handle = create(this, w, h);
         } else {
             resize(handle, w, h);
         }
