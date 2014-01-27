@@ -1,6 +1,28 @@
 package f3.media.scene;
 
 public interface AbstractWebBrowser {
+
+    public interface Video {
+        //public String getSource();
+        public String getId();
+        public int getWidth();
+        public int getHeight();
+        public void play();
+        public void pause();
+        public void load();
+        public float getCurrentTime();
+        public void setCurrentTime(float time);
+        public float getPlaybackRate();
+        public void setPlaybackRate(float value);
+        public void setVolume(float value);
+        public float getVolume();
+        public void setMuted(boolean value);
+        public boolean isMuted();
+        public float getDuration();
+    }
+
+    public java.util.List<Video> getVideos();
+    
     public void setURL(String url);
     public String getURL();
     public void setContent(String content);
