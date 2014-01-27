@@ -34,6 +34,7 @@ static jmethodID NewBoolean = 0;
 static jmethodID NewJSObject = 0;
 static jmethodID NewJSArray = 0;
 
+static jmethodID MOnDocumentReady = 0;
 static jmethodID MOnMethodCall = 0;
 static jmethodID MOnMethodCallWithReturn = 0;
 
@@ -153,10 +154,11 @@ public:
   {
     currentURL = url.spec();
     //fprintf(stderr, "webView=%p, caller=%p\n", webView, caller);
-    JSValue result = caller->ExecuteJavascriptWithResult(WSLit("window"), WSLit(""));
-    fprintf(stderr, "window.isNull %d\n", result.IsNull());
+    //JSValue result = caller->ExecuteJavascriptWithResult(WSLit("window"), WSLit(""));
+    //fprintf(stderr, "window.isNull %d\n", result.IsNull());
     //fprintf(stderr, "thread=%p\n", pthread_self());
-    webView->ExecuteJavascript(WSLit("document.addEventListener('mouseover', f3);"), WSLit(""));
+    //webView->ExecuteJavascript(WSLit("document.addEventListener('onloadedmetadata', f3);"), WSLit(""));
+    notifyDocumentReady();
   }
 
 
@@ -230,6 +232,35 @@ public:
                                     bool is_popup) 
   {
     fprintf(stderr, "POPUP\n");
+  }
+
+  void notifyDocumentReady() {
+    JNIEnv * g_env = 0;
+    JavaVM * g_vm = jvm;
+    // double check it's all ok
+    int getEnvStat = g_vm->GetEnv((void **)&g_env, JNI_VERSION_1_6);
+    bool wasAttached = true;
+    if (getEnvStat == JNI_EDETACHED) {
+      std::cout << "GetEnv: not attached" << std::endl;
+      if (g_vm->AttachCurrentThread((void **) &g_env, NULL) != 0) {
+        std::cout << "Failed to attach" << std::endl;
+      }
+      wasAttached = false;
+    } else if (getEnvStat == JNI_OK) {
+      //
+    } else if (getEnvStat == JNI_EVERSION) {
+      std::cout << "GetEnv: version not supported" << std::endl;
+    }
+    jobject local = g_env->NewGlobalRef(target);
+    g_env->CallVoidMethod(local,
+                          MOnDocumentReady);
+    g_env->DeleteGlobalRef(local);
+    if (g_env->ExceptionCheck()) {
+      g_env->ExceptionDescribe();
+    }
+    if (!wasAttached) {
+      g_vm->DetachCurrentThread();
+    }
   }
 
   virtual void OnMethodCall(Awesomium::WebView* caller,
@@ -677,6 +708,8 @@ void initMethodIds(JNIEnv *env) {
   MOnMethodCall = methodId;
   methodId = env->GetMethodID(cls, "onMethodCallWithReturn", "(Ljava/lang/String;Lorg/f3/media/web/awesomium/JSArray;)Ljava/lang/Object;");
   MOnMethodCallWithReturn = methodId;
+  methodId = env->GetMethodID(cls, "onDocumentReady", "()V");
+  MOnDocumentReady = methodId;
 }
 
 static jobject newInteger(JNIEnv *env, jint value) {
@@ -715,7 +748,7 @@ static jstring newString(JNIEnv *env, const WebString &str) {
 static WebString toWebString(JNIEnv *env, jstring value) {
   jboolean iscopy;
   const char *chs = env->GetStringUTFChars(value, &iscopy);
-  //fprintf(stderr, "to web string %s\n", chs);
+  fprintf(stderr, "to web string %s\n", chs);
   WebString str = WebString::CreateFromUTF8(chs, strlen(chs));
   env->ReleaseStringUTFChars(value, (const char*)chs);
   return str;

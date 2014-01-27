@@ -1,4 +1,5 @@
 package f3.media.scene;
+import f3.math.Interval;
 
 public class WebBrowser is WebBrowserNode 
 {
@@ -6,6 +7,13 @@ public class WebBrowser is WebBrowserNode
     public var url is String on invalidate {
 	urlInvalid = true;
     }
+    
+    public readonly var videoClips is VideoClip[] = bind foreach (v in vids) VideoClip {
+        browser: this;
+        v: v;
+    };
+
+    var vids is AbstractWebBrowser.Video[];
 
     override function update {
 	super.update();
@@ -14,5 +22,37 @@ public class WebBrowser is WebBrowserNode
 	    tex.setURL(url);
 	    super.update();
 	}
+        vids = foreach (v in tex.getVideos()) v;
+    }
+}
+
+
+public class VideoClip is TimeNode {
+    override var id = bind v.getId();
+    public const browser is WebBrowser;
+    public const v is AbstractWebBrowser.Video;
+    var dur is Number = 0;
+    override var contentBounds = bind Interval { end: 1s * dur }
+
+    override var localTime on replace {
+        if (pausedInScene and isPlaying()) {
+            v.setCurrentTime(localTime.toMillis() / 1000.0);
+        }
+    }
+
+    override protected function update 
+	from (sceneTime is Duration) 
+	to () 
+    {
+        dur = v.getDuration();
+        super.update(sceneTime);
+        if (pausedInScene or not isPlaying()) {
+            v.pause();
+        } else {
+            v.play();
+        }
+        if (paused) {
+            v.setCurrentTime(localTime.toMillis() / 1000.0);
+        }
     }
 }

@@ -610,10 +610,78 @@ public class Browser implements AbstractWebBrowser {
         buildKeyMap();
     }
 
+    boolean documentLoaded;
+
+    boolean prepareDocument;
+
+    public void onDocumentReady() {
+        documentLoaded = true;
+        prepareDocument = true;
+    }
+
+    void registerForEvent(String event) {
+        executeJavascript("document.addEventListener('"+event+"', f3, true)");
+        System.err.println("registered for event: "+ event);
+    }
+
+    public Browser() {
+        EventListener videoListener = new EventListener() {
+                public void handleEvent(String eventType, JSObject event) {
+                    System.err.println(eventType+": "+event);
+                    JSObject src = (JSObject)event.get("srcElement");
+                    System.err.println("src="+src);
+                    String id = (String)src.get("id");
+                    System.err.println("id="+id);
+                    if (id == null || "null".equals(id)) {
+                        id = "video";
+                        executeJavascript("document.getElementsByTagName('video')[0].id ='video'");
+                    }
+                    if ("loadstart".equals(eventType)) {
+                        src.put("preload", "metadata");
+                    }
+                    else if ("loadedmetadata".equals(eventType)) {
+                        executeJavascript("document.getElementById('"+id+"').autoplay='false'");
+                        executeJavascript("document.getElementById('"+id+"').pause();");
+                    } 
+                    for (Video vid: videos) {
+                        if (vid.getId().equals(id)) {
+                            ((VideoImpl)vid).handleEvent(eventType, event);
+                            break;
+                        }
+                    }
+                }
+            };
+        addEventListener("loadedmetadata", videoListener);
+        addEventListener("loadstart", videoListener);
+        addEventListener("play", videoListener);
+        addEventListener("pause", videoListener);
+    }
+
     public static void onMethodCall(Object target,
                                     String methodName,
                                     JSArray args) {
         System.err.println("on method call: "+methodName+": "+args);
+        JSObject obj = (JSObject)args.get(0);
+        String eventType = (String)obj.get("type");
+        ((Browser)target).handleEvent(eventType, obj);
+    }
+
+    Map<String, Set<EventListener>> eventListeners = new HashMap();
+
+    public interface EventListener {
+        public void handleEvent(String name, JSObject event);
+    }
+
+    public void addEventListener(String event, EventListener listener) {
+        Set<EventListener> listeners = eventListeners.get(event);
+        if (listeners == null) {
+            listeners = new HashSet();
+            eventListeners.put(event, listeners);
+        }
+        listeners.add(listener);
+        if (documentLoaded && listeners.size() == 1) {
+            registerForEvent(event);
+        }
     }
 
     public Object onMethodCallWithReturn(String methodName,
@@ -732,21 +800,106 @@ public class Browser implements AbstractWebBrowser {
         return document;
     }
 
-    public void setURL(String url) {
-        setURL(handle, url);
+    public void handleEvent(String eventName, JSObject event) {
+        final Set<EventListener> listeners = eventListeners.get(eventName);
+        if (listeners == null || listeners.size() == 0) {
+            executeJavascript("document.removeEventListener('"+eventName+"', f3)");
+        } else {
+            for (EventListener listener: listeners) {
+                listener.handleEvent(eventName, event);
+            }
+        }
+    }
+
+    class VideoImpl implements Video {
+        String id;
+        int width; 
+        int height;
+        float duration = -1;
+        boolean playing;
+        public void handleEvent(String eventName, JSObject event) {
+            System.err.println("handle event: "+id+": "+eventName+": "+event);
+            JSObject src = (JSObject)event.get("srcElement");
+            Object dur = src.get("duration");
+            System.err.println("dur="+dur);
+            if (dur instanceof Number) {
+                duration = ((Number)dur).floatValue();
+            }
+            if ("play".equalsIgnoreCase(eventName)) {
+                playing = true;
+            } else if ("pause".equalsIgnoreCase(eventName)) {
+                playing = false;
+            }
+        }
+        public VideoImpl(String id, int width, int height) {
+            this.id = id;
+        }
+        public String getId() { return id; }
+        public int getWidth() { return width; }
+        public int getHeight() { return height; }
+        public void play() { if (!playing) executeJavascript("document.getElementById('"+id+"').play()"); }
+        public void pause() { if (playing) executeJavascript("document.getElementById('"+id+"').pause()"); }
+        public void load() { executeJavascript("document.getElementById('"+id+"').load()"); }
+        public float getCurrentTime() { return ((Number)executeJavascript("document.getElementById('"+id+"').currentTime")).floatValue(); }
+        public void setCurrentTime(float time) { executeJavascript("document.getElementById('"+id+"').currentTime = "+time); }
+        public float getPlaybackRate() { return ((Number)executeJavascript("document.getElementById('"+id+"').playbackRate")).floatValue(); }
+        public void setPlaybackRate(float value) { executeJavascript("document.getElementById('"+id+"').playbackRate = "+value); }
+        public void setVolume(float value) { executeJavascript("document.getElementById('"+id+"').volume = "+value); }
+        public float getVolume() { return ((Number)executeJavascript("document.getElementById('"+id+"').volume")).floatValue(); }
+        public void setMuted(boolean value) { executeJavascript("document.getElementById('"+id+"').muted = "+value); }
+        public boolean isMuted() { return (Boolean)executeJavascript("document.getElementById('"+id+"').muted"); }
+        public float getDuration() {
+            if (duration < 0) {
+                Object obj = executeJavascript("document.getElementById('"+id+"').duration");
+                if (obj != null) {
+                    duration = ((Number)obj).floatValue();
+                }
+            }
+            return duration;
+        }
+    }
+
+    public void setURL(final String url) {
+        documentLoaded = false;
         HtmlCleaner p = new HtmlCleaner();
         try {
             document = p.clean(new java.net.URL(url));
             /*
-            StringWriter w = new StringWriter();
-            document.serialize(new PrettyXmlSerializer(p.getProperties()), w);
-            System.out.println("HTML => "+w);
+              StringWriter w = new StringWriter();
+              document.serialize(new PrettyXmlSerializer(p.getProperties()), w);
+              System.out.println("HTML => "+w);
             */
+            document.traverse(new TagNodeVisitor() {
+                    public boolean visit(TagNode parentNode, HtmlNode htmlNode) {
+                        if (htmlNode instanceof TagNode) {
+                            TagNode t = (TagNode)htmlNode;
+                            if (t.getName().equalsIgnoreCase("video")) {
+                                String id = t.getAttributeByName("id");
+                                if (id == null) {
+                                    id = "video";
+                                }
+                                String width = t.getAttributeByName("width");
+                                String height = t.getAttributeByName("height");
+                                int w = width == null ? 0 : Integer.parseInt(width);
+                                int h = height == null ? 0 : Integer.parseInt(height);
+                                Video vid = new VideoImpl(id, w, h);
+                                videos.add(vid);
+                            }
+                        }
+                        return true;
+                    }
+                });
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        setURL(handle, url);
     }
+
+    public List<Video> getVideos() {
+        return videos;
+    }
+
+    List<Video> videos = new ArrayList();
 
     String currentContent = null;
 
@@ -823,10 +976,25 @@ public class Browser implements AbstractWebBrowser {
         updateImage(buffer, 0, 0, w, h);
     }
 
+    void checkPrepareDocument() {
+        if (prepareDocument) {
+            for (Map.Entry<String, Set<EventListener>> ent: eventListeners.entrySet()) {
+                if (ent.getValue().size() > 0) {
+                    registerForEvent(ent.getKey());
+                }
+            }
+            /*
+            Object result = executeJavascript("function f3_checkForVideo() { var events = ['abort','canplay','canplaythrough','durationchange','emptied','ended','error','loadeddata','loadedmetadata','loadstart','pause','play','playing','progress','ratechange','seeked','seeking','stalled','suspend','timeupdate','volumechange','waiting']; var vs = document.getElementsByTagName('video'); for (var i = 0; i < vs.length; i++) { for (var j = 0; j < events.length; j++) { vs[i].addEventListener(events[j], f3); } } vs.length; }; document.addEventListener('DOMContentLoaded', f3_checkForVideo); ");
+            */
+            prepareDocument = false;
+        }
+    }
+
 
     public boolean update() {
-        if (handle != 0) {
-            getWindow();
+        if (handle != 0) {            
+            //getWindow();
+            checkPrepareDocument();
             if (render(handle, buffer, potWidth * 4, 4, rect)) {
                 int x = rect[0];
                 int y = rect[1];
