@@ -20,6 +20,15 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
 
     function getMovieIfLoaded to AbstractMovie { tex as AbstractMovie }
 
+    var needsDraw = true;
+    var lastPos is Long = -1;
+
+    public function updateTexture to Boolean {
+	var result = needsDraw;
+	needsDraw = false;
+	return result;
+    }
+
     override function update {
         if (movieLoader == null) {
             throw new java.lang.RuntimeException("No movie loader");
@@ -41,6 +50,7 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
             movie.play();
 	}
 	movie.update();
+        needsDraw = lastPos <> pos;
 	width = movie.getWidth();
 	height = movie.getHeight();
 	if (not paused and pos <> position.toMillis()) {

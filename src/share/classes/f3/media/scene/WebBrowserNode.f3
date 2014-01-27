@@ -26,6 +26,8 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
 
     protected var tex is AbstractWebBrowser;
 
+    public bound function getImplementation to AbstractWebBrowser { tex }
+
     public function executeJavascript from (script is String) to Object
     {
         tex.executeJavascript(script);
