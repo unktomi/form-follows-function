@@ -4,10 +4,12 @@ import f3.media.scene.AbstractTexture;
 import f3.media.input.Keys;
 import f3.media.scene.CursorType;
 import java.nio.*;
+import java.io.*;
 import com.jogamp.opengl.util.texture.*;
 import javax.media.opengl.*;
 import com.jogamp.opengl.util.*;
 import java.util.*;
+import org.htmlcleaner.*;
 
 public class Browser implements AbstractWebBrowser {
 
@@ -724,8 +726,26 @@ public class Browser implements AbstractWebBrowser {
         return getURL(handle);
     }
 
+    TagNode document;
+
+    public TagNode getStaticDocument() {
+        return document;
+    }
+
     public void setURL(String url) {
         setURL(handle, url);
+        HtmlCleaner p = new HtmlCleaner();
+        try {
+            document = p.clean(new java.net.URL(url));
+            /*
+            StringWriter w = new StringWriter();
+            document.serialize(new PrettyXmlSerializer(p.getProperties()), w);
+            System.out.println("HTML => "+w);
+            */
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     String currentContent = null;
