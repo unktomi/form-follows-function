@@ -100,9 +100,7 @@ public:
 
   JSObject *callbackObject;
 
-  void setSize(int width, int height) {
-    this->width = width;
-    this->height = height;
+  void checkInitWebView() {
     if (webView == 0) {
       webView = webCore->CreateWebView(width, height, webSession, kWebViewType_Offscreen);
       webView->set_view_listener(this);
@@ -114,6 +112,13 @@ public:
       if (currentURL.length() > 0) {
         webView->LoadURL(WebURL(currentURL));
       }
+    }
+  }
+
+  void setSize(int width, int height) {
+    this->width = width;
+    this->height = height;
+    if (webView == 0) {
     } else {
       resized = true;
     }
@@ -388,7 +393,12 @@ extern "C" jint JNICALL Java_org_f3_media_web_awesomium_Browser_getCursor
 extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
 (JNIEnv *env, jclass clazz, jlong handle, jobject buffer, jint rowSpan, jint depth, jintArray rectArray) {
   MyWebViewListener *p = (MyWebViewListener*)handle;
-  if (p == 0 || p->webView == 0) {
+  if (p == 0) {
+    return 0;
+  }
+  updateAll();
+  p->checkInitWebView();
+  if (p->webView == 0) {
     return 0;
   }
   unsigned char *bufPtr = (unsigned char *)env->GetDirectBufferAddress(buffer);
@@ -396,7 +406,6 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
     p->webView->Resize(p->width, p->height);
   }
   //std::cout << "updating" << std::endl;
-  updateAll();
   //std::cout << "done updating" << std::endl;
   Awesomium::BitmapSurface *s = (Awesomium::BitmapSurface*) p->webView->surface();
   //fprintf(stderr, "surface %p\n", s);
@@ -748,7 +757,7 @@ static jstring newString(JNIEnv *env, const WebString &str) {
 static WebString toWebString(JNIEnv *env, jstring value) {
   jboolean iscopy;
   const char *chs = env->GetStringUTFChars(value, &iscopy);
-  fprintf(stderr, "to web string %s\n", chs);
+  //fprintf(stderr, "to web string %s\n", chs);
   WebString str = WebString::CreateFromUTF8(chs, strlen(chs));
   env->ReleaseStringUTFChars(value, (const char*)chs);
   return str;

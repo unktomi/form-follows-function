@@ -18,15 +18,18 @@ public class JSArray implements Iterable<Object> {
             }
         };
     }
+
     long handle;
+
     protected void finalize() {
         org.f3.runtime.Entry.deferAction(new java.lang.Runnable() {
                 public void run() {
-                    System.err.println("deleting js array handle: "+handle);
+                    //System.err.println("deleting js array handle: "+handle);
 		    Browser.destroy_js_array(handle);
 		}
 	    });
     }
+
     public JSArray(long handle) {
 	this.handle = handle;
     }

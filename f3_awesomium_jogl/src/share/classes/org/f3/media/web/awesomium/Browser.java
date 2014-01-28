@@ -627,11 +627,11 @@ public class Browser implements AbstractWebBrowser {
     public Browser() {
         EventListener mediaListener = new EventListener() {
                 public void handleEvent(String eventType, JSObject event) {
-                    System.err.println(eventType+": "+event);
+                    //System.err.println(eventType+": "+event);
                     JSObject src = (JSObject)event.get("srcElement");
-                    System.err.println("src="+src);
+                    //System.err.println("src="+src);
                     String id = (String)src.get("id");
-                    System.err.println("id="+id);
+                    //System.err.println("id="+id);
                     if (id == null || "null".equals(id)) {
                         id = null;
                     }
@@ -671,10 +671,10 @@ public class Browser implements AbstractWebBrowser {
     public static void onMethodCall(Object target,
                                     String methodName,
                                     JSArray args) {
-        System.err.println("on method call: "+methodName+": "+args);
+        //System.err.println("on method call: "+methodName+": "+args);
         JSObject obj = (JSObject)args.get(0);
         String eventType = (String)obj.get("type");
-        ((Browser)target).handleEvent(eventType, obj);
+        ((Browser)target).enqueueEvent(eventType, obj);
     }
 
     Map<String, Set<EventListener>> eventListeners = new HashMap();
@@ -811,6 +811,23 @@ public class Browser implements AbstractWebBrowser {
         return document;
     }
 
+    LinkedList eventQueue = new LinkedList();
+
+    void enqueueEvent(String eventName, JSObject event) {
+        eventQueue.add(eventName);
+        eventQueue.add(event);
+    }
+
+    void flushEventQueue() {
+        LinkedList toFlush = eventQueue;
+        eventQueue = new LinkedList();
+        while (toFlush.size() > 0) {
+            String eventName = (String)toFlush.removeFirst();
+            JSObject event = (JSObject)toFlush.removeFirst();
+            handleEvent(eventName, event);
+        }
+    }
+
     public void handleEvent(String eventName, JSObject event) {
         final Set<EventListener> listeners = eventListeners.get(eventName);
         if (listeners == null || listeners.size() == 0) {
@@ -828,10 +845,10 @@ public class Browser implements AbstractWebBrowser {
         boolean playing;
         String accessor;
         public void handleEvent(String eventName, JSObject event) {
-            System.err.println("handle event: "+id+": "+eventName+": "+event);
+            // System.err.println("handle event: "+id+": "+eventName+": "+event);
             JSObject src = (JSObject)event.get("srcElement");
             Object dur = src.get("duration");
-            System.err.println("dur="+dur);
+            //System.err.println("dur="+dur);
             if (dur instanceof Number) {
                 duration = ((Number)dur).floatValue();
             }
@@ -1042,14 +1059,16 @@ public class Browser implements AbstractWebBrowser {
         if (handle != 0) {            
             //getWindow();
             checkPrepareDocument();
+            boolean result = false;
             if (render(handle, buffer, potWidth * 4, 4, rect)) {
                 int x = rect[0];
                 int y = rect[1];
                 int w = rect[2];
                 int h = rect[3];
                 updateImage(buffer, x, y, w, h); 
-                return true;
+                result = true;
             }
+            flushEventQueue();
         }
         return false;
     }
