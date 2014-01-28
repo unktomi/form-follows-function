@@ -8,7 +8,7 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
        MouseInputHandler, KeyboardInputHandler, Focusable 
 {
     public var width is Integer = 1024;
-    public var height is Integer = 512;
+    public var height is Integer = 1024;
 
     override function getWidth to Integer 
     {

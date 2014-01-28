@@ -8,12 +8,18 @@ public class WebBrowser is WebBrowserNode
 	urlInvalid = true;
     }
     
-    public readonly var videoClips is VideoClip[] = bind foreach (v in vids) VideoClip {
+    public readonly var videoClips is VideoClip[] = bind foreach (v in video) VideoClip {
         browser: this;
-        v: v;
+        media: v;
     };
 
-    var vids is AbstractWebBrowser.Video[];
+    public readonly var audioClips is AudioClip[] = bind foreach (v in audio) AudioClip {
+        browser: this;
+        media: v;
+    };
+
+    var video is AbstractWebBrowser.Video[];
+    var audio is AbstractWebBrowser.Audio[];
 
     override function update {
 	super.update();
@@ -22,21 +28,22 @@ public class WebBrowser is WebBrowserNode
 	    tex.setURL(url);
 	    super.update();
 	}
-        vids = foreach (v in tex.getVideos()) v;
+        video = foreach (v in tex.getVideo()) v;
+        audio = foreach (v in tex.getAudio()) v;
     }
 }
 
-
-public class VideoClip is TimeNode {
-    override var id = bind v.getId();
+abstract public class MediaClip is TimeNode {
+    override var id = bind media.getId();
     public const browser is WebBrowser;
-    public const v is AbstractWebBrowser.Video;
+    public const media is AbstractWebBrowser.Media;
     var dur is Number = 0;
     override var contentBounds = bind Interval { end: 1s * dur }
 
     override var localTime on replace {
         if (pausedInScene and isPlaying()) {
-            v.setCurrentTime(localTime.toMillis() / 1000.0);
+            media.pause();
+            media.setCurrentTime(localTime.toMillis() / 1000.0);
         }
     }
 
@@ -44,15 +51,18 @@ public class VideoClip is TimeNode {
 	from (sceneTime is Duration) 
 	to () 
     {
-        dur = v.getDuration();
+        dur = media.getDuration();
         super.update(sceneTime);
         if (pausedInScene or not isPlaying()) {
-            v.pause();
+            media.pause();
         } else {
-            v.play();
-        }
-        if (paused) {
-            v.setCurrentTime(localTime.toMillis() / 1000.0);
+            media.play();
         }
     }
+}
+
+public class VideoClip is MediaClip {
+}
+
+public class AudioClip is MediaClip {
 }
