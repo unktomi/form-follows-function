@@ -1,8 +1,7 @@
 package f3.media.scene;
 
 public interface AbstractWebBrowser {
-
-    public interface Video {
+    public interface Media {
         //public String getSource();
         public String getId();
         public int getWidth();
@@ -21,7 +20,18 @@ public interface AbstractWebBrowser {
         public float getDuration();
     }
 
-    public java.util.List<Video> getVideos();
+    public interface Video extends Media {
+        //public String getSource();
+        public String getId();
+        public int getWidth();
+        public int getHeight();
+    }
+
+    public interface Audio extends Media {
+    }
+
+    public java.util.List<Video> getVideo();
+    public java.util.List<Audio> getAudio();
     
     public void setURL(String url);
     public String getURL();
