@@ -14,6 +14,8 @@ public class Cursor {
 public static const Default = Cursor {type: CursorType.POINTER};
 public static const Hand = Cursor {type: CursorType.HAND};
 public static const IBeam = Cursor {type: CursorType.IBEAM};
+public static const SouthResize = Cursor {type: CursorType.SOUTH_RESIZE};
+public static const EastResize = Cursor {type: CursorType.EAST_RESIZE};
 
 public class CustomCursor is Cursor {
     public var image is Image;

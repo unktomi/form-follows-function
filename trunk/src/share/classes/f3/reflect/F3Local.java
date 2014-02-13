@@ -1188,7 +1188,7 @@ public class F3Local {
 
     }
 
-    static abstract class FunctionMember<M extends Member> extends F3FunctionMember {
+    public static abstract class FunctionMember<M extends Member> extends F3FunctionMember {
         M method;
         F3ClassType owner;
         String name;
@@ -1270,7 +1270,7 @@ public class F3Local {
         }
     }
     
-    static class MethodFunctionMember extends FunctionMember<Method> {
+    public static class MethodFunctionMember extends FunctionMember<Method> {
         MethodFunctionMember(Method method, ClassType owner, F3FunctionType type) {
             super(method, owner, type, method.getName());
         }
@@ -1301,7 +1301,7 @@ public class F3Local {
         return p < 0 ? name: name.substring(p+1);
     }
 
-    static class CtorMember extends FunctionMember<Constructor> {
+    public static class CtorMember extends FunctionMember<Constructor> {
         CtorMember(Constructor method, ClassType owner, F3FunctionType type) {
             super(method, owner, type, "new "+shortName(method));
         }
