@@ -20,8 +20,7 @@ public class Mat4 is F3Value
     override public function equals from (obj is Object) to Boolean 
     {
 	super.equals(obj) or 
-	    (obj is Mat4 and 
-	     {
+	    (obj is Mat4 and {
 		 const m = obj as Mat4;
 		 xx == m.xx and xy == m.xy and xz == m.xz and xw == m.xw and
 		 yx == m.yx and yy == m.yy and yz == m.yz and yw == m.yw and
@@ -231,7 +230,8 @@ public class Mat4 is F3Value
 	"{%16f wx} {%16f wy} {%16f wz} {%16f ww}"
     }
     
-    public function transpose to Mat4 {
+    public function transpose to Mat4 
+    {
 	if (this == <<1>>) then this else fromColumns(getRows(null));
     }
 

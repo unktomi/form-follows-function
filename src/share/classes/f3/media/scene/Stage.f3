@@ -200,7 +200,7 @@ public interface Stage
 	cursor = sceneCursor;
     }
 
-    protected var keyboardHandlers is  KeyboardInputHandler[];
+    protected var keyboardHandlers is KeyboardInputHandler[];
 
     public readonly var focusedScene is Scene;
 

@@ -149,6 +149,10 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	    layout
 	}
 	override function getText to Area {self}
+        override function toString to String 
+        {
+            "{super.toString()}: {text}";
+        }
     }
     readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
     var column is Number;

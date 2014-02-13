@@ -16,7 +16,8 @@ public abstract class Monoid of a
 	add.flip().apply(x)
     }
 
-    public function dual to Monoid of a {
+    public function dual to Monoid of a 
+    {
 	const self = this;
 	Monoid of a {
 	    zero: self.zero;
@@ -29,14 +30,17 @@ public abstract class Monoid of a
 public interface Reducer of (a, b) 
 {
     public const monoid is Monoid of b = the Monoid of b;
+
     public function append from (x is a, y is b) to b 
     {
 	monoid.add(invoke(x), y)
     }
+
     public function prepend from (x is b, y is a) to b 
     {
 	monoid.add(x, invoke(y))
     }
+
     public abstract function invoke from (x is a) to b;
 }
 
