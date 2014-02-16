@@ -74,7 +74,7 @@ function checkMesh from (mn is MeshNode) to Boolean
     return result;
 }
 
-
+const DEBUG_HIERARCHY = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.hierarchy");
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
 
@@ -1942,7 +1942,6 @@ public class SceneRenderer {
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
 
-	
         const vf = function from (_ is (), n is Node) to () {
 	    if (n.toSceneTransform == null) {
 		println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
@@ -1950,7 +1949,7 @@ public class SceneRenderer {
 	    }
 	    if (visited.contains(n)) {
 		//java.lang.Thread.currentThread().dumpStack();
-                println("node occurs multiply in hierarchy: {n} => {visited}");
+                if (DEBUG_HIERARCHY) println("node occurs multiply in hierarchy: {n} => {visited}");
 		return;
 	    }
 	    visited.add(n);
