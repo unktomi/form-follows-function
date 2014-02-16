@@ -81,12 +81,12 @@ public class Point3 is Tuple3
 
     public function min from (v is Point3) to Point3 
     {
-	if (v == this) v else new Point3(Math.min(x, v.x), Math.min(y, v.y), Math.min(z, v.z))
+	if (v == this) v else new Point3 (Math.min(x, v.x), Math.min(y, v.y), Math.min(z, v.z))
     }
 
     public function max from (v is Point3) to Point3 
     {
-	if (v == this) v else new Point3(Math.max(x, v.x), Math.max(y, v.y), Math.max(z, v.z))
+	if (v == this) v else new Point3 (Math.max(x, v.x), Math.max(y, v.y), Math.max(z, v.z))
     }
 
     public function xy to Point2 

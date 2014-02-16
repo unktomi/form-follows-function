@@ -59,7 +59,7 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
             cursor = Cursor { type: ctype };
 	    needsDraw = true;
         }
-        var u = tex.getURL();
+        const u = tex.getURL();
         loadedURL = u;
     }
 
@@ -69,12 +69,14 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
         loadSubject.onNext(loadedURL);
     }
     
-    public function observePageLoaded to Observable of String {
-        loadSubject;
+    public function observePageLoaded to Observable of String 
+    {
+        loadSubject
     }
 
-    public function updateTexture to Boolean {
-	var result = needsDraw;
+    public function updateTexture to Boolean 
+    {
+	const result = needsDraw;
 	needsDraw = false;
 	return result;
     }
@@ -148,7 +150,7 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
 
     override public function onMouseDown from (event is MouseEvent) to ()  
     {
-	println("mouse down event={event}");
+    //	println("mouse down event={event}");
         for (button in event.buttons) {
             tex.injectMouseDown(button);
         }
@@ -157,8 +159,7 @@ public abstract class WebBrowserNode is Shape2D.MeshNode2D, AbstractTexture,
 
     override public function onMouseMove from (event is MouseEvent) to () 
     {
-        var picked = event.picked;
-        var localPoint = event.location;
+        const localPoint = event.location;
 //	println("mouse move event={event}");
         tex.injectMouseMove(localPoint.x, localPoint.y);
         event.stopPropagation();

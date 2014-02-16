@@ -1930,6 +1930,9 @@ public class SceneRenderer {
         }
 	if (scene.visible <> lastVisible) {
 	    dirty = true;
+            if (DEBUG_DRAW) {
+                println("dirty to scene visibility change {scene} {scene.visible}");
+            }
 	    lastVisible = scene.visible;
 	} else if (not scene.visible) {
 	    return false;
@@ -1953,6 +1956,12 @@ public class SceneRenderer {
 		return;
 	    }
 	    visited.add(n);
+            if (n.bounds.extent == Tuple3.<<0>>) {
+                if (lastDrawn.containsKey(n)) {
+                    dirty = true;
+                }
+                return;
+            }
 	    if (n.visibleInScene) {
 		if (n is PointLight) {
 		    insert (n as PointLight) into lights;
@@ -1978,6 +1987,10 @@ public class SceneRenderer {
                                     println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
                                 }
                                 if (lastDrawn.containsKey(n)) {
+                                    if (DEBUG_DRAW) {
+                                        println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
+                                        println("dirty due to scissor cull change {n}");
+                                    }
                                     dirty = true;
                                 }
                                 return ();
@@ -2013,7 +2026,10 @@ public class SceneRenderer {
 			    shape.shader = makeGradientShader(gl, gradient);
 			}
                         //			println("creating shader for {shape} => {shape.shader}");
-			dirty = true;
+                        if (DEBUG_DRAW) {
+                            println("dirty due to shader update {n} {shape.shader}");
+                        }
+                        dirty = true;
 		    }
 		} 
 		if (n is MeshNode) {
@@ -2043,6 +2059,9 @@ public class SceneRenderer {
 				    offscreenToRender.add(stageNode);
 				} else if (value is WebBrowserNode) {
 				    if ((value as WebBrowserNode).updateTexture()) {
+                                        if (DEBUG_DRAW) {
+                                            println("dirty due to texture update {value}");
+                                        }
 					dirty = true;
 				    }
 				}
@@ -2088,6 +2107,9 @@ public class SceneRenderer {
 				    }
 				}
                                 if (info.scissorBounds <> scissorBounds) {
+                                    if (DEBUG_DRAW) {
+                                        println("dirty due to scissorBounds change {n}");
+                                    }
                                     dirty = true;
                                 }
 				if (info.shader <> mn.shader) {
@@ -2140,6 +2162,9 @@ public class SceneRenderer {
 				ti.layout <> tn.getLayout() or 
 				ti.background <> tn.background or
 				ti.foreground <> tn.paint) {
+                                if (DEBUG_DRAW) {
+                                    println("dirty due text draw change {tn}");
+                                }
 				dirty = true;
 				ti.tex = ti.renderer.render(mn as Text.TextMeshNode);
 				//println("rendered {mn}");
