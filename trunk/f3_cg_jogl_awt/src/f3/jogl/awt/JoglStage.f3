@@ -1991,7 +1991,7 @@ public class SceneRenderer {
                                         println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
                                         println("dirty due to scissor cull change {n}");
                                     }
-                                    dirty = true;
+                                    //dirty = true;
                                 }
                                 return ();
                             }
