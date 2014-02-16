@@ -390,6 +390,14 @@ public class Builtins {
             return value ? Then : Else; 
         }
 
+        public static boolean yes() {
+            return true;
+        }
+
+        public static boolean no() {
+            return false;
+        }
+
         public static boolean not(boolean value) {
             return !value;
         }

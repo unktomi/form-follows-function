@@ -67,7 +67,7 @@ public abstract class TextMeshNode is MeshNode2D
     protected var debugText is String;
     override function toString to String
     {
-	"{super.toString()}: {debugText}";
+	"{super.toString()}: {debugText}: {getText().text}";
     }
     public function getLayout to Layout;
     public var background is Paint;
