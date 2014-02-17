@@ -181,16 +181,6 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget
         getFocusable().focusedSubject;
     }
 
-    /*
-    var mouseDrag1 is Observable of MouseEvent = 
-         foreach (press in observeMouseDown()) observeMouseMove().takeUntil(observeMouseUp());
-    var dummy1 = mouseDrag1.subscribe(Observer of MouseEvent 		     
-    {
-	override function onNext from (e is MouseEvent) to () {
-		 println(e);
-	}	
-    });
-    */
     public function lookup from (id is String) to Node {
 	foldLeft(null as Node, 
 		 function from (r is Node, n is Node) to Node 
@@ -198,7 +188,6 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget
 		     if (r == null and n.id == id) then n else r;
 		 })
     }
-
 
     public function toFront from () to () 
     {
