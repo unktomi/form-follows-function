@@ -55,13 +55,15 @@ public class Channel of a is TimeNode
 
     public function setKey from (interpolator is Interpolator of a) to Key of a
     {
+        println("set key {id} {localTime} => {interpolator}");
         setKey(localTime, interpolator)
     }
 
     public function deleteKey to ()
     {
         const k = pickKey(localTime);
-        if (k <> null) delete k from keys;
+        println("delete key {id} {localTime} => {k.position}");
+        if (k <> null and k.position == localTime) delete k from keys;
     }
 
     public function moveKey from (k is Key of a, delta is Duration) to Key of a
