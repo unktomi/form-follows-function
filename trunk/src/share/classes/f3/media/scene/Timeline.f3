@@ -45,9 +45,16 @@ public class Timeline
     }
 
     var positionSubject is Subject of Duration;
+    var pausedSubject is Subject of Boolean;
 
-    public function observePlayhead to Observable of Duration {
+    public function observePlayhead to Observable of Duration 
+    {
 	if (positionSubject == null) then positionSubject = Subject of Duration {} else positionSubject;
+    }  
+
+    public function observePaused to Observable of Boolean 
+    {
+	if (pausedSubject == null) then pausedSubject = Subject of Boolean {} else pausedSubject;
     }
 
     function interpolateChannel
@@ -60,7 +67,7 @@ public class Timeline
 	ch.interpolate(sceneTime, weight, r);
     }
 
-    public var paused is Boolean = false;
+    public var paused is Boolean = false on replace { pausedSubject.onNext(paused) }
     public var content is TimeNode[];
     public const root is TimeGroup = 
     {
