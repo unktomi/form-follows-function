@@ -3292,6 +3292,7 @@ class AwtMenuItem is MenuFactory.MenuItemImpl {
 
     public function addTo from (parent is java.awt.Menu) to ()
     {
+        println("adding {result} to {parent}");
 	parent.add(result);
     }
 
@@ -3407,6 +3408,23 @@ public const THE_MENU_FACTORY = AWTMenuFactoryImpl {}
 
 public class JoglStage is Stage
 {
+
+    const awtmenu = new java.awt.PopupMenu();
+
+    public override function showPopupMenu from (x is Integer, y is Integer, menu is Menu) to () {
+        if (awtmenu.getParent() == null) {
+            frame.add(awtmenu);
+        }
+        awtmenu.removeAll();
+        const m is java.awt.Menu = (menu.itemImpl as AwtMenu).menuResult;
+        println("m={m}");
+        const items = foreach (i in [0..<m.countItems()]) m.getItem(i);
+        for (item in items) {
+            awtmenu.add(item);
+        }
+        println("showing popup menu at {x}, {y} {awtmenu}");
+        awtmenu.show(frame, x, y);
+    }
 
     public function setFullscreen from (b is Boolean) to ()
     {

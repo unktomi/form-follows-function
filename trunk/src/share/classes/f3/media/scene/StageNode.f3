@@ -63,6 +63,7 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
 
     function convert from (e is MouseEvent) to MouseEvent
     {
+       containingScene = e.scene;
        const e1 = MouseEvent {
             clickCount: e.clickCount;
             stage: this;
@@ -77,6 +78,8 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
        //println("w={width}, h={height} {e} => {e1}");
        return e1;
     }
+
+    var containingScene is Scene;
 
     function convert from (e is MouseWheelEvent) to MouseWheelEvent
     {
@@ -128,4 +131,13 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
     }
     override function getWidth to Integer { width }
     override function getHeight to Integer { height }
+
+    public override function showPopupMenu from (x is Integer, y is Integer, menu is Menu) to () 
+    {
+        const x1 = x - width / 2.0;
+        const y1 = -(y - height / 2.0);
+        const pt = toSceneTransform * new Point3(x1, y1, 0);
+        const screenPt = containingScene.camera.toScreen(pt);
+        containingScene.stage.showPopupMenu(screenPt.x as Integer, screenPt.y as Integer, menu);
+    }
 }
