@@ -1,25 +1,30 @@
 package f3.util;
 import f3.util.Observer.DefaultObserver;
-import f3.lang.Ref;
+import f3.lang.*;
 
 public interface Observable of a, is org.f3.runtime.Monad of (Observable, a) 
 {
     public var debugString is String;
 
+    public function toRef to ConstRef of a 
+    {
+        AbstractConstRef of a {
+            var last is a;
+            override function get to a 
+            {
+                return last
+            }
+            var disp = subscribe(function from (x is a) to () {
+                    last = x;
+                });
+        }
+    }
+
     public function prepend from (x is a) to Observable of a 
     {
         observe(x).followedBy(this);
     }
-    /*
-    public function asObserver to Observer of Observer of a {
-        DefaultObserver of Observer of a {
-            override function onNext from (x is Observer of a) to ()
-            {
-                subscribe(x)
-            }
-        }
-    }
-    */
+
     public function or of b from (xs is Observable of b) to Observable of <a, b> {
         const self = this;
         DefaultObservable of <a, b> {
@@ -943,7 +948,7 @@ public function observe of (f is org.f3.runtime.Functor, a)
 public function observe of (class F of _, a) 
     from (xs is F of a) 
     to Observable of a 
-    with (_ is the Functor of F)
+    with (the Functor of F)
 {
     DefaultObservable of a {
 	override public function subscribe from (observer is Observer of a) to Disposable 

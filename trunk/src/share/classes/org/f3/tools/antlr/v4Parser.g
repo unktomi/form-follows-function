@@ -1936,6 +1936,14 @@ implicitFormalParameter
             }
             endPos($var); 
         }
+    |
+        THE typeRef=type
+        {
+            {
+                $var = F.at(pos($THE)).Param(Name.fromString(names, "the "+ $typeRef.rtype), $typeRef.rtype);
+            }
+            endPos($var); 
+         }
     ;
     
 // Catch an error. We create an erroneous node for anything that was at the start 
