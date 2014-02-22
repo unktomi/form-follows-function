@@ -1,4 +1,5 @@
 package f3.util;
+import f3.lang.*;
 
 public class Subject of a is Observable of a, Observer of a 
 {
@@ -11,6 +12,20 @@ public class Subject of a is Observable of a, Observer of a
     var observers is java.util.Map of (Observer of a, ());
 
     public readonly var last is a;
+
+    override public function toRef to Ref of a 
+    {
+        AbstractRef of a {
+            override function get to a 
+            {
+                last
+            }
+            override function set from (x is a) to ()
+            {
+                onNext(x)
+            }
+        }
+    }
 
     public override function onNext from (x is a) to ()
     {
