@@ -2,6 +2,8 @@ package f3.media.scene;
 import f3.media.input.*;
 import f3.util.*;
 
+public const DEBUG_CURSOR = Boolean.getBoolean("f3.debug.cursor");
+
 public interface Stage
 {
     public const menubar is Menu.Bar;
@@ -193,6 +195,9 @@ public interface Stage
 	var sceneCursor is Cursor = defaultCursor;
 	for (scene in content.reverse()) {
 	    if (scene.cursor <> null) {
+                if (DEBUG_CURSOR) {
+                    println("using cursor of {scene}");
+                }
                 sceneCursor = scene.cursor;
 		break;
 	    }
