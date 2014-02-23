@@ -1941,8 +1941,8 @@ public class SceneRenderer {
 	lastWidth = width;
 	lastHeight = height;
 	//println("scene.root={scene.root} => {scene.content}");
-	scene.update();
-        scene.update(); // hack: necessary to prevent flashing
+	//scene.update();
+        //scene.update(); // hack: necessary to prevent flashing
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
 
@@ -2065,6 +2065,18 @@ public class SceneRenderer {
 				}
 			    }
 			} 
+                        if (mn is WebBrowserNode) {
+                            if ((mn as WebBrowserNode).updateTexture()) {
+                                if (DEBUG_DRAW) {
+                                    println("dirty due to texture update {mn}");
+                                } 
+                                dirty = true;
+                            } else {
+                                if (DEBUG_DRAW) {
+                                    println("not dirty due to texture update {mn}");
+                                } 
+                            }
+                        }
 			var tris is Integer;
                         if (not checkMesh(mn)) {
                             return ();
@@ -3008,6 +3020,9 @@ public class Listener is GLEventListener, DropTargetListener {
         for (scene in stage.content) {
 	    scene.stage = stage;
 	}
+        for (scene in stage.content) {
+            scene.update();
+        }
 	skip = true;
 	if (stageRenderer.renderScenes(gl, stage.width, stage.height)) {
 	    if (lastOpaque <> opaque or lastTransp <> transp) {

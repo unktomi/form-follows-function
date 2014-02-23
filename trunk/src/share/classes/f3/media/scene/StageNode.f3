@@ -96,11 +96,20 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
             scroll: e.scroll;
         }
     }
-
+    
+    var updateTime is Long;
     override function update 
     {
+        const now = java.lang.System.currentTimeMillis();
+        const elapsed = now - updateTime;
+        updateTime = now;
         super.update();
-	updateCursor();
+        if (elapsed >= 16) {
+            for (scene in content) scene.update();
+            updateCursor();
+        } else {
+            //println("elapsed: {elapsed}");
+        }
     }
     public var drawingSurface is AbstractTexture;
     public const factory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
