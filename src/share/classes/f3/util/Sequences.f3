@@ -23,3 +23,10 @@ public function sort of a
 {
     if (xs.size() <= 1) then xs else org.f3.runtime.sequence.Sequences.sort of a(xs, comparator);
 }      
+
+public function sort of (a is java.lang.Comparable) 
+    from (xs is (..a)[]) 
+    to (..a)[] 
+{
+    if (xs.size() <= 1) then xs else org.f3.runtime.sequence.Sequences.sort of a(xs);
+}      

@@ -77,6 +77,7 @@ function checkMesh from (mn is MeshNode) to Boolean
 const DEBUG_HIERARCHY = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.hierarchy");
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
+const DEBUG_LIGHTS = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.lights");
 
 public const ENABLE_TEXTURED_TEXT is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.textured.text");;
 public const ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.2d.renderer");;
@@ -1883,7 +1884,7 @@ public class SceneRenderer {
     var lastDrawn = new java.util.HashMap of (MeshNode, DrawInfo);
     var viewMatrix is Mat4;
     var projectionMatrix is Mat4;
-    var lightPositions is Point3[]; // hack
+    var lightPositions is Point3[];
     var lastCamera is Camera;
 
     var renderer2D is java.util.Map of (Scene, SceneRenderer2D) = new java.util.WeakHashMap of (Scene, SceneRenderer2D) ;
@@ -1955,6 +1956,12 @@ public class SceneRenderer {
                 if (DEBUG_HIERARCHY) println("node occurs multiply in hierarchy: {n} => {visited}");
 		return;
 	    }
+            if (n is PointLight and n.visibleInScene) {
+                if (DEBUG_LIGHTS) {
+                    println("found pointLight {n}");
+                }
+                insert (n as PointLight) into lights;
+            }
 	    visited.add(n);
             if (n.bounds.extent == Tuple3.<<0>>) {
                 if (lastDrawn.containsKey(n)) {
@@ -1963,9 +1970,6 @@ public class SceneRenderer {
                 return;
             }
 	    if (n.visibleInScene) {
-		if (n is PointLight) {
-		    insert (n as PointLight) into lights;
-		}
 		var debug = false;
 		var par = n;
 		while (par <> null) {
@@ -2217,9 +2221,12 @@ public class SceneRenderer {
 	    }
             return ();
 	};
+        scene.root.foldLeft(null, vf);
+        /*
 	for (i in scene.visibleMeshes) {
 	    vf((), i);
 	}
+        */
 	for (i in offscreenToRender) {
 	    if (renderStageNode(gl, i as StageNode)) {
                 dirty = true;
@@ -2257,12 +2264,14 @@ public class SceneRenderer {
 		projectionMatrix = camera.projectionMatrix;
 	    }
 	}
+
         var positions is Point3[] = foreach (light in lights) light.location;
+        positions = Sequences.sort(positions);
 	//println("light positions = {positions}");
         if (positions <> lightPositions) {
             lightPositions = positions;
             dirty = true;
-	    if (DEBUG_DRAW) {
+	    if (DEBUG_DRAW or DEBUG_LIGHTS) {
 		println("needs draw due to light positions");
 	    }
         }
