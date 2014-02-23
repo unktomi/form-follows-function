@@ -791,15 +791,18 @@ JNIEXPORT jobject JNICALL Java_org_f3_media_web_awesomium_Browser_execute_1js
   (JNIEnv *env, jclass, jlong h, jstring script)
 {
   MyWebViewListener *l = (MyWebViewListener*)h;
-  fprintf(stderr, "handle=%p\n", (void*)h);
+  //  fprintf(stderr, "handle=%p\n", (void*)h);
   if (l->webView == 0) {
     return 0;
   }
+#if 0
+  fprintf(stderr, "script=%s\n", script);
   fprintf(stderr, "thread=%p\n", pthread_self());
   fprintf(stderr, "webview=%p\n", l->webView);
   fprintf(stderr, "script=%p\n", script);
+#endif
   WebString str = toWebString(env, script);
-  fprintf(stderr, "calling execute\n");
+  //  fprintf(stderr, "calling execute\n");
   JSValue value = l->webView->ExecuteJavascriptWithResult(str, WSLit(""));
   jobject result = fromJSValue(env, value);
   return result;

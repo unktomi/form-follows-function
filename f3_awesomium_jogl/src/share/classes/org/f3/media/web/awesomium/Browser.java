@@ -830,6 +830,7 @@ public class Browser implements AbstractWebBrowser {
 
     public void handleEvent(String eventName, JSObject event) {
         final Set<EventListener> listeners = eventListeners.get(eventName);
+        System.err.println("handle event: "+ eventName);
         if (listeners == null || listeners.size() == 0) {
             executeJavascript("document.removeEventListener('"+eventName+"', f3)");
         } else {
@@ -1053,13 +1054,20 @@ public class Browser implements AbstractWebBrowser {
             prepareDocument = false;
         }
     }
-
+    
+    long updateTime;
+    boolean lastResult;
 
     public boolean update() {
+        boolean result = false;
+        long now = System.currentTimeMillis();
+        if (now - updateTime < 16) {
+            return lastResult;
+        }
         if (handle != 0) {            
             //getWindow();
             checkPrepareDocument();
-            boolean result = false;
+            long pre = now;
             if (render(handle, buffer, potWidth * 4, 4, rect)) {
                 int x = rect[0];
                 int y = rect[1];
@@ -1069,8 +1077,12 @@ public class Browser implements AbstractWebBrowser {
                 result = true;
             }
             flushEventQueue();
+            now = System.currentTimeMillis();
+            long elapsed = (now - updateTime);
+            //System.err.println(result + ": elapsed: "+elapsed+"ms, this: "+(now - pre)+"ms");
+            updateTime = now;
         }
-        return false;
+        return lastResult = result;
     }
 
 

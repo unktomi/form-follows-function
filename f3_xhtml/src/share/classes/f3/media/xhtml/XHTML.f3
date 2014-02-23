@@ -25,13 +25,31 @@ import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 import org.xhtmlrenderer.simple.extend.FormSubmissionListener;
 import org.xhtmlrenderer.util.ImageUtil;
 
+public class Embed {
+    public const uri is String;
+    public const node is Node;
+    override public function equals from (obj is Object) to Boolean 
+    {
+        obj is Embed and { const x = obj as Embed; x.uri == uri and x.node == node };
+    }
+}
 
 public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
 
     var underMouse is Box;
     var pressed is Box;
 
-    var linkClickedSubject = Subject of String {};
+    protected function resolveElement from (uri is String) to Node
+    {
+        for (x in embed) {
+            if (x.uri == uri) return x.node; 
+        }
+        return null;
+    }
+
+    public var embed is Embed[];
+
+    const linkClickedSubject = Subject of String {};
 
     public function observeLinkClicked to Observable of String {
          linkClickedSubject;
@@ -82,11 +100,14 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
         underMouse = rootBox.getLayer().find(layoutContext, x, y, false);
         cursor = if isHyperlink() then Cursor.Hand else null;
     }
-    public override function onMouseDrag from (event is MouseEvent) to () {
+    public override function onMouseDrag from (event is MouseEvent) to () 
+    {
     }
-    public override function onMouseEnter from (event is MouseEvent) to () {
+    public override function onMouseEnter from (event is MouseEvent) to () 
+    {
     }
-    public override function onMouseLeave from (event is MouseEvent) to () {
+    public override function onMouseLeave from (event is MouseEvent) to () 
+    {
         underMouse = null;
     }
     public override function onMouseWheel from (event is MouseWheelEvent) to () {
@@ -134,7 +155,7 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
         return outputDevice.getNode();
     }
 
-    protected const replacedElementFactory = ReplacedElementFactoryImpl {};
+    protected const replacedElementFactory = ReplacedElementFactoryImpl {xhtml: this};
 
     const dotsPerPoint = 1;
     const dotsPerPixel = 1;
@@ -758,7 +779,7 @@ class ReplacedElementImpl is ReplacedElement {
 
 
 class ReplacedElementFactoryImpl is ReplacedElementFactory {
-
+    public const xhtml is AbstractXHTMLNode;
     public var baseURL is String;
     public const imageLoader is ImageLoader = the ImageLoader;
     public const pathFactory is Shape2D.Path2DFactory = the Shape2D.Path2DFactory;
@@ -782,6 +803,10 @@ class ReplacedElementFactoryImpl is ReplacedElementFactory {
                 tx: bind n.contentBounds.extent.x;
                 ty: bind n.contentBounds.extent.y;
                 content: n;
+            }
+        } else if (elem.getNodeName().equalsIgnoreCase("embed")) {
+            if (n == null) {
+                n = xhtml.resolveElement(elem.getAttribute("src"));
             }
         }
         if (n == null) then null else
