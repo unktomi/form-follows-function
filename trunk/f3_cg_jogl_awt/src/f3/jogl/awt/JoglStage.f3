@@ -1956,12 +1956,6 @@ public class SceneRenderer {
                 if (DEBUG_HIERARCHY) println("node occurs multiply in hierarchy: {n} => {visited}");
 		return;
 	    }
-            if (n is PointLight and n.visibleInScene) {
-                if (DEBUG_LIGHTS) {
-                    println("found pointLight {n}");
-                }
-                insert (n as PointLight) into lights;
-            }
 	    visited.add(n);
             if (n.bounds.extent == Tuple3.<<0>>) {
                 if (lastDrawn.containsKey(n)) {
@@ -2221,12 +2215,10 @@ public class SceneRenderer {
 	    }
             return ();
 	};
-        scene.root.foldLeft(null, vf);
-        /*
-	for (i in scene.visibleMeshes) {
+        lights = scene.visibleLights;
+        for (i in scene.visibleMeshes) {
 	    vf((), i);
 	}
-        */
 	for (i in offscreenToRender) {
 	    if (renderStageNode(gl, i as StageNode)) {
                 dirty = true;

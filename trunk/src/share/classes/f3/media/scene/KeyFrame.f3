@@ -35,18 +35,28 @@ public function sortKeys of a
 
 public abstract class NumberInterpolator is Interpolator of Number 
 {
-
     override function scale from (x is Number, weight is Number) to Number 
     {
 	x * weight;
     }
-
     override function add from (x is Number, y is Number) to Number 
     {
 	x + y;
     }
-
     override const zero = 0.0;
+}
+
+public abstract class ColorInterpolator is Interpolator of Color 
+{
+    override function scale from (x is Color, weight is Number) to Color
+    {
+	x * weight;
+    }
+    override function add from (x is Color, y is Color) to Color 
+    {
+	x + y;
+    }
+    override const zero = Color.BLACK;
 }
 
 public static const Linear = NumberInterpolator
@@ -54,6 +64,14 @@ public static const Linear = NumberInterpolator
     override function interpolate from (k is Key of Number, t is Number) to Number 
     {
 	k.prev.value + t * (k.value - k.prev.value)
+    }
+}
+
+public static const ColorLinear = ColorInterpolator 
+{
+    override function interpolate from (k is Key of Color, t is Number) to Color 
+    {
+	k.prev.value + (k.value - k.prev.value) * t
     }
 }
 
