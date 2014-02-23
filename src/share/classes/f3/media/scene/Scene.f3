@@ -112,18 +112,22 @@ public class Scene
     }
 
     public readonly var visibleMeshes is MeshNode[];
+    public readonly var visibleLights is PointLight[];
 
     public function pickGeometry 
         from (ray is Ray3) to Pick[]
     {
         var result is Pick[];
         visibleMeshes = [];
+        visibleLights = [];
         root.foldLeft((), 
                       function from (_ is (), n is Node) to () 
                        {
                            if (n is MeshNode and n.visibleInScene and 
                                camera.contains(n.boundsInScene)) {
                                insert n as MeshNode into visibleMeshes;
+                           } else if (n is PointLight and n.visibleInScene) {
+                               insert (n as PointLight) into visibleLights;
                            }
                        });
         for (n in visibleMeshes) {
