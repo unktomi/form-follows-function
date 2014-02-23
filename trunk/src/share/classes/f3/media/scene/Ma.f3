@@ -3068,6 +3068,8 @@ class MFile is MNode {
 
 class MLight is MSpatial {
     const type is String;
+    var cl is Tuple3;
+    var li is Number;
     override public function toNode from (m is MaModel) to Node 
     {
         if (this.type == "pointLight") {
