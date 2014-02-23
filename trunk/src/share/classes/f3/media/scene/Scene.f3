@@ -344,6 +344,9 @@ public class Scene
         var cursorPick is Pick = null;
         for (i in underMouse) {
             if (i.node.blocksPointer or i.node.cursor <> null) {
+                if (Stage.DEBUG_CURSOR) {
+                    println("cursor pick is {i.node} in {this}");
+                }
                 cursorPick = i;
                 break;
             }
