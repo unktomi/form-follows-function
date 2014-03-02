@@ -105,9 +105,10 @@ public:
       webView = webCore->CreateWebView(width, height, webSession, kWebViewType_Offscreen);
       webView->set_view_listener(this);
       webView->set_load_listener(this);
+      webView->set_js_method_handler(this);
+      webCore->Update();
       JSValue result = webView->CreateGlobalJavascriptObject(WSLit("f3"));
       callbackObject = &result.ToObject();
-      webView->set_js_method_handler(this);
       callbackObject->SetCustomMethod(WSLit("handleEvent"), false);
       if (currentURL.length() > 0) {
         webView->LoadURL(WebURL(currentURL));

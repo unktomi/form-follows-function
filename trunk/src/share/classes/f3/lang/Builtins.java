@@ -398,6 +398,14 @@ public class Builtins {
             return false;
         }
 
+        public static boolean Yes() {
+            return true;
+        }
+
+        public static boolean No() {
+            return false;
+        }
+
         public static boolean not(boolean value) {
             return !value;
         }
