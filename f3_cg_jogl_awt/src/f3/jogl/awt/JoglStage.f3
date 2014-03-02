@@ -503,7 +503,11 @@ class JoglPath2D is Path2D
             if (stroke.join == Stroke.Join.BEVEL) then BasicStroke.JOIN_BEVEL 
                 else if (stroke.join == Stroke.Join.MITER) then BasicStroke.JOIN_MITER
                     else BasicStroke.JOIN_ROUND;
-        const bs = new BasicStroke(stroke.width, cap, join);
+        const dashArray is nativearray of Number = stroke.dash;
+        const bs = new BasicStroke(stroke.width, cap, join, 
+                                   Math.max(stroke.miterlimit, 1.0), 
+                                   if dashArray.length == 0 then null else dashArray, 
+                                   stroke.dashPhase);
         const ss = bs.createStrokedShape(path);
         var gp is GeneralPath;
         if (ss instanceof GeneralPath){
@@ -580,7 +584,7 @@ function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to S
 
 
 public class TexturedTextMeshNode is MeshNode {
-       public const tn is Text.TextMeshNode;
+    public const tn is Text.TextMeshNode;
 }
 
 class TextRenderer2D {
@@ -1941,7 +1945,7 @@ public class SceneRenderer {
 	lastWidth = width;
 	lastHeight = height;
 	//println("scene.root={scene.root} => {scene.content}");
-	//scene.update();
+	scene.update();
         //scene.update(); // hack: necessary to prevent flashing
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);

@@ -27,8 +27,9 @@ public class MouseEvent is PointerEvent
     }
 
     public readonly var dragStart = bind sceneToLocal(picked.node.toSceneTransform, picked.dragPoint0);
-    public readonly var drag is Vec3 = bind location - dragStart;
-    public readonly var sceneDrag = bind picked.dragPoint0 - picked.dragPoint1;
+    public readonly var dragEnd = bind sceneToLocal(picked.node.toSceneTransform, picked.dragPoint1);
+    public readonly var drag is Vec3 = bind dragEnd - dragStart;
+    public readonly var sceneDrag = bind picked.dragPoint1 - picked.dragPoint0;
 
     override function toString to String {
         "Mouse Event button {buttons}, clickCount {clickCount}, screenDrag {screenDrag}, {PointerEvent.toString()}";

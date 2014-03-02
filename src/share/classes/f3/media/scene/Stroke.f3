@@ -5,12 +5,16 @@ public class Stroke is AbstractStroke
     public const cap is Cap = Cap.BUTT;
     public const join is Join = Join.MITER;
     public const width is Number = 1.0;
+    public const miterlimit is Number = 1.0;
+    public const dash is Number[];
+    public const dashPhase is Number;
 
     override public function equals from (obj is Object) to Boolean 
     {
         (obj instanceof Stroke) and {
             const other = obj as Stroke;
-	    cap == other.cap and join == other.join and width == other.width;
+	    cap == other.cap and join == other.join and width == other.width and
+            miterlimit == other.miterlimit and dash == other.dash and dashPhase == dashPhase;
         }
     }
 }
