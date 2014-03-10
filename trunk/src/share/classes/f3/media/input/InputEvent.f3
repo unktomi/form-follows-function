@@ -3,9 +3,11 @@ import f3.media.scene.Scene;
 import f3.media.scene.Stage;
 import f3.media.scene.MasterTimeline;
 
+var seqNum = 0;
+
 public interface InputEvent 
 {
-    public const count is Integer;
+    public const count is Integer = seqNum++;
     public const stage is Stage;
     public const scene is Scene;
     public const altKey is Boolean;

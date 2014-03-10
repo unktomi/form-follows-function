@@ -25,6 +25,11 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
         observe(x).followedBy(this);
     }
 
+    public function count to Observable of Integer 
+    {
+        fold(0, function from (n is Integer, _ is a) to Integer { n + 1 })
+    }
+
     public function or of b from (xs is Observable of b) to Observable of <a, b> {
         const self = this;
         DefaultObservable of <a, b> {
@@ -126,14 +131,14 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
         }
     }
 
-    public function repeat from (count is Integer) to Observable of a 
+    public function repeat from (repeatCount is Integer) to Observable of a 
     {
         const self = this;
         DefaultObservable of a {
             override function subscribe from (y is Observer of a) to Disposable {
                 var d is Disposable = 
                     self.subscribe(DefaultObserver of a {
-                            var n = count-1;
+                            var n = repeatCount-1;
                             override function onNext from (x is a) to ()
                             {
                                 y.onNext(x);
@@ -640,7 +645,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	buffer(count, Duration.INDEFINITE);
     }
 
-    public function buffer from (count is Integer, duration is Duration) to Observable of a 
+    public function buffer from (bufferSize is Integer, duration is Duration) to Observable of a 
     {
 	const self = this;
 	DefaultObservable of a {
@@ -657,7 +662,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 			}
 			expiry = now + duration;
 		    }
-		    const j = if (force) then xs.size() else count;
+		    const j = if (force) then xs.size() else bufferSize;
 		    const batch = xs[0..<j];
 		    xs[0..<j] = [];
 		    for (x in batch) {
