@@ -17,7 +17,11 @@ class PointerObserver of a is Subject of a {
     var disp;
     init {
 	disp = ptr.onReplace(this.onNext);
-	onNext(ptr.get());
+	try {
+            onNext(ptr.get());
+        } catch (e is java.lang.Exception) {
+            e.printStackTrace()
+        }
     }
 }
 

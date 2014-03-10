@@ -45,6 +45,11 @@ import org.f3.runtime.sequence.Sequences;
  * @profile desktop
  */
 public class F3Local {
+
+    public interface JVMLocalType {
+        public Type getType();
+    }
+
     public static Context getContext() { return Context.instance; }
 
     /** Implementation of {@link F3Context} using Java reflection.
@@ -365,7 +370,7 @@ public class F3Local {
     /** A mirror of a {@code Class} in the current JVM.
      * @profile desktop
      */
-    public static class ClassType extends F3ClassType {
+    public static class ClassType extends F3ClassType implements JVMLocalType {
 	Type type;
         Class refClass;
         Class refInterface;

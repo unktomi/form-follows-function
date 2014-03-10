@@ -254,8 +254,11 @@ public abstract class Shape2D is Node, MouseInputHandler
 								     getStroke(stroke), 
 								     strokePaint);
 
-    override var contentBounds = bind Bounds.merge(fillMesh.bounds, 
-						   strokeMesh.bounds);
+    override var contentBounds = bind getContentBounds();
+
+    bound function getContentBounds to Bounds {
+        if strokeMesh == null then fillMesh.bounds else strokeMesh.bounds;
+    }
 
     override public function of b foldLeft 
 	from (z is b,

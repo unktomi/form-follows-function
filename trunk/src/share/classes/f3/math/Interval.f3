@@ -8,11 +8,9 @@ public class Interval
 {
     public const start is Duration;
     public const end is Duration;
-    public function duration to Duration { end - start };
+    public function duration to Duration { end - start }
 
-    override function toString to String {
-	"Interval {start}, {end}";
-    }
+    override function toString to String { "Interval {start}, {end}" }
 
     public function mul from (scale is Number) to Interval 
     {
