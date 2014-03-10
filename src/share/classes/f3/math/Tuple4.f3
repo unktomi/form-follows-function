@@ -2,8 +2,8 @@ package f3.math;
 import org.f3.runtime.*;
 import java.lang.Math;
 
-public static const <<0>> = Tuple4 {x: 0.0, y: 0.0, z: 0.0, w: 0.0};
-public static const <<1>> = Tuple4 {x: 1.0, y: 1.0, z: 1.0, w: 1.0};
+public const <<0>> = Tuple4 {x: 0.0, y: 0.0, z: 0.0, w: 0.0};
+public const <<1>> = Tuple4 {x: 1.0, y: 1.0, z: 1.0, w: 1.0};
 
 public class Tuple4 is F3Value
 {

@@ -44,8 +44,9 @@ public class Group is Node
     {
         var content = content0;
         var b = b0;
+        var c = content[0];
         if (content == []) then b
-        else mergeBounds(content[1..], Bounds.merge(b, content[0].bounds));
+        else mergeBounds(content[1..], Bounds.merge(b, if c.visible then c.bounds else null));
     }
 
     override public function foldLeft of b

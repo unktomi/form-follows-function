@@ -1569,7 +1569,9 @@ public class F3Types extends Types {
                 case CHAR: s = "Character"; break;
                 case BOOLEAN: s = "Boolean"; break;
                 case VOID: s = "()"; break;
-                default: s = t.toString(); break;
+            default: {
+                s = t.toString();
+            } break;
             }
             buffer.append(s);
             return null;

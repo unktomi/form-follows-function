@@ -599,4 +599,4 @@ function luBacksubstitution
     }
 }
 
-public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
+public const TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

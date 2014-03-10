@@ -2,8 +2,8 @@ package f3.math;
 import java.lang.Math;
 import f3.math.Quat.*;
 
-public static const EPSILON = 0.000001;
-public static const ZERO_TOLERANCE = .00001;
+public const EPSILON = 0.000001;
+public const ZERO_TOLERANCE = .00001;
 
 public function quat
     from (rx is Number,

@@ -28,7 +28,7 @@ package f3.reflect;
  * @author Per Bothner
  * @profile desktop
  */
-public class F3PrimitiveType extends F3Type {
+public class F3PrimitiveType extends F3Type implements F3Local.JVMLocalType {
     Class clas;
     String name;
     Class boxed;
@@ -38,6 +38,10 @@ public class F3PrimitiveType extends F3Type {
 	this.boxed = boxed;
     }
     public String getName() { return name; }
+
+    public java.lang.reflect.Type getType() {
+        return clas;
+    }
 
     static final F3PrimitiveType voidType =
         new F3PrimitiveType(Void.TYPE, "()", Void.class);

@@ -51,4 +51,4 @@ function run {
     println(<<1>> * <<1>> * Vec2.<<1>> * 2);
 }
 
-public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<1>>);
+public const TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<1>>);

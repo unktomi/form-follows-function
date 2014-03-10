@@ -127,9 +127,9 @@ public class Builtins {
 	return x;
     }
 
-    static class Curry<R,A1,A2> extends Function1<Function1<R,A2>,A1> {
-        Function2<R,A1,A2> fun;
-        public Curry(Function2<R,A1,A2> fun) {
+    static class Curry<R,A1,A2> extends Function1<Function1<R, A2>, A1> {
+        final Function2<? extends R, ? super A1, ? super A2> fun;
+        public Curry(Function2<? extends R, ? super A1, ? super A2> fun) {
             this.fun = fun;
         }
         public String toString() {
@@ -154,14 +154,14 @@ public class Builtins {
         }
     }
 
-    public static <R, A1, A2> Function1<Function1<R,A2>, A1> curry(final Function2<R, A1, A2> fun) {
-        return new Curry<R,A1,A2>(fun);
+    public static <R, A1, A2> Function1<Function1<R,A2>, A1> curry(final Function2<? extends R, ? super A1, ? super A2> fun) {
+        return new Curry<R, A1, A2>(fun);
     }
 
-    public static <R, A1, A2> Function2<R,A1,A2> 
-        uncurry(final Function1<Function1<R,A2>,A1> fun) {
+    public static <R, A1, A2> Function2<? extends R, ? super A1, ? super A2> 
+        uncurry(final Function1<? extends Function1<? extends R, ? super A2>, ? super A1> fun) {
         if (fun instanceof Curry) {
-            return (Function2<R,A1,A2>)((Curry)fun).fun;
+            return (Function2<? extends R, ? super A1, ? super A2>)((Curry)fun).fun;
         }
         return new Function2<R,A1,A2>() {
             public String toString() {

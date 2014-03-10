@@ -81,7 +81,7 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
     public function normalize from () to Quat
     {
 	const lenSq = lengthSquared();
-	if (lenSq != 1 and lenSq != 0) then mul(1/Math.sqrt(lenSq)) else this
+	if (lenSq <> 1 and lenSq <> 0) then mul(1/Math.sqrt(lenSq)) else this
     }
 
     public function lengthSquared from () to Number 

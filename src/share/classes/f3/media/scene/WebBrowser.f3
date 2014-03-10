@@ -47,12 +47,17 @@ abstract public class MediaClip is TimeNode {
         }
     }
 
+    var _playbackRate = 0;
+
     override protected function update 
 	from (sceneTime is Duration) 
 	to () 
     {
         dur = media.getDuration();
         super.update(sceneTime);
+        if (_playbackRate <> toSceneTransform.rate) {
+            media.setPlaybackRate(_playbackRate = toSceneTransform.rate);
+        }
         if (pausedInScene or not isPlaying()) {
             media.pause();
         } else {
