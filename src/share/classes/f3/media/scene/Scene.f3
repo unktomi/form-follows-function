@@ -541,6 +541,7 @@ public class Scene
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
             const we = MouseWheelEvent { // this sucks
+                count: sceneEvent.count;
                 clickCount: e.clickCount;
                 stage: e.stage;
                 scene: this;
@@ -567,6 +568,7 @@ public class Scene
             sceneEvent.stopPropagation();
             const e = makeMouseEvent(null, p, sceneEvent);
             const we = MouseWheelEvent { // this sucks
+                count: e.count;
                 clickCount: e.clickCount;
                 stage: e.stage;
                 scene: this;
@@ -687,6 +689,7 @@ public class Scene
     {
         const e = sceneEvent;
         MouseEvent {
+            count: sceneEvent.count;
             clickCount: e.clickCount;
             stage: e.stage;
             scene: this;
