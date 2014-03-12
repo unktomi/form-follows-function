@@ -231,6 +231,7 @@ COLON       : ':';
 QUES        : '?';
 SUCHTHAT    : '=>';
 ARROW       : '->';
+BWD_ARROW   : '<-';
 SUBSUB      : '--';
 
 

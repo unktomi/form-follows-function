@@ -3544,8 +3544,8 @@ inClause
     F3Var var2 = null;
 }
 
-    : (formalParameter IN)=>(f1=formalParameter   { errNodes.append($f1.var);    }
-        IN 
+    : (formalParameter (IN | BWD_ARROW))=>(f1=formalParameter   { errNodes.append($f1.var);    }
+        (IN | BWD_ARROW)
         se=expression   { errNodes.append($se.value);               }
 
         (
@@ -3558,7 +3558,7 @@ inClause
             endPos($value); 
         })
 |
-     e2=expression INTO f3=formalParameter (IN f4=formalParameter { var2 = $f4.var ;} )?
+     e2=expression (INTO | ARROW) f3=formalParameter ((INTO | ARROW) f4=formalParameter { var2 = $f4.var ;} )?
         (
               WHERE we2=expression   { weVal = $we2.value; errNodes.append($we2.value); }
             |

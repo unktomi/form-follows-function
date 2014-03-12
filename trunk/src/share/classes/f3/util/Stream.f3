@@ -330,19 +330,13 @@ bound function <<every other>> of a
     xs.followedBy(<<every other>>(xs.later.later))
 }
 
-bound var fib is Stream of Integer = repeat(0).followedBy(fib1);
-bound var fib1 is Stream of Integer = repeat(1).followedBy(fib2);
-bound var fib2 is Stream of Integer = fib + fib1;
-
-/*
-bound var fib is Stream of Integer = fib1.prepend(0);
-bound var fib1 is Stream of Integer = fib2.prepend(1);
-bound var fib2 is Stream of Integer = fib + fib1;
-*/
 
 function run 
 {
-    println(fib.take(100));
+    bound var fib is Stream of Integer = repeat(0).followedBy(fib1);
+    bound var fib1 is Stream of Integer = repeat(1).followedBy(fib2);
+    bound var fib2 is Stream of Integer = fib + fib1;
+    println(fib.take(2000));
 }
 
 

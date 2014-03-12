@@ -1,8 +1,8 @@
 package f3.util;
 
-public interface Cofunctor of (class F of _) 
+public interface ContravariantFunctor of (class F of _) 
 {
-    public function comap of (a, b)
+    public function contramap of (a, b)
 	from (xs is F of a,
 	      f is function from b to a) 
         to F of b;

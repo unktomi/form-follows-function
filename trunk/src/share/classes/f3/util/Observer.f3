@@ -11,7 +11,7 @@ public abstract class DefaultObserver of a is Observer of a
 {
 }
 
-const cofunctor = Cofunctor of Observer {
+const instance = ContravariantFunctor of Observer {
 
     override public function comap of (a, b)
 	from (xs is Observer of a,
