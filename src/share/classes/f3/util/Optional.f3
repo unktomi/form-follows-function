@@ -23,7 +23,8 @@ public abstract class Optional of a is Monad of (Optional, a), F3Value
 	from (f is function from a to Optional of b) 
 	to Optional of b;
 
-    abstract public function get to a;
+    abstract public function getOrElse from (x is a) to a;
+    public function get to a { getOrElse(null) }
 
     public function isAbsent from () to Boolean 
     {
@@ -59,7 +60,7 @@ public class Present of a is Optional of a
 	f(x)
     }
 
-    public override function get to a 
+    public override function getOrElse from (_ is a) to a 
     { 
 	x
     }
@@ -109,9 +110,9 @@ public class Absent of a is Optional of a
 	absent of b()
     }
 
-    public override function get to a
+    public override function getOrElse from (y is a) to a
     { 
-	null
+        y
     }
 
     override function toString to String 
@@ -145,7 +146,7 @@ public function absent of a to Absent of a
     Absence as Absent of a;
 }
 
-static def Absence = Absent of null {};
+const Absence = Absent of null {};
 
-public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Absence);
+public const TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Absence);
 

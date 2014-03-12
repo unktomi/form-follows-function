@@ -813,10 +813,12 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     {
 	const self = this;
 	DefaultObservable of b {
-	    override function subscribe from (observer is Observer of b) to Disposable {
+	    override function subscribe from (observer is Observer of b) to Disposable 
+            {
 		self.subscribe(Observer of a {
 			var r = z;
-			override function onNext from (x is a) to () {
+			override function onNext from (x is a) to () 
+                        {
 			    observer.onNext(r = f(r, x));
 			}
 			override function onError from (e is java.lang.Exception) to ()
@@ -846,7 +848,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     }
 
     public function partition from (f is function from a to Boolean) 
-	to (Observable of a)[]
+	to (Observable of a, Observable of a)
     {
 	var d0 is Disposable;
 	var d1 is Disposable;
@@ -882,7 +884,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	}
 	d0 = subscribe(y);
 	d1 = subscribe(n);
-	[y, n]
+	(y, n)
     }
 
 }

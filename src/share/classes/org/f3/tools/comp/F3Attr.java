@@ -1845,14 +1845,16 @@ public class F3Attr implements F3Visitor {
             Type elemtype;
 	    if (clause.intoVar != null) {
 		if (!types.isComonad(exprType)) {
-		    chk.typeError(clause, MsgSym.MESSAGE_INCOMPATIBLE_TYPES, exprType, syms.f3_ComonadType);
+		    //chk.typeError(clause, MsgSym.MESSAGE_INCOMPATIBLE_TYPES, exprType, syms.f3_ComonadType);
 		    elemtype = exprType;
 		} else {
 		    elemtype = comonadType = exprType;
 		    //elemtype = types.comonadElementType(exprType);
 		}
 		Type comonadTypeClass = types.comonadTypeClass(exprType);
+                System.err.println("comonadTypeClass="+comonadTypeClass);
 		Symbol theOne = findThe(env, clause.getSequenceExpression(), comonadTypeClass);
+                System.err.println("theOne="+theOne);
 		typeClasses[idx] = accessThe(theOne, comonadTypeClass, env);
 	    } else      // if exprtype is T[], T is the element type of the for-each
 		if (types.isSequence(exprType)) {
