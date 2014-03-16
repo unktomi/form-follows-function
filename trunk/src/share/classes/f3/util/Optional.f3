@@ -23,8 +23,8 @@ public abstract class Optional of a is Monad of (Optional, a), F3Value
 	from (f is function from a to Optional of b) 
 	to Optional of b;
 
-    abstract public function getOrElse from (x is a) to a;
-    public function get to a { getOrElse(null) }
+    abstract public function getOrElse from (y is a) to a;
+    public function get to a { getOrElse of a (null) }
 
     public function isAbsent from () to Boolean 
     {
@@ -54,15 +54,15 @@ public class Present of a is Optional of a
     }
 
     override function flatmap of b 
-	from (f is function from a to Optional of b) 
+	from (this is Present of a, f is function from a to Optional of b) 
 	to Optional of b 
     {
 	f(x)
     }
 
-    public override function getOrElse from (_ is a) to a 
+    override public function getOrElse from (y is a) to a
     { 
-	x
+        x
     }
 
     public function coflatmap of b 
@@ -110,7 +110,7 @@ public class Absent of a is Optional of a
 	absent of b()
     }
 
-    public override function getOrElse from (y is a) to a
+    override public function getOrElse from (y is a) to a
     { 
         y
     }

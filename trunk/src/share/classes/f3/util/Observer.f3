@@ -13,7 +13,7 @@ public abstract class DefaultObserver of a is Observer of a
 
 const instance = ContravariantFunctor of Observer {
 
-    override public function comap of (a, b)
+    override public function contramap of (a, b)
 	from (xs is Observer of a,
 	      f is function from b to a) 
         to Observer of b
