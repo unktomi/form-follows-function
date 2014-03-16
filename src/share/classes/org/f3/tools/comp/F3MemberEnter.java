@@ -493,6 +493,9 @@ public class F3MemberEnter extends F3TreeScanner implements F3Visitor, Completer
 	    final F3TypeAlias ta = (F3TypeAlias)tx;
 	    final F3Env<F3AttrContext> env1 = env;
 	    Scope toScope = env1.toplevel.scriptScope;//env.toplevel.namedImportScope;
+            if (toScope == null) {
+                toScope = env.info.scope;
+            }
 	    //System.err.println("env.info.scope.owner="+env.info.scope.owner);
 	    ta.tsym = new F3Resolve.TypeAliasSymbol(ta.getIdentifier(), 
 						    syms.unknownType,
