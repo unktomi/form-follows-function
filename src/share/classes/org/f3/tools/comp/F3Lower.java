@@ -1740,8 +1740,17 @@ public class F3Lower implements F3Visitor {
 	Type clazztype = types.erasure(tree.clazz.type);
 	//System.err.println("tree="+tree);
 	//System.err.println("clazztype="+clazztype);
-        F3Expression expr = lowerExpr(tree.getExpression(), clazztype);
-        result = m.at(tree.pos).TypeCast(tree.clazz, expr).setType(tree.type);
+        if (false && (!(tree.getExpression() instanceof F3Instanciate) && clazztype != syms.voidType && !types.unboxedTypeOrType(clazztype).isPrimitive())) {
+            F3Expression expr1 = tree.getExpression();
+            //System.err.println("expr1="+expr1);
+            F3Expression expr = lowerExpr(tree.getExpression(), clazztype);
+            result = m.Conditional(m.TypeTest(expr1, tree.getType()).setType(syms.booleanType), m.at(tree.pos).TypeCast(tree.clazz, expr).setType(tree.type), m.Literal(TypeTags.BOT, null).setType(clazztype)).setType(clazztype);
+            System.err.println("tree="+tree.getExpression().getClass());
+            System.err.println("result="+result);
+        } else {
+            F3Expression expr = lowerExpr(tree.getExpression(), clazztype);
+            result = m.at(tree.pos).TypeCast(tree.clazz, expr).setType(tree.type);
+        }
     }
 
     public void visitTypeClass(F3TypeClass tree) {

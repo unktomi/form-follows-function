@@ -502,6 +502,7 @@ public class F3Attr implements F3Visitor {
         Type t = attribExpr(tree, env);
 	if (tree instanceof F3Var.This) {
 	    Type t1 = t;
+            Type t0 = tree.sym.type;
 	    tree.sym.type = types.erasure(tree.sym.type);
 	    Type expectedType = env.getEnclosingClassType();
 	    if (isObjLiteral(expectedType.tsym)) {
@@ -511,9 +512,9 @@ public class F3Attr implements F3Visitor {
 			expectedType,
 			pSequenceness, false);
 	    tree.baseType = env.getEnclosingClassType();
-	    //System.err.println("this: "+env.getEnclosingClassType());
-	    //System.err.println("this': "+t1);;
-	    //System.err.println("check id: "+ t);
+	    System.err.println("this: "+env.getEnclosingClassType());
+	    System.err.println("this': "+t1);;
+	    System.err.println("check id: "+ t);
 	    t = tree.sym.type = tree.type = t1;
 	}
 	return t;
@@ -904,7 +905,6 @@ public class F3Attr implements F3Visitor {
 	    //System.err.println("visitIdent: "+ tree+": "+result+ " inSuper="+inSuperType);
 	//}
 	if (pkind == TYP && !inSuperType) {
-
 	    if (result instanceof TypeVarDefn) {
 		Type result0 = result;
 		tree.type = result = types.expandTypeVar(result);
@@ -3064,10 +3064,13 @@ public class F3Attr implements F3Visitor {
             List<F3Var> params = tree.getParams();
 	    if (params.head instanceof F3Var.This) {
 		F3Var pvar = params.head;
+                boolean saved = inSuperType; // hack
+                inSuperType = true; // hack
 		Type refinedThis = attribVar(pvar, localEnv);
+                inSuperType = saved; // hack
 		localEnv.thisVar = pvar;
 		params = tree.operation.funParams = params.tail;
-		//System.err.println("refined this: "+ refinedThis+ ": "+refinedThis.tsym.type);
+		System.err.println("refined this: "+ refinedThis+ ": "+refinedThis.tsym.type);
 		if (refinedThis.tsym instanceof ClassSymbol) {
 		    ClassSymbol base = (ClassSymbol)refinedThis.tsym;
 		    owner = new ClassSymbol(base.flags(), base.name, refinedThis, base.owner);

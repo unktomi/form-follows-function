@@ -11,11 +11,12 @@ public class Cursor {
 }
 
 
-public static const Default = Cursor {type: CursorType.POINTER};
-public static const Hand = Cursor {type: CursorType.HAND};
-public static const IBeam = Cursor {type: CursorType.IBEAM};
-public static const SouthResize = Cursor {type: CursorType.SOUTH_RESIZE};
-public static const EastResize = Cursor {type: CursorType.EAST_RESIZE};
+public const Default = Cursor {type: CursorType.POINTER};
+public const Hand = Cursor {type: CursorType.HAND};
+public const IBeam = Cursor {type: CursorType.IBEAM};
+public const SouthResize = Cursor {type: CursorType.SOUTH_RESIZE};
+public const SouthEastResize = Cursor {type: CursorType.SOUTHEAST_RESIZE};
+public const EastResize = Cursor {type: CursorType.EAST_RESIZE};
 
 public class CustomCursor is Cursor {
     public var image is Image;

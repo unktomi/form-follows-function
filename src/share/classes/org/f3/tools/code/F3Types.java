@@ -1030,6 +1030,14 @@ public class F3Types extends Types {
 	return unexpandWildcard(t0, false);
     }
 
+    public List<Type> unexpandWildcards(List<Type> t0, boolean unconditionally) {
+        ListBuffer<Type> result = ListBuffer.lb();
+        for (Type x: t0) {
+            result.append(unexpandWildcard(x, unconditionally));
+        }
+        return result.toList();
+    }
+
     public Type unexpandWildcard(final Type t0, boolean unconditionally) {
 	Type t = t0;
 	if (t instanceof CapturedType) {
