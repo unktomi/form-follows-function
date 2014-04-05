@@ -102,7 +102,7 @@ public class F3FunctionType extends F3Type {
               || ! returnType.equals(ftype.returnType))
             return false;
         for (int i = minArgs; --i >= 0; ) {
-            if (! argTypes[i].equals(ftype.argTypes[i]))
+            if (!argTypes[i].equals(ftype.argTypes[i]))
                 return false;
         }
         return true;

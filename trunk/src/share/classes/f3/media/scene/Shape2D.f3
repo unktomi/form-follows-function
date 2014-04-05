@@ -246,19 +246,16 @@ public abstract class Shape2D is Node, MouseInputHandler
     public var cy is Number;
     public readonly var path is Path2D;
 
-    public readonly var fillMesh is MeshNode = bind createMeshNode(path, 
-								   null, 
-								   fillPaint);
+    public readonly var fillMesh is MeshNode2D = bind createMeshNode(path, 
+                                                                     null, 
+                                                                     fillPaint);
 
-    public readonly var strokeMesh is MeshNode = bind createMeshNode(path, 
-								     getStroke(stroke), 
-								     strokePaint);
+    public readonly var strokeMesh is MeshNode2D = bind createMeshNode(path, 
+                                                                       getStroke(stroke), 
+                                                                       strokePaint);
+    var cb is Bounds;
+    override var contentBounds = bind cb;
 
-    override var contentBounds = bind getContentBounds();
-
-    bound function getContentBounds to Bounds {
-        if strokeMesh == null then fillMesh.bounds else strokeMesh.bounds;
-    }
 
     override public function of b foldLeft 
 	from (z is b,
@@ -288,6 +285,7 @@ public abstract class Shape2D is Node, MouseInputHandler
         fillMesh.updateParent();
         strokeMesh.setParent(this);
         strokeMesh.updateParent();
+        cb = Bounds.merge(strokeMesh.bounds, fillMesh.bounds);
     }
 }
 

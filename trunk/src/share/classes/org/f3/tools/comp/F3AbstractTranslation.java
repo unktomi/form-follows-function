@@ -546,6 +546,8 @@ public abstract class F3AbstractTranslation
             } else if (ret instanceof ExpressionResult) {
                 return new StatementsResult(expr.pos(), asStatements((ExpressionResult) ret, targettedType));
             } 
+            System.err.println("result="+ret);
+            System.err.println("expr="+expr);
         }
 	return null;
     }
@@ -869,6 +871,9 @@ public abstract class F3AbstractTranslation
         void translateStmt(F3Expression expr, Type targettedType) {
             //TODO: My guess is that statements will need to preserve bindee info for block-expressions
             StatementsResult res = translateToStatementsResult(expr, targettedType);
+            if (res == null) {
+                System.err.println("res is null: "+expr + ": "+targettedType);
+            }
             addPreface(res.statements());
         }
 
