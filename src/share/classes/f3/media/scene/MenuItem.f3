@@ -39,3 +39,7 @@ public class MenuItem is Foldable of MenuItem
 	f(this, z);
     }
 }
+
+public class CheckBox is MenuItem {
+    public var selected is Boolean;
+}

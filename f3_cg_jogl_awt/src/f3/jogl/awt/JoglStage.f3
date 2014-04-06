@@ -43,7 +43,6 @@ import javax.swing.JOptionPane;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
 const ALWAYS_SWAP_BUFFERS is Boolean = Boolean.getBoolean("always.swap.buffers");
-var scissoring is Boolean;
 
 function checkMesh from (mn is MeshNode) to Boolean 
 {
@@ -79,8 +78,10 @@ const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
 const DEBUG_LIGHTS = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.lights");
 
-public const ENABLE_TEXTURED_TEXT is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.textured.text");;
-public const ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.2d.renderer");;
+public const ENABLE_TEXTURED_TEXT is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.textured.text");
+public const ENABLE_2D_RENDERER is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.enable.2d.renderer");
+
+public const DISABLE_SCISSOR is Boolean = java.lang.Boolean.getBoolean("f3.jogl.stage.disable.scissor");
 
 var DISABLE_DEFORMERS = false;
 
@@ -2389,7 +2390,7 @@ public class SceneRenderer {
 
     var polygonMode = PolygonMode.Fill;
 
-    var currentScissor is Node;
+    var currentScissor is Bounds;
 
     function draw
 	from (gl is GL2,
@@ -2425,6 +2426,7 @@ public class SceneRenderer {
     }
     
 
+    var scissoring is Boolean;
 
     function enableScissorTest to ()
     {
@@ -2478,12 +2480,12 @@ public class SceneRenderer {
 		}
 		mp = mp.parent;
 	    }
-	    if (scissor <> currentScissor) {
-		currentScissor = scissor;
-		if (camera is Camera2D and scissor <> null) {
+	    if (sbounds <> currentScissor) {
+		currentScissor = sbounds;
+ 		if (not DISABLE_SCISSOR and camera is Camera2D and sbounds <> null) {
 		    const bounds = sbounds;
 		    const sb = camera.toScreen(bounds);
-                    //println("scissoring: {scissor} => {sb}");
+                    println("scissoring: {scissor} => {sb}");
 		    enableScissorTest();
 		    gl.glScissor(sb.center.x - sb.extent.x,
 				 camera.height-sb.center.y-sb.extent.y,
@@ -3361,11 +3363,27 @@ class AwtSeparator is AwtMenuItem {
     }
 }
 
+class AwtCheckBox is AwtMenuItem {
+    override var awtItem = new java.awt.CheckboxMenuItem();
+    override var result = 
+	bind buildMenuItem(item.label,
+			   item.enabled,
+			   item.shortcut,
+			   function from () to () {
+                               const ch = item as MenuItem.CheckBox;
+                               ch.selected = (awtItem as java.awt.CheckboxMenuItem).getState();
+                               item.action();
+                           });
+    postinit {
+        (awtItem as java.awt.CheckboxMenuItem).setState((item as MenuItem.CheckBox).selected);
+    }
+}
+
 class AwtMenu is AwtMenuItem {
     override var awtItem = new java.awt.Menu();
-    readonly var menuResult = 
-	bind buildMenuItems(result as java.awt.Menu, 
-			    foreach (m in (item as Menu).items) m.itemImpl as AwtMenuItem);
+    bound var menuResult = 
+	buildMenuItems(result as java.awt.Menu, 
+                       foreach (m in (item as Menu).items) m.itemImpl as AwtMenuItem);
 
 
     override public bound function getAwtItem to java.awt.MenuItem 
@@ -3416,6 +3434,10 @@ class AWTMenuFactoryImpl is MenuFactory {
 		AwtMenu {
 		    item: bind item;
 		}	
+	    } else if (item is MenuItem.CheckBox) {
+                AwtCheckBox {
+                    item: bind item;
+                }
 	    } else {
 		AwtMenuItem {
 		    item: bind item;
