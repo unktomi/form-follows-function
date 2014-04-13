@@ -535,10 +535,7 @@ function run
     const xs = asList([1..5]);
     println(xs);
     println(xs.reverse());
-    println(foreach (x in xs, y in xs) 
-	    {
-		x * y;
-	    });
+    println(foreach (x in xs, y in xs) x * y);
     const ys = xs.replicate(10000003).take(554545);
     println(ys.take(33));
     const m = the Monad of List;

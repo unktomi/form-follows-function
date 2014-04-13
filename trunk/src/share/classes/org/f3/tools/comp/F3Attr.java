@@ -512,9 +512,9 @@ public class F3Attr implements F3Visitor {
 			expectedType,
 			pSequenceness, false);
 	    tree.baseType = env.getEnclosingClassType();
-	    System.err.println("this: "+env.getEnclosingClassType());
-	    System.err.println("this': "+t1);;
-	    System.err.println("check id: "+ t);
+	    //System.err.println("this: "+env.getEnclosingClassType());
+	    //System.err.println("this': "+t1);;
+	    //System.err.println("check id: "+ t);
 	    t = tree.sym.type = tree.type = t1;
 	}
 	return t;
@@ -3070,7 +3070,7 @@ public class F3Attr implements F3Visitor {
                 inSuperType = saved; // hack
 		localEnv.thisVar = pvar;
 		params = tree.operation.funParams = params.tail;
-		System.err.println("refined this: "+ refinedThis+ ": "+refinedThis.tsym.type);
+		//System.err.println("refined this: "+ refinedThis+ ": "+refinedThis.tsym.type);
 		if (refinedThis.tsym instanceof ClassSymbol) {
 		    ClassSymbol base = (ClassSymbol)refinedThis.tsym;
 		    owner = new ClassSymbol(base.flags(), base.name, refinedThis, base.owner);

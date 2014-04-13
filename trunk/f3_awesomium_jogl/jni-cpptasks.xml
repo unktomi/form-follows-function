@@ -793,7 +793,7 @@
       <!--compilerarg value="-ObjC" /-->
       <compilerarg value="-mmacosx-version-min=10.5"/>
       <defineset>
-        <define name="macosx" />
+        <define name="__APPLE__" />
         <define name="_DEBUG"   if="c.compiler.use-debug"/>
         <define name="DEBUG"    if="c.compiler.use-debug"/>
         <define name="NDEBUG"   unless="c.compiler.use-debug"/>

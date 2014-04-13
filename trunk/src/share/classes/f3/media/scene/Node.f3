@@ -181,7 +181,20 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget
         getFocusable().focusedSubject;
     }
 
-    public function lookup from (id is String) to Node {
+    public function observeKeyDown from (keyCode is Integer) to Observable of KeyboardEvent {
+        observeKeyDown().filter(|e| e.keyCode == keyCode);
+    }
+
+    public function observeKeyUp from (keyCode is Integer) to Observable of KeyboardEvent {
+        observeKeyUp().filter(|e| e.keyCode == keyCode);
+    }
+
+    public function observeKeyInput from (keyChar is String) to Observable of KeyboardEvent {
+        observeKeyInput().filter(|e| e.keyChar == keyChar);
+    }
+
+    public function lookup from (id is String) to Node 
+    {
 	foldLeft(null as Node, 
 		 function from (r is Node, n is Node) to Node 
 		 {
