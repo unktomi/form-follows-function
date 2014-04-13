@@ -3872,7 +3872,7 @@ public class Joint is MaTransform {
 
     var ikEffector is MaTransform;
 
-    var t0 = bind if (ikEffector != null) then ikEffector.t else t;
+    bound var t0 = if (ikEffector <> null) then ikEffector.t else t;
 
     var ikr is Mat4 = Mat4.<<1>>;
     var is_ik is Boolean = false;
@@ -3881,7 +3881,7 @@ public class Joint is MaTransform {
         ikr = jor;
     }
 
-    var r0 = bind if (is_ik) then ikr else r;
+    boundvar r0 = if (is_ik) then ikr else r;
 
     override var transform =  bind if (constraint <> null) then constraint.transform else
         translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
@@ -3909,7 +3909,7 @@ public class Joint is MaTransform {
     var pax is Number;
     var pay is Number;
     var paz is Number;
-    readonly var pa = bind rotate(pax, pay, paz, ro);
+    bound var pa = rotate(pax, pay, paz, ro);
 
     function getPreferredRotation to Quat {
         if (preferredRotation == null) {

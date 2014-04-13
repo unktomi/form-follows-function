@@ -26,7 +26,7 @@ public class BlendLayer is TimeGroup, Player {
         if (lastClip == null) {
             return;
         }
-        const fadeOut is TimeNode[] = foreach (c in content where c <> lastClip and c.isPlaying() and c.pickable and c.blendWeight != 0) c;
+        const fadeOut is TimeNode[] = foreach (c in content where c <> lastClip and c.isPlaying() and c.pickable and c.blendWeight <> 0) c;
         if (fadeOut == []) {
             lastClip.blendWeight = 1.0;
             lastClip = null;

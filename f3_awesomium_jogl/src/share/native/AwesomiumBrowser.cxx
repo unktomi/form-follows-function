@@ -42,17 +42,19 @@ static Awesomium::WebCore *webCore = 0;
 static Awesomium::WebSession *webSession = 0;
 static void ensureWebCore() {
   if (webCore == 0) {
-    Awesomium::WebConfig config;
+    Awesomium::WebConfig &config = *new Awesomium::WebConfig();
     //config.setEnablePlugins(true);
     config.log_level = kLogLevel_Verbose;
     config.plugin_path = WSLit("/Library/Internet Plug-ins/");
+    /*
     WebStringArray arr;
     arr.Push(WSLit("--allow-file_access-from-files"));
     config.additional_options = arr;
+    */
     webCore = Awesomium::WebCore::Initialize(config);
     WebPreferences prefs;
     prefs.enable_plugins = true;
-    prefs.enable_web_gl = true;
+    prefs.enable_web_gl = false;
     prefs.allow_universal_access_from_file_url = true;
     prefs.allow_file_access_from_file_url = true;
     webSession = webCore->CreateWebSession(WSLit(""), prefs);
@@ -915,7 +917,7 @@ JNIEXPORT jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_has
 JNIEXPORT jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_hasMethod
   (JNIEnv *env, jclass cls, jlong h, jstring index)
 {
-    JSObject *obj = (JSObject*)obj;
+    JSObject *obj = (JSObject*)h;
     WebString str = toWebString(env, index);
     bool result = obj->HasMethod(str);
     return result;

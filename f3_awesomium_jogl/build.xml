@@ -51,6 +51,7 @@
         <fileset dir="src/share/native" includes="**.cxx"/>
       </compiler>
       <linker extends="${linker.cfg.id.base}">
+        <linkerarg value="-F/Library/Frameworks"/>
         <linkerarg value="-framework"/>
         <linkerarg value="Awesomium"/>
       </linker>
