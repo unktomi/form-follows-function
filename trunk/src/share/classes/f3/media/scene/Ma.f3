@@ -3881,7 +3881,7 @@ public class Joint is MaTransform {
         ikr = jor;
     }
 
-    boundvar r0 = if (is_ik) then ikr else r;
+    bound var r0 = if (is_ik) then ikr else r;
 
     override var transform =  bind if (constraint <> null) then constraint.transform else
         translate(tx, ty, tz) * scale(parentInverseScale) * jor * r * scale(sx, sy, sz);
