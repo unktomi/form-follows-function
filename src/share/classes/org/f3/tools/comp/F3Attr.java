@@ -1549,6 +1549,9 @@ public class F3Attr implements F3Visitor {
     public void finishOverrideAttribute(F3OverrideClassVar tree, F3Env<F3AttrContext> env) {
         F3VarSymbol v = tree.sym;
         Type declType = tree.getId().type;
+        if (declType == null) {
+            declType = syms.f3_UnspecifiedType;
+        }
         result = tree.type = declType;
 
         // Need to check that the override did not specify a different type
@@ -1563,10 +1566,12 @@ public class F3Attr implements F3Visitor {
                     declType);
         }
         else if (f3Type == syms.f3_UnspecifiedType) {
-            tree.setF3Type(f3make.at(tree.pos).TypeClass(f3make.at(tree.pos).Type(declType),
-                    types.isSequence(declType) ?
-                        Cardinality.ANY :
-                        Cardinality.SINGLETON));
+            if (declType != syms.f3_UnspecifiedType) {
+                tree.setF3Type(f3make.at(tree.pos).TypeClass(f3make.at(tree.pos).Type(declType),
+                                                             types.isSequence(declType) ?
+                                                             Cardinality.ANY :
+                                                             Cardinality.SINGLETON));
+            }
         }
 
         chk.checkBoundArrayVar(tree);
@@ -1619,8 +1624,8 @@ public class F3Attr implements F3Visitor {
                 // declaration position to maximal possible value, effectively
                 // marking the variable as undefined.
                 v.pos = Position.MAXPOS;
-
-                chk.checkNonVoid(init, attribExpr(init, initEnv, declType));
+                final Type t = declType == syms.f3_UnspecifiedType ? Type.noType : declType;
+                chk.checkNonVoid(init, attribExpr(init, initEnv, t));
                 chk.checkBidiBind(tree.getInitializer(), tree.getBindStatus(), initEnv, v.type);
             }
         } finally {
@@ -1638,7 +1643,7 @@ public class F3Attr implements F3Visitor {
         // created BLOCK-method.
         F3Env<F3AttrContext> localEnv = newLocalEnv(tree);
         //find overridden var
-        Type type = null;
+        Type type = syms.f3_UnspecifiedType;
         Symbol idSym = rs.findIdentInType(localEnv, localEnv.enclClass.type, tree.getName(), VAR);
         if (idSym != null) {
             idSym.complete();

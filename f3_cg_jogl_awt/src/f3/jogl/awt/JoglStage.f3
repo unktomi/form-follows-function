@@ -2834,6 +2834,7 @@ public class Listener is GLEventListener, DropTargetListener {
                 altKey:  altDown;
                 ctrlKey:  controlDown;
                 metaKey:  metaDown;
+                shiftKey: shiftDown;
                 clickCount:  clickCount;
                 buttons: button;
             });
@@ -2848,6 +2849,7 @@ public class Listener is GLEventListener, DropTargetListener {
                 ctrlKey:  controlDown;
                 altKey:  altDown;
                 metaKey:  metaDown;
+                shiftKey: shiftDown;
                 buttons:  button;
             });
     }
