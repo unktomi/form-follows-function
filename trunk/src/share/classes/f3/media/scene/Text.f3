@@ -43,6 +43,7 @@ public interface Font
     public const descent is Number;
     public const leading is Number;
     public function height to Number { ascent+descent+leading }
+    public function width from (text is String) to Number;
 }
 
 public interface LayoutInstance 
@@ -87,6 +88,8 @@ abstract public class AbstractText is AbstractNode {
 	ColorPaint(Color.BLACK);
     public var selectionBackground is Paint = ColorPaint { color: Color.WHITE };
     public var indent is Number = 0.0;
+    public var selectionStart is Integer;
+    public var selectionEnd is Integer;
 }
 
 public class Label is AbstractText {
@@ -105,13 +108,32 @@ public class Label is AbstractText {
 	indent: bind indent;
 	editable: false;
         cursor: bind cursor;
+        /*
+        selectionStart: bind selectionStart with inverse;
+        selectionEnd: bind selectionEnd with inverse;
+        override function deleteSelection to ()
+        {
+            deleteRange(0, text.length())
+        }
+
+        override function clearSelection to ()
+        {
+        }
+
+        override function selectAll to ()
+        {
+        }
+        */
+
     };
+    override var contentBounds = bind content.bounds; // workaround for compiler bug
     override var blocksPointer = true;
     override var pickable = false;
     override var internalContent = bind content;
     public var text is String on replace {
 	content.setText(text);
     }
+    //override var width = bind font.width(text); // this exposed compiler bugs when its overridden subsequently
 }
 
 
@@ -122,13 +144,11 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     public readonly var text is String = "";
     var lastValue is String;
     const buffer = new java.lang.StringBuffer;
-    var selectionStart is Integer;
-    var selectionEnd is Integer;
     var caretPosition is Integer;
     readonly var start = bind Math.min(selectionStart, selectionEnd);
     readonly var end = bind Math.max(selectionStart, selectionEnd);
     protected const singleLine is Boolean = false;
-    const rect = Rectangle {
+    bound var rect = bind if background == null then null else Rectangle {
 	factory: pathFactory;
         height: bind height;
         width: bind width;
@@ -139,7 +159,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     public readonly var textShape = bind layout.getShape();
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
     public readonly var caretShape = bind if (editable) then layout.getCaretShape(caretPosition) else null;
-    readonly var selectionMesh = bind if (editable and selectionShape.getBounds().width() > 0) then createMeshNode(selectionShape, null, selectionBackground) else null;
+    readonly var selectionMesh = bind if (/*editable and */end > start) then createMeshNode(selectionShape, null, selectionBackground) else null;
     const self = this;
     readonly var textMesh is TextMeshNode = TextMeshNode {
         override var path = bind textShape;
@@ -176,8 +196,8 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         }
     }
 
-    readonly var contentGroup is Group = Group {
-	override var transform = bind translate(if (rightJustified) -indent else indent, 
+    const contentGroup is Group = Group {
+	override var transform = bind translate(if rightJustified then -indent else indent, 
 						height / 2);
 	content: bind [selectionMesh, textMesh, caretMesh];
     }
@@ -308,7 +328,12 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	}
     }
 
-    public function deleteSelection 
+    public function deleteSelection to ()
+    {
+        deleteRange(start, end);
+    }
+
+    public function deleteRange from (start is Integer, end is Integer) to ()
     {
         if (start < end) {
             caretPosition = start;
@@ -341,13 +366,13 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         }
     }
 
-    public function selectAll 
+    public function selectAll to ()
     {
         selectionStart = 0;
         selectionEnd = buffer.length();
     }
 
-    public function clearSelection  
+    public function clearSelection to ()
     {
         selectionStart = selectionEnd = caretPosition;
     }

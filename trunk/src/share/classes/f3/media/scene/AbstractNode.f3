@@ -13,7 +13,8 @@ public abstract class AbstractNode is Node
     protected var internalContent is Node;
     override var contentBounds = bind internalContent.bounds;
 
-    override function updateParent {
+    override function updateParent to () 
+    {
         preupdate();
 	internalContent.setParent(this);
 	internalContent.updateParent();

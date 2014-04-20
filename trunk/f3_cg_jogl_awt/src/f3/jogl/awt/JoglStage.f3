@@ -146,6 +146,11 @@ const fonts = new java.util.HashMap of (String, java.awt.Font);
 
 class JoglFont is Text.Font {
     public const font is java.awt.Font;
+    override function width from (text is String) to Number
+    {
+        const r = font.getStringBounds(text, frc);
+        return r.getX() + r.getWidth();
+    }
 }
 
 function flip_y from (path is GeneralPath) to GeneralPath 
@@ -2502,7 +2507,7 @@ public class SceneRenderer {
 	    if (mn is Text.TextMeshNode)  {
                 if (camera is Camera2D) {
                     if (toSceneTransform.getRotation() == Quat.<<1>>) {
-                        const t = mn.toSceneTransform.getTranslation();
+                        const t = toSceneTransform.getTranslation();
                         const tn = mn as Text.TextMeshNode;
                         //const b = tn.getLayout().getShape().getBounds();
                         //const x = if (tn.getText().rightJustified) then b.right() else b.left();
@@ -2524,7 +2529,7 @@ public class SceneRenderer {
 	    } else if (camera is Camera2D) {
                 if (mn is Shape2D.MeshNode2D and (mn as Shape2D.MeshNode2D).gridFit) {
                     if (toSceneTransform.getRotation() == Quat.<<1>>) {
-                        const t = mn.toSceneTransform.getTranslation();
+                        const t = toSceneTransform.getTranslation();
                         toSceneTransform = translate(Math.round(t.x),
                                                      Math.round(t.y),
                                                      0);
