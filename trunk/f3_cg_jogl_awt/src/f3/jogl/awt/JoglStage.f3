@@ -2522,6 +2522,10 @@ public class SceneRenderer {
                         //println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {
                         println("text was rotated {toSceneTransform.getTranslation()}");
+                        const t = toSceneTransform.getTranslation();
+                        toSceneTransform *= translate(t.x-Math.round(t.x),
+                                                      t.y-Math.round(t.y),
+                                                      0);
                     }
                 } else {
 //                    println("camera is : {camera}");
@@ -3135,6 +3139,10 @@ function mapKeyCode from (k is Integer) to Integer
 
 function buildKeyMap 
 {
+    map(KeyEvent.VK_MINUS, Keys.Minus);
+    map(KeyEvent.VK_PLUS, Keys.Plus);
+    map(KeyEvent.VK_PERIOD, Keys.Period);
+    map(KeyEvent.VK_COMMA, Keys.Comma);
     map(KeyEvent.VK_BACK_SPACE, Keys.Backspace);
     map(KeyEvent.VK_SPACE, Keys.Spacebar);
     map(KeyEvent.VK_TAB, Keys.Tab);

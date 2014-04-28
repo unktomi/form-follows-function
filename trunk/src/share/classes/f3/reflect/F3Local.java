@@ -124,7 +124,8 @@ public class F3Local {
                 }
                 protected void getFunctions(F3MemberFilter filter, SortedMemberArray<? super F3FunctionMember> result) 
                 {
-                    base.getFunctions(filter, result);
+                    SortedMemberArray<F3FunctionMember> result1 = new SortedMemberArray<F3FunctionMember>();
+                    base.getFunctions(filter, result1);
                 }
                 protected void getVariables(F3MemberFilter filter, SortedMemberArray<? super F3VarMember> result)
                 {
@@ -1199,6 +1200,10 @@ public class F3Local {
         String name;
         F3FunctionType type;
 
+        public M getUnderlying() {
+            return method;
+        }
+
         abstract public Annotation getAnnotation(Class clazz);
 
         FunctionMember(M method, ClassType owner, F3FunctionType type, String name) {
@@ -1293,6 +1298,10 @@ public class F3Local {
         @Override
         public Annotation getAnnotation(Class clazz) {
             return method.getAnnotation(clazz);
+        }
+
+        public MethodFunctionMember subst(F3Context ctx) {
+            return new MethodFunctionMember(method, (ClassType)ctx.subst(owner), (F3FunctionType)ctx.subst(getType()));
         }
 
     }

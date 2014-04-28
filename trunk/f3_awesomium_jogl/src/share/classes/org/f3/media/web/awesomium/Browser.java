@@ -559,8 +559,8 @@ public class Browser implements AbstractWebBrowser {
 	map(Keys._7, AK_7);
 	map(Keys._8, AK_8);
 	map(Keys._9, AK_9);
-	//map(Keys.Semicolon, AK_SEMICOLON);
-	//    map(Keys.Equals, AK_EQUALS);
+	map(Keys.Semicolon, AK_SEMICOLON);
+	map(Keys.Equals, AK_EQUALS);
 	map(Keys.A, AK_A);
 	map(Keys.B, AK_B);
 	map(Keys.C, AK_C);

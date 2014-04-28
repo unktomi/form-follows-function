@@ -52,14 +52,14 @@ public function observe of a
     }
 }
 
-public function If from (xs is Observable of Boolean) to Observable of (()) 
+public function If from (condition is Observable of Boolean) to Observable of (()) 
 {
-    foreach (x in xs.filter(id of Boolean)) ()
+    foreach (x in condition.filter(id of Boolean)) ()
 }
 
-public function IfNot from (xs is Observable of Boolean) to Observable of (()) 
+public function IfNot from (condition is Observable of Boolean) to Observable of (()) 
 {
-    foreach (x in xs.filter(function from (y is Boolean) to Boolean { not y })) ()
+    foreach (x in condition.filter(function from (y is Boolean) to Boolean { not y })) ()
 }
 
 public class ThenElse {
