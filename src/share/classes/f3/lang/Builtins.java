@@ -237,8 +237,8 @@ public class Builtins {
     */
 
     public final static class NumberOperators {
-        public static float negate(float x) {
-            return -x;
+        public static float negate(float n) {
+            return -n;
         }
         public Function1<Float, Float> add(final float x) {
             return new Function1<Float,Float>() {
@@ -346,8 +346,8 @@ public class Builtins {
                 }
             };
         }
-        public static int negate(int x) {
-            return -x;
+        public static int negate(int n) {
+            return -n;
         }
         public static int add(int x, int y) {
             return x + y;
@@ -386,8 +386,8 @@ public class Builtins {
 
     public final static class BooleanOperators {
 
-        public static <a, b> b If(boolean value, b Then, b Else) {
-            return value ? Then : Else; 
+        public static <a, b> b If(boolean condition, b _then, b _else) {
+            return condition ? _then : _else; 
         }
 
         public static boolean yes() {
@@ -410,34 +410,34 @@ public class Builtins {
             return !value;
         }
 
-        public static boolean and(final boolean x, final boolean y) {
-            return x && y;
+        public static boolean and(final boolean former, final boolean latter) {
+            return former && latter;
         }
 
-        public static Function1<Boolean, Boolean> and(final boolean x) {
+        public static Function1<Boolean, Boolean> and(final boolean former) {
             return new Function1<Boolean, Boolean>() {
-                public Boolean invoke(Boolean y) {
-                    return x && y;
+                public Boolean invoke(Boolean latter) {
+                    return former && latter;
                 }
             };
         }
 
-        public static boolean or(final boolean x, final boolean y) {
-            return x || y;
+        public static boolean or(final boolean former, final boolean latter) {
+            return former || latter;
         }
 
-        public static Function1<Boolean, Boolean> or(final boolean x) {
+        public static Function1<Boolean, Boolean> or(final boolean former) {
             return new Function1<Boolean, Boolean>() {
-                public Boolean invoke(Boolean y) {
-                    return x || y;
+                public Boolean invoke(Boolean latter) {
+                    return former || latter;
                 }
             };
         }
-        public static boolean equal(boolean x, boolean y) {
-            return x == y;
+        public static boolean equal(boolean former, boolean latter) {
+            return former == latter;
         }
-        public static boolean notEqual(boolean x, boolean y) {
-            return x != y;
+        public static boolean notEqual(boolean former, boolean latter) {
+            return former != latter;
         }
     }
 }

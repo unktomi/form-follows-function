@@ -34,6 +34,11 @@ public interface Keys {
 
     public static final int Spacebar = 0x20;
 
+    public static final int Minus = 0xbd;
+    public static final int Plus = 0xbb;
+    public static final int Period = 0xbe;
+    public static final int Comma = 0xbc;
+
     public static final int Semicolon =  59;
     public static final int Equals = 61;
 

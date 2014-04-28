@@ -836,10 +836,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 
     public function always of b from (x is b) to Observable of b 
     {
-	map(function from (_ is a) to b 
-	    {
-		x
-	    })
+	map(|ignored| x);
     }
 
     public function apply from () to Observable of (()) 
