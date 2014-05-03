@@ -58,19 +58,19 @@ public class Mat4 is F3Value
 	}
     }
 
-    public function * of a from (x is Transformable of a) to a 
+    public function * of a from (transformable is Transformable of a) to a 
     {
-	x.premultiply(this)
+	transformable.premultiply(this)
     }
 
-    public function * from (v is Vec3) to Vec3 
+    public function * from (vector is Vec3) to Vec3 
     {
-	mul(v);
+	mul(vector);
     }
 
-    public function * from (p is Point3) to Point3
+    public function * from (point is Point3) to Point3
     {
-	mul(p);
+	mul(point);
     }
 
     public function get 
@@ -122,15 +122,15 @@ public class Mat4 is F3Value
     }
 
     public function mul 
-	from (v is Vec3) 
+	from (vector is Vec3) 
 	to Vec3 
     {
 	if (this == <<1>>)
-	    then v
+	    then vector
 	    else {
-		const x = get(0, 0) * v.x + get(0, 1) * v.y + get(0, 2) * v.z; 
-		const y = get(1, 0) * v.x + get(1, 1) * v.y + get(1, 2) * v.z;
-		const z = get(2, 0) * v.x + get(2, 1) * v.y + get(2, 2) * v.z;
+		const x = get(0, 0) * vector.x + get(0, 1) * vector.y + get(0, 2) * vector.z; 
+		const y = get(1, 0) * vector.x + get(1, 1) * vector.y + get(1, 2) * vector.z;
+		const z = get(2, 0) * vector.x + get(2, 1) * vector.y + get(2, 2) * vector.z;
 		Vec3 {
 		    x: x;
 		    y: y;
@@ -140,15 +140,15 @@ public class Mat4 is F3Value
     }
 
     public function mul 
-	from (p is Point3) 
+	from (point is Point3) 
 	to Point3
     {
 	if (this == <<1>>) 
-	    then p
+	    then point
 	    else {
-		const x = get(0, 0) * p.x + get(0, 1) * p.y + get(0, 2) * p.z + get(0, 3);
-		const y = get(1, 0) * p.x + get(1, 1) * p.y + get(1, 2) * p.z + get(1, 3);
-		const z = get(2, 0) * p.x + get(2, 1) * p.y + get(2, 2) * p.z + get(2, 3);
+		const x = get(0, 0) * point.x + get(0, 1) * point.y + get(0, 2) * point.z + get(0, 3);
+		const y = get(1, 0) * point.x + get(1, 1) * point.y + get(1, 2) * point.z + get(1, 3);
+		const z = get(2, 0) * point.x + get(2, 1) * point.y + get(2, 2) * point.z + get(2, 3);
 		Point3 {
 		    x: x;
 		    y: y;
@@ -178,46 +178,46 @@ public class Mat4 is F3Value
     }
 
     public function mul 
-	from (m is Mat4) 
+	from (matrix is Mat4) 
 	to Mat4
     {
 	if (this == <<1>>) 
-	    then m
-	    else if (m == <<1>>) then this
+	    then matrix
+	    else if (matrix == <<1>>) then this
 		else
 	        Mat4 {
 		    // this.row1 dot m.column1
-		    xx: xx * m.xx + xy * m.yx + xz * m.zx + xw * m.wx;
-		    // this.row2 dot m.column1
-		    yx: yx * m.xx + yy * m.yx + yz * m.zx + yw * m.wx;
-		    // this.row3 dot m.column1
-		    zx: zx * m.xx + zy * m.yx + zz * m.zx + zw * m.wx;
-		    // this.row4 dot m.column1
-		    wx: wx * m.xx + wy * m.yx + wz * m.zx + ww * m.wx;
+		    xx: xx * matrix.xx + xy * matrix.yx + xz * matrix.zx + xw * matrix.wx;
+		    // this.row2 dot matrix.column1
+		    yx: yx * matrix.xx + yy * matrix.yx + yz * matrix.zx + yw * matrix.wx;
+		    // this.row3 dot matrix.column1
+		    zx: zx * matrix.xx + zy * matrix.yx + zz * matrix.zx + zw * matrix.wx;
+		    // this.row4 dot matrix.column1
+		    wx: wx * matrix.xx + wy * matrix.yx + wz * matrix.zx + ww * matrix.wx;
 		 
-		    xy: xx * m.xy + xy * m.yy + xz * m.zy + xw * m.wy;
-		    // this.row2 dot m.column2
-		    yy: yx * m.xy + yy * m.yy + yz * m.zy + yw * m.wy;
-		    // this.row3 dot m.column2
-		    zy: zx * m.xy + zy * m.yy + zz * m.zy + zw * m.wy;
-		    // this.row4 dot m.column2
-		    wy: wx * m.xy + wy * m.yy + wz * m.zy + ww * m.wy;
+		    xy: xx * matrix.xy + xy * matrix.yy + xz * matrix.zy + xw * matrix.wy;
+		    // this.row2 dot matrix.column2
+		    yy: yx * matrix.xy + yy * matrix.yy + yz * matrix.zy + yw * matrix.wy;
+		    // this.row3 dot matrix.column2
+		    zy: zx * matrix.xy + zy * matrix.yy + zz * matrix.zy + zw * matrix.wy;
+		    // this.row4 dot matrix.column2
+		    wy: wx * matrix.xy + wy * matrix.yy + wz * matrix.zy + ww * matrix.wy;
 
-		    xz: xx * m.xz + xy * m.yz + xz * m.zz + xw * m.wz;
-		    // this.row2 dot m.column3
-		    yz: yx * m.xz + yy * m.yz + yz * m.zz + yw * m.wz;
-		    // this.row3 dot m.column3
-		    zz: zx * m.xz + zy * m.yz + zz * m.zz + zw * m.wz;
-		    // this.row4 dot m.column3
-		    wz: wx * m.xz + wy * m.yz + wz * m.zz + ww * m.wz;
+		    xz: xx * matrix.xz + xy * matrix.yz + xz * matrix.zz + xw * matrix.wz;
+		    // this.row2 dot matrix.column3
+		    yz: yx * matrix.xz + yy * matrix.yz + yz * matrix.zz + yw * matrix.wz;
+		    // this.row3 dot matrix.column3
+		    zz: zx * matrix.xz + zy * matrix.yz + zz * matrix.zz + zw * matrix.wz;
+		    // this.row4 dot matrix.column3
+		    wz: wx * matrix.xz + wy * matrix.yz + wz * matrix.zz + ww * matrix.wz;
 
-		    xw: xx * m.xw + xy * m.yw + xz * m.zw + xw * m.ww;
-		    // this.row2 dot m.column4
-		    yw: yx * m.xw + yy * m.yw + yz * m.zw + yw * m.ww;
-		    // this.row3 dot m.column4
-		    zw: zx * m.xw + zy * m.yw + zz * m.zw + zw * m.ww;
-		    // this.row4 dot m.column4
-		    ww: wx * m.xw + wy * m.yw + wz * m.zw + ww * m.ww;
+		    xw: xx * matrix.xw + xy * matrix.yw + xz * matrix.zw + xw * matrix.ww;
+		    // this.row2 dot matrix.column4
+		    yw: yx * matrix.xw + yy * matrix.yw + yz * matrix.zw + yw * matrix.ww;
+		    // this.row3 dot matrix.column4
+		    zw: zx * matrix.xw + zy * matrix.yw + zz * matrix.zw + zw * matrix.ww;
+		    // this.row4 dot matrix.column4
+		    ww: wx * matrix.xw + wy * matrix.yw + wz * matrix.zw + ww * matrix.ww;
 		}
 
     }
@@ -245,9 +245,9 @@ public class Mat4 is F3Value
         if <<1>> == this then this else invertGeneral(true);
     }
 
-    public function getRows from (arr0 is nativearray of Number) to nativearray of Number 
+    public function getRows from (array is nativearray of Number) to nativearray of Number 
     {
-	var arr is nativearray of Number = arr0;
+	var arr is nativearray of Number = array;
         if (arr == null) arr = newFloatArray(16);
         arr[0] = xx;
         arr[1] = xy;
@@ -295,9 +295,9 @@ public class Mat4 is F3Value
 	if transpose then fromColumns(result) else fromRows(result);
     }
 
-    public function getColumns from (arr0 is nativearray of Number) to nativearray of Number
+    public function getColumns from (array is nativearray of Number) to nativearray of Number
     {
-	var arr is nativearray of Number = arr0;
+	var arr is nativearray of Number = array;
         if (arr == null) arr = newFloatArray(16);
         arr[0] = xx;
         arr[1] = yx;
@@ -332,8 +332,9 @@ public const <<0>> = Mat4 {xx: 0.0, xy: 0.0, xz: 0.0, xw: 0.0
 			   zx: 0.0, zy: 0.0, zz: 0.0, zw: 0.0
 			   wx: 0.0, wy: 0.0, wz: 0.0, ww: 0.0};
 
-public function fromRows from (a is nativearray of Number) to Mat4 
+public function fromRows from (array is nativearray of Number) to Mat4 
 {
+    const a = array;
     Mat4 {
 	xx: a[0],  xy: a[1],  xz: a[2],  xw: a[3]; 
 	yx: a[4],  yy: a[5],  yz: a[6]   yw: a[7];
@@ -342,8 +343,9 @@ public function fromRows from (a is nativearray of Number) to Mat4
     }
 }
 
-public function fromColumns from (a is nativearray of Number) to Mat4 
+public function fromColumns from (array is nativearray of Number) to Mat4 
 {
+    const a = array;
     Mat4 {
 	xx: a[0],  xy: a[4],  xz: a[8],  xw: a[12]; 
 	yx: a[1],  yy: a[5],  yz: a[9]   yw: a[13];

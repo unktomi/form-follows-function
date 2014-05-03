@@ -6,50 +6,60 @@ public const <<1>> = Point3 {x: 1.0, y: 1.0, z: 1.0};
 
 public class Point3 is Tuple3
 {
-    public function dot from (v is Vec3) to Number 
+    public function dot from (vector is Vec3) to Number 
     {
-	x*v.x + 
-        y*v.y +
-	z*v.z
+	x*vector.x + 
+        y*vector.y +
+	z*vector.z
     }
 
-    public function add from (v is Vec3) to Point3
-    {
-	Point3 
-	{ 
-	    x: x + v.x;
-	    y: y + v.y;
-	    z: z + v.z;
-	} 
-    }
-
-    public function add from (v is Tuple3) to Point3
+    public function add from (vector is Vec3) to Point3
     {
 	Point3 
 	{ 
-	    x: x + v.x;
-	    y: y + v.y;
-	    z: z + v.z;
+	    x: x + vector.x;
+	    y: y + vector.y;
+	    z: z + vector.z;
 	} 
     }
 
-    public function sub from (v is Tuple3) to Point3
+    public function add from (vector is Tuple3) to Point3
     {
 	Point3 
 	{ 
-	    x: x - v.x;
-	    y: y - v.y;
-	    z: z - v.z;
+	    x: x + vector.x;
+	    y: y + vector.y;
+	    z: z + vector.z;
 	} 
     }
 
-    public function sub from (v is Point3) to Vec3
+    public function sub from (vector is Vec3) to Point3
+    {
+	Point3 
+	{ 
+	    x: x - vector.x;
+	    y: y - vector.y;
+	    z: z - vector.z;
+	} 
+    }
+
+    public function sub from (vector is Tuple3) to Point3
+    {
+	Point3 
+	{ 
+	    x: x - vector.x;
+	    y: y - vector.y;
+	    z: z - vector.z;
+	} 
+    }
+
+    public function sub from (point is Point3) to Vec3
     {
 	Vec3 
 	{ 
-	    x: x - v.x;
-	    y: y - v.y;
-	    z: z - v.z;
+	    x: x - point.x;
+	    y: y - point.y;
+	    z: z - point.z;
 	} 
     }
 
@@ -63,30 +73,51 @@ public class Point3 is Tuple3
 	} 
     }
 
-    public function mul from (n is Number) to Point3
-    {
-	if (n == 0) then <<0>> else if (n == 1) then this else 
-	Point3 
-        { 
-	    x: x*n;
-	    y: y*n;
-	    z: z*n;
-	} 
+    public override function * from (scale is Number) to Point3 
+    {   
+    	if scale == 0 then <<0>> else if scale == 1 then this else
+	Point3 { 
+	    x: x*scale;
+	    y: y*scale;
+	    z: z*scale;
+	}
     }
 
-    public function div from (n is Number) to Point3
-    {
-	mul(1/n)
+    public override function / from (scale is Number) to Point3 
+    {   
+	Point3 { 
+	    x: x/scale;
+	    y: y/scale;
+	    z: z/scale;
+	}
     }
 
-    public function min from (v is Point3) to Point3 
+    public function mul from (tuple is Tuple3) to Point3 
     {
-	if (v == this) v else new Point3 (Math.min(x, v.x), Math.min(y, v.y), Math.min(z, v.z))
+        Point3 {
+            x: x * tuple.x;
+            y: y * tuple.y;
+            z: z * tuple.z;
+        }
+    }   
+
+    public function div from (tuple is Tuple3) to Point3 
+    {
+        Point3 {
+            x: x / tuple.x;
+            y: y / tuple.y;
+            z: z / tuple.z;
+        }
+    }   
+
+    public function min from (point is Point3) to Point3 
+    {
+	if (point == this) point else new Point3 (Math.min(x, point.x), Math.min(y, point.y), Math.min(z, point.z))
     }
 
-    public function max from (v is Point3) to Point3 
+    public function max from (point is Point3) to Point3 
     {
-	if (v == this) v else new Point3 (Math.max(x, v.x), Math.max(y, v.y), Math.max(z, v.z))
+	if (point == this) point else new Point3 (Math.max(x, point.x), Math.max(y, point.y), Math.max(z, point.z))
     }
 
     public function xy to Point2 
@@ -105,9 +136,9 @@ public class Point3 is Tuple3
         }
     }
 
-    public function translate(x is Number, y is Number, z is Number) to Point3
+    public function translate from (tx is Number, ty is Number, tz is Number) to Point3
     {
-        new Point3(this.x+x, this.y+y, this.z+z)
+        new Point3(this.x+tx, this.y+ty, this.z+tz)
     }
 
     override function toString from () to String 
