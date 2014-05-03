@@ -151,7 +151,6 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
         rc.setRootLayer(root.getLayer());
         println("RENDERING {root} rc={rc}");
         root.getLayer().paint(rc);
-
         return outputDevice.getNode();
     }
 
@@ -222,14 +221,15 @@ const prefix =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
     "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
     "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
-    "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body>";
-const suffix = "</body></html>";
+    "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
+const suffix = "</html>";
 
 public class Text is AbstractXHTMLNode {
     public var style is String;
+    public var inlineStyle is String;
     public var content is String;
 
-    readonly var fullContent = bind "{prefix}<div style='{style}'>{content}</div>{suffix}";
+    bound var fullContent = "{prefix}<head><style type='text/css'>{style}</style></head><body><div style='{inlineStyle}'>{content}</div></body>{suffix}";
 
     override bound function loadDocument to org.w3c.dom.Document 
     {

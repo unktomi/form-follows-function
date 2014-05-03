@@ -126,6 +126,9 @@ public class F3Local {
                 {
                     SortedMemberArray<F3FunctionMember> result1 = new SortedMemberArray<F3FunctionMember>();
                     base.getFunctions(filter, result1);
+                    for (F3FunctionMember member: result1) {
+                        result.add(((FunctionMember)member).subst(getReflectionContext()));
+                    }
                 }
                 protected void getVariables(F3MemberFilter filter, SortedMemberArray<? super F3VarMember> result)
                 {
@@ -1200,6 +1203,8 @@ public class F3Local {
         String name;
         F3FunctionType type;
 
+        abstract public FunctionMember<M> subst(F3Context ctx);
+
         public M getUnderlying() {
             return method;
         }
@@ -1333,6 +1338,10 @@ public class F3Local {
         @Override
         public Annotation getAnnotation(Class clazz) {
             return method.getAnnotation(clazz);
+        }
+
+        public CtorMember subst(F3Context ctx) {
+            return new CtorMember(method, (ClassType)ctx.subst(owner), (F3FunctionType)ctx.subst(getType()));
         }
     }
 

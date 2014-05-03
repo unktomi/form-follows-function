@@ -81,44 +81,44 @@ public class Buffer
 public class Vec3 is Tuple3
 {
     public function +
-	from (p is Point3) 
+	from (point is Point3) 
 	to Point3 
     {
-	p + this
+	point + this
     }
 
     public function dot
-	from (v is Tuple3) 
+	from (vector is Tuple3) 
 	to Number 
     {
-	x*v.x + 
-        y*v.y +
-	z*v.z
+	x*vector.x + 
+        y*vector.y +
+	z*vector.z
     }
 
     public function cross 
-	from (v is Tuple3) 
+	from (vector is Tuple3) 
 	to Vec3 
     {
 	Vec3 
 	{
-	    x: y*v.z - z*v.y;
-	    y: z*v.x - x*v.z;
-	    z: x*v.y - y*v.x;
+	    x: y*vector.z - z*vector.y;
+	    y: z*vector.x - x*vector.z;
+	    z: x*vector.y - y*vector.x;
 	}
     }
 
     public function translate
-	from (dx is Number,
-	      dy is Number,
-	      dz is Number) 
+	from (tx is Number,
+	      ty is Number,
+	      tz is Number) 
 	to Vec3
     {
 	Vec3 
 	{ 
-	    x: x + dx;
-	    y: y + dy;
-	    z: z + dz;
+	    x: x + tx;
+	    y: y + ty;
+	    z: z + tz;
 	} 
     }
 
@@ -135,26 +135,26 @@ public class Vec3 is Tuple3
     }
 
     public function +
-	from (v is Vec3) 
+	from (vector is Vec3) 
 	to Vec3
     {
 	Vec3 
 	{ 
-	    x: x + v.x;
-	    y: y + v.y;
-	    z: z + v.z;
+	    x: x + vector.x;
+	    y: y + vector.y;
+	    z: z + vector.z;
 	} 
     }
 
     public function -
-	from (v is Vec3) 
+	from (vector is Vec3) 
 	to Vec3
     {
 	Vec3 
 	{ 
-	    x: x - v.x;
-	    y: y - v.y;
-	    z: z - v.z;
+	    x: x - vector.x;
+	    y: y - vector.y;
+	    z: z - vector.z;
 	} 
     }
 
@@ -169,6 +169,24 @@ public class Vec3 is Tuple3
 	} 
     }
 
+    public function mul from (tuple is Tuple3) to Vec3 
+    {
+        Vec3 {
+            x: x * tuple.x;
+            y: y * tuple.y;
+            z: z * tuple.z;
+        }
+    }   
+
+    public function div from (tuple is Tuple3) to Vec3 
+    {
+        Vec3 {
+            x: x / tuple.x;
+            y: y / tuple.y;
+            z: z / tuple.z;
+        }
+    }   
+
     public function - to Vec3
     {
 	Vec3 
@@ -179,20 +197,20 @@ public class Vec3 is Tuple3
 	} 
     }
 
-    override public function * from (n is Number) to Vec3
+    override public function * from (scale is Number) to Vec3
     {
-	if (n == 0) then <<0>> else if (n == 1) then this else 
+	if (scale == 0) then <<0>> else if (scale == 1) then this else 
 	Vec3 
         { 
-	    x: x*n;
-	    y: y*n;
-	    z: z*n;
+	    x: x*scale;
+	    y: y*scale;
+	    z: z*scale;
 	} 
     }
 
-    public function / from (n is Number) to Vec3
+    public function / from (scale is Number) to Vec3
     {
-	this * (1/n)
+	this * (1/scale)
     }
 
     public function map from (f is function from Number to Number) to Vec3 
@@ -214,9 +232,9 @@ public class Vec3 is Tuple3
 	       0    , 0    , 0    , 1);
     }
 
-    public function project from (v is Tuple3) to Vec3 
+    public function project from (vector is Tuple3) to Vec3 
     {
-	this * this.dot(v);
+	this * this.dot(vector);
     }
 
     public function lerp
@@ -267,18 +285,18 @@ public class Vec3 is Tuple3
     }
 
     public function rotationTo 
-	from (v is Vec3)
+	from (vector is Vec3)
 	to Quat 
     {
-	rotationTo(v, null);
+	rotationTo(vector, null);
     }
 
     public function rotationTo 
-	from (v is Vec3, preferredAxis is Vec3) 
+	from (vector is Vec3, preferredAxis is Vec3) 
 	to Quat 
     {
 	const s = normalize();
-	const t = v.normalize();
+	const t = vector.normalize();
 	const factor = s.length() * t.length();
 	if (Math.abs(factor) > LinearMath.EPSILON) {
 	    const dot = s.dot(t) / factor;
