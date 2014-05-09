@@ -386,6 +386,12 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	markDirty();
     }
 
+    public function appendText from (ch is String) to () 
+    {
+        buffer.append(ch);
+	markDirty();
+    }
+
     function moveCaretUp from (shift is Boolean) to () 
     {
 	const hit = layout.pick(caretPosition);

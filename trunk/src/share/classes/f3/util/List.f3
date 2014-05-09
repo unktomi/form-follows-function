@@ -100,7 +100,7 @@ public abstract class List of a is Accumulative of a, org.f3.runtime.Monad of (L
 	accumulate(empty of a(),
 		   function from (ys is List of a, x is a) to List of a
 		   {
-		       if (--count > 0) then ys.append(x) else ys;
+		       if (count-- > 0) then ys.append(x) else ys;
 		   })
     }
 
@@ -110,7 +110,7 @@ public abstract class List of a is Accumulative of a, org.f3.runtime.Monad of (L
 	accumulate(empty of a(),
 		   function from (ys is List of a, x is a) to List of a
 		   {
-		       if (--count > 0) then ys else ys.append(x);
+		       if (count-- > 0) then ys else ys.append(x);
 		   })
     }
 
