@@ -124,7 +124,7 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
     }
 
     public var width is Number = 800;
-    public var height is Number = 600;
+    public var height is Number = -1;
     public var font is f3.media.scene.Text.Font; 
     abstract bound function loadDocument to org.w3c.dom.Document;
     readonly var document is org.w3c.dom.Document = bind loadDocument();
@@ -210,7 +210,7 @@ public abstract class AbstractXHTMLNode is AbstractNode, MouseInputHandler {
         root.layout(c);
         const dim = root.getLayer().getPaintingDimension(c);
         layoutWidth = dim.width;
-        layoutHeight = dim.height;
+        layoutHeight = if height > 0 then height else dim.height;
         return root;
     }
 

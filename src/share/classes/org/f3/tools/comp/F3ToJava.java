@@ -548,7 +548,7 @@ public class F3ToJava extends F3AbstractTranslation {
             InitTranslator(DiagnosticPosition diagPos) { super(diagPos); }
             
             protected ExpressionResult doit() {
-                assert !vsym.isParameter() : "Parameters are not initialized";
+                assert !vsym.isParameter() : "Parameters are not initialized: "+vsym;
                 setSubstitution(init, vsym);
                 final JCExpression nonNullInit = translateNonBoundInit(diagPos, init, vsym);
                 final boolean isLocal = !vsym.isMember();

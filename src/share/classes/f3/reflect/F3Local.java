@@ -62,9 +62,16 @@ public class F3Local {
      */
 
     public static class Context extends F3Context {
+
+        Context parent;
+
         static Context instance = new Context();
 
         private Context () {
+        }
+
+        public boolean equals(Object other) {
+            return other instanceof Context;
         }
 
 	static F3Type[] boxedPrimitives =  
@@ -124,11 +131,7 @@ public class F3Local {
                 }
                 protected void getFunctions(F3MemberFilter filter, SortedMemberArray<? super F3FunctionMember> result) 
                 {
-                    SortedMemberArray<F3FunctionMember> result1 = new SortedMemberArray<F3FunctionMember>();
-                    base.getFunctions(filter, result1);
-                    for (F3FunctionMember member: result1) {
-                        result.add(((FunctionMember)member).subst(getReflectionContext()));
-                    }
+                    base.getFunctions(filter, result);
                 }
                 protected void getVariables(F3MemberFilter filter, SortedMemberArray<? super F3VarMember> result)
                 {
