@@ -125,7 +125,7 @@ function getFont from (spec is String) to java.awt.Font
         } else if (attr == "font-family") {
             const fams = value.split(",");
             for (x in fams, y in families) {
-                if (x == y) {
+                if (x.equalsIgnoreCase(y)) {
                     name = x;
                     println("FOUND FONT FAMILY: {x}");
                     break;
@@ -1867,8 +1867,8 @@ public class SceneRenderer {
         if (surface == null) {
             surface = OffscreenSurface {
                 gl: gl;
-                override var width = bind stageNode.width;
-                override var height = bind stageNode.height;
+                override var width = bind stageNode.width * stageNode.superSample;
+                override var height = bind stageNode.height * stageNode.superSample;
             }
 	    surface.stageRenderer = SurfaceRenderer {
 		stage: stageNode;
