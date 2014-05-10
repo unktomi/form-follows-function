@@ -18,6 +18,8 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
     const _2 = observeKeyUp().subscribe(injectKeyUp);
     const _3 = observeKeyInput().subscribe(injectKeyInput);
 
+    public const superSample is Integer = 2;
+
     override public function acceptFocus to Boolean 
     {
 	if (getFocusedScene() <> null) {
