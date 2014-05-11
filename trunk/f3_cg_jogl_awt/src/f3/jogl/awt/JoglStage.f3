@@ -40,6 +40,10 @@ import f3.media.svg.SVG;
 import f3.media.xhtml.XHTML;
 import com.jogamp.opengl.util.awt.TextureRenderer;
 import javax.swing.JOptionPane;
+import java.awt.font.TextAttribute;
+import java.text.AttributedString;
+import java.text.AttributedCharacterIterator;
+
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
 const ALWAYS_SWAP_BUFFERS is Boolean = Boolean.getBoolean("always.swap.buffers");
@@ -85,7 +89,7 @@ public const DISABLE_SCISSOR is Boolean = java.lang.Boolean.getBoolean("f3.jogl.
 
 var DISABLE_DEFORMERS = false;
 
-const frc = new java.awt.font.FontRenderContext(null, true, false);
+const frc = new java.awt.font.FontRenderContext(null, true, true);
 const families = 
     java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames() on replace {
     for (x in families) println(x);
@@ -183,12 +187,104 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
     }
 }
 
+class TextRun {
+    const text is String;
+    const attr is Integer = Integer.MAX_VALUE;
+}
+
 public class JoglTextLayoutInstance is Text.LayoutInstance {
 
     const engine is JoglTextLayoutEngine;
     const shapeExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
     const caretExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
     const selectionExtrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
+
+    function convertMarkup 
+        from (input is String, 
+              attrs is java.util.Map of (..AttributedCharacterIterator.Attribute, ?) ) 
+        to AttributedString
+    {
+        var i = 0;
+        const len = input.length();
+        const LT = "<".charAt(0);
+        var runs is TextRun[];
+        var count is Integer = 0;
+
+        function flush to () {
+            if (count < i) {
+                const run = TextRun {
+                    text: input.substring(count, i);
+                } 
+                insert run into runs;
+                //println("flushed {i} {run.text}");
+                count = i;
+            }
+        }
+
+        function matches from (str is String) to Boolean {
+            for (j in [0..<str.length()]) {
+                if (i + j < input.length()) {
+                    if (input.charAt(i+j) <> str.charAt(j)) {
+                        //println("match failed at {i+j} for {str.charAt(j)}, {input.charAt(i+j)}");
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            flush();
+            //println("matched {str}");
+            i += str.length();
+            count += str.length();
+            return true;
+        }
+
+        while (i < len) {
+            const ch = input.charAt(i);
+            if (ch == LT) {
+                if (matches("<sub>")) {
+                    const j = input.indexOf("</sub>", i);
+                    if (j >= i) {
+                        insert TextRun {
+                            text: input.substring(i, j);
+                            attr: TextAttribute.SUPERSCRIPT_SUB;
+                        } into runs;
+                        count = i = j + 6;
+                        continue;
+                    }
+                } else if (matches("<sup>")) {
+                    const j = input.indexOf("</sup>", i);
+                    if (j >= i) {
+                        insert TextRun {
+                            text: input.substring(i, j);
+                            attr: TextAttribute.SUPERSCRIPT_SUPER;
+                        } into runs;
+                        count = i = j + 6;
+                        continue;
+                    }
+                } 
+            }           
+            i++;
+        }
+        flush();
+        const buf = new java.lang.StringBuffer();
+        for (r in runs) {
+            buf.append(r.text);
+        }
+        const newString = buf.toString();
+        const attrString = new AttributedString(newString);
+        attrString.addAttributes(attrs, 0, newString.length());
+        var off = 0;
+        for (r in runs) {
+            if (r.attr <> Integer.MAX_VALUE) {
+                //println("adding attribute to {off}: {r.text}");
+                attrString.addAttribute(TextAttribute.SUPERSCRIPT, r.attr, off, off+r.text.length());
+            }
+            off += r.text.length();
+        }
+        //println("converted markup to {newString}");
+        return attrString;
+    }
 
     override public function createLayout
 	from (text0 is String, 
@@ -199,6 +295,8 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
 	to Text.Layout 
     {
 	const font = if (font0 <> null) then font0 else engine.createFont("");
+        var match is Integer;
+        var off is Integer = 0;
         const text = "{text0} ";
         const width = wrapWidth;
         const height = clipHeight;
@@ -206,12 +304,21 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
         var layouts is java.awt.font.TextLayout[] = [];
         var xs is Number[] = [];
         var ys is Number[] = [];
-        const str = new java.text.AttributedString(text);
-        str.addAttribute(java.awt.font.TextAttribute.FONT, (font as JoglFont).font); 
+        const str = convertMarkup(text, (font as JoglFont).font.getAttributes());
         const measurer = new java.awt.font.LineBreakMeasurer(str.getIterator(), frc);
         var y = 0.0;
 	var w = Math.round(wrapWidth / 2.0);
-        while (measurer.getPosition() < text.length()) {
+        var lastPos = -1;
+        while (true) {
+            const pos = measurer.getPosition();
+            println("pos: {pos}, of {text.length()}");
+            if (pos >= text.length()) {
+                break;
+            }
+            if (pos == lastPos) {
+                break;
+            }
+            lastPos = pos;
             const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
             const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline+1;
 	    try {
@@ -1858,7 +1965,6 @@ public class SceneRenderer {
     var opaqueToDraw = new java.util.ArrayList of MeshNode;
     public var parent is StageRenderer;
 
-
     function renderStageNode 
 	from (gl is GL2, stageNode is StageNode)
 	to Boolean
@@ -1867,8 +1973,8 @@ public class SceneRenderer {
         if (surface == null) {
             surface = OffscreenSurface {
                 gl: gl;
-                override var width = bind stageNode.width * stageNode.superSample;
-                override var height = bind stageNode.height * stageNode.superSample;
+                override var width = bind Math.min(4096, stageNode.width * stageNode.superSample);
+                override var height = bind Math.min(4096, stageNode.height * stageNode.superSample);
             }
 	    surface.stageRenderer = SurfaceRenderer {
 		stage: stageNode;
