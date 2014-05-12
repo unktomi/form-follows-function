@@ -125,6 +125,17 @@ public class Subject of a is Observable of a, Observer of a
         }
     }
 
+    public function disposeAll to ()
+    {
+        if (flushing) {
+            insert function {
+                observers.clear();
+            } into todo;
+        } else {
+            observers.clear();
+        }
+    }
+
     function removeSubscriber from (x is Observer of a) to ()
     {
         if (flushing) {

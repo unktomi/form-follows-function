@@ -311,7 +311,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
         var lastPos = -1;
         while (true) {
             const pos = measurer.getPosition();
-            println("pos: {pos}, of {text.length()}");
+            //println("pos: {pos}, of {text.length()}");
             if (pos >= text.length()) {
                 break;
             }
