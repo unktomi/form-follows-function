@@ -386,7 +386,7 @@ public class Builtins {
 
     public final static class BooleanOperators {
 
-        public static <a>  If (boolean condition, <a> _then, <b> _else) {
+        public static <a> a If (boolean condition, a _then, a _else) {
             return condition ? _then : _else; 
         }
 
