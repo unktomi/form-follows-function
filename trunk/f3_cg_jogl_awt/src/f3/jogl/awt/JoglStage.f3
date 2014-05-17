@@ -101,6 +101,7 @@ function getFont from (spec is String) to java.awt.Font
     var size = 12;
     var style = 0;
     var name = "Lucida Grande";
+    const fontAttrs is java.util.Map of (TextAttribute, Integer) = new java.util.HashMap of (TextAttribute, Integer);
     for (i in props) {
         const prop = i.trim().split(":");
         if (prop.length < 2) {
@@ -118,6 +119,10 @@ function getFont from (spec is String) to java.awt.Font
             } else {
 		// error
 	    }
+        } else if (attr == "text-decoration") {
+            if (value == "underline") {
+                fontAttrs.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+            }
         } else if (attr == "font-style") {
             if (value == "italic") {
                 style = Bits.add(style, java.awt.Font.ITALIC);
@@ -142,6 +147,9 @@ function getFont from (spec is String) to java.awt.Font
     if (result == null) {
         result = new java.awt.Font(name, style, size);
         fonts.put(k, result);
+    }
+    if (fontAttrs.size() > 0) {
+        result= result.deriveFont(fontAttrs);
     }
     return result;
 }
