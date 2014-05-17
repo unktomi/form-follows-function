@@ -241,8 +241,13 @@ public class Text is AbstractXHTMLNode {
 
     function createDocument from (string is String) to org.w3c.dom.Document 
     {
-        const input = new org.xml.sax.InputSource(new java.io.BufferedReader(new java.io.StringReader(string)));
-        XMLResource.load(input).getDocument()
+        try {
+            const input = new org.xml.sax.InputSource(new java.io.BufferedReader(new java.io.StringReader(string)));
+            XMLResource.load(input).getDocument();
+        } catch (e is java.lang.Exception) {
+            println("input was {string}");
+            throw new RuntimeException(e);
+        }
     }
 }
 
