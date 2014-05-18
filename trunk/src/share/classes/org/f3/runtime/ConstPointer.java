@@ -23,6 +23,7 @@
 
 package org.f3.runtime;
 import org.f3.runtime.sequence.Sequences;
+import org.f3.runtime.sequence.*;
 import f3.animation.KeyValueTarget;
 import f3.animation.KeyValueTarget.Type;
 import org.f3.functions.Function1;
@@ -182,7 +183,16 @@ public class ConstPointer<This extends F3Object,a> implements f3.lang.MemberRef<
     }
 
     public a get() {
-        return (a)(obj != null? obj.get$(varnum) : getDefaultValue());
+        a result = (a)(obj != null? obj.get$(varnum) : getDefaultValue());
+        /*
+        if (result instanceof SequenceRef || result instanceof SequenceProxy) {
+            result = (a)Sequences.copy((Sequence)result);
+        }
+        */
+        if (result instanceof ArraySequence) {
+            ((ArraySequence)result).incrementSharing();
+        }
+        return result;
     }
 
     public a get(int pos) {
