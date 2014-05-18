@@ -243,10 +243,10 @@ public class Text is AbstractXHTMLNode {
     {
         try {
             const input = new org.xml.sax.InputSource(new java.io.BufferedReader(new java.io.StringReader(string)));
-            XMLResource.load(input).getDocument();
+            return XMLResource.load(input).getDocument();
         } catch (e is java.lang.Exception) {
             println("input was {string}");
-            throw new RuntimeException(e);
+            throw new java.lang.RuntimeException(e);
         }
     }
 }
