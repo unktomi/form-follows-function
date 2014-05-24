@@ -14,6 +14,13 @@ public function quat
     Quat(rx, ry, rz)
 }
 
+public function quat
+    from (angle is Number, axis is Vec3) 
+    to Quat
+{
+    Quat(angle, axis)
+}
+
 
 public function vector 
     from (x is Number,
