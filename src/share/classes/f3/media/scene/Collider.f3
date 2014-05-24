@@ -93,7 +93,7 @@ public abstract class Collider {
 
     public abstract function applyForce from (x is Number, y is Number, z is Number) to ();
 
-    public function applyTarque from (v is Vec3) to () 
+    public function applyTorque from (v is Vec3) to () 
     {
         applyTorque(v.x, v.y, v.z);
     }
@@ -125,7 +125,7 @@ public abstract class Collider {
 
     public abstract function applyImpulse from (x is Number, y is Number, z is Number) to ();
 
-    public function applyTarqueImpulse from (v is Vec3) to () 
+    public function applyTorqueImpulse from (v is Vec3) to () 
     {
         applyTorqueImpulse(v.x, v.y, v.z);
     }
