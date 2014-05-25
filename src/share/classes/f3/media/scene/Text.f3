@@ -130,10 +130,19 @@ public class Label is AbstractText {
     override var blocksPointer = true;
     override var pickable = false;
     override var internalContent = bind content;
-    public var text is String on replace {
-	content.setText(text);
+    var textInvalid = true;
+    public var text is String on invalidate {
+           textInvalid = true;
     }
     //override var width = bind font.width(text); // this exposed compiler bugs when its overridden subsequently
+    override function update to () 
+    {
+        super.update();
+        if (textInvalid) {
+            textInvalid = false;
+            content.setText(text);
+        }
+    }   
 }
 
 
