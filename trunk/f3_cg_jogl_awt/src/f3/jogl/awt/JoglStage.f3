@@ -331,7 +331,8 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
             const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline+1;
 	    try {
 		const layout = measurer.nextLayout(wrapWidth, limit, false);
-		y += layout.getAscent();
+                //		y += layout.getAscent();
+                y += font.ascent;
 		if (y > clipHeight) {
 		    break;
 		}
@@ -339,7 +340,8 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
 		    var dx = 
 			if (rightJustify or not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
 		    dx -= w;
-		    y += layout.getDescent() + layout.getLeading();
+		    //y += layout.getDescent() + layout.getLeading();
+                    y += font.descent + font.leading;
 		    insert dx into xs;
 		    insert y into ys;
 		    insert layout into layouts;
