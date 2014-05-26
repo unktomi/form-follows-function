@@ -227,7 +227,7 @@ public bound function createMeshNode
 	  paint is Paint)
     to MeshNode2D 
 {
-    if (paint == null) then null else {
+    if (paint == null or p == null) then null else {
 	    MeshNode2D {
 		id: id,
 		paint: bind paint;

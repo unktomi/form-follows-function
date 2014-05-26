@@ -124,8 +124,12 @@ public abstract class F3ClassType extends F3Type implements F3Member {
         return (modifiers & F3_CLASS) != 0;
     }
 
+    protected boolean isDirectlyAssignableFrom(F3ClassType cls) {
+        return this.equals(cls);
+    }
+
     public boolean isAssignableFrom(F3ClassType cls) {
-        if (this.equals(cls))
+        if (this.isDirectlyAssignableFrom(cls))
             return true;
         List<F3ClassType> supers = cls.getSuperClasses(false);
         for (F3ClassType s : supers) {

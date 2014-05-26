@@ -238,6 +238,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     }
 
     var lastTime is Long;
+    var lastCaretPos = -1;
 
     override function update 
     {
@@ -253,16 +254,23 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 	    const now = java.lang.System.currentTimeMillis();
 	    if (not focused) {
 		caretMesh.visible = false;
+                lastCaretPos = -1;
 	    } else {
-		if (caretMesh.visible) {
-		    if (now - lastTime >= 600) {
-			lastTime = now;
-			caretMesh.visible = false;
-		    }
-		} else if (now - lastTime >= 400) {
-		    caretMesh.visible = true;
-		    lastTime = now;
-		}
+                if (lastCaretPos <> caretPosition) {
+                    caretMesh.visible = true;
+                    lastTime = now;
+                    lastCaretPos = caretPosition;
+                }  else {
+                    if (caretMesh.visible) {
+                        if (now - lastTime >= 600) {
+                            lastTime = now;
+                            caretMesh.visible = false;
+                        }
+                    } else if (now - lastTime >= 400) {
+                        caretMesh.visible = true;
+                        lastTime = now;
+                    }
+                }
 	    }
 	} else {
 	    caretMesh.visible = false;
