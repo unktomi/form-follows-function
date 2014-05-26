@@ -403,11 +403,15 @@ class JoglTextLayout is Text.Layout
                 const path = new GeneralPath();
                 const t = AffineTransform.getTranslateInstance(dx, y);
                 var shapes = layout.getCaretShapes(caret-pos);
-                if (shapes[0].getBounds().getWidth() == 0) {
-                    shapes[0] = new java.awt.BasicStroke(1).createStrokedShape(shapes[0]);
+                for (j in shapes) {
+                    if (j == null) continue;
+                    const shape = if (j.getBounds2D().getWidth() == 0) then new java.awt.BasicStroke(1).createStrokedShape(j) else j;
+                    path.append(shape.getPathIterator(t), false);
                 }
-                path.append(shapes[0].getPathIterator(t), false);
-                return JoglPath2D { path: flip_y(path), extrusion: caretExtrusion }
+                return JoglPath2D { 
+                    path: flip_y(path);
+                    extrusion: caretExtrusion;
+                }
             }
             pos += layout.getCharacterCount();
         }
@@ -662,6 +666,7 @@ class JoglPath2D is Path2D
             }
             return mb.toMesh();
         } catch (e is java.lang.Exception) {
+            e.printStackTrace();
             return null;
         }
     }

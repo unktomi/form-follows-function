@@ -392,6 +392,13 @@ public class F3Local {
 	    this.type = type;
         }
 
+        protected boolean isDirectlyAssignableFrom(F3ClassType cls) {
+            if (cls instanceof ClassType) {
+                return refClass.equals(((ClassType)cls).refClass);
+            }
+            return false;
+        }
+
 	public boolean isConvertibleFrom(F3Type typ) {
 	    if (typ instanceof F3PrimitiveType) {
 		for (int i = 0; i < Context.boxedPrimitives.length; i += 2) {
@@ -458,8 +465,21 @@ public class F3Local {
     
         @Override
         public boolean equals (Object obj) {
-            return (obj instanceof ClassType
-                    && refClass == ((ClassType) obj).refClass)  || super.equals(obj);
+            if (this == obj) return true;
+            final boolean sameClass =  (obj instanceof ClassType
+                                        && refClass == ((ClassType) obj).refClass);
+            if (sameClass) {
+                final ClassType x = (ClassType)obj;
+                if (isTypeVariable() && x.isTypeVariable()) {
+                    return hasSameType(x);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        boolean hasSameType(ClassType c) {
+            return type.equals(c.type);
         }
 
         void getSuperClasses(boolean all, SortedClassArray result) {
