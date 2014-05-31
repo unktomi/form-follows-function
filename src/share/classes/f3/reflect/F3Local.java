@@ -93,7 +93,8 @@ public class F3Local {
 
         public F3ClassType instantiateType(final F3ClassType base, final F3Type[] typeParams) {
             final F3Type[] orig = base.getTypeParameters();
-            return new F3ClassType(new F3Local.Context() {
+            ClassType baseType = (ClassType)base;
+            return new ClassType(new F3Local.Context() {
                     {
                         for (int i = 0; i < orig.length; i++) {
                             F3Type t = orig[i];
@@ -107,7 +108,7 @@ public class F3Local {
                         }
                         return mapped;
                     }
-                }, base.modifiers) {
+                }, base.modifiers, baseType.refClass, baseType.refInterface, baseType.type) {
                 { 
                     name = base.getName();
                 }
@@ -140,8 +141,8 @@ public class F3Local {
                 public F3FunctionMember getFunction(String name, F3Type... argType) {
                     return base.getFunction(name, argType);
                 }
-                public F3ObjectValue allocate () {
-                    return base.allocate();
+                public ObjectValue allocate () {
+                    return (ObjectValue)base.allocate();
                 }
                 public F3ClassType getDeclaringClass() {
                     return base.getDeclaringClass();
@@ -163,7 +164,7 @@ public class F3Local {
                         return false;
                     }
                     final F3ClassType other = (F3ClassType)obj;
-                    final F3Type[] otherParams = other.getTypeParameters();
+                    final F3Type[] otherParams = other.getTypeArguments();
                     for (int i = 0; i < typeParams.length; i++) {
                         if (!otherParams[i].equals(typeParams[i])) {
                             return false;
@@ -394,7 +395,11 @@ public class F3Local {
 
         protected boolean isDirectlyAssignableFrom(F3ClassType cls) {
             if (cls instanceof ClassType) {
-                return refClass.equals(((ClassType)cls).refClass);
+                ClassType x = (ClassType)cls;
+                if (refInterface != null) {
+                    return refInterface.equals(x.refInterface);
+                }
+                return refClass.equals(x.refClass);
             }
             return false;
         }
