@@ -480,21 +480,21 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
         update();
         lastValue = text;
-        commitSubject.onNext(());
+        commitSubject.onNext(text);
         loseFocus();
     }
     
     var textSubject is Subject of String;
-    var commitSubject is Subject of (());
+    var commitSubject is Subject of String;
 
     public function observeText to Observable of String
     {
         if (textSubject == null) then textSubject = Subject of String {} else textSubject;
     }
 
-    public function observeCommit to Observable of (())
+    public function observeCommit to Observable of (String)
     {
-        if (commitSubject == null) then commitSubject = Subject of (()) {} else commitSubject;
+        if (commitSubject == null) then commitSubject = Subject of (String) {} else commitSubject;
     }
 
 }
