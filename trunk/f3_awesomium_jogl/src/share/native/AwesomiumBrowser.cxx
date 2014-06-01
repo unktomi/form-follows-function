@@ -111,7 +111,9 @@ public:
       webCore->Update();
       JSValue result = webView->CreateGlobalJavascriptObject(WSLit("f3"));
       callbackObject = &result.ToObject();
-      webCore->Update();
+      for (int i = 0; i < 10; i++) {
+        webCore->Update();
+      }
       callbackObject->SetCustomMethod(WSLit("handleEvent"), false);
       if (currentURL.length() > 0) {
         webView->LoadURL(WebURL(currentURL));
