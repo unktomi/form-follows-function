@@ -61,6 +61,7 @@ public interface LayoutEngine
 {
     public abstract function createFont from (spec is String) to Font;
     public abstract function createLayoutInstance to LayoutInstance;
+    public const allFontFamilies is String[];
 }
 
 public abstract class TextMeshNode is MeshNode2D 
@@ -80,7 +81,7 @@ const OFFWHITE = new Color(.9, .9, .9, 1);
 abstract public class AbstractText is AbstractNode {
     public var width is Number = 300;
     public var height is Number = bind font.height();
-    public var font is Font = layoutEngine.createFont("font-size:14;font-family:Dialog;");
+    public var font is Font = bind layoutEngine.createFont("font-size:14;font-family:Dialog;");
     public var rightJustified is Boolean = false;
     public var background is Paint = ColorPaint(OFFWHITE);
     public var foreground is Paint = ColorPaint(Color.BLACK);

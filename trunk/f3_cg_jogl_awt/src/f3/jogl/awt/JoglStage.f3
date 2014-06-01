@@ -175,6 +175,8 @@ function flip_y from (path is GeneralPath) to GeneralPath
 
 class JoglTextLayoutEngine is Text.LayoutEngine {
 
+    override const allFontFamilies = bind families;
+
     override public function createFont from (spec is String) to Text.Font 
     {
         const font = getFont(spec);
@@ -692,8 +694,8 @@ class JoglPath2DFactory is Shape2D.Path2DFactory
     }
 }
 
-public const ThePath2DFactory = JoglPath2DFactory {};
-public const TheLayoutEngine = JoglTextLayoutEngine {};
+public const ThePath2DFactory is Shape2D.Path2DFactory = JoglPath2DFactory {};
+public const TheLayoutEngine is Text.LayoutEngine = JoglTextLayoutEngine {};
 
 function makeGradientShader from (gl is GL2, grad is Shape2D.GradientPaint) to Shader 
 {
