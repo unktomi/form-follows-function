@@ -159,7 +159,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     readonly var end = bind Math.max(selectionStart, selectionEnd);
     protected const singleLine is Boolean = false;
     bound var rect = if background == null then null else Rectangle {
-        transform: bind translate(0, -font.descent/2.0);
+        transform: bind translate(0, -font.descent);
 	factory: pathFactory;
         height: bind height;
         width: bind width;
