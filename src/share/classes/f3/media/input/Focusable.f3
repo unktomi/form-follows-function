@@ -18,8 +18,7 @@ public interface Focusable is Focuser, KeyboardFocusTarget {
     public const keyDown is Subject of KeyboardEvent = Subject of KeyboardEvent {};
     public const keyUp is Subject of KeyboardEvent = Subject of KeyboardEvent {};
     public const keyInput is Subject of KeyboardEvent = Subject of KeyboardEvent {};
-
-    public const focusedSubject is Subject of Boolean;
+    public const focusedSubject is Subject of Boolean = Subject of Boolean {};
 
     override public function observeKeyDown to Observable of KeyboardEvent 
     {
