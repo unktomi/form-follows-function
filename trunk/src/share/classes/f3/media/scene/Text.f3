@@ -476,6 +476,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
         loseFocus();
         setText(lastValue);
+        clearSelection();
     }
 
     function commit
