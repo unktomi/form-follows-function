@@ -169,7 +169,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     public readonly var layout = bind layoutInstance.createLayout(text, font, Math.max(width-indent, 0), height, rightJustified);
     public readonly var textShape = bind layout.getShape();
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
-    public readonly var caretShape = bind if (editable) then layout.getCaretShape(caretPosition) else null;
+    public readonly var caretShape = bind layout.getCaretShape(caretPosition);
     readonly var selectionMesh = bind if (/*editable and */end > start) then createMeshNode(selectionShape, null, selectionBackground) else null;
     const self = this;
     readonly var textMesh is TextMeshNode = TextMeshNode {
@@ -185,7 +185,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
             "{super.toString()}: {text}";
         }
     }
-    readonly var caretMesh = bind createMeshNode(caretShape, null, foreground);
+    const caretMesh = MeshNode2D { paint: bind foreground, path: bind caretShape };
     var column is Number;
     var isLeading is Boolean;
     var dirty = true;
@@ -272,6 +272,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
                         lastTime = now;
                     }
                 }
+                //println("setting caret visibility: {this} {caretMesh} {caretMesh.visible} shape={caretShape}");
 	    }
 	} else {
 	    caretMesh.visible = false;
@@ -389,6 +390,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
         selectionStart = 0;
         selectionEnd = buffer.length();
+        caretPosition = selectionEnd;
     }
 
     public function clearSelection to ()

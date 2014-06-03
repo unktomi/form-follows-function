@@ -199,7 +199,7 @@ public class Scene
                 }
         }
         result = f3.util.Sequences.sort(result.reverse(), java.util.Comparator of Pick {
-                override function compare from (p0 is Pick , p1 is Pick) to Integer 
+                override function compare from (p0 is Pick, p1 is Pick) to Integer 
                 {
                     java.lang.Math.signum(p0.t - p1.t) as Integer;
                 }
@@ -285,24 +285,24 @@ public class Scene
                             var stageNode = value as StageNode;
                             if (stageNode.width <> 0 
                                 and stageNode.height <> 0) {
-                                var mx: Number;
-                                var my: Number;
+                                var mx is Number;
+                                var my is Number;
                                 if (picked <> null) {
-                                    var tri = picked.tri;
-                                    var w = picked.w;
-                                    var st = texCoords[texUnit];
-                                    var s0 = st.getX(tri);
-                                    var t0 = st.getY(tri);
-                                    var s1 = st.getX(tri+1);
-                                    var t1 = st.getY(tri+1);
-                                    var s2 = st.getX(tri+2);
-                                    var t2 = st.getY(tri+2);
-                                    var s = s0*w.x + s1*w.y + s2*w.z;
-                                    var t = t0*w.x + t1*w.y + t2*w.z;
+                                    const tri = picked.tri;
+                                    const w = picked.w;
+                                    const st = texCoords[texUnit];
+                                    const s0 = st.getX(tri);
+                                    const t0 = st.getY(tri);
+                                    const s1 = st.getX(tri+1);
+                                    const t1 = st.getY(tri+1);
+                                    const s2 = st.getX(tri+2);
+                                    const t2 = st.getY(tri+2);
+                                    const s = s0*w.x + s1*w.y + s2*w.z;
+                                    const t = t0*w.x + t1*w.y + t2*w.z;
                                     mx = s * stageNode.width;
                                     my = t * stageNode.height;
                                 }
-                                var me = MouseEvent {
+                                const me = MouseEvent {
                                     screenx: mx;
                                     screeny: my;
                                 }
