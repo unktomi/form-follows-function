@@ -588,7 +588,7 @@ public class Color extends Comparable of Object, Formattable {
         return "color({%.0f r}%, {%.0f g}%, {%.0f b}%{if (o != 100) ", {%.0f o}" else ""})";
     }
 
-    function toHex(hex:Integer, digits:Integer, upper:Boolean) {
+    function toHex(hex:Integer, digits:Integer, upper:Boolean) to String {
         var hexStr = Integer.toHexString(hex);
         if (upper) {
             hexStr = hexStr.toUpperCase();
