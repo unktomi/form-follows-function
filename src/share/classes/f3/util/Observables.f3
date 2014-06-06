@@ -52,6 +52,14 @@ public function observe of a
     }
 }
 
+public function Filter of a 
+    from (source is Observable of a, 
+          predicate is function from a to Boolean) 
+    to Observable of a
+{
+    source.filter(predicate)
+}
+
 public function If from (condition is Observable of Boolean) to Observable of (()) 
 {
     foreach (x in condition.filter(id of Boolean)) ()

@@ -62,8 +62,8 @@ public class Channel of a is TimeNode
     public function deleteKey to ()
     {
         const k = pickKey(localTime);
-        println("delete key {id} {localTime} => {k.position}");
-        if (k <> null and k.position == localTime) delete k from keys;
+        println("delete key {id} local={localTime} cur={currentTime} => {k.position}");
+        if (k <> null and k.position == currentTime) delete k from keys;
     }
 
     public function moveKey from (k is Key of a, delta is Duration) to Key of a
