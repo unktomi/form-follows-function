@@ -27,6 +27,7 @@ public interface Path2D {
     abstract public function createStrokedShape from (stroke is Stroke) to Path2D;
     abstract public function apply from (output is Path2D) to ();
     abstract public function contains from (x is Number, y is Number) to Boolean;
+    public function flatten from (flattness is Number) to Path2D;
 }
 
 public function rect
@@ -406,6 +407,44 @@ public class Path is Shape2D {
         return path;
     }
 }
+
+public class PathLine {
+    public var path is Path2D;
+    public readonly var mesh is AbstractMesh = bind toMesh(path);
+    const lineMesh = LineMesh {};
+    function toMesh from (path is Path2D) to AbstractMesh {
+        const p = path.flatten(.005);
+        lineMesh.reset();
+        p.apply(Path2D {
+                override public function moveTo from (x0 is Number, y0 is Number) to () { 
+                    lineMesh.moveTo(x0, y0, 0);
+                }
+                override public function lineTo from (x1 is Number, y1 is Number) to () {
+                    lineMesh.lineTo(x1, y1, 0);
+                }
+                override public function quadTo from (cx1 is Number, cy1 is Number, 
+                                                      x2 is Number, y2 is Number) to () { 
+                }
+                override public function cubicTo from (cx1 is Number, cy1 is Number, 
+                                                       cx2 is Number, cy2 is Number,
+                                                       x2 is Number, y2 is Number) to () { 
+                }
+                override public function closePath to () { 
+                    lineMesh.close();
+                }
+                override public function reset to () { }
+                override public function createMesh to AbstractMesh { null }
+                override public function setTextureMatrix from (mat is Mat4) to () { }
+                override public function getBounds to Bounds { null }
+                override public function createStrokedShape from (stroke is Stroke) to Path2D { null }
+                override public function apply from (output is Path2D) to () { }
+                override public function contains from (x is Number, y is Number) to Boolean { false }
+                override public function flatten from (flattness is Number) to Path2D { null }
+            });
+        lineMesh.getMesh();
+    }
+}
+
 
 public function moveTo(p is Vec2) to MoveTo 
 {

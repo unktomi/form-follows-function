@@ -47,6 +47,8 @@ import java.text.AttributedCharacterIterator;
 //import f3.media.web.awesomium.AwesomiumWebBrowserFactory;
 
 const ALWAYS_SWAP_BUFFERS is Boolean = Boolean.getBoolean("always.swap.buffers");
+const DISABLE_SUPERSAMPLE is Boolean = Boolean.getBoolean("f3.jogl.stage.disable.supersample");
+const DEBUG_SCISSOR is Boolean = Boolean.getBoolean("f3.jogl.stage.debug.scissor");
 
 function checkMesh from (mn is MeshNode) to Boolean 
 {
@@ -101,9 +103,11 @@ function getFont from (spec is String) to java.awt.Font
     var size = 12;
     var style = 0;
     var name = "Lucida Grande";
-    const fontAttrs is java.util.Map of (TextAttribute, Integer) = new java.util.HashMap of (TextAttribute, Integer);
+    const fontAttrs is java.util.Map of (TextAttribute, Object) = new java.util.HashMap of (TextAttribute, Object);
     for (i in props) {
-        const prop = i.trim().split(":");
+        const j = i.trim();
+        if (j == "") continue;
+        const prop = j.split(":");
         if (prop.length < 2) {
             throw new java.lang.IllegalArgumentException(spec);
         }
@@ -122,6 +126,8 @@ function getFont from (spec is String) to java.awt.Font
         } else if (attr == "text-decoration") {
             if (value == "underline") {
                 fontAttrs.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+            } else if (value == "line-through") {
+                fontAttrs.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
             }
         } else if (attr == "font-style") {
             if (value == "italic") {
@@ -140,6 +146,8 @@ function getFont from (spec is String) to java.awt.Font
                     break;
                 }
             }
+        } else {
+            throw new java.lang.IllegalArgumentException("unsupported font attribute: {attr}");
         }
     }
     const k = "{name}.{style}.{size}";
@@ -156,7 +164,7 @@ function getFont from (spec is String) to java.awt.Font
 
 const fonts = new java.util.HashMap of (String, java.awt.Font);
 
-class JoglFont is Text.Font {
+abstract class JoglFont is Text.Font {
     public const font is java.awt.Font;
     override function width from (text is String) to Number
     {
@@ -190,6 +198,10 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
             descent: lineMetrics.getDescent();
             leading: lineMetrics.getLeading();
             font: font;
+            override public function derive from (css is String) to Text.Font
+            {
+                createFont("{spec};{css}");
+            }
         }
     }
     override public function createLayoutInstance to Text.LayoutInstance {
@@ -557,6 +569,15 @@ class JoglPath2D is Path2D
     public const extrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
     var textureMatrix is Mat4 = Mat4.<<1>>;
     override public function setTextureMatrix from (m is Mat4) to () { textureMatrix = m; }
+    override public function flatten from (flatness is Number) to Path2D
+    {
+        const newPath = new GeneralPath();
+        newPath.append(path.getPathIterator(null, flatness), false);
+        JoglPath2D {
+            path: newPath;
+        }
+    }
+
     override public function apply from (output is Path2D) to () 
     {
         const pi = path.getPathIterator(null);
@@ -574,6 +595,7 @@ class JoglPath2D is Path2D
             } else if (seg == java.awt.geom.PathIterator.SEG_CLOSE) {
                 output.closePath();
             }
+            pi.next();
         }
     }
 
@@ -1988,10 +2010,11 @@ public class SceneRenderer {
     {
         var surface = stageNode.drawingSurface as OffscreenSurface;
         if (surface == null) {
+            const scale = if not DISABLE_SUPERSAMPLE then stageNode.superSample else 1;
             surface = OffscreenSurface {
                 gl: gl;
-                override var width = bind Math.min(4096, stageNode.width * stageNode.superSample);
-                override var height = bind Math.min(4096, stageNode.height * stageNode.superSample);
+                override var width = bind Math.min(4096, stageNode.width * scale);
+                override var height = bind Math.min(4096, stageNode.height * scale);
             }
 	    surface.stageRenderer = SurfaceRenderer {
 		stage: stageNode;
@@ -2599,11 +2622,20 @@ public class SceneRenderer {
             var sbounds is Bounds = null;
 	    while (mp <> null and not (mp is Stage)) {
 		if (mp instanceof Scissored and (mp as Scissored).scissorBounds <> null) {
+                    if (DEBUG_SCISSOR) {
+                        println("scissoring: {mp}");
+                        println("scissorBounds: {(mp as Scissored).scissorBounds}");
+                        println("world: {mp.toSceneTransform * (mp as Scissored).scissorBounds}");
+                    }
+                    const pb = sbounds;
                     if (scissor <> null) {
-                        sbounds = Bounds.intersect(sbounds, mp.toSceneTransform * (scissor as Scissored).scissorBounds);                        
+                        sbounds = Bounds.intersect(sbounds, mp.toSceneTransform * (mp as Scissored).scissorBounds);                        
                     } else {
                         scissor = mp;
                         sbounds = mp.toSceneTransform * (scissor as Scissored).scissorBounds;
+                    }
+                    if (DEBUG_SCISSOR) {
+                        println("intersecting: {pb} => {sbounds}");
                     }
 		}
 		mp = mp.parent;
@@ -2613,7 +2645,6 @@ public class SceneRenderer {
  		if (not DISABLE_SCISSOR and camera is Camera2D and sbounds <> null) {
 		    const bounds = sbounds;
 		    const sb = camera.toScreen(bounds);
-                    println("scissoring: {scissor} => {sb}");
 		    enableScissorTest();
 		    gl.glScissor(sb.center.x - sb.extent.x,
 				 camera.height-sb.center.y-sb.extent.y,

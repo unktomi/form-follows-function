@@ -44,6 +44,7 @@ public interface Font
     public const leading is Number;
     public function height to Number { ascent+descent+leading }
     public function width from (text is String) to Number;
+    public function derive from (css is String) to Font;
 }
 
 public interface LayoutInstance 
@@ -91,6 +92,7 @@ abstract public class AbstractText is AbstractNode {
     public var indent is Number = 0.0;
     public var selectionStart is Integer;
     public var selectionEnd is Integer;
+    public bound function getLayout to Layout;
 }
 
 public class Label is AbstractText {
@@ -131,6 +133,7 @@ public class Label is AbstractText {
     override var blocksPointer = true;
     override var pickable = false;
     override var internalContent = bind content;
+    override bound function getLayout to Layout { content.getLayout() }
     var textInvalid = true;
     public var text is String on invalidate {
            textInvalid = true;
@@ -166,7 +169,8 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         fillPaint: bind background;
     };
     readonly var layoutInstance = bind layoutEngine.createLayoutInstance();
-    public readonly var layout = bind layoutInstance.createLayout(text, font, Math.max(width-indent, 0), height, rightJustified);
+    public readonly var layout is Layout = bind layoutInstance.createLayout(text, font, Math.max(width-indent, 0), height, rightJustified);
+    override bound function getLayout to Layout { layout }
     public readonly var textShape = bind layout.getShape();
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
     public readonly var caretShape = bind layout.getCaretShape(caretPosition);
