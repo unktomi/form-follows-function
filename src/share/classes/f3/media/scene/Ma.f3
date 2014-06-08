@@ -3243,13 +3243,15 @@ class MAnimCurve__ is MAnimCurve of Number
                 tan1 = t;
             }
         }
+        /*
         if (tan0 == FIXED) {
             //return KeyFrame.Discrete;
             return KeyFrame.Linear;
         }
-        if (tan0 == STEPPED or i1 >= kix.size()) {
+        if (tan0 == STEPPED or i1 > kix.size()) {
             return KeyFrame.Linear;
         }
+        */      
         var x0 is Number;
         var y0 is Number;
         var x1 is Number;

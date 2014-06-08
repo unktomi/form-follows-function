@@ -87,6 +87,14 @@ const FPS = 24.0;
 
 public class Tangent is NumberInterpolator 
 {
+    override public function equals from (obj is Object) to Boolean
+    {
+        if (obj is Tangent) then {
+            const tan = obj as Tangent;
+            tan.kox == kox and tan.koy == koy and tan.kix == kix and tan.kiy == kiy;
+        } else false;
+    }
+
     public const kox is Number;
     public const koy is Number;
     public const kix is Number;
@@ -150,7 +158,7 @@ public abstract class Interpolator of a
 public class Key of a 
 {
     public const position is Duration;
-    public const value is a;
+    public var value is a;
     public readonly var prev is Key of a;
     public readonly var next is Key of a;
     public const interpolator is Interpolator of a;

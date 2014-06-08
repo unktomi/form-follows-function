@@ -53,6 +53,14 @@ public class Channel of a is TimeNode
         }
     }
 
+    public function setKey from (k is Key of a, t is Duration, value is a, i is Interpolator of a) to Key of a 
+    {
+        delete k from keys;
+        const newKey = createKey(t, value, i);
+        insert newKey into keys;
+        return newKey;
+    }
+
     public function setKey from (interpolator is Interpolator of a) to Key of a
     {
         println("set key {id} {localTime} => {interpolator}");
