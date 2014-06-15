@@ -103,6 +103,7 @@ public class Timeline
         }
 	playhead = sceneTime;
 	root.updateParent();
+        const oldUnderplayHead = underPlayhead;
         underPlayhead = pick(sceneTime);
 	if (Channel.DEBUG) {
             for (x in underPlayhead) {

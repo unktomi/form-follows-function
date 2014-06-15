@@ -96,6 +96,21 @@ public class Channel of a is TimeNode
         return newKey;
     }
 
+    override function markCompleted to ()
+    {
+        var k is Key of a;
+        println("MARK COMPLETED {localTime}, {currentTime}");
+        if (localTime < 0s) {
+            k = sortedKeys[0];
+        } else {
+            k = sortedKeys[sortedKeys.size()-1];
+        }
+        for (p in targets) {
+            p.set(k.value);
+        }
+        super.markCompleted();
+    }
+
     public function pickKeyIndex from (point is Duration) to Integer
     {
         var pos = binarySearch(sortedKeys, point);

@@ -144,7 +144,7 @@ public abstract class TimeNode is Foldable of TimeNode
         } into todo;
     }
 
-    function markCompleted to () 
+    protected function markCompleted to () 
     {
         insert function to () {
             completed.onNext(());
