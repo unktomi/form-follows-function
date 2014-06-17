@@ -89,7 +89,7 @@ abstract public class AbstractText is AbstractNode {
     public var selectionForeground is Paint = 
 	ColorPaint(Color.BLACK);
     public var selectionBackground is Paint = ColorPaint { color: Color.WHITE };
-    public var indent is Number = 0.0;
+    public var indent is Number = 1.0;
     public var selectionStart is Integer;
     public var selectionEnd is Integer;
     public bound function getLayout to Layout;
@@ -97,6 +97,7 @@ abstract public class AbstractText is AbstractNode {
 
 public class Label is AbstractText {
     public var singleLine is Boolean = false;
+    override var indent = 0.0;
     public readonly var content is Text.Area = Text.Area {
 	width: bind width;
 	height: bind height;
