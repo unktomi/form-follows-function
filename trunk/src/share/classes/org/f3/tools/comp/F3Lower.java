@@ -874,6 +874,9 @@ public class F3Lower implements F3Visitor {
 	    if (vsym.isStatic()) {
 		ownerType = m.ScriptSymbol(vsym.owner).type;
 	    }
+            if (ownerType == null || ownerType instanceof Type.MethodType) {
+                ownerType = syms.f3_ObjectType;
+            }
 	    F3Expression pointerCall = m.at(that.pos).Apply(List.<F3Expression>of(m.Type(ownerType), 
 										  m.Type(vsym.type)),
 							    pointerMake,
