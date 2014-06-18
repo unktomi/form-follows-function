@@ -2644,12 +2644,16 @@ public class SceneRenderer {
 		currentScissor = sbounds;
  		if (not DISABLE_SCISSOR and camera is Camera2D and sbounds <> null) {
 		    const bounds = sbounds;
-		    const sb = camera.toScreen(bounds);
+		    const sb = bounds;//camera.toScreen(bounds);
+                    const x = camera.width/2 + sb.center.x - sb.extent.x;
+                    const y = camera.height/2 + sb.center.y - sb.extent.y;
+                    const w = sb.extent.x*2;
+                    const h = sb.extent.y*2;
+                    if (DEBUG_SCISSOR) {
+                       println("glScissor {x},{y},{w},{h}");
+                    }
 		    enableScissorTest();
-		    gl.glScissor(sb.center.x - sb.extent.x,
-				 camera.height-sb.center.y-sb.extent.y,
-				 sb.extent.x*2,
-				 sb.extent.y*2);
+		    gl.glScissor(x, y, w, h);
 		} else {
 		    disableScissorTest();
 		}
