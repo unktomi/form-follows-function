@@ -207,7 +207,6 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
         if (this.text <> text) {
             selectAll();
-            deleteSelection();
             insertText(lastValue = text);
         }
     }
