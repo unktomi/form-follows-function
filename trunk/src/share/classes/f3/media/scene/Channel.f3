@@ -98,18 +98,21 @@ public class Channel of a is TimeNode
 
     override function markCompleted to ()
     {
-        var k is Key of a;
-        println("MARK COMPLETED {localTime}, {currentTime}");
-        if (localTime < 0s) {
-            k = sortedKeys[0];
-        } else {
-            k = sortedKeys[sortedKeys.size()-1];
-        }
-        for (p in targets) {
-            p.set(k.value);
+        if (sceneBlendWeight == 1.0) {
+            var k is Key of a;
+            println("MARK COMPLETED {localTime}, {currentTime}");
+            if (localTime < 0s) {
+                k = sortedKeys[0];
+            } else {
+                k = sortedKeys[sortedKeys.size()-1];
+            }
+            for (p in targets) {
+                p.set(k.value);
+            }
         }
         super.markCompleted();
     }
+
 
     public function pickKeyIndex from (point is Duration) to Integer
     {
@@ -130,8 +133,10 @@ public class Channel of a is TimeNode
     public function interpolate
 	from (sceneTime is Duration, weight is Number, v is a) to a
     {
+        if (weight == 0) { return v }
 	const pos = localTime;
 	const picked = pickKey(pos);
+        println("id={id} playing={playing} localTime={localTime} picked={picked.position} {picked.value}");
 	var k1 is Key of a;
 	var k2 is Key of a;
 	if (picked.position < pos) {

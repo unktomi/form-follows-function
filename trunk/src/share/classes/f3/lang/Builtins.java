@@ -440,4 +440,6 @@ public class Builtins {
             return former != latter;
         }
     }
+
+    public static Void unit() { return null; }
 }

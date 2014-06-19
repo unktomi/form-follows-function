@@ -34,13 +34,15 @@ public class Timeline
 	    for (ch in chs) {
 		weight += ch.sceneBlendWeight;
 	    }
-	    var r;
-	    var first = true;
-	    for (ch in chs) {
-		const w = ch.sceneBlendWeight / weight;
-                r = interpolateChannel(ch, sceneTime, r, w);
-	    }
-	    target.set(r);
+            if (weight > 0) {
+                var r;
+                var first = true;
+                for (ch in chs) {
+                    const w = ch.sceneBlendWeight / weight;
+                    r = interpolateChannel(ch, sceneTime, r, w);
+                }
+                target.set(r);
+            }
 	}
     }
 
@@ -103,7 +105,10 @@ public class Timeline
         }
 	playhead = sceneTime;
 	root.updateParent();
-        const oldUnderplayHead = underPlayhead;
+        root.visit(function from (n is TimeNode) to () 
+		   { 
+		       n.update(sceneTime);
+		   });
         underPlayhead = pick(sceneTime);
 	if (Channel.DEBUG) {
             for (x in underPlayhead) {
@@ -114,10 +119,6 @@ public class Timeline
             const chs = foreach (n in underPlayhead where n is Channel of ?) n as Channel of ?;
             interpolateChannels(chs, sceneTime);
         }
-        root.visit(function from (n is TimeNode) to () 
-		   { 
-		       n.update(sceneTime);
-		   });
 	positionSubject.onNext(playhead);
     }
 
