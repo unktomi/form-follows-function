@@ -1,0 +1,11 @@
+package f3.lang;
+
+public abstract class AbstractObservableRef of a is AbstractRef of a, ObservableRef of a {
+       protected abstract function subscribe from (f is function from a to ()) to (function from () to ());
+       override function onReplace of b from (f is function from a to b) to (function from () to ()) {
+           onChange(function from (x is a) to () {
+                   f(x)
+               });
+       }      
+       
+}
