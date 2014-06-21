@@ -2615,12 +2615,31 @@ public class F3Attr implements F3Visitor {
 				    //F3Expression exp = f3make.QualIdent(toAssign);
 				    F3Expression exp = accessThe(toAssign, varSym.type, localEnv);
 				    attribExpr(exp, localEnv, memberType);
+                                    F3BindStatus bstat = tree.getBindStatus();
 				    F3ObjectLiteralPart newPart = f3make.ObjectLiteralPart(varSym.name,
 											   exp,
-											   F3BindStatus.UNBOUND);
+											   bstat);
 				    newPart.sym = varSym;
 				    newPart.type = memberType;
 				    newParts = newParts.append(newPart);
+                                    if (bstat != F3BindStatus.UNBOUND && cdef == null) {
+                                        long innerClassFlags = Flags.SYNTHETIC | Flags.FINAL; // to enable, change to Flags.FINAL
+                                        cdef = f3make.at(tree.pos()).ClassDeclaration(f3make.Modifiers(innerClassFlags),
+                                                                                      f3make.objectLiteralClassName(ownerSym.name),
+                                                                                      List.<F3Expression>of(f3make.Type(ownerSym.type)),
+                                                                                      List.<F3Tree>nil());
+                                        
+                                        if (cdef.sym == null) {
+                                            enter.classEnter(cdef, env);
+                                        }
+                                        cdef.sym.complete();
+                                        attribSupertypes(cdef, cdef.sym);
+                                        cdef.type = cdef.sym.type;
+                                        //System.err.println("cdef.type="+cdef.type);
+                                        types.addF3Class(cdef.sym, cdef);
+                                        tree.def = cdef;
+                                    }
+
 				} else {
 				    log.error(tree.pos(), "the.not.found", varSym.name, clazz, types.toF3String(memberType));
 				}

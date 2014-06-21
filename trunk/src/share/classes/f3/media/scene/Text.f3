@@ -175,7 +175,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     public readonly var textShape = bind layout.getShape();
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
     public readonly var caretShape = bind layout.getCaretShape(caretPosition);
-    readonly var selectionMesh = bind if (/*editable and */end > start) then createMeshNode(selectionShape, null, selectionBackground) else null;
+    readonly var selectionMesh = bind if (/*editable and */end > start) then createMeshNode(selectionShape, null, selectionBackground, true) else null;
     const self = this;
     readonly var textMesh is TextMeshNode = TextMeshNode {
         override var path = bind textShape;

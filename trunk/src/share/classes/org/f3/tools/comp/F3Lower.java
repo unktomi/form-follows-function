@@ -1585,13 +1585,22 @@ public class F3Lower implements F3Visitor {
         F3ClassDeclaration cdecl = tree.getClassBody();
         F3ClassDeclaration lowCdecl;
         if (newOverrides.nonEmpty()) {
-            cdecl.setMembers(cdecl.getMembers().appendList(newOverrides));
-            lowCdecl = lowerDecl(cdecl);
-            preTrans.liftTypes(cdecl, cdecl.type, preTrans.makeDummyMethodSymbol(cdecl.sym));
-	    //System.err.println("cdecl="+cdecl);
-	    if (cdecl.sym == null) {
-		System.err.println("cdecl.sym is null");
-	    }
+            //            System.err.println("newOverrides="+newOverrides.toList());
+            if (cdecl == null) {
+                System.err.println("cdecl is null");
+                lowCdecl = lowerDecl(cdecl);
+            } else if (cdecl.getMembers() == null) {
+                System.err.println("cdecl.getMembers is null");
+                lowCdecl = lowerDecl(cdecl);
+            } else {
+                cdecl.setMembers(cdecl.getMembers().appendList(newOverrides));
+                lowCdecl = lowerDecl(cdecl);
+                preTrans.liftTypes(cdecl, cdecl.type, preTrans.makeDummyMethodSymbol(cdecl.sym));
+                //System.err.println("cdecl="+cdecl);
+                if (cdecl.sym == null) {
+                    System.err.println("cdecl.sym is null");
+                }
+            }
         } else {
 	    if (cdecl != null && cdecl.sym == null) {
 		cdecl = null;
