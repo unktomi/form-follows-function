@@ -215,23 +215,26 @@ public bound function createMeshNode
     from (
 	  p is Path2D, 
 	  stroke is Stroke, 
-	  paint is Paint)
+	  paint is Paint,
+          gridFit is Boolean)
     to MeshNode2D 
 {
-    createMeshNode("", p, stroke, paint);
+    createMeshNode("", p, stroke, paint, gridFit);
 }
 
 public bound function createMeshNode
     from (id is String,
 	  p is Path2D, 
 	  stroke is Stroke, 
-	  paint is Paint)
+	  paint is Paint,
+          gridFit is Boolean)
     to MeshNode2D 
 {
     if (paint == null or p == null) then null else {
 	    MeshNode2D {
 		id: id,
 		paint: bind paint;
+                gridFit: bind gridFit;
 		override var path = bind if (stroke == null) then p else p.createStrokedShape(stroke);
             }
         }
@@ -246,14 +249,17 @@ public abstract class Shape2D is Node, MouseInputHandler
     public var cx is Number;
     public var cy is Number;
     public readonly var path is Path2D;
+    public var gridFit is Boolean = true;
 
     public readonly var fillMesh is MeshNode2D = bind createMeshNode(path, 
                                                                      null, 
-                                                                     fillPaint);
+                                                                     fillPaint,
+                                                                     gridFit);
 
     public readonly var strokeMesh is MeshNode2D = bind createMeshNode(path, 
                                                                        getStroke(stroke), 
-                                                                       strokePaint);
+                                                                       strokePaint,
+                                                                       gridFit);
     var cb is Bounds;
     override var contentBounds = bind cb;
 

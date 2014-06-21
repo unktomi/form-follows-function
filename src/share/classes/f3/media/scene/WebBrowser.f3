@@ -47,7 +47,7 @@ abstract public class MediaClip is TimeNode {
         }
     }
 
-    var _playbackRate = 0;
+    var _playbackRate = 0.0;
 
     override protected function update 
 	from (sceneTime is Duration) 

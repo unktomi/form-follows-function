@@ -384,7 +384,7 @@ class Loader {
             if (i.stroke != null) {
                 println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
             }
-            var shape = Shape2D.createMeshNode(i.id, convertPath(fac, height, i.transform, i.path), i.stroke, i.paint);
+            var shape = Shape2D.createMeshNode(i.id, convertPath(fac, height, i.transform, i.path), i.stroke, i.paint, true);
             if (sizeof contentNode.content == 50) {
                 contentNode = Group {}
                 insert contentNode into rootNode.content;

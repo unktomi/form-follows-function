@@ -433,13 +433,13 @@ class OutputDeviceImpl is AbstractOutputDevice {
     {
         if (DEBUG) println("DRAW RECT {x}, {y}, {width}, {height}");
         const rect = Shape2D.rect(pathFactory, tx+x, this.height-ty-y-height, width, height);
-        add(Shape2D.createMeshNode(rect, stroke, paint));
+        add(Shape2D.createMeshNode(rect, stroke, paint, true));
     }
 
     override public function drawOval from (x is Integer, y is Integer, width is Integer, height is Integer) to ()
     {
        const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
-       add(Shape2D.createMeshNode(oval, stroke, paint));
+       add(Shape2D.createMeshNode(oval, stroke, paint, true));
     }
     
     override public function drawBorderLine from (bounds is java.awt.Rectangle, side is Integer, width is Integer, solid is Boolean) to ()
@@ -498,7 +498,7 @@ class OutputDeviceImpl is AbstractOutputDevice {
     override public function fill from (s is Shape) to ()
     {
         if (DEBUG) println("FILL {s} paint={paint}");
-        var shape = Shape2D.createMeshNode("", convertPath(pathFactory, height, null, s), null, paint);
+        var shape = Shape2D.createMeshNode("", convertPath(pathFactory, height, null, s), null, paint, true);
         add(shape);
     }
 
@@ -506,13 +506,13 @@ class OutputDeviceImpl is AbstractOutputDevice {
     {
         if (DEBUG) println("FILLRECT {x}, {y}, {width}, {height} paint={paint} factory={pathFactory}");
         const rect = Shape2D.rect(pathFactory, tx+x, this.height-ty-y-height, width, height);
-        add(Shape2D.createMeshNode(rect, null, paint));
+        add(Shape2D.createMeshNode(rect, null, paint, true));
     }
 
     override public function fillOval from (x is Integer, y is Integer, w is Integer, h is Integer) to ()
     {
       const oval = Shape2D.ellipse(pathFactory, tx+x, this.height-ty-y-height, width, height);
-      add(Shape2D.createMeshNode(oval, null, paint));
+      add(Shape2D.createMeshNode(oval, null, paint, true));
     }
 
     function getClipArea to Area {
