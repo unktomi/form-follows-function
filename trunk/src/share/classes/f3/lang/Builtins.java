@@ -237,8 +237,11 @@ public class Builtins {
     */
 
     public final static class NumberOperators {
-        public static float negate(float n) {
-            return -n;
+
+        public static float Number(float value) { return value; }
+
+        public static float negate(float value) {
+            return -value;
         }
         public Function1<Float, Float> add(final float x) {
             return new Function1<Float,Float>() {
@@ -346,8 +349,8 @@ public class Builtins {
                 }
             };
         }
-        public static int negate(int n) {
-            return -n;
+        public static int negate(int value) {
+            return -value;
         }
         public static int add(int x, int y) {
             return x + y;
@@ -382,6 +385,7 @@ public class Builtins {
         public static boolean notEqual(int x, int y) {
             return x != y;
         }
+        public static int Integer(int value) { return value; }
     }
 
     public final static class BooleanOperators {

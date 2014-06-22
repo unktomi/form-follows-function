@@ -43,6 +43,42 @@ public class F3PrimitiveType extends F3Type implements F3Local.JVMLocalType {
         return clas;
     }
 
+    public boolean isConvertibleFrom(F3Type cls) {
+        if (isAssignableFrom(cls)) {
+            return true;
+        }
+        if (cls instanceof F3PrimitiveType) {
+            final F3PrimitiveType t = (F3PrimitiveType)cls;
+            final Class clas = t.clas;
+            final Class c = this.clas;
+            boolean result;
+            if (clas == Byte.TYPE) {
+                result = c == Short.TYPE || c == Character.TYPE || c == Integer.TYPE || c == Long.TYPE || c == Float.TYPE || c == Double.TYPE;
+            } else if (clas == Short.TYPE) {
+                result = c == Character.TYPE || c == Integer.TYPE || c == Long.TYPE || c == Float.TYPE || c == Double.TYPE;
+            }
+            else if (clas == Character.TYPE) {
+                result = c == Short.TYPE || c == Integer.TYPE || c == Long.TYPE || c == Float.TYPE || c == Double.TYPE;
+            }
+            else if (clas == Integer.TYPE) {
+                result = c == Long.TYPE || c == Float.TYPE || c == Double.TYPE;
+            }
+            else if (clas == Long.TYPE) {
+                result = c == Double.TYPE;
+            }
+            else if (clas == Float.TYPE) {
+                result = c == Long.TYPE || c == Double.TYPE;
+            } else {
+                result = false;
+            }
+            System.err.println("target="+clas);
+            System.err.println("src="+c);
+            System.err.println("result="+result);
+            return result;
+        }
+        return false;
+    }
+
     static final F3PrimitiveType voidType =
         new F3PrimitiveType(Void.TYPE, "()", Void.class);
 

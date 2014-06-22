@@ -106,8 +106,10 @@ public class Channel of a is TimeNode
             } else {
                 k = sortedKeys[sortedKeys.size()-1];
             }
-            for (p in targets) {
-                p.set(k.value);
+            if (k <> null) {
+                for (p in targets) {
+                    p.set(k.value);
+                }
             }
         }
         super.markCompleted();
@@ -136,7 +138,7 @@ public class Channel of a is TimeNode
         if (weight == 0) { return v }
 	const pos = localTime;
 	const picked = pickKey(pos);
-        println("id={id} playing={playing} localTime={localTime} picked={picked.position} {picked.value}");
+        //println("id={id} playing={playing} localTime={localTime} picked={picked.position} {picked.value}");
 	var k1 is Key of a;
 	var k2 is Key of a;
 	if (picked.position < pos) {
