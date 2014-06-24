@@ -735,6 +735,17 @@ public class F3Resolve {
     Symbol findVar(F3Env<F3AttrContext> env, Name name, int kind, Type expected, 
 		   boolean boxingEnabled, boolean varargsEnabled) 
     {
+	boolean isThe = name == syms.the;
+        Symbol res = findVar0(env, name, kind, expected, boxingEnabled, varargsEnabled);
+        if (isThe && res instanceof AmbiguityError) {
+            AmbiguityError exc = (AmbiguityError)res;
+            res = new AmbiguityError(exc.sym1, exc.sym2, expected);
+        }
+        return res;
+    }
+    Symbol findVar0(F3Env<F3AttrContext> env, Name name, int kind, Type expected, 
+                    boolean boxingEnabled, boolean varargsEnabled) 
+    {
         Symbol bestSoFar = expected.tag == METHOD ? methodNotFound : varNotFound;
         Symbol sym;
         F3Env<F3AttrContext> env1 = env;
@@ -821,7 +832,7 @@ public class F3Resolve {
 					    if (types.isSameType(bestSoFar.type, sym.type)) {
 						// ambiguous
 						if (!isSameSymbol(bestSoFar, sym)) {
-						    return new AmbiguityError(bestSoFar, sym);
+						    return new AmbiguityError(bestSoFar, sym, expected);
 						}
 					    }
 					    bestSoFar = sym;
@@ -3006,9 +3017,13 @@ public class F3Resolve {
     class AmbiguityError extends ResolveError {
         Symbol sym1;
         Symbol sym2;
-
+        Type the;
         AmbiguityError(Symbol sym1, Symbol sym2) {
+            this(sym1, sym2, null);
+        }
+        AmbiguityError(Symbol sym1, Symbol sym2, Type the) {
             super(AMBIGUOUS, sym1, "ambiguity error");
+            this.the = the;
             this.sym1 = sym1;
             this.sym2 = sym2;
 	    //System.err.println(this);
@@ -3042,8 +3057,8 @@ public class F3Resolve {
             }
             Name sname = pair.sym1.name;
             if (sname == sname.table.init) sname = pair.sym1.owner.name;
-	    if (name == syms.the) {
-		sname = name;
+	    if (the != null) {
+		sname = names.fromString("\"the "+types.toF3String(the)+"\"");
 	    }
             log.error(pos, MsgSym.MESSAGE_REF_AMBIGUOUS, sname,
                       kindName(pair.sym1),

@@ -33,6 +33,14 @@ public abstract class F3Expression extends F3Tree implements ExpressionTree, F3B
     
     private F3BindStatus bindStatus;
 
+    public static List<F3Expression> getImplicitArgs(F3Expression exp) {
+        if (exp instanceof F3Ident) {
+            return ((F3Ident)exp).implicitArgs;
+        } else if (exp instanceof F3Select) {
+            return ((F3Select)exp).implicitArgs;
+        }
+        return null;
+    }
     public static void setImplicitArgs(F3Expression exp, List<F3Expression> args) {
         if (exp instanceof F3Ident) {
             ((F3Ident)exp).implicitArgs = args;
