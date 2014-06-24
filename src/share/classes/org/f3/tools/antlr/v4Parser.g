@@ -1251,8 +1251,8 @@ functionDefinition [ F3Modifiers mods, int pos ]
         )
         )
         ((OF | FORALL) (genericArgs = genericParams[false, false]))?
-        ((TO)=>(
-            rt1= returnTypeReference
+        ((TO | COLON | RETURNS)=>(
+            rt1 = returnTypeReference
             { errNodes.append($rt1.rtype); rtype = $rt1.rtype; }
             (FROM
             fp1=formalParameters
@@ -1264,6 +1264,11 @@ functionDefinition [ F3Modifiers mods, int pos ]
                 }
                 argTypes = $fp1.params.toList();
             })?
+
+            ((WITH LPAREN)=>(WITH implicits=implicitFormalParameters {
+             implicitArgs = $implicits.params.toList();
+            })|)
+
         )
         |
         FROM
@@ -6225,7 +6230,8 @@ typeFunction
     (
       (FROM)=>(FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* )? RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) TO ret=type) { argsList = typeArgBuf.toList(); }
     |
-        (TO)=> (TO ret=type FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* )? RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}) { argsList = typeArgBuf.toList(); })
+        (TO) => (TO ret=type 
+            ((FROM)=>(FROM ((LPAREN)=>(LPAREN (t=type {typeArgBuf.append($t.rtype);} (COMMA t0=type {typeArgBuf.append($t0.rtype);})* )? RPAREN) | t1=type {typeArgBuf.append($t1.rtype);}))|) { argsList = typeArgBuf.toList(); })
     |
         (LPAREN 
             typeArgList 

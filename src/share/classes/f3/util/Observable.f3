@@ -845,7 +845,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
     }
 
     public function partition from (f is function from a to Boolean) 
-	to (Observable of a, Observable of a)
+	to (..Observable of a, ..Observable of a)
     {
 	var d0 is Disposable;
 	var d1 is Disposable;
@@ -881,7 +881,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	}
 	d0 = subscribe(y);
 	d1 = subscribe(n);
-	(y as Observable of a, n as Observable of a)
+	(y, n)
     }
 
 }
