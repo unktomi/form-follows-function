@@ -4163,7 +4163,7 @@ public class F3Attr implements F3Visitor {
 			if ((varSym.flags() & F3Flags.IMPLICIT_PARAMETER) != 0) {
 			    if (tree.explicits != null) {
 				for (F3Expression exp: tree.explicits) {
-				    if (types.isSubtypeUnchecked(varSym.type, exp.type)) {
+				    if (types.isSubtypeUncheckedBoxed(varSym.type, exp.type)) {
 					args = args.append(exp.type);
 					sawImplicit = true;
 					continue loop1;
@@ -4231,9 +4231,9 @@ public class F3Attr implements F3Visitor {
 				//System.err.println("explicits="+tree.explicits);
 				if (tree.explicits != null) {
 				    for (F3Expression exp: tree.explicits) {
-					if (types.isSubtypeUnchecked(expectedType, exp.type)) {
+					if (types.isSubtypeUncheckedBoxed(expectedType, exp.type)) {
 					    if (implicitExpr != null) {
-						if (types.isSameType(implicitExpr.type, exp.type)) {
+						if (types.isSameTypeBoxed(implicitExpr.type, exp.type)) {
 						    // ambiguous
 						    //System.err.println("ambiguous: "+ implicitExpr.type);
 						    //System.err.println("ambiguous: "+ exp.type);
