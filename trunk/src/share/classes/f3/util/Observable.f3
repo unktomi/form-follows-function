@@ -881,7 +881,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	}
 	d0 = subscribe(y);
 	d1 = subscribe(n);
-	(y, n)
+	(y as Observable of a, n as Observable of a)
     }
 
 }

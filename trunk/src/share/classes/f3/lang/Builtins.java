@@ -186,9 +186,9 @@ public class Builtins {
     }
     */
 
-    public static <a,b> Pair<? extends a, ? extends b> both(a x,  b y) 
+    public static <a,b> Pair<a, b> both(a x,  b y) 
     {
-	return Pair.both(x, y);
+	return new Pair<a,b>(x, y);
     }
 
     public static <a, F extends Functor> Sequence<a> toSequence(Functor<F, a> xs)
@@ -208,7 +208,7 @@ public class Builtins {
 	return x;
     }
 
-    public static <a, b> Pair<? extends a,? extends b> $comma(a x, b y) 
+    public static <a, b> Pair<a,b> $comma(a x, b y) 
     {
 	return Pair.both(x, y);
     }
