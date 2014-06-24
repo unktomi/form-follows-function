@@ -747,6 +747,7 @@ public class F3Resolve {
 	//System.err.println("checkArgs: "+ checkArgs+": "+mtype.getClass()+": "+mtype);
 	boolean isThe = name == syms.the;
         if (isThe && DEBUG_THE) {
+            Thread.currentThread().dumpStack();
             System.err.println("expected: "+expected.getClass()+": "+expected);
         }
         while (env1 != null) {
@@ -1313,6 +1314,11 @@ public class F3Resolve {
             System.err.println("site="+site);
             System.err.println("intype="+intype);
         }
+        if (isThe) {
+            if (mtype.isPrimitive()) {
+                mtype = types.boxedTypeOrType(mtype);
+            }
+        }
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
             if (isThe && DEBUG_THE) {
@@ -1351,10 +1357,10 @@ public class F3Resolve {
 			    }
 			    if (sym.type != null && 
 				mtype != null &&
-				types.isSubtypeUnchecked(sym.type, mtype)) {
+				types.isSubtypeUncheckedBoxed(sym.type, mtype)) {
 				if (bestSoFar.kind == VAR) {
-				    if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
-					if (types.isSameType(bestSoFar.type, sym.type)) {
+				    if (types.isSubtypeUncheckedBoxed(bestSoFar.type, sym.type)) {
+					if (types.isSameTypeBoxed(bestSoFar.type, sym.type)) {
 					    // ambiguous
 					    if (!isSameSymbol(bestSoFar, sym)) {
 						return new AmbiguityError(bestSoFar, sym);
@@ -2878,7 +2884,7 @@ public class F3Resolve {
                                     ((MethodSymbol) wrongSym).params);
 		    else
                         wrongSymStr = wrongSym.toString() + " of type "+types.toF3String(reader.translateType(wrongSym.asMemberOf(site, types).type));
-		    //Thread.currentThread().dumpStack();
+		    Thread.currentThread().dumpStack();
                     log.error(pos,
                               MsgSym.MESSAGE_CANNOT_APPLY_SYMBOL + (explanation != null ? ".1" : ""),
                               wrongSymStr,

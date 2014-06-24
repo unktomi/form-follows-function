@@ -237,11 +237,10 @@ public class F3TreeMaker implements F3TreeFactory {
 	if (expr.size() == 1) {
 	    return expr.head;
 	}
-        F3Ident id = Ident(names.fromString("org"));
+        F3Ident id = Ident(names.fromString("f3"));
         F3Select sel = 
-            Select(id, names.fromString("f3"), false);
-        sel = Select(sel, names.fromString("runtime"), false);
-        sel = Select(sel, names.fromString("Pair"), false);
+            Select(id, names.fromString("lang"), false);
+        sel = Select(sel, names.fromString("Builtins"), false);
         sel = Select(sel, names.fromString("both"), false);
 	F3Expression arg1 = expr.head;
 	expr = expr.tail;
@@ -1353,11 +1352,11 @@ public class F3TreeMaker implements F3TreeFactory {
 	if (!(first instanceof F3Type)) {
 	    first = TypeClass(first, Cardinality.SINGLETON);
 	}
-	((F3Type)first).boundKind = BoundKind.EXTENDS;
+	//((F3Type)first).boundKind = BoundKind.EXTENDS;
 	if (!(second instanceof F3Type)) {
 	    second = TypeClass(second, Cardinality.SINGLETON);
 	}
-	((F3Type)second).boundKind = BoundKind.EXTENDS;
+	//((F3Type)second).boundKind = BoundKind.EXTENDS;
         F3Ident id = Ident(names.fromString("org"));
         F3Select sel = 
             Select(id, names.fromString("f3"), false);

@@ -816,6 +816,16 @@ public class F3Types extends Types {
         }
         return lub;
     }
+
+    public boolean isSameTypeBoxed(Type t, Type s) {
+        return isSameType(boxedTypeOrType(t),
+                          boxedTypeOrType(s));
+    }
+
+    public boolean isSubtypeUncheckedBoxed(Type t, Type s) {
+        return isSubtypeUnchecked(boxedTypeOrType(t),
+                                  boxedTypeOrType(s));
+    }
     
     boolean WARNED_BUG = false;
     @Override
