@@ -1319,16 +1319,24 @@ public class F3Lower implements F3Visitor {
     F3Expression toFunctionValue(F3Expression tree, boolean isSelect, boolean apply) {
         boolean needsReceiverVar = isSelect;
 	boolean staticOfNonStatic = false;
+        List<F3Expression> implicitArgs = null;
         if (isSelect) {
              F3Select qualId = (F3Select)tree;
+             implicitArgs = qualId.implicitArgs;
              Symbol selectedSym = F3TreeInfo.symbolFor(qualId.selected);
 	     staticOfNonStatic = qualId.staticRefOfNonStatic;
              if (selectedSym != null && selectedSym.kind == Kinds.TYP) {
                  needsReceiverVar = false;
              }
+        } else {
+            if (tree instanceof F3Ident) {
+                F3Ident qualId = (F3Ident)tree;
+                implicitArgs = qualId.implicitArgs;
+            }
         }
 	Symbol sym = F3TreeInfo.symbolFor(tree);
         MethodSymbol msym = sym instanceof MethodSymbol ? (MethodSymbol)sym : null;
+	//System.err.println("msym="+(msym == null ? null: msym.type));
         Type mtype = tree.type; // hack!!
 	//System.err.println("tree="+tree.getClass()+": "+tree);
 	//System.err.println("mtype="+mtype);
@@ -1380,6 +1388,11 @@ public class F3Lower implements F3Visitor {
 	} else {
 	    meth = tree.setType(mtype);
 	}
+        if (implicitArgs != null) {
+	    for (F3Expression expr : implicitArgs) {
+                args.append(lowerExpr(expr));
+            }
+        }
 	if (staticOfNonStatic) {
 	    // we want to change 
 	    // String.toUpperCase($x$0) 

@@ -1052,6 +1052,25 @@ public class F3Types extends Types {
 	return t0;
     }
 
+    Type asClassTypeOrType(Type t) {
+        if (t instanceof MethodType) {
+            t = syms.makeFunctionType((MethodType)t);
+        } else if (t instanceof ForAll) {
+            final ForAll forall = (ForAll)t;
+            if (forall.qtype instanceof MethodType) {
+                t = syms.makeFunctionType(forall);
+            }
+        }
+        return t;
+    }
+
+    @Override
+    public boolean isSubtypeUnchecked (Type t, Type s, Warner warn) {
+        return super.isSubtypeUnchecked(asClassTypeOrType(t),
+                                        asClassTypeOrType(s),
+                                        warn);
+    }
+
     @Override
     public boolean isConvertible (Type t, Type s, Warner warn) {
 	//t = expandTypeVar(t);

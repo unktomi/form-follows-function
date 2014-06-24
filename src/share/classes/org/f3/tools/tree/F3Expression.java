@@ -27,10 +27,19 @@ import org.f3.api.F3BindStatus;
 import org.f3.api.tree.*;
 
 import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.util.List;
 
 public abstract class F3Expression extends F3Tree implements ExpressionTree, F3BoundMarkable {
     
     private F3BindStatus bindStatus;
+
+    public static void setImplicitArgs(F3Expression exp, List<F3Expression> args) {
+        if (exp instanceof F3Ident) {
+            ((F3Ident)exp).implicitArgs = args;
+        } else if (exp instanceof F3Select) {
+            ((F3Select)exp).implicitArgs = args;
+        }
+    }
 
     /** Initialize tree.
      */

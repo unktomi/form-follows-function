@@ -67,6 +67,11 @@ public class Channel of a is TimeNode
         setKey(localTime, interpolator)
     }
 
+    public function deleteKeys from (first is Duration, last is Duration) to ()
+    {
+        keys = foreach (k in keys where k.position < first or k.position > last) k;
+    }
+
     public function deleteKey to ()
     {
         const k = pickKey(localTime);

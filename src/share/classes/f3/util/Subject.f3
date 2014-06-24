@@ -13,9 +13,14 @@ public class Subject of a is Observable of a, Observer of a
 
     public readonly var last is a;
 
-    override public function toRef to Ref of a 
+    override public function toRef to ObservableRef of a 
     {
-        AbstractRef of a {
+        const self = this;
+        AbstractObservableRef of a {
+            override function subscribe from (f is function from a to ()) to (function from () to ())
+            {
+                self.subscribe(f).dispose
+            }
             override function get to a 
             {
                 last

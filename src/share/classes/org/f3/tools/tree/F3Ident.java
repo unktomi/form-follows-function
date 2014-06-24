@@ -39,6 +39,7 @@ public class F3Ident extends F3Expression implements IdentifierTree {
     private Name name;
     public Symbol sym;
     public List<F3Expression> typeArgs;
+    public List<F3Expression> implicitArgs;
 
     protected F3Ident() {
         this(null, null);
@@ -48,6 +49,7 @@ public class F3Ident extends F3Expression implements IdentifierTree {
         this.name = name;
         this.sym = sym;
     }
+
 
     @Override
     public void accept(F3Visitor v) {
