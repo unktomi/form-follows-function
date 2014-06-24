@@ -746,6 +746,9 @@ public class F3Resolve {
         boolean checkArgs = (mtype instanceof MethodType) || (mtype instanceof ForAll);
 	//System.err.println("checkArgs: "+ checkArgs+": "+mtype.getClass()+": "+mtype);
 	boolean isThe = name == syms.the;
+        if (isThe && DEBUG_THE) {
+            System.err.println("expected: "+expected.getClass()+": "+expected);
+        }
         while (env1 != null) {
             Scope sc = env1.info.scope;
             Type envClass;
@@ -787,7 +790,7 @@ public class F3Resolve {
                 for (Scope.Entry e = lookup(sc, name, isThe); 
 		     e != null && e.scope != null; 
 		     e = next(e, isThe)) {
-		    if (false && isThe) {
+		    if (DEBUG_THE && isThe) {
 			System.err.println("e.sym="+e.sym);
 		    }
                     if ((e.sym.flags_field & SYNTHETIC) != 0)
@@ -810,7 +813,7 @@ public class F3Resolve {
 				}
 			    }
                         } else if (isThe) {
-			    if (sym.kind == VAR) {
+			    if (true || sym.kind == VAR) {
 				if (sym.type != null && types.isSubtypeUnchecked(sym.type, mtype)) {
 				    if (bestSoFar.kind == VAR) {
 					if (types.isSubtypeUnchecked(bestSoFar.type, sym.type)) {
@@ -971,7 +974,9 @@ public class F3Resolve {
 	    if (x.owner == y.owner) {
 		return true;
 	    }
-	    //System.err.println("different owners: "+ x.owner + " " + y.owner);
+            //System.err.println("x: "+x);
+            //System.err.println("y: "+x);
+	    System.err.println("different owners: "+ x.owner + " " + y.owner);
 	}
 	return false;
     }
@@ -1114,7 +1119,7 @@ public class F3Resolve {
                 !noteWarner.unchecked;
             if (m1SignatureMoreSpecific && m2SignatureMoreSpecific) {
                 if (!types.overrideEquivalent(mt1, mt2)) {
-		    //System.err.println("not override eq "+ mt1 + ", "+mt2);
+		    System.err.println("not override eq "+ mt1 + ", "+mt2);
                     return new AmbiguityError(m1, m2);
 		}
                 // same signature; select (a) the non-bridge method, or
@@ -1302,12 +1307,17 @@ public class F3Resolve {
         if (mtype instanceof FunctionType)
             mtype = ((FunctionType)mtype).asMethodOrForAll();
         boolean checkArgs = mtype instanceof MethodType || mtype instanceof ForAll;
-	//System.err.println("searching for "+name+": "+mtype);
-	//System.err.println("site="+site);
-	//System.err.println("intype="+intype);
 	boolean isThe = name == syms.the;
+        if (isThe && DEBUG_THE) {
+            System.err.println("searching for "+name+": "+mtype);
+            System.err.println("site="+site);
+            System.err.println("intype="+intype);
+        }
         for (Type ct = intype; ct.tag == CLASS; ct = types.supertype(ct)) {
             ClassSymbol c = (ClassSymbol)ct.tsym;
+            if (isThe && DEBUG_THE) {
+                System.err.println("searching for "+name+": "+mtype + " in "+c);
+            }
 	    if (c.members() == null) {
 		//System.err.println("ct="+ct);
 		//System.err.println("site="+site);
@@ -1323,7 +1333,10 @@ public class F3Resolve {
                         (e.sym.flags_field & SYNTHETIC) != 0)
                     continue;
                 e.sym.complete();
-                if (! checkArgs) {
+                if (isThe && DEBUG_THE) {
+                    System.err.println("searching for "+name+": "+mtype + " in "+c + ": "+e.sym);
+                }
+                if (!checkArgs) {
 		    if (!isThe) {
 			// No argument list to disambiguate.
 			if (bestSoFar.kind == ABSENT_VAR || bestSoFar.kind == ABSENT_MTH)
@@ -1365,18 +1378,24 @@ public class F3Resolve {
 		    //System.err.println("owner="+e.sym.owner);
 		    //System.err.println("type="+e.sym.type);
 		    //System.err.println("mtype="+mtype);
+                    if (isThe && DEBUG_THE) {
+                        System.err.println("selectBest "+e.sym);
+                    }
                     bestSoFar = selectBest(env, site, mtype,
                                            e.sym, bestSoFar,
                                            allowBoxing,
                                            useVarargs,
                                            operator);
+                    if (isThe && DEBUG_THE) {
+                        System.err.println("bestSoFar=>"+bestSoFar);
+                    }
                 }
-                else if ((e.sym.kind & (VAR|MTH)) != 0 && bestSoFar == methodNotFound) {
+                else if ((e.sym.kind & (VAR|MTH)) != 0) {
                     // FIXME duplicates logic in findVar.
+		    /*
                     Type mt = e.sym.type;
                     if (mt instanceof FunctionType)
                         mt = ((FunctionType)mt).asMethodOrForAll();
-		    /*
                     if (!( (mt instanceof MethodType) || (mt instanceof ForAll)) ||
                             ! argumentsAcceptable(mtype.getParameterTypes(), mt.getParameterTypes(),
 						  true, false, Warner.noWarnings)) {
@@ -1385,14 +1404,22 @@ public class F3Resolve {
 		    }
                     return e.sym;
 		    */
-                    bestSoFar = selectBest(env, site, mt,
+                    bestSoFar = selectBest(env, site, mtype,
                                            e.sym, bestSoFar,
                                            allowBoxing,
                                            useVarargs,
                                            operator);
+                    if (DEBUG_THE && isThe) {
+                        System.err.println("best so far: "+bestSoFar);
+                    }
                 }
             }
-            if (! checkArgs &&
+            if (isThe) {
+                if (bestSoFar.kind != ABSENT_VAR && bestSoFar.kind != ABSENT_MTH) {
+                    return bestSoFar;
+                }
+            }
+            if (!checkArgs && 
                 bestSoFar.kind != ABSENT_VAR && bestSoFar.kind != ABSENT_MTH) {
 		if (DEBUG_THE && isThe) {
 		    System.err.println("best so far: "+bestSoFar);
@@ -2979,7 +3006,11 @@ public class F3Resolve {
             this.sym1 = sym1;
             this.sym2 = sym2;
 	    //System.err.println(this);
-	    //Thread.currentThread().dumpStack();
+            if (DEBUG_THE) {
+                System.err.println("sym1="+sym1.getClass()+ ": "+sym1+": "+sym1.type);
+                System.err.println("sym2="+sym2.getClass()+ ": "+sym2+": "+sym2.type);
+                Thread.currentThread().dumpStack();
+            }
         }
 
         /** Report error.

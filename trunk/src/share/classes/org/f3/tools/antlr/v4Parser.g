@@ -3301,7 +3301,7 @@ boundExpression
         }
     
             (
-                (WITH INVERSE)=>WITH 
+                (INVERSE)=>
                 
                     // Future syntax: (expression AS)?
                 
@@ -4730,6 +4730,12 @@ primaryExpression
                     //
                     endPos($value);
                 }
+    |
+            (WITH)=>(WITH 
+		       (LPAREN
+				  texprs = expressionList
+                {F3Expression.setImplicitArgs(value, $texprs.args.toList());}
+				  RPAREN))
     |
     )
 

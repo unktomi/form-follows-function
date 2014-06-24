@@ -27,11 +27,11 @@ public class ComparableOrdering of (a is java.lang.Comparable of a), is Ordering
     }
 }
 
-public static const DoubleOrdering = ComparableOrdering of Double {}
-public static const NumberOrdering = ComparableOrdering of Number {}
-public static const LongOrdering = ComparableOrdering of Long {}
-public static const IntegerOrdering = ComparableOrdering of Integer {}
-public static const ShortOrdering = ComparableOrdering of Short {}
-public static const ByteOrdering = ComparableOrdering of Byte {}
-public static const CharacterOrdering = ComparableOrdering of Character {}
+public const DoubleOrdering = ComparableOrdering of Double {}
+public const NumberOrdering = ComparableOrdering of Number {}
+public const LongOrdering = ComparableOrdering of Long {}
+public const IntegerOrdering = ComparableOrdering of Integer {}
+public const ShortOrdering = ComparableOrdering of Short {}
+public const ByteOrdering = ComparableOrdering of Byte {}
+public const CharacterOrdering = ComparableOrdering of Character {}
 

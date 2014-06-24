@@ -1713,7 +1713,7 @@ public abstract class F3AbstractTranslation
                 int argNum = 0;
                 for (List<F3Expression> l = args; l.nonEmpty(); l = l.tail) {
                     F3Expression arg = l.head;
-                    if (!handlingVarargs) {
+                    if (!handlingVarargs && t != null) {
                         formal = t.head;
                         t = t.tail;
                         if (usesVarArgs && t.isEmpty()) {

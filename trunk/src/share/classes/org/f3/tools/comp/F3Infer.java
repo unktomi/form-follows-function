@@ -269,6 +269,7 @@ public class F3Infer {
 				   Warner warn) throws NoInstanceException {
         List<Type> undetvars = Type.map(that.tvars, fromTypeVarFun);
 	//System.err.println("undetvars="+undetvars);
+        //System.err.println("instantiateExpr1: "+ that + " to "+ to);
         for (List<Type> l = undetvars; l.nonEmpty(); l = l.tail) {
             UndetVar v = (UndetVar) l.head;
             ListBuffer<Type> hibounds = new ListBuffer<Type>();
