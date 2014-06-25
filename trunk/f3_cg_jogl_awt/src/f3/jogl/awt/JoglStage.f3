@@ -2297,13 +2297,7 @@ public class SceneRenderer {
 					} else {
                                             if (x is Movie) {
                                                 const movie = x as Movie;
-                                                const frameValue = info.shaderParams.get("movie.position");
-                                                //println("checking movie: {frameValue} {movie.position}");
-                                                if (frameValue == null or {
-                                                        const frame = frameValue as Duration;
-                                                        frame <> movie.position;
-                                                    }) {
-                                                    info.shaderParams.put("movie.position", movie.position);
+                                                if (movie.updateTexture()) {
                                                     if (DEBUG_DRAW) {
                                                         println("is dirty: {mn}: {p.name}");
                                                     }
