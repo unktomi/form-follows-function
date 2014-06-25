@@ -45,7 +45,9 @@ static void ensureWebCore() {
     Awesomium::WebConfig &config = *new Awesomium::WebConfig();
     //config.setEnablePlugins(true);
     config.log_level = kLogLevel_Verbose;
-    config.plugin_path = WSLit("/Library/Internet Plug-ins/");
+    //config.enable_plugins = true;
+    //config.plugin_path = WSLit("/Library/Internet Plug-ins/");
+    config.user_agent = WSLit("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36");
     /*
     WebStringArray arr;
     arr.Push(WSLit("--allow-file_access-from-files"));
@@ -54,7 +56,7 @@ static void ensureWebCore() {
     webCore = Awesomium::WebCore::Initialize(config);
     WebPreferences prefs;
     prefs.enable_plugins = true;
-    prefs.enable_web_gl = false;
+    prefs.enable_web_gl = true;
     prefs.allow_universal_access_from_file_url = true;
     prefs.allow_file_access_from_file_url = true;
     webSession = webCore->CreateWebSession(WSLit(""), prefs);
