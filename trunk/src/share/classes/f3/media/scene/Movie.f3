@@ -22,13 +22,17 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
     function getMovieIfLoaded to AbstractMovie { tex as AbstractMovie }
 
     var needsDraw = true;
+    var pos is Long;
     var lastPos is Long = -1;
-    var countDown is Integer;
+    var countDown is Integer = 5;
 
     public function updateTexture to Boolean {
-	var result = needsDraw;
-	needsDraw = false;
-	return result;
+	needsDraw = countDown > 0;
+        if (needsDraw) {
+            countDown--;
+        }
+        lastPos = pos;
+	return needsDraw;
     }
 
     override function update to () 
@@ -44,7 +48,6 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
             movie.setPosition(longPos);
             movie.play();
 	}
-	var pos is Long;
 	if (paused) {
 	    pos = movie.pause();
             movie.setPosition(longPos);
@@ -57,14 +60,12 @@ public class Movie is Shape2D.MeshNode2D, AbstractTexture {
         //if (pos <> lastPos) {
         //     println("pos={pos}, lastPos={lastPos}");
         //}
-        if (lastPos <> pos) {
-            countDown = 1;
+        if (not needsDraw) {
+            needsDraw = (lastPos <> pos);
+            if (needsDraw) {
+                countDown = 60;
+            }
         }
-        needsDraw = countDown > 0;
-        if (needsDraw) {
-            countDown--;
-        }
-        lastPos = pos;
 	width = movie.getWidth();
 	height = movie.getHeight();
 	if (not paused and pos <> position.toMillis()) {

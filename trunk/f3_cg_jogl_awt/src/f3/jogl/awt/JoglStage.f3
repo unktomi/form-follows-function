@@ -3122,6 +3122,10 @@ public class Listener is GLEventListener, DropTargetListener {
         frame.setSize(w, h);
     }
 
+    var frameCount is Integer;
+    var frameTime is Long;
+    var fps is Integer;
+
     function render from (gl is GL2, width is Integer, height is Integer) to () {
         const now = java.lang.System.currentTimeMillis();
         if (startTime == 0) {
@@ -3141,15 +3145,26 @@ public class Listener is GLEventListener, DropTargetListener {
         if (not frame.isActive()) {
             prevTime = now;
         }
+
+        if (now - frameTime > 1000) {
+            const elapsed is Double = (now - frameTime) / (1000.0 as Double);
+            //println("frameCount: {frameCount}");
+            //println("elapsed: {elapsed}");
+            fps = Math.round(frameCount / elapsed);
+            //println("fps={fps}");
+            frameTime = now;
+            frameCount = 0;
+        }
+        frameCount++;
 	if (false) {
 	    const rt = java.lang.Runtime.getRuntime();
 	    const mem = rt.totalMemory();
 	    const free = rt.freeMemory();
 	    setTitle("mem({%,d mem-free}/{%,d mem}) {stage.title}");
 	} else {
-	    if (stageTitle <> stage.title) {
+	    if (true or stageTitle <> stage.title) {
                 stageTitle = stage.title;
-                setTitle(stageTitle);
+                setTitle("{stageTitle} - {fps}fps");
             }
 
 	}
@@ -3214,9 +3229,10 @@ public class Listener is GLEventListener, DropTargetListener {
                 //println("sleeping {d}");
                 if (d > 0) {
                     java.lang.Thread.sleep(d);
-                    sleepFrames = Math.min(sleepFrames*2, 32);
+                    sleepFrames = Math.min(sleepFrames*2, 64);
                 } else {
                     sleepFrames = 16;
+                    canvas.swapBuffers();
                 }
             } else {
                 canvas.swapBuffers();
