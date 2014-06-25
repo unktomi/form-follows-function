@@ -34,7 +34,7 @@ public class WebBrowser is WebBrowserNode
 }
 
 abstract public class MediaClip is TimeNode {
-    override var id = bind media.getId();
+    override var id = bind media.getLabel();
     public const browser is WebBrowser;
     public const media is AbstractWebBrowser.Media;
     var dur is Number = 0;

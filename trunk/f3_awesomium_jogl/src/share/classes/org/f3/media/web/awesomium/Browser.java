@@ -13,6 +13,9 @@ import org.htmlcleaner.*;
 
 public class Browser implements AbstractWebBrowser {
 
+
+    static final boolean ENABLE_SUBIMAGE = Boolean.getBoolean("f3.awesomium.jogl.enable.subimage");
+
     // AK_BACK (08) BACKSPACE key
     static final int AK_BACK = 0x08;
 		
@@ -631,7 +634,7 @@ public class Browser implements AbstractWebBrowser {
                     JSObject src = (JSObject)event.get("srcElement");
                     //System.err.println("src="+src);
                     String id = (String)src.get("id");
-                    //System.err.println("id="+id);
+                    System.err.println("id="+id);
                     if (id == null || "null".equals(id)) {
                         id = null;
                     }
@@ -649,13 +652,13 @@ public class Browser implements AbstractWebBrowser {
                         executeJavascript("{ var v = "+script+"; v.autoplay = false; v.pause(); }");
                     } 
                     for (Video vid: videos) {
-                        if (id == null || vid.getId().equals(id)) {
+                        if (id == null || vid.getId() == null || vid.getId().equals(id)) {
                             ((VideoImpl)vid).handleEvent(eventType, event);
                             break;
                         }
                     }
                     for (Audio vid: audio) {
-                        if (id == null || vid.getId().equals(id)) {
+                        if (id == null || vid.getId() == null || id.equals(vid.getId())) {
                             ((AudioImpl)vid).handleEvent(eventType, event);
                             break;
                         }
@@ -847,6 +850,9 @@ public class Browser implements AbstractWebBrowser {
         float duration = -1;
         boolean playing;
         String accessor;
+        public String getLabel() {
+            return id;
+        }
         public void handleEvent(String eventName, JSObject event) {
             // System.err.println("handle event: "+id+": "+eventName+": "+event);
             JSObject src = (JSObject)event.get("srcElement");
@@ -893,11 +899,15 @@ public class Browser implements AbstractWebBrowser {
                 Object obj = executeJavascript(getAccess()+".duration");
                 if (obj != null) {
                     duration = ((Number)obj).floatValue();
+                    if (duration < 0) {
+                        duration = 0;
+                    }
+                } else {
+                    duration = 0;
                 }
             }
             if (java.lang.Float.isNaN(duration)) {
-                duration = -1;
-                return 0;
+                duration = 0;
             }
             return duration;
         }
@@ -914,8 +924,16 @@ public class Browser implements AbstractWebBrowser {
     }
 
     class AudioImpl extends MediaImpl implements Audio {
-        public AudioImpl(String id) {
+        final String src;
+        public AudioImpl(String id, String src) {
             super(id, "audio");
+            this.src = src;
+        }
+        public String getSrc() {
+            return src;
+        }
+        public String getLabel() {
+            return getId() == null ? getSrc() : getId();
         }
     }
 
@@ -941,10 +959,18 @@ public class Browser implements AbstractWebBrowser {
                                 int h = height == null ? 0 : Integer.parseInt(height);
                                 Video vid = new VideoImpl(id, w, h);
                                 videos.add(vid);
+                                System.err.println("created video: "+id);
                             } else if (t.getName().equalsIgnoreCase("audio")) {
                                 String id = t.getAttributeByName("id");
-                                Audio audio = new AudioImpl(id);
+                                String src = t.getAttributeByName("src");
+                                Audio audio = new AudioImpl(id, src);
                                 Browser.this.audio.add(audio);
+                                System.err.println("created auideo: "+id);
+                            } else if (t.getName().equalsIgnoreCase("object")) {
+                                String type = t.getAttributeByName("type");
+                                if ("application/x-shockwave-flash".equals(type)) {
+                                }
+                            } else if (t.getName().equalsIgnoreCase("embed")) {
                             }
                         }
                         return true;
@@ -1059,6 +1085,23 @@ public class Browser implements AbstractWebBrowser {
     
     long updateTime;
     boolean lastResult;
+    /*
+    // hack
+    javax.swing.Timer keepAliveTimer = new javax.swing.Timer(1000, new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent event) {
+                long now = System.currentTimeMillis();
+                if (now - updateTime > 2000) {
+                    System.err.println("killing page web page");
+                    keepAliveTimer.stop();
+                    destroy(handle);
+                }
+            }
+        });
+    {
+        keepAliveTimer.start();
+    }
+    */
+
 
     public boolean update() {
         boolean result = false;
@@ -1091,8 +1134,13 @@ public class Browser implements AbstractWebBrowser {
     void updateImage(ByteBuffer buffer, 
                      int x, int y, int w, int h) {
         //System.out.println("updateImage: " +x +" " + y+" " + w+" "+h +" of " + pot(width) + " " + pot(height));
-        if (false) {
-            backingStore.updateSubImage(gl, data, 0, x, y, x, y, w, h);
+        if (ENABLE_SUBIMAGE) {
+            final int left = x;
+            final int top = potHeight-y;
+            final int bottom = top-h;
+            System.out.println("updateImage: " +left +" " + bottom+" " + w+" "+h +" of " + pot(width) + " " + pot(height));
+            backingStore.updateSubImage(gl, data, 0, left, bottom, left, bottom, w, h);
+            //updateTextureSubImage(gl, buffer, left, bottom, w, h, left, bottom, w, h);
         } else {
             backingStore.updateSubImage(gl, data, 0, 0, 0, 0, 0, potWidth, potHeight);
         }
@@ -1206,5 +1254,84 @@ public class Browser implements AbstractWebBrowser {
     static native int getSize(long array);
 
     //    static native long callFunction(long webview, String object, String function, long args, String frame);
+
+    public void updateTextureSubImage(GL gl, final ByteBuffer data, final int srcX, final int srcY,
+            final int srcWidth, final int srcHeight, final int dstX, final int dstY, final int dstWidth,
+            final int dstHeight) throws UnsupportedOperationException {
+
+        // Determine the original texture configuration, so that this method can
+        // restore the texture configuration to its original state.
+        final int origTexBinding[] = new int[1];
+        gl.glGetIntegerv(GL.GL_TEXTURE_BINDING_2D, origTexBinding, 0);
+        final int origAlignment[] = new int[1];
+        gl.glGetIntegerv(GL.GL_UNPACK_ALIGNMENT, origAlignment, 0);
+        final int origRowLength = 0;
+        final int origSkipPixels = 0;
+        final int origSkipRows = 0;
+
+        final int alignment = 1;
+        int rowLength;
+        if (srcWidth == dstWidth) {
+            // When the row length is zero, then the width parameter is used.
+            // We use zero in these cases in the hope that we can avoid two
+            // unnecessary calls to glPixelStorei.
+            rowLength = 0;
+        } else {
+            // The number of pixels in a row is different than the number of
+            // pixels in the region to be uploaded to the texture.
+            rowLength = srcWidth;
+        }
+        final int pixelFormat = this.data.getPixelFormat();
+
+        // Update the texture configuration (when necessary).
+        if (origTexBinding[0] != getTextureId()) {
+            gl.glBindTexture(GL.GL_TEXTURE_2D, getTextureId());
+        }
+        if (origAlignment[0] != alignment) {
+            gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, alignment);
+        }
+        if (origRowLength != rowLength) {
+            gl.glPixelStorei(GL2.GL_UNPACK_ROW_LENGTH, rowLength);
+        }
+        if (origSkipPixels != srcX) {
+            gl.glPixelStorei(GL2.GL_UNPACK_SKIP_PIXELS, srcX);
+        }
+        if (origSkipRows != srcY) {
+            gl.glPixelStorei(GL2.GL_UNPACK_SKIP_ROWS, srcY);
+        }
+
+        // Upload the image region into the texture.
+        if (true) {
+            gl.glTexSubImage2D(GL.GL_TEXTURE_2D, 0, dstX, dstY, dstWidth, dstHeight, pixelFormat, GL.GL_UNSIGNED_BYTE,
+                    data);
+        } else {
+            final int internalFormat = this.data.getInternalFormat();
+            gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, internalFormat, dstWidth, dstHeight, 0, pixelFormat,
+                    GL.GL_UNSIGNED_BYTE, data);
+        }
+
+        // Restore the texture configuration (when necessary).
+        // Restore the texture binding.
+        if (origTexBinding[0] != getTextureId()) {
+            gl.glBindTexture(GL.GL_TEXTURE_2D, origTexBinding[0]);
+        }
+        // Restore alignment.
+        if (origAlignment[0] != alignment) {
+            gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, origAlignment[0]);
+        }
+        // Restore row length.
+        if (origRowLength != rowLength) {
+            gl.glPixelStorei(GL2.GL_UNPACK_ROW_LENGTH, origRowLength);
+        }
+        // Restore skip pixels.
+        if (origSkipPixels != srcX) {
+            gl.glPixelStorei(GL2.GL_UNPACK_SKIP_PIXELS, origSkipPixels);
+        }
+        // Restore skip rows.
+        if (origSkipRows != srcY) {
+            gl.glPixelStorei(GL2.GL_UNPACK_SKIP_ROWS, origSkipRows);
+        }
+    }
+
 
 }

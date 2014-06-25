@@ -4,6 +4,7 @@ public interface AbstractWebBrowser {
     public interface Media {
         //public String getSource();
         public String getId();
+        public String getLabel();
         public int getWidth();
         public int getHeight();
         public void play();

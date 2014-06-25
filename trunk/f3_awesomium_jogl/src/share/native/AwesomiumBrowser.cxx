@@ -40,6 +40,45 @@ static jmethodID MOnMethodCallWithReturn = 0;
 
 static Awesomium::WebCore *webCore = 0;
 static Awesomium::WebSession *webSession = 0;
+
+class MySurface: public BitmapSurface {
+public:
+  virtual ~MySurface() {}
+  Awesomium::Rect dirtyRegion;
+  MySurface(int width, int height): BitmapSurface(width, height) {}
+  virtual void Paint(unsigned char* src_buffer,
+                     int src_row_span,
+                     const Awesomium::Rect& src_rect,
+                     const Awesomium::Rect& dest_rect) {
+    /*
+    fprintf(stderr, "paint %d %d %d %d => %d %d %d %d\n", 
+            src_rect.x, src_rect.y, src_rect.width, src_rect.height, 
+            dest_rect.x, dest_rect.y, dest_rect.width, dest_rect.height);
+    */
+    dirtyRegion = dest_rect;
+    BitmapSurface::Paint(src_buffer, src_row_span, src_rect, dest_rect);
+  }
+
+  virtual void Scroll(int dx,
+                      int dy,
+                      const Awesomium::Rect& clip_rect) {
+    /*
+    fprintf(stderr, "scroll %d %d => %d %d %d %d\n", 
+    dx, dy,
+            clip_rect.x, clip_rect.y, clip_rect.height, clip_rect.width);
+    */
+    BitmapSurface::Scroll(dx, dy, clip_rect);
+  }
+};
+
+class MySurfaceFactory : public BitmapSurfaceFactory {
+public:
+  virtual Awesomium::Surface* CreateSurface(WebView* view, int width, int height) {
+    return new MySurface(width, height);
+  }
+};
+
+
 static void ensureWebCore() {
   if (webCore == 0) {
     Awesomium::WebConfig &config = *new Awesomium::WebConfig();
@@ -60,7 +99,7 @@ static void ensureWebCore() {
     prefs.allow_universal_access_from_file_url = true;
     prefs.allow_file_access_from_file_url = true;
     webSession = webCore->CreateWebSession(WSLit(""), prefs);
-    //webCore->set_surface_factory(new BitmapSurfaceFactory());
+    webCore->set_surface_factory(new MySurfaceFactory());
   }
 }
 
@@ -415,7 +454,7 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
   }
   //std::cout << "updating" << std::endl;
   //std::cout << "done updating" << std::endl;
-  Awesomium::BitmapSurface *s = (Awesomium::BitmapSurface*) p->webView->surface();
+  MySurface *s = (MySurface*) p->webView->surface();
   //fprintf(stderr, "surface %p\n", s);
   //fprintf(stderr, "bufPtr %p\n", bufPtr);
   if (s == 0) {
@@ -430,10 +469,10 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
         unsigned char *outPtr = bufPtr;
         s->CopyTo(outPtr, s->row_span(), 4, true, true);
         jint arr[4];
-        arr[0] = 0;
-        arr[1] = 0;
-        arr[2] = p->width;
-        arr[3] = p->height;
+        arr[0] = s->dirtyRegion.x;
+        arr[1] = s->dirtyRegion.y;
+        arr[2] = s->dirtyRegion.width;
+        arr[3] = s->dirtyRegion.height;
         env->SetIntArrayRegion(rectArray, 0, 4, (const jint*)arr);
         s->set_is_dirty(false);
         return 1;
