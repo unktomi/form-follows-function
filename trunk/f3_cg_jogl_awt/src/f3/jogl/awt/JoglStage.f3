@@ -3155,18 +3155,17 @@ public class Listener is GLEventListener, DropTargetListener {
             frameTime = now;
             frameCount = 0;
         }
-        frameCount++;
 	if (false) {
 	    const rt = java.lang.Runtime.getRuntime();
 	    const mem = rt.totalMemory();
 	    const free = rt.freeMemory();
 	    setTitle("mem({%,d mem-free}/{%,d mem}) {stage.title}");
 	} else {
-	    if (true or stageTitle <> stage.title) {
-                stageTitle = stage.title;
-                setTitle("{stageTitle} - {fps}fps");
+            if (stage.title.trim() == "") {
+                setTitle("{fps} fps");
+            } else {
+                setTitle("{stage.title} - {fps} fps");
             }
-
 	}
         const delta = 1ms * (now - prevTime);
 	//	println("delta={delta}");
@@ -3214,6 +3213,7 @@ public class Listener is GLEventListener, DropTargetListener {
 		lastOpaque = opaque;
 	    }
 	    skip = false;
+            frameCount++;
 	}
         trig = not skip;
         justInit = false;
@@ -3229,11 +3229,11 @@ public class Listener is GLEventListener, DropTargetListener {
                 //println("sleeping {d}");
                 if (d > 0) {
                     java.lang.Thread.sleep(d);
-                    sleepFrames = Math.min(sleepFrames*2, 64);
+                    sleepFrames = Math.min(sleepFrames*2, 32);
                 } else {
                     sleepFrames = 16;
-                    canvas.swapBuffers();
                 }
+                // keep the same buffer
             } else {
                 canvas.swapBuffers();
                 sleepFrames = 16;
