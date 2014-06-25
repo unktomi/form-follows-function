@@ -43,6 +43,7 @@
     <cc outtype="shared" subsystem="console" outfile="build/native/org.f3.media.web.awesomium" objdir="build/native/obj">
       <compiler extends="${compiler.cfg.id.base}">
         <compilerarg value="-F."/>
+        <compilerarg value="-fno-rtti"/>
         <includepath path="build/native/include"/>
         <includepath path="stub_includes/jni"/>
         <includepath path="stub_includes/jni/macosx"/>
