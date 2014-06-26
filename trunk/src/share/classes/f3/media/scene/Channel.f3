@@ -103,7 +103,7 @@ public class Channel of a is TimeNode
 
     override function markCompleted to ()
     {
-        if (sceneBlendWeight == 1.0) {
+        if (false and sceneBlendWeight == 1.0) {
             var k is Key of a;
             println("MARK COMPLETED {localTime}, {currentTime}");
             if (localTime < 0s) {

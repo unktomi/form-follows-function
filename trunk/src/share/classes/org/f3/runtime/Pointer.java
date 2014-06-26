@@ -128,9 +128,9 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
             @Override
             public boolean update$(F3Object src, final int depNum,
 				   int startPos, int endPos, int newLength, final int phase) {
-		System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
+		//System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
                 if ((phase & PHASE_TRANS$PHASE) == PHASE$TRIGGER) {
-		    System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
+		    //System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
 		    f.invoke(get());
                 }
                 return true;
