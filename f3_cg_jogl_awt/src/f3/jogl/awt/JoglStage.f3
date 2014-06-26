@@ -2137,7 +2137,7 @@ public class SceneRenderer {
                         if (sciss != null) {
                             const sb = par.toSceneTransform * sciss;
                             if (Bounds.intersect(sb, n.boundsInScene) == null) {
-                                if (debug) {
+                                if (DEBUG_DRAW) {
                                     println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
                                 }
                                 if (lastDrawn.containsKey(n)) {
