@@ -722,10 +722,10 @@ public class Color extends Comparable of Object, Formattable {
      *
      * @profile common
      */
-    public function ofTheWay(endVal:Object, t:Number):Object {
+    public function ofTheWay(endVal:Color, t:Number):Color {
         if (t == 0) return this;
         if (t == 1) return endVal;
-        def c = endVal as Color;
+        def c = endVal;
         Color {
             red: red * (1 - t) + c.red * t
             green: green * (1 - t) + c.green * t

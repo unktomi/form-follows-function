@@ -2356,7 +2356,7 @@ public class SceneRenderer {
 			}
 			//println("thisDraw {mn}: {thisDraw.size()}");
 		    } else {
-			if (debug) {
+			if (DEBUG_DRAW) {
 			    println("culled {n} {n.id} {n.boundsInScene}");
 			}
 			if (lastDrawn.containsKey(mn)) {
