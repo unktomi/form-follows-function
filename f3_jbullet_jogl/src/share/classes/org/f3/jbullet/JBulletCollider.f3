@@ -416,23 +416,15 @@ public class JBulletCollider is Collider {
     var collisionMap is Map of (JBulletCollider, Set of ContactPoint);
 
     function fillWorldMatrix to () {
-        var t = collidable.getCollisionWorldTransform();
+        var t = collidable.getCollisionWorldTransform() * translate(centerOfMass);
         for (c in [0..<4], r in [0..<4]) {
             _worldMatrix[c*4+r] = t.get(r, c);
         }
     }
 
-    public bound var initialTransform is Mat4 = 
-        translate(collisionInitialPosition + (centerOfMass - Point3.<<0>>)) *
-        (if (collisionInitialOrientation <> Vec3.<<0>>) 
-            then rotate(collisionInitialOrientation.x, collisionInitialOrientation.y, collisionInitialOrientation.z)
-        else Mat4.<<1>>);
-
-    public bound var initialTransformInverse is Mat4 = initialTransform.inverse();
-
     function drainWorldMatrix to () {
         const mat = Mat4.fromColumns(_worldMatrix);
-        collidable.setCollisionWorldTransform(mat);
+        collidable.setCollisionWorldTransform(mat * translate(-centerOfMass));
         if (not _currentlyActive) {
             _currentlyActive = true;
             collidable.onEnterCollisionWorld();
@@ -474,7 +466,7 @@ public class JBulletCollider is Collider {
         }
     }
 
-    function reactivate from () to () 
+    protected function reactivate from () to () 
     {
         removeRigidBody();
         if (active and collidable <> null and _dynamicsWorld() <> null) {
@@ -485,7 +477,7 @@ public class JBulletCollider is Collider {
 
     override function update from () to () 
     {
-        println("update {this}: {active}, {collidable}, {_dynamicsWorld}, rigidBody={_rigidBody}");
+        //println("update {this}: {active}, {collidable}, {_dynamicsWorld}, rigidBody={_rigidBody}");
         if (collidable <> null and _dynamicsWorld() <> null) {
             if (_rigidBody == null) {
                 createRigidBody(getCollisionShape());

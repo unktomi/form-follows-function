@@ -52,11 +52,16 @@ class DebugDrawer is IDebugDraw {
         gl.glDisable(gl.GL_STENCIL_TEST);
         gl.glDisable(gl.GL_LIGHTING);
         gl.glMatrixMode(gl.GL_PROJECTION);
-        const mat = cam.projectionMatrix;
+        var mat = cam.projectionMatrix;
         for (r in [0..<4], c in [0..<4]) {
-            m[r*4+c] = mat.get(r, c);
+            m[c*4+r] = mat.get(r, c);
         }
-        gl.glPushMatrix();
+        gl.glLoadMatrixf(m, 0);
+        gl.glMatrixMode(gl.GL_MODELVIEW);
+        mat = cam.viewMatrix;
+        for (r in [0..<4], c in [0..<4]) {
+            m[c*4+r] = mat.get(r, c);
+        }
         gl.glLoadMatrixf(m, 0);
         gl.glBindTexture(gl.GL_TEXTURE_2D, 0);
         gl.glUseProgram(0);
@@ -115,6 +120,11 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     override function reset to ()
     {
+        const cobjs = dynamicsWorld.getCollisionObjectArray();
+        for (cobj in cobjs) {
+            const c = getUserPointer(cobj) as JBulletCollider;
+            c.reactivate();
+        }
     }
 
     override function createCollider from (collidable is Collidable) to Collider {
@@ -295,15 +305,20 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             gl.glPushClientAttrib(gl.GL_CLIENT_ALL_ATTRIB_BITS as Integer);
             gl.glPushAttrib(gl.GL_ALL_ATTRIB_BITS);
             dynamicsWorld.debugDrawWorld();
-            gl.glPopMatrix();
             gl.glPopAttrib();
             gl.glPopClientAttrib();
         }
     }
 
+    var lastTimeStep is Double;
     public override function update from (sceneTime is Duration, camera is Camera) to ()
     {
-        var timeStep = sceneTime.toMillis() / 1000.0;
+        //println("update: {sceneTime}");
+        var millis = sceneTime.toMillis();
+        var timeStep is Double = (millis - lastTimeStep) / 1000.0;
+        if (timeStep < 0) {
+            println("timestep = {timeStep}");
+        }
         const dynamicsWorld = getDynamicsWorld();
         if (toBeDeleted.size() > 0) {
             var di = toBeDeleted.iterator();
@@ -326,6 +341,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
                 } else {
                     dynamicsWorld.removeCollisionObject(d);
                 }
+                println("REMOVED {d}");
             }
             toBeDeleted.clear();
         }
@@ -339,6 +355,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             */
             return;
         }
+        lastTimeStep = millis;
         var steps = 4;
 
         if (variableTimeStep) {
@@ -426,7 +443,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         while (iter2.hasNext()) {
             const obj = iter2.next();
             const collider = getUserPointer(obj) as JBulletCollider;
-            println("updating collisions for {collider}");
+            //println("updating collisions for {collider}");
             if (collider.needsCollisions()) {
                 if (not updated.containsKey(collider)) {
                     collider.mergeCollisions(null);
@@ -436,7 +453,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         updated.clear();
     }
 
-    public function createCollisionShape from (m is AbstractMesh) to 
+    public function createCollisionShape from (m is AbstractMesh, t is Mat4) to 
         com.bulletphysics.collision.shapes.CollisionShape
     {
         const count = m.vertices.getVertexCount();
@@ -449,9 +466,11 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 	for (i in [0..<count]) 
 	    {
                 const v = new javax.vecmath.Vector3f();
-                v.set(m.vertices.getX(i), 
-                      m.vertices.getY(i), 
-                      m.vertices.getZ(i));
+                const pt1 = point(m.vertices.getX(i), 
+                                 m.vertices.getY(i), 
+                                 m.vertices.getZ(i));
+                const pt2 = t * pt1;
+                v.set(pt2.x, pt2.y, pt2.z);
                 pts.add(v);
 	    }
 	return new com.bulletphysics.collision.shapes.ConvexHullShape(pts);
@@ -464,23 +483,21 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         var n0 is Node;
         const collider = n.collider;
         const tmp = n.toSceneTransform.inverse();
+        const initial = collider.initialTransform.inverse();
         var count = 0;
         n.foldLeft((), function from (_ is (), n is Node) to () {
                 if (n is MeshNode) {
                     const meshNode = n as MeshNode;
                     const mesh = meshNode.mesh;
-                    const c = createCollisionShape(mesh);
+                    const c = createCollisionShape(mesh, initial);
                     count++;
                     if (count > 1) {
-                        if (compoundShape == null) { 
-                            compoundShape = new com.bulletphysics.collision.shapes.CompoundShape();
-                            compoundShape.addChildShape(Util.convertToBullet(tmp * n.toSceneTransform, null), result);
-                            result = compoundShape;
-                        }
                         compoundShape.addChildShape(Util.convertToBullet(tmp * n.toSceneTransform, null), c);
                     } else {
+                        compoundShape = new com.bulletphysics.collision.shapes.CompoundShape();
+                        compoundShape.addChildShape(Util.convertToBullet(Mat4.<<1>>, null), c);
                         n0 = n;
-                        result = c;
+                        result = compoundShape;
                     }
                 }
             });
