@@ -1,0 +1,491 @@
+package org.f3.jbullet;
+import com.bulletphysics.ContactAddedCallback;
+import com.bulletphysics.BulletGlobals;
+import com.bulletphysics.ContactDestroyedCallback;
+import com.bulletphysics.collision.dispatch.CollisionObject;
+import com.bulletphysics.collision.dispatch.CollisionFlags;
+import com.bulletphysics.collision.dispatch.CollisionWorld;
+import com.bulletphysics.collision.broadphase.AxisSweep3;
+import com.bulletphysics.collision.broadphase.SimpleBroadphase;
+import com.bulletphysics.collision.broadphase.BroadphaseInterface;
+import com.bulletphysics.collision.dispatch.CollisionDispatcher;
+import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
+import com.bulletphysics.collision.shapes.BoxShape;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.StaticPlaneShape;
+import com.bulletphysics.collision.shapes.TriangleIndexVertexArray;
+import com.bulletphysics.collision.shapes.BvhTriangleMeshShape;
+import com.bulletphysics.collision.narrowphase.ManifoldPoint;
+import com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import com.bulletphysics.dynamics.constraintsolver.ConstraintSolver;
+import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
+import com.bulletphysics.linearmath.MotionState;
+import com.bulletphysics.linearmath.IDebugDraw;
+import com.bulletphysics.linearmath.DebugDrawModes;
+import com.bulletphysics.linearmath.Transform;
+import javax.vecmath.Vector3f;
+import java.util.*;
+import java.lang.System;
+import javax.media.opengl.*;
+import javax.media.opengl.glu.*;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import f3.media.scene.*;
+import f3.media.scene.Collider.*;
+import java.lang.ref.WeakReference;
+import f3.jogl.awt.JoglStage;
+const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jbullet.debug.physics");
+const ZERO_GRAVITY = new Vector3f();
+
+class DebugDrawer is IDebugDraw {
+
+    var cam is Camera;
+
+    public function update from (camera is Camera) to ()
+    {
+        cam = camera;
+        cam.update();
+        const gl is GL2 = JoglStage.THE_GL2;
+        gl.glDisable(gl.GL_DEPTH_TEST);
+        gl.glDisable(gl.GL_STENCIL_TEST);
+        gl.glDisable(gl.GL_LIGHTING);
+        gl.glMatrixMode(gl.GL_PROJECTION);
+        const mat = cam.projectionMatrix;
+        for (r in [0..<4], c in [0..<4]) {
+            m[r*4+c] = mat.get(r, c);
+        }
+        gl.glPushMatrix();
+        gl.glLoadMatrixf(m, 0);
+        gl.glBindTexture(gl.GL_TEXTURE_2D, 0);
+        gl.glUseProgram(0);
+    }
+
+    var m = new nativearray of Number(16);
+
+    public override function drawTriangle from (v0 is Vector3f, v1 is Vector3f, v2 is Vector3f, color is Vector3f, alpha is Number) to ()
+    {
+        const gl is GL2 = JoglStage.THE_GL2;
+        gl.glColor4f(color.x, color.y, color.z, alpha);
+        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINES);
+        gl.glBegin(gl.GL_TRIANGLES);
+        gl.glVertex3f(v0.x, v0.y, v0.z);
+        gl.glVertex3f(v1.x, v1.y, v1.z);
+        gl.glVertex3f(v2.x, v2.y, v2.z);
+        gl.glEnd();
+    }
+
+    public override function drawLine from (_from is Vector3f, _to is Vector3f, color is Vector3f) to ()
+    {
+        cam.update();
+        const gl is GL2 = JoglStage.THE_GL2;
+        gl.glColor4f(color.x, color.y, color.z, 1);
+        gl.glBegin(gl.GL_LINES);
+        gl.glVertex3f(_from.x, _from.y, _from.z);
+        gl.glVertex3f(_to.x, _to.y, _to.z);
+        gl.glEnd();
+    }
+    
+    public override function drawContactPoint(PointOnB:Vector3f, normalOnB:Vector3f, distance:Number, lifeTime:Integer,  color:Vector3f):Void {
+    }
+    
+    public override function reportErrorWarning(warningString:String):Void {
+        System.out.println("BULLET: {warningString}");
+    }
+
+    public override function draw3dText(location:Vector3f, textString:String):Void {
+    }
+
+    var mode = //DebugDrawModes.DRAW_WIREFRAME;
+    f3.util.Bits.add(DebugDrawModes.DRAW_AABB, DebugDrawModes.DRAW_WIREFRAME);
+    //      DebugDrawModes.DRAW_AABB;
+
+    public override function setDebugMode(debugMode:Integer):Void {
+//        mode = debugMode;
+    }
+
+    public override function getDebugMode():Integer {
+        return mode;
+    }
+
+}
+
+public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
+
+    override function reset to ()
+    {
+    }
+
+    override function createCollider from (collidable is Collidable) to Collider {
+        const result = JBulletCollider {
+            dynamicsWorld: this;
+            collidable: collidable;
+        }
+        collidable.collider = result;
+        println("CREATED COLLIDER for {collidable} => {result}");
+        return result;
+    }
+    
+    const toBeDeleted = new LinkedList of CollisionObject;
+
+    function getUserPointer from (obj is com.bulletphysics.collision.dispatch.CollisionObject) to Object 
+    {
+        const ref = obj.getUserPointer() as WeakReference of Object;
+        if (ref <> null) {
+            const result = (obj.getUserPointer() as WeakReference of Object).get();
+            if (result == null) {
+                obj.setUserPointer(null);
+                enqueueForDelete(obj);
+            }
+            return result;
+        }
+        return null;
+    }            
+    
+    function getUserData from (obj is com.bulletphysics.dynamics.constraintsolver.TypedConstraint) to Object 
+    {
+        const ref = obj.getUserData() as WeakReference;
+        if (ref <> null) {
+            const result = ref.get();
+            return result;
+        }
+        return null;
+    }
+    
+    protected function enqueueForDelete from (obj is CollisionObject) to ()
+    {
+        toBeDeleted.add(obj);
+    }
+
+    public const erp is Number = 0.2;
+    public const iterations is Integer = 10;
+
+    public function getDynamicsWorld to com.bulletphysics.dynamics.DiscreteDynamicsWorld 
+    { 
+        if (dynamicsWorld == null) {
+            const worldAabbMin = new Vector3f(-10000,-10000,-10000);
+            const worldAabbMax = new Vector3f(10000,10000,10000);
+            const overlappingPairCache = new AxisSweep3(worldAabbMin, worldAabbMax);
+            const collision_config = new DefaultCollisionConfiguration();
+            const dispatcher = new CollisionDispatcher(collision_config);
+            //com.bulletphysics.extras.gimpact.GImpactCollisionAlgorithm.registerAlgorithm(dispatcher);
+            const constraintSolver = new SequentialImpulseConstraintSolver();
+            dynamicsWorld = new DiscreteDynamicsWorld(dispatcher, 
+                                                      overlappingPairCache, 
+                                                      constraintSolver, 
+                                                      collision_config);
+            dynamicsWorld.getSolverInfo().numIterations = iterations;
+            //println("gravity = {_gravity}");
+            dynamicsWorld.setGravity(_gravity);
+        };
+        dynamicsWorld; 
+    }    
+
+    var debugDrawer is DebugDrawer;
+
+    const contactAdded = ContactAddedCallback {
+        public override function contactAdded 
+        from (pt is ManifoldPoint,
+              objA is CollisionObject,
+              partA is Integer,
+              indexA is Integer,
+              objB is CollisionObject,
+              partB is Integer,
+              indexB is Integer)
+         to Boolean 
+        {
+            const ptA = pt.getPositionWorldOnA(new Vector3f());
+            const ptB = pt.getPositionWorldOnB(new Vector3f());
+            return false;
+        }
+    };
+    
+    const contactDestroyed = ContactDestroyedCallback {
+        public override function contactDestroyed from (userData is Object) to Boolean {
+            return false;
+        }
+    };
+
+    var _gravity is javax.vecmath.Vector3f;
+
+    public var gravity is Vec3 = GRAVITY on replace {
+        setGravity(gravity.x, gravity.y, gravity.z);
+    };
+    
+    function setGravity from (x is Number, y is Number, z is Number) to () 
+    {
+        _gravity = new Vector3f(x, y, z);
+        dynamicsWorld.setGravity(_gravity);
+    }
+    
+    var time is Number = -1;
+    
+    const updated = new HashMap of (JBulletCollider, Map of (JBulletCollider, Set of Collider.ContactPoint));
+    const v0 = new Vector3f();
+    const v1 = new Vector3f();
+
+    public var minFPS is Integer = 60;
+    public var variableTimeStep is Boolean;
+
+    var dynamicsWorld is com.bulletphysics.dynamics.DiscreteDynamicsWorld;
+
+    var prevTime is Number;
+
+    const _forceFields = new java.util.WeakHashMap of (ForceField, ());
+
+    public override function addForceField from (ff is ForceField) to ()
+    {
+        _forceFields.put(ff, ());
+        setGravity(0, 0, 0);
+    }
+
+    public override function removeForceField from (ff is ForceField) to () 
+    {
+        _forceFields.remove(ff);
+        if (_forceFields.size() == 0) {
+            setGravity(gravity.x, gravity.y, gravity.z);
+        }
+    }
+
+    function applyForceFields to ()
+    {
+        if (_forceFields.size() > 0) {
+            setGravity(0, 0, 0);
+            var rigidBodies is Collider[];
+            const cobjs = dynamicsWorld.getCollisionObjectArray();
+            var gravityApplied is Boolean = false;
+            for (obj in cobjs) {
+                if (obj instanceof RigidBody) {
+                    var c = obj as RigidBody;
+                    if (c.getInvMass() != 0) {
+                        insert getUserPointer(c) as Collider into rigidBodies;
+                    }
+                }
+            }
+            const ffs = foreach (obj in _forceFields.keySet()) obj as ForceField;
+            for (ff in ffs) {
+                var apply = true;
+                if (ff instanceof GravityField) { // only allow a single unrestricted gravity field
+                    if (ff.restrictTo == []) {
+                        apply = not gravityApplied;
+                        gravityApplied = true;
+                            
+                    }
+                } 
+                if (apply) {
+                    ff.doApply(this, rigidBodies);
+                }
+            }
+        } else {
+            setGravity(gravity.x, gravity.y, gravity.z);
+        }
+    }
+
+    public var debug is Boolean = DEBUG_DRAW;
+
+    public function debugDraw from (camera is Camera) to () 
+    {
+        if (debug) {
+            if (dynamicsWorld.getDebugDrawer() == null) {
+                dynamicsWorld.setDebugDrawer(debugDrawer = DebugDrawer{});
+            }
+            debugDrawer.update(camera);
+            const gl is GL2 = JoglStage.THE_GL2;
+            gl.glPushClientAttrib(gl.GL_CLIENT_ALL_ATTRIB_BITS as Integer);
+            gl.glPushAttrib(gl.GL_ALL_ATTRIB_BITS);
+            dynamicsWorld.debugDrawWorld();
+            gl.glPopMatrix();
+            gl.glPopAttrib();
+            gl.glPopClientAttrib();
+        }
+    }
+
+    public override function update from (sceneTime is Duration, camera is Camera) to ()
+    {
+        var timeStep = sceneTime.toMillis() / 1000.0;
+        const dynamicsWorld = getDynamicsWorld();
+        if (toBeDeleted.size() > 0) {
+            var di = toBeDeleted.iterator();
+            while (di.hasNext()) {
+                var d = di.next() as CollisionObject;
+                if (d instanceof RigidBody) {
+                    var collider = getUserPointer(d) as Collider;
+                    var constraints = collider.constraints;
+                    for (c0 in constraints) {
+                        const c = c0 as JBulletRigidBodyConstraint;
+                        var tc = c.tc;
+                        if (tc != null) {
+                            dynamicsWorld.removeConstraint(tc);
+                            c.tc = null;
+                            c.remove();
+                        }
+                        
+                    }
+                    dynamicsWorld.removeRigidBody(d as RigidBody);
+                } else {
+                    dynamicsWorld.removeCollisionObject(d);
+                }
+            }
+            toBeDeleted.clear();
+        }
+        if (paused) {
+            /*
+            const iter2 = dynamicsWorld.getCollisionObjectArray().iterator();
+            while (iter2.hasNext()) {
+                const obj = iter2.next();
+                const collider = getUserPointer(obj) as JBulletCollider;
+            }
+            */
+            return;
+        }
+        var steps = 4;
+
+        if (variableTimeStep) {
+            steps = 0;
+        }
+
+        applyForceFields();
+        dynamicsWorld.stepSimulation(timeStep,
+                                     steps,
+                                     1.0/60);
+        var dispatcher = dynamicsWorld.getDispatcher();
+        var numManifolds = dispatcher.getNumManifolds();
+        for (i in [0..<numManifolds]) {
+            var contactManifold = dispatcher.getManifoldByIndexInternal(i);
+            var objA = contactManifold.getBody0() as CollisionObject;
+            var objB = contactManifold.getBody1() as CollisionObject;
+            var numContacts = contactManifold.getNumContacts();
+            var fxA = getUserPointer(objA) as JBulletCollider;
+            var fxB = getUserPointer(objB) as JBulletCollider;
+            if (fxA.needsCollisions() or fxB.needsCollisions()) {
+                for (j in [0..<numContacts]) {
+                    const pt = contactManifold.getContactPoint(j);
+                    if (pt.getDistance() < 0) {
+                        const ptA = pt.getPositionWorldOnA(v0);
+                        const ptB = pt.getPositionWorldOnB(v1);
+                        const normalB = pt.normalWorldOnB;
+                        if (fxA.needsCollisions()) {
+                            const contactPtA = Collider.ContactPoint {
+                                point: new Point3(ptA.x,
+                                                  ptA.y,
+                                                  ptA.z);
+                                normal: new Vec3(-normalB.x,
+                                                 -normalB.y,
+                                                 -normalB.z);
+                                thisCollider: fxA;
+                                otherCollider: fxB
+                            }
+                            var map = updated.get(fxA);
+                            if (map == null) {
+                                map = new HashMap of (JBulletCollider, Set of ContactPoint)(3);
+                                updated.put(fxA, map);
+                            }
+                            var set = map.get(fxB);
+                            if (set == null) {
+                                set = new TreeSet of ContactPoint();
+                                map.put(fxB, set);
+                            }
+                            set.add(contactPtA);
+                        }
+                        if (fxB.needsCollisions()) {
+                            const contactPtB = Collider.ContactPoint {
+                                point: new Point3(ptB.x,
+                                                  ptB.y,
+                                                  ptB.z);
+                                normal: new Vec3(normalB.x,
+                                                  normalB.y,
+                                                  normalB.z);
+                                thisCollider: fxB;
+                                otherCollider: fxA;
+                            }
+                            var map = updated.get(fxB);
+                            if (map == null) {
+                                map = new HashMap of (JBulletCollider, Set of ContactPoint)(3);
+                                updated.put(fxB, map);
+                            }
+                            var set = map.get(fxA);
+                            if (set == null) {
+                                set = new TreeSet of ContactPoint();
+                                map.put(fxA, set);
+                            }
+                            set.add(contactPtB);
+                        }
+                    }
+                }
+            }
+        }
+        const iter1 = updated.entrySet().iterator();
+        while (iter1.hasNext()) {
+            const e = iter1.next();
+            const fxObj = e.getKey();
+            const map = e.getValue();
+            fxObj.mergeCollisions(map);
+        }
+        const iter2 = dynamicsWorld.getCollisionObjectArray().iterator();
+        while (iter2.hasNext()) {
+            const obj = iter2.next();
+            const collider = getUserPointer(obj) as JBulletCollider;
+            println("updating collisions for {collider}");
+            if (collider.needsCollisions()) {
+                if (not updated.containsKey(collider)) {
+                    collider.mergeCollisions(null);
+                }
+            }
+        }
+        updated.clear();
+    }
+
+    public function createCollisionShape from (m is AbstractMesh) to 
+        com.bulletphysics.collision.shapes.CollisionShape
+    {
+        const count = m.vertices.getVertexCount();
+        if (count < 3 or 
+	    m.vertices.getCoordsPerVertex() <> 3 or
+	    m.indexMode <> IndexMode.Triangles) {
+            return null;
+        }
+        var pts = new java.util.ArrayList of Vector3f;
+	for (i in [0..<count]) 
+	    {
+                const v = new javax.vecmath.Vector3f();
+                v.set(m.vertices.getX(i), 
+                      m.vertices.getY(i), 
+                      m.vertices.getZ(i));
+                pts.add(v);
+	    }
+	return new com.bulletphysics.collision.shapes.ConvexHullShape(pts);
+    }
+
+    public function createCollisionShape from (n is Node) to com.bulletphysics.collision.shapes.CollisionShape
+    {
+        var compoundShape is com.bulletphysics.collision.shapes.CompoundShape;
+        var result is com.bulletphysics.collision.shapes.CollisionShape;
+        var n0 is Node;
+        const collider = n.collider;
+        const tmp = n.toSceneTransform.inverse();
+        var count = 0;
+        n.foldLeft((), function from (_ is (), n is Node) to () {
+                if (n is MeshNode) {
+                    const meshNode = n as MeshNode;
+                    const mesh = meshNode.mesh;
+                    const c = createCollisionShape(mesh);
+                    count++;
+                    if (count > 1) {
+                        if (compoundShape == null) { 
+                            compoundShape = new com.bulletphysics.collision.shapes.CompoundShape();
+                            compoundShape.addChildShape(Util.convertToBullet(tmp * n.toSceneTransform, null), result);
+                            result = compoundShape;
+                        }
+                        compoundShape.addChildShape(Util.convertToBullet(tmp * n.toSceneTransform, null), c);
+                    } else {
+                        n0 = n;
+                        result = c;
+                    }
+                }
+            });
+        println("CREATED COLLISION SHAPE: {result}");
+        return result;
+    }
+
+}

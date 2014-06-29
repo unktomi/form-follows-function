@@ -1,0 +1,39 @@
+package org.f3.jbullet;
+import f3.math.*;
+
+public function convertToBullet(vec is Vec3, v is javax.vecmath.Vector3f) to javax.vecmath.Vector3f {
+       if (v == null) {
+           return new javax.vecmath.Vector3f(vec.x, vec.y, vec.z);
+       }
+       v.set(vec.x, vec.y, vec.z);
+       return v;
+}
+
+public function convertToBullet(vec is Point3, v is javax.vecmath.Vector3f) to javax.vecmath.Vector3f {
+       if (v == null) {
+           return new javax.vecmath.Vector3f(vec.x, vec.y, vec.z);
+       }
+       v.set(vec.x, vec.y, vec.z);
+       return v;
+}
+
+public function convertToBullet(mat is Mat4,
+                                _result is com.bulletphysics.linearmath.Transform) to com.bulletphysics.linearmath.Transform {
+    var result = _result;
+    if (result == null) {
+        result = new com.bulletphysics.linearmath.Transform();
+        result.setIdentity();
+    }
+    var a = new nativearray of Number(16);
+    for (r in [0..<4], c in [0..<4]) {
+        a[c*4+r] = mat.get(r, c);
+    }
+    result.setFromOpenGLMatrix(a);
+    return result;
+}
+
+public function convertFromBullet(t is com.bulletphysics.linearmath.Transform) to Mat4 {
+    var mat = new nativearray of Number(16);
+    t.getOpenGLMatrix(mat);
+    return Mat4.fromColumns(mat);
+}
