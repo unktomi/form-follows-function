@@ -234,6 +234,13 @@ public function rotate
 }
 
 public function rotate 
+    from (angles is Tuple3) 
+    to Mat4 
+{
+    rotate(angles.x, angles.y, angles.z);
+}
+
+public function rotate 
     from (rx is Number, ry is Number, rz is Number) 
     to Mat4 
 {

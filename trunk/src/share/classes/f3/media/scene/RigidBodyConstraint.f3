@@ -22,7 +22,7 @@ public abstract class RigidBodyConstraint {
         }
     }
 
-    protected function remove to () 
+    public function remove to () 
     {
         if (applied) {
             applied = false;

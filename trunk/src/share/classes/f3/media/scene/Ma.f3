@@ -23,6 +23,8 @@ class MAttr {
 
 class MaModel 
 {
+    public var dynamicsWorld is DynamicsWorld;
+
     const nodeMap is java.util.Map of (String, MNode) = 
         new java.util.HashMap of (String, MNode);
 
@@ -104,6 +106,12 @@ class MaModel
                 then MAimConstraint {name: name  parent: findNode(parent)}
             else if (nodeType == "tweak") 
                 then MTweak {name: name  parent: findNode(parent)}
+            else if (nodeType == "rigidBody") 
+                then MRigidBody {name: name  parent: findNode(parent)}
+            else if (nodeType == "rigidConstraint") 
+                then MRigidConstraint {name: name  parent: findNode(parent)}
+            else if (nodeType == "choice") 
+                then MChoice {name: name  parent: findNode(parent)}
             else if (nodeType == "script") {
                 if (name == "sceneConfigurationScriptNode") then MSceneConfig {model: this} else null
             }
@@ -340,6 +348,15 @@ class MaModel
             const resolved = toShader(target as MAbstractShader);
             println("resolved shader {target.name} to {resolved}");
             target.getPointer(key, resolved);
+        } else if (target instanceof MChoice) {
+            const conns = target.connectionsFromThis.get("o");
+            //println("resolve choice conns=>{conns}");
+            var rptr is Ref of ?;
+            for (conn in conns) {
+                rptr = resolveTargetPointer(conn);
+                //println("conn={conn}, ptr=>{rptr}");
+            }
+            rptr;
         } else if (target instanceof MAnimCurve) {
             const ch = toChannel(target as MAnimCurve, false) as Channel of ?;
             ch.targets[0];
@@ -566,7 +583,6 @@ class MaModel
         }
         return r;
     }
-
     function generateScene 
     {
         for (n in nodeMap.values() where n instanceof MCharacter) {
@@ -711,6 +727,7 @@ class Connection {
 }
 
 class MNode {
+    public const dynamicsWorld is DynamicsWorld = the DynamicsWorld;
     const connectionsFromThis is java.util.Map of (String, Connection[]) =
         new java.util.HashMap of (String, Connection[]);
     const connectionsToThis is java.util.Map of (String, Connection[]) =
@@ -824,6 +841,9 @@ class MSceneConfig is MNode {
             }
         } else super.setAttr(cmd);
     }
+}
+
+class MChoice is MNode {
 }
 
 abstract class MSpatial is MNode {
@@ -2728,7 +2748,102 @@ class MMesh is MSpatial
                 m.spatialMap.put(this, r);
             }
         }
+        const conns = connectionsFromThis.get("msg");
+        println("RIGID BODY conns=>{conns}");
+        for (conn in conns) {
+            println("RIGID BODY conn=>{conn}");
+            if (conn.targetNode is MRigidBody) {
+                const rigidBody = conn.targetNode as MRigidBody;
+                const chc = rigidBody.connectionsFromThis.get("chc");
+                println("RIGID BODY chc=>{chc}");
+                var target is Collider;
+                var targetNode is MaTransform;
+                for (c in chc) {
+                    const chc_n = c.targetNode;
+                    const chc_o = chc_n.connectionsFromThis.get("o");
+                    for (x in chc_o) {
+                        println("RIGID BODY x=>{x}");
+                        const tn = m.toNode(x.targetNode as MSpatial);
+                        println("RIGID BODY tn=>{tn}");
+                        if (tn <> null) {
+                            targetNode = tn as MaTransform;
+                        }
+                    }
+                }
+                target = dynamicsWorld.createCollider(targetNode);
+                target.dynamic = rigidBody.act;
+                target.mass = rigidBody.mas;
+                const ip = rigidBody.ip;
+                const iv = rigidBody.iv;
+                const isp = rigidBody.isp;
+                const ior = rigidBody.ior;
+                targetNode.tx = ip.x;
+                targetNode.ty = ip.y;
+                targetNode.tz = ip.z;
+                target.collisionInitialVelocity = iv;
+                target.collisionInitialSpin = isp;
+                target.collisionInitialOrientation = ior;
+                target.friction = rigidBody.sf;
+                target.restitution = rigidBody.b;
+                target.centerOfMass = rigidBody.com;
+            }
+        }
         return r0;
+    }
+}
+
+class MRigidBody is MNode {
+    public var act is Boolean = true; // active
+    public var mas is Number = 1; // mass
+    public var ip is Point3; // initial position
+    public var iv is Vec3; // initial velocity
+    public var isp is Vec3; // initial spin
+    public var ior is Vec3; // initial orientation
+    public var sf is Number = .2; // friction
+    public var df is Number = .2; // friction
+    public var b is Number = .6; // restitution
+    public var com is Point3; // center of mass
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "ip") {
+            ip = cmd.getPoint3();
+        } else if (n == "iv") {
+            iv = cmd.getVec3();
+        } else if (n == "isp") {
+            isp = cmd.getVec3();
+        } else if (n == "ior") {
+            ior = cmd.getVec3();
+        } else if (n == "sf") {
+            sf = cmd.getFloat();
+        } else if (n == "b") {
+            b = cmd.getFloat();
+        } else if (n == "com") {
+            com = cmd.getPoint3();
+        } else if (n == "mas") {
+            mas = cmd.getFloat();
+        } else if (n == "act") {
+            act = cmd.getBoolean();
+        } else super.setAttr(cmd);
+    }
+}
+
+class MRigidConstraint is MNode {
+    var rb1 is MRigidBody;
+    var rb2 is MRigidBody;
+    var ip is Point3;
+    var ino is Vec3;
+    var typ is Integer;
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "ip") {
+            ip = cmd.getPoint3();
+        } else if (n == "ino") {
+            ino = cmd.getVec3();
+        } else if (n == "typ") {
+            typ = cmd.getInt();
+        } else super.setAttr(cmd);
     }
 }
 
@@ -3636,6 +3751,7 @@ class Command
 
 class MaParser 
 {
+    public var dynamicsWorld is DynamicsWorld;
     public var effectLoader is CGEffectLoader;
     public var imageLoader is ImageLoader;
     var pos = 0;
@@ -3729,6 +3845,7 @@ class MaParser
     {
         tokenize(input);
         const model = MaModel {
+            dynamicsWorld: dynamicsWorld;
             effectLoader: effectLoader;
             imageLoader: imageLoader;
             url: url
@@ -4140,6 +4257,7 @@ public class Model {
     public var url is String;
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
+    public const dynamicsWorld is DynamicsWorld;
 
     public bound function getResources to String[] 
     {
@@ -4177,7 +4295,7 @@ public class Model {
 
     function load from (url is String, effectLoader is CGEffectLoader, imageLoader is ImageLoader) to ModelContent 
     {
-        const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader};
+        const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader, dynamicsWorld: dynamicsWorld};
         const m = p.parse(new java.net.URL(url));
         m.spatialRoot.updateParent();
         const mc = ModelContent {

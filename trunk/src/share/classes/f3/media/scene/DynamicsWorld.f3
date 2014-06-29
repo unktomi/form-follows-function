@@ -4,5 +4,11 @@ import f3.math.*;
 public const GRAVITY = new Vec3(0, -9.8, 0);
 
 public abstract class DynamicsWorld {
-    public abstract function update from (sceneTime is Duration) to ();
+    public var paused is Boolean = false;
+    public function update from (sceneTime is Duration, camera is Camera) to ();
+    public function addForceField from (field is ForceField) to ();
+    public function removeForceField from (field is ForceField) to ();
+    public function createCollider from (collidable is Collidable) to Collider;
+    public function reset to ();
+    public function debugDraw from (camera is Camera) to ();
 }

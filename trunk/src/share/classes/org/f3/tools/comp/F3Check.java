@@ -2445,6 +2445,7 @@ public class F3Check {
         new ForwardReferenceChecker(names, types, defs, getForwardRefKinds()) {
             @Override
             protected void reportForwardReference(DiagnosticPosition pos, boolean selfReference, Symbol s, boolean potential) {
+                //Thread.currentThread().dumpStack();
                 JCDiagnostic description =
                         diags.fragment(selfReference ?
                             MsgSym.MESSAGE_F3_SELF_REFERENCE :
@@ -2753,6 +2754,7 @@ public class F3Check {
         private void removeVar(F3VarSymbol vsym) {
             VarScope scope = currentScope();
             while (scope != null) {
+                //System.err.println("removing var: "+ vsym);
                 scope.uninited_vars.remove(vsym);
                 scope = scope.prevScope;
             }
@@ -2772,6 +2774,7 @@ public class F3Check {
 		    case VAR_SCRIPT_INIT: sym = ((F3VarInit)tree).getSymbol(); break;
 		}
 		if (sym != null) {
+                    //System.err.println("adding var: "+ sym);
 		    currentScope().uninited_vars.add(sym);
 		}
 	    }
