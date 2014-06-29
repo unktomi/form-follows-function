@@ -22,8 +22,9 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget, Collidable
     public readonly var visibleInScene is Boolean =  
 	bind visible and parent.visibleInScene;
     public readonly var collisionWorldTransform is Mat4 = Mat4.<<1>>;
+    public readonly var collisionWorldTransformInverse is Mat4 = bind collisionWorldTransformInverse;
     public override function setCollisionWorldTransform from (mat is Mat4) to () { collisionWorldTransform = mat }
-    public override function getCollisionWorldTransform from () to Mat4 { collisionWorldTransform } 
+    public override function getCollisionWorldTransform from () to Mat4 { toSceneTransform * collisionWorldTransformInverse } 
 
     public readonly var parentToSceneTransform is Mat4 = 
 	bind if parent == null then Mat4.<<1>> else parent.toSceneTransform;
@@ -33,7 +34,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget, Collidable
 	transform = m;
     }
     public readonly var toSceneTransform is Mat4 = 
-	bind parentToSceneTransform * collisionWorldTransform * transform;
+	bind parentToSceneTransform * transform * collisionWorldTransform;
     public readonly var bounds is Bounds = bind transform * contentBounds;
     public readonly var boundsInScene is Bounds = bind parentToSceneTransform * bounds;
     public readonly var contentBounds is Bounds;
