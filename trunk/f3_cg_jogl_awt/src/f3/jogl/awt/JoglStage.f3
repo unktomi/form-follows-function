@@ -1765,7 +1765,7 @@ class JoglImageLoader is ImageLoader {
     {
         try {
             var result = loadTexture2D0(url);
-	    println("LOAD IMAGE {url} => {result}");
+
 	    return result;
         } catch (t is java.lang.Throwable) {
             t.printStackTrace();
@@ -1790,7 +1790,7 @@ class JoglImageLoader is ImageLoader {
                 var w is Integer;
                 var h is Integer;
                 if (url.endsWith(".png")) {
-                    var decoder = new PNGDecoder(new java.io.BufferedInputStream(new java.net.URL(url).openStream()));
+                    const decoder = new PNGDecoder(new java.io.BufferedInputStream(new java.net.URL(url).openStream()));
                     tWidth = decoder.getWidth();
                     tHeight = decoder.getHeight();
                     var buffer = BufferUtils.createByteBuffer(4*tWidth*tHeight);
@@ -1845,6 +1845,7 @@ class JoglImageLoader is ImageLoader {
                                                w,
                                                h,
                                                texture.getMustFlipVertically());
+
             } else {
                 texture = TextureIO.newTexture(new java.net.URL(url), false, null);
             }

@@ -110,6 +110,8 @@ class MaModel
                 then MRigidBody {name: name  parent: findNode(parent)}
             else if (nodeType == "rigidConstraint") 
                 then MRigidConstraint {name: name  parent: findNode(parent)}
+            else if (nodeType == "bulletRigidBodyShape") 
+                then MBulletRigidBodyShape {name: name  parent: findNode(parent)}
             else if (nodeType == "choice") 
                 then MChoice {name: name  parent: findNode(parent)}
             else if (nodeType == "script") {
@@ -2788,6 +2790,28 @@ class MMesh is MSpatial
                 target.centerOfMass = rigidBody.com;
             }
         }
+        const bulletConns = connectionsFromThis.get("imesh");
+        for (conn in bulletConns) {
+            const b = conn.targetNode as MBulletRigidBodyShape;
+            var targetNode is MaTransform;
+            var target is Collider;
+            for (x in b.connectionsToThis.get("inwmat")) {
+                const tn = m.toNode(x.targetNode as MSpatial);
+                println("BULLET RIGID BODY tn=>{tn}");
+                if (tn <> null) {
+                    targetNode = tn as MaTransform;
+                }
+            }
+            //target = dynamicsWorld.createCollider(targetNode);
+            target.active = (b.bdytyp == 2);
+            target.mass = b.ms;
+            target.centerOfMass = b.com;
+            target.friction = b.fric;
+            target.restitution = b.restit;
+            target.collisionInitialVelocity = b.iv;
+            target.linearDamping = b.lindamp;
+            target.angularDamping = b.angdamp;
+        }
         return r0;
     }
 }
@@ -2843,6 +2867,71 @@ class MRigidConstraint is MNode {
             ino = cmd.getVec3();
         } else if (n == "typ") {
             typ = cmd.getInt();
+        } else super.setAttr(cmd);
+    }
+}
+
+class MBulletRigidBodyShape is MNode {
+    var ms is Number = 1.0; // mass
+    var com is Point3; // center of mass
+    var lindamp is Number = 0.0; // linear damping
+    var angdamp is Number = 0.0; // angular damping;
+    var fric is Number = 1.0; // friction;
+    var restit is Number = 0.0; // restitution
+    var initslp is Boolean = false; // initially sleeping
+    var iv is Vec3 = Vec3.<<0>>; // initial velocity
+    var iav is Vec3 = Vec3.<<0>>; // initial angular velocity 
+    var i is Vec3 = Vec3.<<0>>; // initial impulse
+    var ip is Point3 = Point3.<<0>>; // impulse position
+    var ti is Vec3 = Vec3.<<0>>; // torque impulse
+    var colshtyp is Integer; // collider shape type box (ext), sphere (rad), capsule (axis, rad, len), hull, mesh, plane (axis), cylinder (rad, len)
+    //imesh is link to mesh
+    var bdytyp is Integer; // static, kinematic, dynamic
+    var len is Number;
+    var ext is Tuple3;
+    var axis is Integer;
+    var itrs is Point3;
+    var rad is Number;
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "ms") {
+        } else if (n == "com") {
+            com = cmd.getPoint3();
+        } else if (n == "lindamp") {
+            lindamp = cmd.getFloat();
+        } else if (n == "angdamp") {
+            angdamp = cmd.getFloat();
+        } else if (n == "fric") {
+            fric = cmd.getFloat();
+        } else if (n == "restit") {
+            restit = cmd.getFloat();
+        } else if (n == "initslp") {
+            initslp = cmd.getBoolean();
+        } else if (n == "iv") {
+            iv = cmd.getVec3();
+        } else if (n == "iav") {
+            iav = cmd.getVec3();
+        } else if (n == "i") {
+            i = cmd.getVec3();
+        } else if (n == "ip") {
+            ip = cmd.getPoint3();
+        } else if (n == "ti") {
+            ti = cmd.getVec3();
+        } else if (n == "colshtyp") {
+            colshtyp = cmd.getInt();
+        } else if (n == "bdytyp") {
+            bdytyp = cmd.getInt();
+        } else if (n == "len") {
+            len = cmd.getFloat();
+        } else if (n == "ext") {
+            ext = cmd.getTuple3();
+        } else if (n == "axis") {
+            axis = cmd.getInt();
+        } else if (n == "itrs") {
+            itrs = cmd.getPoint3();
+        } else if (n == "rad") {
+            rad = cmd.getFloat();
         } else super.setAttr(cmd);
     }
 }
