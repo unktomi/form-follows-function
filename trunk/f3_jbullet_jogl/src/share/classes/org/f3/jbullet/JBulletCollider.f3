@@ -84,7 +84,7 @@ public class JBulletCollider is Collider {
     var _rigidBody is CollisionObject;
     var _worldMatrix is nativearray of Number;
 
-    public bound var rigidBody = if (_rigidBody is RigidBody) _rigidBody as RigidBody else null;
+    public bound var rigidBody = if (_rigidBody is RigidBody) then _rigidBody as RigidBody else null;
 
     override var angularDamping is Number = 0.5 on replace {
         getRigidBody().setDamping(linearDamping, angularDamping);
