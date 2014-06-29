@@ -2873,6 +2873,9 @@ public class SceneRenderer {
     
 }
 
+// hack
+public var THE_GL2 is GL2;
+
 public class Listener is GLEventListener, DropTargetListener {
 
     var currentButtons is Integer[];
@@ -3127,6 +3130,7 @@ public class Listener is GLEventListener, DropTargetListener {
     var fps is Integer;
 
     function render from (gl is GL2, width is Integer, height is Integer) to () {
+        THE_GL2 = gl;
         const now = java.lang.System.currentTimeMillis();
         if (startTime == 0) {
 	    startTime = now;
