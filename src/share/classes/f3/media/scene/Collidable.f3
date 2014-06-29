@@ -5,7 +5,6 @@ public interface Collidable {
     public abstract function setCollisionWorldTransform from (mat is Mat4) to ();
     public abstract function getCollisionWorldTransform from () to Mat4;
     public var collider is Collider;
-    public var dynamicsWorld is DynamicsWorld;
     public function onEnterCollisionWorld to () { }
     public function onLeaveCollisionWorld to () { }
 }

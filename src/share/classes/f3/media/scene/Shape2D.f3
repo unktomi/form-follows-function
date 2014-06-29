@@ -211,6 +211,9 @@ function getStroke from (stroke is Stroke) to Stroke
     if (stroke == null) then DEFAULT_STROKE else stroke;
 }
 
+
+public abstract class Shape2D is Node, MouseInputHandler 
+{
 public bound function createMeshNode
     from (
 	  p is Path2D, 
@@ -239,9 +242,6 @@ public bound function createMeshNode
             }
         }
 }
-
-public abstract class Shape2D is Node, MouseInputHandler 
-{
     public const factory is Path2DFactory = the Path2DFactory;
     public var stroke is Stroke;
     public var strokePaint is Paint;

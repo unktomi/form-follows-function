@@ -1454,9 +1454,17 @@ public class F3Resolve {
                                        allowBoxing, useVarargs, operator);
             }
             if (concrete != bestSoFar &&
-                concrete.kind < ERR  && bestSoFar.kind < ERR &&
-                types.isSubSignature(concrete.type, bestSoFar.type))
-                bestSoFar = concrete;
+                concrete.kind < ERR  && bestSoFar.kind < ERR) {
+                try { 
+                    if (types.isSubSignature(concrete.type, bestSoFar.type)) {
+                        bestSoFar = concrete;
+                    }
+                } catch (Throwable exc) {
+                    System.err.println("concrete: "+ concrete.type);
+                    System.err.println("bestSoFar: "+ bestSoFar.type);
+                    exc.printStackTrace();
+                }
+            }
             if (name == names.init)
                 return bestSoFar;
         }

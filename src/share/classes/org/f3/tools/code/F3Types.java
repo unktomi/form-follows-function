@@ -1423,6 +1423,15 @@ public class F3Types extends Types {
 	return super.resultSubtype(t, s, warner);
     }
 
+    public boolean isSubSignature(Type t, Type s) {
+	if (t instanceof FunctionType) {
+	    t = ((FunctionType)t).asMethodOrForAll();
+	}
+	if (s instanceof FunctionType) {
+	    s = ((FunctionType)s).asMethodOrForAll();
+	}
+        return super.isSubSignature(t, s);
+    }
 
     /**
      * Returns a list of all supertypes of t, without duplicates, where supertypes
