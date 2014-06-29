@@ -1,0 +1,9 @@
+package org.f3.jbullet;
+import f3.media.scene.*;
+
+public class JBulletDynamicsWorldFactory is DynamicsWorldFactory {
+    override public function createDynamicsWorld to DynamicsWorld
+    {
+        JBulletDynamicsWorld {}
+    }
+}

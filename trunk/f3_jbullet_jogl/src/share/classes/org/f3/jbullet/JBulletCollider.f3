@@ -1,0 +1,507 @@
+package org.f3.jbullet;
+
+import com.bulletphysics.dynamics.RigidBody;
+import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
+import com.bulletphysics.linearmath.MotionState;
+import com.bulletphysics.collision.dispatch.CollisionObject;
+import com.bulletphysics.collision.dispatch.CollisionFlags;
+import com.bulletphysics.collision.dispatch.CollisionWorld;
+import com.bulletphysics.collision.shapes.BoxShape;
+import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.StaticPlaneShape;
+import com.bulletphysics.collision.shapes.TriangleIndexVertexArray;
+import com.bulletphysics.collision.shapes.BvhTriangleMeshShape;
+import java.lang.System;
+import java.util.*;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import f3.media.scene.*;
+import java.lang.Comparable;
+import javax.vecmath.Vector3f;
+
+class CMotionState is MotionState {
+    public var c is java.lang.ref.WeakReference of JBulletCollider;
+    public var rb is CollisionObject;
+    public const world is JBulletDynamicsWorld;
+
+    override public function getWorldTransform 
+        from (out is com.bulletphysics.linearmath.Transform) 
+        to com.bulletphysics.linearmath.Transform 
+    {
+        const c = this.c.get();
+        var result = out;
+        if (result == null) {
+            result = new com.bulletphysics.linearmath.Transform();
+        }
+        c.fillWorldMatrix();
+        result.setFromOpenGLMatrix(c._worldMatrix);
+        return result;
+    }
+
+    override public function setWorldTransform from (out is com.bulletphysics.linearmath.Transform) to ()
+    {
+        const c = this.c.get();
+        if (c.getRigidBody() == rb) {
+            if (c.dynamic) {
+                if (c._worldMatrix <> null) {
+                    out.getOpenGLMatrix(c._worldMatrix);
+                    c.drainWorldMatrix();
+                }
+            }
+        } else {
+            println("dead motion state {c}");
+            if (rb <> null) {
+                world.enqueueForDelete(rb);
+                rb = null;
+            }
+        }
+    }
+}
+
+
+public class JBulletCollider is Collider {
+
+    var collisionShape is com.bulletphysics.collision.shapes.CollisionShape;
+
+    public function getCollisionShape to com.bulletphysics.collision.shapes.CollisionShape
+    {
+        if (collisionShape == null) {
+            collisionShape = (dynamicsWorld as JBulletDynamicsWorld).createCollisionShape(collidable as Node);
+        }
+        return collisionShape;
+    }
+
+    override var friction is Number = 0.5 on replace {
+        _rigidBody.setFriction(friction);
+    }
+    override var restitution is Number on replace {
+        _rigidBody.setRestitution(restitution);
+    }
+    override var active is Boolean = true on replace {
+        activate();
+    }
+
+    var _rigidBody is CollisionObject;
+    var _worldMatrix is nativearray of Number;
+
+    public bound var rigidBody = if (_rigidBody is RigidBody) _rigidBody as RigidBody else null;
+
+    override var angularDamping is Number = 0.5 on replace {
+        getRigidBody().setDamping(linearDamping, angularDamping);
+    }
+    override var linearDamping is Number = 0.0 on replace {
+        getRigidBody().setDamping(linearDamping, angularDamping);
+    }
+
+    protected bound function getRigidBody to RigidBody 
+    {
+        _rigidBody as RigidBody;
+    }
+
+    override public function applyForce from (v is Vec3) to ()
+    {
+        applyForce(v.x, v.y, v.z);
+    }
+
+    override public function applyForce from (x is Number, y is Number, z is Number) to ()
+    {
+        if (_rigidBody is RigidBody){
+            const force = new Vector3f(x, y, z);
+            (_rigidBody as RigidBody).applyCentralForce(force);
+        }
+    }
+
+    override public function applyTarque from (v is Vec3) to ()
+    {
+        applyTorque(v.x, v.y, v.z);
+    }
+
+    override public function applyTorque from (x is Number, y is Number, z is Number) to () 
+    {
+        if (_rigidBody instanceof RigidBody){
+            const force = new Vector3f(x, y, z);
+            (_rigidBody as RigidBody).applyTorque(force);
+        }
+    }
+
+    override public function setAngularFactor from (v is Vec3) to ()
+    {
+        const v' = new Vector3f(v.x, v.y, v.z);
+        (_rigidBody as RigidBody).setAngularFactor(v');
+    }
+
+    override public function setLinearFactor from (v is Vec3) to () 
+    {
+        const vv = new javax.vecmath.Vector3f(v.x, v.y, v.z);
+        (_rigidBody as RigidBody).setLinearFactor(vv);
+    }
+
+    override public function getLinearVelocity from () to Vec3 
+    {
+        const v = getRigidBody().getLinearVelocity(new javax.vecmath.Vector3f());
+        return new Vec3(v.x, v.y, v.z);
+    }
+
+    override public function getAngularVelocity from () to Vec3 
+    {
+        const v = getRigidBody().getAngularVelocity(new javax.vecmath.Vector3f());
+        return new Vec3(v.x, v.y, v.z);
+    }
+
+    override public function setLinearVelocity from (v is Vec3) to () {
+        setLinearVelocity(v.x, v.y, v.z);
+    }
+
+    override public function setLinearVelocity from (x is Number, y is Number, z is Number) to () 
+    {
+        getRigidBody().setLinearVelocity(new javax.vecmath.Vector3f(x, y, z));
+    }
+
+    override public function setAngularVelocity from (v is Vec3) to () 
+    {
+        setAngularVelocity(v.x, v.y, v.z);
+    }
+
+    override public function setAngularVelocity from (x is Number, y is Number, z is Number) to () 
+    {
+        getRigidBody().setAngularVelocity(new javax.vecmath.Vector3f(x, y, z));
+    }
+
+    override public function applyImpulse from (v is Vec3) to () 
+    {
+        applyImpulse(v.x, v.y, v.z);
+    }
+
+    override public function applyImpulse from (x is Number, y is Number, z is Number) to () 
+    {
+        if (_rigidBody instanceof RigidBody){
+            const force = new Vector3f(x, y, z);
+            (_rigidBody as RigidBody).applyCentralImpulse(force);
+        }
+    }
+
+    override public function applyTarqueImpulse from (v is Vec3) to () {
+        applyTorqueImpulse(v.x, v.y, v.z);
+    }
+
+    override public function applyTorqueImpulse from (x is Number, y is Number, z is Number) to () {
+        if (_rigidBody instanceof RigidBody){
+            const force = new Vector3f(x, y, z);
+            (_rigidBody as RigidBody).applyTorqueImpulse(force);
+        }
+    }
+
+    function addContact from (pt is ContactPoint) to () {
+        for (c in collisions) {
+            if (c.collider == pt.otherCollider) {
+                var found = false;
+                for (cp in c.contacts) {
+                    if (pt == cp) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (not found) {
+                    insert pt into c.contacts;
+                }
+                return;
+            }
+        }
+        var collision = Collision { 
+            collider: pt.otherCollider;
+            contacts: [pt] 
+        };
+        addCollision(collision);
+        if (onCollisionEnter <> null) {
+            onCollisionEnter(collision);
+        }
+    }
+
+    function removeContact from (pt is ContactPoint) to () {
+        for (c in collisions) {
+            if (c.collider == pt.otherCollider) {
+                if (sizeof c.contacts == 1) {
+                    var collision = c;
+                    delete this.collisions[indexof c];
+                    if (onCollisionLeave <> null) {
+                        onCollisionLeave(collision);
+                    }
+                } else {
+                    delete pt from c.contacts;
+                }
+                break;
+            }
+        }
+    }
+
+    protected function createRigidBody from (colShape is CollisionShape) to () {
+        if (_rigidBody <> null) { return }
+        if (_dynamicsWorld() == null or colShape == null) {
+            return;
+        }
+        println("creating rigid body {this} collider={collidable} w={_dynamicsWorld()} mass={mass} dynamic={dynamic} {colShape}");
+        _worldMatrix = new nativearray of Number(16);
+        var self = this;
+        var motionState = CMotionState {
+            c: new java.lang.ref.WeakReference of JBulletCollider(self);
+            world: _dynamicsWorld();
+        }
+        if (true or dynamic) {
+            var localInertia = new Vector3f(0, 0, 0);
+            if (mass <> 0) {
+                colShape.calculateLocalInertia(mass, localInertia);
+            }
+            var rigidBody is RigidBody;
+            var rbinfo = new RigidBodyConstructionInfo(mass, motionState,
+                                                       colShape, localInertia);
+            rbinfo.linearDamping = linearDamping;
+            rbinfo.angularDamping = angularDamping;
+            if (not dynamic) {
+/*
+               rigidBody = RigidBody {
+                    override public function getWorldTransform(out is com.bulletphysics.linearmath.Transform) to com.bulletphysics.linearmath.Transform {
+                        var result = out;
+                        if (result == null) {
+                            result = new com.bulletphysics.linearmath.Transform();
+                        }
+                        if (_worldMatrix == null) { return result }
+                        fillWorldMatrix();
+                        result.setFromOpenGLMatrix(_worldMatrix);
+                        return result;
+                    }
+                }
+                rigidBody.setupRigidBody(rbinfo);
+*/
+                rigidBody = new RigidBody(rbinfo);
+                rigidBody.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT);
+                rigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
+            } else {
+                rigidBody = new RigidBody(rbinfo);
+            }
+            _rigidBody = rigidBody;
+            if (mass == 0) {
+                //                _rigidBody.setCollisionFlags(CollisionFlags.STATIC_OBJECT);
+            }
+            _rigidBody.setFriction(friction);
+            _rigidBody.setRestitution(restitution);
+            _rigidBody.setUserPointer(new java.lang.ref.WeakReference of Collider(this));
+            var v = new javax.vecmath.Vector3f();
+            if (collisionInitialVelocity <> null) {
+                v.set(collisionInitialVelocity.x,
+                      collisionInitialVelocity.y, 
+                      collisionInitialVelocity.z);
+                rigidBody.setLinearVelocity(v);
+            }
+            if (collisionInitialSpin <> null) {
+                v.set(collisionInitialSpin.x, 
+                      collisionInitialSpin.y, 
+                      collisionInitialSpin.z);
+                rigidBody.setAngularVelocity(v);
+            }
+
+            if (collisionInitialOrientation <> null) {
+                // fix me
+            }
+            setLinearFactor(linearFactor);
+            setAngularFactor(angularFactor);
+            _dynamicsWorld().getDynamicsWorld().addRigidBody(_rigidBody as RigidBody);
+        } else {
+            _rigidBody = CollisionObject {
+                override public function getWorldTransform(out is com.bulletphysics.linearmath.Transform) to com.bulletphysics.linearmath.Transform {
+                    var result = out;
+                    if (result == null) {
+                        result = new com.bulletphysics.linearmath.Transform();
+                    }
+                    if (_worldMatrix == null) { return result }
+                    fillWorldMatrix();
+                    result.setFromOpenGLMatrix(_worldMatrix);
+                    return result;
+                }
+            };
+            _rigidBody.setUserPointer(new java.lang.ref.WeakReference of Collider(this));
+            _rigidBody.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT);
+            _rigidBody.setCollisionShape(colShape);
+            _rigidBody.setFriction(friction);
+            _rigidBody.setRestitution(restitution);
+            _dynamicsWorld().getDynamicsWorld().addCollisionObject(_rigidBody);
+        }
+        motionState.rb = _rigidBody;
+    }
+
+    protected function removeRigidBody to () {
+        if (_rigidBody <> null) {
+            _currentlyActive = false;
+            _dynamicsWorld().enqueueForDelete(_rigidBody);
+            _rigidBody = null;
+            _worldMatrix = null;
+            setCollisions([]);
+            collisionMap = null;
+            collidable.onLeaveCollisionWorld();
+        }
+    }
+
+    protected function mergeCollisions from (map is Map of (JBulletCollider, Set of ContactPoint)) to () {
+        // Map<Collider, Set<ContactPoint> >
+        if (collisionMap == map) {
+            return;
+        }
+        var toBeAdded = new HashSet of JBulletCollider();
+        var toBeRemoved = new HashSet of JBulletCollider();
+        var all = new HashSet of JBulletCollider();
+        if (collisionMap <> null) {
+            all.addAll(collisionMap.keySet());
+        }
+        if (map <> null) {
+            all.addAll(map.keySet());
+        }
+        var iter = all.iterator();
+        var enter is Collision[];
+        var leave is Collision[];
+        while (iter.hasNext()) {
+            var collider = iter.next();
+            var curPts = collisionMap.get(collider) as Set;
+            var newPts = map.get(collider);
+            if (curPts == null) {
+                var qi = newPts.iterator();
+                var nc = Collision {
+                    collider: collider;
+                    contacts: foreach (j in [0..<newPts.size()]) {
+                        qi.next() as ContactPoint;
+                    }
+                };
+                addCollision(nc);
+                if (onCollisionEnter <> null) {
+                    insert nc into enter;
+                }
+            } else if (newPts == null) {
+                var xs is Integer[];
+                for (i in collisions) {
+                    if (i.collider == collider) {
+                        insert indexof i into xs;
+                    }
+                }
+                for (i in xs.reverse()) {
+                    if (onCollisionLeave <> null) {
+                        insert collisions[i] into leave;
+                    }
+                    delete collisions[i];
+                }
+            } else {
+                for (i in collisions) {
+                    if (i.collider == collider) {
+                        const q = newPts.iterator();
+                        i.contacts = 
+                            foreach (j in [0..<newPts.size()]) {
+                                q.next() as ContactPoint;
+                            };
+                        break;
+                    }
+                }
+            }
+        }
+        if (onCollisionLeave <> null) {
+            for (i in leave) {
+                onCollisionLeave(i);
+            }
+        }
+        if (onCollisionEnter <> null) {
+            for (i in enter) {
+                onCollisionEnter(i);
+            }
+        }
+        collisionMap = map;
+    }
+
+    // Map<Collider, Set<ContactPoint> >
+    var collisionMap is Map of (JBulletCollider, Set of ContactPoint);
+
+    function fillWorldMatrix to () {
+        var t = collidable.getCollisionWorldTransform();
+        for (c in [0..<4], r in [0..<4]) {
+            _worldMatrix[c*4+r] = t.get(r, c);
+        }
+    }
+
+    public bound var initialTransform is Mat4 = 
+        translate(collisionInitialPosition + (centerOfMass - Point3.<<0>>)) *
+        (if (collisionInitialOrientation <> Vec3.<<0>>) 
+            then rotate(collisionInitialOrientation.x, collisionInitialOrientation.y, collisionInitialOrientation.z)
+        else Mat4.<<1>>);
+
+    public bound var initialTransformInverse is Mat4 = initialTransform.inverse();
+
+    function drainWorldMatrix to () {
+        const mat = Mat4.fromColumns(_worldMatrix);
+        collidable.setCollisionWorldTransform(mat);
+        if (not _currentlyActive) {
+            _currentlyActive = true;
+            collidable.onEnterCollisionWorld();
+        }
+    }
+
+    public override function applyConstraint from (other0 is Collider, c is RigidBodyConstraint) to Boolean 
+    {
+        const other = other0 as JBulletCollider;
+        if (_dynamicsWorld() == null) {
+            return false;
+        }
+        const rb1 = _rigidBody as com.bulletphysics.dynamics.RigidBody;
+        const rb2 = other._rigidBody as com.bulletphysics.dynamics.RigidBody;
+        if (rb1 <> null and rb2 <> null) {
+            try {
+                const tc = (c as JBulletRigidBodyConstraint).getConstraint(rb1, rb2);
+                _dynamicsWorld().getDynamicsWorld().addConstraint(tc);
+                return true;
+            } catch (e) {
+                println(e);
+            }
+        }
+        return false;
+    }
+
+    public var shape is Collidable;
+
+    var _currentlyActive is Boolean;   
+
+    public bound function isActive to Boolean { _currentlyActive }
+      
+    function activate from () to () {
+        if (not active) {
+            removeRigidBody();
+        } else if (collidable <> null and _dynamicsWorld() <> null) {
+            //            var c = if (shape <> null) shape else collidable;
+            //            createRigidBody(c.getCollisionShape());
+        }
+    }
+
+    function reactivate from () to () 
+    {
+        removeRigidBody();
+        if (active and collidable <> null and _dynamicsWorld() <> null) {
+            //            var c = if (shape <> null) shape else collidable;
+            //            createRigidBody(c.getCollisionShape());
+        }
+    }
+
+    override function update from () to () 
+    {
+        println("update {this}: {active}, {collidable}, {_dynamicsWorld}, rigidBody={_rigidBody}");
+        if (collidable <> null and _dynamicsWorld() <> null) {
+            if (_rigidBody == null) {
+                createRigidBody(getCollisionShape());
+            }
+        }
+        if (_dynamicsWorld() <> null) {
+            for (c in constraints) c.apply();
+        }
+    }
+
+    protected function _dynamicsWorld from () to JBulletDynamicsWorld {
+        dynamicsWorld as JBulletDynamicsWorld;
+    }
+
+    public override function getCollisionWorldTransform to Mat4 {
+        return collidable.getCollisionWorldTransform();
+    }
+
+}

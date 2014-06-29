@@ -46,7 +46,7 @@
              includes="**/*.f3" source="${javac.source}" sourcepath=""
              srcdir="${src.classes.dir}" target="${javac.target}"
              compilerclasspath="${javac.classpath}">
-	  <!--compilerarg value="-XDdumpjava"/-->
+	  <compilerarg value="-XDdumpjava"/>
             <classpath>
                 <path path="lib/core-renderer.jar"/>
             </classpath>

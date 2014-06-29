@@ -345,7 +345,7 @@ class Loader {
     public var fac is Path2DFactory;
     public var url is String;
     public var rootNode = RootNode {id: url};
-    public var contentNode is  Group = Group {};
+    public var contentNode is Group = Group {};
     function load {
         insert contentNode into rootNode.content;
         var width = 0.0;
@@ -384,7 +384,14 @@ class Loader {
             if (i.stroke != null) {
                 println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
             }
-            var shape = Shape2D.createMeshNode(i.id, convertPath(fac, height, i.transform, i.path), i.stroke, i.paint, true);
+            //var shape = Shape2D.createMeshNode(i.id, dynamicsWorld, convertPath(fac, height, i.transform, i.path), i.stroke, i.paint, true);
+            const p = convertPath(fac, height, i.transform, i.path);
+            const p1 = if (i.stroke <> null) p.createStrokedShape(i.stroke) else p;
+            const shape = Shape2D.MeshNode2D {
+                id: i.id;
+                path: p1;
+                paint: i.paint;
+            };
             if (sizeof contentNode.content == 50) {
                 contentNode = Group {}
                 insert contentNode into rootNode.content;

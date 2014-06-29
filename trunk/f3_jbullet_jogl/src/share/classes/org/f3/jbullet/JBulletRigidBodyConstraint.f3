@@ -1,0 +1,23 @@
+package org.f3.jbullet;
+import f3.media.scene.*;
+
+public abstract class JBulletRigidBodyConstraint is RigidBodyConstraint {
+    
+    protected var tc is com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
+
+    public function getConstraint from (x is com.bulletphysics.dynamics.RigidBody,
+                                        y is com.bulletphysics.dynamics.RigidBody)
+        to com.bulletphysics.dynamics.constraintsolver.TypedConstraint 
+    {
+        tc = createConstraint(x, y);
+        tc.setUserData(new java.lang.ref.WeakReference of RigidBodyConstraint(this));
+        return tc;
+    }
+
+    protected abstract function createConstraint
+        from (x is com.bulletphysics.dynamics.RigidBody,
+              y is com.bulletphysics.dynamics.RigidBody) 
+        to
+        com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
+
+}

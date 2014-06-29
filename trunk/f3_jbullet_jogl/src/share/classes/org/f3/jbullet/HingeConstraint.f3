@@ -1,0 +1,74 @@
+package org.f3.jbullet;
+
+import java.lang.Math;
+import f3.math.*;
+import f3.math.LinearMath.*;
+
+const NEG_Z_AXIS = new Vec3(0, 0, -1);
+const Y_AXIS = new Vec3(0, 1, 0);
+
+public class HingeConstraint is JBulletRigidBodyConstraint {
+    public var initialPosition is Point3 = Point3.<<0>>;
+    public var initialOrientation is Vec3 = Y_AXIS;
+    public var minLimit is Number = 1e30;
+    public var maxLimit is Number = -1e30;
+    public var limitSoftness is Number = 0.9;
+    public var biasFactor is Number = 0.3;
+    public var relaxationFactor is Number = 1.0;
+    public var usePivots is Boolean = false;
+    public var pivotInA is Vec3;
+    public var pivotInB is Vec3;
+    public var rotInA is Tuple3 = Tuple3.<<0>>;
+    public var rotInB is Tuple3 = Tuple3.<<0>>;
+    public var worldSpace is Boolean = false;
+
+    override protected function createConstraint(a is com.bulletphysics.dynamics.RigidBody,
+                                                 b is com.bulletphysics.dynamics.RigidBody) 
+        to com.bulletphysics.dynamics.constraintsolver.TypedConstraint 
+    {
+        var ct is com.bulletphysics.dynamics.constraintsolver.HingeConstraint;
+        const w1 = if (worldSpace and node1 <> null) then node1.getCollisionWorldTransform() else Mat4.<<1>>;
+        const w2 = if (worldSpace and node2 <> null) then node2.getCollisionWorldTransform() else Mat4.<<1>>;
+        if (usePivots) {
+            const pivotInA = w1.inverse() * this.pivotInA;
+            const pivotInB = w2.inverse() * this.pivotInB;
+            var q = Quat.Quat(rotInA);
+            const axisInA = (q * NEG_Z_AXIS).normalize();
+            q = Quat.Quat(rotInB);
+            const axisInB = (q * NEG_Z_AXIS).normalize();
+            if (a == null) {
+                ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(b,
+                                                                                     Util.convertToBullet(pivotInB, null), 
+                                                                                     Util.convertToBullet(axisInB, null));
+            } else if (b == null) {
+                ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(a,
+                                                                                     Util.convertToBullet(pivotInA, null), 
+                                                                                     Util.convertToBullet(axisInA, null));
+            } else {
+                ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(a, b,
+                                                                                     Util.convertToBullet(pivotInA, null), 
+                                                                                     Util.convertToBullet(pivotInB, null),
+                                                                                     Util.convertToBullet(axisInA, null),
+                                                                                     Util.convertToBullet(axisInB, null));
+            }
+        } else {
+            const frame = translate(initialPosition) * rotate(initialOrientation);
+            const frameA = w1.inverse() * frame;
+            const frameB = w2.inverse() * frame;
+            if (a == null) {
+                ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(b, 
+                                                                                     Util.convertToBullet(frameB, null));
+            } else if (b == null) {
+                ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(a, 
+                                                                                     Util.convertToBullet(frameA, null));
+            } else {
+                ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(a, 
+                                                                                     b,
+                                                                                     Util.convertToBullet(frameA, null),
+                                                                                     Util.convertToBullet(frameB, null));
+            }
+        }
+        ct.setLimit(minLimit, maxLimit, limitSoftness, biasFactor, relaxationFactor);
+        return ct;
+    }
+}
