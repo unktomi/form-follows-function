@@ -27,6 +27,12 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 	Quat(aa.first, m * aa.second);
     }
 
+    public function mul from (mat is Mat4) to Mat4
+    {
+        toMat4() * mat
+    }
+
+
     override public function mul 
 	from (n is Number) 
 	to Quat 
