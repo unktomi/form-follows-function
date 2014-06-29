@@ -2770,7 +2770,7 @@ class MMesh is MSpatial
                         }
                     }
                 }
-                target = dynamicsWorld.createCollider(targetNode);
+                //target = dynamicsWorld.createCollider(targetNode);
                 target.dynamic = rigidBody.act;
                 target.mass = rigidBody.mas;
                 const ip = rigidBody.ip;
