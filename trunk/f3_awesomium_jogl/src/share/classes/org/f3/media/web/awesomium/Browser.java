@@ -616,23 +616,27 @@ public class Browser implements AbstractWebBrowser {
     boolean documentLoaded;
 
     boolean prepareDocument;
+    boolean parseDocument = true;
 
     public void onDocumentReady() {
         documentLoaded = true;
         prepareDocument = true;
+        parseDocument = true;
     }
     
     void parseDocument() {
-        String html = (String)executeJavascript("document.body.innerHTML");
+        String html = (String)executeJavascript("document.getElementsByTagName('body')[0].innerHTML");
         System.err.println("html=>"+html);
+        if (html == null) {
+            return;
+        }
+        parseDocument = false;
         HtmlCleaner p = new HtmlCleaner();
         try {
             document = html != null ? p.clean("<html><body>"+html+"</body></html>") : p.clean(new java.net.URL(currentURL));
-            /*
-              StringWriter w = new StringWriter();
-              document.serialize(new PrettyXmlSerializer(p.getProperties()), w);
-              System.out.println("HTML => "+w);
-            */
+            StringWriter w = new StringWriter();
+            document.serialize(new PrettyXmlSerializer(p.getProperties()), w);
+            System.out.println("HTML => "+w);
             document.traverse(new TagNodeVisitor() {
                     public boolean visit(TagNode parentNode, HtmlNode htmlNode) {
                         if (htmlNode instanceof TagNode) {
@@ -641,8 +645,8 @@ public class Browser implements AbstractWebBrowser {
                                 String id = t.getAttributeByName("id");
                                 String width = t.getAttributeByName("width");
                                 String height = t.getAttributeByName("height");
-                                int w = width == null ? 0 : Integer.parseInt(width);
-                                int h = height == null ? 0 : Integer.parseInt(height);
+                                int w = parseDim(width, Browser.this.width);
+                                int h = parseDim(height, Browser.this.height);
                                 Video vid = new VideoImpl(id, w, h);
                                 videos.add(vid);
                                 System.err.println("created video: "+id);
@@ -670,6 +674,21 @@ public class Browser implements AbstractWebBrowser {
     void registerForEvent(String event) {
         executeJavascript("document.addEventListener('"+event+"', f3, true)");
         System.err.println("registered for event: "+ event);
+    }
+
+    int parseDim(String v, int amount) {
+        if (v == null) return 0;
+        try {
+            int pct = v.indexOf("%");
+            if (pct > 0) {
+                v = v.substring(0, pct);
+                return (int)Math.round(Float.parseFloat(v) * amount);
+             }
+            return Integer.parseInt(v);
+        } catch (Exception exc) {
+            exc.printStackTrace();
+        }
+        return 0;
     }
 
     public Browser() {
@@ -970,6 +989,9 @@ public class Browser implements AbstractWebBrowser {
             this.width = width;
             this.height = height;
         }
+        public String getLabel() {
+            return getId() == null ? "Video" : getId();
+        }
     }
 
     class AudioImpl extends MediaImpl implements Audio {
@@ -982,7 +1004,7 @@ public class Browser implements AbstractWebBrowser {
             return src;
         }
         public String getLabel() {
-            return getId() == null ? getSrc() : getId();
+            return getId() == null ? ("Audio - "+getSrc()) : getId();
         }
     }
 
@@ -1083,7 +1105,6 @@ public class Browser implements AbstractWebBrowser {
 
     void checkPrepareDocument() {
         if (prepareDocument) {
-            parseDocument();
             for (Map.Entry<String, Set<EventListener>> ent: eventListeners.entrySet()) {
                 if (ent.getValue().size() > 0) {
                     registerForEvent(ent.getKey());
@@ -1093,6 +1114,9 @@ public class Browser implements AbstractWebBrowser {
             Object result = executeJavascript("function f3_checkForVideo() { var events = ['abort','canplay','canplaythrough','durationchange','emptied','ended','error','loadeddata','loadedmetadata','loadstart','pause','play','playing','progress','ratechange','seeked','seeking','stalled','suspend','timeupdate','volumechange','waiting']; var vs = document.getElementsByTagName('video'); for (var i = 0; i < vs.length; i++) { for (var j = 0; j < events.length; j++) { vs[i].addEventListener(events[j], f3); } } vs.length; }; document.addEventListener('DOMContentLoaded', f3_checkForVideo); ");
             */
             prepareDocument = false;
+        }
+        if (parseDocument) {
+            parseDocument();
         }
     }
     
