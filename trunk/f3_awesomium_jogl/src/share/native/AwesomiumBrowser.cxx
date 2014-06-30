@@ -45,6 +45,7 @@ class MySurface: public BitmapSurface {
 public:
   virtual ~MySurface() {}
   Awesomium::Rect dirtyRegion;
+  int x; int y;
   MySurface(int width, int height): BitmapSurface(width, height) {}
   virtual void Paint(unsigned char* src_buffer,
                      int src_row_span,
@@ -62,10 +63,12 @@ public:
   virtual void Scroll(int dx,
                       int dy,
                       const Awesomium::Rect& clip_rect) {
+    x += dx;
+    y += dy;
     /*
-    fprintf(stderr, "scroll %d %d => %d %d %d %d\n", 
-    dx, dy,
-            clip_rect.x, clip_rect.y, clip_rect.height, clip_rect.width);
+    fprintf(stderr, "scroll %d %d => clip %d %d %d %d x=%d, y=%d\n", 
+            dx, dy,
+            clip_rect.x, clip_rect.y, clip_rect.height, clip_rect.width, x, y);
     */
     BitmapSurface::Scroll(dx, dy, clip_rect);
   }
@@ -123,10 +126,6 @@ public:
 
   void update() {
     //webCore->update();
-  }
-
-  ~MyWebViewListener() {
-    webView->Destroy();
   }
 
   MyWebViewListener(JavaVM *jvm, jobject target)
@@ -418,6 +417,9 @@ extern "C" void JNICALL Java_org_f3_media_web_awesomium_Browser_destroy
   if (p->target != 0) {
     env->DeleteGlobalRef(p->target);
   }
+  if (p->webView != 0) {
+    p->webView->Destroy();
+  }
   delete p;
 }
 
@@ -469,10 +471,17 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
         unsigned char *outPtr = bufPtr;
         s->CopyTo(outPtr, s->row_span(), 4, true, true);
         jint arr[4];
-        arr[0] = s->dirtyRegion.x;
-        arr[1] = s->dirtyRegion.y;
-        arr[2] = s->dirtyRegion.width;
-        arr[3] = s->dirtyRegion.height;
+        if (s->x != 0 || s->y != 0) { // hack
+          arr[0] = 0;
+          arr[1] = 0;
+          arr[2] = p->width;
+          arr[3] = p->height;
+        } else {
+          arr[0] = s->dirtyRegion.x;
+          arr[1] = s->dirtyRegion.y;
+          arr[2] = s->dirtyRegion.width;
+          arr[3] = s->dirtyRegion.height;
+        }
         env->SetIntArrayRegion(rectArray, 0, 4, (const jint*)arr);
         s->set_is_dirty(false);
         return 1;
