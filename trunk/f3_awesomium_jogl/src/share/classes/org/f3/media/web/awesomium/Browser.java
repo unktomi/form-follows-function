@@ -1138,9 +1138,9 @@ public class Browser implements AbstractWebBrowser {
             final int left = x;
             final int top = potHeight-y;
             final int bottom = top-h;
-            System.out.println("updateImage: " +left +" " + bottom+" " + w+" "+h +" of " + pot(width) + " " + pot(height));
-            backingStore.updateSubImage(gl, data, 0, left, bottom, left, bottom, w, h);
-            //updateTextureSubImage(gl, buffer, left, bottom, w, h, left, bottom, w, h);
+            //System.out.println("updateImage: " +left +" " + bottom+" " + w+" "+h +" of " + pot(width) + " " + pot(height));
+            //backingStore.updateSubImage(gl, data, 0, left, bottom, left, bottom, w, h);
+            updateTextureSubImage(gl, buffer, left, bottom, potWidth, potHeight, left, bottom, w, h);
         } else {
             backingStore.updateSubImage(gl, data, 0, 0, 0, 0, 0, potWidth, potHeight);
         }
@@ -1158,7 +1158,7 @@ public class Browser implements AbstractWebBrowser {
         TextureData data = new TextureData(GLProfile.get(GLProfile.GL2),
                                            GL.GL_RGBA8,
                                            w, h, 0,
-                                           GL.GL_RGBA,
+                                           GL.GL_BGRA,
                                            GL.GL_UNSIGNED_BYTE,
                                            true, false, true,
                                            null, null);
@@ -1255,15 +1255,14 @@ public class Browser implements AbstractWebBrowser {
 
     //    static native long callFunction(long webview, String object, String function, long args, String frame);
 
+    final int origTexBinding[] = new int[1];
+    final int origAlignment[] = new int[1];
     public void updateTextureSubImage(GL gl, final ByteBuffer data, final int srcX, final int srcY,
             final int srcWidth, final int srcHeight, final int dstX, final int dstY, final int dstWidth,
             final int dstHeight) throws UnsupportedOperationException {
-
         // Determine the original texture configuration, so that this method can
         // restore the texture configuration to its original state.
-        final int origTexBinding[] = new int[1];
         gl.glGetIntegerv(GL.GL_TEXTURE_BINDING_2D, origTexBinding, 0);
-        final int origAlignment[] = new int[1];
         gl.glGetIntegerv(GL.GL_UNPACK_ALIGNMENT, origAlignment, 0);
         final int origRowLength = 0;
         final int origSkipPixels = 0;
@@ -1271,7 +1270,7 @@ public class Browser implements AbstractWebBrowser {
 
         final int alignment = 1;
         int rowLength;
-        if (srcWidth == dstWidth) {
+        if (false && srcWidth == dstWidth) {
             // When the row length is zero, then the width parameter is used.
             // We use zero in these cases in the hope that we can avoid two
             // unnecessary calls to glPixelStorei.
@@ -1283,22 +1282,11 @@ public class Browser implements AbstractWebBrowser {
         }
         final int pixelFormat = this.data.getPixelFormat();
 
-        // Update the texture configuration (when necessary).
-        if (origTexBinding[0] != getTextureId()) {
-            gl.glBindTexture(GL.GL_TEXTURE_2D, getTextureId());
-        }
-        if (origAlignment[0] != alignment) {
-            gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, alignment);
-        }
-        if (origRowLength != rowLength) {
-            gl.glPixelStorei(GL2.GL_UNPACK_ROW_LENGTH, rowLength);
-        }
-        if (origSkipPixels != srcX) {
-            gl.glPixelStorei(GL2.GL_UNPACK_SKIP_PIXELS, srcX);
-        }
-        if (origSkipRows != srcY) {
-            gl.glPixelStorei(GL2.GL_UNPACK_SKIP_ROWS, srcY);
-        }
+        gl.glBindTexture(GL.GL_TEXTURE_2D, getTextureId());
+        gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, alignment);
+        gl.glPixelStorei(GL2.GL_UNPACK_ROW_LENGTH, rowLength);
+        gl.glPixelStorei(GL2.GL_UNPACK_SKIP_PIXELS, srcX);
+        gl.glPixelStorei(GL2.GL_UNPACK_SKIP_ROWS, srcY);
 
         // Upload the image region into the texture.
         if (true) {
