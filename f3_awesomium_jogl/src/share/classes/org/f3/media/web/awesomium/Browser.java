@@ -621,6 +621,51 @@ public class Browser implements AbstractWebBrowser {
         documentLoaded = true;
         prepareDocument = true;
     }
+    
+    void parseDocument() {
+        String html = (String)executeJavascript("document.body.innerHTML");
+        System.err.println("html=>"+html);
+        HtmlCleaner p = new HtmlCleaner();
+        try {
+            document = html != null ? p.clean("<html><body>"+html+"</body></html>") : p.clean(new java.net.URL(currentURL));
+            /*
+              StringWriter w = new StringWriter();
+              document.serialize(new PrettyXmlSerializer(p.getProperties()), w);
+              System.out.println("HTML => "+w);
+            */
+            document.traverse(new TagNodeVisitor() {
+                    public boolean visit(TagNode parentNode, HtmlNode htmlNode) {
+                        if (htmlNode instanceof TagNode) {
+                            TagNode t = (TagNode)htmlNode;
+                            if (t.getName().equalsIgnoreCase("video")) {
+                                String id = t.getAttributeByName("id");
+                                String width = t.getAttributeByName("width");
+                                String height = t.getAttributeByName("height");
+                                int w = width == null ? 0 : Integer.parseInt(width);
+                                int h = height == null ? 0 : Integer.parseInt(height);
+                                Video vid = new VideoImpl(id, w, h);
+                                videos.add(vid);
+                                System.err.println("created video: "+id);
+                            } else if (t.getName().equalsIgnoreCase("audio")) {
+                                String id = t.getAttributeByName("id");
+                                String src = t.getAttributeByName("src");
+                                Audio audio = new AudioImpl(id, src);
+                                Browser.this.audio.add(audio);
+                                System.err.println("created auideo: "+id);
+                            } else if (t.getName().equalsIgnoreCase("object")) {
+                                String type = t.getAttributeByName("type");
+                                if ("application/x-shockwave-flash".equals(type)) {
+                                }
+                            } else if (t.getName().equalsIgnoreCase("embed")) {
+                            }
+                        }
+                        return true;
+                    }
+                });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     void registerForEvent(String event) {
         executeJavascript("document.addEventListener('"+event+"', f3, true)");
@@ -797,11 +842,15 @@ public class Browser implements AbstractWebBrowser {
     int[] rect = new int[4];
 
     public void focus() {
-        focus(handle);
+        if (handle != 0) {
+            focus(handle);
+        }
     }
 
     public void unfocus() {
-        unfocus(handle);
+        if (handle != 0) {
+            unfocus(handle);
+        }
     }
 
     public String getURL() {
@@ -937,48 +986,11 @@ public class Browser implements AbstractWebBrowser {
         }
     }
 
+    String currentURL;
+
     public void setURL(final String url) {
+        currentURL = url;
         documentLoaded = false;
-        HtmlCleaner p = new HtmlCleaner();
-        try {
-            document = p.clean(new java.net.URL(url));
-            /*
-              StringWriter w = new StringWriter();
-              document.serialize(new PrettyXmlSerializer(p.getProperties()), w);
-              System.out.println("HTML => "+w);
-            */
-            document.traverse(new TagNodeVisitor() {
-                    public boolean visit(TagNode parentNode, HtmlNode htmlNode) {
-                        if (htmlNode instanceof TagNode) {
-                            TagNode t = (TagNode)htmlNode;
-                            if (t.getName().equalsIgnoreCase("video")) {
-                                String id = t.getAttributeByName("id");
-                                String width = t.getAttributeByName("width");
-                                String height = t.getAttributeByName("height");
-                                int w = width == null ? 0 : Integer.parseInt(width);
-                                int h = height == null ? 0 : Integer.parseInt(height);
-                                Video vid = new VideoImpl(id, w, h);
-                                videos.add(vid);
-                                System.err.println("created video: "+id);
-                            } else if (t.getName().equalsIgnoreCase("audio")) {
-                                String id = t.getAttributeByName("id");
-                                String src = t.getAttributeByName("src");
-                                Audio audio = new AudioImpl(id, src);
-                                Browser.this.audio.add(audio);
-                                System.err.println("created auideo: "+id);
-                            } else if (t.getName().equalsIgnoreCase("object")) {
-                                String type = t.getAttributeByName("type");
-                                if ("application/x-shockwave-flash".equals(type)) {
-                                }
-                            } else if (t.getName().equalsIgnoreCase("embed")) {
-                            }
-                        }
-                        return true;
-                    }
-                });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         setURL(handle, url);
     }
 
@@ -1071,6 +1083,7 @@ public class Browser implements AbstractWebBrowser {
 
     void checkPrepareDocument() {
         if (prepareDocument) {
+            parseDocument();
             for (Map.Entry<String, Set<EventListener>> ent: eventListeners.entrySet()) {
                 if (ent.getValue().size() > 0) {
                     registerForEvent(ent.getKey());
@@ -1085,7 +1098,7 @@ public class Browser implements AbstractWebBrowser {
     
     long updateTime;
     boolean lastResult;
-    /*
+
     // hack
     javax.swing.Timer keepAliveTimer = new javax.swing.Timer(1000, new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent event) {
@@ -1093,14 +1106,16 @@ public class Browser implements AbstractWebBrowser {
                 if (now - updateTime > 2000) {
                     System.err.println("killing page web page");
                     keepAliveTimer.stop();
-                    destroy(handle);
+                    long h = handle;
+                    handle = 0;
+                    destroy(h);
                 }
             }
         });
     {
         keepAliveTimer.start();
     }
-    */
+
 
 
     public boolean update() {
@@ -1111,6 +1126,7 @@ public class Browser implements AbstractWebBrowser {
         }
         if (handle != 0) {            
             //getWindow();
+            boolean firstTime = prepareDocument;
             checkPrepareDocument();
             long pre = now;
             if (render(handle, buffer, potWidth * 4, 4, rect)) {
@@ -1118,6 +1134,11 @@ public class Browser implements AbstractWebBrowser {
                 int y = rect[1];
                 int w = rect[2];
                 int h = rect[3];
+                if (firstTime) {
+                    x = y = 0;
+                    w = potWidth;
+                    h = potHeight;
+                } 
                 updateImage(buffer, x, y, w, h); 
                 result = true;
             }
