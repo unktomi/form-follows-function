@@ -31,6 +31,10 @@ public class SkinCluster is MeshDeformer {
     const temp2 = new Vec3f();
     public override function apply from (m is MeshNode) to function from () to () 
     {
+        if (root == null) {
+           println("ROOT MISSING {this}");
+           return function to () { };
+        }
 	root.toSceneTransform.inverse().getRows(sceneToLocal.data);
 	if (jointMats == []) {
 	    geomMatrix.getRows(bindShape.data);
@@ -62,56 +66,57 @@ public class SkinCluster is MeshDeformer {
 	if (not dirty) {
 	    return function from () to () {};
 	}
-        return function to () {
-            for (j in [0..<joints.size()]) {
-                const joint = joints[j];
-                const wm = joint.toSceneTransform;
-                const jm = jointMats[j];
-                wm.getRows(jm.data);
-                const cm = combined[j];
-                const cmi = combinedInverseTranspose[j];
-                const pm = bindPreMats[j];
-                if (bindShape <> null) {
-                    tempMat.mul(sceneToLocal, bindShapeInverse);
-                    cm.mul(tempMat, jm);
-                    tempMat.mul(cm, pm);
-                    cm.mul(tempMat, bindShape);
-                } else {
-                    tempMat.mul(sceneToLocal, jm);
-                    cm.mul(tempMat, pm);
-                }
-                cmi.set(cm); cmi.invert(); cmi.transpose();
+        return doApply;
+    }
+    function doApply to () {
+        for (j in [0..<joints.size()]) {
+            const joint = joints[j];
+            const wm = joint.toSceneTransform;
+            const jm = jointMats[j];
+            wm.getRows(jm.data);
+            const cm = combined[j];
+            const cmi = combinedInverseTranspose[j];
+            const pm = bindPreMats[j];
+            if (bindShape <> null) {
+                tempMat.mul(bindShapeInverse, sceneToLocal);
+                cm.mul(tempMat, jm);
+                tempMat.mul(cm, pm);
+                cm.mul(tempMat, bindShape);
+            } else {
+                tempMat.mul(sceneToLocal, jm);
+                cm.mul(tempMat, pm);
             }
-            var i = 0;
-            while (i < weights.size()) {
-                const vert = (weights[i++] * 3) as Integer;
-                const numInfluences = weights[i++] as Integer;
-                pos.set(0, 0, 0);
-                norm.set(0, 0, 0);
-                origPos.set(sourceVertices.get(vert+0), 
-                            sourceVertices.get(vert+1), 
-                            sourceVertices.get(vert+2));
-                origNorm.set(sourceNormals.get(vert+0), 
-                             sourceNormals.get(vert+1), 
-                             sourceNormals.get(vert+2));
-                for (j in [0..<numInfluences]) {
-                    const joint = weights[i++] as Integer;
-                    const weight = weights[i++];
-                    combined[joint].xformPt(origPos, temp1);
-                    temp1.scale(weight);
-                    pos.add(temp1);
-                    combinedInverseTranspose[joint].xformDir(origNorm, temp2);
-                    temp2.scale(weight);
-                    norm.add(temp2);
-                }
-                norm.normalize();
-                targetVertices.put(vert+0, pos.x());
-                targetVertices.put(vert+1, pos.y());
-                targetVertices.put(vert+2, pos.z());
-                targetNormals.put(vert+0, norm.x());
-                targetNormals.put(vert+1, norm.y());
-                targetNormals.put(vert+2, norm.z());
+            cmi.set(cm); cmi.invert(); cmi.transpose();
+        }
+        var i = 0;
+        while (i < weights.size()) {
+            const vert = (weights[i++] * 3) as Integer;
+            const numInfluences = weights[i++] as Integer;
+            pos.set(0, 0, 0);
+            norm.set(0, 0, 0);
+            origPos.set(sourceVertices.get(vert+0), 
+                        sourceVertices.get(vert+1), 
+                        sourceVertices.get(vert+2));
+            origNorm.set(sourceNormals.get(vert+0), 
+                         sourceNormals.get(vert+1), 
+                         sourceNormals.get(vert+2));
+            for (j in [0..<numInfluences]) {
+                const joint = weights[i++] as Integer;
+                const weight = weights[i++];
+                combined[joint].xformPt(origPos, temp1);
+                temp1.scale(weight);
+                pos.add(temp1);
+                combinedInverseTranspose[joint].xformDir(origNorm, temp2);
+                temp2.scale(weight);
+                norm.add(temp2);
             }
+            norm.normalize();
+            targetVertices.put(vert+0, pos.x());
+            targetVertices.put(vert+1, pos.y());
+            targetVertices.put(vert+2, pos.z());
+            targetNormals.put(vert+0, norm.x());
+            targetNormals.put(vert+1, norm.y());
+            targetNormals.put(vert+2, norm.z());
         }
     }
 }

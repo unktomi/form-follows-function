@@ -21,12 +21,6 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget //, Collidab
     public var visible is Boolean = true;
     public readonly var visibleInScene is Boolean =  
 	bind visible and parent.visibleInScene;
-    /*
-    public readonly var collisionWorldTransform is Mat4 = Mat4.<<1>>;
-    public readonly var collisionWorldTransformInverse is Mat4 = bind collisionWorldTransformInverse;
-    public override function setCollisionWorldTransform from (mat is Mat4) to () { collisionWorldTransform = mat }
-    public override function getCollisionWorldTransform from () to Mat4 { toSceneTransform * collisionWorldTransformInverse } 
-    */
     public readonly var parentToSceneTransform is Mat4 = 
 	bind if parent == null then Mat4.<<1>> else parent.toSceneTransform;
     public readonly var transform is Mat4 = Mat4.<<1>>;
@@ -34,8 +28,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget //, Collidab
     {
 	transform = m;
     }
-    public readonly var toSceneTransform is Mat4 = 
-	bind parentToSceneTransform * transform;
+    public readonly var toSceneTransform is Mat4 = bind parentToSceneTransform * transform;
     public readonly var bounds is Bounds = bind transform * contentBounds;
     public readonly var boundsInScene is Bounds = bind parentToSceneTransform * bounds;
     public readonly var contentBounds is Bounds;
@@ -44,8 +37,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget //, Collidab
     public readonly var containsPointer is Boolean;
     protected function setContainsPointer from (value is Boolean) to () { containsPointer = value; }
     public readonly var pickable is Boolean = true;
-    public readonly var pickableInScene is Boolean = 
-	bind pickable and parent.pickableInScene;
+    public readonly var pickableInScene is Boolean = bind pickable and parent.pickableInScene;
 
     override public function foldLeft of b
 	from (z is b, f is function from (b, Node) to b) 
@@ -188,15 +180,18 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget //, Collidab
         getFocusable().focusedSubject;
     }
 
-    public function observeKeyDown from (keyCode is Integer) to Observable of KeyboardEvent {
+    public function observeKeyDown from (keyCode is Integer) to Observable of KeyboardEvent 
+    {
         observeKeyDown().filter(|e| e.keyCode == keyCode);
     }
 
-    public function observeKeyUp from (keyCode is Integer) to Observable of KeyboardEvent {
-        observeKeyUp().filter(|e| e.keyCode == keyCode);
+    public function observeKeyUp from (keyCode is Integer) to Observable of KeyboardEvent 
+    {
+        observeKeyUp().filter(|e | e.keyCode == keyCode);
     }
 
-    public function observeKeyInput from (keyChar is String) to Observable of KeyboardEvent {
+    public function observeKeyInput from (keyChar is String) to Observable of KeyboardEvent 
+    {
         observeKeyInput().filter(|e| e.keyChar == keyChar);
     }
 

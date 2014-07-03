@@ -8,7 +8,7 @@ import org.f3.functions.*;
  *    Pair of (a, b) = a x b
  *
  * Pair implements Functor and Monad which means you can use it in 
- * a 'for' loop.
+ * a 'foreach' loop.
  */    
 
 public class Pair<a, b> implements Monad<Pair, a>, Comonad<Pair, a>, TypeCons2<Pair, a, b> 

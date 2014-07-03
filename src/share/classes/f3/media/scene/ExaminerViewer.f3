@@ -136,7 +136,7 @@ public abstract class ExaminerViewer is MouseInputHandler {
 	}
         if (dragging) {
             var doRotation =
-                (button1Down and not button2Down and not button3Down);
+                (isAltDown and button1Down and not button2Down and not button3Down);
             var doTranslation =
                 (button2Down and not button1Down and not button3Down);
             var doZoom =
@@ -148,7 +148,7 @@ public abstract class ExaminerViewer is MouseInputHandler {
                 doZoom = false;
                 doTranslation = true;
             }
-            if (isAltDown and doRotation) {
+            if (false and isAltDown and doRotation) {
                 doRotation = false;
                 doZoom = true;
                 doTranslation = false;

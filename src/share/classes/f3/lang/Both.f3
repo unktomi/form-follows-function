@@ -1,0 +1,73 @@
+package f3.lang;
+
+public function both of (a, b) from (former is a, latter is b) to Both of (a, b)
+{
+    Both of (a, b) {
+        former: former;
+        latter: latter;
+    }
+}
+
+public class Both of (a, b) 
+    is org.f3.runtime.Monad of (Both, a), org.f3.runtime.Comonad of (Both, a) 
+{
+
+    public const former is a;
+    public const latter is b;
+
+    public function flatmap of c from (f is function from a to Both of (c, b)) to Both of (c, b) 
+    {
+        f(former);
+    }
+
+    override public function map of c from (f is function from a to c) to Both of (c, b) 
+    {
+        Both of (c, b) {
+            former: f(former);
+            latter: latter;
+        }
+    }
+
+    override function hashCode() to Integer {
+        var hashCode = 1;
+        var e is Object = former;
+        hashCode = 31*hashCode + e.hashCode();
+        e = latter;
+        hashCode = 31*hashCode + e.hashCode();
+        return hashCode;
+    }
+    
+    override function equals from (obj is Object) to Boolean
+    {
+        if (obj is Both of (a, b)) {
+            const p = obj as Both of (a, b);
+            return former == p.former and latter == p.latter;
+        } else false;
+    }
+
+    function toString from (x is Object, sep is String) to String {
+	const r = new java.lang.StringBuilder();
+	if (x instanceof Both of (?, ?)) {
+	    const p = x as Both of (?, ?);
+	    r.append(toString(p.former, ", "));
+	    r.append(toString(p.latter, sep));
+	} else {
+	    r.append(x);
+	    r.append(sep);
+	}
+	return r.toString();
+    }
+
+    public function swap to Both of (b, a) {
+        Both of (b, a) 
+        {
+            former: latter;
+            latter: former;
+        }
+    }
+
+    override function toString to String {
+        return "({toString(former, ", ")}{toString(latter, ")")}";
+    }
+
+}
