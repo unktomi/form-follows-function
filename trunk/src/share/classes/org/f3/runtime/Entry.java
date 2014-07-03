@@ -70,12 +70,13 @@ public class Entry {
         try {
             AccessController.doPrivileged(
                     new PrivilegedAction<Void>() {
-
                         @Override
                         public Void run() {
-                            CodeSource codesource = app.getProtectionDomain().getCodeSource();
-                            if (codesource != null) {
-                                SystemProperties.setF3Property(SystemProperties.codebase, codesource.getLocation().toString());
+                            if (app.getProtectionDomain() != null) {
+                                CodeSource codesource = app.getProtectionDomain().getCodeSource();
+                                if (codesource != null) {
+                                    SystemProperties.setF3Property(SystemProperties.codebase, codesource.getLocation().toString());
+                                }
                             }
                             main.setAccessible(true);
                             return null;

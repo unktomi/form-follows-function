@@ -2,10 +2,10 @@ package f3.lang;
 
 public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 {
-    public abstract function case of _ 
-	from (f is function from a to _, 
-	      g is function from b to _) 
-	to _;
+    public abstract function case of c 
+	from (f is function from a to c, 
+	      g is function from b to c) 
+	to c;
 
     override abstract public function map of c 
 	from (f is function from b to c) 
@@ -15,37 +15,37 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 	from (f is function from b to Either of (a, c)) 
 	to Either of (a, c);
 
-    public function case of (c, _) 
+    public function case of (c, d) 
 	from (this is Either of (Either of (a, b), c),
-	      f is function from a to _,
-	      g is function from b to _,
-	      h is function from c to _) to _
+	      f is function from a to d,
+	      g is function from b to d,
+	      h is function from c to d) to d
     {
-	this.case(function from (y is Either of (a, b)) to _ 
+	this.case(function from (y is Either of (a, b)) to d 
 		  {
 		      y.case(f, g);
 		  },
 		  h)
     }
-
-    public function case of (c, d, _) 
+    /*
+    public function case of (c, d, e) 
 	from (this is Either of (Either of (Either of (a, b), c), d),
-	      f is function from a to _,
-	      g is function from b to _,
-	      h is function from c to _,
-	      i is function from d to _) to _
+	      f is function from a to e,
+	      g is function from b to e,
+	      h is function from c to e,
+	      i is function from d to e) to e
     {
-	this.case(function from (y is Either of (Either of (a, b), c)) to _ 
-		  {
-		      y.case(function from (z is Either of (a, b)) to _ 
-			     {
-				 z.case(f, g);
-			     },
-			     h);
-		  },
-		  i)
+        this.case(function from (y is Either of (Either of (a, b), c)) to e 
+                  {
+                      y.case(function from (z is Either of (a, b)) to e 
+                             {
+                                 z.case(f, g);
+                             },
+                             h);
+                  },
+                  i) 
     }
-
+    */
     public function swap to Either of (b, a) 
     {
 	const self = this;
@@ -80,13 +80,22 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 		
 	    }
 
-	    override function case of _ from (f is function from b to _, 
-					      g is function from a to _) to _
+	    override function case of c from (f is function from b to c, 
+					      g is function from a to c) to c
 	    {
 		self.case(g, f)
 	    }
 	}
     }
+
+    public function getFormerOrElse from (defaultValue is a) to a {
+        return defaultValue
+    }
+
+    public function getLatterOrElse from (defaultValue is b) to b {
+        return defaultValue
+    }
+
 
     public function getFormer to java.lang.Iterable of a 
     {
@@ -103,6 +112,9 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 public function Former of (a, b) from (x is a) to Either of (a, b) 
 {
     Either of (a, b) {
+        override function getFormerOrElse from (defaultValue is a) to a {
+            x
+        }
 
 	override function toString to String 
 	{
@@ -154,15 +166,19 @@ public function Latter of (a, b) from (y is b) to Either of (a, b)
 {
     Either of (a, b) {
 
+        override function getLatterOrElse from (defaultValue is b) to b {
+            y
+        }
+
 	override function toString to String 
 	{
 	    "Latter: {y}";
 	}
 
-	override function case of _ 
-	    from (f is function from a to _, 
-		  g is function from b to _) 
-	    to _
+	override function case of c 
+	    from (f is function from a to c, 
+		  g is function from b to c) 
+	    to c
 	{
 	    g(y);
 	}

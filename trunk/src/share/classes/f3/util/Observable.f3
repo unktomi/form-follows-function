@@ -101,7 +101,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		   {
 		       not x;
                        }*/
-                   ).subscribe(p);
+                   ).subscribe(p.set);
     }
 
     public function filter from (p is function from a to Boolean) to Observable of a
@@ -179,7 +179,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 	to Disposable 
     {
 	subscribe(DefaultObserver of a 
-		  {
+                  {
 		      override function onNext from (x is a) to ()
 		      {
 			  f(x);

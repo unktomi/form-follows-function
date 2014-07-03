@@ -3144,6 +3144,7 @@ public class Listener is GLEventListener, DropTargetListener {
         if (not ALWAYS_SWAP_BUFFERS and not dragging and not trig and not frame.isActive()) {
             java.lang.Thread.sleep(128);
             trig = true;
+            lastFrame = java.lang.System.currentTimeMillis();
             return;
         }
         MasterTimeline.paused = not frame.isActive();
@@ -3204,7 +3205,6 @@ public class Listener is GLEventListener, DropTargetListener {
         transp = 0;
         transp_tris = 0;
         opaque_tris = 0;
-        var dirty = false;
         for (scene in stage.content) {
 	    scene.stage = stage;
 	}
@@ -3219,7 +3219,9 @@ public class Listener is GLEventListener, DropTargetListener {
 	    }
 	    skip = false;
             frameCount++;
-	}
+	} else {
+            //println("nothing rendered");
+        }
         trig = not skip;
         justInit = false;
 	stage.flush();
@@ -3229,9 +3231,8 @@ public class Listener is GLEventListener, DropTargetListener {
             if (lastFrame == 0) {
                 lastFrame = end;
             } 
-            const d = lastFrame + sleepFrames - end;
+            var d = lastFrame + sleepFrames - end;
             if (skip) {
-                //println("sleeping {d}");
                 if (d > 0) {
                     java.lang.Thread.sleep(d);
                     sleepFrames = Math.min(sleepFrames*2, 32);

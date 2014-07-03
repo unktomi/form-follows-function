@@ -13,6 +13,7 @@ import f3.media.scene.meshdeform.SkinCluster;
 import f3.media.scene.meshdeform.MeshDeformer;
 import f3.util.Bits;
 
+
 class MAttr {
     const longName is String;
     const shortName is String;
@@ -1689,7 +1690,6 @@ abstract class MMeshDeformer is MNode {
                     done = true;
                 } else if (c.sourceNode is MGroupParts and c.sourcePath == "og") {
                     gp = c.sourceNode as MGroupParts;
-                    done = true;
                     break;
                 } else if (c.sourceNode is MMeshDeformer and name == "og") {
                     const d = c.sourceNode as MMeshDeformer;
@@ -1833,6 +1833,7 @@ class MSkinCluster is MMeshDeformer {
             resolvedTarget.shader = resolvedSource.shader; // hack?
         }
         resolvedTarget.visible = true;
+        println("CREATING SKIN CLUSTER with {joints.size()} joints {weights.size()} weights");
         const result = SkinCluster {
             sourceVertices: sourceVertices;
             sourceNormals: sourceNormals;
@@ -1840,7 +1841,7 @@ class MSkinCluster is MMeshDeformer {
             targetNormals: resolvedTarget.mesh.getNormalBuffer();
             joints: joints;          
             weights: weights;
-            bindPreMatrices: pm[0..<joints.size()];
+            bindPreMatrices: this.pm;//pm[0..<joints.size()];
             geomMatrix: gm;
         }
         insert result into resolvedTarget.deformers;
@@ -2115,6 +2116,12 @@ class Index is PathNode {
     override function toString to String {
         "[{index}]"
     }
+    function asRange to Range {
+        Range {
+            startIndex: index;
+            endIndex: index;
+        }
+    }
 }
 
 class Field is PathNode {
@@ -2306,16 +2313,21 @@ class MMesh is MSpatial
 	const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
 	for (f in polyfaces) {
 	    const faceIndex = indexof f;
-	    for (faceEdge0 in f.faceEdges) {
-                const faceEdge = faceEdgeIndex(faceEdge0);
+	    for (faceEdge in f.faceEdges) {
 		if (isSmooth(faceEdge)) {
+                    println("isSmooth: {faceIndex}, {indexof faceEdge} => {faceEdge}");
 		    const e0 = edgeStart(faceEdge);
 		    const e1 = edgeEnd(faceEdge);
-		    edgeToFace1.put(e0, [faceEdge, faceIndex]);
-		    edgeToFace1.put(e1, [faceEdge, faceIndex]);
+                    var m = edgeToFace1.get(e0);
+                    if (m == null) m = [];
+		    edgeToFace1.put(e0, [m, faceEdge, faceIndex]);
+                    m = edgeToFace1.get(e1);
+                    if (m == null) m = [];
+		    edgeToFace1.put(e1, [m, faceEdge, faceIndex]);
 		}
 	    }
 	}
+        println("edgeToFace1 => {edgeToFace1.size()}");
 	const stack = new java.util.Stack of Integer;
 	const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
 	while (edgeToFace1.size() > 0) {
@@ -2323,102 +2335,7 @@ class MMesh is MSpatial
 	    const edge1 = ent.getKey();
 	    const indices1 = ent.getValue();
 	    var faces is Integer[];
-	    const faceEdge = indices1[0];
-	    const faceIndex = indices1[1];
-	    stack.push(faceIndex);
-	    stack.push(faceEdge);
             edgeToFace1.remove(edge1);
-	    while (not stack.isEmpty()) {
-		const faceEdge1 = stack.pop();
-		const faceIndex1 = stack.pop();
-		insert faceIndex1 into faces;
-		const iter = edgeToFace1.entrySet().iterator();
-		while (iter.hasNext()) {
-		    const n = iter.next();
-		    const edge2 = n.getKey();
-		    const indices2 = n.getValue();
-		    const faceEdge2 = indices2[0];
-		    const faceIndex2 = indices2[1];
-		    if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
-			stack.push(faceIndex2);
-			stack.push(faceEdge2);
-			iter.remove();
-		    }
-		}
-	    }
-	    edgeToFace2.put(edge1, faces);
-	}
-	for (f in polyfaces) {
-	    const faceIndex = indexof f;
-	    for (faceEdge in f.faceEdges) {
-		const edge = edgeStart(faceEdge);
-		const faces = edgeToFace2.get(edge);
-		if (faces == []) {
-		    //edgeToNormal.put(edge, this.normal(faceIndex));
-		} else {
-		    var norm = Vec3.<<0>>;
-		    for (j in faces) {
-			const faceNorm = faceNormals[j];
-			norm += faceNorm;
-		    }
-		    edgeToNormal.put(edge, norm);
-		}
-	    }
-	}
-    }
-
-    function buildMesh1
-    {
-        for (v in normals) {
-            if (v > 1e10) { // bogus normals
-                normals = [];
-                break;
-            }
-        }
-        if (normals <> []) {
-           return;
-        }
-        for (polyface in polyfaces) {
-            var norm = Vec3.<<0>>;
-            const faceEdges = polyface.faceEdges;
-            for (faceEdge in faceEdges) {
-                const i = indexof faceEdge;
-                const edge = edgeStart(faceEdge);
-                const next = edgeEnd(faceEdge);
-                const prev = edgeStart(faceEdges[(i + faceEdges.size()-1) mod faceEdges.size()]);
-                const v0 = vertex(edge);
-                const v1 = vertex(next);
-                const v2 = vertex(prev);
-                norm += (v1 - v0).cross(v2 - v0);
-            }
-            norm = norm.normalize();
-            insert norm into faceNormals;
-        }
-        const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
-        for (f in polyfaces) {
-            const faceIndex = indexof f;
-            for (faceEdge in f.faceEdges) {
-                if (isSmooth(faceEdge)) {
-                    //println("found smooth edge {faceEdge}");
-                    const e0 = edgeStart(faceEdge);
-                    const e1 = edgeEnd(faceEdge);
-                    const xs = if (edgeToFace1.containsKey(e0)) then edgeToFace1.get(e0) else [];
-                    const ys = if (edgeToFace1.containsKey(e1)) then edgeToFace1.get(e1) else [];
-                    edgeToFace1.put(e0, [xs, faceEdge, faceIndex]);
-                    edgeToFace1.put(e1, [ys, faceEdge, faceIndex]);
-                }
-            }
-        }
-        //println("edgeToFace1  => {edgeToFace1}");
-        const stack = new java.util.Stack of Integer;
-        const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
-        var faceSet = new java.util.TreeSet of Integer;
-        while (edgeToFace1.size() > 0) {
-            const ent = edgeToFace1.pollFirstEntry();
-            const edge1 = ent.getKey();
-            const indices1 = ent.getValue();
-            edgeToFace1.remove(edge1);
-            faceSet.clear();
             for (i in [0..<indices1.size() step 2]) {
                 const faceEdge = indices1[i+0];
                 const faceIndex = indices1[i+1];
@@ -2427,41 +2344,39 @@ class MMesh is MSpatial
                 while (not stack.isEmpty()) {
                     const faceEdge1 = stack.pop();
                     const faceIndex1 = stack.pop();
-                    //println("adding {faceIndex1} for {faceEdge1} to {faceEdge}");
-                    faceSet.add(faceIndex1);
-                    const iter = edgeToFace1.entrySet().iterator();
+                    insert faceIndex1 into faces;
+                    const iter = edgeToFace1.keySet().iterator();
                     while (iter.hasNext()) {
-                        const n = iter.next();
-                        const edge2 = n.getKey();
-                        const indices2 = n.getValue();
-                        var remaining = indices2;
+                        const edge2 = iter.next();
+                        const indices2 = edgeToFace1.get(edge2);
+                        var newIndices is Integer[];
                         for (j in [0..<indices2.size() step 2]) {
                             const faceEdge2 = indices2[j+0];
-                            const faceIndex2 = indices2[i+1];
+                            const faceIndex2 = indices2[j+1];
                             if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
+                                //println("found match {faceEdge2}, {faceIndex2}");
                                 stack.push(faceIndex2);
                                 stack.push(faceEdge2);
-                                delete remaining[j..j+1];
+                            } else {
+                                insert faceEdge2 into newIndices;
+                                insert faceIndex2 into newIndices;
                             }
                         }
-                        if (true or remaining.size() == 0) {
+                        if (newIndices == []) {
                             iter.remove();
                         } else {
-                            edgeToFace1.put(edge2, remaining);
+                            edgeToFace1.put(edge2, newIndices);
                         }
                     }
                 }
             }
-            const faces = foreach (i in faceSet) i;
-            //println("faces for edge1 {edge1} => {foreach (x in faces) "{x},"}");
             edgeToFace2.put(edge1, faces);
-        }
-        for (f in polyfaces) {
-            const faceIndex = indexof f;
-            for (faceEdge in f.faceEdges) {
-                const edge = edgeStart(faceEdge);
+	}
+	for (f in polyfaces) {
+	    const faceIndex = indexof f;
+	    for (faceEdge in f.faceEdges) {
+		const edge = edgeStart(faceEdge);
                 const faces = edgeToFace2.get(edge);
-                //println("faces for {faceEdge} = { foreach (x in faces) "{x}," }");
                 if (faces == []) {
                     //edgeToNormal.put(edge, this.normal(faceIndex));
                 } else {
@@ -2470,11 +2385,13 @@ class MMesh is MSpatial
                         const faceNorm = faceNormals[j];
                         norm += faceNorm;
                     }
+                    //println("face normal: {faceIndex}, {faceEdge}, {edge} faces=({faces}) => {norm}");
                     edgeToNormal.put(edge, norm.normalize());
                 }
-            }
-        }
+	    }
+	}
     }
+
 
     function getMesh to AbstractMesh[]
     {
@@ -2494,29 +2411,30 @@ class MMesh is MSpatial
             this.nb.clear();
             this.uvbs = [];
 */
+        println("get mesh {name}");
+        println("verts: {verts.size()}");
+        println("normals: {normals.size()}");
+        println("edgeToNormal: {edgeToNormal.size()}");
+        println("faceNormals: {faceNormals.size()}");
         for (comp in components) {
             const startIndex = comp.faceStart;
             const endIndex = comp.faceEnd;
-            for (i in [startIndex..<endIndex]) {
+            for (i in [startIndex..endIndex]) {
                 const f = polyfaces[i];
                 if (f == null) {
                    continue;
                 }
                 const edge0 = edgeStart(f.faceEdges[0]);
-                const norm0 = i;
                 const uv0 = f.getUV(0);
                 var edge1 = edgeStart(f.faceEdges[1]);
-                var norm1 = i;
                 var uv1 = f.getUV(1);
                 for (j in [2..<f.faceEdges.size()]) {
-                    insertVertex(edge0, norm0, uv0);
-                    insertVertex(edge1, norm1, uv1);
+                    insertVertex(edge0, i, uv0);
+                    insertVertex(edge1, i, uv1);
                     const edge2 = edgeStart(f.faceEdges[j]);
-                    const norm2 = i;
                     const uv2 = f.getUV(j);
-                    insertVertex(edge2, norm2, uv2);
+                    insertVertex(edge2, i, uv2);
                     edge1 = edge2;
-                    norm1 = norm2;
                     uv1 = uv2;
                 }
             }
@@ -2581,7 +2499,12 @@ class MMesh is MSpatial
         const n = 
             if (this.normals <> []) 
                 then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
-                else if (edgeToNormal.containsKey(edge)) 
+                else if ({
+                        const y = edgeToNormal.containsKey(edge);
+                        //println("face: {face}");
+                        //println("edgeToNormal contains {edge} => {y}");
+                        y
+                    }) 
                     then edgeToNormal.get(edge) 
                     else faceNormals[face];
         ib.add(ib.getBufferSize());
@@ -2607,6 +2530,9 @@ class MMesh is MSpatial
             if (path.path[1] instanceof Range) {
                 const r = path.path[1] as Range;
                 verts[r.startIndex*3..r.endIndex*3] = values;
+            } else if (path.path[1] instanceof Index) {
+                const r = path.path[1] as Index;
+                verts[r.index*3..r.index*3] = values;
             } else {
                 verts = values;
             }
@@ -2616,6 +2542,9 @@ class MMesh is MSpatial
             if (path.path[1] instanceof Range) {
                 const r = path.path[1] as Range;
                 pointTweaks[r.startIndex*3..r.endIndex*3] = values;
+            } else if (path.path[1] instanceof Index) {
+                const r = path.path[1] as Index;
+                pointTweaks[r.index*3..r.index*3] = values;
             } else {
                 pointTweaks = values;
             }
@@ -2625,6 +2554,9 @@ class MMesh is MSpatial
             if (path.path[1] instanceof Range) {
                 const r = path.path[1] as Range;
                 normals[r.startIndex*3..r.endIndex*3] = values;
+            } else if (path.path[1] instanceof Index) {
+                const r = path.path[1] as Index;
+                normals[r.index*3..r.index*3] = values;
             } else {
                 normals = values;
             }
@@ -2634,6 +2566,9 @@ class MMesh is MSpatial
             if (path.path[1] instanceof Range) {
                 const r = path.path[1] as Range;
                 edges[r.startIndex*3..r.endIndex*3] = values;
+            } else if (path.path[1] instanceof Index) {
+                const r = path.path[1] as Index;
+                edges[r.index*3..r.index*3] = values;
             } else {
                 edges = values;
             }
@@ -2643,6 +2578,9 @@ class MMesh is MSpatial
             if (path.path[1] instanceof Range) {
                 const r = path.path[1] as Range;
                 polyfaces[r.startIndex..r.endIndex] = values;
+            } else if (path.path[1] instanceof Index) {
+                const r = path.path[1] as Index;
+                polyfaces[r.index..r.index] = values;
             } else {
                 polyfaces = values;
             }
@@ -3479,8 +3417,7 @@ class MAnimCurve__ is MAnimCurve of Number
         }
         if (x0 == 0 or x1 == 0) {
             println("bad tangent interpolator {name} {x0},{y0} {x1},{y1}");
-            if (x0 == 0) x0 = 1.0;
-            if (x1 == 0) x1 = 1.0;
+            return KeyFrame.Linear;
         }
         println("created interpolator {name} {x0},{y0} {x1},{y1}");
         KeyFrame.Tangent {
