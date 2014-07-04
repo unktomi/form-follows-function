@@ -2282,7 +2282,7 @@ class MMesh is MSpatial
         vector(imag * x, imag * y, imag * z);
     }
 
-    const edgeToNormal = new java.util.TreeMap of (Integer, Vec3);
+    const vertToNormal = new java.util.TreeMap of (Integer, Vec3);
     function buildMesh
     {
 	for (v in normals) {
@@ -2310,85 +2310,74 @@ class MMesh is MSpatial
 	    norm = norm.normalize();
 	    insert norm into faceNormals;
 	}
-	const edgeToFace1 = new java.util.TreeMap of (Integer, Integer[]);
+	const vertexToFace1 = new java.util.TreeMap of (Integer, Integer[]);
 	for (f in polyfaces) {
 	    const faceIndex = indexof f;
 	    for (faceEdge in f.faceEdges) {
 		if (isSmooth(faceEdge)) {
-                    println("isSmooth: {faceIndex}, {indexof faceEdge} => {faceEdge}");
+                //                    println("isSmooth: {faceIndex}, {indexof faceEdge} => {faceEdge}");
+                    const i = faceEdgeIndex(faceEdge);
 		    const e0 = edgeStart(faceEdge);
 		    const e1 = edgeEnd(faceEdge);
-                    var m = edgeToFace1.get(e0);
+                    var m = vertexToFace1.get(e0);
                     if (m == null) m = [];
-		    edgeToFace1.put(e0, [m, faceEdge, faceIndex]);
-                    m = edgeToFace1.get(e1);
+		    vertexToFace1.put(e0, [m, i, faceIndex]);
+                    m = vertexToFace1.get(e1);
                     if (m == null) m = [];
-		    edgeToFace1.put(e1, [m, faceEdge, faceIndex]);
+		    vertexToFace1.put(e1, [m, i, faceIndex]);
 		}
 	    }
 	}
-        println("edgeToFace1 => {edgeToFace1.size()}");
+        // println("vertexToFace1 => {vertexToFace1.size()}");
 	const stack = new java.util.Stack of Integer;
-	const edgeToFace2 = new java.util.TreeMap of (Integer, Integer[]);
-	while (edgeToFace1.size() > 0) {
-	    const ent = edgeToFace1.pollFirstEntry();
-	    const edge1 = ent.getKey();
-	    const indices1 = ent.getValue();
+	const vertexToFace2 = new java.util.TreeMap of (Integer, Integer[]);
+	while (vertexToFace1.size() > 0) {
+	    const ent = vertexToFace1.pollFirstEntry();
+	    const vert1 = ent.getKey();
+	    var indices1 = ent.getValue();
 	    var faces is Integer[];
-            edgeToFace1.remove(edge1);
-            for (i in [0..<indices1.size() step 2]) {
-                const faceEdge = indices1[i+0];
-                const faceIndex = indices1[i+1];
-                stack.push(faceIndex);
-                stack.push(faceEdge);
-                while (not stack.isEmpty()) {
-                    const faceEdge1 = stack.pop();
-                    const faceIndex1 = stack.pop();
-                    insert faceIndex1 into faces;
-                    const iter = edgeToFace1.keySet().iterator();
-                    while (iter.hasNext()) {
-                        const edge2 = iter.next();
-                        const indices2 = edgeToFace1.get(edge2);
-                        var newIndices is Integer[];
-                        for (j in [0..<indices2.size() step 2]) {
-                            const faceEdge2 = indices2[j+0];
-                            const faceIndex2 = indices2[j+1];
-                            if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
-                                //println("found match {faceEdge2}, {faceIndex2}");
-                                stack.push(faceIndex2);
-                                stack.push(faceEdge2);
-                            } else {
-                                insert faceEdge2 into newIndices;
-                                insert faceIndex2 into newIndices;
-                            }
-                        }
-                        if (newIndices == []) {
-                            iter.remove();
-                        } else {
-                            edgeToFace1.put(edge2, newIndices);
-                        }
+            vertexToFace1.remove(vert1);
+            const faceEdge = indices1[0];
+            const faceIndex = indices1[1];
+            stack.push(faceIndex);
+            stack.push(faceEdge);
+            var j = 2;
+            while (not stack.isEmpty()) {
+                const faceEdge1 = stack.pop();
+                const faceIndex1 = stack.pop();
+                insert faceIndex1 into faces;
+                while (j < indices1.size()) {
+                    const faceEdge2 = indices1[j];
+                    const faceIndex2 = indices1[j+1];
+                    if (faceEdge1 == faceEdge2 or faceIndex1 == faceIndex2) {
+                        //println("found match {faceEdge2}, {faceIndex2}");
+                        stack.push(faceIndex2);
+                        stack.push(faceEdge2);
+                        delete indices1[j..j+1];
+                    } else {
+                        j += 2;
                     }
                 }
             }
-            edgeToFace2.put(edge1, faces);
+            vertexToFace2.put(vert1, faces);
 	}
 	for (f in polyfaces) {
 	    const faceIndex = indexof f;
 	    for (faceEdge in f.faceEdges) {
-		const edge = edgeStart(faceEdge);
-                const faces = edgeToFace2.get(edge);
-                if (faces == []) {
-                    //edgeToNormal.put(edge, this.normal(faceIndex));
-                } else {
-                    var norm = Vec3.<<0>>;
-                    for (j in faces) {
-                        const faceNorm = faceNormals[j];
-                        norm += faceNorm;
+                for (vert in [edgeStart(faceEdge), edgeEnd(faceEdge)]) {
+                    const faces = vertexToFace2.get(vert);
+                    if (faces == []) {
+                    } else {
+                        var norm = Vec3.<<0>>;
+                        for (j in faces) {
+                            const faceNorm = faceNormals[j];
+                            norm += faceNorm;
+                        }
+                        //println("face normal: {faceIndex}, {faceEdge}, {edge} faces=({faces}) => {norm}");
+                        vertToNormal.put(vert, norm.normalize());
                     }
-                    //println("face normal: {faceIndex}, {faceEdge}, {edge} faces=({faces}) => {norm}");
-                    edgeToNormal.put(edge, norm.normalize());
                 }
-	    }
+            }
 	}
     }
 
@@ -2414,7 +2403,7 @@ class MMesh is MSpatial
         println("get mesh {name}");
         println("verts: {verts.size()}");
         println("normals: {normals.size()}");
-        println("edgeToNormal: {edgeToNormal.size()}");
+        println("vertToNormal: {vertToNormal.size()}");
         println("faceNormals: {faceNormals.size()}");
         for (comp in components) {
             const startIndex = comp.faceStart;
@@ -2491,22 +2480,24 @@ class MMesh is MSpatial
     public var vertIndices is Integer[];
 
     function insertVertex
-        from (edge is Integer, face is Integer, uvIndex is Integer[]) 
+        from (vert is Integer, face is Integer, uvIndex is Integer[]) 
         to ()
     {
-        const v = this.vertex(edge);
-        insert edge into vertIndices;
+        const v = this.vertex(vert);
+        insert vert into vertIndices;
         const n = 
             if (this.normals <> []) 
-                then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, edge) else this.normal(edge))
-                else if ({
-                        const y = edgeToNormal.containsKey(edge);
-                        //println("face: {face}");
-                        //println("edgeToNormal contains {edge} => {y}");
+                then (if this.normals.size() <> this.verts.size() then getFaceVertexNormal(face, vert) else this.normal(vert))
+                else {
+                    if ({
+                        const y = vertToNormal.containsKey(vert);
+                        println("face: {face}");
+                        println("vertToNormal contains {face}, {vert} => {y}");
                         y
                     }) 
-                    then edgeToNormal.get(edge) 
+                    then vertToNormal.get(vert) 
                     else faceNormals[face];
+                }
         ib.add(ib.getBufferSize());
         vb.add(v.x, v.y, v.z);
         nb.add(n.x, n.y, n.z);

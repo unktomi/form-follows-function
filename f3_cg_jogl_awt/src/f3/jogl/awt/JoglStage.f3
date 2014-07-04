@@ -3241,7 +3241,10 @@ public class Listener is GLEventListener, DropTargetListener {
                 }
                 // keep the same buffer
             } else {
+                //const x = java.lang.System.currentTimeMillis();
                 canvas.swapBuffers();
+                //const y = java.lang.System.currentTimeMillis();
+                //println("swapped buffers {y-x}ms");
                 sleepFrames = 16;
             }
             lastFrame = java.lang.System.currentTimeMillis();
