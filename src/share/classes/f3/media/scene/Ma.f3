@@ -2500,7 +2500,8 @@ class MMesh is MSpatial
                 }
         ib.add(ib.getBufferSize());
         vb.add(v.x, v.y, v.z);
-        nb.add(n.x, n.y, n.z);
+        const nn = n.normalize();
+        nb.add(nn.x, nn.y, nn.z);
         while (uvIndex.size() > uvbs.size()) {
             insert new FloatBufferBuilder into uvbs;
         }
