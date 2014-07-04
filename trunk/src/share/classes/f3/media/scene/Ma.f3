@@ -1831,9 +1831,13 @@ class MSkinCluster is MMeshDeformer {
         const sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
         const sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
         resolvedTarget.mesh = resolvedSource.mesh;
-        if (resolvedTarget.shader == null) {
+        println("resolved source shader: {resolvedSource.shader}");
+        println("resolved target shader: {resolvedTarget.shader}");
+        if (resolvedTarget.shader == null or resolvedTarget.shader == m.getDefaultShader()) {
+            println("using source shader");
             resolvedTarget.shader = resolvedSource.shader; // hack?
-        }
+        } 
+        resolvedSource.visible = false;
         resolvedTarget.visible = true;
         println("CREATING SKIN CLUSTER with {joints.size()} joints {weights.size()} weights");
         const result = SkinCluster {
@@ -1843,7 +1847,7 @@ class MSkinCluster is MMeshDeformer {
             targetNormals: resolvedTarget.mesh.getNormalBuffer();
             joints: joints;          
             weights: weights;
-            bindPreMatrices: this.pm;//pm[0..<joints.size()];
+            bindPreMatrices: pm;
             geomMatrix: gm;
         }
         insert result into resolvedTarget.deformers;
@@ -3146,10 +3150,9 @@ class MShader is MAbstractShader
     override function toShader from (m is MaModel) to Shader 
     {
         const alpha = 1.0 - it.x;
-        const diffuse = toColor(c.x * dc, c.y * dc, c.z * dc, alpha);
         const ambient = toColor(ambc.x, ambc.y, ambc.z, alpha);
         const emissive = toColor(ic.x, ic.y, ic.z, alpha);
-        const specular = if (this.type == "lambert") Color.BLACK else toColor(sc.x, sc.y, sc.z, alpha);
+        const specular = if (this.type == "lambert") then Color.BLACK else toColor(sc.x, sc.y, sc.z, alpha);
         const shininess = if (this.type == "phong") then cp else if (this.type == "blinn") then 100.0 - 99.0 * Math.sqrt(ec) else 0.0;
         println("toShader {this.type} shininess => {shininess}");
         var image is AbstractTexture;
@@ -3172,6 +3175,13 @@ class MShader is MAbstractShader
                 break;
             }
         }
+        const diffuse = if image == null then toColor(c.x * dc, c.y * dc, c.z * dc, alpha) else Color.color(dc, dc, dc);
+        println("diffuse => {diffuse}");
+        println("ambient => {ambient}");
+        println("emissive => {emissive}");
+        println("specular => {specular}");
+        println("shininess => {shininess}");
+        const dcColor = Color.color(dc, dc, dc);
         const shader = m.effectLoader.loadDefaultShader(image,
                                                         diffuse,
                                                         ambient,
