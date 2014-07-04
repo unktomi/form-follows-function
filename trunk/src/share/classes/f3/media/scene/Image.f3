@@ -1,4 +1,5 @@
 package f3.media.scene;
+import f3.math.*;
 
 public class Image is AbstractTexture, Shape2D.MeshNode2D {
     public var url is String;
@@ -18,3 +19,4 @@ public class Image is AbstractTexture, Shape2D.MeshNode2D {
     function getThis to Image { this } // workaround for compiler bug with bound "this"
     override var gridFit = false;
 }
+
