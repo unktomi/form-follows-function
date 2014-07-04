@@ -12,6 +12,7 @@
   <target name="init">
     <mkdir dir="build/classes"/>
     <copy todir="lib">
+      <fileset dir="thirdparty" includes="*.jar"/>
       <fileset dir="../dist/lib/shared" includes="*.jar"/>
       <fileset dir="../f3_svg_awt/build/" includes="*.jar"/>
       <fileset dir="../f3_xhtml/build/" includes="*.jar"/>
@@ -74,6 +75,7 @@
 		<path path="lib/f3.svg.awt.jar"/>
 		<path path="lib/f3.awesomium.jogl.jar"/>
 		<path path="lib/f3.xhtml.awt.jar"/>
+		<path path="lib/commons-imaging-1.0-SNAPSHOT.jar"/>
             </classpath>
     </f3c>
   </target>
