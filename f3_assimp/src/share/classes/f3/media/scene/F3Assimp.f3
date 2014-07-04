@@ -92,7 +92,7 @@ class Loader {
                 }
                 tex;
             } else null;
-        var shininess = mat.getShininess();
+        var shininess = mat.getShininessStrength();
         if (diffuseTex == null) {
             effectLoader.loadDefaultShader(diffuseTex,
                                            toColor(d),
@@ -105,7 +105,7 @@ class Loader {
                                            Color.WHITE,
                                            Color.BLACK,//toColor(a),
                                            Color.BLACK,//toColor(e),
-                                           Color.BLACK,//toColor(s),
+                                           toColor(s),
                                            shininess);
         }
     }

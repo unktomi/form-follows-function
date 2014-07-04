@@ -1345,10 +1345,10 @@ class JoglCGEffectLoader is CGEffectLoader
         }
         shader.setParameter("diffuse", diffuse);
         shader.setParameter("emissive", emissive);
-        var ambientIntensity = 
-	    vector(ambient.red, ambient.green, ambient.blue, ambient.opacity);
+        const ambientIntensity = Vec4.<<0>>;
         const lightIntensity = Vec4.<<1>> - ambientIntensity;
-        shader.setParameter("ambientIntensity", ambientIntensity);
+        shader.setParameter("ambientIntensity", ambientIntensity);        
+        shader.setParameter("ambient", ambient);
         shader.setParameter("lightIntensity", lightIntensity);
         shader.setParameter("specular", specular);
         shader.setParameter("shininess", shininess);
@@ -1783,7 +1783,8 @@ class JoglImageLoader is ImageLoader {
 	from (url is String)
 	to AbstractTexture 
     {
-        if (url.endsWith(".mp4") or url.endsWith(".mov") or url.endsWith(".wmv")) {
+        const loweredUrl = url.toLowerCase();
+        if (loweredUrl.endsWith(".mp4") or loweredUrl.endsWith(".mov") or loweredUrl.endsWith(".wmv")) {
             return Movie { url: url };
 	}
         const ref = loaded.get(url) as java.lang.ref.WeakReference;
@@ -1795,7 +1796,7 @@ class JoglImageLoader is ImageLoader {
                 var tHeight is Integer;
                 var w is Integer;
                 var h is Integer;
-                if (url.endsWith(".png")) {
+                if (loweredUrl.endsWith(".png")) {
                     try {
                         const decoder = new PNGDecoder(new java.io.BufferedInputStream(new java.net.URL(url).openStream()));
                         tWidth = decoder.getWidth();
@@ -1832,10 +1833,14 @@ class JoglImageLoader is ImageLoader {
                     }
                 }
                 if (texture == null) {
-                    //javax.imageio.ImageIO.setUseCache(false);
-                    //im = javax.imageio.ImageIO.read(new java.net.URL(url));
                     // read image
-                    im = Imaging.getBufferedImage(new java.net.URL(url).openStream());
+                    im = 
+                        if (loweredUrl.endsWith(".jpg")) then {
+                                javax.imageio.ImageIO.setUseCache(false);
+                                javax.imageio.ImageIO.read(new java.net.URL(url));
+                            } else {
+                            Imaging.getBufferedImage(new java.net.URL(url).openStream());
+                        };
                     tWidth = im.getWidth(null);
                     tHeight = im.getHeight(null);
                     w = pot(tWidth);
