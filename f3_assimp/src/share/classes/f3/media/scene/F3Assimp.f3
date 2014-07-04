@@ -1,0 +1,329 @@
+package f3.media.scene;
+import jassimp.*;
+import jassimp.AiPostProcessSteps.*;
+import f3.media.scene.*;
+import f3.media.scene.MeshBuffer.*;
+import f3.media.scene.KeyFrame.*;
+import f3.media.scene.Channel.*;
+import f3.math.*;
+
+public class NumberKey is Key of Number {
+    override var interpolator = KeyFrame.Linear;
+}
+
+function findFile from (dir is java.io.File, name is String) to java.io.File
+{
+    for (f in dir.listFiles()) {
+        if (not f.isDirectory()) {
+            if (f.getName().equalsIgnoreCase(name)) {
+                return f;
+            }
+        }
+    }
+    for (f in dir.listFiles()) {
+        if (f.isDirectory()) {
+            const r = findFile(f, name);
+            if (r <> null) {
+                return r;
+            }
+        }
+    }
+    return null;
+}
+
+class Loader {
+    var resources = new java.util.HashSet of String;
+    const imageLoader is ImageLoader;
+    const effectLoader is CGEffectLoader;
+    const filename is String;
+    const defaultShader = 
+        effectLoader.loadDefaultShader(null,
+                                       Color.GRAY,
+                                       Color.BLACK,
+                                       Color.BLACK,
+                                       Color.BLACK,
+                                       0);
+    
+    function importFile from (filename is String) to AiScene
+    {
+        try {
+            const r = Jassimp.importFile(filename, 
+                                         java.util.EnumSet.<<of>>(//CALC_TANGENT_SPACE, 
+                                                                  GEN_NORMALS, 
+                                                                  JOIN_IDENTICAL_VERTICES, 
+                                                                  TRIANGULATE, 
+                                                                  GEN_UV_COORDS));
+            println("Meshes: {r.getNumMeshes()}");
+            println("Anims: {r.getNumAnimations()}");
+            return r;
+        } catch (e is java.lang.Exception) {
+            println(Jassimp.getErrorString());
+            throw new java.lang.RuntimeException(Jassimp.getErrorString());
+        }
+    }
+    const scene = importFile(filename);
+    const wrapper = new AiBuiltInWrapperProvider();
+    function toColor from (c is AiColor) to Color
+    {
+        println("TO COLOR {c}");
+        Color.color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
+    }
+    const shaders = foreach (mat in scene.getMaterials()) {
+        var d = mat.getDiffuseColor(wrapper);
+        var a = mat.getAmbientColor(wrapper);
+        var s = mat.getSpecularColor(wrapper);
+        var e = mat.getEmissiveColor(wrapper);
+        var t = mat.getTransparentColor(wrapper);
+        var r = mat.getReflectiveColor(wrapper);
+        var diffuseCount = mat.getNumTextures(AiTextureType.DIFFUSE);
+        var diffuseTex = if (diffuseCount > 0) then {
+                const textureFilename = mat.getTextureFile(AiTextureType.DIFFUSE, 0).replace("\\", "/");
+                const dir = new java.io.File(filename).getParentFile();
+                const actual = new java.io.File(dir, textureFilename);
+                const finalFilename = if (actual.exists()) then actual else {
+                        const fname = actual.getName();
+                        findFile(dir, fname);
+                    };
+                println("texture file: {textureFilename} => {finalFilename.toURI().toString()}");
+                const tex = if (finalFilename == null) then null else imageLoader.loadImage(finalFilename.toURI().toString());
+                println("tex=>{tex} loader={imageLoader}");
+                if (tex <> null) {
+                    resources.add(finalFilename.toURI().toString());
+                }
+                tex;
+            } else null;
+        var shininess = mat.getShininess();
+        if (diffuseTex == null) {
+            effectLoader.loadDefaultShader(diffuseTex,
+                                           toColor(d),
+                                           toColor(a),
+                                           Color.BLACK,//toColor(e),
+                                           toColor(s),
+                                           shininess);
+        } else {
+            effectLoader.loadDefaultShader(diffuseTex,
+                                           Color.WHITE,
+                                           Color.BLACK,//toColor(a),
+                                           Color.BLACK,//toColor(e),
+                                           Color.BLACK,//toColor(s),
+                                           shininess);
+        }
+    }
+    const meshes = foreach (m in scene.getMeshes()) generateMesh(m);
+    const root = scene.getSceneRoot(wrapper);
+    const spatialRoot = generateScene(root);
+    const clips = foreach (x in scene.getAnimations()) TimeGroup {
+        var ticksPerSecond = x.getTicksPerSecond() as Number;
+        var tick = 1s / (if (ticksPerSecond == 0) then 24 else ticksPerSecond);
+        id: x.getName();
+        var content = foreach (ch in x.getChannels())  {
+            const qs is Tuple3[] = {
+                var tmp is Tuple3[];
+                for (i in [0..<ch.getNumRotKeys()]) {
+                    const q0 = ch.getRotKeyQuaternion(i, wrapper);
+                    const q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW());
+                    const t = q1.toAngles();
+                    insert t into tmp;
+                }
+                tmp;
+            };
+            const target is TransformNode = spatialRoot.lookup(ch.getNodeName()) as TransformNode;
+            println("{x.getName()} animation target {ch.getNodeName()} => {target}");
+            [if (ch.getNumPosKeys() > 0) {
+                [Channel of Number {
+                        id: "{x.getName()}#tx"
+                        targets: &target.tx;
+                        keys: 
+                        foreach (i in [0..<ch.getNumPosKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getPosKeyTime(i);
+                                value: ch.getPosKeyX(i)
+                            }
+                        }
+                    },
+                    Channel of Number {
+                        id: "{x.getName()}#ty"
+                        targets: &target.ty;
+                        keys: 
+                        foreach (i in [0..<ch.getNumPosKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getPosKeyTime(i);
+                                value: ch.getPosKeyY(i)
+                                    }
+                        }
+                    },
+                    Channel of Number {
+                        id: "{x.getName()}#tz"
+                        targets: &target.tz;
+                        keys: 
+                        foreach (i in [0..<ch.getNumPosKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getPosKeyTime(i);
+                                value: ch.getPosKeyZ(i);
+                            }
+                        }
+                    }];
+                } else [],
+                if (ch.getNumScaleKeys() > 0) {
+                    [Channel of Number {
+                        id: "{x.getName()}#sx"
+                        targets: &target.sx;
+                        keys: 
+                        foreach (i in [0..<ch.getNumScaleKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getScaleKeyTime(i);
+                                value: ch.getScaleKeyX(i)
+                            }
+                        }
+                    },
+                    Channel of Number {
+                        id: "{x.getName()}#sy"
+                        targets: &target.sy;
+                        keys: 
+                        foreach (i in [0..<ch.getNumScaleKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getScaleKeyTime(i);
+                                value: ch.getScaleKeyY(i)
+                                    }
+                        }
+                    },
+                    Channel of Number {
+                        id: "{x.getName()}#sz"
+                        targets: &target.sz;
+                        keys: 
+                        foreach (i in [0..<ch.getNumScaleKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getScaleKeyTime(i);
+                                value: ch.getScaleKeyZ(i);
+                            }
+                        }
+                    }];
+                } else [],
+                if (ch.getNumRotKeys() > 0) {
+                    [Channel of Number {
+                        id: "{x.getName()}#rx"
+                        targets: &target.rx;
+                        keys: foreach (i in [0..<ch.getNumRotKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getRotKeyTime(i);
+                                value: qs[i].x;
+                            }
+                       }
+                    },
+                    Channel of Number {
+                        id: "{x.getName()}#ry"
+                        targets: &target.ry;
+                        keys: 
+                        foreach (i in [0..<ch.getNumRotKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getRotKeyTime(i);
+                                value: qs[i].y;
+                            }
+                        }
+                    },
+                    Channel of Number {
+                        id: "{x.getName()}#rz"
+                        targets: &target.rz;
+                        keys: 
+                        foreach (i in [0..<ch.getNumRotKeys()]) {
+                            NumberKey {
+                                position: tick * ch.getRotKeyTime(i);
+                                value: qs[i].z;
+                            }
+                        }
+                    }]
+                } else []];
+            };
+            content: content;
+    }
+    function toMat4 from (mat is AiMatrix4f) to Mat4
+    {
+        Mat4.fromRows(foreach (r in [0..<4], c in [0..<4]) mat.get(r, c))
+    }
+    function generateMesh from (mesh is AiMesh) to AbstractMesh
+    {
+        const mb = MeshBuffer {
+            indexBuffer: mesh.getFaceBuffer();
+            vertexBuffer: VertexAttributeBuffer { 
+                id: "POSITION";
+                coordsPerVertex: 3;
+                buffer: mesh.getPositionBuffer();
+            }
+            normalBuffer: VertexAttributeBuffer { 
+                id: "NORMAL";
+                coordsPerVertex: 3;
+                buffer: mesh.getNormalBuffer();
+            }
+            textureBuffers: foreach (i in [0..<JassimpConfig.MAX_NUMBER_TEXCOORDS]) {
+                const buf = mesh.getTexCoordBuffer(i);
+                if (buf == null) then null else {
+                        println("texcoord: {i} {mesh.getNumUVComponents(i)}");
+                        VertexAttributeBuffer {
+                            id: "TEXCOORD{i}";
+                            coordsPerVertex: mesh.getNumUVComponents(i); 
+                            buffer: buf;
+                        }
+                    }
+            }
+        };
+        println("created mesh: texCoords: {mb.textureBuffers.size()}");
+        mb.toMesh();
+    }
+    function generateScene from (x is AiNode) to TransformNode {
+        TransformNode {
+            id: x.getName();
+            content: Group {
+                id: "{x.getName()}#content"
+                transform: toMat4(x.getTransform(wrapper));
+                var meshIndices is Integer[] = x.getMeshes();
+                var meshNodes is MeshNode[] = foreach (i in meshIndices) {
+                    MeshNode 
+                    { 
+                        shader: shaders[scene.getMeshes().get(i).getMaterialIndex()];
+                        id: "{x.getName()}#{scene.getMeshes().get(i).getName()}";
+                        mesh: meshes[i];
+                    }
+                }
+                content: [foreach (c in x.getChildren()) generateScene(c), meshNodes];
+            }
+        }
+    }
+}
+    
+class ModelContent {
+    public var resources is String[]; 
+    public var spatialRoot is Node;
+    public var temporalRoot is TimeNode;
+}
+
+public class F3Assimp {
+    public var url is String;
+    public readonly var spatialRoot is Node = bind modelContent.spatialRoot;
+    public readonly var temporalRoot is TimeNode = bind modelContent.temporalRoot;
+    public bound function getSpatialRoot to Node { spatialRoot }
+    public bound function getTemporalRoot to TimeNode { temporalRoot }
+    public const effectLoader is CGEffectLoader = the CGEffectLoader;
+    public const imageLoader is ImageLoader = the ImageLoader;
+    bound var modelContent is ModelContent = load(url, effectLoader);
+    public bound function getResources to String[]  
+    {
+        modelContent.resources;
+    }
+    function toFilename from (u is String) to String
+    {
+        const u1 = new java.net.URL(u);
+        new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null)).getAbsolutePath();
+    }
+    function load from (url is String, effectLoader is CGEffectLoader) to ModelContent {
+        const loader = Loader {
+            effectLoader: effectLoader;
+            imageLoader: imageLoader;
+            filename: toFilename(url);
+        }
+        ModelContent {
+            spatialRoot: loader.spatialRoot;
+            temporalRoot: TimeGroup { id: url content: loader.clips }
+            resources: foreach (x in loader.resources) x;
+        }
+    }
+}

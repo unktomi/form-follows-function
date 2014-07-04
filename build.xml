@@ -890,6 +890,10 @@
         <ant dir="f3_xhtml" antfile="build.xml" inheritAll="false" target="jar">
         </ant>
       </target>
+    <target name="f3.assimp" depends="jar">
+        <ant dir="f3_assimp" antfile="build.xml" inheritAll="false" target="jar">
+        </ant>
+      </target>
 
     <target name="f3.fmod" depends="jar">
         <ant dir="f3_fmod" antfile="build.xml" inheritAll="false" target="jar">
