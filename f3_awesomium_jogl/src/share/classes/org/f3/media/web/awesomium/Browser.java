@@ -643,6 +643,7 @@ public class Browser implements AbstractWebBrowser {
                             TagNode t = (TagNode)htmlNode;
                             if (t.getName().equalsIgnoreCase("video")) {
                                 String id = t.getAttributeByName("id");
+                                if (id == null) id = "";
                                 String width = t.getAttributeByName("width");
                                 String height = t.getAttributeByName("height");
                                 int w = parseDim(width, Browser.this.width);
@@ -652,6 +653,7 @@ public class Browser implements AbstractWebBrowser {
                                 System.err.println("created video: "+id);
                             } else if (t.getName().equalsIgnoreCase("audio")) {
                                 String id = t.getAttributeByName("id");
+                                if (id == null) id = "";
                                 String src = t.getAttributeByName("src");
                                 Audio audio = new AudioImpl(id, src);
                                 Browser.this.audio.add(audio);
@@ -700,12 +702,13 @@ public class Browser implements AbstractWebBrowser {
                     String id = (String)src.get("id");
                     System.err.println("id="+id);
                     if (id == null || "null".equals(id)) {
-                        id = null;
+                        id = "";
                     }
                     if ("loadstart".equals(eventType)) {
                         src.put("preload", "metadata");
                     }
                     else if ("loadedmetadata".equals(eventType)) {
+                        System.err.println("loadedmetadata: "+event);
                         String script;
                         if (id == null) { 
                             script = "document.getElementsByTagName('video')";
@@ -716,21 +719,24 @@ public class Browser implements AbstractWebBrowser {
                         executeJavascript("{ var v = "+script+"; v.autoplay = false; v.pause(); }");
                     } 
                     for (Video vid: videos) {
-                        if (id == null || vid.getId() == null || vid.getId().equals(id)) {
+                        if (vid.getId().equals(id)) {
                             ((VideoImpl)vid).handleEvent(eventType, event);
                             break;
                         }
                     }
-                    for (Audio vid: audio) {
-                        if (id == null || vid.getId() == null || id.equals(vid.getId())) {
-                            ((AudioImpl)vid).handleEvent(eventType, event);
+                    for (Audio aud: audio) {
+                        if (aud.getId().equals(id)) {
+                            ((AudioImpl)aud).handleEvent(eventType, event);
                             break;
                         }
                     }
                 }
             };
         addEventListener("loadedmetadata", mediaListener);
+        addEventListener("durationchange", mediaListener);
         addEventListener("loadstart", mediaListener);
+        addEventListener("progress", mediaListener);
+        addEventListener("canplay", mediaListener);
         addEventListener("play", mediaListener);
         addEventListener("pause", mediaListener);
     }
@@ -990,7 +996,7 @@ public class Browser implements AbstractWebBrowser {
             this.height = height;
         }
         public String getLabel() {
-            return getId() == null ? "Video" : getId();
+            return "".equals(getId()) ? "Video" : getId();
         }
     }
 
@@ -1004,7 +1010,7 @@ public class Browser implements AbstractWebBrowser {
             return src;
         }
         public String getLabel() {
-            return getId() == null ? ("Audio - "+getSrc()) : getId();
+            return "".equals(getId()) ? ("Audio - "+getSrc()) : getId();
         }
     }
 
