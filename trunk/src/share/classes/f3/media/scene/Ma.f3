@@ -1681,7 +1681,9 @@ abstract class MMeshDeformer is MNode {
         println("gp {name} => {gp.name}");
         var done = false;
         while (not done) {
-            for (c in gp.connectionsToThis.get("ig")) {
+            const conns = gp.connectionsToThis.get("ig");
+            if (conns.size() == 0) break;
+            for (c in conns) {
                 println(c);
                 const sp = parsePath(c.sourcePath).path;
                 const name = (sp[0] as Field).name;
