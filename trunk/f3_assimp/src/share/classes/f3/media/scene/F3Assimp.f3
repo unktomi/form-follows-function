@@ -271,7 +271,7 @@ class Loader {
     }
     function generateScene from (x is AiNode) to TransformNode {
         TransformNode {
-            id: x.getName();
+            id: if x == root then url else x.getName();
             content: Group {
                 id: "{x.getName()}#content"
                 transform: toMat4(x.getTransform(wrapper));
