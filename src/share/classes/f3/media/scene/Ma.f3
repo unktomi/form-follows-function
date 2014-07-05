@@ -13,7 +13,6 @@ import f3.media.scene.meshdeform.SkinCluster;
 import f3.media.scene.meshdeform.MeshDeformer;
 import f3.util.Bits;
 
-
 class MAttr {
     const longName is String;
     const shortName is String;
@@ -105,6 +104,12 @@ class MaModel
                 then MOrientConstraint {name: name  parent: findNode(parent)}
             else if (nodeType == "aimConstraint") 
                 then MAimConstraint {name: name  parent: findNode(parent)}
+            else if (nodeType == "poleVectorConstraint") 
+                then MPoleVectorConstraint {name: name  parent: findNode(parent)}
+            else if (nodeType == "ikHandle") 
+                then MIKHandle {name: name  parent: findNode(parent)}
+            else if (nodeType == "ikEffector") 
+                then MIKEffector {name: name  parent: findNode(parent)}
             else if (nodeType == "tweak") 
                 then MTweak {name: name  parent: findNode(parent)}
             else if (nodeType == "rigidBody") 
@@ -1928,6 +1933,54 @@ class MBlendShape is MMeshDeformer {
     }
 }
 
+class MIKHandle is MSpatial {
+    public var pv is Vec3;
+    public var rol is Number;
+    public var tw is Number;
+    override function setAttr from (cmd is Command) to () 
+    {
+        const attr = cmd.getAttr();
+        if (attr == "pv") {
+            pv = cmd.getVec3();
+        } else if (attr == "rol") {
+            rol = cmd.getFloat();
+        } else if (attr == "tw") {
+            tw = cmd.getFloat();
+        } else super.setAttr(cmd);
+    }
+    override function toNode from (m is MaModel) to Node
+    {
+        /*
+        var hsj is Joint;
+        var hee is Node;
+        var poleVectorConstraint is Node;
+        for (c in connectionsToThis.get("hsj")) {
+            hsj = m.toNode(c.targetNode as MSpatial) as Joint;
+        }
+        for (c in connectionsToThis.get("hee")) {
+            hee = m.toNode(c.targetNode as MSpatial) as Node;
+        }
+        for (c in connectionsToThis.get("pvx")) {
+            poleVectorConstraint = m.toNode(c.targetNode as MSpatial) as Node;
+        }
+        IKHandleNode {
+            pv: pv;
+            joint: hsj;
+            effector: hee;
+            roll: rol;
+            twist: tw;
+        }
+        */
+        return null;
+    }
+}
+
+class MPoleVectorConstraint is MPointConstraint {
+}
+
+class MIKEffector is MNode {
+}
+
 class MJoint is MTransform {
 
     var jox is Number;
@@ -3181,7 +3234,6 @@ class MShader is MAbstractShader
         println("emissive => {emissive}");
         println("specular => {specular}");
         println("shininess => {shininess}");
-        const dcColor = Color.color(dc, dc, dc);
         const shader = m.effectLoader.loadDefaultShader(image,
                                                         diffuse,
                                                         ambient,
@@ -3282,6 +3334,12 @@ abstract class MAnimCurve of a is MTemporal
                     insert 1.0 into kix;
                 }
                 kix[r.startIndex..r.endIndex] = values;
+            } else if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (kix.size() < r.startIndex) {
+                    insert 1.0 into kix;
+                }
+                kix[r.startIndex..r.endIndex] = values;
             } else {
                 kix = values;
             }
@@ -3295,6 +3353,12 @@ abstract class MAnimCurve of a is MTemporal
                     insert 0.0 into kiy;
                 }
                 kiy[r.startIndex..r.endIndex] = values;
+            } else if (p[1] instanceof Index) {
+                const r = p[1] as Index;
+                while (kiy.size() < r.index) {
+                    insert 0.0 into kiy;
+                }
+                kiy[r.index..r.index] = values;
             } else {
                 kiy = values;
             }
@@ -3308,6 +3372,12 @@ abstract class MAnimCurve of a is MTemporal
                     insert 1.0 into kox;
                 }
                 kox[r.startIndex..r.endIndex] = values;
+            } else if (p[1] instanceof Index) {
+                const r = p[1] as Index;
+                while (kox.size() < r.index) {
+                    insert 1.0 into kox;
+                }
+                kox[r.index..r.index] = values;
             } else {
                 kox = values;
             }
@@ -3321,6 +3391,12 @@ abstract class MAnimCurve of a is MTemporal
                     insert 0.0 into koy;
                 }
                 koy[r.startIndex..r.endIndex] = values;
+            } else if (p[1] instanceof Index) {
+                const r = p[1] as Index;
+                while (koy.size() < r.index) {
+                    insert 0.0 into koy;
+                }
+                koy[r.index..r.index] = values;
             } else {
                 koy = values;
             }
@@ -3334,6 +3410,12 @@ abstract class MAnimCurve of a is MTemporal
                     insert 0 into kit;
                 }
                 kit[r.startIndex..r.endIndex] = values;
+            } else if (p[1] instanceof Index) {
+                const r = p[1] as Index;
+                while (kit.size() < r.index) {
+                    insert 0 into kit;
+                }
+                kit[r.index..r.index] = values;
             } else {
                 kit = values;
             }
@@ -3346,6 +3428,12 @@ abstract class MAnimCurve of a is MTemporal
                     insert 0 into kot;
                 }
                 kot[r.startIndex..r.endIndex] = values;
+            } else if (p[1] instanceof Range) {
+                const r = p[1] as Index;
+                while (kot.size() < r.index) {
+                    insert 0 into kot;
+                }
+                kot[r.index..r.index] = values;
             } else {
                 kot = values;
             }
@@ -3992,6 +4080,8 @@ public class MaTransform is Group
     public readonly var r is Mat4 = bind rotate(rx, ry, rz, ro);
     // scale
     public readonly var s is Tuple3 = bind tuple(sx, sy, sz);
+
+    public readonly var rp is Point3 = bind point(rpx, rpy, rpz);
     
     override var transform = 
         bind if (constraint <> null) then constraint.transform else
@@ -4012,6 +4102,9 @@ public class MaTransform is Group
 }
 
 public class Joint is MaTransform {
+    public function setIKRotation from (rot is Quat) to ()
+    {
+    }
     public var jox is Number;
     public var joy is Number;
     public var joz is Number;
