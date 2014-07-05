@@ -1846,6 +1846,7 @@ class MSkinCluster is MMeshDeformer {
         resolvedTarget.visible = true;
         println("CREATING SKIN CLUSTER with {joints.size()} joints {weights.size()} weights");
         const result = SkinCluster {
+            indexBuffer: resolvedTarget.mesh.getIndexBuffer();
             sourceVertices: sourceVertices;
             sourceNormals: sourceNormals;
             targetVertices: resolvedTarget.mesh.getVertexBuffer();

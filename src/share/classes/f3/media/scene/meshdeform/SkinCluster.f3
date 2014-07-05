@@ -6,6 +6,7 @@ import java.util.concurrent.*;
 
 public class SkinCluster is MeshDeformer {
     public var root is Node;
+    public var indexBuffer is IntBuffer;
     public var sourceVertices is FloatBuffer;
     public var sourceNormals is FloatBuffer;
     public var targetVertices is FloatBuffer;
@@ -13,7 +14,7 @@ public class SkinCluster is MeshDeformer {
     public const joints is Node[];
     public const weights is Number[];
     public const bindPreMatrices is Mat4[];
-    public const geomMatrix is Mat4;
+    public var geomMatrix is Mat4;
     var bindShapeInverse is Mat4f = new Mat4f();
     var bindShape is Mat4f = new Mat4f();
     var jointMats is Mat4f[];
@@ -90,7 +91,7 @@ public class SkinCluster is MeshDeformer {
         }
         var i = 0;
         while (i < weights.size()) {
-            const vert = (weights[i++] * 3) as Integer;
+            const vert = (weights[i++] as Integer) * 3;
             const numInfluences = weights[i++] as Integer;
             pos.set(0, 0, 0);
             norm.set(0, 0, 0);

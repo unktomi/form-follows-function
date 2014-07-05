@@ -2,10 +2,17 @@ package f3.media.scene;
 import jassimp.*;
 import jassimp.AiPostProcessSteps.*;
 import f3.media.scene.*;
+import f3.media.scene.meshdeform.*;
 import f3.media.scene.MeshBuffer.*;
 import f3.media.scene.KeyFrame.*;
 import f3.media.scene.Channel.*;
 import f3.math.*;
+
+const DISABLE_DEFORMERS = Boolean.getBoolean("f3.assimp.disable.deformers");
+
+class WeightList {
+    public var w is Number[];
+}
 
 public class NumberKey is Key of Number {
     override var interpolator = KeyFrame.Linear;
@@ -49,9 +56,13 @@ class Loader {
         try {
             const r = Jassimp.importFile(filename, 
                                          java.util.EnumSet.<<of>>(//CALC_TANGENT_SPACE, 
-                                                                  GEN_NORMALS, 
-                                                                  JOIN_IDENTICAL_VERTICES, 
+                                                                  GEN_SMOOTH_NORMALS, 
+                                                                  //JOIN_IDENTICAL_VERTICES, 
                                                                   TRIANGULATE, 
+                                                                  //OPTIMIZE_MESHES,
+                                                                  //SPLIT_LARGE_MESHES,
+                                                                  //SORT_BY_PTYPE,
+                                                                  //DEBONE,
                                                                   GEN_UV_COORDS));
             println("Meshes: {r.getNumMeshes()}");
             println("Anims: {r.getNumAnimations()}");
@@ -112,6 +123,25 @@ class Loader {
     const meshes = foreach (m in scene.getMeshes()) generateMesh(m);
     const root = scene.getSceneRoot(wrapper);
     const spatialRoot = generateScene(root);
+
+    function generateAllDeformers to ()
+    {
+        foreach (i in [0..<scene.getMeshes().size()]) {
+            const mesh = meshes[i];
+            const d = generateDeformer(i);
+            if (d <> null) {
+                spatialRoot.foldLeft((), function from (_ is (), n is Node) to () {
+                        if (n is MeshNode) {
+                            const mn = n as MeshNode;
+                            if (mn.mesh == mesh) {
+                                insert d into mn.deformers;
+                            }
+                        }
+                    });
+            }
+        }
+    }
+
     const clips = foreach (x in scene.getAnimations()) TimeGroup {
         var ticksPerSecond = x.getTicksPerSecond() as Number;
         var tick = 1s / (if (ticksPerSecond == 0) then 24 else ticksPerSecond);
@@ -266,24 +296,87 @@ class Loader {
                     }
             }
         };
-        println("created mesh: texCoords: {mb.textureBuffers.size()}");
-        mb.toMesh();
+        const result = mb.toMesh();
+        println("created mesh {mesh.getName()}: {result.vertices.getVertexCount()}, texCoords: {mb.textureBuffers.size()}");
+        result;
     }
-    function generateScene from (x is AiNode) to TransformNode {
+
+    function generateDeformer from (i is Integer) to SkinCluster
+    {
+        const sceneMesh = scene.getMeshes().get(i);
+        if (sceneMesh.hasBones() and sceneMesh.getBones().size() > 1) {
+            const mesh = meshes[i];
+            const ib = mesh.getIndexBuffer();
+            println("generate deformer: ib={ib.limit()} vert={mesh.getVertexBuffer().limit()}");
+            var weights is Number[];
+            var pm is Mat4[];
+            const map = new java.util.TreeMap of (Integer, WeightList);
+            var joints is Node[];
+            for (x in sceneMesh.getBones()) {
+                const jointIndex = indexof x;
+                for (wt in x.getBoneWeights()) {
+                    const v = ib.get(wt.getVertexId());
+                    println("joint: {jointIndex}, vertex: {v}, weight: {wt.getWeight()}");
+                    var wl = map.get(v);
+                    if (wl == null) {
+                        wl = WeightList {};
+                        map.put(v, wl);
+                    }
+                    const w = wt.getWeight();
+                    insert jointIndex into wl.w;
+                    insert w into wl.w;
+                }
+                const m = x.getOffsetMatrix(wrapper);
+                const joint = spatialRoot.lookup(x.getName());
+                const m1 = toMat4(m);
+                insert m1 into pm;
+                println("Joint {jointIndex} => {joint.id} {joint} pm=\n{m1}");
+                insert joint into joints;
+            }
+            for (ent in map.entrySet()) {
+                const v is Integer = ent.getKey();
+                const wl = ent.getValue();
+                for (ii in [0..<wl.w.size() step 2]) {
+                    println("\"wl[{v}].w[{wl.w[ii]}]\" {wl.w[ii+1]};");                     
+                }
+                insert v into weights;
+                insert wl.w.size() / 2 into weights;
+                insert wl.w into weights;
+            }
+            const sourceVertices = BufferUtils.clone(mesh.getVertexBuffer());
+            const sourceNormals = BufferUtils.clone(mesh.getNormalBuffer());
+            const deformer = SkinCluster {
+                root: spatialRoot;
+                indexBuffer: mesh.getIndexBuffer();
+                sourceVertices: sourceVertices;
+                sourceNormals: sourceNormals;
+                targetVertices: mesh.getVertexBuffer();
+                targetNormals: mesh.getNormalBuffer();
+                joints: joints;          
+                weights: weights;
+                bindPreMatrices: pm;
+                geomMatrix: Mat4.<<1>>; // already applied to pm by assimp
+            }
+        } else null
+    }
+
+    function generateScene from (x is AiNode) to Node {
         TransformNode {
             id: if x == root then url else x.getName();
-            content: Group {
-                id: "{x.getName()}#content"
-                transform: toMat4(x.getTransform(wrapper));
-                var meshIndices is Integer[] = x.getMeshes();
-                var meshNodes is MeshNode[] = foreach (i in meshIndices) {
-                    MeshNode 
-                    { 
-                        shader: shaders[scene.getMeshes().get(i).getMaterialIndex()];
-                        id: "{x.getName()}#{scene.getMeshes().get(i).getName()}";
-                        mesh: meshes[i];
-                    }
+            var meshIndices is Integer[] = x.getMeshes();
+            var meshNodes is MeshNode[] = foreach (i in meshIndices) {
+                const sceneMesh = scene.getMeshes().get(i);
+                const mesh = meshes[i];
+                MeshNode 
+                { 
+                    id: "{x.getName()}#mesh";
+                    shader: shaders[sceneMesh.getMaterialIndex()];
+                    mesh: mesh;
                 }
+            }
+            content: Group {
+                id: "{x.getName()}#content";
+                transform: toMat4(x.getTransform(wrapper));
                 content: [foreach (c in x.getChildren()) generateScene(c), meshNodes];
             }
         }
@@ -297,6 +390,7 @@ class ModelContent {
 }
 
 public class F3Assimp {
+
     public var url is String;
     public readonly var spatialRoot is Node = bind modelContent.spatialRoot;
     public readonly var temporalRoot is TimeNode = bind modelContent.temporalRoot;
@@ -305,20 +399,26 @@ public class F3Assimp {
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
     bound var modelContent is ModelContent = load(url, effectLoader);
+
     public bound function getResources to String[]  
     {
         modelContent.resources;
     }
+
     function toFilename from (u is String) to String
     {
         const u1 = new java.net.URL(u);
         new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null)).getAbsolutePath();
     }
+
     function load from (url is String, effectLoader is CGEffectLoader) to ModelContent {
         const loader = Loader {
             effectLoader: effectLoader;
             imageLoader: imageLoader;
             filename: toFilename(url);
+        }
+        if (not DISABLE_DEFORMERS) {
+            loader.generateAllDeformers();
         }
         ModelContent {
             spatialRoot: loader.spatialRoot;
