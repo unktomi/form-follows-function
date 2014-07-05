@@ -15,7 +15,7 @@ public interface Stage
     public var width is Integer = 640;
     public var height is Integer = 480;
     public var content is Scene[];
-
+    
     public function resize 
 	from (width is Integer, height is Integer, outsideWidth is Integer, outsideHeight is Integer) 
 	to () 

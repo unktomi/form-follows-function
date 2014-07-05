@@ -114,6 +114,11 @@ public class FloatBufferBuilder {
         curIndex++;
     }
 
+    public FloatBufferBuilder put(float val) {
+        add(val);
+        return this;
+    }
+
     public void add(float val) {
         reserve(1);
         if (cached != null) {

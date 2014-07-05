@@ -106,6 +106,11 @@ public class IntBufferBuilder {
         curIndex++;
     }
 
+    public IntBufferBuilder put(int val) {
+        add(val);
+        return this;
+    }
+
     public void add(int val) {
         reserve(1);
         if (cached != null) {
