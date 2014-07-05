@@ -1402,9 +1402,9 @@ class F3AnalyzeClass {
         // Lastly, insert any mixin vars and methods from the interfaces.
         for (F3Expression supertype : currentClassDecl.getSupertypes()) {
             // This will technically only analyze mixin classes.
-            // We also want to clone all mixin vars amnd methods.
+            // We also want to clone all mixin vars and methods.
 	    typeMap.put(supertype.type.tsym, supertype.type);
-            analyzeClass(supertype.type.tsym, true, true);
+            analyzeClass(supertype.type.tsym, true, isMixinClass(supertype.type.tsym));
         }
 
         for (String key: toRemove) { // hack...
@@ -1530,7 +1530,7 @@ class F3AnalyzeClass {
 		if (supertype.tsym instanceof ClassSymbol) {
 		    ClassSymbol iSym = (ClassSymbol) supertype.tsym;
 		    //		System.err.println("analyzing: " +iSym);
-		    analyzeClass(iSym, false, true);
+		    analyzeClass(iSym, false, needsCloning);
 		}
             }
 
