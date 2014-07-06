@@ -113,11 +113,19 @@ class MaModel
             else if (nodeType == "tweak") 
                 then MTweak {name: name  parent: findNode(parent)}
             else if (nodeType == "rigidBody") 
-                then MRigidBody {name: name  parent: findNode(parent)}
+                then MLegacyRigidBody {name: name  parent: findNode(parent)}
             else if (nodeType == "rigidConstraint") 
-                then MRigidConstraint {name: name  parent: findNode(parent)}
+                then MLegacyRigidConstraint {name: name  parent: findNode(parent)}
             else if (nodeType == "bulletRigidBodyShape") 
                 then MBulletRigidBodyShape {name: name  parent: findNode(parent)}
+            else if (nodeType == "bulletRigidBodyConstraintShape") 
+                then MBulletRigidBodyConstraintShape {name: name  parent: findNode(parent)}
+            else if (nodeType == "gravityField") 
+                then MGravityField {name: name  parent: findNode(parent)}
+            else if (nodeType == "radialField") 
+                then MRadialField {name: name  parent: findNode(parent)}
+            else if (nodeType == "vortexField") 
+                then MVortexField {name: name  parent: findNode(parent)}
             else if (nodeType == "choice") 
                 then MChoice {name: name  parent: findNode(parent)}
             else if (nodeType == "script") {
@@ -224,6 +232,15 @@ class MaModel
     const deformerMap is java.util.Map of (MNode, MeshDeformer) = 
         new java.util.HashMap of (MNode, MeshDeformer) ();
 
+    const rigidBodyMap is java.util.Map of (MNode, Collider) = 
+        new java.util.HashMap of (MNode, Collider) ();
+
+    const rigidBodyConstraintMap is java.util.Map of (MNode, RigidBodyConstraint) = 
+        new java.util.HashMap of (MNode, RigidBodyConstraint) ();
+
+    const forceFieldMap is java.util.Map of (MNode, ForceField) = 
+        new java.util.HashMap of (MNode, ForceField) ();
+
     public var url is String;
 
     public var spatialRoot is Group;
@@ -234,6 +251,7 @@ class MaModel
     var clipLibs is TimeGroup[];
 
     function checkDeformers() {
+        /*
         const disable = temporalRoot.bounds.duration() == 0s;
         if (disable) {
             spatialRoot.foldLeft((), function from (_ is (), n is Node) to ()
@@ -244,6 +262,7 @@ class MaModel
                                      }
                                  });
         }
+        */
     }
 
 
@@ -502,6 +521,33 @@ class MaModel
         return ch;
     }
 
+    function toForceField from (n is MField) to ForceField
+    {
+        if (forceFieldMap.containsKey(n)) then forceFieldMap.get(n) else {
+                const f = n.toForceField(this);
+                forceFieldMap.put(n, f);
+                f;
+            };
+    }
+
+    function toRigidBody from (n is MRigidBody) to Collider
+    {
+        if (rigidBodyMap.containsKey(n)) then rigidBodyMap.get(n) else {
+                const rb = n.toRigidBody(this);
+                rigidBodyMap.put(n, rb);
+                rb;
+            };
+    }
+
+    function toRigidBodyConstraint from (n is MRigidBodyConstraint) to RigidBodyConstraint
+    {
+        if (rigidBodyConstraintMap.containsKey(n)) then rigidBodyConstraintMap.get(n) else {
+                const rbc = n.toRigidBodyConstraint(this);
+                rigidBodyConstraintMap.put(n, rbc);
+                rbc;
+            };
+    }
+
     var defaultShader is Shader;
     function getDefaultShader to Shader {
         if (defaultShader == null) {
@@ -516,13 +562,14 @@ class MaModel
         return defaultShader;
     }
 
+
     function toShader from (n is MAbstractShader) to Shader
     {
         if (n == null) {
             getDefaultShader();
         } else {
             if (shaderMap.containsKey(n)) then shaderMap.get(n) else {
-                    var shader = n.toShader(this);
+                    const shader = n.toShader(this);
                     shaderMap.put(n, shader);
                 }
         }
@@ -628,6 +675,10 @@ class MaModel
                     const skinCluster = toSkinCluster(n as MSkinCluster);
                     skinCluster.root = spatialRoot;
                     skinCluster;
+                } else if (n instanceof MRigidBody) {
+                    toRigidBody(n as MRigidBody);
+                } else if (n instanceof MRigidBodyConstraint) {
+                    toRigidBodyConstraint(n as MRigidBodyConstraint);
                 } else null
         }
         const startFrame = this.startFrame;
@@ -1713,7 +1764,8 @@ abstract class MMeshDeformer is MNode {
                     break;
                 } else if (c.sourceNode is MMeshDeformer and name == "og") {
                     const d = c.sourceNode as MMeshDeformer;
-                    sourceMesh = d.resolveSourceMesh();
+                    sourceMesh = d.resolveTargetMesh();
+                    sourceIsStatic = false;
                     done = true;
                     break;
                 } else {
@@ -1732,6 +1784,8 @@ abstract class MMeshDeformer is MNode {
         }
         return targetMesh;
     }
+
+    protected var sourceIsStatic is Boolean = true;
 
     function resolveMeshes {
         resolveSourceMesh();
@@ -1847,18 +1901,27 @@ class MSkinCluster is MMeshDeformer {
                 }
             }
         }
-        if (resolvedSource.mesh.getVertexBuffer() == null or 
-            resolvedTarget.mesh.getVertexBuffer() == null) {
-            return null;
+        if (resolvedSource.mesh.getVertexBuffer() == null) {
+            println("No resolvedSource buffer: {resolvedSource.mesh}");
         }
-        const sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
-        const sourceNormals = BufferUtils.clone(resolvedSource.mesh.getNormalBuffer());
-        resolvedTarget.mesh = resolvedSource.mesh;
+        if (resolvedTarget.mesh.getVertexBuffer() == null) {
+            println("No resolvedTarget buffer: {resolvedTarget.mesh}");
+        }
+        var sourceVertices = resolvedSource.mesh.getVertexBuffer();
+        var sourceNormals = resolvedSource.mesh.getNormalBuffer();
+        if (sourceIsStatic) {
+            sourceVertices = BufferUtils.clone(sourceVertices);
+            sourceNormals = BufferUtils.clone(sourceNormals);
+            resolvedTarget.mesh = resolvedSource.mesh;
+        }
         println("resolved source shader: {resolvedSource.shader}");
         println("resolved target shader: {resolvedTarget.shader}");
         if (resolvedTarget.shader == null or resolvedTarget.shader == m.getDefaultShader()) {
             println("using source shader");
             resolvedTarget.shader = resolvedSource.shader; // hack?
+            if (resolvedTarget.shader == null) {
+                resolvedTarget.shader = m.getDefaultShader();
+            }
         } 
         resolvedSource.visible = false;
         resolvedTarget.visible = true;
@@ -2762,8 +2825,8 @@ class MMesh is MSpatial
         println("RIGID BODY conns=>{conns}");
         for (conn in conns) {
             println("RIGID BODY conn=>{conn}");
-            if (conn.targetNode is MRigidBody) {
-                const rigidBody = conn.targetNode as MRigidBody;
+            if (conn.targetNode is MLegacyRigidBody) {
+                const rigidBody = conn.targetNode as MLegacyRigidBody;
                 const chc = rigidBody.connectionsFromThis.get("chc");
                 println("RIGID BODY chc=>{chc}");
                 var target is Collider;
@@ -2783,50 +2846,61 @@ class MMesh is MSpatial
                 target = dynamicsWorld.createCollider(targetNode);
                 target.dynamic = rigidBody.act;
                 target.mass = rigidBody.mas;
-                const ip = rigidBody.ip;
+                const ip = rigidBody.ip; 
+                const com = rigidBody.com;
                 const iv = rigidBody.iv;
                 const isp = rigidBody.isp;
                 const ior = rigidBody.ior;
-                targetNode.tx = ip.x;
-                targetNode.ty = ip.y;
-                targetNode.tz = ip.z;
+                //targetNode.tx = ip.x;
+                //targetNode.ty = ip.y;
+                //targetNode.tz = ip.z;
                 target.collisionInitialVelocity = iv;
                 target.collisionInitialSpin = isp;
                 target.collisionInitialOrientation = ior;
+                target.collisionInitialPosition = ip;
                 target.friction = rigidBody.sf;
                 target.restitution = rigidBody.b;
                 target.centerOfMass = rigidBody.com;
                 targetNode.collider = target;
             }
         }
-        const bulletConns = connectionsFromThis.get("imesh");
+        const bulletConns = connectionsFromThis.get("o");
         for (conn in bulletConns) {
-            const b = conn.targetNode as MBulletRigidBodyShape;
-            var targetNode is MaTransform;
-            var target is Collider;
-            for (x in b.connectionsToThis.get("inwmat")) {
-                const tn = m.toNode(x.targetNode as MSpatial);
-                println("BULLET RIGID BODY tn=>{tn}");
-                if (tn <> null) {
-                    targetNode = tn as MaTransform;
+            if (conn.targetNode is MBulletRigidBodyShape) {
+                const b = conn.targetNode as MBulletRigidBodyShape;
+                var targetNode is MaTransform;
+                var target is Collider;
+                for (x in b.connectionsToThis.get("inwmat")) {
+                    const tn = m.toNode(x.sourceNode as MSpatial);
+                    println("BULLET RIGID BODY tn=>{tn}");
+                    if (tn <> null) {
+                        targetNode = tn as MaTransform;
+                    }
+                }
+                if (targetNode <> null) {
+                    target = dynamicsWorld.createCollider(targetNode);
+                    target.dynamic = (b.bdytyp == 2);
+                    target.mass = b.ms;
+                    target.centerOfMass = b.com;
+                    target.friction = b.fric;
+                    target.restitution = b.restit;
+                    target.collisionInitialVelocity = b.iv;
+                    target.linearDamping = b.lindamp;
+                    target.angularDamping = b.angdamp;
+                    targetNode.collider = target;
+                    target.collisionInitialPosition = b.itrs;
+                    targetNode.tx = b.itrs.x;
+                    targetNode.ty = b.itrs.y;
+                    targetNode.tz = b.itrs.z;
+                    break;
                 }
             }
-            target = dynamicsWorld.createCollider(targetNode);
-            target.active = (b.bdytyp == 2);
-            target.mass = b.ms;
-            target.centerOfMass = b.com;
-            target.friction = b.fric;
-            target.restitution = b.restit;
-            target.collisionInitialVelocity = b.iv;
-            target.linearDamping = b.lindamp;
-            target.angularDamping = b.angdamp;
-            targetNode.collider = target;
         }
         return r0;
     }
 }
 
-class MRigidBody is MNode {
+class MLegacyRigidBody is MNode {
     public var act is Boolean = true; // active
     public var mas is Number = 1; // mass
     public var ip is Point3; // initial position
@@ -2862,9 +2936,9 @@ class MRigidBody is MNode {
     }
 }
 
-class MRigidConstraint is MNode {
-    var rb1 is MRigidBody;
-    var rb2 is MRigidBody;
+class MLegacyRigidConstraint is MNode {
+    var rb1 is MLegacyRigidBody;
+    var rb2 is MLegacyRigidBody;
     var ip is Point3;
     var ino is Vec3;
     var typ is Integer;
@@ -2881,7 +2955,363 @@ class MRigidConstraint is MNode {
     }
 }
 
-class MBulletRigidBodyShape is MNode {
+abstract class MField is MTransform {
+    public function toForceField from (m is MaModel) to ForceField;
+    public var mag is Number;
+    public var att is Number;
+    public var maxDistance is Number = -1;
+
+    override public function getPointer
+        from (ptr is String, target is Object) 
+        to Ref of ?
+    {
+        println("get pointer {name} attr={ptr} target={target}");
+        const n = target as ForceFieldNode;
+        if (ptr == "mag") {
+            &n.forceField.magnitude;
+        } else if (ptr == "att") {
+            &n.forceField.attenuation;
+        } else if (ptr == "max") {
+            &n.forceField.maxDistance;
+        } else super.getPointer(ptr, target);
+    }
+
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "mag") {
+            mag = cmd.getFloat();
+        } else if (n == "att") {
+            att = cmd.getFloat();
+        } else if (n == "max") {
+            maxDistance = cmd.getFloat();
+        } else super.setAttr(cmd);
+    }
+
+    override function toNode from (m is MaModel) to Node 
+    {
+        const tn = ForceFieldNode {
+
+            visible: visible;
+
+            id: name
+
+            tx: t.x;
+            ty: t.y;
+            tz: t.z;
+
+            sx: s.x;
+            sy: s.y;
+            sz: s.z;
+
+            rx: r.x;
+            ry: r.y;
+            rz: r.z;
+
+            ro: ro;
+
+            rpx: rp.x;
+            rpy: rp.y;
+            rpz: rp.z;
+
+            spx: sp.x;
+            spy: sp.y;
+            spz: sp.z;
+
+            rptx: rpt.x;
+            rpty: rpt.y;
+            rptz: rpt.z;
+
+            sptx: spt.x;
+            spty: spt.y;
+            sptz: spt.z;
+
+            tmrpx: tmrp.x;
+            tmrpy: tmrp.y;
+            tmrpz: tmrp.z;
+        }
+        m.spatialMap.put(this, tn);
+        const p = m.toParentNode(parent as MSpatial);
+        insert tn into p.content;
+        m.toForceField(this);
+        return tn;
+    }
+}
+
+class MGravityField is MField {
+
+    public var dy is Number = -1.0;
+    override var mag = 9.8;
+    public var dx is Number;
+    public var dz is Number;
+
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "d") {
+            const d = cmd.getVec3();
+            dx = d.x; dy = d.y; dz = d.z;
+        } else if (n == "dx") {
+            dx = cmd.getFloat();
+        } else if (n == "dy") {
+            dy = cmd.getFloat();
+        } else if (n == "dz") {
+            dz = cmd.getFloat();
+        } else super.setAttr(cmd);
+    }
+    override function toForceField from (m is MaModel) to ForceField
+    {
+        const target = m.toNode(this) as ForceFieldNode;
+        const r = GravityField {
+            dynamicsWorld: m.dynamicsWorld;
+            worldTransform: bind target.toSceneTransform;
+            magnitude: mag;
+            attenuation: att;
+            maxDistance: maxDistance;
+            gravity: new Vec3(mag * dx, mag *dy, mag *dz);
+        }
+        target.forceField = r;
+        return r;
+    }
+}
+
+class MRadialField is MField {
+    public var typ is Float;
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "typ") {
+            typ = cmd.getFloat();
+        } else super.setAttr(cmd);
+    }
+    override function toForceField from (m is MaModel) to ForceField
+    {
+        const target = m.toNode(this) as ForceFieldNode;
+        const r = RadialField {
+            dynamicsWorld: m.dynamicsWorld;
+            worldTransform: bind target.toSceneTransform;
+            magnitude: mag;
+            attenuation: att;
+            maxDistance: maxDistance;
+        }
+        target.forceField = r;
+        return r;
+    }
+}
+
+class MVortexField is MField {
+    public var ax is Vec3;
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "ax") {
+            ax = cmd.getVec3();
+        } else super.setAttr(cmd);
+    }
+    override function toForceField from (m is MaModel) to ForceField
+    {
+        const target = m.toNode(this) as ForceFieldNode;
+        const r = VortexField {
+            dynamicsWorld: m.dynamicsWorld;
+            worldTransform: bind target.toSceneTransform;
+            magnitude: mag;
+            attenuation: att;
+            maxDistance: maxDistance;
+            axis: ax;
+        }
+        target.forceField = r;
+        return r;
+    }
+}
+
+abstract class MRigidBody is MNode {
+    public function toRigidBody from (m is MaModel) to Collider;
+}
+
+abstract class MRigidBodyConstraint is MNode {
+    public function toRigidBodyConstraint from (m is MaModel) to RigidBodyConstraint;
+}
+
+class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
+    public var contyp is Integer;
+    public var angmotorvel is Vec3;
+    public var linconx is Number;
+    public var lincony is Number;
+    public var linconz is Number;
+    public var angconx is Number;
+    public var angcony is Number;
+    public var angconz is Number;
+    public var lcmin is Vec3;
+    public var lcmax is Vec3;
+    public var acmin is Vec3;
+    public var acmax is Vec3;
+    public var linspstiff is Vec3;
+    public var linspdamp is Vec3;
+    public var angspstiff is Vec3;
+    public var angspdamp is Vec3;
+    public var lindamp is Number;
+    public var linsoft is Number;
+    public var linrestit is Number;
+    public var angdamp is Number;
+    public var angsoft is Number;
+    public var angrestit is Number;
+    public var linmotor is Boolean;
+    public var linmotorvel is Vec3;
+    public var linmotormaxf is Vec3;
+    public var angmotor is Boolean;
+    public var angmotormaxf is Vec3;
+    public var linlimsoft is Number = 1.0;
+    public var linlimbias is Number = 0.3;
+    public var linlimrelax is Number = 1.0;
+    public var anglimsoft is Number = 1.0;
+    public var anglimbias is Number = 0.3;
+    public var anglimrelas is Number = 1.0;
+    public var linspringx is Boolean;
+    public var linspringy is Boolean;
+    public var linspringz is Boolean;
+    public var angspringx is Boolean;
+    public var angspringy is Boolean;
+    public var angspringz is Boolean;
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "contyp") {
+            contyp = cmd.getInt();
+        } else if (n == "angmotorvel") {
+            angmotorvel = cmd.getVec3();
+        } else if (n == "linconx") {
+            linconx = cmd.getFloat();
+        } else if (n == "lincony") {
+            lincony = cmd.getFloat();
+        } else if (n == "linconz") {
+            linconz = cmd.getFloat();
+        } else if (n == "angconx") {
+            angconx = cmd.getFloat();
+        } else if (n == "angcony") {
+            angcony = cmd.getFloat();
+        } else if (n == "angconz") {
+            angconz = cmd.getFloat();
+        } else if (n == "lcmin") {
+            lcmin = cmd.getVec3();
+        } else if (n == "lcmax") {
+            lcmax = cmd.getVec3();
+        } else if (n == "acmin") {
+            acmin = cmd.getVec3();
+        } else if (n == "acmax") {
+            acmax = cmd.getVec3();
+        } else if (n == "linspstiff") {
+            linspstiff = cmd.getVec3();
+        } else if (n == "linspdamp") {
+            linspdamp = cmd.getVec3();
+        } else if (n == "angspstiff") {
+            angspstiff = cmd.getVec3();
+        } else if (n == "angspdamp") {
+            angspdamp = cmd.getVec3();
+        } else if (n == "lindamp") {
+            lindamp = cmd.getFloat();
+        } else if (n == "linsoft") {
+            linsoft = cmd.getFloat();
+        } else if (n == "linrestit") {
+            linrestit = cmd.getFloat();
+        } else if (n == "angdamp") {
+            angdamp = cmd.getFloat();
+        } else if (n == "angsoft") {
+            angsoft = cmd.getFloat();
+        } else if (n == "angrestit") {
+            angrestit = cmd.getFloat();
+        } else if (n == "angrestit") {
+            angrestit = cmd.getFloat();
+        } else if (n == "linmotor") { linmotor = cmd.getBoolean(); }
+        else if (n == "linmotorvel") { linmotorvel = cmd.getVec3(); }
+        else if (n == "linmotormaxf") { linmotormaxf = cmd.getVec3(); }
+        else if (n == "angmotor") { angmotor = cmd.getBoolean(); }
+        else if (n == "angmotorvel") { angmotorvel = cmd.getVec3(); }
+        else if (n == "angmotormaxf") { angmotormaxf = cmd.getVec3(); }
+        else if (n == "linlimsoft") { linlimsoft = cmd.getFloat(); }
+        else if (n == "linlimbias") { linlimbias = cmd.getFloat(); }
+        else if (n == "linlimrelax") { linlimrelax = cmd.getFloat(); }
+        else if (n == "anglimsoft") { anglimsoft = cmd.getFloat(); }
+        else if (n == "anglimbias") { anglimbias = cmd.getFloat(); }
+        else if (n == "anglimrelas") { anglimrelas = cmd.getFloat(); }
+        else if (n == "linspringx") { linspringx = cmd.getBoolean(); }
+        else if (n == "linspringy") { linspringy = cmd.getBoolean(); }
+        else if (n == "linspringz") { linspringz = cmd.getBoolean(); }
+        else if (n == "angspringx") { angspringx = cmd.getBoolean(); }
+        else if (n == "angspringy") { angspringy = cmd.getBoolean(); }
+        else if (n == "angspringz") { angspringz = cmd.getBoolean(); }
+        else super.setAttr(cmd);
+    }
+    
+    override public function toRigidBodyConstraint from (m is MaModel) to RigidBodyConstraint
+    {
+        //Constraint type. The valid enum values are: Point(0), Hinge(1), Slider(2), ConeTwist(3), 6DOF(4), Spring Hinge(5), Spring 6DOF(6)
+        var bodyA is Node;
+        var bodyB is Node;
+        for (c in connectionsToThis.get("rba")) {
+            bodyA = m.toRigidBody(c.sourceNode as MRigidBody).collidable as Node;
+        }
+        for (c in connectionsToThis.get("rbb")) {
+            bodyB = m.toRigidBody(c.sourceNode as MRigidBody).collidable as Node;
+        }
+        const result = 
+        if (contyp == 0) {
+            PointToPointConstraint {
+                node1: bodyA;
+                node2: bodyB;
+            }
+        } else if (contyp == 1) {
+            HingeConstraint {
+                node1: bodyA;
+                node2: bodyB;
+            }
+        } else {
+            null;
+        }
+        println("RIGID BODY CONSTRAINT {result} between {bodyA}, {bodyB}"); 
+        result;
+    }
+}
+
+class MBulletRigidBodyShape is MRigidBody {
+
+    override public function toRigidBody from (m is MaModel) to Collider
+    {
+        var mesh is MMesh;
+        for (x in connectionsToThis.get("mesh")) {
+            mesh = x.sourceNode as MMesh;
+        }
+        const meshNode = m.toNode(mesh) as MeshNode;
+        var targetNode is MaTransform;
+        var target is Collider;
+        const b = this;
+        for (x in b.connectionsToThis.get("inwmat")) {
+            const tn = m.toNode(x.sourceNode as MSpatial);
+            println("BULLET RIGID BODY tn=>{tn}");
+            if (tn <> null) {
+                targetNode = tn as MaTransform;
+            }
+        }
+        if (targetNode <> null) {
+            if (targetNode.collider == null) {
+                target = dynamicsWorld.createCollider(targetNode);
+                target.dynamic = (b.bdytyp == 2);
+                target.mass = b.ms;
+                target.centerOfMass = b.com;
+                target.friction = b.fric;
+                target.restitution = b.restit;
+                target.collisionInitialVelocity = b.iv;
+                target.linearDamping = b.lindamp;
+                target.angularDamping = b.angdamp;
+                targetNode.collider = target;
+                //target.collisionInitialPosition = b.itrs;
+                //targetNode.tx = b.itrs.x;
+                //targetNode.ty = b.itrs.y;
+                //targetNode.tz = b.itrs.z;
+            }
+        }
+        return targetNode.collider;
+    }
+
     var ms is Number = 1.0; // mass
     var com is Point3; // center of mass
     var lindamp is Number = 0.0; // linear damping
@@ -4119,7 +4549,15 @@ public class MaTransform is Group
                   -spz);
 
    public var constraint is Constraint;
+}
 
+public class ForceFieldNode is MaTransform {
+    public var forceField is ForceField;
+    override function update to ()
+    {
+        forceField.apply();
+        super.update();
+    }
 }
 
 public class Joint is MaTransform {

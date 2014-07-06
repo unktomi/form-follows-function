@@ -1,40 +1,28 @@
 package org.f3.jbullet;
-
 import java.lang.Math;
+import f3.media.scene.*;
+import f3.media.scene.RigidBodyConstraint;
 import f3.math.*;
 import f3.math.LinearMath.*;
 
 const NEG_Z_AXIS = new Vec3(0, 0, -1);
 const Y_AXIS = new Vec3(0, 1, 0);
 
-public class HingeConstraint is JBulletRigidBodyConstraint {
-    public var initialPosition is Point3 = Point3.<<0>>;
-    public var initialOrientation is Vec3 = Y_AXIS;
-    public var minLimit is Number = 1e30;
-    public var maxLimit is Number = -1e30;
-    public var limitSoftness is Number = 0.9;
-    public var biasFactor is Number = 0.3;
-    public var relaxationFactor is Number = 1.0;
-    public var usePivots is Boolean = false;
-    public var pivotInA is Vec3;
-    public var pivotInB is Vec3;
-    public var rotInA is Tuple3 = Tuple3.<<0>>;
-    public var rotInB is Tuple3 = Tuple3.<<0>>;
-    public var worldSpace is Boolean = false;
+public class JBulletHingeConstraint is JBulletRigidBodyConstraint of HingeConstraint {
 
     override protected function createConstraint(a is com.bulletphysics.dynamics.RigidBody,
                                                  b is com.bulletphysics.dynamics.RigidBody) 
         to com.bulletphysics.dynamics.constraintsolver.TypedConstraint 
     {
         var ct is com.bulletphysics.dynamics.constraintsolver.HingeConstraint;
-        const w1 = if (worldSpace and node1 <> null) then node1.collider.collisionWorldTransform else Mat4.<<1>>;
-        const w2 = if (worldSpace and node2 <> null) then node2.collider.collisionWorldTransform else Mat4.<<1>>;
-        if (usePivots) {
-            const pivotInA = w1.inverse() * this.pivotInA;
-            const pivotInB = w2.inverse() * this.pivotInB;
-            var q = Quat.Quat(rotInA);
+        const w1 = if (constraint.worldSpace and constraint.node1 <> null) then constraint.node1.collider.collisionWorldTransform else Mat4.<<1>>;
+        const w2 = if (constraint.worldSpace and constraint.node2 <> null) then constraint.node2.collider.collisionWorldTransform else Mat4.<<1>>;
+        if (constraint.usePivots) {
+            const pivotInA = w1.inverse() * constraint.pivotInA;
+            const pivotInB = w2.inverse() * constraint.pivotInB;
+            var q = Quat.Quat(constraint.rotInA);
             const axisInA = (q * NEG_Z_AXIS).normalize();
-            q = Quat.Quat(rotInB);
+            q = Quat.Quat(constraint.rotInB);
             const axisInB = (q * NEG_Z_AXIS).normalize();
             if (a == null) {
                 ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(b,
@@ -52,7 +40,7 @@ public class HingeConstraint is JBulletRigidBodyConstraint {
                                                                                      Util.convertToBullet(axisInB, null));
             }
         } else {
-            const frame = translate(initialPosition) * rotate(initialOrientation);
+            const frame = translate(constraint.initialPosition) * rotate(constraint.initialOrientation);
             const frameA = w1.inverse() * frame;
             const frameB = w2.inverse() * frame;
             if (a == null) {
@@ -68,7 +56,11 @@ public class HingeConstraint is JBulletRigidBodyConstraint {
                                                                                      Util.convertToBullet(frameB, null));
             }
         }
-        ct.setLimit(minLimit, maxLimit, limitSoftness, biasFactor, relaxationFactor);
+        ct.setLimit(constraint.minLimit, 
+                    constraint.maxLimit, 
+                    constraint.limitSoftness, 
+                    constraint.biasFactor, 
+                    constraint.relaxationFactor);
         return ct;
     }
 }

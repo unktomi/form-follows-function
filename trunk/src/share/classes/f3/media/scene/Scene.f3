@@ -707,4 +707,15 @@ public class Scene
         }
     }
 
+    const postRenderSubject is Subject of Scene = Subject of Scene {};
+    
+    public function observeRenderComplete to Observable of Scene 
+    {
+        postRenderSubject;
+    }
+    
+    public function fireRenderComplete to ()
+    {
+        postRenderSubject.onNext(this);
+    }
 }

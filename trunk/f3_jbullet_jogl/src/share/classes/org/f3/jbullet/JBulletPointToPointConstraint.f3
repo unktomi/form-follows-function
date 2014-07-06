@@ -3,52 +3,45 @@ import f3.media.scene.*;
 import f3.math.*;
 import f3.math.LinearMath.*;
 
-public class PointToPointConstraint is JBulletRigidBodyConstraint {
-
-    public const initialPosition is Point3 = Point3.<<0>>;
-    public const initialOrientation is Vec3 = new Vec3(0, 0, -1);
-    public var usePivots is Boolean = false;
-    public var worldSpace is Boolean = false;
-    public var pivotInA is Point3;
-    public var pivotInB is Point3;
+public class JBulletPointToPointConstraint is JBulletRigidBodyConstraint of PointToPointConstraint {
 
     override protected function createConstraint from (a is com.bulletphysics.dynamics.RigidBody,
                                                        b is com.bulletphysics.dynamics.RigidBody) 
         to com.bulletphysics.dynamics.constraintsolver.TypedConstraint 
     {
         var ct is com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint;
-        const w1 = if (worldSpace and node1 <> null) then node1.collider.collisionWorldTransform else Mat4.<<1>>;
-        const w2 = if (worldSpace and node2 <> null) then node2.collider.collisionWorldTransform else Mat4.<<1>>;
+        const w1 = if (constraint.worldSpace and constraint.node1 <> null) then constraint.node1.collider.collisionWorldTransform else Mat4.<<1>>;
+        const w2 = if (constraint.worldSpace and constraint.node2 <> null) then constraint.node2.collider.collisionWorldTransform else Mat4.<<1>>;
         var single is com.bulletphysics.dynamics.RigidBody;
         var pivotInSingle is Point3;
         var wSingle is Mat4;
         if (a == null) {
             single = b;
-            pivotInSingle = pivotInB;
+            pivotInSingle = constraint.pivotInB;
             wSingle = w1;
         } else if (b == null) {
             single = a;
-            pivotInSingle = pivotInA;
+            pivotInSingle = constraint.pivotInA;
             wSingle = w2;
         }
         if (single <> null) {
-            if (not usePivots) {
-                pivotInSingle = initialPosition;
+            if (not constraint.usePivots) {
+                pivotInSingle = constraint.initialPosition;
             }
             pivotInSingle = wSingle.inverse() * pivotInSingle;
             ct = new com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint(single,
                                                                                        Util.convertToBullet(pivotInSingle, null));
         } else {
-            if (usePivots) {
-                const pivotInA = w1.inverse() * this.pivotInA;
-                const pivotInB = w2.inverse() * this.pivotInA;
+            if (constraint.usePivots) {
+                const pivotInA = w1.inverse() * constraint.pivotInA;
+                const pivotInB = w2.inverse() * constraint.pivotInA;
                 ct = new com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint(a, 
                                                                                            b,
                                                                                            Util.convertToBullet(pivotInA, null),
                                                                                            Util.convertToBullet(pivotInB, null));
                 
             } else {
-                const frame = translate(initialPosition);
+                const frame = translate(constraint.initialPosition);
                 const frameA = (w1.inverse() * frame).getTranslation();
                 const frameB = (w2.inverse() * frame).getTranslation();
                 ct = new com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint(a, 
