@@ -8,7 +8,7 @@ public abstract class DynamicsWorld {
     public function update from (sceneTime is Duration, camera is Camera) to ();
     public function addForceField from (field is ForceField) to ();
     public function removeForceField from (field is ForceField) to ();
-    public function createCollider from (collidable is Collidable) to Collider;
+    public function createCollider from (n is Node) to Collider;
     public function reset to ();
     public function debugDraw from (camera is Camera) to ();
 }

@@ -233,6 +233,19 @@ class MaModel
     var channels is TimeNode[];
     var clipLibs is TimeGroup[];
 
+    function checkDeformers() {
+        const disable = temporalRoot.bounds.duration() == 0s;
+        if (disable) {
+            spatialRoot.foldLeft((), function from (_ is (), n is Node) to ()
+                                 {
+                                     if (n is MeshNode) {
+                                         const mn = n as MeshNode;
+                                         for (x in mn.deformers) { x.enabled = false; }
+                                     }
+                                 });
+        }
+    }
+
 
     function getCameras to Camera[] 
     {
@@ -1778,7 +1791,11 @@ class MSkinCluster is MMeshDeformer {
         println("gm={gm}");
         println("Source Mesh={sourceMesh.name}");
         println("Target Mesh={targetMesh.name}");
-
+        for (x in wl) {
+            for (y in x.w) {
+                println("wl[{indexof x}].w[{indexof y}] = {y}");
+            }
+        }
         const resolvedSource = m.toNode(sourceMesh) as MeshNode;
         const resolvedTarget = m.toNode(targetMesh) as MeshNode;
         println("Source Mesh={resolvedSource}");
@@ -1830,7 +1847,8 @@ class MSkinCluster is MMeshDeformer {
                 }
             }
         }
-        if (resolvedSource == null or resolvedTarget == null) {
+        if (resolvedSource.mesh.getVertexBuffer() == null or 
+            resolvedTarget.mesh.getVertexBuffer() == null) {
             return null;
         }
         const sourceVertices = BufferUtils.clone(resolvedSource.mesh.getVertexBuffer());
@@ -2762,7 +2780,7 @@ class MMesh is MSpatial
                         }
                     }
                 }
-                //target = dynamicsWorld.createCollider(targetNode);
+                target = dynamicsWorld.createCollider(targetNode);
                 target.dynamic = rigidBody.act;
                 target.mass = rigidBody.mas;
                 const ip = rigidBody.ip;
@@ -2778,6 +2796,7 @@ class MMesh is MSpatial
                 target.friction = rigidBody.sf;
                 target.restitution = rigidBody.b;
                 target.centerOfMass = rigidBody.com;
+                targetNode.collider = target;
             }
         }
         const bulletConns = connectionsFromThis.get("imesh");
@@ -2792,7 +2811,7 @@ class MMesh is MSpatial
                     targetNode = tn as MaTransform;
                 }
             }
-            //target = dynamicsWorld.createCollider(targetNode);
+            target = dynamicsWorld.createCollider(targetNode);
             target.active = (b.bdytyp == 2);
             target.mass = b.ms;
             target.centerOfMass = b.com;
@@ -2801,6 +2820,7 @@ class MMesh is MSpatial
             target.collisionInitialVelocity = b.iv;
             target.linearDamping = b.lindamp;
             target.angularDamping = b.angdamp;
+            targetNode.collider = target;
         }
         return r0;
     }
@@ -4422,6 +4442,7 @@ public class Model {
         const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader, dynamicsWorld: dynamicsWorld};
         const m = p.parse(new java.net.URL(url));
         m.spatialRoot.updateParent();
+        m.checkDeformers();
         const mc = ModelContent {
             resources: foreach (u in m.resourceUrls) u;
             spatial: m.spatialRoot;

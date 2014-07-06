@@ -307,7 +307,7 @@ class Loader {
         if (sceneMesh.hasBones() and sceneMesh.getBones().size() > 1) {
             const mesh = meshes[i];
             const ib = mesh.getIndexBuffer();
-            println("generate deformer: ib={ib.limit()} vert={mesh.getVertexBuffer().limit()}");
+            println("generate deformer: tri={sceneMesh.isPureTriangle()} ib={ib.limit()} vert={mesh.getVertexBuffer().limit()}");
             var weights is Number[];
             var pm is Mat4[];
             const map = new java.util.TreeMap of (Integer, WeightList);

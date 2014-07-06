@@ -120,20 +120,21 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     override function reset to ()
     {
+    println("RESET DYNAMICS");
         const cobjs = dynamicsWorld.getCollisionObjectArray();
         for (cobj in cobjs) {
             const c = getUserPointer(cobj) as JBulletCollider;
             c.reactivate();
         }
+        toBeDeleted.clear();
+        dynamicsWorld = null;
     }
 
-    override function createCollider from (collidable is Collidable) to Collider {
+    override function createCollider from (n is Node) to Collider {
         const result = JBulletCollider {
+            target: n;
             dynamicsWorld: this;
-            collidable: collidable;
         }
-        collidable.collider = result;
-        println("CREATED COLLIDER for {collidable} => {result}");
         return result;
     }
     
@@ -294,7 +295,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     public var debug is Boolean = DEBUG_DRAW;
 
-    public function debugDraw from (camera is Camera) to () 
+    override public function debugDraw from (camera is Camera) to () 
     {
         if (debug) {
             if (dynamicsWorld.getDebugDrawer() == null) {
@@ -315,10 +316,8 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
     {
         //println("update: {sceneTime}");
         var millis = sceneTime.toMillis();
-        var timeStep is Double = (millis - lastTimeStep) / 1000.0;
-        if (timeStep < 0) {
-            println("timestep = {timeStep}");
-        }
+        var timeStep is Double = millis;
+        var firstTime = this.dynamicsWorld == null;
         const dynamicsWorld = getDynamicsWorld();
         if (toBeDeleted.size() > 0) {
             var di = toBeDeleted.iterator();
@@ -345,7 +344,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             }
             toBeDeleted.clear();
         }
-        if (paused) {
+        if (not firstTime and paused) {
             /*
             const iter2 = dynamicsWorld.getCollisionObjectArray().iterator();
             while (iter2.hasNext()) {
@@ -355,6 +354,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             */
             return;
         }
+        firstTime = false;
         lastTimeStep = millis;
         var steps = 4;
 
@@ -482,8 +482,8 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         var result is com.bulletphysics.collision.shapes.CollisionShape;
         var n0 is Node;
         const collider = n.collider;
-        const tmp = n.toSceneTransform.inverse();
-        const initial = collider.initialTransform.inverse();
+        const tmp = (n.parentToSceneTransform * n.transform).inverse();
+        const initial = translate(-collider.centerOfMass) * collider.initialTransformInverse;
         var count = 0;
         n.foldLeft((), function from (_ is (), n is Node) to () {
                 if (n is MeshNode) {
