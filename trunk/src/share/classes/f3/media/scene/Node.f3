@@ -9,7 +9,7 @@ class NodeFocus is Focusable {}
 
 // A Node in the 3d spatial affine transform hierarchy
 
-public abstract class Node is Foldable of Node, KeyboardFocusTarget //, Collidable
+public abstract class Node is Foldable of Node, KeyboardFocusTarget, Collidable
 {
     override function toString to String {
 	"{super.toString()} {id}"
@@ -28,7 +28,12 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget //, Collidab
     {
 	transform = m;
     }
-    public readonly var toSceneTransform is Mat4 = bind parentToSceneTransform * transform;
+    bound var collisionWorldTransform = bind collider.collisionWorldTransform;
+    public readonly var toSceneTransform is Mat4 = 
+        bind if (collider.dynamic) 
+        collisionWorldTransform
+        else parentToSceneTransform * transform;
+
     public readonly var bounds is Bounds = bind transform * contentBounds;
     public readonly var boundsInScene is Bounds = bind parentToSceneTransform * bounds;
     public readonly var contentBounds is Bounds;
@@ -56,7 +61,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget //, Collidab
     public function updateParent from () to () { update() }
     protected function setParent from (n is Node) to () { parent = n }
     public function update from () to () { 
-        //collider.update();
+        collider.update();
     }
     public function preupdate from () to () {}
 

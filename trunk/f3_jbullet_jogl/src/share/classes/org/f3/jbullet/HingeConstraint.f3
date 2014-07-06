@@ -27,8 +27,8 @@ public class HingeConstraint is JBulletRigidBodyConstraint {
         to com.bulletphysics.dynamics.constraintsolver.TypedConstraint 
     {
         var ct is com.bulletphysics.dynamics.constraintsolver.HingeConstraint;
-        const w1 = if (worldSpace and node1 <> null) then node1.getCollisionWorldTransform() else Mat4.<<1>>;
-        const w2 = if (worldSpace and node2 <> null) then node2.getCollisionWorldTransform() else Mat4.<<1>>;
+        const w1 = if (worldSpace and node1 <> null) then node1.collider.collisionWorldTransform else Mat4.<<1>>;
+        const w2 = if (worldSpace and node2 <> null) then node2.collider.collisionWorldTransform else Mat4.<<1>>;
         if (usePivots) {
             const pivotInA = w1.inverse() * this.pivotInA;
             const pivotInB = w2.inverse() * this.pivotInB;
