@@ -120,18 +120,19 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     override function reset to ()
     {
-    println("RESET DYNAMICS");
+        println("RESET DYNAMICS");
         const cobjs = dynamicsWorld.getCollisionObjectArray();
         for (cobj in cobjs) {
             const c = getUserPointer(cobj) as JBulletCollider;
             c.reactivate();
         }
-        toBeDeleted.clear();
-        dynamicsWorld = null;
+        //toBeDeleted.clear();
+        //dynamicsWorld = null;
     }
 
     override function createCollider from (n is Node) to Collider {
         const result = JBulletCollider {
+            collidable: n;
             target: n;
             dynamicsWorld: this;
         }
@@ -189,6 +190,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             dynamicsWorld.getSolverInfo().numIterations = iterations;
             //println("gravity = {_gravity}");
             dynamicsWorld.setGravity(_gravity);
+
         };
         dynamicsWorld; 
     }    
@@ -276,15 +278,16 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             }
             const ffs = foreach (obj in _forceFields.keySet()) obj as ForceField;
             for (ff in ffs) {
+
                 var apply = true;
                 if (ff instanceof GravityField) { // only allow a single unrestricted gravity field
                     if (ff.restrictTo == []) {
                         apply = not gravityApplied;
                         gravityApplied = true;
-                            
                     }
                 } 
                 if (apply) {
+                    //println("applying force field {ff}");
                     ff.doApply(this, rigidBodies);
                 }
             }
@@ -327,12 +330,12 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
                     var collider = getUserPointer(d) as Collider;
                     var constraints = collider.constraints;
                     for (c0 in constraints) {
-                        const c = c0 as JBulletRigidBodyConstraint;
+                        const c = c0.impl as JBulletRigidBodyConstraint;
                         var tc = c.tc;
                         if (tc != null) {
                             dynamicsWorld.removeConstraint(tc);
                             c.tc = null;
-                            c.remove();
+                            c0.remove();
                         }
                         
                     }
@@ -460,6 +463,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         if (count < 3 or 
 	    m.vertices.getCoordsPerVertex() <> 3 or
 	    m.indexMode <> IndexMode.Triangles) {
+            println("invalid mesh: {m}");
             return null;
         }
         var pts = new java.util.ArrayList of Vector3f;
@@ -483,21 +487,24 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         var n0 is Node;
         const collider = n.collider;
         const tmp = (n.parentToSceneTransform * n.transform).inverse();
-        const initial = translate(-collider.centerOfMass) * collider.initialTransformInverse;
+        const initial = translate(-collider.centerOfMass);
         var count = 0;
         n.foldLeft((), function from (_ is (), n is Node) to () {
                 if (n is MeshNode) {
                     const meshNode = n as MeshNode;
                     const mesh = meshNode.mesh;
+                    println("creating collision shape for mesh: {mesh} of {meshNode}");
                     const c = createCollisionShape(mesh, initial);
-                    count++;
-                    if (count > 1) {
-                        compoundShape.addChildShape(Util.convertToBullet(tmp * n.toSceneTransform, null), c);
-                    } else {
-                        compoundShape = new com.bulletphysics.collision.shapes.CompoundShape();
-                        compoundShape.addChildShape(Util.convertToBullet(Mat4.<<1>>, null), c);
-                        n0 = n;
-                        result = compoundShape;
+                    if (c <> null) {
+                        count++;
+                        if (count > 1) {
+                            compoundShape.addChildShape(Util.convertToBullet(tmp * n.toSceneTransform, null), c);
+                        } else {
+                            compoundShape = new com.bulletphysics.collision.shapes.CompoundShape();
+                            compoundShape.addChildShape(Util.convertToBullet(Mat4.<<1>>, null), c);
+                            n0 = n;
+                            result = compoundShape;
+                        }
                     }
                 }
             });

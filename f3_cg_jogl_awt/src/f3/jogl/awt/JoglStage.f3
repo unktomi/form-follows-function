@@ -123,22 +123,25 @@ function getFont from (spec is String) to java.awt.Font
             size = java.lang.Integer.parseInt(value);
         } else if (attr == "font-weight") {
             if (value == "normal") {
-                style = Bits.add(style, java.awt.Font.PLAIN);
+                style = Bits.add(Bits.remove(style, java.awt.Font.BOLD), java.awt.Font.PLAIN);
             } else if (value == "bold") {
-                style = Bits.add(style, java.awt.Font.BOLD);
+                style = Bits.add(Bits.remove(style,java.awt.Font.PLAIN), java.awt.Font.BOLD);
             } else {
 		// error
 	    }
         } else if (attr == "text-decoration") {
+            fontAttrs.remove(TextAttribute.UNDERLINE);
+            fontAttrs.remove(TextAttribute.STRIKETHROUGH);
             if (value == "underline") {
                 fontAttrs.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
             } else if (value == "line-through") {
                 fontAttrs.put(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
             }
         } else if (attr == "font-style") {
+            style = Bits.remove(style, java.awt.Font.ITALIC);
             if (value == "italic") {
                 style = Bits.add(style, java.awt.Font.ITALIC);
-            } else if (value == "strikethrough") {
+            } else if (value == "normal") {
                 // @TODO
             } else {
 		// error
@@ -172,6 +175,10 @@ const fonts = new java.util.HashMap of (String, java.awt.Font);
 
 abstract class JoglFont is Text.Font {
     public const font is java.awt.Font;
+    override function hashCode to Integer { font.hashCode() }
+    override function equals from (obj is Object) to Boolean {
+        return obj is JoglFont and { const j = obj as JoglFont; j.font.equals(font) }
+    }
     override function width from (text is String) to Number
     {
         const r = font.getStringBounds(text, frc);
@@ -194,10 +201,12 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
     override public function createFont from (spec is String) to Text.Font 
     {
         const font = getFont(spec);
+        println("font spec: {spec}");
+        println("font: {font}");
         const lineMetrics = font.getLineMetrics("A", 0, 1, frc);
         JoglFont {
             name: font.getName();
-            weight: if (f3.util.Bits.contains(font.getStyle(), java.awt.Font.BOLD)) then "bold" else "plain";
+            weight: if (f3.util.Bits.contains(font.getStyle(), java.awt.Font.BOLD)) then "bold" else "normal";
             style: if (f3.util.Bits.contains(font.getStyle(), java.awt.Font.ITALIC)) then "italic" else "normal";
             size: font.getSize2D();
             ascent: lineMetrics.getAscent();
@@ -206,7 +215,8 @@ class JoglTextLayoutEngine is Text.LayoutEngine {
             font: font;
             override public function derive from (css is String) to Text.Font
             {
-                createFont("{spec};{css}");
+                const r = createFont("{spec};{css}");
+                return r;
             }
         }
     }
@@ -1991,6 +2001,7 @@ public class StageRenderer {
             gl.glViewport(0, 0, width, height);
 	    for (sceneRenderer in sceneRenderers) {
 		sceneRenderer.renderScene(gl, width, height, sceneRenderer.scene.camera);
+                sceneRenderer.scene.fireRenderComplete();
 	    }
 	    endDraw();
 	    onDraw(m1, t1, m2, t2);

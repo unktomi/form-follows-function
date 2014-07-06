@@ -69,6 +69,9 @@ public class JBulletCollider is Collider {
     {
         if (collisionShape == null) {
             collisionShape = _dynamicsWorld().createCollisionShape(target);
+            if (collisionShape == null) {
+                active = false;
+            }
         }
         return collisionShape;
     }
@@ -241,7 +244,7 @@ public class JBulletCollider is Collider {
         if (_dynamicsWorld() == null or colShape == null) {
             return;
         }
-        println("creating rigid body {this} collider={collidable} w={_dynamicsWorld()} mass={mass} dynamic={dynamic} {colShape}");
+        println("creating rigid body {this} collidable={collidable} w={_dynamicsWorld()} mass={mass} dynamic={dynamic} {colShape}");
         _worldMatrix = new nativearray of Number(16);
         var self = this;
         var motionState = CMotionState {
@@ -417,7 +420,8 @@ public class JBulletCollider is Collider {
     var collisionMap is Map of (JBulletCollider, Set of ContactPoint);
 
     function fillWorldMatrix to () {
-        var t = getCollisionWorldTransform() * translate(centerOfMass);
+        const t = 
+            (if dynamic then getCollisionWorldTransform() else target.toSceneTransform) * translate(centerOfMass);
         for (c in [0..<4], r in [0..<4]) {
             _worldMatrix[c*4+r] = t.get(r, c);
         }
@@ -434,6 +438,13 @@ public class JBulletCollider is Collider {
 
     public override function applyConstraint from (other0 is Collider, c is RigidBodyConstraint) to Boolean 
     {
+        if (c.impl == null) { // hack
+            if (c is HingeConstraint) {
+                c.impl = JBulletHingeConstraint { constraint: c as HingeConstraint }
+            } else if (c is PointToPointConstraint) {
+                c.impl = JBulletPointToPointConstraint { constraint: c as PointToPointConstraint }
+            }
+        }
         const other = other0 as JBulletCollider;
         if (_dynamicsWorld() == null) {
             return false;
@@ -442,7 +453,7 @@ public class JBulletCollider is Collider {
         const rb2 = other._rigidBody as com.bulletphysics.dynamics.RigidBody;
         if (rb1 <> null and rb2 <> null) {
             try {
-                const tc = (c as JBulletRigidBodyConstraint).getConstraint(rb1, rb2);
+                const tc = (c.impl as JBulletRigidBodyConstraint).getConstraint(rb1, rb2);
                 _dynamicsWorld().getDynamicsWorld().addConstraint(tc);
                 return true;
             } catch (e) {
@@ -483,7 +494,9 @@ public class JBulletCollider is Collider {
         if (_dynamicsWorld() <> null) {
             if (_rigidBody == null) {
                 //setCollisionWorldTransform(initialTransform);
-                createRigidBody(getCollisionShape());
+                if (active) {
+                    createRigidBody(getCollisionShape());
+                }
             }
         }
         if (_dynamicsWorld() <> null) {
