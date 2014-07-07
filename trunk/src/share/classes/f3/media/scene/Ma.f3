@@ -1759,12 +1759,14 @@ abstract class MMeshDeformer is MNode {
                 if (c.sourceNode is MMesh and c.sourcePath == "w") {
                     sourceMesh = c.sourceNode as MMesh;
                     done = true;
+                    break;
                 } else if (c.sourceNode is MGroupParts and c.sourcePath == "og") {
                     gp = c.sourceNode as MGroupParts;
                     break;
                 } else if (c.sourceNode is MMeshDeformer and name == "og") {
                     const d = c.sourceNode as MMeshDeformer;
-                    sourceMesh = d.resolveTargetMesh();
+                    sourceMesh = d.resolveSourceMesh();
+                    println("source mesh => {sourceMesh} from {c}");
                     sourceIsStatic = false;
                     done = true;
                     break;
@@ -1778,8 +1780,16 @@ abstract class MMeshDeformer is MNode {
 
     protected function resolveTargetMesh from () to MMesh {
         for (c in connectionsFromThis.get("og")) {
+            println("resolve target mesh {c}");
             if (c.targetNode is MMesh and c.targetPath == "i") {
                 targetMesh = c.targetNode as MMesh;
+                break;
+            } else if (c.targetNode is MMeshDeformer) {
+                const next = (c.targetNode as MMeshDeformer);
+                next.sourceIsStatic = false;
+                targetMesh = next.resolveSourceMesh();
+                break;
+            } else {
             }
         }
         return targetMesh;
@@ -1912,8 +1922,8 @@ class MSkinCluster is MMeshDeformer {
         if (sourceIsStatic) {
             sourceVertices = BufferUtils.clone(sourceVertices);
             sourceNormals = BufferUtils.clone(sourceNormals);
-            resolvedTarget.mesh = resolvedSource.mesh;
         }
+        resolvedTarget.mesh = resolvedSource.mesh;
         println("resolved source shader: {resolvedSource.shader}");
         println("resolved target shader: {resolvedTarget.shader}");
         if (resolvedTarget.shader == null or resolvedTarget.shader == m.getDefaultShader()) {
@@ -1923,8 +1933,10 @@ class MSkinCluster is MMeshDeformer {
                 resolvedTarget.shader = m.getDefaultShader();
             }
         } 
-        resolvedSource.visible = false;
-        resolvedTarget.visible = true;
+        if (sourceIsStatic) {
+            resolvedSource.visible = false;
+            resolvedTarget.visible = true;
+        }
         println("CREATING SKIN CLUSTER with {joints.size()} joints {weights.size()} weights");
         const result = SkinCluster {
             indexBuffer: resolvedTarget.mesh.getIndexBuffer();
@@ -4841,6 +4853,12 @@ public class Model {
     public const imageLoader is ImageLoader = the ImageLoader;
     public const dynamicsWorld is DynamicsWorld;
 
+    var fileTimestamp is Long;
+
+    postinit {
+        checkTimestamp();
+    }
+
     public bound function getResources to String[] 
     {
         return modelContent.resources;
@@ -4863,9 +4881,23 @@ public class Model {
         modelContent.cameras;
     }
 
+    function makeRootMonitor from (modelContent is ModelContent) to Node {
+        Group {
+            id: bind "{url} Last Modified {new java.util.Date(fileTimestamp)}";
+            content: bind modelContent.spatial;
+            override function update to ()
+            {
+                checkTimestamp();
+                super.update();
+            }
+        }
+    }
+
     public bound function getSpatialRoot to Node 
     {
-        modelContent.spatial;
+        if (monitorForChanges) {
+            makeRootMonitor(modelContent)
+        } else modelContent.spatial;
     }
 
     public bound function getTemporalRoot to TimeNode 
@@ -4873,9 +4905,39 @@ public class Model {
         modelContent.temporal;
     }
 
-    public readonly var modelContent is ModelContent = bind load(url, effectLoader, imageLoader); 
+    public readonly var modelContent is ModelContent = 
+        bind load(url, effectLoader, imageLoader, fileTimestamp); 
 
-    function load from (url is String, effectLoader is CGEffectLoader, imageLoader is ImageLoader) to ModelContent 
+    public var monitorForChanges is Boolean = false;
+    public var pollInterval is Duration = 2s;
+    var lastCheck is Long;
+
+    function checkTimestamp to ()
+    {
+        if (monitorForChanges) {
+            const now = java.lang.System.currentTimeMillis();
+            if (now >= lastCheck + pollInterval.toMillis()) {
+                lastCheck = now;
+                if (url.startsWith("file:")) {
+                    const u = new java.net.URL(url);
+                    const f = new java.io.File(u.getFile());
+                    fileTimestamp = f.lastModified();
+                }
+            }
+        }
+    }
+
+    function load from (url is String, 
+                        effectLoader is CGEffectLoader, 
+                        imageLoader is ImageLoader,
+                        timestamp is Long) to ModelContent 
+    {
+        load(url, effectLoader, imageLoader);
+    }
+
+    function load from (url is String, 
+                        effectLoader is CGEffectLoader, 
+                        imageLoader is ImageLoader) to ModelContent 
     {
         const p = MaParser {effectLoader: effectLoader, imageLoader: imageLoader, dynamicsWorld: dynamicsWorld};
         const m = p.parse(new java.net.URL(url));
