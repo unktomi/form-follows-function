@@ -20,7 +20,46 @@ import f3.media.svg.impl.Matrix;
 public class SVG 
 {
     public var url is String;
-    public var root is Node = bind load(url);
+    public var monitorForChanges is Boolean = false;
+    public var pollInterval is Duration = 2s;
+    var lastCheck is Long;
+    var fileTimestamp is Long;
+
+    function checkTimestamp to ()
+    {
+        if (monitorForChanges) {
+            const now = java.lang.System.currentTimeMillis();
+            if (now >= lastCheck + pollInterval.toMillis()) {
+                if (url.startsWith("file:")) {
+                    const u = new java.net.URL(url);
+                    const f = new java.io.File(u.getFile());
+                    fileTimestamp = f.lastModified();
+                }
+                lastCheck = now;
+            }
+        }
+    }
+
+    postinit {
+        checkTimestamp();
+    }
+
+    public var root is Node = bind load(url, fileTimestamp);
+
+    function load from (url is String, fileTimestamp is Long) to Node {
+        if (monitorForChanges) {
+            Group {
+                id: bind "{url} lastModified={new java.util.Date(fileTimestamp)}";
+                content: load(url);
+                override function update to ()
+                {
+                    checkTimestamp();
+                    super.update();
+                }
+             }
+        } else load(url);
+    }
+
     public const factory is Path2DFactory = the Path2DFactory;
     function load from (url is String) to Node 
     {
