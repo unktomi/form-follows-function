@@ -13,6 +13,29 @@ import f3.media.scene.meshdeform.SkinCluster;
 import f3.media.scene.meshdeform.MeshDeformer;
 import f3.util.Bits;
 
+function rotate 
+    from (rx is Number, ry is Number, rz is Number, ro is Integer) 
+    to Mat4 
+{
+    qrotate(rx, ry, rz, ro).toMat4();
+}
+
+function qrotate 
+    from (rx is Number, ry is Number, rz is Number, ro is Integer) 
+    to Quat
+{
+    const angles = [rx, ry, rz];
+    var q = Quat.<<1>>;
+    const rots = foreach (i in [0..2]) { 
+        const j = RotateOrder[ro*3+i]; 
+        Quat.Quat(angles[j], axes[j]);
+    }
+    for (r in rots.reverse()) {
+        q *= r;
+    }
+    return q;
+}
+
 class MAttr {
     const longName is String;
     const shortName is String;
@@ -86,6 +109,8 @@ class MaModel
                 then MPlusMinusAverage {name: name parent: findNode(parent)}
             else if (nodeType == "multiplyDivide" ) 
                 then MMultiplyDivide {name: name parent: findNode(parent)}
+            else if (nodeType == "pairBlend" ) 
+                then MPairBlend {name: name parent: findNode(parent)}
             else if (nodeType == "clamp") 
                 then MClamp {name: name  parent: findNode(parent)}
             else if (nodeType == "reverse") 
@@ -226,8 +251,8 @@ class MaModel
     const clipLibMap is java.util.Map of (MNode, TimeGroup) = 
         new java.util.HashMap of (MNode, TimeGroup) ();
 
-    const linkMap is java.util.Map of (MNode, Link of ?) = 
-        new java.util.HashMap of (MNode, Link of ?) ();
+    const linkMap is java.util.Map of (MNode, (Link of ?)[]) = 
+        new java.util.HashMap of (MNode, (Link of ?)[]) ();
 
     const deformerMap is java.util.Map of (MNode, MeshDeformer) = 
         new java.util.HashMap of (MNode, MeshDeformer) ();
@@ -589,7 +614,7 @@ class MaModel
             }
     }
 
-    function toLink from (n is MUtility) to Link of ?
+    function toLink from (n is MUtility) to (Link of ?)[]
     {
         if (linkMap.containsKey(n)) then linkMap.get(n) else {
                 const link = n.toLink(this);
@@ -684,7 +709,8 @@ class MaModel
         const startFrame = this.startFrame;
         const endFrame = this.endFrame;
         const linkMap = this.linkMap;
-        const links = foreach (link in linkMap.values()) link;
+        var links is Link[];
+        for (link in linkMap.values()) insert link into links;
         const playRange = Interval { start: FPS * startFrame, end: FPS * endFrame };
         temporalRoot = finishGenerateScene(startFrame, endFrame, links, playRange, channels, url, spatialRoot);
     }
@@ -798,7 +824,7 @@ class Connection {
     }
 }
 
-class MNode {
+abstract class MNode {
     public const dynamicsWorld is DynamicsWorld = the DynamicsWorld;
     const connectionsFromThis is java.util.Map of (String, Connection[]) =
         new java.util.HashMap of (String, Connection[]);
@@ -953,9 +979,181 @@ abstract class MSpatial is MNode {
     }
 }
 
+class MPairBlend is MUtilityOfTuple3 {
+    public var it1 is Tuple3;
+    public var it2 is Tuple3;
+    public var ir1 is Tuple3;
+    public var ir2 is Tuple3;
+
+    public var w is Number = 1.0;
+    public var ro is Integer = 0;
+
+    override function setAttr from (cmd is Command) to () {
+        const n = cmd.getAttr();
+        if (n == "w") {
+            w = cmd.getFloat();
+        } else if (n == "it1") {
+            it1 = cmd.getTuple3();
+        } else if (n == "it2") {
+            it2 = cmd.getTuple3();
+        } if (n == "ir1") {
+            ir1 = cmd.getTuple3();
+        } else if (n == "ir2") {
+            ir2 = cmd.getTuple3();
+        } else super.setAttr(cmd);
+    }
+
+    override function resolveInput from (m is MaModel, p is String) to ConstRef of ? 
+    {
+        if (p.startsWith("it1")) {
+            const t = m.resolveInput(this, "it1", it1);
+            if (p == "it1x") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().x;
+                    }
+                }
+            } else if (p == "it1y") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().y;
+                    }
+                }
+            } else if (p == "it1z") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().z;
+                    }
+                }
+            } else null
+        } else if (p.startsWith("it2")) {
+            const t = m.resolveInput(this, "it2", it2);
+            if (p == "it2x") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().x;
+                    }
+                }
+            } else if (p == "it2y") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().y;
+                    }
+                }
+            } else if (p == "it2z") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().z;
+                    }
+                }
+            } else null
+        } 
+        else if (p.startsWith("ir1")) {
+            const t = m.resolveInput(this, "ir1", ir1);
+            if (p == "ir1x") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().x;
+                    }
+                }
+            } else if (p == "ir1y") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().y;
+                    }
+                }
+            } else if (p == "ir1z") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().z;
+                    }
+                }
+            } else null
+        } else if (p.startsWith("ir2")) {
+            const t = m.resolveInput(this, "ir2", ir2);
+            if (p == "ir2x") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().x;
+                    }
+                }
+            } else if (p == "ir2y") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().y;
+                    }
+                }
+            } else if (p == "ir2z") {
+                AbstractConstRef of Number {
+                    override function get to Number {
+                        t.get().z;
+                    }
+                }
+            } else null
+        } else null;
+        
+    }
+
+    override function toLink from (m is MaModel) to (Link of ?)[] {
+        const name = this.name;
+        const f1 = getOutput(m, "ot");
+        const f2 = getOutput(m, "or");
+        [Link of Tuple3 {
+            input: AbstractConstRef of Tuple3 { 
+                override function toString to String {
+                    "{name}.ot {f1.get()}"
+                }
+                override function get to Tuple3 { f1.get() } 
+            }
+            output: foreach (conn in connectionsFromThis.get("ot")) {
+                const ptr = m.resolveTargetPointer(conn);
+                ptr as Ref of Tuple3;
+            }
+        },
+        Link of Tuple3 {
+            input: AbstractConstRef of Tuple3 { 
+                override function toString to String {
+                    "{name}.or {f2.get()}"
+                }
+                override function get to Tuple3 { f2.get() } 
+            }
+            output: foreach (conn in connectionsFromThis.get("or")) {
+                const ptr = m.resolveTargetPointer(conn);
+                ptr as Ref of Tuple3;
+            }
+        }]
+    }
+
+    override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
+    {
+        if (attr == "ot") {
+            const input1 = m.resolveInput(this, "it1", it1) as ConstRef of Tuple3;
+            const input2 = m.resolveInput(this, "it2", it2) as ConstRef of Tuple3;
+            AbstractConstRef of Tuple3 {
+                override function get to Tuple3 {
+                    const t1 is Tuple3 = input1.get();
+                    const t2 is Tuple3 = input2.get();
+                    //println("multiply {input1} {input2} {t1} {t2}");
+                    t1 * (1.0-w) + t2 * w;
+                }
+            }
+        } else if (attr == "or") {
+            const input1 = m.resolveInput(this, "ir1", ir1) as ConstRef of Tuple3;
+            const input2 = m.resolveInput(this, "ir2", ir2) as ConstRef of Tuple3;
+            AbstractConstRef of Tuple3 {
+                override function get to Tuple3 {
+                    const t1 is Tuple3 = input1.get();
+                    const t2 is Tuple3 = input2.get();
+                    qrotate(t1.x, t1.y, t1.z, ro).slerp(qrotate(t2.x, t2.y, t2.z, ro), w).toAngles();
+                }
+            }
+        } else null;
+    }
+}
+
 abstract class MUtility is MNode
 {
-    public function toLink from (m is MaModel) to Link of ? {
+    public function toLink from (m is MaModel) to (Link of ?)[] {
         null
     }
 }
@@ -982,11 +1180,35 @@ public class Link of a
     }
 }
 
+class MUnitConversion is MUtilityOfTuple3 {
+
+    var cf is Number;
+    var i is Tuple3;
+
+    override function setAttr from (cmd is Command) to () {
+        const n = cmd.getAttr();
+        if (n == "cf") {
+            cf = cmd.getFloat();
+        } else if (n == "i") {
+            i = cmd.getTuple3();
+        } else super.setAttr(cmd);
+    }
+
+    override function toLink from (m is MaModel) to (Link of ?)[] {
+        null; //@TODO
+    }
+
+    override function getOutput from (m is MaModel, attr is String) to ConstRef of Tuple3
+    {
+        null; //@TODO
+    }
+}
+
 class MPlusMinusAverage is MUtilityOfTuple3 {
 
     var op is Integer = 1;
 
-    override function toLink from (m is MaModel) to Link of ? {
+    override function toLink from (m is MaModel) to (Link of ?)[] {
         const f = getOutput(m, "o3");
         const name = this.name;
         Link of Tuple3 {
@@ -1116,7 +1338,7 @@ class MMultiplyDivide is MUtilityOfTuple3
     }
 
 
-    override function toLink from (m is MaModel) to Link of ? 
+    override function toLink from (m is MaModel) to (Link of ?)[]
     {
         const f = getOutput(m, "o");
         const name = this.name;
@@ -1270,7 +1492,7 @@ class MClamp is MUtilityOfTuple3 {
         null
     }
 
-    override function toLink from (m is MaModel) to Link of ? 
+    override function toLink from (m is MaModel) to (Link of ?)[]
     {
         const name = this.name;
         Link of Tuple3 {
@@ -1335,7 +1557,7 @@ class MReverse is MUtilityOfTuple3 {
 
     var i is Tuple3;
 
-    override function toLink from (m is MaModel) to Link of ? 
+    override function toLink from (m is MaModel) to (Link of ?)[]
     {
         const name = this.name;
         Link of Tuple3 {
@@ -1612,6 +1834,7 @@ class MTransform is MSpatial {
         m.spatialMap.put(this, tn);
         const p = m.toParentNode(parent as MSpatial);
         insert tn into p.content;
+        p.updateParent();
         return tn;
     }
 }
@@ -1855,9 +2078,11 @@ class MSkinCluster is MMeshDeformer {
         println("gm={gm}");
         println("Source Mesh={sourceMesh.name}");
         println("Target Mesh={targetMesh.name}");
-        for (x in wl) {
-            for (y in x.w) {
-                println("wl[{indexof x}].w[{indexof y}] = {y}");
+        if (false) {
+            for (x in wl) {
+                for (y in x.w) {
+                    println("wl[{indexof x}].w[{indexof y}] = {y}");
+                }
             }
         }
         const resolvedSource = m.toNode(sourceMesh) as MeshNode;
@@ -2644,8 +2869,8 @@ class MMesh is MSpatial
                 else {
                     if ({
                         const y = vertToNormal.containsKey(vert);
-                        println("face: {face}");
-                        println("vertToNormal contains {face}, {vert} => {y}");
+                        //println("face: {face}");
+                        //println("vertToNormal contains {face}, {vert} => {y}");
                         y
                     }) 
                     then vertToNormal.get(vert) 
@@ -2820,17 +3045,17 @@ class MMesh is MSpatial
                 }
             }
             for (pn in [parent, parents]) {
-                const p = m.toParentNode(pn as MSpatial);
                 const r = MeshNode {
                     visible: visible;
                     id: "{name}{id}";
                     mesh: mesh;
                     shader: shader;
                 }
+                m.spatialMap.put(this, r);
+                const p = m.toParentNode(pn as MSpatial);
                 id = "#{indexof mesh +1}";
                 insert r into p.content;
                 r0 = r;
-                m.spatialMap.put(this, r);
             }
         }
         const conns = connectionsFromThis.get("msg");
@@ -2874,38 +3099,6 @@ class MMesh is MSpatial
                 target.restitution = rigidBody.b;
                 target.centerOfMass = rigidBody.com;
                 targetNode.collider = target;
-            }
-        }
-        const bulletConns = connectionsFromThis.get("o");
-        for (conn in bulletConns) {
-            if (conn.targetNode is MBulletRigidBodyShape) {
-                const b = conn.targetNode as MBulletRigidBodyShape;
-                var targetNode is MaTransform;
-                var target is Collider;
-                for (x in b.connectionsToThis.get("inwmat")) {
-                    const tn = m.toNode(x.sourceNode as MSpatial);
-                    println("BULLET RIGID BODY tn=>{tn}");
-                    if (tn <> null) {
-                        targetNode = tn as MaTransform;
-                    }
-                }
-                if (targetNode <> null) {
-                    target = dynamicsWorld.createCollider(targetNode);
-                    target.dynamic = (b.bdytyp == 2);
-                    target.mass = b.ms;
-                    target.centerOfMass = b.com;
-                    target.friction = b.fric;
-                    target.restitution = b.restit;
-                    target.collisionInitialVelocity = b.iv;
-                    target.linearDamping = b.lindamp;
-                    target.angularDamping = b.angdamp;
-                    targetNode.collider = target;
-                    target.collisionInitialPosition = b.itrs;
-                    targetNode.tx = b.itrs.x;
-                    targetNode.ty = b.itrs.y;
-                    targetNode.tz = b.itrs.z;
-                    break;
-                }
             }
         }
         return r0;
@@ -3289,10 +3482,13 @@ class MBulletRigidBodyShape is MRigidBody {
     override public function toRigidBody from (m is MaModel) to Collider
     {
         var mesh is MMesh;
-        for (x in connectionsToThis.get("mesh")) {
+        println(connectionsToThis.get("imesh"));
+        for (x in connectionsToThis.get("imesh")) {
             mesh = x.sourceNode as MMesh;
         }
+        println("mesh=>{mesh}");
         const meshNode = m.toNode(mesh) as MeshNode;
+        println("meshNode=>{meshNode}");
         var targetNode is MaTransform;
         var target is Collider;
         const b = this;
@@ -3301,11 +3497,32 @@ class MBulletRigidBodyShape is MRigidBody {
             println("BULLET RIGID BODY tn=>{tn}");
             if (tn <> null) {
                 targetNode = tn as MaTransform;
+                break;
             }
         }
         if (targetNode <> null) {
             if (targetNode.collider == null) {
                 target = dynamicsWorld.createCollider(targetNode);
+                if (colshtyp == 1) {
+                    target.colliderShape = ColliderShape.Box { extent: ext }
+                } else if (colshtyp == 2) {
+                    target.colliderShape = ColliderShape.Sphere { radius: rad }
+                } else if (colshtyp == 3) {
+                    target.colliderShape = ColliderShape.Capsule { radius: rad; length: len }
+                } else if (colshtyp == 4) {
+                    const t = ColliderShape.ConvexHull {target: meshNode};
+                    target.colliderShape = t;
+                    println("colliderShape.target 4 => {t}");
+                } else if (colshtyp == 5) {
+                    const t = ColliderShape.StaticMesh {target: meshNode}
+                    target.colliderShape = t;
+                    println("colliderShape.target 5 => {t.target}");
+                } else if (colshtyp == 6) {
+                    target.colliderShape = ColliderShape.StaticPlane { }
+                } else if (colshtyp == 7) {
+                    target.colliderShape = ColliderShape.Cylinder {radius: rad; length: len }
+                }
+                println("colliderShape {colshtyp} => {target.colliderShape}");
                 target.dynamic = (b.bdytyp == 2);
                 target.mass = b.ms;
                 target.centerOfMass = b.com;
@@ -3315,10 +3532,19 @@ class MBulletRigidBodyShape is MRigidBody {
                 target.linearDamping = b.lindamp;
                 target.angularDamping = b.angdamp;
                 targetNode.collider = target;
-                //target.collisionInitialPosition = b.itrs;
-                //targetNode.tx = b.itrs.x;
-                //targetNode.ty = b.itrs.y;
-                //targetNode.tz = b.itrs.z;
+                println("targetNode=>{targetNode}");
+                const p0 = targetNode.parent;
+                if (p0 is MaTransform) {
+                    const p = p0 as MaTransform;
+                    println("targetNode.parent=>{p}");
+                    target.collisionInitialPosition = p.t;
+                    println("ip={p.t}");
+                    target.collisionInitialOrientation = 
+                        new Vec3(p.rx, 
+                                 p.ry, 
+                                 p.ry);
+                }
+                target.collisionInitialSpin = b.iav;
             }
         }
         return targetNode.collider;
@@ -3336,9 +3562,9 @@ class MBulletRigidBodyShape is MRigidBody {
     var i is Vec3 = Vec3.<<0>>; // initial impulse
     var ip is Point3 = Point3.<<0>>; // impulse position
     var ti is Vec3 = Vec3.<<0>>; // torque impulse
-    var colshtyp is Integer; // collider shape type box (ext), sphere (rad), capsule (axis, rad, len), hull, mesh, plane (axis), cylinder (rad, len)
+    var colshtyp is Integer = 1; // collider shape type box (ext), sphere (rad), capsule (axis, rad, len), hull, mesh, plane (axis), cylinder (rad, len)
     //imesh is link to mesh
-    var bdytyp is Integer; // static, kinematic, dynamic
+    var bdytyp is Integer = 1; // static(0), kinematic(1), dynamic(2)
     var len is Number;
     var ext is Tuple3;
     var axis is Integer;
@@ -3919,7 +4145,23 @@ class MAnimCurve__ is MAnimCurve of Number
 
         const n = cmd.getAttr();
         if (n == "ktv") {
-            ktv = cmd.getFloat2Array();
+            const p = cmd.getPath().path;
+            const values = cmd.getFloat2Array();
+            if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (ktv.size() < r.startIndex) {
+                    insert Vec2.<<0>> into ktv;
+                }
+                ktv[r.startIndex..r.endIndex] = values;
+            } else if (p[1] instanceof Range) {
+                const r = p[1] as Range;
+                while (ktv.size() < r.startIndex) {
+                    insert Vec2.<<0>> into ktv;
+                }
+                ktv[r.startIndex..r.endIndex] = values;
+            } else {
+                ktv = values;
+            }
         } else super.setAttr(cmd);
     }
 
@@ -4521,21 +4763,6 @@ public class MaTransform is Group
     // rotate order
     public var ro is Integer;
 
-    function rotate 
-        from (rx is Number, ry is Number, rz is Number, ro is Integer) 
-        to Mat4 
-    {
-        const angles = [rx, ry, rz];
-        var q = Quat.<<1>>;
-        const rots = foreach (i in [0..2]) { 
-            const j = RotateOrder[ro*3+i]; 
-            Quat.Quat(angles[j], axes[j]);
-        }
-        for (r in rots.reverse()) {
-            q *= r;
-        }
-        return q.toMat4();
-    }
 
     // translation
     public readonly var t is Point3 = bind point(tx, ty, tz);
@@ -4883,7 +5110,7 @@ public class Model {
 
     function makeRootMonitor from (modelContent is ModelContent) to Node {
         Group {
-            id: bind "{url} Last Modified {new java.util.Date(fileTimestamp)}";
+            id: bind "{url} {new java.util.Date(fileTimestamp)}";
             content: bind modelContent.spatial;
             override function update to ()
             {
@@ -4919,8 +5146,8 @@ public class Model {
             if (now >= lastCheck + pollInterval.toMillis()) {
                 lastCheck = now;
                 if (url.startsWith("file:")) {
-                    const u = new java.net.URL(url);
-                    const f = new java.io.File(u.getFile());
+                    const u1 = new java.net.URL(url);
+                    const f = new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null));
                     fileTimestamp = f.lastModified();
                 }
             }
