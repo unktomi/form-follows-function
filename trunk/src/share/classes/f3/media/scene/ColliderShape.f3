@@ -1,0 +1,36 @@
+package f3.media.scene;
+import f3.math.*;
+
+public abstract class ColliderShape {
+}
+
+public class Box is ColliderShape {
+    public var extent is Tuple3 = Tuple3.<<1>>;
+}
+
+public class Sphere is ColliderShape {
+    public var radius is Number;
+}
+
+public class Capsule is ColliderShape {
+    public var axis is Vec3 = Vec3.Y_AXIS;
+    public var radius is Number;
+    public var length is Number;
+}
+
+public class ConvexHull is ColliderShape {
+    public var target is MeshNode;
+}
+
+public class StaticMesh is ColliderShape {
+    public var target is MeshNode;
+}
+
+public class StaticPlane is ColliderShape {
+}
+
+public class Cylinder is ColliderShape {
+    public var axis is Vec3 = Vec3.Y_AXIS;
+    public var radius is Number = 0.5;
+    public var length is Number = 1.0;
+}

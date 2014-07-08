@@ -85,7 +85,7 @@
 
     <!-- Here are popular targets for building in this dir -->
     <target name="help"       depends="-do-help" description="Show help on targets"/>
-    <target name="binaries"   depends="jar,f3.svg.awt,f3.xhtml.awt,f3.fmod,f3.cg.jogl.awt,f3doc,launcher" description="Build compiler and compiler runtime binaries"/>
+    <target name="binaries"   depends="jar,f3.cg.jogl.awt,f3.svg.awt,f3.xhtml.awt,f3.fmod,f3.jbullet,f3.assimp,f3doc,launcher" description="Build compiler and compiler runtime binaries"/>
 
 <!-- jjh: temporarily changed to dev-test until the tests on the exclude lists can be fixed
     <target name="test"       depends="binaries,-do-test" description="Build binaries and run tests"/>
@@ -892,6 +892,11 @@
       </target>
     <target name="f3.assimp" depends="jar">
         <ant dir="f3_assimp" antfile="build.xml" inheritAll="false" target="jar">
+        </ant>
+      </target>
+
+    <target name="f3.jbullet" depends="jar">
+        <ant dir="f3_jbullet_jogl" antfile="build.xml" inheritAll="false" target="jar">
         </ant>
       </target>
 

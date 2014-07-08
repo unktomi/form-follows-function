@@ -70,7 +70,7 @@ public class SkinCluster is MeshDeformer {
         return doApply;
     }
     function doApply to () {
-    println("applying skin {this}");
+//    println("applying skin {this}");
         for (j in [0..<joints.size()]) {
             const joint = joints[j];
             const wm = joint.toSceneTransform;

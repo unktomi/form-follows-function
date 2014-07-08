@@ -392,13 +392,55 @@ class ModelContent {
 public class F3Assimp {
 
     public var url is String;
-    public readonly var spatialRoot is Node = bind modelContent.spatialRoot;
-    public readonly var temporalRoot is TimeNode = bind modelContent.temporalRoot;
-    public bound function getSpatialRoot to Node { spatialRoot }
-    public bound function getTemporalRoot to TimeNode { temporalRoot }
+    public readonly var spatialRoot is Node = bind getSpatialRoot();
+    public readonly var temporalRoot is TimeNode = bind getTemporalRoot();
+    public bound function getTemporalRoot to TimeNode { modelContent.temporalRoot }
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
-    bound var modelContent is ModelContent = load(url, effectLoader);
+    bound var modelContent is ModelContent = load(url, effectLoader, fileTimestamp);
+    public var monitorForChanges is Boolean = false;
+    public var pollInterval is Duration = 2s;
+    var lastCheck is Long;
+
+    function checkTimestamp to ()
+    {
+        if (monitorForChanges) {
+            const now = java.lang.System.currentTimeMillis();
+            if (now >= lastCheck + pollInterval.toMillis()) {
+                lastCheck = now;
+                if (url.startsWith("file:")) {
+                    const u1 = new java.net.URL(url);
+                    const f = new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null));
+                    fileTimestamp = f.lastModified();
+                }
+            }
+        }
+    }
+
+    var fileTimestamp is Long;
+
+    postinit {
+        checkTimestamp();
+    }
+
+    function makeRootMonitor from (modelContent is ModelContent) to Node {
+        Group {
+            id: bind "{url} {new java.util.Date(fileTimestamp)}";
+            content: bind modelContent.spatialRoot;
+            override function update to ()
+            {
+                checkTimestamp();
+                super.update();
+            }
+        }
+    }
+
+    public bound function getSpatialRoot to Node 
+    {
+        if (monitorForChanges) {
+            makeRootMonitor(modelContent)
+        } else modelContent.spatialRoot;
+    }
 
     public bound function getResources to String[]  
     {
@@ -411,7 +453,7 @@ public class F3Assimp {
         new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null)).getAbsolutePath();
     }
 
-    function load from (url is String, effectLoader is CGEffectLoader) to ModelContent {
+    function load from (url is String, effectLoader is CGEffectLoader, fileTimestamp is Long) to ModelContent {
         const loader = Loader {
             effectLoader: effectLoader;
             imageLoader: imageLoader;

@@ -30,12 +30,12 @@ public class SVG
         if (monitorForChanges) {
             const now = java.lang.System.currentTimeMillis();
             if (now >= lastCheck + pollInterval.toMillis()) {
+                lastCheck = now;
                 if (url.startsWith("file:")) {
-                    const u = new java.net.URL(url);
-                    const f = new java.io.File(u.getFile());
+                    const u1 = new java.net.URL(url);
+                    const f = new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null));
                     fileTimestamp = f.lastModified();
                 }
-                lastCheck = now;
             }
         }
     }
@@ -49,7 +49,7 @@ public class SVG
     function load from (url is String, fileTimestamp is Long) to Node {
         if (monitorForChanges) {
             Group {
-                id: bind "{url} lastModified={new java.util.Date(fileTimestamp)}";
+                id: bind "{url} {new java.util.Date(fileTimestamp)}";
                 content: load(url);
                 override function update to ()
                 {

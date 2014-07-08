@@ -30,7 +30,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget, Collidable
     }
     bound var collisionWorldTransform = bind collider.collisionWorldTransform;
     public readonly var toSceneTransform is Mat4 = 
-        bind if (collider.dynamic) 
+        bind if (collider.dynamic and collider.isActive()) 
         collisionWorldTransform
         else parentToSceneTransform * transform;
 

@@ -8,7 +8,7 @@ public abstract class Sound is Node {
     public var velocity is Vec3;
     public var paused is Boolean;
     public const soundLoader is SoundLoader = the SoundLoader;
-    public readonly var sound is AbstractSound;
+    public readonly var sound is AbstractSound = bind load(url, fileTimestamp);
     public var position is Duration;
     public var volume is Number = 1.0;
     public var frequency is Number = 44100;
@@ -21,6 +21,7 @@ public abstract class Sound is Node {
 
     override function update to ()
     {
+        checkTimestamp();
         if (soundLoader == null) {
             throw new java.lang.RuntimeException("No sound loader");
         }
@@ -45,15 +46,47 @@ public abstract class Sound is Node {
 	}
         const worldPos = toSceneTransform.getTranslation();
         sound.setLocation(worldPos);
+        super.update();
     }
+
+    public var monitorForChanges is Boolean = false;
+    public var pollInterval is Duration = 2s;
+    var lastCheck is Long;
+
+    function checkTimestamp to ()
+    {
+        if (monitorForChanges) {
+            const now = java.lang.System.currentTimeMillis();
+            if (now >= lastCheck + pollInterval.toMillis()) {
+                lastCheck = now;
+                if (url.startsWith("file:")) {
+                    const u1 = new java.net.URL(url);
+                    const f = new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null));
+                    fileTimestamp = f.lastModified();
+                }
+            }
+        }
+    }
+
+    var fileTimestamp is Long;
+
+    postinit {
+        checkTimestamp();
+    }
+
+    function load from (url is String, timestamp is Long) to AbstractSound {
+        load(url)
+    }
+
+    protected function load from (url is String) to AbstractSound;
 }
 
 public class Sample is Sound {
-    override var sound = bind soundLoader.loadSample(url);
+    override function load from (url is String) to AbstractSound { soundLoader.loadSample(url) }
 }
 
 public class Stream is Sound {
-    override var sound = bind soundLoader.loadStream(url);
+    override function load from (url is String) to AbstractSound { soundLoader.loadStream(url) }
 }
 
 public class Clip is TimeNode {

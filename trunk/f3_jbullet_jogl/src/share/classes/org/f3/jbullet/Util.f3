@@ -1,15 +1,7 @@
 package org.f3.jbullet;
 import f3.math.*;
 
-public function convertToBullet(vec is Vec3, v is javax.vecmath.Vector3f) to javax.vecmath.Vector3f {
-       if (v == null) {
-           return new javax.vecmath.Vector3f(vec.x, vec.y, vec.z);
-       }
-       v.set(vec.x, vec.y, vec.z);
-       return v;
-}
-
-public function convertToBullet(vec is Point3, v is javax.vecmath.Vector3f) to javax.vecmath.Vector3f {
+public function convertToBullet(vec is Tuple3, v is javax.vecmath.Vector3f) to javax.vecmath.Vector3f {
        if (v == null) {
            return new javax.vecmath.Vector3f(vec.x, vec.y, vec.z);
        }

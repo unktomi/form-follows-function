@@ -68,10 +68,11 @@ public class JBulletCollider is Collider {
     public function getCollisionShape to com.bulletphysics.collision.shapes.CollisionShape
     {
         if (collisionShape == null) {
-            collisionShape = _dynamicsWorld().createCollisionShape(target);
+            collisionShape = _dynamicsWorld().createCollisionShape(target, colliderShape);
             if (collisionShape == null) {
                 active = false;
             }
+            collisionShape.setMargin(0.04);
         }
         return collisionShape;
     }
@@ -262,31 +263,14 @@ public class JBulletCollider is Collider {
             rbinfo.linearDamping = linearDamping;
             rbinfo.angularDamping = angularDamping;
             if (not dynamic) {
-/*
-               rigidBody = RigidBody {
-                    override public function getWorldTransform(out is com.bulletphysics.linearmath.Transform) to com.bulletphysics.linearmath.Transform {
-                        var result = out;
-                        if (result == null) {
-                            result = new com.bulletphysics.linearmath.Transform();
-                        }
-                        if (_worldMatrix == null) { return result }
-                        fillWorldMatrix();
-                        result.setFromOpenGLMatrix(_worldMatrix);
-                        return result;
-                    }
-                }
-                rigidBody.setupRigidBody(rbinfo);
-*/
                 rigidBody = new RigidBody(rbinfo);
                 rigidBody.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT);
                 rigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
             } else {
                 rigidBody = new RigidBody(rbinfo);
+                rigidBody.setSleepingThresholds(0, 0);
             }
             _rigidBody = rigidBody;
-            if (mass == 0) {
-                //                _rigidBody.setCollisionFlags(CollisionFlags.STATIC_OBJECT);
-            }
             _rigidBody.setFriction(friction);
             _rigidBody.setRestitution(restitution);
             _rigidBody.setUserPointer(new java.lang.ref.WeakReference of Collider(this));
@@ -467,7 +451,7 @@ public class JBulletCollider is Collider {
 
     var _currentlyActive is Boolean;   
 
-    public bound function isActive to Boolean { _currentlyActive }
+    override public bound function isActive to Boolean { _currentlyActive }
       
     function activate from () to () {
         if (not active) {
@@ -480,21 +464,16 @@ public class JBulletCollider is Collider {
 
     protected function reactivate from () to () 
     {
-        setCollisionWorldTransform(initialTransform);
         removeRigidBody();
-        if (active and collidable <> null and _dynamicsWorld() <> null) {
-            //            var c = if (shape <> null) shape else collidable;
-            //            createRigidBody(c.getCollisionShape());
-        }
     }
 
     override function update from () to () 
     {
-        //println("update {this}: {active}, {collidable}, {_dynamicsWorld}, rigidBody={_rigidBody}");
         if (_dynamicsWorld() <> null) {
             if (_rigidBody == null) {
-                //setCollisionWorldTransform(initialTransform);
                 if (active) {
+                    println(initialTransform);
+                    setCollisionWorldTransform(initialTransform);
                     createRigidBody(getCollisionShape());
                 }
             }
