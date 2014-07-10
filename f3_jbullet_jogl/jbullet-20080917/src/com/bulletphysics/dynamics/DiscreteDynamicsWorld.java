@@ -335,8 +335,8 @@ public class DiscreteDynamicsWorld extends DynamicsWorld {
 				int clampedSimulationSteps = (numSimulationSubSteps > maxSubSteps) ? maxSubSteps : numSimulationSubSteps;
 
 				for (int i = 0; i < clampedSimulationSteps; i++) {
-					internalSingleStepSimulation(fixedTimeStep);
-					synchronizeMotionStates();
+                                    internalSingleStepSimulation(fixedTimeStep);
+                                    synchronizeMotionStates();
 				}
 			}
 

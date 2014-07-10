@@ -73,7 +73,7 @@ class DebugDrawer is IDebugDraw {
     {
         const gl is GL2 = JoglStage.THE_GL2;
         gl.glColor4f(color.x, color.y, color.z, alpha);
-        gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINES);
+        //gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINES);
         gl.glBegin(gl.GL_TRIANGLES);
         gl.glVertex3f(v0.x, v0.y, v0.z);
         gl.glVertex3f(v1.x, v1.y, v1.z);
@@ -91,15 +91,51 @@ class DebugDrawer is IDebugDraw {
         gl.glVertex3f(_to.x, _to.y, _to.z);
         gl.glEnd();
     }
-    
-    public override function drawContactPoint(PointOnB:Vector3f, normalOnB:Vector3f, distance:Number, lifeTime:Integer,  color:Vector3f):Void {
+
+    const _to = new Vector3f;
+    const DEBUG_NORMALS = false;
+    public override function drawContactPoint 
+        from (pointOnB is Vector3f, 
+              normalOnB is Vector3f, 
+              distance is Number, 
+              lifeTime is Integer, 
+              color is Vector3f) to () 
+    {
+        const gl is GL2 = JoglStage.THE_GL2;
+        _to.scaleAdd(distance*100.0, normalOnB, pointOnB);
+        const _from = pointOnB;
+        // JAVA NOTE: added
+        if (DEBUG_NORMALS) {
+            _to.normalize(normalOnB);
+            _to.scale(10);
+            _to.add(pointOnB);
+            gl.glLineWidth(3);
+            gl.glPointSize(6);
+            gl.glBegin(gl.GL_POINTS);
+            gl.glColor3f(color.x, color.y, color.z);
+            gl.glVertex3f(_from.x, _from.y, _from.z);
+            gl.glEnd();
+        }
+        
+        gl.glBegin(gl.GL_LINES);
+        gl.glColor3f(color.x, color.y, color.z);
+        gl.glVertex3f(_from.x, _from.y, _from.z);
+        gl.glVertex3f(_to.x, _to.y, _to.z);
+        gl.glEnd();
+        
+        // JAVA NOTE: added
+        if (DEBUG_NORMALS) {
+            gl.glLineWidth(1);
+            gl.glPointSize(1);
+        }
     }
-    
+
     public override function reportErrorWarning(warningString:String):Void {
         System.out.println("BULLET: {warningString}");
     }
 
     public override function draw3dText(location:Vector3f, textString:String):Void {
+        
     }
 
     var mode = //DebugDrawModes.DRAW_WIREFRAME;
@@ -118,6 +154,7 @@ class DebugDrawer is IDebugDraw {
 
 public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
+    var firstTime is Boolean = true;
     override function reset to ()
     {
         println("RESET DYNAMICS");
@@ -127,8 +164,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             c.reactivate();
         }
         lastTimeStep = 0;
-        //toBeDeleted.clear();
-        //dynamicsWorld = null;
+        firstTime = true;
     }
 
     override function createCollider from (n is Node) to Collider {
@@ -297,7 +333,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         }
     }
 
-    public var debug is Boolean = DEBUG_DRAW;
+    override var debug is Boolean = DEBUG_DRAW;
 
     override public function debugDraw from (camera is Camera) to () 
     {
@@ -314,15 +350,15 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             gl.glPopClientAttrib();
         }
     }
-
+    const FIXED_TIME_STEP = 1.0/60;
     var lastTimeStep is Double;
     public override function update from (sceneTime is Duration, camera is Camera) to ()
     {
         //println("update: {sceneTime}");
-        var millis = sceneTime.toMillis();
+        const millis = java.lang.System.currentTimeMillis();
         var timeStep is Double = if (lastTimeStep == 0) then 0 else millis - lastTimeStep;
         timeStep /= 1000.0;
-        lastTimeStep = millis;
+        ///println("timestep: {timeStep}");
         var firstTime = this.dynamicsWorld == null;
         const dynamicsWorld = getDynamicsWorld();
         if (toBeDeleted.size() > 0) {
@@ -350,30 +386,20 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             }
             toBeDeleted.clear();
         }
+        lastTimeStep = millis;
         if (not firstTime and paused) {
-            /*
-            const iter2 = dynamicsWorld.getCollisionObjectArray().iterator();
-            while (iter2.hasNext()) {
-                const obj = iter2.next();
-                const collider = getUserPointer(obj) as JBulletCollider;
-            }
-            */
             return;
         }
-        firstTime = false;
-        lastTimeStep = millis;
-        var steps = 4;
-
+        var steps = 1;
         if (variableTimeStep) {
             steps = 0;
         }
-
         applyForceFields();
         dynamicsWorld.stepSimulation(timeStep,
                                      steps,
-                                     1.0/60);
-        var dispatcher = dynamicsWorld.getDispatcher();
-        var numManifolds = dispatcher.getNumManifolds();
+                                     FIXED_TIME_STEP);
+        const dispatcher = dynamicsWorld.getDispatcher();
+        const numManifolds = dispatcher.getNumManifolds();
         for (i in [0..<numManifolds]) {
             var contactManifold = dispatcher.getManifoldByIndexInternal(i);
             var objA = contactManifold.getBody0() as CollisionObject;
@@ -511,7 +537,8 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             const s = colliderShape as ColliderShape.StaticMesh;
             result = createCollisionShape(s.target.mesh, Mat4.<<1>>);
         } else if (colliderShape is ColliderShape.StaticPlane) {
-            result = new StaticPlaneShape(new Vector3f(0, 1, 0), 0); 
+            //result = new StaticPlaneShape(new Vector3f(0, 1, 0), 0); 
+            result = new com.bulletphysics.collision.shapes.BoxShape(new Vector3f(10000, 1, 10000));
         } else if (colliderShape is ColliderShape.Cylinder) {
             const s = colliderShape as ColliderShape.Cylinder;
             result = new com.bulletphysics.collision.shapes.CylinderShapeZ(new Vector3f(s.radius, s.length, 0));

@@ -3,6 +3,37 @@ import f3.media.scene.*;
 import f3.math.*;
 import java.nio.*;
 import java.util.concurrent.*;
+import java.lang.Math;
+
+const pool = new ForkJoinPool(java.lang.Runtime.getRuntime().availableProcessors());
+
+class TopAction is Callable of (()) {
+    public const cluster is SkinCluster;
+    public const size is Integer;
+    const actions = cluster.topAction(this);
+    override function call to (()) {
+        if (actions == []) {
+            cluster.doit(0, size);
+        } else {
+            const list = new java.util.ArrayList of (Callable of (()));
+            for (x in actions) list.add(x);
+            for (x in pool.invokeAll(list)) {
+                x.get();
+            }
+        }
+        return ();
+    }
+}
+
+class SkinAction is Callable of (()) {
+    public const cluster is SkinCluster;
+    public const start is Integer;
+    public const end is Integer;
+    override function call to (()) {
+        cluster.doit(start, end);
+        return ();
+    }
+}
 
 public class SkinCluster is MeshDeformer {
     public var root is Node;
@@ -23,13 +54,6 @@ public class SkinCluster is MeshDeformer {
     var combinedInverseTranspose is Mat4f[];
     const sceneToLocal = new Mat4f();
     var lastWm is Mat4[];
-    const tempMat = new Mat4f();
-    const pos = new Vec3f();
-    const norm = new Vec3f();
-    const origPos = new Vec3f();
-    const origNorm = new Vec3f();
-    const temp1 = new Vec3f();
-    const temp2 = new Vec3f();
     public override function apply from (m is MeshNode) to function from () to () 
     {
         if (root == null) {
@@ -67,10 +91,6 @@ public class SkinCluster is MeshDeformer {
 	if (not dirty) {
 	    return function from () to () {};
 	}
-        return doApply;
-    }
-    function doApply to () {
-//    println("applying skin {this}");
         for (j in [0..<joints.size()]) {
             const joint = joints[j];
             const wm = joint.toSceneTransform;
@@ -90,8 +110,76 @@ public class SkinCluster is MeshDeformer {
             }
             cmi.set(cm); cmi.invert(); cmi.transpose();
         }
+        if (top == null) {
+            top = TopAction {
+                size: vertCount();
+                cluster: this;
+            }
+        }
+        const fut = pool.submit(top);
+        return function to () { fut.get() }
+    }
+
+    var top is TopAction;
+
+    function vertCount to Integer {
         var i = 0;
-        while (i < weights.size()) {
+        var count = 0;
+        const size = weights.size();
+        while (i < size) {
+            ++i;
+            count++;
+            const numInfluences = weights[i++] as Integer;
+            i += numInfluences * 2;
+        }
+        return count;
+    }
+
+    function topAction from (top is TopAction) to (Callable of (()))[] {
+        const weights = this.weights;
+        const size = top.size;
+        if (size < 512) {
+            return []
+        } else {
+            const batch = weights.size() / java.lang.Runtime.getRuntime().availableProcessors();
+            var actions is (Callable of (()))[];
+            var i = 0;
+            var prev = 0;
+            while (i < weights.size()) {
+                ++i;
+                const numInfluences = weights[i++] as Integer;
+                i += numInfluences * 2;
+                if (weights.size() - i < batch) {
+                    i = weights.size();
+                }
+                if (i - prev >= batch) {
+                    const start = prev;
+                    const end = i;
+                    prev = end;
+                    const run = SkinAction { 
+                        cluster: top.cluster;
+                        start: start;
+                        end: end;
+                    } 
+                    insert run into actions;
+                }
+            }
+            return actions;
+        }
+    }
+
+    const tempMat = new Mat4f();
+
+    function doit from (start is Integer, end is Integer) to ()
+    {
+    const temp1 = new Vec3f();
+    const temp2 = new Vec3f();
+    const pos = new Vec3f();
+    const norm = new Vec3f();
+    const origPos = new Vec3f();
+    const origNorm = new Vec3f();
+        var i = start;
+        while (i < end) {
             const vert = (weights[i++] as Integer) * 3;
             const numInfluences = weights[i++] as Integer;
             pos.set(0, 0, 0);

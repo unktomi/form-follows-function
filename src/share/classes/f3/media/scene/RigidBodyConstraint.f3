@@ -9,11 +9,11 @@ public abstract class RigidBodyConstraint {
 
     protected var applied is Boolean;
     
-    public readonly var collider1 is Collider = bind node1.collider on replace {
+    public const collider1 is Collider = node1.collider;
+    public const collider2 is Collider = node2.collider;
+    
+    postinit {
         insert this into collider1.constraints;
-    }
-
-    public readonly var collider2 is Collider = bind node2.collider on replace {
         insert this into collider2.constraints;
     }
 
