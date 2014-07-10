@@ -177,6 +177,7 @@ class MaModel
     {
         const n = cmd.name;
         if (n == "createNode") {
+            lastSetAttr = null;
             createNode(cmd);
         } else if (n == "setAttr") {
             if (cmd.args.size() > 1) {
@@ -185,6 +186,10 @@ class MaModel
             } else {
                 lastSetAttr = cmd;
             }
+        } else if (n == "select") {
+            const name = cmd.getString(0);
+            current = if name == null then null else nodeMap.get(name);
+            lastSetAttr = null;
         } else if (n == "addAttr") {
             addAttr(cmd);
         } else if (n == "connectAttr") {
@@ -202,12 +207,16 @@ class MaModel
 
     function addAttr from (cmd is Command) to () 
     {
-        current.addAttr(cmd);
+        if (current != null) {
+            current.addAttr(cmd);
+        }
     }
 
     function setAttr from (cmd is Command) to () 
     {
-        current.setAttr(cmd);
+        if (current != null) {
+            current.setAttr(cmd);
+        }
     }
     
     function connectAttr from (cmd is Command) to () 
@@ -989,6 +998,7 @@ class MPairBlend is MUtilityOfTuple3 {
     public var ro is Integer = 0;
 
     override function setAttr from (cmd is Command) to () {
+        println(cmd);
         const n = cmd.getAttr();
         if (n == "w") {
             w = cmd.getFloat();
@@ -1000,6 +1010,8 @@ class MPairBlend is MUtilityOfTuple3 {
             ir1 = cmd.getTuple3();
         } else if (n == "ir2") {
             ir2 = cmd.getTuple3();
+        } else if (n == "ro") {
+            ro = cmd.getInt();
         } else super.setAttr(cmd);
     }
 
@@ -3081,7 +3093,7 @@ class MMesh is MSpatial
                     }
                 }
                 target = dynamicsWorld.createCollider(targetNode);
-                target.dynamic = rigidBody.act;
+                target.bodyType = if (rigidBody.act) then RigidBodyType.Static else RigidBodyType.Kinematic;
                 target.mass = rigidBody.mas;
                 const ip = rigidBody.ip; 
                 const com = rigidBody.com;
@@ -3452,12 +3464,19 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
         //Constraint type. The valid enum values are: Point(0), Hinge(1), Slider(2), ConeTwist(3), 6DOF(4), Spring Hinge(5), Spring 6DOF(6)
         var bodyA is Node;
         var bodyB is Node;
+        var pivotA is Point3;
+        var pivotB is Point3;
         for (c in connectionsToThis.get("rba")) {
             bodyA = m.toRigidBody(c.sourceNode as MRigidBody).collidable as Node;
+            const parent = m.toNode(c.sourceNode.parent as MSpatial) as MaTransform;
+            pivotA = parent.t;
         }
         for (c in connectionsToThis.get("rbb")) {
             bodyB = m.toRigidBody(c.sourceNode as MRigidBody).collidable as Node;
+            const parent = m.toNode(c.sourceNode.parent as MSpatial) as MaTransform;
+            pivotB = parent.t;
         }
+
         const result = 
         if (contyp == 0) {
             PointToPointConstraint {
@@ -3468,6 +3487,10 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
             HingeConstraint {
                 node1: bodyA;
                 node2: bodyB;
+                worldSpace: no;
+                pivotInA: pivotA;
+                pivotInB: pivotB;
+                usePivots: no;
             }
         } else {
             null;
@@ -3523,7 +3546,7 @@ class MBulletRigidBodyShape is MRigidBody {
                     target.colliderShape = ColliderShape.Cylinder {radius: rad; length: len }
                 }
                 println("colliderShape {colshtyp} => {target.colliderShape}");
-                target.dynamic = (b.bdytyp == 2);
+                target.bodyType = if (b.bdytyp == 0) then RigidBodyType.Static else if (b.bdytyp == 1) then RigidBodyType.Kinematic else RigidBodyType.Dynamic; 
                 target.mass = b.ms;
                 target.centerOfMass = b.com;
                 target.friction = b.fric;
@@ -3532,7 +3555,7 @@ class MBulletRigidBodyShape is MRigidBody {
                 target.linearDamping = b.lindamp;
                 target.angularDamping = b.angdamp;
                 targetNode.collider = target;
-                println("targetNode=>{targetNode}");
+                println("targetNode=>{targetNode}, parent={targetNode.parent}");
                 const p0 = targetNode.parent;
                 if (p0 is MaTransform) {
                     const p = p0 as MaTransform;
@@ -3543,6 +3566,15 @@ class MBulletRigidBodyShape is MRigidBody {
                         new Vec3(p.rx, 
                                  p.ry, 
                                  p.ry);
+                } else {
+                    target.collisionInitialPosition = itrs;
+                    targetNode.tx += itrs.x;
+                    targetNode.ty += itrs.y;
+                    targetNode.tz += itrs.z;
+                    target.collisionInitialOrientation = irot;
+                    targetNode.rx += irot.x;
+                    targetNode.ry += irot.y;
+                    targetNode.rz += irot.z;
                 }
                 target.collisionInitialSpin = b.iav;
             }
@@ -3569,6 +3601,7 @@ class MBulletRigidBodyShape is MRigidBody {
     var ext is Tuple3;
     var axis is Integer;
     var itrs is Point3;
+    var irot is Vec3;
     var rad is Number;
     override function setAttr from (cmd is Command) to () 
     {
@@ -3606,10 +3639,12 @@ class MBulletRigidBodyShape is MRigidBody {
             ext = cmd.getTuple3();
         } else if (n == "axis") {
             axis = cmd.getInt();
-        } else if (n == "itrs") {
-            itrs = cmd.getPoint3();
         } else if (n == "rad") {
             rad = cmd.getFloat();
+        } else if (n == "itrs") {
+            itrs = cmd.getPoint3();
+        } else if (n == "irot") {
+            irot = cmd.getVec3();
         } else super.setAttr(cmd);
     }
 }
@@ -3665,13 +3700,20 @@ class MCGFXShader is MAbstractShader
                     if (slashslash > 0) {
                         fname = "..{fname.substring(slashslash+1)}";
                     }
+                    const testFile = new java.io.File(fname);
                     const paramName = conn.targetPath;
                     const p = shader.getParameter(paramName) as Shader.Parameter of AbstractTexture;
                     try {
-                        const u = new java.net.URL(baseURL, fname).toString();
+                        const u = 
+                            if (testFile.exists()) {
+                                testFile.toURI().toString();
+                            } else {
+                                new java.net.URL(baseURL, fname).toString();
+                            }
                         const image = m.imageLoader.loadImage(u);
                         m.recordResource(u);
-                        //println("setting {paramName} to {file.ftn} p={p}");
+                        println("u={u}");
+                        println("setting {paramName} to {file.ftn} p={p}");
                         p.set(image);
                     } catch (e is java.lang.Exception) {
                         e.printStackTrace();
@@ -3783,6 +3825,28 @@ class MCGFXVector is MSpatial {
         return vecNode;
     }
     
+}
+
+class MLayeredShader is MAbstractShader {
+    public var c is Tuple3;
+    public var t is Tuple3 = Tuple3.<<1>>;
+    public var g is Tuple3;
+    override function setAttr from (cmd is Command) to () 
+    {
+        const n = cmd.getAttr();
+        if (n == "c") {
+            c = cmd.getTuple3();
+        } else if (n == "t") {
+            t = cmd.getTuple3();
+        } else if (n == "g") {
+            g = cmd.getTuple3();
+        } else super.setAttr(cmd);
+    }
+
+    override function toShader from (m is MaModel) to Shader 
+    {
+        null
+    }
 }
 
 class MShader is MAbstractShader 
@@ -3909,7 +3973,15 @@ class MShader is MAbstractShader
                     fname = "..{fname.substring(slashslash+1)}";
                 }
                 try {
-                    image = m.imageLoader.loadImage(new java.net.URL(baseURL, fname).toString());
+                    const testFile = new java.io.File(fname);
+                    const u = 
+                        if (testFile.exists()) {
+                            testFile.toURI().toString(); 
+                        } else {
+                            new java.net.URL(baseURL, fname).toString();
+                        };
+                    println("u={u}");
+                    image = m.imageLoader.loadImage(u);
                     uvMap = [0];
                 } catch (e is java.lang.Exception) {
                     e.printStackTrace();

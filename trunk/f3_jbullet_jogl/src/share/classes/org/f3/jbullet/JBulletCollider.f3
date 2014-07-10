@@ -42,7 +42,7 @@ class CMotionState is MotionState {
     {
         const c = this.c.get();
         if (c.getRigidBody() == rb) {
-            if (c.dynamic) {
+            if (c.bodyType == RigidBodyType.Dynamic) {
                 if (c._worldMatrix <> null) {
                     out.getOpenGLMatrix(c._worldMatrix);
                     c.drainWorldMatrix();
@@ -72,7 +72,6 @@ public class JBulletCollider is Collider {
             if (collisionShape == null) {
                 active = false;
             }
-            collisionShape.setMargin(0.04);
         }
         return collisionShape;
     }
@@ -245,14 +244,14 @@ public class JBulletCollider is Collider {
         if (_dynamicsWorld() == null or colShape == null) {
             return;
         }
-        println("creating rigid body {this} collidable={collidable} w={_dynamicsWorld()} mass={mass} dynamic={dynamic} {colShape}");
+        println("creating rigid body {this} collidable={collidable} w={_dynamicsWorld()} mass={mass} bodyType={bodyType} {colShape}");
         _worldMatrix = new nativearray of Number(16);
         var self = this;
         var motionState = CMotionState {
             c: new java.lang.ref.WeakReference of JBulletCollider(self);
             world: _dynamicsWorld();
         }
-        if (true or dynamic) {
+        if (true) {
             var localInertia = new Vector3f(0, 0, 0);
             if (mass <> 0) {
                 colShape.calculateLocalInertia(mass, localInertia);
@@ -262,13 +261,16 @@ public class JBulletCollider is Collider {
                                                        colShape, localInertia);
             rbinfo.linearDamping = linearDamping;
             rbinfo.angularDamping = angularDamping;
-            if (not dynamic) {
+            if (bodyType <> RigidBodyType.Dynamic) {
                 rigidBody = new RigidBody(rbinfo);
-                rigidBody.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT);
+                if (bodyType == RigidBodyType.Kinematic) {
+                    rigidBody.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT);
+                } else {
+                    rigidBody.setCollisionFlags(CollisionFlags.STATIC_OBJECT);
+                }
                 rigidBody.setActivationState(CollisionObject.DISABLE_DEACTIVATION);
             } else {
                 rigidBody = new RigidBody(rbinfo);
-                rigidBody.setSleepingThresholds(0, 0);
             }
             _rigidBody = rigidBody;
             _rigidBody.setFriction(friction);
@@ -405,7 +407,7 @@ public class JBulletCollider is Collider {
 
     function fillWorldMatrix to () {
         const t = 
-            (if dynamic then getCollisionWorldTransform() else target.toSceneTransform) * translate(centerOfMass);
+            (if bodyType == RigidBodyType.Dynamic then getCollisionWorldTransform() else target.toSceneTransform) * translate(centerOfMass);
         for (c in [0..<4], r in [0..<4]) {
             _worldMatrix[c*4+r] = t.get(r, c);
         }
@@ -473,7 +475,9 @@ public class JBulletCollider is Collider {
             if (_rigidBody == null) {
                 if (active) {
                     println(initialTransform);
-                    setCollisionWorldTransform(initialTransform);
+                    if (bodyType == RigidBodyType.Dynamic)  {
+                        setCollisionWorldTransform(initialTransform);
+                    }
                     createRigidBody(getCollisionShape());
                 }
             }

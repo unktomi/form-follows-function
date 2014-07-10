@@ -891,6 +891,7 @@ class SceneRenderer2D
 					   bg.opacity));
 	camera.update();
 	g.clearRect(0, 0, w, h);
+
 	scene.root.foldLeft((), 
 			    function from (_ is (), n is Node) to () 
 			    {
@@ -2131,7 +2132,7 @@ public class SceneRenderer {
         //scene.update(); // hack: necessary to prevent flashing
 	const visited = new java.util.HashSet of Node;
 	const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
-
+        var deformerFutures is (function to ())[];
         const vf = function from (_ is (), n is Node) to () {
 	    if (n.toSceneTransform == null) {
 		println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
@@ -2222,8 +2223,11 @@ public class SceneRenderer {
 			for (deformer in mn.deformers) {
 			    //println("applying deformer {deformer} to {mn}");
                             try {
-                                deformer.apply(mn)(); // fix me: opt
-                                mn.mesh.updateBounds();
+                                const f = deformer.apply(mn);
+                                insert function to () {
+                                    f();
+                                    mn.mesh.updateBounds();
+                                } into deformerFutures;
                             } catch (e is java.lang.Throwable) {
                                 e.printStackTrace();
                             }
@@ -2411,6 +2415,7 @@ public class SceneRenderer {
         for (i in scene.visibleMeshes) {
 	    vf((), i);
 	}
+        for (v in deformerFutures) v();
 	for (i in offscreenToRender) {
 	    if (renderStageNode(gl, i as StageNode)) {
                 dirty = true;

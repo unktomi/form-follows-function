@@ -13,4 +13,5 @@ public abstract class DynamicsWorld {
     public function createCollider from (n is Node) to Collider;
     public function reset to ();
     public function debugDraw from (camera is Camera) to ();
+    public var debug is Boolean;
 }

@@ -208,7 +208,7 @@ public class Vec3 is Tuple3
 	} 
     }
 
-    public function / from (scale is Number) to Vec3
+    override public function / from (scale is Number) to Vec3
     {
 	this * (1/scale)
     }

@@ -61,7 +61,7 @@ public abstract class Collider {
     public var dynamicsWorld is DynamicsWorld;
     public var constraints is RigidBodyConstraint[];
     public var mass is Number;
-    public var dynamic is Boolean = false;
+    public var bodyType is RigidBodyType = RigidBodyType.Dynamic;
     public var friction is Number = 0.5;
     public var restitution is Number; 
     public var tracksCollisions is Boolean = false;
