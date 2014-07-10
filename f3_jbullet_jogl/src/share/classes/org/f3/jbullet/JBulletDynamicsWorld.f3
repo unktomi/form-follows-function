@@ -1,7 +1,9 @@
 package org.f3.jbullet;
+import java.util.concurrent.*;
 import com.bulletphysics.ContactAddedCallback;
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.ContactDestroyedCallback;
+import com.bulletphysics.util.ObjectArrayList;
 import com.bulletphysics.collision.dispatch.CollisionObject;
 import com.bulletphysics.collision.dispatch.CollisionFlags;
 import com.bulletphysics.collision.dispatch.CollisionWorld;
@@ -151,6 +153,8 @@ class DebugDrawer is IDebugDraw {
     }
 
 }
+
+public const pool = Executors.newSingleThreadExecutor();
 
 public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
@@ -352,7 +356,8 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
     }
     const FIXED_TIME_STEP = 1.0/60;
     var lastTimeStep is Double;
-    public override function update from (sceneTime is Duration, camera is Camera) to ()
+    public override function update from (sceneTime is Duration, camera is Camera) to 
+        function to ()
     {
         //println("update: {sceneTime}");
         const millis = java.lang.System.currentTimeMillis();
@@ -388,101 +393,125 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         }
         lastTimeStep = millis;
         if (not firstTime and paused) {
-            return;
+            return  null;
         }
         var steps = 1;
         if (variableTimeStep) {
             steps = 0;
         }
         applyForceFields();
-        dynamicsWorld.stepSimulation(timeStep,
-                                     steps,
-                                     FIXED_TIME_STEP);
-        const dispatcher = dynamicsWorld.getDispatcher();
-        const numManifolds = dispatcher.getNumManifolds();
-        for (i in [0..<numManifolds]) {
-            var contactManifold = dispatcher.getManifoldByIndexInternal(i);
-            var objA = contactManifold.getBody0() as CollisionObject;
-            var objB = contactManifold.getBody1() as CollisionObject;
-            var numContacts = contactManifold.getNumContacts();
-            var fxA = getUserPointer(objA) as JBulletCollider;
-            var fxB = getUserPointer(objB) as JBulletCollider;
-            if (fxA.needsCollisions() or fxB.needsCollisions()) {
-                for (j in [0..<numContacts]) {
-                    const pt = contactManifold.getContactPoint(j);
-                    if (pt.getDistance() < 0) {
-                        const ptA = pt.getPositionWorldOnA(v0);
-                        const ptB = pt.getPositionWorldOnB(v1);
-                        const normalB = pt.normalWorldOnB;
-                        if (fxA.needsCollisions()) {
-                            const contactPtA = Collider.ContactPoint {
-                                point: new Point3(ptA.x,
-                                                  ptA.y,
-                                                  ptA.z);
-                                normal: new Vec3(-normalB.x,
-                                                 -normalB.y,
-                                                 -normalB.z);
-                                thisCollider: fxA;
-                                otherCollider: fxB
+        const cobjs = dynamicsWorld.getCollisionObjectArray();
+        var gravityApplied is Boolean = false;
+        for (obj in cobjs) {
+            if (obj instanceof RigidBody) {
+                var cobj = obj as RigidBody;
+                const j = getUserPointer(cobj) as JBulletCollider;
+                j.motionState.fillWorldMatrix();
+            }
+        }
+        const fut = pool.submit(Callable of (()) {
+                override function call to (()) {
+                    dynamicsWorld.stepSimulation(timeStep,
+                                                 steps,
+                                                 FIXED_TIME_STEP);
+                    return ();
+                }
+            });
+        return function to () {
+            fut.get();
+            for (obj in cobjs) {
+                if (obj instanceof RigidBody) {
+                    var cobj = obj as RigidBody;
+                    const j = getUserPointer(cobj) as JBulletCollider;
+                    j.motionState.drainWorldMatrix();
+                }
+            }
+            const dispatcher = dynamicsWorld.getDispatcher();
+            const numManifolds = dispatcher.getNumManifolds();
+            for (i in [0..<numManifolds]) {
+                var contactManifold = dispatcher.getManifoldByIndexInternal(i);
+                var objA = contactManifold.getBody0() as CollisionObject;
+                var objB = contactManifold.getBody1() as CollisionObject;
+                var numContacts = contactManifold.getNumContacts();
+                var fxA = getUserPointer(objA) as JBulletCollider;
+                var fxB = getUserPointer(objB) as JBulletCollider;
+                if (fxA.needsCollisions() or fxB.needsCollisions()) {
+                    for (j in [0..<numContacts]) {
+                        const pt = contactManifold.getContactPoint(j);
+                        if (pt.getDistance() < 0) {
+                            const ptA = pt.getPositionWorldOnA(v0);
+                            const ptB = pt.getPositionWorldOnB(v1);
+                            const normalB = pt.normalWorldOnB;
+                            if (fxA.needsCollisions()) {
+                                const contactPtA = Collider.ContactPoint {
+                                    point: new Point3(ptA.x,
+                                                      ptA.y,
+                                                      ptA.z);
+                                    normal: new Vec3(-normalB.x,
+                                                     -normalB.y,
+                                                     -normalB.z);
+                                    thisCollider: fxA;
+                                    otherCollider: fxB
+                                }
+                                var map = updated.get(fxA);
+                                if (map == null) {
+                                    map = new HashMap of (JBulletCollider, Set of ContactPoint)(3);
+                                    updated.put(fxA, map);
+                                }
+                                var set = map.get(fxB);
+                                if (set == null) {
+                                    set = new TreeSet of ContactPoint();
+                                    map.put(fxB, set);
+                                }
+                                set.add(contactPtA);
                             }
-                            var map = updated.get(fxA);
-                            if (map == null) {
-                                map = new HashMap of (JBulletCollider, Set of ContactPoint)(3);
-                                updated.put(fxA, map);
-                            }
-                            var set = map.get(fxB);
-                            if (set == null) {
-                                set = new TreeSet of ContactPoint();
-                                map.put(fxB, set);
-                            }
-                            set.add(contactPtA);
-                        }
-                        if (fxB.needsCollisions()) {
-                            const contactPtB = Collider.ContactPoint {
-                                point: new Point3(ptB.x,
-                                                  ptB.y,
+                            if (fxB.needsCollisions()) {
+                                const contactPtB = Collider.ContactPoint {
+                                    point: new Point3(ptB.x,
+                                                      ptB.y,
                                                   ptB.z);
-                                normal: new Vec3(normalB.x,
-                                                  normalB.y,
-                                                  normalB.z);
-                                thisCollider: fxB;
-                                otherCollider: fxA;
+                                    normal: new Vec3(normalB.x,
+                                                     normalB.y,
+                                                     normalB.z);
+                                    thisCollider: fxB;
+                                    otherCollider: fxA;
+                                }
+                                var map = updated.get(fxB);
+                                if (map == null) {
+                                    map = new HashMap of (JBulletCollider, Set of ContactPoint)(3);
+                                    updated.put(fxB, map);
+                                }
+                                var set = map.get(fxA);
+                                if (set == null) {
+                                    set = new TreeSet of ContactPoint();
+                                    map.put(fxA, set);
+                                }
+                                set.add(contactPtB);
                             }
-                            var map = updated.get(fxB);
-                            if (map == null) {
-                                map = new HashMap of (JBulletCollider, Set of ContactPoint)(3);
-                                updated.put(fxB, map);
-                            }
-                            var set = map.get(fxA);
-                            if (set == null) {
-                                set = new TreeSet of ContactPoint();
-                                map.put(fxA, set);
-                            }
-                            set.add(contactPtB);
                         }
                     }
                 }
             }
-        }
-        const iter1 = updated.entrySet().iterator();
-        while (iter1.hasNext()) {
-            const e = iter1.next();
-            const fxObj = e.getKey();
-            const map = e.getValue();
-            fxObj.mergeCollisions(map);
-        }
-        const iter2 = dynamicsWorld.getCollisionObjectArray().iterator();
-        while (iter2.hasNext()) {
-            const obj = iter2.next();
-            const collider = getUserPointer(obj) as JBulletCollider;
-            //println("updating collisions for {collider}");
-            if (collider.needsCollisions()) {
-                if (not updated.containsKey(collider)) {
-                    collider.mergeCollisions(null);
+            const iter1 = updated.entrySet().iterator();
+            while (iter1.hasNext()) {
+                const e = iter1.next();
+                const fxObj = e.getKey();
+                const map = e.getValue();
+                fxObj.mergeCollisions(map);
+            }
+            const iter2 = dynamicsWorld.getCollisionObjectArray().iterator();
+            while (iter2.hasNext()) {
+                const obj = iter2.next();
+                const collider = getUserPointer(obj) as JBulletCollider;
+                //println("updating collisions for {collider}");
+                if (collider.needsCollisions()) {
+                    if (not updated.containsKey(collider)) {
+                        collider.mergeCollisions(null);
+                    }
                 }
             }
+            updated.clear();
         }
-        updated.clear();
     }
 
     public function createCollisionShape from (m is AbstractMesh, t is Mat4) to 
@@ -495,7 +524,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             println("invalid mesh: {m} {count} coordsPerVertex { m.vertices.getCoordsPerVertex() } indexMode {m.indexMode} ");
             return null;
         }
-        var pts = new java.util.ArrayList of Vector3f;
+        var pts = new ObjectArrayList of Vector3f;
 	for (i in [0..<count]) 
 	    {
                 const v = new javax.vecmath.Vector3f();

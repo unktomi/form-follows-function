@@ -13,6 +13,8 @@ import f3.media.scene.meshdeform.SkinCluster;
 import f3.media.scene.meshdeform.MeshDeformer;
 import f3.util.Bits;
 
+public const DEBUG_LINKS = Boolean.getBoolean("f3.ma.debug.links");
+
 function rotate 
     from (rx is Number, ry is Number, rz is Number, ro is Integer) 
     to Mat4 
@@ -344,6 +346,11 @@ class MaModel
                 result = src.getOutput(this, c.sourcePath);
             } else {
                 result = resolveSourcePointer(c) as Ref of Number;
+            }
+        }
+        if (result == null) {
+            result = AbstractConstRef of Number {
+                override function get to Number { value }
             }
         }
         return result;
@@ -691,29 +698,31 @@ class MaModel
             (n as MCharacter).applyAlias(this);
         }
         spatialRoot = Group {id: url};
+        var rigidBodies is MRigidBody[];
+        var rigidConstraints is MRigidBodyConstraint[];
         for (n in nodeMap.values()) {
-            const r = 
-                if (n is MSpatial) {
-                    toNode(n as MSpatial)
-                } else if (n is MConstraint) {
-                    toConstraint(n as MConstraint)
-                } else if (n is MAnimCurve) {
-                    toChannel(n as MAnimCurve, false);
-                } else if (n instanceof MClipLibrary) {
-                    toClipLibrary(n as MClipLibrary);
-                } else if (n instanceof MUtility) {
-                    toLink(n as MUtility);
-                } else if (n instanceof MBlendShape) {
-                    toBlendShape(n as MBlendShape);
-                } else if (n instanceof MSkinCluster) {
-                    const skinCluster = toSkinCluster(n as MSkinCluster);
-                    skinCluster.root = spatialRoot;
-                    skinCluster;
-                } else if (n instanceof MRigidBody) {
-                    toRigidBody(n as MRigidBody);
-                } else if (n instanceof MRigidBodyConstraint) {
-                    toRigidBodyConstraint(n as MRigidBodyConstraint);
-                } else null
+            if (n is MSpatial) {
+                toNode(n as MSpatial);
+            } else if (n is MConstraint) {
+                toConstraint(n as MConstraint);
+            } else if (n is MAnimCurve) {
+                toChannel(n as MAnimCurve, false);
+            } else if (n instanceof MClipLibrary) {
+                toClipLibrary(n as MClipLibrary);
+            } else if (n instanceof MUtility) {
+                toLink(n as MUtility);
+            } else if (n instanceof MBlendShape) {
+                toBlendShape(n as MBlendShape);
+            } else if (n instanceof MSkinCluster) {
+                const skinCluster = toSkinCluster(n as MSkinCluster);
+                skinCluster.root = spatialRoot;
+            } else if (n instanceof MRigidBody) {
+                //toRigidBody(n as MRigidBody);
+                insert n as MRigidBody into rigidBodies;
+            } else if (n instanceof MRigidBodyConstraint) {
+                //toRigidBodyConstraint(n as MRigidBodyConstraint);
+                insert n as MRigidBodyConstraint into rigidConstraints;
+            }
         }
         const startFrame = this.startFrame;
         const endFrame = this.endFrame;
@@ -722,6 +731,15 @@ class MaModel
         for (link in linkMap.values()) insert link into links;
         const playRange = Interval { start: FPS * startFrame, end: FPS * endFrame };
         temporalRoot = finishGenerateScene(startFrame, endFrame, links, playRange, channels, url, spatialRoot);
+        for (link in links) {
+            link.apply();
+        }
+        for (rb in rigidBodies) {
+            toRigidBody(rb);
+        }
+        for (rc in rigidConstraints) {
+            toRigidBodyConstraint(rc);
+        }
     }
 
 }
@@ -994,6 +1012,13 @@ class MPairBlend is MUtilityOfTuple3 {
     public var ir1 is Tuple3;
     public var ir2 is Tuple3;
 
+    public var txm is Number;
+    public var tym is Number;
+    public var tzm is Number;
+
+    public var rm is Integer = 0;
+    public var ri is Integer = 0;
+
     public var w is Number = 1.0;
     public var ro is Integer = 0;
 
@@ -1007,11 +1032,26 @@ class MPairBlend is MUtilityOfTuple3 {
         } else if (n == "it2") {
             it2 = cmd.getTuple3();
         } if (n == "ir1") {
-            ir1 = cmd.getTuple3();
+            ir1 = cmd.getTuple3() * (180.0 / Math.PI as Number);
         } else if (n == "ir2") {
-            ir2 = cmd.getTuple3();
+            ir2 = cmd.getTuple3() * (180.0 / Math.PI as Number);
         } else if (n == "ro") {
             ro = cmd.getInt();
+        } else if (n == "rm") {
+            rm = cmd.getInt();
+        } else if (n == "ri") {
+            ri = cmd.getInt();
+        } else if (n == "txm") {
+            txm = cmd.getInt();
+        } else if (n == "tym") {
+            tym = cmd.getInt();
+        } else if (n == "tzm") {
+            tzm = cmd.getInt();
+        } else if (n == "tx") {
+            const tx = cmd.getPoint3();
+            txm = tx.x;
+            tym = tx.y;
+            tzm = tx.z;
         } else super.setAttr(cmd);
     }
 
@@ -1141,22 +1181,37 @@ class MPairBlend is MUtilityOfTuple3 {
         if (attr == "ot") {
             const input1 = m.resolveInput(this, "it1", it1) as ConstRef of Tuple3;
             const input2 = m.resolveInput(this, "it2", it2) as ConstRef of Tuple3;
+            const w1 = new Tuple3(if txm == 0 then 0.0 else if txm == 1 then 0.0 else this.w,
+                                  if tym == 0 then 0.0 else if tym == 1 then 0.0 else this.w,
+                                  if tzm == 0 then 0.0 else if tzm == 1 then 0.0 else this.w);
+            const w2 = Tuple3.<<1>>-w1;
             AbstractConstRef of Tuple3 {
                 override function get to Tuple3 {
                     const t1 is Tuple3 = input1.get();
                     const t2 is Tuple3 = input2.get();
                     //println("multiply {input1} {input2} {t1} {t2}");
-                    t1 * (1.0-w) + t2 * w;
+                    t1 * w1 + t2 * w2;
                 }
             }
         } else if (attr == "or") {
             const input1 = m.resolveInput(this, "ir1", ir1) as ConstRef of Tuple3;
             const input2 = m.resolveInput(this, "ir2", ir2) as ConstRef of Tuple3;
+            const euler is Boolean = ri == 0;
+            const w = if (rm == 0) then 0.0 else if rm == 1 then 1.0 else this.w;
             AbstractConstRef of Tuple3 {
                 override function get to Tuple3 {
                     const t1 is Tuple3 = input1.get();
                     const t2 is Tuple3 = input2.get();
-                    qrotate(t1.x, t1.y, t1.z, ro).slerp(qrotate(t2.x, t2.y, t2.z, ro), w).toAngles();
+                    const r = 
+                        if (not euler) {
+                            qrotate(t1.x, t1.y, t1.z, ro).slerp(qrotate(t2.x, t2.y, t2.z, ro), w).toAngles();
+                        } else {
+                            t1*(1.0-w)+t2*w;
+                        }
+                    if (DEBUG_LINKS) {
+                        println("{name}: ir1={t1}, ir2={t2}, w={w} => {r}");
+                    }
+                    r;
                 }
             }
         } else null;
@@ -1184,9 +1239,9 @@ public class Link of a
     public const output is (Ref of a)[];
     public function apply from () to () 
     {
-        //println("applying input {input}");
+        if (DEBUG_LINKS) println("applying input {input}");
         for (o in output) {
-            //println("applying {input} to {o}");
+            if (DEBUG_LINKS) println("applying {input} to {o}");
             o.set(input.get());
         }
     }
@@ -3364,12 +3419,12 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
     public var acmax is Vec3;
     public var linspstiff is Vec3;
     public var linspdamp is Vec3;
-    public var angspstiff is Vec3;
-    public var angspdamp is Vec3;
-    public var lindamp is Number;
+    public var angspstiff is Vec3 = Vec3.<<1>> * 39.478;
+    public var angspdamp is Vec3 = Vec3.<<1>> * 0.1;
+    public var lindamp is Number = 0.1;
     public var linsoft is Number;
     public var linrestit is Number;
-    public var angdamp is Number;
+    public var angdamp is Number = 0.1;
     public var angsoft is Number;
     public var angrestit is Number;
     public var linmotor is Boolean;
@@ -3389,6 +3444,7 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
     public var angspringx is Boolean;
     public var angspringy is Boolean;
     public var angspringz is Boolean;
+
     override function setAttr from (cmd is Command) to () 
     {
         const n = cmd.getAttr();
@@ -3554,28 +3610,14 @@ class MBulletRigidBodyShape is MRigidBody {
                 target.collisionInitialVelocity = b.iv;
                 target.linearDamping = b.lindamp;
                 target.angularDamping = b.angdamp;
-                targetNode.collider = target;
                 println("targetNode=>{targetNode}, parent={targetNode.parent}");
-                const p0 = targetNode.parent;
-                if (p0 is MaTransform) {
-                    const p = p0 as MaTransform;
-                    println("targetNode.parent=>{p}");
-                    target.collisionInitialPosition = p.t;
-                    println("ip={p.t}");
-                    target.collisionInitialOrientation = 
-                        new Vec3(p.rx, 
-                                 p.ry, 
-                                 p.ry);
-                } else {
-                    target.collisionInitialPosition = itrs;
-                    targetNode.tx += itrs.x;
-                    targetNode.ty += itrs.y;
-                    targetNode.tz += itrs.z;
-                    target.collisionInitialOrientation = irot;
-                    targetNode.rx += irot.x;
-                    targetNode.ry += irot.y;
-                    targetNode.rz += irot.z;
+                targetNode.irot += irot;
+                targetNode.itrs += itrs;
+                if (target.bodyType == RigidBodyType.Dynamic) {
+                    target.collisionInitialPosition = targetNode.toSceneTransform.getTranslation();
+                    target.collisionInitialOrientation = targetNode.toSceneTransform.getRotation().toAngles();
                 }
+                targetNode.collider = target;
                 target.collisionInitialSpin = b.iav;
             }
         }
@@ -3586,15 +3628,16 @@ class MBulletRigidBodyShape is MRigidBody {
     var com is Point3; // center of mass
     var lindamp is Number = 0.0; // linear damping
     var angdamp is Number = 0.0; // angular damping;
-    var fric is Number = 1.0; // friction;
-    var restit is Number = 0.0; // restitution
+    var fric is Number = 0.5; // friction;
+    var restit is Number = 0.5; // restitution
     var initslp is Boolean = false; // initially sleeping
+    var notslp is Boolean = false; // never sleeps
     var iv is Vec3 = Vec3.<<0>>; // initial velocity
     var iav is Vec3 = Vec3.<<0>>; // initial angular velocity 
     var i is Vec3 = Vec3.<<0>>; // initial impulse
     var ip is Point3 = Point3.<<0>>; // impulse position
     var ti is Vec3 = Vec3.<<0>>; // torque impulse
-    var colshtyp is Integer = 1; // collider shape type box (ext), sphere (rad), capsule (axis, rad, len), hull, mesh, plane (axis), cylinder (rad, len)
+    var colshtyp is Integer = 1; // collider shape type: box (ext), sphere (rad), capsule (axis, rad, len), hull, mesh, plane (axis), cylinder (rad, len)
     //imesh is link to mesh
     var bdytyp is Integer = 1; // static(0), kinematic(1), dynamic(2)
     var len is Number;
@@ -3619,6 +3662,8 @@ class MBulletRigidBodyShape is MRigidBody {
             restit = cmd.getFloat();
         } else if (n == "initslp") {
             initslp = cmd.getBoolean();
+        } else if (n == "notslp") {
+            notslp = cmd.getBoolean();
         } else if (n == "iv") {
             iv = cmd.getVec3();
         } else if (n == "iav") {
@@ -4800,6 +4845,8 @@ const axes = [Vec3.X_AXIS, Vec3.Y_AXIS, Vec3.Z_AXIS];
 // http://download.autodesk.com/global/docs/maya2012/en_us/Nodes/transform.html
 public class MaTransform is Group
 {
+    public var itrs is Point3;
+    public var irot is Vec3;
     // translation
     public var tx is Number;
     public var ty is Number;
@@ -4839,7 +4886,7 @@ public class MaTransform is Group
     // translation
     public readonly var t is Point3 = bind point(tx, ty, tz);
     // rotation
-    public readonly var r is Mat4 = bind rotate(rx, ry, rz, ro);
+    public readonly var r is Mat4 = bind rotate(irot.x+rx, irot.y+ry, irot.z+rz, ro);
     // scale
     public readonly var s is Tuple3 = bind tuple(sx, sy, sz);
 
@@ -4847,9 +4894,9 @@ public class MaTransform is Group
     
     override var transform = 
         bind if (constraint <> null) then constraint.transform else
-        translate(tx+rpx+rptx, 
-                  ty+rpy+rpty, 
-                  tz+rpz+rptz) * 
+        translate(itrs.x+tx+rpx+rptx, 
+                  itrs.y+ty+rpy+rpty, 
+                  itrs.z+tz+rpz+rptz) * 
         r *
         translate(-rpx+spx, 
                   -rpy+spy, 

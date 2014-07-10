@@ -56,6 +56,15 @@ public class Tuple3 is F3Value, java.lang.Comparable of Tuple3
 	}
     }
 
+    public function mul from (tuple is Tuple3) to Tuple3
+    {
+        Tuple3 {
+            x: x * tuple.x;
+            y: y * tuple.y;
+            z: z * tuple.z;
+        }
+    }
+
     public function * from (vector is Vec3) to Vec3 
     {
         vector * this;
