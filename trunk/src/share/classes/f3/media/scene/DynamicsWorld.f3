@@ -7,7 +7,7 @@ public interface Constraint {} // implementation
 
 public abstract class DynamicsWorld {
     public var paused is Boolean = false;
-    public function update from (sceneTime is Duration, camera is Camera) to ();
+    public function update from (sceneTime is Duration, camera is Camera) to function to ();
     public function addForceField from (field is ForceField) to ();
     public function removeForceField from (field is ForceField) to ();
     public function createCollider from (n is Node) to Collider;

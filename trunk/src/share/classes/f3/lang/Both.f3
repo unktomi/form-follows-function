@@ -1,12 +1,26 @@
 package f3.lang;
 
-public function both of (a, b) from (former is a, latter is b) to Both of (a, b)
+public function both of (a, b) 
+    from (former is a, latter is b) 
+    to Both of (a, b)
 {
     Both of (a, b) {
         former: former;
         latter: latter;
     }
 }
+
+// dual of Either.case
+public function both of (a, b, c)
+    from (f is function from c to a, 
+          g is function from c to b) 
+    to function from c to Both of (a, b) 
+{
+    function from (x is c) to Both of (a, b) {
+        both(f(x), g(x))
+    }
+}
+
 
 public class Both of (a, b) 
     is org.f3.runtime.Monad of (Both, a), org.f3.runtime.Comonad of (Both, a) 
