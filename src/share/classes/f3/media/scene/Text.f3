@@ -78,6 +78,7 @@ public abstract class TextMeshNode is MeshNode2D
 }
 
 const OFFWHITE = new Color(.9, .9, .9, 1);
+const SF_PAINT = ColorPaint { color: Color.WHITE };// { color: Color.color(.71, .84, .99) };
 
 abstract public class AbstractText is AbstractNode {
     public var width is Number = 300;
@@ -88,7 +89,7 @@ abstract public class AbstractText is AbstractNode {
     public var foreground is Paint = ColorPaint(Color.BLACK);
     public var selectionForeground is Paint = 
 	ColorPaint(Color.BLACK);
-    public var selectionBackground is Paint = ColorPaint { color: Color.WHITE };
+    public var selectionBackground is Paint = SF_PAINT;
     public var indent is Number = 1.0;
     public var selectionStart is Integer;
     public var selectionEnd is Integer;

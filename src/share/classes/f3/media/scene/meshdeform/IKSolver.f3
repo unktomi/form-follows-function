@@ -1,0 +1,81 @@
+package f3.media.scene.meshdeform;
+import f3.media.scene.*;
+import f3.math.*;
+import java.nio.*;
+
+public class IKSolver {
+    public var pv is Point3;
+    public var poleVectorConstrainingNode is Ma.MaTransform;
+    public var poleVector is Node;
+    public var startJoint is Ma.Joint;
+    public var midJoint is Ma.Joint;
+    public var endEffector is Node;
+    public var handle is Node;
+    public var twist is Number;
+    public var joint is Node;
+
+    const solver = new IKSolverImpl();
+
+    const startJointPos = new Vec3f();
+    const midJointPos = new Vec3f();
+    const handlePos = new Vec3f();
+    const effectorPos = new Vec3f();
+    const poleVectorPos = new Vec3f();
+
+    const qStart = new Rotf();
+    const qEnd = new Rotf();
+    
+    var needsSolve = true;
+
+    function copyTo from (p is Point3, v is Vec3f) to ()
+    {
+        v.set(p.x, p.y, p.z);
+    }
+
+    function copyFrom from (q is Rotf) to Quat
+    {
+        new Quat(q.x(), q.y(), q.z(), q.w());
+    }
+
+    var startPoint is Point3 on replace {
+        needsSolve = true;
+    }
+    var midPoint is Point3 on replace {
+        needsSolve = true;
+    }
+    var handlePoint is Point3  on replace {
+        needsSolve = true;
+    }
+    var effectorPoint is Point3  on replace {
+        needsSolve = true;
+    }
+    var poleVectorPoint is Point3  on replace {
+        needsSolve = true;
+    }
+    var jointTransform is Mat4 on replace {
+        needsSolve = true;
+    }
+    public function apply to ()
+    {
+        jointTransform = joint.toSceneTransform;
+        startPoint = startJoint.toSceneTransform.getTranslation();
+        midPoint = midJoint.toSceneTransform.getTranslation();
+        handlePoint = handle.toSceneTransform.getTranslation();
+        effectorPoint = endEffector.toSceneTransform.getTranslation();
+        poleVectorPoint = if (poleVector == null) then joint.parentToSceneTransform * pv else {
+                const n = poleVectorConstrainingNode;
+                n.parentToSceneTransform * (n.t + n.rp);
+            }
+        if (needsSolve) {
+            needsSolve = false;
+            copyTo(startPoint, startJointPos);
+            copyTo(midPoint, midJointPos);
+            copyTo(effectorPoint, effectorPos);
+            copyTo(Point3.<<0>>+(poleVectorPoint - startPoint), poleVectorPos);
+            solver.solveIK(startJointPos, midJointPos, effectorPos, handlePos, poleVectorPos, twist, qStart, qEnd);
+            startJoint.setIKRotation(copyFrom(qStart));
+            midJoint.setIKRotation(copyFrom(qEnd));
+        }
+    }
+}
+

@@ -1,6 +1,15 @@
 package f3.media.scene.meshdeform;
 import java.nio.*;
 import f3.media.scene.MeshNode;
+import java.util.concurrent.*;
+
+class BlendAction is Callable of (()) {
+    public const blendShape is BlendShape;
+    override function call to (()) {
+        blendShape.doit();
+        return ();
+    }
+}
 
 public class BlendShape is MeshDeformer {
     public var sourceVertices is FloatBuffer;
@@ -13,6 +22,11 @@ public class BlendShape is MeshDeformer {
 
     public override function apply from (_ is MeshNode) to function from () to ()
     {
+        const fut = pool.submit(BlendAction {blendShape: this});
+        return function to () { fut.get() }
+    }
+
+    function doit to () {
     //	println("applying blend shape {weights.size()} => {weights}");
         const origPos is FloatBuffer = sourceVertices;
         const origNorm is FloatBuffer = sourceNormals;
@@ -58,6 +72,5 @@ public class BlendShape is MeshDeformer {
         }
         positionData.rewind();
         normalData.rewind();
-	return function {}
     }
 }

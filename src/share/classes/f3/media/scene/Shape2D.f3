@@ -251,12 +251,14 @@ public bound function createMeshNode
     public readonly var path is Path2D;
     public var gridFit is Boolean = true;
 
-    public readonly var fillMesh is MeshNode2D = bind createMeshNode(path, 
+    public readonly var fillMesh is MeshNode2D = bind createMeshNode("{id}#fill", 
+                                                                     path, 
                                                                      null, 
                                                                      fillPaint,
                                                                      gridFit);
 
-    public readonly var strokeMesh is MeshNode2D = bind createMeshNode(path, 
+    public readonly var strokeMesh is MeshNode2D = bind createMeshNode("{id}#stroke", 
+                                                                       path, 
                                                                        getStroke(stroke), 
                                                                        strokePaint,
                                                                        gridFit);

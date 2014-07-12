@@ -1,0 +1,30 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class VortexField extends ForceField {
+
+    public var impulse is Boolean = false;
+    public var axis is Vec3 = Vec3.<<0>>;
+
+    override public function applyForceField 
+        from (world is DynamicsWorld, bodies is Collider[]) to ()
+     {
+         const fieldLocation = worldTransform.getTranslation();
+         for (body in bodies) {
+             const t = body.collisionWorldTransform;
+             const bodyLocation = t.getTranslation();
+             const dir = fieldLocation - bodyLocation;
+             const dist = dir.length();
+             if (dist > 0) {
+                if (maxDistance < 0 or dist < maxDistance) {
+                    const force = dir.cross(axis).normalize() * -magnitude;
+                    if (impulse) {
+                        body.applyImpulse(force);
+                    } else {
+                        body.applyForce(force);
+                    }
+                }
+            }
+        }
+    }
+}

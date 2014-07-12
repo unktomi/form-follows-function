@@ -12,6 +12,7 @@ import f3.media.scene.meshdeform.BlendShape;
 import f3.media.scene.meshdeform.SkinCluster;
 import f3.media.scene.meshdeform.MeshDeformer;
 import f3.util.Bits;
+import f3.media.scene.Constraint.*;
 
 public const DEBUG_LINKS = Boolean.getBoolean("f3.ma.debug.links");
 
@@ -949,6 +950,73 @@ abstract class MNode {
     }
 }
 
+public class MParticle is MSpatial {
+    public var rad is Number = 1.0;
+    public var lfm is Integer; // life span mode
+    public var lfr is Number; // life span random
+    public var eiw is Boolean = true; // emission to world
+    public var ifc is Vec3; // input force
+    override function setAttr from (cmd is Command) to () {
+        const n = cmd.getAttr();
+        if (n == "rad") {
+            rad = cmd.getFloat();
+        } else if (n == "lfm") {
+            lfm = cmd.getInt();
+        } else if (n == "lfr") {
+            lfr = cmd.getFloat();
+        } else if (n == "eiw") {
+            eiw = cmd.getBoolean();
+        } else if (n == "ifc") {
+            ifc = cmd.getVec3();
+        } else super.setAttr(cmd);
+    }
+    
+    override public function toNode from (m is MaModel) to Node 
+    {
+        var r is ParticleSystem;
+        m.spatialMap.put(this, r);
+        const p = m.toParentNode(parent as MSpatial);
+        insert r into p.content;
+        return r;
+    }
+}
+
+public class MPointEmitter is MNode {
+    public var emt is Integer; // emitter type
+    public var rat is Number = 100; // rate
+    public var spd is Number; // speed
+    public var d is Vec3 = Vec3.X_AXIS; // direction
+    public var pcr is Number; // particle color x
+    public var pcg is Number; // particle color y
+    public var pcb is Number; // particle color z
+    public var spr is Number; // spread
+    override function setAttr from (cmd is Command) to () {
+        const n = cmd.getAttr();
+        if (n == "emt") {
+            emt = cmd.getInt();
+        } else if (n == "rat") {
+            rat = cmd.getInt();
+        } else if (n == "spr") {
+            spr = cmd.getInt();
+        } else if (n == "spd") {
+            rat = cmd.getInt();
+        } else if (n == "d") {
+            d = cmd.getVec3();
+        } else if (n == "pc") {
+            const pc = cmd.getVec3();
+            pcr = pc.x;
+            pcg = pc.y;
+            pcb = pc.z;
+        } else if (n == "pcr") {
+            pcr = cmd.getFloat();
+        } else if (n == "pcg") {
+            pcg = cmd.getFloat();
+        } else if (n == "pcb") {
+            pcb = cmd.getFloat();
+        } else super.setAttr(cmd);
+    }
+}
+
 class MSceneConfig is MNode {
     var min is Number;
     var max is Number;
@@ -1147,6 +1215,9 @@ class MPairBlend is MUtilityOfTuple3 {
     }
 
     override function toLink from (m is MaModel) to (Link of ?)[] {
+        if (true) {
+            return [];
+        }
         const name = this.name;
         const f1 = getOutput(m, "ot");
         const f2 = getOutput(m, "or");
@@ -3148,7 +3219,7 @@ class MMesh is MSpatial
                     }
                 }
                 target = dynamicsWorld.createCollider(targetNode);
-                target.bodyType = if (rigidBody.act) then RigidBodyType.Static else RigidBodyType.Kinematic;
+                target.bodyType = if (rigidBody.act) then RigidBodyType.Dynamic else RigidBodyType.Kinematic;
                 target.mass = rigidBody.mas;
                 const ip = rigidBody.ip; 
                 const com = rigidBody.com;
@@ -3532,6 +3603,14 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
             const parent = m.toNode(c.sourceNode.parent as MSpatial) as MaTransform;
             pivotB = parent.t;
         }
+        if (bodyA == null) {
+            println("{name} can't find bodyA: {connectionsToThis}");
+            return null;
+        }       
+        if (bodyB == null) {
+            println("{name} can't find bodyB: {connectionsToThis}");
+            return null;
+        }       
 
         const result = 
         if (contyp == 0) {
@@ -4886,26 +4965,27 @@ public class MaTransform is Group
     // translation
     public readonly var t is Point3 = bind point(tx, ty, tz);
     // rotation
-    public readonly var r is Mat4 = bind rotate(irot.x+rx, irot.y+ry, irot.z+rz, ro);
+    public readonly var r is Mat4 = bind if (constraint is AimConstraint or constraint is OrientConstraint) then constraint.transform else rotate(irot.x+rx, irot.y+ry, irot.z+rz, ro);
     // scale
     public readonly var s is Tuple3 = bind tuple(sx, sy, sz);
 
     public readonly var rp is Point3 = bind point(rpx, rpy, rpz);
     
     override var transform = 
-        bind if (constraint <> null) then constraint.transform else
-        translate(itrs.x+tx+rpx+rptx, 
-                  itrs.y+ty+rpy+rpty, 
-                  itrs.z+tz+rpz+rptz) * 
-        r *
-        translate(-rpx+spx, 
-                  -rpy+spy, 
-                  -rpz+spz) *
-        scale(sx, sy, sz) *
-        translate(-spx, 
-                  -spy, 
-                  -spz);
-
+        bind if (constraint <> null)
+        then constraint.transform 
+        else translate(itrs.x+tx+rpx+rptx, 
+                       itrs.y+ty+rpy+rpty, 
+                       itrs.z+tz+rpz+rptz) * 
+                 r *
+                 translate(-rpx+spx, 
+                           -rpy+spy, 
+                           -rpz+spz) *
+                 scale(sx, sy, sz) *
+                 translate(-spx, 
+                           -spy, 
+                           -spz);
+    
    public var constraint is Constraint;
 }
 

@@ -213,6 +213,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     public const erp is Number = 0.2;
     public const iterations is Integer = 10;
+    public const splitImpulse is Boolean = true;
 
     public function getDynamicsWorld to com.bulletphysics.dynamics.DiscreteDynamicsWorld 
     { 
@@ -229,6 +230,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
                                                       constraintSolver, 
                                                       collision_config);
             dynamicsWorld.getSolverInfo().numIterations = iterations;
+            dynamicsWorld.getSolverInfo().splitImpulse = splitImpulse;
             //println("gravity = {_gravity}");
             dynamicsWorld.setGravity(_gravity);
 
@@ -395,7 +397,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         if (not firstTime and paused) {
             return  null;
         }
-        var steps = 1;
+        var steps = 100;
         if (variableTimeStep) {
             steps = 0;
         }
@@ -570,7 +572,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             result = new com.bulletphysics.collision.shapes.BoxShape(new Vector3f(10000, 1, 10000));
         } else if (colliderShape is ColliderShape.Cylinder) {
             const s = colliderShape as ColliderShape.Cylinder;
-            result = new com.bulletphysics.collision.shapes.CylinderShapeZ(new Vector3f(s.radius, s.length, 0));
+            result = new com.bulletphysics.collision.shapes.CylinderShape(new Vector3f(s.radius, s.length, 0));
         }
         if (result == null) {
             const collider = n.collider;

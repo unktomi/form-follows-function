@@ -1,0 +1,34 @@
+package f3.media.scene;
+import f3.math.*;
+
+
+public class Generic6DOFConstraint is RigidBodyConstraint {
+    public var transformInA is Mat4 = Mat4.<<1>>;
+    public var transformInB is Mat4 = Mat4.<<1>>;
+    
+    public var linearDamping is Number;
+    public var linearSoftness is Number;
+    public var linearRestitution is Number;
+    public var angularDamping is Number;
+    public var angularSoftness is Number;
+    public var angularRestitution is Number;
+    public var linearMotorEnabled is Boolean;
+    public var linearMotorTargetSpeed is Vec3;
+    public var linearMotorMaxForce is Vec3;
+    public var angularMotorEnabled is Boolean;
+    public var angularMotorTargetSpeed is Vec3;
+    public var angularMotorMaxForce is Vec3;
+    public var linearConstraintLocked is Boolean[];
+    public var angularConstraintLocked is Boolean[];
+    public var linearConstraintMin is Vec3;
+    public var linearConstraintMax is Vec3;
+    public var angularConstraintMin is Vec3;
+    public var angularConstraintMax is Vec3;
+    public var linearSpringEnabled is Boolean[];
+    public var angularSpringEnabled is Boolean[];
+    public var linearSpringStiffness is Tuple3;
+    public var linearSpringDampening is Tuple3;
+    public var angularSpringStiffness is Tuple3;
+    public var angularSpringDampening is Tuple3;
+
+}

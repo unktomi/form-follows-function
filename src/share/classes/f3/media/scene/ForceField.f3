@@ -1,0 +1,50 @@
+package f3.media.scene;
+import f3.math.*;
+
+public abstract class ForceField {
+    var applied is Boolean;
+    public var dynamicsWorld is DynamicsWorld = the DynamicsWorld;
+    public var active is Boolean = true;
+    public var magnitude is Number;
+    public var attenuation is Number;
+    public var maxDistance is Number = -1;
+    public var worldTransform is Mat4;
+
+    //  called from dynamicsWorld
+    public function doApply from (world is DynamicsWorld, bodies is Collider[]) to ()
+    {
+        if (active) {
+            if (restrictTo <> []) {
+                applyForceField(world, restrictTo);
+            } else {
+                applyForceField(world, bodies);
+            }
+        } else {
+            if (applied) {
+                world.removeForceField(this);
+                applied = false;
+            }
+        }
+    }
+
+    public abstract function applyForceField from (world is DynamicsWorld, bodies is Collider[]) to ();
+    
+    public var restrictTo is Collider[];
+    
+    public function apply from () to () 
+    {
+        if (dynamicsWorld <> null) {
+            if (active) {
+                if (not applied) {
+                    applied = true;
+                    dynamicsWorld.addForceField(this);
+                }
+            } else {
+                if (applied) {
+                    applied = false;
+                    dynamicsWorld.removeForceField(this);
+                }
+            }
+        }
+    }
+}

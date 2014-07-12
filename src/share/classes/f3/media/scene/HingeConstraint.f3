@@ -1,0 +1,18 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class HingeConstraint is RigidBodyConstraint {
+    public var initialPosition is Point3 = Point3.<<0>>;
+    public var initialOrientation is Vec3 = Vec3.Y_AXIS;
+    public var minLimit is Number = 1e30;
+    public var maxLimit is Number = -1e30;
+    public var limitSoftness is Number = 0.9;
+    public var biasFactor is Number = 0.3;
+    public var relaxationFactor is Number = 1.0;
+    public var usePivots is Boolean = false;
+    public var pivotInA is Point3;
+    public var pivotInB is Point3;
+    public var rotInA is Vec3 = Vec3.ZERO;
+    public var rotInB is Vec3 = Vec3.ZERO;
+    public var worldSpace: Boolean = false;
+}
