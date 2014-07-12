@@ -19,6 +19,8 @@ public interface AbstractWebBrowser {
         public void setMuted(boolean value);
         public boolean isMuted();
         public float getDuration();
+        public long getLoaded();
+        public long getTotal();
     }
 
     public interface Video extends Media {

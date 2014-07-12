@@ -924,6 +924,8 @@ public class Browser implements AbstractWebBrowser {
         float duration = -1;
         boolean playing;
         String accessor;
+        long loaded;
+        long total;
         public String getLabel() {
             return id;
         }
@@ -939,6 +941,15 @@ public class Browser implements AbstractWebBrowser {
                 playing = true;
             } else if ("pause".equalsIgnoreCase(eventName)) {
                 playing = false;
+            } else if (("progress").equalsIgnoreCase(eventName)) {
+                final Object loaded = src.get("loaded");
+                if (loaded instanceof Number) {
+                    this.loaded = ((Number)loaded).longValue();
+                }
+                final Object total = src.get("total");
+                if (total instanceof Number) {
+                    this.total = ((Number)total).longValue();
+                }
             }
         }
 
@@ -968,6 +979,12 @@ public class Browser implements AbstractWebBrowser {
         public float getVolume() { return ((Number)executeJavascript(getAccess()+".volume")).floatValue(); }
         public void setMuted(boolean value) { executeJavascript(getAccess()+".muted = "+value); }
         public boolean isMuted() { return (Boolean)executeJavascript(getAccess()+".muted"); }
+        public long getLoaded() {
+            return loaded;
+        }
+        public long getTotal() {
+            return total;
+        }
         public float getDuration() {
             if (duration < 0) {
                 Object obj = executeJavascript(getAccess()+".duration");
