@@ -5,15 +5,19 @@ import java.nio.*;
 import java.util.concurrent.*;
 import java.lang.Math;
 
-const pool = new ForkJoinPool(java.lang.Runtime.getRuntime().availableProcessors());
-
 class TopAction is Callable of (()) {
     public const cluster is SkinCluster;
     public const size is Integer;
     const actions = cluster.topAction(this);
+    const temp1 = new Vec3f();
+    const temp2 = new Vec3f();
+    const pos = new Vec3f();
+    const norm = new Vec3f();
+    const origPos = new Vec3f();
+    const origNorm = new Vec3f();
     override function call to (()) {
         if (actions == []) {
-            cluster.doit(0, size);
+            cluster.doit(0, size, temp1, temp2, pos, norm, origPos, origNorm);
         } else {
             const list = new java.util.ArrayList of (Callable of (()));
             for (x in actions) list.add(x);
@@ -29,8 +33,14 @@ class SkinAction is Callable of (()) {
     public const cluster is SkinCluster;
     public const start is Integer;
     public const end is Integer;
+    const temp1 = new Vec3f();
+    const temp2 = new Vec3f();
+    const pos = new Vec3f();
+    const norm = new Vec3f();
+    const origPos = new Vec3f();
+    const origNorm = new Vec3f();
     override function call to (()) {
-        cluster.doit(start, end);
+        cluster.doit(start, end, temp1, temp2, pos, norm, origPos, origNorm);
         return ();
     }
 }
@@ -54,6 +64,7 @@ public class SkinCluster is MeshDeformer {
     var combinedInverseTranspose is Mat4f[];
     const sceneToLocal = new Mat4f();
     var lastWm is Mat4[];
+    const tempMat = new Mat4f();
     public override function apply from (m is MeshNode) to function from () to () 
     {
         if (root == null) {
@@ -168,16 +179,18 @@ public class SkinCluster is MeshDeformer {
         }
     }
 
-    const tempMat = new Mat4f();
 
-    function doit from (start is Integer, end is Integer) to ()
+    function doit 
+        from (start is Integer, 
+              end is Integer,
+              temp1 is Vec3f,
+              temp2 is Vec3f,
+              pos is Vec3f,
+              norm is Vec3f,
+              origPos is Vec3f,
+              origNorm is Vec3f)
+        to ()
     {
-    const temp1 = new Vec3f();
-    const temp2 = new Vec3f();
-    const pos = new Vec3f();
-    const norm = new Vec3f();
-    const origPos = new Vec3f();
-    const origNorm = new Vec3f();
         var i = start;
         while (i < end) {
             const vert = (weights[i++] as Integer) * 3;

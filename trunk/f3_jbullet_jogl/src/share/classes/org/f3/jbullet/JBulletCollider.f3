@@ -428,6 +428,7 @@ public class JBulletCollider is Collider {
             } else if (c is PointToPointConstraint) {
                 c.impl = JBulletPointToPointConstraint { constraint: c as PointToPointConstraint }
             }
+            println("CREATING CONSTRAINT IMPL => {c.impl} for {c} from {this} to {other0}");
         }
         const other = other0 as JBulletCollider;
         if (_dynamicsWorld() == null) {

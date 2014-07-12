@@ -137,7 +137,18 @@ public class Scene
                 n.boundsInScene.intersects(ray)) 
                 {
                     const mesh = (n as MeshNode).mesh;
-                    const localRay = n.toSceneTransform.inverse() * ray;
+                    var localRay is Ray3;
+                    try { 
+                        localRay = n.toSceneTransform.inverse() * ray;
+                    } catch (e is java.lang.Exception) {
+                        var p is Node = n;
+                        println("{p}: {e}");
+                        while (p <> null) {
+                            println("contained in {p}");
+                            p = p.parent;
+                        }
+                        continue;
+                    }
                     var point is Point3;
                     var t is Number;
                     var tri is Integer;
@@ -204,28 +215,23 @@ public class Scene
                     java.lang.Math.signum(p0.t - p1.t) as Integer;
                 }
         });
-//        for (i in result) {
-        //    println("picked {i.node} => {i.t}");
-//        }
         for (i in [0..<result.size()]) {
             if (result[i].node.blocksPointer) {
                 result = result[i..i];
                 break;
             }
         }
-        //for (i in result) {
-         //   println("picked {i.node} blocks={i.node.blocksPointer}");
-        //}
         return result;
     }
 
+    var moveEvent is MouseEvent;
     var mouseX is Number;
     var mouseY is Number;
     public readonly var underMouse is Pick[];
     public readonly var pressed is Pick[];
     public readonly var mousePosition is Point3;
 
-    var moveEvent is MouseEvent;
+
     public function update to () 
     {
         try {
@@ -314,7 +320,7 @@ public class Scene
                 }
 
             });
-                */
+        */
         const event = MouseEvent {
             sceneLocation: mouseV;
             screenx: mouseX;
@@ -326,8 +332,9 @@ public class Scene
             shiftKey: moveEvent.shiftKey;
             buttons: moveEvent.buttons;
         }
-        for (x in underMouse) 
+        for (x in underMouse) {
             oldUnderMouse.put(x.node, x);
+        }
         underMouse = nowUnderMouse;
         for (i in nowUnderMouse) {
             const old = oldUnderMouse.remove(i.node);
@@ -340,8 +347,9 @@ public class Scene
             doMouseLeave(picked, event);
         }
         oldUnderMouse.clear();
-        for (i in underMouse) 
+        for (i in underMouse) {
             doMouseMove(i, event);
+        }
         if (event.screenDrag <> Vec2.<<0>>) {
             for (i in pressed) doMouseDrag(i, event);
         }
@@ -393,7 +401,7 @@ public class Scene
             if (f <> focus) {
                 focus.loseFocus();
                 focus = f;
-                println("set focus to {focus}");
+                //println("set focus to {focus}");
             }
             focusCount++;
             focusSet = true;

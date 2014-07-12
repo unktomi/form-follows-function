@@ -1,0 +1,11 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class PointToPointConstraint is RigidBodyConstraint {
+    public const initialPosition is Point3 = Point3.<<0>>;
+    public const initialOrientation is Vec3 = new Vec3(0, 0, -1);
+    public var usePivots is Boolean = false;
+    public var worldSpace is Boolean = false;
+    public var pivotInA is Point3;
+    public var pivotInB is Point3;
+}

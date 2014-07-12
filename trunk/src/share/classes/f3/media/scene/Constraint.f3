@@ -118,7 +118,6 @@ public class AimConstraint is Constraint
     public var sceneUpVector is Vec3 = Vec3.Y_AXIS;
 
     const pointConstraint = PointConstraint {
-        toSceneTransform: bind toSceneTransform;
 	sources: bind sources;
     }
 

@@ -1,0 +1,29 @@
+package f3.media.scene;
+import f3.math.*;
+
+public class GravityField is ForceField {
+    
+    public var gravity is Vec3 = new Vec3(0, -9.8, 0);
+
+    override public function applyForceField from (world is DynamicsWorld, bodies is Collider[]) to ()
+    {
+        const fieldLocation = worldTransform.getTranslation();
+        for (body in bodies) {
+            const t = body.collisionWorldTransform;
+            const bodyLocation = t.getTranslation();
+            const dir = fieldLocation - bodyLocation;
+            const dist = dir.length();
+            if (dist > 0) {
+                if (maxDistance < 0 or dist < maxDistance) {
+                    const force = gravity;
+                    body.applyForce(force);
+                }
+            }
+        }
+    }
+
+    override public function toString to String 
+    {
+        "{super.toString()} gravity = {gravity}";
+    }
+}

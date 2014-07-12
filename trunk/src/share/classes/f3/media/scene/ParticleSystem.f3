@@ -1,0 +1,7 @@
+package f3.media.scene;
+
+public class PointEmitter {
+}
+
+public class ParticleSystem is AbstractNode {
+}

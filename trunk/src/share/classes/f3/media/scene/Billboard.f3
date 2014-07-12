@@ -1,0 +1,171 @@
+package f3.media.scene;
+import f3.media.input.*;
+import f3.math.*;
+
+function addQuad 
+    from (start is Integer,
+          ib is IntBufferBuilder,
+          vb is FloatBufferBuilder, 
+          nb is FloatBufferBuilder, 
+          tb is FloatBufferBuilder, 
+          x is Number,
+          y is Number,
+          width is Number, 
+          height is Number, 
+          uw is Number, 
+          uh is Number) to Integer
+{
+    const indices = [0, 1, 2, 0, 2, 3];
+    for (i in indices) ib.put(start + i);
+    vb.put(x-width).put(y+height).put(0);
+    vb.put(x-width).put(y-height).put(0);
+    vb.put(x+width).put(y-height).put(0);
+    vb.put(x+width).put(y+height).put(0);
+    for (i in [0..<4]) {
+        nb.put(0).put(0).put(1);
+    }
+    const sx = width/uw;
+    const sy = height/uh;
+    const tx = (1.0-sx);
+    const ty = (1.0-sy);
+    tb.put(tx).put(1.0-ty);
+    tb.put(tx).put(ty);
+    tb.put(1.0-tx).put(ty);
+    tb.put(1.0-tx).put(1.0-ty);
+    return start + 4;
+}
+
+public class Billboard2D is AbstractNode, MouseInputHandler {
+    const indexBuilder is IntBufferBuilder = new IntBufferBuilder();
+    const pos is FloatBufferBuilder = new FloatBufferBuilder();
+    const norm is FloatBufferBuilder = new FloatBufferBuilder();
+    const uv is FloatBufferBuilder = new FloatBufferBuilder();
+    var buffer is java.nio.FloatBuffer;
+    var uvBuffer is java.nio.FloatBuffer;
+    var normBuffer is java.nio.FloatBuffer;
+    var indexBuffer is java.nio.IntBuffer;
+    public var content is Image[];
+    var imageBounds = bind foreach (im in content) if (im.visible) then im.bounds else null;
+    
+    var pressed is Image;
+    var over is Image;
+
+    function findTarget from (pt is Point3) to Image
+    {
+        for (im in content where im.visible) {
+            if (im.bounds.contains(pt)) {
+                return im;
+            }
+        }
+        return null;
+    }
+
+    function retarget from (im is Image, e is MouseEvent) to MouseEvent
+    {
+        MouseEvent {
+            count: e.count;
+            clickCount: e.clickCount;
+            stage: e.stage;
+            scene: e.scene;
+            altKey: e.altKey;
+            ctrlKey: e.ctrlKey;
+            shiftKey: e.shiftKey;
+            metaKey: e.metaKey;
+            screenx: e.screenx;
+            screeny: e.screeny;
+            screenDrag: e.screenDrag;
+            sceneLocation: e.sceneLocation;
+            location: e.location + (im.bounds.center - Point3.<<0>>);
+            buttons: e.buttons;
+        }
+    }
+
+    override public function onMouseUp from (event is MouseEvent) to () {
+        pressed = null;
+    }
+
+    override public function onMouseDown from (event is MouseEvent) to () {
+        pressed = findTarget(event.location);
+        pressed.onMouseDown(retarget(pressed, event));
+    }
+
+    override public function onMouseMove from (event is MouseEvent) to () {
+        over.onMouseMove(retarget(over, event));
+    }
+
+    override public function onMouseDrag from (event is MouseEvent) to () {
+        pressed.onMouseDrag(retarget(pressed, event));
+    }
+
+    override public function onMouseEnter from (event is MouseEvent) to () {
+        over = findTarget(event.location);
+        over.onMouseEnter(retarget(over, event));
+    }
+
+    override public function onMouseLeave from (event is MouseEvent) to () {
+        over.onMouseLeave(retarget(over, event));
+        over = null;
+    }
+
+    override public function onMouseWheel from (event is MouseWheelEvent) to () {
+        //over.onMouseWheel(retarget(over, event))
+    }
+
+    override function updateParent to () {
+        foreach (im in content) {
+            im.setParent(this);
+            im.updateParent;
+        }
+        super.updateParent();
+    }
+
+    const paint = Shape2D.TexturePaint {
+        texture: bind content[0];
+    }
+
+    override var internalContent = MeshNode {
+        shader: bind effectLoader.loadPaintShader(paint);
+        override var mesh = bind getMesh(imageBounds);
+    }
+    
+    public function getMesh from (bounds is Bounds[]) to AbstractMesh
+    {
+        indexBuilder.reset();
+        pos.reset();
+        norm.reset();
+        uv.reset();
+        var i = 0;
+        for (x in bounds where x.extent.x > 0 and x.extent.y > 0) {
+            const c = x.center;
+            const w = x.extent.x;
+            const h = x.extent.y;
+            i = addQuad(i, indexBuilder, pos, null, uv, c.x, c.y, w, h, w, h);
+        }
+        println("CREATING BILLBOARD MESH: {i}");
+        indexBuffer = indexBuilder.getBuffer(indexBuffer);
+        buffer = pos.getBuffer(buffer);
+        normBuffer = norm.getBuffer(normBuffer);
+        uvBuffer = uv.getBuffer(uvBuffer);
+	const vertexAttrs = MeshBuffer.VertexAttributeBuffer {
+            id: "POSITION";
+	    coordsPerVertex: 3;
+	    buffer: buffer;
+	}
+	const normAttrs = MeshBuffer.VertexAttributeBuffer {
+            id: "NORMAL";
+	    coordsPerVertex: 3;
+	    buffer: normBuffer;
+	}
+	const uvAttrs = MeshBuffer.VertexAttributeBuffer {
+            id: "TEXCOORD0";
+	    coordsPerVertex: 2;
+	    buffer: uvBuffer;
+	}
+	MeshBuffer {
+	    indexBuffer: indexBuffer;
+	    vertexBuffer: vertexAttrs;
+            normalBuffer: normAttrs;
+	    textureBuffers: [uvAttrs];
+	}.toMesh();
+    }
+}

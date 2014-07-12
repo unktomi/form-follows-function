@@ -1,8 +1,9 @@
 package f3.media.scene.meshdeform;
 import f3.media.scene.MeshNode;
-//import java.util.concurrent.*;
+import java.util.concurrent.*;
 
-//package const pool is AbstractExecutorService = new ForkJoinPool();
+public const pool = new ForkJoinPool(java.lang.Runtime.getRuntime().availableProcessors());
+
 
 public interface MeshDeformer {
     public var enabled is Boolean = true;
