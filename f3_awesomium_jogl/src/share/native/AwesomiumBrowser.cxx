@@ -135,6 +135,7 @@ public:
      resized = true;
      this->target = target;
      this->jvm = jvm;
+     callbackObject = 0;
   }
 
   int width, height;
@@ -142,6 +143,7 @@ public:
   Awesomium::Cursor cursorType;
 
   JSObject *callbackObject;
+  JSValue callbackValue;
 
   void checkInitWebView() {
     if (webView == 0) {
@@ -149,12 +151,9 @@ public:
       webView->set_view_listener(this);
       webView->set_load_listener(this);
       webView->set_js_method_handler(this);
-      webCore->Update();
-      JSValue result = webView->CreateGlobalJavascriptObject(WSLit("f3"));
-      callbackObject = &result.ToObject();
-      for (int i = 0; i < 10; i++) {
-        webCore->Update();
-      }
+    } else if (callbackObject == 0) {
+      callbackValue = webView->CreateGlobalJavascriptObject(WSLit("f3"));
+      callbackObject = &callbackValue.ToObject();
       callbackObject->SetCustomMethod(WSLit("handleEvent"), false);
       if (currentURL.length() > 0) {
         webView->LoadURL(WebURL(currentURL));
@@ -464,7 +463,6 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
     return 0;
   }
   if (s->is_dirty()) {
-    p->resized = false;
     if (bufPtr != 0) {
       //fprintf(stderr, "surface %d, %d\n", s->width(), s->height());
       //fprintf(stderr, "p %d, %d\n", p->width, p->height);
@@ -472,7 +470,7 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
         unsigned char *outPtr = bufPtr;
         s->CopyTo(outPtr, s->row_span(), 4, true, true);
         jint arr[4];
-        if (s->x != 0 || s->y != 0) { // hack
+        if (p->resized || s->x != 0 || s->y != 0) { // hack
           arr[0] = 0;
           arr[1] = 0;
           arr[2] = p->width;
@@ -484,10 +482,10 @@ extern "C" jboolean JNICALL Java_org_f3_media_web_awesomium_Browser_render
           arr[3] = s->dirtyRegion.height;
         }
         env->SetIntArrayRegion(rectArray, 0, 4, (const jint*)arr);
-        s->set_is_dirty(false);
         return 1;
       }
     }
+    p->resized = false;
     /*
     Awesomium::Rect rect = p->webView->getDirtyBounds();
     const Awesomium::RenderBuffer *buffer = p->webView->render();
