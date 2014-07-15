@@ -346,10 +346,10 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             if (dynamicsWorld.getDebugDrawer() == null) {
                 dynamicsWorld.setDebugDrawer(debugDrawer = DebugDrawer{});
             }
-            debugDrawer.update(camera);
             const gl is GL2 = JoglStage.THE_GL2;
             gl.glPushClientAttrib(gl.GL_CLIENT_ALL_ATTRIB_BITS as Integer);
             gl.glPushAttrib(gl.GL_ALL_ATTRIB_BITS);
+            debugDrawer.update(camera);
             dynamicsWorld.debugDrawWorld();
             gl.glPopAttrib();
             gl.glPopClientAttrib();

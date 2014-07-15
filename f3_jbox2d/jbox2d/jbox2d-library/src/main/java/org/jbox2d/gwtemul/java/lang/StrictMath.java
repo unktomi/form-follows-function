@@ -21,7 +21,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  ******************************************************************************/
-package java.lang;
+package org.jbox2d.gwtemul.java.lang;
 
 /**
  * GWT doesn't support strict math, so we "emulate" it with non-strict math.
