@@ -118,6 +118,7 @@ public class JoglDebugDraw extends DebugDraw {
     gl.glColor4f(color.x, color.y, color.z, 1f);
     for (int i = 0; i < vertexCount; i++) {
       Vec2 v = vertices[i];
+      System.err.println("polygon vertex: "+v.x +", "+v.y);
       gl.glVertex2f(v.x, v.y);
     }
     gl.glEnd();
@@ -133,6 +134,7 @@ public class JoglDebugDraw extends DebugDraw {
     gl.glColor4f(color.x, color.y, color.z, .4f);
     for (int i = 0; i < vertexCount; i++) {
       Vec2 v = vertices[i];
+      System.err.println("polygon vertex: "+v.x +", "+v.y);
       gl.glVertex2f(v.x, v.y);
     }
     gl.glEnd();
@@ -149,6 +151,7 @@ public class JoglDebugDraw extends DebugDraw {
 
   @Override
   public void drawCircle(Vec2 center, float radius, Color3f color) {
+      System.err.println("drawCircle: "+center +", "+radius+", "+color);
     GL2 gl = panel.getGL().getGL2();
     gl.glPushMatrix();
     transformViewport(gl, zero);
@@ -174,6 +177,7 @@ public class JoglDebugDraw extends DebugDraw {
 
   @Override
   public void drawCircle(Vec2 center, float radius, Vec2 axis, Color3f color) {
+      System.err.println("drawCircle: "+center +", "+radius+", "+color + " axis="+axis);
     GL2 gl = panel.getGL().getGL2();
     gl.glPushMatrix();
     transformViewport(gl, zero);

@@ -31,7 +31,7 @@ public class JBox2DCollider is Collider {
     }
 
     function doFillTransform to () {
-        const m = getTarget().parentToSceneTransform * getTarget().transform;
+        const m = getTarget().parentToSceneTransform * getTarget().getScalePivot();
         setCollisionWorldTransform(m);
         const t = m.getTranslation();
         const r = m.getRotation();
@@ -41,7 +41,7 @@ public class JBox2DCollider is Collider {
     protected function drainTransform to () {
         if (body <> null) {
             const t = body.getTransform();
-            println("drain transform {t}");
+            //println("drain transform {t}");
             setCollisionWorldTransform(translate(t.p.x, t.p.y) * rotate(Math.toDegrees(t.q.getAngle()), Vec3.Z_AXIS));
         }
     }
@@ -55,7 +55,7 @@ public class JBox2DCollider is Collider {
     {
         if (active) {
             if (body == null) {
-                if (world.world <> null) {
+                if (world.world <> null and not world.paused) {
                     createBody();
                     world.addCollider(this);
                 }

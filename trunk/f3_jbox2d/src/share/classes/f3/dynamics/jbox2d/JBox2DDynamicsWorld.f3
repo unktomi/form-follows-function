@@ -7,7 +7,9 @@ import org.jbox2d.collision.shapes.*;
 import java.lang.Math;
 import org.jbox2d.common.Vec2;
 import f3.jogl.awt.JoglStage;
+import java.util.concurrent.*;
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jbox2d.debug.physics");
+public const pool = Executors.newSingleThreadExecutor();
 
 public class JBox2DDynamicsWorld is DynamicsWorld {
 
@@ -16,13 +18,25 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
 
     const debugDrawer = new JoglDebugDraw();
     const toBeDeleted = new java.util.LinkedList of JBox2DCollider;
+    var projectionMatrix is nativearray of Number = new nativearray of Number(16);
+    var viewMatrix is nativearray of Number = new nativearray of Number(16);
 
     override function debugDraw from (camera is Camera) to ()
     {
         if (DEBUG_DRAW) {
             world.setDebugDraw(debugDrawer);
-            println("drawing debug");
-            debugDrawer.begin(JoglStage.THE_GL2, camera.width as Integer, camera.height as Integer);
+            var mat = camera.projectionMatrix;
+            var m = projectionMatrix;
+            for (r in [0..<4], c in [0..<4]) {
+                m[c*4+r] = mat.get(r, c);
+            }
+            mat = camera.viewMatrix;
+            m = viewMatrix;
+            for (r in [0..<4], c in [0..<4]) {
+                m[c*4+r] = mat.get(r, c);
+            }
+            debugDrawer.begin(JoglStage.THE_GL2, camera.width as Integer, camera.height as Integer,
+                              projectionMatrix, viewMatrix);
             world.drawDebugData();
             debugDrawer.end();
         }
@@ -67,19 +81,25 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
             delta = ((now - lastTime) / 1000.0) as Number;
         }
         lastTime = now;
-        println("step: {delta}, {world} bodies={rigidBodies.size()}");
-        world.step(delta, 6, 2);
-        iter = rigidBodies.iterator();
-        while (iter.hasNext()) {
-            const b = iter.next();
-            if (b.target.get() == null) {
-                world.destroyBody(b.body);
-                iter.remove();
-            } else {
-                b.drainTransform();
+        const fut = pool.submit(Callable of (()) {
+                override function call to (()) {
+                    world.step(delta, 6, 2);
+                    return ();
+                }
+            });
+        return function to () {
+            fut.get();
+            const iter = rigidBodies.iterator();
+            while (iter.hasNext()) {
+                const b = iter.next();
+                if (b.target.get() == null) {
+                    world.destroyBody(b.body);
+                    iter.remove();
+                } else {
+                    b.drainTransform();
+                }
             }
         }
-        return function to () { }
     }
 
     const rigidBodies = new java.util.HashSet of JBox2DCollider;
@@ -129,7 +149,7 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
     protected function createShapes from (n is Node, collider is JBox2DCollider) to () 
     {
         const ps = PolygonShape {}
-        const b = n.contentBounds;
+        const b = n.getScalePivot().inverse() * n.bounds;
         println("creating shape: {b}");
         ps.setAsBox(b.extent.x, b.extent.y, new Vec2(b.center.x, b.center.y), 0);
         const fd = FixtureDef {};
