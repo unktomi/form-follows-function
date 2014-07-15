@@ -56,6 +56,7 @@ public class Collision {
 }
 
 public abstract class Collider {
+    public function destroy to ();
     public var colliderShape is ColliderShape = ColliderShape.ConvexHull {};
     public readonly var collisionWorldTransform is Mat4 = Mat4.<<1>>;
     public var dynamicsWorld is DynamicsWorld;
@@ -108,23 +109,24 @@ public abstract class Collider {
     }
     public var onCollisionEnter is function from Collision to ();
     public var onCollisionLeave is function from Collision to ();
-    public var collidable is Collidable;
-    public abstract function applyConstraint from (collider is Collider, constraint is RigidBodyConstraint) to Boolean;
-    public function applyForce from (v is Vec3) to ();
+    public function getTarget to Node;
+    public abstract function applyConstraint from (collider is Collider, 
+                                                   constraint is RigidBodyConstraint) to Boolean;
+    public function applyForce from (v is Vec3) to () { applyForce(v.x, v.y, v.z) }
     public function applyForce from (x is Number, y is Number, z is Number) to ();
-    public function applyTarque from (v is Vec3) to ();
+    public function applyTarque from (v is Vec3) to () { applyTorque(v.x, v.y, v.z) }
     public function applyTorque from (x is Number, y is Number, z is Number) to (); 
     public function setAngularFactor from (v is Vec3) to ();
     public function setLinearFactor from (v is Vec3) to ();
     public function getLinearVelocity from () to Vec3; 
     public function getAngularVelocity from () to Vec3; 
-    public function setLinearVelocity from (v is Vec3) to ();
+    public function setLinearVelocity from (v is Vec3) to () { setLinearVelocity(v.x, v.y, v.z) }
     public function setLinearVelocity from (x is Number, y is Number, z is Number) to (); 
-    public function setAngularVelocity from (v is Vec3) to (); 
+    public function setAngularVelocity from (v is Vec3) to () { setAngularVelocity(v.x, v.y, v.z) } 
     public function setAngularVelocity from (x is Number, y is Number, z is Number) to (); 
-    public function applyImpulse from (v is Vec3) to (); 
+    public function applyImpulse from (v is Vec3) to () { applyImpulse(v.x, v.y, v.z) }
     public function applyImpulse from (x is Number, y is Number, z is Number) to (); 
-    public function applyTarqueImpulse from (v is Vec3) to ();
+    public function applyTarqueImpulse from (v is Vec3) to () { applyTorqueImpulse(v.x, v.y, v.z) }
     public function applyTorqueImpulse from (x is Number, y is Number, z is Number) to ();
 
     //public function observeCollisions to Observable of Collision:

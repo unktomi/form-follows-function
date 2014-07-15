@@ -1,0 +1,97 @@
+<project name="jni-project" default="jar">
+
+  <!--target name="jni.properties.load.user">
+    <property name="macosx32" value="true"/>
+    <property name="macosx64" value="false"/>
+  </target-->
+
+  <!--import file="jni-cpptasks.xml"/-->
+
+  <!--target name="init" depends="jni.cpptasks.detect.os,jni.cpptasks.setup.compiler"-->
+  <property name="build.classes.dir" value="build/classes"/>
+  <property name="javac.source" value="1.5"/>
+  <property name="javac.target" value="1.5"/>
+  <property name="src.classes.dir" value="src"/>
+  <property name="javac.classpath" value="lib/f3c.jar"/>
+  <target name="clean">
+    <delete dir="build"/>
+    <delete dir="lib" includes="f3*.jar"/>
+    <delete dir="lib" includes="jogl*.jar"/>
+ </target>
+  <target name="init">
+    <copy todir="lib">
+      <fileset dir="../dist/lib/shared" includes="*.jar"/>
+      <fileset dir="../f3_cg_jogl_awt/lib/" includes="jogl-all.jar"/>
+      <fileset dir="../f3_cg_jogl_awt/build/" includes="*.jar"/>
+    </copy>
+    <!--mkdir dir="build/native/include"/>
+    <mkdir dir="build/native/obj"/-->
+    <mkdir dir="build/classes"/>
+  <taskdef name="f3c" classname="org.f3.tools.ant.F3AntTask" >
+    <classpath>
+      <pathelement location="lib/f3c.jar"/>
+    </classpath>
+  </taskdef>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac debug="yes" deprecation="no"
+             destdir="${build.classes.dir}"
+             excludes="${excludes}" includeantruntime="false"
+             includes="**/*.java" source="${javac.source}" sourcepath=""
+             srcdir="${src.classes.dir}" target="${javac.target}">
+            <classpath>
+        <pathelement location="lib/f3rt.jar"/>
+        <pathelement location="lib/jogl-all.jar"/>
+        <pathelement location="lib/f3.cg.jogl.awt.jar"/>
+        <pathelement location="lib/jbox2d.jar"/>
+            </classpath>
+    </javac>
+    <f3c debug="yes" deprecation="no"
+             destdir="${build.classes.dir}"
+             excludes="${excludes}" includeantruntime="false"
+             includes="**/*.f3" source="${javac.source}" sourcepath=""
+             srcdir="${src.classes.dir}" target="${javac.target}"
+             compilerclasspath="${javac.classpath}">
+	  <!--compilerarg value="-XDdumpjava"/-->
+            <classpath>
+        <pathelement location="lib/f3rt.jar"/>
+        <pathelement location="lib/jogl-all.jar"/>
+        <pathelement location="lib/f3.cg.jogl.awt.jar"/>
+        <pathelement location="lib/jbox2d.jar"/>
+            </classpath>
+    </f3c>
+  </target>
+
+  <!--target name="native-headers" depends="java-compile">
+    <javah destdir="build/native/include" classpath="build/classes">
+    </javah>
+  </target>  
+
+  <target name="native-library" depends="native-headers">
+    <echo message="java home ${java.home}"/>
+    <cc outtype="shared" subsystem="console" outfile="build/native/org.f3.media.web.awesomium" objdir="build/native/obj">
+      <compiler extends="${compiler.cfg.id.base}">
+        <compilerarg value="-F."/>
+        <compilerarg value="-fno-rtti"/>
+        <includepath path="build/native/include"/>
+        <includepath path="stub_includes/jni"/>
+        <includepath path="stub_includes/jni/macosx"/>
+        <includepath path="."/>
+        <fileset dir="src/share/native" includes="**.cxx"/>
+      </compiler>
+      <linker extends="${linker.cfg.id.base}">
+        <linkerarg value="-F/Library/Frameworks"/>
+        <linkerarg value="-framework"/>
+        <linkerarg value="Awesomium"/>
+      </linker>
+    </cc>
+  </target-->
+  <target name="jar" depends="compile">
+    <jar compress="true" destfile="build/org.f3.jbox2d.jar">
+      <fileset dir="build/classes"/>
+    </jar>
+  </target>
+
+
+</project>

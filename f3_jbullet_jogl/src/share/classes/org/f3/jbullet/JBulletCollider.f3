@@ -59,14 +59,14 @@ public class CMotionState is MotionState {
 
 public class JBulletCollider is Collider {
 
-    public var target is Node;
+    public var target is java.lang.ref.WeakReference of Node;
     
     var collisionShape is com.bulletphysics.collision.shapes.CollisionShape;
     
     public function getCollisionShape to com.bulletphysics.collision.shapes.CollisionShape
     {
         if (collisionShape == null) {
-            collisionShape = _dynamicsWorld().createCollisionShape(target, colliderShape);
+            collisionShape = _dynamicsWorld().createCollisionShape(target.get(), colliderShape);
             if (collisionShape == null) {
                 active = false;
             }
@@ -243,7 +243,7 @@ public class JBulletCollider is Collider {
         if (_dynamicsWorld() == null or colShape == null) {
             return;
         }
-        println("creating rigid body {this} collidable={collidable} w={_dynamicsWorld()} mass={mass} bodyType={bodyType} {colShape}");
+        println("creating rigid body {this} collidable={target.get()} w={_dynamicsWorld()} mass={mass} bodyType={bodyType} {colShape}");
         var self = this;
         motionState = CMotionState {
             c: new java.lang.ref.WeakReference of JBulletCollider(self);
@@ -405,10 +405,13 @@ public class JBulletCollider is Collider {
 
     public function fillWorldMatrix from (worldMatrix0 is nativearray of Number) to () {
         var worldMatrix = worldMatrix0;
-        const t = 
-            (if bodyType == RigidBodyType.Dynamic then getCollisionWorldTransform() else target.toSceneTransform) * translate(centerOfMass);
-        for (c in [0..<4], r in [0..<4]) {
-            worldMatrix[c*4+r] = t.get(r, c);
+        const n = target.get();
+        if (n <> null) {
+            const t = 
+                (if bodyType == RigidBodyType.Dynamic then getCollisionWorldTransform() else n.toSceneTransform) * translate(centerOfMass);
+            for (c in [0..<4], r in [0..<4]) {
+                worldMatrix[c*4+r] = t.get(r, c);
+            }
         }
     }
 
@@ -450,6 +453,14 @@ public class JBulletCollider is Collider {
 
     public var shape is Collidable;
 
+    override function destroy to ()
+    {
+        removeRigidBody();
+        target.clear();
+    }
+
+    override function getTarget to Node { target.get() }
+
     var _currentlyActive is Boolean;   
 
     override public bound function isActive to Boolean { _currentlyActive }
@@ -457,9 +468,6 @@ public class JBulletCollider is Collider {
     function activate from () to () {
         if (not active) {
             removeRigidBody();
-        } else if (collidable <> null and _dynamicsWorld() <> null) {
-            //            var c = if (shape <> null) shape else collidable;
-            //            createRigidBody(c.getCollisionShape());
         }
     }
 

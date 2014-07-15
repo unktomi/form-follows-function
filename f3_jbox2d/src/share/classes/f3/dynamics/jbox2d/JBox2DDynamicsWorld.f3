@@ -1,0 +1,180 @@
+package f3.dynamics.jbox2d;
+import f3.media.scene.*;
+import f3.math.*;
+import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.FixtureDef;
+import org.jbox2d.collision.shapes.*;
+import java.lang.Math;
+import org.jbox2d.common.Vec2;
+import f3.jogl.awt.JoglStage;
+const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jbox2d.debug.physics");
+
+public class JBox2DDynamicsWorld is DynamicsWorld {
+
+    public readonly var world is World;
+    var lastTime is Long;
+
+    const debugDrawer = new JoglDebugDraw();
+    const toBeDeleted = new java.util.LinkedList of JBox2DCollider;
+
+    override function debugDraw from (camera is Camera) to ()
+    {
+        if (DEBUG_DRAW) {
+            world.setDebugDraw(debugDrawer);
+            debugDrawer.begin(JoglStage.THE_GL2, camera.width as Integer, camera.height as Integer);
+            world.drawDebugData();
+            debugDrawer.end();
+        }
+    }
+
+    override function update from (sceneTime is Duration, camera is Camera) to function to ()
+    {
+        if (world == null) {
+            world = new World(new Vec2(0, -9.8));
+            world.setAllowSleep(no);
+        }
+        for (x in toBeDeleted) {
+            if (x.body <> null) {
+                world.destroyBody(x.body);
+            }
+            rigidBodies.remove(x);
+        }
+        toBeDeleted.clear();
+        const now = java.lang.System.currentTimeMillis();
+        var delta is Number = 0.0;
+        var iter = rigidBodies.iterator();
+        while (iter.hasNext()) {
+            const b = iter.next();
+            if (b.target.get() == null) {
+                world.destroyBody(b.body);
+                iter.remove();
+            } else {
+                b.fillTransform();
+            }
+        }
+        if (paused)  {
+            return function to () {};
+        }
+        if (lastTime <> 0) {
+            delta = ((now - lastTime) / 1000.0) as Number;
+        }
+        lastTime = now;
+        println("step: {delta}, {world} bodies={rigidBodies.size()}");
+        world.step(delta, 6, 2);
+        iter = rigidBodies.iterator();
+        while (iter.hasNext()) {
+            const b = iter.next();
+            if (b.target.get() == null) {
+                world.destroyBody(b.body);
+                iter.remove();
+            } else {
+                b.drainTransform();
+            }
+        }
+        return function to () { }
+    }
+
+    const rigidBodies = new java.util.HashSet of JBox2DCollider;
+
+    protected function addCollider from (x is JBox2DCollider) to ()
+    {
+        rigidBodies.add(x);
+    }
+
+    protected function removeCollider from (x is JBox2DCollider) to ()
+    {
+        toBeDeleted.add(x);
+    }
+
+    function applyForceFields to () {
+        for (f in forceFields) {
+            f.doApply(this, foreach (x in rigidBodies) x); // fix me: opt
+        }
+    }
+    
+    var forceFields is ForceField[];        
+
+    override function addForceField from (field is ForceField) to ()
+    {
+        insert field into forceFields;
+    }
+
+    override function removeForceField from (field is ForceField) to ()
+    {
+        delete field from forceFields;
+    }
+
+    override function createCollider from (n is Node) to Collider
+    {
+        JBox2DCollider {
+            target: new java.lang.ref.WeakReference of Node (n);
+            world: this;
+        }
+    }
+
+    override function reset to ()
+    {
+    }
+
+    protected function createShapes from (n is Node, collider is JBox2DCollider) to () 
+    {
+        const ps = PolygonShape {}
+        const b = n.contentBounds;
+        println("creating shape: {b}");
+        ps.setAsBox(b.extent.x, b.extent.y, new Vec2(b.center.x, b.center.y), 0);
+        const fd = FixtureDef {};
+        fd.shape = ps;
+        fd.density = collider.mass / (b.width() * b.height());
+        fd.friction = collider.friction;
+        fd.restitution = collider.restitution;
+        const fix = collider.body.createFixture(fd);
+        println("fixture=>{fix}");
+        
+        /*
+        var result is Shape;
+        var toLocal = n.toSceneTransform.inverse();
+
+        n.foldLeft((), function from (_ is (), n is Node) to () {
+                if (n is Shape2D.MeshNode2D) {
+                    const m = n as Shape2D.MeshNode2D;
+                    const mat = toLocal * m.toSceneTransform;
+                    const t = mat.getTranslation();
+                    const rot = Math.toRadians(mat.getRotation().toAngles().z) as Number;
+                    var p is Node = m.parent;
+                    while (p <> null and not (p is Shape2D)) {
+                        p = p.parent;
+                    }
+
+                    if (p is Shape2D) {
+                        if (p is Shape2D.Rectangle) {
+                            const r = p as Shape2D.Rectangle;
+                            var ps = PolygonShape {}
+                            ps.setAsBox(r.width/2, r.height/2, new Vec2(t.x+r.cx, t.y+r.cy), rot);
+                            result = ps;
+                        } else if (p is Shape2D.Circle) {
+                            const c = p as Shape2D.Circle;
+                            var cs = CircleShape {}
+                            cs.m_radius = c.radius;
+                            cs.m_p.set(t.x+c.cx, t.y+c.cy);
+                            result = cs;
+                        } else {
+                        }
+                    }
+                    if (result == null) {
+                        var ps = PolygonShape {}
+                        var b = m.path.getBounds();
+                        ps.setAsBox(b.extent.x, b.extent.y, new Vec2(t.x+b.center.x, t.y+b.center.y), 0);
+                        result = ps;
+                    }
+                    const fd = FixtureDef {};
+                    fd.shape = result;
+                    fd.friction = collider.friction;
+                    fd.restitution = collider.restitution;
+                    collider.body.createFixture(fd);
+                }
+            });
+        */
+    }
+
+
+}

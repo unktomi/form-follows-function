@@ -752,3 +752,74 @@ public class Color extends Comparable of Object, Formattable {
         return Bits.bitXor(value, opacity as Integer);
     }
 }
+
+public class ColorRef is AbstractRef of Color {
+
+    public const target is Ref of Color;
+
+    public function getRed to Ref of Number {
+        const self = this;
+        AbstractRef of Number {
+            override function get to Number {
+                self.get().red;
+            } 
+            override function set from (r is Number) to () 
+            {
+                const v = self.get();
+                self.set(Color.color(r, v.green, v.blue, v.opacity));
+            } 
+        } as Ref of Number
+    }
+
+    public function getGreen to Ref of Number {
+        const self = this;
+        AbstractRef of Number {
+            override function get to Number {
+                self.get().green;
+            } 
+            override function set from (g is Number) to () 
+            {
+                const v = self.get();
+                self.set(Color.color(v.red, g, v.blue, v.opacity));
+            } 
+        }
+    }
+
+    public function getBlue to Ref of Number {
+        const self = this;
+        AbstractRef of Number {
+            override function get to Number {
+                self.get().blue;
+            } 
+            override function set from (b is Number) to () 
+            {
+                const v = self.get();
+                self.set(Color.color(v.red, v.green, b, v.opacity));
+            } 
+        }
+    }
+
+    public function getOpacity to Ref of Number {
+        const self = this;
+        AbstractRef of Number {
+            override function get to Number {
+                self.get().opacity;
+            } 
+            override function set from (alpha is Number) to () 
+            {
+                const v = self.get();
+                self.set(Color.color(v.red, v.green, v.blue, alpha));
+            } 
+        }
+    }
+
+    override function get to Color {
+        target.get();
+    } 
+
+    override function set from (c is Color) to () 
+    {
+        target.set(c);
+    } 
+    
+}

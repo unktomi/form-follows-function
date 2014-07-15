@@ -61,7 +61,7 @@ public abstract class F3ClassType extends F3Type implements F3Member {
     }
     
     public String toString() {
-        String n = getName();
+        String n = isTypeVariable() ? getTypeVariable() : getName();
         if (n == null)
             n = "<anonymous>";
         n = "class "+n;

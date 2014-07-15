@@ -151,4 +151,13 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
         const screenPt = containingScene.camera.toScreen(pt);
         containingScene.stage.showPopupMenu(screenPt.x as Integer, screenPt.y as Integer, menu);
     }
+
+    public override function showTooltip from (x is Integer, y is Integer, tooltip is String) to () 
+    {
+        const x1 = x - width / 2.0;
+        const y1 = -(y - height / 2.0);
+        const pt = toSceneTransform * new Point3(x1, y1, 0);
+        const screenPt = containingScene.camera.toScreen(pt);
+        containingScene.stage.showTooltip(screenPt.x as Integer, screenPt.y as Integer, tooltip);
+    }
 }

@@ -1,0 +1,11 @@
+package f3.dynamics.jbox2d;
+import f3.media.scene.*;
+
+public class JBox2DDynamicsWorldFactory is DynamicsWorldFactory {
+
+    override public function createDynamicsWorld to DynamicsWorld
+    {
+        JBox2DDynamicsWorld {}
+    }
+
+}

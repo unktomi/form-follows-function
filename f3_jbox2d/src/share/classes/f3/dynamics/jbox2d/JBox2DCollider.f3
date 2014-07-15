@@ -1,0 +1,147 @@
+package f3.dynamics.jbox2d;
+
+import f3.media.scene.*;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import org.jbox2d.dynamics.Body;
+import org.jbox2d.dynamics.BodyDef;
+import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.common.Vec2;
+import java.lang.Math;
+
+public class JBox2DCollider is Collider {
+
+    public var target is java.lang.ref.WeakReference of Node;
+    public readonly var body is Body;
+    public var world is JBox2DDynamicsWorld;
+
+    override function getTarget to Node { target.get() }
+    override function destroy to () {
+        active = false;
+        update();
+        target.clear();
+    }
+
+    protected function fillTransform to () {
+        if (body <> null) {
+            if (bodyType <> RigidBodyType.Dynamic) {
+                doFillTransform();
+            }
+        }
+    }
+
+    function doFillTransform to () {
+        const m = getTarget().parentToSceneTransform * getTarget().transform;
+        setCollisionWorldTransform(m);
+        const t = m.getTranslation();
+        const r = m.getRotation();
+        body.setTransform(new Vec2(t.x, t.y), Math.toRadians(r.toAngles().z));
+    }
+
+    protected function drainTransform to () {
+        if (body <> null) {
+            const t = body.getTransform();
+            println("drain transform {t}");
+            setCollisionWorldTransform(translate(t.p.x, t.p.y) * rotate(Math.toDegrees(t.q.getAngle()), Vec3.Z_AXIS));
+        }
+    }
+
+    override function update to ()
+    {
+        if (active) {
+            if (body == null) {
+                if (world.world <> null) {
+                    createBody();
+                    world.addCollider(this);
+                }
+            }
+        } else {
+            if (body <> null) {
+                world.removeCollider(this);
+            }
+        }
+    }
+
+    override bound function isActive to Boolean {
+        active;
+    }
+
+    function createBody to () {
+        const bd = BodyDef {};
+        bd.type = if bodyType == RigidBodyType.Dynamic then BodyType.DYNAMIC else if bodyType == RigidBodyType.Kinematic then BodyType.KINEMATIC else BodyType.STATIC;
+        bd.linearDamping = linearDamping;
+        bd.angularDamping = angularDamping;
+        bd.position = new Vec2(collisionInitialPosition.x, collisionInitialPosition.y);
+        bd.angle = Math.toRadians(collisionInitialOrientation.z);
+        bd.linearVelocity = new Vec2(collisionInitialVelocity.x, collisionInitialVelocity.y);
+        bd.angularVelocity = collisionInitialVelocity.z;
+        println("create body: {bodyType}");
+        println("bd.type=>{bd.type}");
+        body = world.world.createBody(bd);
+        body.setSleepingAllowed(no);
+        world.createShapes(target.get(), this);
+        doFillTransform();
+        println("created body {body} mass=>{body.getMass()}");
+    }
+
+    override function applyConstraint from (collider is Collider, constraint is RigidBodyConstraint) 
+        to Boolean
+    {
+        false;
+    }
+
+    override function applyForce from (x is Number, y is Number, z is Number) to ()
+    {
+        body.applyForceToCenter(new Vec2(x, y));
+    }
+
+    override function applyTorque from (x is Number, y is Number, z is Number) to ()
+    {
+        body.applyTorque(Math.toRadians(z))
+    }
+
+    override function setAngularFactor from (v is Vec3) to ()
+    {
+    }
+
+    override function setLinearFactor from (v is Vec3) to ()
+    {
+    }
+
+    override function getLinearVelocity from () to Vec3
+    {
+        const v = body.getLinearVelocity();
+        new Vec3(v.x, v.y, 0);
+    }
+
+    override function getAngularVelocity from () to Vec3
+    {
+        new Vec3(0, 0, Math.toDegrees(body.getAngularVelocity()))
+    }
+
+    override function setLinearVelocity from (x is Number, y is Number, z is Number) to ()
+    {
+        body.setLinearVelocity(new Vec2(x, y))
+    }
+
+    override function setAngularVelocity from (x is Number, y is Number, z is Number) to ()
+    {
+        body.setAngularVelocity(Math.toRadians(z))
+    }
+
+
+    override function applyImpulse from (x is Number, y is Number, z is Number) to ()
+    {
+        body.applyLinearImpulse(new Vec2(x, y), new Vec2(centerOfMass.x, centerOfMass.y), true);
+    }
+
+    override function applyTarqueImpulse from (v is Vec3) to ()
+    {
+    }
+
+    override function applyTorqueImpulse from (x is Number, y is Number, z is Number) to ()
+    {
+        body.applyAngularImpulse(z);
+    }
+}
+

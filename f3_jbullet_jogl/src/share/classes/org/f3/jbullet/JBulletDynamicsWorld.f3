@@ -173,8 +173,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     override function createCollider from (n is Node) to Collider {
         const result = JBulletCollider {
-            collidable: n;
-            target: n;
+            target: new java.lang.ref.WeakReference of Node(n);
             dynamicsWorld: this;
         }
         return result;
@@ -408,7 +407,11 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             if (obj instanceof RigidBody) {
                 var cobj = obj as RigidBody;
                 const j = getUserPointer(cobj) as JBulletCollider;
-                j.motionState.fillWorldMatrix();
+                if (j.target.get() == null) {
+                    enqueueForDelete(cobj);
+                } else {
+                    j.motionState.fillWorldMatrix();
+                }
             }
         }
         const fut = pool.submit(Callable of (()) {

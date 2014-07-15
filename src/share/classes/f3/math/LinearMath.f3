@@ -247,7 +247,18 @@ public function rotate
     if (rx == 0 and ry == 0 and rz == 0) {
 	return Mat4.<<1>>;
     }
-    quat(rx, ry, rz).toMat4();
+    var result = Mat4.<<1>>;
+    if (rz <> 0) {
+        result *= rotate(rz, Vec3.Z_AXIS);
+    }
+    if (ry <> 0) {
+        result *= rotate(ry, Vec3.Y_AXIS);
+    }
+    if (rx <> 0) {
+        result *= rotate(rx, Vec3.X_AXIS);
+    }
+    //quat(rx, ry, rz).toMat4();
+    result
 }
 
 public function rotate
