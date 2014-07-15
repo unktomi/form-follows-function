@@ -12,8 +12,8 @@ import java.lang.Math;
 public class JBox2DCollider is Collider {
 
     public var target is java.lang.ref.WeakReference of Node;
-    public readonly var body is Body;
-    public var world is JBox2DDynamicsWorld;
+    protected var body is Body;
+    protected var world is JBox2DDynamicsWorld;
 
     override function getTarget to Node { target.get() }
     override function destroy to () {
@@ -46,6 +46,11 @@ public class JBox2DCollider is Collider {
         }
     }
 
+    protected function reset to ()
+    {
+        world.removeCollider(this)
+    }
+    
     override function update to ()
     {
         if (active) {
@@ -63,7 +68,7 @@ public class JBox2DCollider is Collider {
     }
 
     override bound function isActive to Boolean {
-        active;
+        active and body <> null;
     }
 
     function createBody to () {
