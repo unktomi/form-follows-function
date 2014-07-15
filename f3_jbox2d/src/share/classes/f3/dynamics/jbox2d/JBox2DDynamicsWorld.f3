@@ -21,10 +21,24 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
     {
         if (DEBUG_DRAW) {
             world.setDebugDraw(debugDrawer);
+            println("drawing debug");
             debugDrawer.begin(JoglStage.THE_GL2, camera.width as Integer, camera.height as Integer);
             world.drawDebugData();
             debugDrawer.end();
         }
+    }
+
+    function handleDeleted to ()
+    {
+        for (x in toBeDeleted) {
+            if (x.body <> null) {
+                const body = x.body;
+                x.body = null;
+                world.destroyBody(body);
+            }
+            rigidBodies.remove(x);
+        }
+        toBeDeleted.clear();
     }
 
     override function update from (sceneTime is Duration, camera is Camera) to function to ()
@@ -33,13 +47,7 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
             world = new World(new Vec2(0, -9.8));
             world.setAllowSleep(no);
         }
-        for (x in toBeDeleted) {
-            if (x.body <> null) {
-                world.destroyBody(x.body);
-            }
-            rigidBodies.remove(x);
-        }
-        toBeDeleted.clear();
+        handleDeleted();
         const now = java.lang.System.currentTimeMillis();
         var delta is Number = 0.0;
         var iter = rigidBodies.iterator();
@@ -114,6 +122,8 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
 
     override function reset to ()
     {
+        for (x in rigidBodies) { x.reset() }
+        handleDeleted();
     }
 
     protected function createShapes from (n is Node, collider is JBox2DCollider) to () 
