@@ -42,7 +42,11 @@ public class JBox2DCollider is Collider {
         if (body <> null) {
             const t = body.getTransform();
             //println("drain transform {t}");
-            setCollisionWorldTransform(translate(t.p.x, t.p.y) * rotate(Math.toDegrees(t.q.getAngle()), Vec3.Z_AXIS));
+            const n = getTarget();
+            setCollisionWorldTransform(translate(t.p.x, t.p.y) * 
+                                       rotate(Math.toDegrees(t.q.getAngle()), Vec3.Z_AXIS) *
+                                       n.getScalePivot().inverse() * n.transform
+                                       );
         }
     }
 
@@ -86,6 +90,9 @@ public class JBox2DCollider is Collider {
         body.setSleepingAllowed(no);
         world.createShapes(target.get(), this);
         doFillTransform();
+        if (bodyType == RigidBodyType.Dynamic) {
+            drainTransform();
+        }
         println("created body {body} mass=>{body.getMass()}");
     }
 
