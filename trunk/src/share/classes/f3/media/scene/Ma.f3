@@ -3594,12 +3594,12 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
         var pivotA is Point3;
         var pivotB is Point3;
         for (c in connectionsToThis.get("rba")) {
-            bodyA = m.toRigidBody(c.sourceNode as MRigidBody).collidable as Node;
+            bodyA = m.toRigidBody(c.sourceNode as MRigidBody).getTarget();
             const parent = m.toNode(c.sourceNode.parent as MSpatial) as MaTransform;
             pivotA = parent.t;
         }
         for (c in connectionsToThis.get("rbb")) {
-            bodyB = m.toRigidBody(c.sourceNode as MRigidBody).collidable as Node;
+            bodyB = m.toRigidBody(c.sourceNode as MRigidBody).getTarget();
             const parent = m.toNode(c.sourceNode.parent as MSpatial) as MaTransform;
             pivotB = parent.t;
         }

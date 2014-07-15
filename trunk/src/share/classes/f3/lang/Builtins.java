@@ -445,5 +445,5 @@ public class Builtins {
         }
     }
 
-    public static Void unit() { return null; }
+    public static Void nothing() { return null; }
 }

@@ -282,5 +282,6 @@ public interface Stage
     public readonly var outsideHeight is Integer;
 
     public function showPopupMenu from (x is Integer, y is Integer, menu is Menu) to ();
+    public function showTooltip from (x is Integer, y is Integer, tooltip is String) to ();
 }
  

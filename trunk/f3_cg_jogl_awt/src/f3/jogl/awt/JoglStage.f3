@@ -3677,6 +3677,12 @@ public const THE_MENU_FACTORY = AWTMenuFactoryImpl {}
 public class JoglStage is Stage
 {
 
+    override public function showTooltip from (x is Integer, y is Integer, tooltip is String) to () 
+    {
+        tt.setToolTipText(tooltip);
+        tt.showToolTip(x, y);
+    }
+
     const awtmenu = new java.awt.PopupMenu();
 
     public override function showPopupMenu from (x is Integer, y is Integer, menu is Menu) to () {
@@ -3794,6 +3800,8 @@ public class JoglStage is Stage
 
     var cursors = new java.util.HashMap of (String, java.awt.Cursor);
 
+    var tt is ToolTipListener;
+
     function setup {
         const glp = GLProfile.get("GL2");
         const caps = new GLCapabilities(glp);
@@ -3803,6 +3811,7 @@ public class JoglStage is Stage
         caps.setNumSamples(NUM_SAMPLES);
         canvas = new GLCanvas(caps);
         frame = Frame {};
+        tt = new ToolTipListener(canvas, frame);
 	TheDialogFactory.frame = frame;
         frame.setSize(width, height);
 	canvas.setAutoSwapBufferMode(false);

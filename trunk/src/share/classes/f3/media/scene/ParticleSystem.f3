@@ -1,7 +1,36 @@
 package f3.media.scene;
+import f3.math.*;
+/*
+class Particle {
+    var x is Number;
+    var y is Number;
+    var z is Number;
+    var vx is Number;
+    var vy is Number;
+    var vz is Number;
+    var r is Number;
+    var g is Number;
+    var b is Number;
+    var a is Number = 1.0;
+    var rotate is Number;
+    var size is Number;
+    var age is number;
+    var lifetime is Number;
+}
 
 public class PointEmitter {
+    public var rate is Number;
+    public var speed is Number;
+    public var direction is Vec3;
+    public var color is Color;
+    public var spread is Number;
 }
+*/
 
 public class ParticleSystem is AbstractNode {
+    public var radius is Number = 1.0;
+    public var emitToWorld is Boolean = yes;
+    public var inputForce is Vec3;
+    override var internalContent = Group {};
 }
+

@@ -315,7 +315,7 @@ class Loader {
             for (x in sceneMesh.getBones()) {
                 const jointIndex = indexof x;
                 for (wt in x.getBoneWeights()) {
-                    const v = ib.get(wt.getVertexId());
+                    const v = ib.get(wt.getVertexId()); 
                     println("joint: {jointIndex}, vertex: {v}, weight: {wt.getWeight()}");
                     var wl = map.get(v);
                     if (wl == null) {
@@ -337,11 +337,14 @@ class Loader {
                 const v is Integer = ent.getKey();
                 const wl = ent.getValue();
                 for (ii in [0..<wl.w.size() step 2]) {
-                    println("\"wl[{v}].w[{wl.w[ii]}]\" {wl.w[ii+1]};");                     
+                    println("\"wl[{v}].w[{wl.w[ii] as Integer}]\" {wl.w[ii+1]};");                     
                 }
                 insert v into weights;
                 insert wl.w.size() / 2 into weights;
-                insert wl.w into weights;
+                var totalWeight = 0.0;
+                for (w in wl.w) { totalWeight += w }
+                const n = 1.0 / totalWeight;
+                for (w in wl.w) { insert w * n into weights }
             }
             const sourceVertices = BufferUtils.clone(mesh.getVertexBuffer());
             const sourceNormals = BufferUtils.clone(mesh.getNormalBuffer());
