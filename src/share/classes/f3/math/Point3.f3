@@ -92,7 +92,7 @@ public class Point3 is Tuple3
 	}
     }
 
-    public function mul from (tuple is Tuple3) to Point3 
+    override public function mul from (tuple is Tuple3) to Point3 
     {
         Point3 {
             x: x * tuple.x;

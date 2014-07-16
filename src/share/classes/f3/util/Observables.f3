@@ -25,11 +25,33 @@ class PointerObserver of a is Subject of a {
     }
 }
 
+class ReadonlyPointerObserver of a is Subject of a {
+    public const ptr is ObservableConstRef of a;
+    var disp;
+    init {
+	disp = ptr.onReplace(this.onNext);
+	try {
+            onNext(ptr.get());
+        } catch (e is java.lang.Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
 public function observe of a 
     from (p is ObservableRef of a)
     to Subject of a
 {
     PointerObserver of a {
+	ptr: p
+    }
+}
+
+public function observe of a 
+    from (p is ObservableConstRef of a)
+    to Subject of a
+{
+    ReadonlyPointerObserver of a {
 	ptr: p
     }
 }

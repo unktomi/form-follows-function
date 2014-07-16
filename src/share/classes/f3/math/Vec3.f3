@@ -169,7 +169,7 @@ public class Vec3 is Tuple3
 	} 
     }
 
-    public function mul from (tuple is Tuple3) to Vec3 
+    override public function mul from (tuple is Tuple3) to Vec3 
     {
         Vec3 {
             x: x * tuple.x;

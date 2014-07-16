@@ -28,6 +28,8 @@ public interface Path2D {
     abstract public function apply from (output is Path2D) to ();
     abstract public function contains from (x is Number, y is Number) to Boolean;
     public function flatten from (flattness is Number) to Path2D;
+    public function getPoints to Point2[];
+    public function getPoints from (mat is Mat4) to Point2[];
 }
 
 public function rect
@@ -448,6 +450,8 @@ public class PathLine {
                 override public function apply from (output is Path2D) to () { }
                 override public function contains from (x is Number, y is Number) to Boolean { false }
                 override public function flatten from (flattness is Number) to Path2D { null }
+                override public function getPoints to Point2[] { [] }
+                override public function getPoints from (mat is Mat4) to Point2[] { [] }
             });
         lineMesh.getMesh();
     }

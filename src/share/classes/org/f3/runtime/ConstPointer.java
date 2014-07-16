@@ -27,6 +27,7 @@ import org.f3.runtime.sequence.*;
 import f3.animation.KeyValueTarget;
 import f3.animation.KeyValueTarget.Type;
 import org.f3.functions.Function1;
+import org.f3.functions.*;
 
 /**
  * Pointers
@@ -38,7 +39,7 @@ import org.f3.functions.Function1;
 // Pointers are Functors/Monads/Comonads (i.e they are "containers" of 1 object, namely the thing they point at)
 //
 
-public class ConstPointer<This extends F3Object,a> implements f3.lang.MemberRef<This>, f3.lang.ConstRef<a>
+public class ConstPointer<This extends F3Object,a> implements f3.lang.MemberRef<This>, f3.lang.ObservableConstRef<a> 
 {
     final Type type;
     final This obj;
@@ -245,4 +246,29 @@ public class ConstPointer<This extends F3Object,a> implements f3.lang.MemberRef<
             dep.switchDependence$(oldSrc, oldVarNum, newSrc, newVarNum, depNum);
         }
     }
+
+    public <b> Function0<Void> onReplace(final Function1<? extends b, ? super a> f) {
+        final F3Object thisObj = getF3Object();
+        final int thisVarNum = getVarNum();
+        final F3Object listener = new F3Base() {
+            @Override
+            public boolean update$(F3Object src, final int depNum,
+				   int startPos, int endPos, int newLength, final int phase) {
+		//System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
+                if ((phase & PHASE_TRANS$PHASE) == PHASE$TRIGGER) {
+		    //System.err.println("*update "+this+": "+src+": "+depNum+": "+phase);
+		    f.invoke(get());
+                }
+                return true;
+            }
+        };
+        addDependency(listener);
+	return new Function0<Void>() {
+	    public Void invoke() {
+		removeDependency(listener);
+		return null;
+	    }
+	};
+    }
+
 }
