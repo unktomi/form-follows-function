@@ -8,6 +8,7 @@ import f3.media.input.*;
 import java.awt.Frame;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
 import java.awt.BasicStroke;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -593,10 +594,89 @@ class JoglPath2D is Path2D
             path: newPath;
         }
     }
+    /*
+    public function add from (other is Path2D) to Path2D {
+        const newPath = new GeneralPath();
+        const area1 = new Area(getPath());
+        const area2 = new Area((other as JoglPath2D).getPath());
+        newPath.append(area1.add(area2).getPathIterator(null), false);
+        JoglPath2D {
+            path: newPath;
+        }
+    }
+
+    public function subtract from (other is Path2D) to Path2D {
+        const newPath = new GeneralPath();
+        const area1 = new Area(getPath());
+        const area2 = new Area((other as JoglPath2D).getPath());
+        newPath.append(area1.subtract(area2).getPathIterator(null), false);
+        JoglPath2D {
+            path: newPath;
+        }
+    }
+
+    public function intersection from (other is Path2D) to Path2D {
+        const newPath = new GeneralPath();
+        const area1 = new Area(getPath());
+        const area2 = new Area((other as JoglPath2D).getPath());
+        newPath.append(area1.intersect(area2).getPathIterator(null), false);
+        JoglPath2D {
+            path: newPath;
+        }
+    }
+    */
+    function getPath to GeneralPath { 
+        path;
+    }
+
+    function getPathIterator from (t is AffineTransform) to PathIterator {
+        getPath().getPathIterator(t);
+    }
+
+    function getPathIterator from (t is AffineTransform, flatness is Number) to PathIterator 
+    {
+        getPath().getPathIterator(t, flatness);
+    }
+
+    override public function getPoints from () to Point2[] 
+    {
+        getPoints(null);
+    }
+
+    override public function getPoints from (mat is Mat4) to Point2[] 
+    {
+        const t = toAffineTransform(mat);
+        var result is Point2[];
+        const pi = getPathIterator(t);
+        const coords = java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 6) as nativearray of Number;
+        var x is Number;
+        var y is Number;
+        while (not pi.isDone()) {
+            var seg = pi.currentSegment(coords);
+            if (seg == java.awt.geom.PathIterator.SEG_MOVETO) {
+                x = coords[0];
+                y = coords[1];
+                insert new Point2(x, y) into result;
+            } else if (seg == java.awt.geom.PathIterator.SEG_LINETO) {
+                insert new Point2(coords[0], coords[1]) into result;
+            } else if (seg == java.awt.geom.PathIterator.SEG_CLOSE) {
+                insert new Point2(x, y) into result;
+            } else if (seg == java.awt.geom.PathIterator.SEG_CUBICTO) {
+                insert new Point2(coords[0], coords[1]) into result;
+                insert new Point2(coords[2],coords[3]) into result;
+                insert new Point2(coords[4], coords[5]) into result;
+            } else if (seg == java.awt.geom.PathIterator.SEG_QUADTO) {
+                insert new Point2(coords[0], coords[1]) into result;
+                insert new Point2(coords[2],coords[3]) into result;
+            }
+            pi.next();
+        }
+        return result;
+    }
 
     override public function apply from (output is Path2D) to () 
     {
-        const pi = path.getPathIterator(null);
+        const pi = getPathIterator(null);
         const coords = java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 6) as nativearray of Number;
         while (not pi.isDone()) {
             var seg = pi.currentSegment(coords);
@@ -617,17 +697,17 @@ class JoglPath2D is Path2D
 
     override public function moveTo from (x0 is Number, y0 is Number) to () 
     {
-        path.moveTo(x0, y0);
+        getPath().moveTo(x0, y0);
     }
 
     override public function lineTo from (x1 is Number, y1 is Number) to () 
     {
-        path.lineTo(x1, y1);
+        getPath().lineTo(x1, y1);
     }
 
     override public function quadTo from (cx1 is Number, cy1 is Number, x2 is Number, y2 is Number) to () 
     {
-        path.quadTo(cx1, cy1, x2, y2);
+        getPath().quadTo(cx1, cy1, x2, y2);
     }
 
     override public function cubicTo 
@@ -636,12 +716,12 @@ class JoglPath2D is Path2D
 	      x2 is Number, y2 is Number) 
 	to () 
     {
-        path.curveTo(cx1, cy1, cx2, cy2, x2, y2);
+        getPath().curveTo(cx1, cy1, cx2, cy2, x2, y2);
     }
 
     override public function closePath 
     {
-        path.closePath();
+        getPath().closePath();
     }
 
     override public function reset 
@@ -651,7 +731,7 @@ class JoglPath2D is Path2D
 
     override public function getBounds to Bounds 
     {
-        const bnds = path.getBounds2D();
+        const bnds = getPath().getBounds2D();
         Bounds {
             center: point(bnds.getX() + bnds.getWidth()/2,
 			  bnds.getY() + bnds.getHeight()/2,
@@ -675,7 +755,7 @@ class JoglPath2D is Path2D
                                    Math.max(stroke.miterlimit, 1.0), 
                                    if dashArray.length == 0 then null else dashArray, 
                                    stroke.dashPhase);
-        const ss = bs.createStrokedShape(path);
+        const ss = bs.createStrokedShape(getPath());
         var gp is GeneralPath;
         if (ss instanceof GeneralPath){
             gp = ss as GeneralPath;
@@ -689,13 +769,13 @@ class JoglPath2D is Path2D
 
     override public function contains from (x is Number, y is Number) to Boolean 
     {
-        path.contains(x, y);
+        getPath().contains(x, y);
     }
 
     override public function createMesh to AbstractMesh 
     {
         try {
-            extrusion.resetShape(path);
+            extrusion.resetShape(getPath());
             extrusion.setTextureMatrix(toAffineTransform(textureMatrix));
             const md = extrusion.createMeshData();
             const mb = MeshBuffer {
@@ -710,6 +790,7 @@ class JoglPath2D is Path2D
             return null;
         }
     }
+
 }
 
 function toAffineTransform from (m is Mat4) to java.awt.geom.AffineTransform 

@@ -80,7 +80,7 @@ public abstract class Collider {
 
     public bound var initialTransformInverse is Mat4 = initialTransform.inverse();
 
-
+    public var gravityScale is Number = 1.0;
     public var centerOfMass is Point3 = Point3.<<0>>;
     public var active is Boolean = true;
     public readonly var linearFactor is Vec3 = Vec3.<<1>>;

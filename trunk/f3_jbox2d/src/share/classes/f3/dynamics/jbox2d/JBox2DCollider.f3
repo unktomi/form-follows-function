@@ -32,7 +32,6 @@ public class JBox2DCollider is Collider {
 
     function doFillTransform to () {
         const m = getTarget().parentToSceneTransform * getTarget().getScalePivot();
-        setCollisionWorldTransform(m);
         const t = m.getTranslation();
         const r = m.getRotation();
         body.setTransform(new Vec2(t.x, t.y), Math.toRadians(r.toAngles().z));
@@ -84,14 +83,17 @@ public class JBox2DCollider is Collider {
         bd.angle = Math.toRadians(collisionInitialOrientation.z);
         bd.linearVelocity = new Vec2(collisionInitialVelocity.x, collisionInitialVelocity.y);
         bd.angularVelocity = collisionInitialVelocity.z;
+        bd.gravityScale = gravityScale;
         println("create body: {bodyType}");
         println("bd.type=>{bd.type}");
+        const n = getTarget();
+        const t = n.toSceneTransform;
         body = world.world.createBody(bd);
         body.setSleepingAllowed(no);
         world.createShapes(target.get(), this);
         doFillTransform();
         if (bodyType == RigidBodyType.Dynamic) {
-            drainTransform();
+            setCollisionWorldTransform(t);
         }
         println("created body {body} mass=>{body.getMass()}");
     }
@@ -140,7 +142,6 @@ public class JBox2DCollider is Collider {
     {
         body.setAngularVelocity(Math.toRadians(z))
     }
-
 
     override function applyImpulse from (x is Number, y is Number, z is Number) to ()
     {

@@ -4971,6 +4971,16 @@ public class MaTransform is Group
 
     public readonly var rp is Point3 = bind point(rpx, rpy, rpz);
     
+    override public bound function getScalePivot to Mat4 {
+        translate(itrs.x+tx+rpx+rptx, 
+                  itrs.y+ty+rpy+rpty, 
+                  itrs.z+tz+rpz+rptz) * 
+            r *
+            translate(-rpx
+                      -rpy, 
+                      -rpz);
+    }
+
     override var transform = 
         bind if (constraint <> null)
         then constraint.transform 
@@ -5319,15 +5329,6 @@ public class Model {
         }
     }
 
-    override public bound function getScalePivot to Mat4 {
-        translate(itrs.x+tx+rpx+rptx, 
-                  itrs.y+ty+rpy+rpty, 
-                  itrs.z+tz+rpz+rptz) * 
-            r *
-            translate(-rpx
-                      -rpy, 
-                      -rpz);
-    }
 
     public bound function getSpatialRoot to Node 
     {

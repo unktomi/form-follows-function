@@ -85,7 +85,7 @@
 
     <!-- Here are popular targets for building in this dir -->
     <target name="help"       depends="-do-help" description="Show help on targets"/>
-    <target name="binaries"   depends="jar,f3.svg.awt,f3.xhtml.awt,f3.fmod,f3.cg.jogl.awt,f3.jbullet,f3.assimp,f3doc,launcher" description="Build compiler and compiler runtime binaries"/>
+    <target name="binaries"   depends="jar,f3.svg.awt,f3.xhtml.awt,f3.fmod,f3.cg.jogl.awt,f3.jbullet,f3.jbox2d,f3.assimp,f3doc,launcher" description="Build compiler and compiler runtime binaries"/>
 
 <!-- jjh: temporarily changed to dev-test until the tests on the exclude lists can be fixed
     <target name="test"       depends="binaries,-do-test" description="Build binaries and run tests"/>
@@ -900,6 +900,11 @@
         </ant>
       </target>
 
+    <target name="f3.jbox2d" depends="jar">
+        <ant dir="f3_jbox2d" antfile="build.xml" inheritAll="false" target="jar">
+        </ant>
+      </target>
+
     <target name="f3.fmod" depends="jar">
         <ant dir="f3_fmod" antfile="build.xml" inheritAll="false" target="jar">
         </ant>
@@ -1594,6 +1599,8 @@
         <ant dir="f3_assimp" antfile="build.xml" inheritAll="false" target="clean">
         </ant>
         <ant dir="f3_jbullet_jogl" antfile="build.xml" inheritAll="false" target="clean">
+        </ant>
+        <ant dir="f3_jbox2d" antfile="build.xml" inheritAll="false" target="clean">
         </ant>
     </target>
 
