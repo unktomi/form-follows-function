@@ -4126,6 +4126,7 @@ class MShader is MAbstractShader
                                                         specular,
                                                         shininess);
         m.shaderMap.put(this, shader);
+        shader.id = name;
         shader.uvMap = uvMap;
         return shader;
     }
@@ -5280,6 +5281,7 @@ public class ModelContent {
     public var clipLibraries is TimeGroup[];
     public var cameras is Camera[];
     public var resources is String[];
+    public var shaders is Shader[];
 }
 
 public class Model {
