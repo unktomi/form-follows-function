@@ -11,7 +11,7 @@ public interface Parameter of a is Ref of a
 }
 
 public abstract class Shader {
-    public const id is String;
+    public var id is String;
     public var uvMap is Integer[] = [];
     abstract public function apply from (mesh is AbstractMesh,
     					 sceneTransform is Mat4,

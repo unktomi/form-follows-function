@@ -1,6 +1,7 @@
 package f3.media.input;
 
 public interface Keys {
+
     public static final int Backspace = 8;
     public static final int Tab = 9;
     public static final int Enter = 12;

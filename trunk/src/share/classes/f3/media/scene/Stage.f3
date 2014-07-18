@@ -49,12 +49,20 @@ public interface Stage
 	to Pick[]
     {
 	var result is Pick[];
+
 	for (scene in content.reverse()) {
-	    const ns = scene.pick(screenx, screeny);
-	    insert ns into result;
-	    if (ns <> [] and ns.reverse()[0].node.blocksPointer) {
-		break;
-	    }
+            var blocked = false;
+            const ns = scene.pick(screenx, screeny);
+            insert ns into result;
+            if (ns <> []) {
+                for (x in ns) {
+                    if (x.node.blocksPointer) {
+                        blocked = true;
+                        break;
+                    }
+                }
+            }
+            if (blocked) break;
 	}
 	return result;
     }
@@ -81,13 +89,13 @@ public interface Stage
                 focusSet = true;
                 focusedScene = c;
             }
-	    for (x in c.pressed) {
-	    	if (x.node.blocksPointer) {
-		   blocked = true;	  
-		   break;
-		}
-	    }
-	    if (blocked) break;
+            for (x in c.pressed) {
+                if (x.node.blocksPointer) {
+                    blocked = true;	  
+                    break;
+                }
+            }
+            if (blocked) break;
         }
 	//	println("mouse down: {event}");
         if (not blocked) for (h in mouseHandlers) {
@@ -115,8 +123,15 @@ public interface Stage
         for (h in mouseHandlers) {
             h.onMouseMove(event);
         }
+        var blocked = false;
         for (c in content.reverse()) {
             c.injectMouseMove(event);
+            for (j in c.underMouse) {
+                if (j.node.blocksPointer) {
+                    blocked = true;
+                }
+            }
+            if (blocked) break;
         }
     }
 

@@ -20,10 +20,30 @@ public class NumberKey is Key of Number {
 
 function findFile from (dir is java.io.File, name is String) to java.io.File
 {
+    if (dir == null) return null;
+    println("searching for {name} in {dir}");
+    const isPsd = name.endsWith(".psd"); // hacks for unity fbx
+    const baseName = {
+        const dot = name.lastIndexOf(".");
+        if (dot > 0) then name.substring(0, dot) else name;
+    };
     for (f in dir.listFiles()) {
         if (not f.isDirectory()) {
             if (f.getName().equalsIgnoreCase(name)) {
                 return f;
+            }
+        }
+    }
+    if (isPsd) {
+        for (f in dir.listFiles()) {
+            if (not f.isDirectory()) {
+                const dot = f.getName().lastIndexOf(".");
+                const fbasename = if (dot > 0) then f.getName().substring(0, dot) else f.getName();
+                if (baseName.equalsIgnoreCase(fbasename)) {
+                    if (f.getName().endsWith(".tif")) {
+                        return f;
+                    }
+                }
             }
         }
     }
@@ -93,7 +113,8 @@ class Loader {
                 const actual = new java.io.File(dir, textureFilename);
                 const finalFilename = if (actual.exists()) then actual else {
                         const fname = actual.getName();
-                        findFile(dir, fname);
+                        const imgFile = findFile(dir, fname);
+                        if (imgFile == null) then findFile(dir.getParentFile(), fname) else imgFile;
                     };
                 println("texture file: {textureFilename} => {finalFilename.toURI().toString()}");
                 const tex = if (finalFilename == null) then null else imageLoader.loadImage(finalFilename.toURI().toString());
@@ -104,7 +125,7 @@ class Loader {
                 tex;
             } else null;
         var shininess = mat.getShininessStrength();
-        if (diffuseTex == null) {
+        const sh = if (diffuseTex == null) {
             effectLoader.loadDefaultShader(diffuseTex,
                                            toColor(d),
                                            toColor(a),
@@ -118,7 +139,9 @@ class Loader {
                                            Color.BLACK,//toColor(e),
                                            toColor(s),
                                            shininess);
-        }
+        };
+        sh.id = mat.getName();
+        sh;
     }
     const meshes = foreach (m in scene.getMeshes()) generateMesh(m);
     const root = scene.getSceneRoot(wrapper);
@@ -390,6 +413,7 @@ class ModelContent {
     public var resources is String[]; 
     public var spatialRoot is Node;
     public var temporalRoot is TimeNode;
+    public var shaders is Shader[];
 }
 
 public class F3Assimp {
