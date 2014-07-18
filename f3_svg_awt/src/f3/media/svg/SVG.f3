@@ -223,7 +223,10 @@ function convertStroke from (paint is f3.media.svg.impl.Paint) to Stroke
     }
 }
 
-class RootNode extends TransformNode {
+class RootNode is Group {
+    public readonly var width is Number;
+    public readonly var height is Number;
+    override var transform = bind translate(-width/2, -height/2);
     public function updateRoot to () 
     {
         updateParent();
@@ -383,12 +386,16 @@ function flipPaint from (paint is Shape2D.Paint) to Shape2D.Paint
 class Loader {
     public var fac is Path2DFactory;
     public var url is String;
-    public var rootNode = RootNode {id: url};
+    public var rootNode = RootNode {
+        //override var tx = bind -width/2;
+        //override var ty = bind -height/2;
+        id: url;
+    };
     public var contentNode is Group = Group {};
+    var width = 0.0;
+    var height = 0.0;
     function load {
         insert contentNode into rootNode.content;
-        var width = 0.0;
-        var height = 0.0;
         var bounds: Bounds;
 	var canvasStack = new java.util.Stack of Canvas;
         SVGParser.getSVGFromInputStream(Picture {
@@ -437,12 +444,20 @@ class Loader {
             }
             insert shape into contentNode.content;
         }
+        println("height={height} width={width}");
         println("root bounds={rootNode.bounds}");
         if (height <= 0 or width <= 0) {
-            height = bounds.height();
-            width = bounds.width();
+            if (height <= 0) {
+                height = rootNode.bounds.height();
+            } 
+            if (width <= 0) {
+                width = rootNode.bounds.width();
+            }
         }
+        rootNode.width = width;
+        rootNode.height = height;
         println("height={height} width={width}");
+        println("root bounds={rootNode.bounds}");
     }
 }
 
