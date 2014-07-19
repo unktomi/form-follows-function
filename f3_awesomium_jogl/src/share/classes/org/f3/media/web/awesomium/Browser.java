@@ -1128,15 +1128,12 @@ public class Browser implements AbstractWebBrowser {
 
     void checkPrepareDocument() {
         if (prepareDocument) {
+            prepareDocument = false;
             for (Map.Entry<String, Set<EventListener>> ent: eventListeners.entrySet()) {
                 if (ent.getValue().size() > 0) {
                     registerForEvent(ent.getKey());
                 }
             }
-            /*
-            Object result = executeJavascript("function f3_checkForVideo() { var events = ['abort','canplay','canplaythrough','durationchange','emptied','ended','error','loadeddata','loadedmetadata','loadstart','pause','play','playing','progress','ratechange','seeked','seeking','stalled','suspend','timeupdate','volumechange','waiting']; var vs = document.getElementsByTagName('video'); for (var i = 0; i < vs.length; i++) { for (var j = 0; j < events.length; j++) { vs[i].addEventListener(events[j], f3); } } vs.length; }; document.addEventListener('DOMContentLoaded', f3_checkForVideo); ");
-            */
-            prepareDocument = false;
         }
         if (parseDocument) {
             parseDocument();
@@ -1163,9 +1160,22 @@ public class Browser implements AbstractWebBrowser {
         keepAliveTimer.start();
     }
 
+    static long lastUpdateAll = 0;
+    static void checkUpdateAll() {
+        final long now = System.currentTimeMillis();
+        if (now - lastUpdateAll > 32) {
+            lastUpdateAll = now;
+            final long start = now;
+            updateAll();
+            final long end = System.currentTimeMillis();
+            //System.err.println("update all => "+(end-start)+"ms");
+        }
+    }
+
 
 
     public boolean update() {
+        checkUpdateAll();
         boolean result = false;
         long now = System.currentTimeMillis();
         if (now - updateTime < 16) {
@@ -1176,6 +1186,8 @@ public class Browser implements AbstractWebBrowser {
             boolean firstTime = prepareDocument;
             checkPrepareDocument();
             long pre = now;
+            long endRender = 0;
+            long endUpdate = 0;
             if (render(handle, buffer, potWidth * 4, 4, rect)) {
                 int x = rect[0];
                 int y = rect[1];
@@ -1186,13 +1198,16 @@ public class Browser implements AbstractWebBrowser {
                     w = potWidth;
                     h = potHeight;
                 } 
+                endRender = System.currentTimeMillis();
                 updateImage(buffer, x, y, w, h); 
+                endUpdate = System.currentTimeMillis();
                 result = true;
             }
             flushEventQueue();
             now = System.currentTimeMillis();
             long elapsed = (now - updateTime);
             //System.err.println(result + ": elapsed: "+elapsed+"ms, this: "+(now - pre)+"ms");
+            //System.err.println("render: "+ (endRender - pre)+"ms, updateImage: "+(endUpdate-endRender)+"ms");
             updateTime = now;
         }
         return lastResult = result;
@@ -1275,12 +1290,7 @@ public class Browser implements AbstractWebBrowser {
     public JSObject getWindow() {
 	if (window == null) {
 	    if (handle != 0) {
-		window = (JSObject)execute_js(handle, "window");
-                org.mozilla.javascript.ScriptableObject rhinoObj = (org.mozilla.javascript.ScriptableObject)
-                    AwesomiumRhino.convert(window);
-                for (Object x: rhinoObj.getIds()) {
-                    System.err.println(x);
-                }
+		window = (JSObject)executeJavascript("window");
 	    }
 	}
 	return window;
@@ -1288,7 +1298,11 @@ public class Browser implements AbstractWebBrowser {
 
     public Object executeJavascript(String script) {
         if (handle != 0) {
-            return execute_js(handle, script);
+            long start = System.currentTimeMillis();
+            Object result = execute_js(handle, script);
+            long end = System.currentTimeMillis();
+            System.err.println("execute: "+script+" => "+(end-start)+"ms");
+            return result;
         }
         return null;
     }
