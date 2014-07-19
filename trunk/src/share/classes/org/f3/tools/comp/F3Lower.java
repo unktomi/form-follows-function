@@ -871,6 +871,9 @@ public class F3Lower implements F3Visitor {
 	    F3Select pointerMake = (F3Select)m.at(that.pos).Select(pointerType, pointerMakeSym, false);
 	    pointerMake.sym = pointerMakeSym;
 	    Type ownerType = vsym.owner.type;
+            if (types.isMixin(vsym.owner)) {
+                ownerType = syms.f3_ObjectType;
+            }
 	    if (vsym.isStatic()) {
 		ownerType = m.ScriptSymbol(vsym.owner).type;
 	    }
