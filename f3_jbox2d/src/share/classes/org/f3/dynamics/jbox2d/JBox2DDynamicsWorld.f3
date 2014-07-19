@@ -25,7 +25,7 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
 
     override function debugDraw from (camera is Camera) to ()
     {
-        if (DEBUG_DRAW) {
+        if (DEBUG_DRAW and available) {
             world.setDebugDraw(debugDrawer);
             var mat = camera.projectionMatrix;
             var m = projectionMatrix;
@@ -47,26 +47,28 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
     function handleDeleted to ()
     {
         for (x in toBeDeleted) {
-            if (x.body <> null) {
-                const body = x.body;
-                x.body = null;
-                world.destroyBody(body);
-            }
+            x.removeBody(world);
             rigidBodies.remove(x);
         }
         toBeDeleted.clear();
     }
 
+    var last is function to ();
+
     override function update from (sceneTime is Duration, camera is Camera) to function to ()
     {
+        if (last <> null) {
+            return last;
+        }
         if (requestedReset) {
             requestedReset = false;
             for (x in rigidBodies) { x.reset() }
             handleDeleted();
             world = null;
+            return function to () {}
         }
         if (world == null) {
-            world = new World(new Vec2(0, -9.8));
+            world = new World(new Vec2(gravity.x, gravity.y));
             world.setAllowSleep(no);
         }
         handleDeleted();
@@ -99,8 +101,17 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
             }
         }
         const fut = if not DISABLE_THREADS then pool.submit(call) else { call.call(); null }
-        return function to () {
-            fut.get();
+        const result = function to () {
+            available = true;
+            if (fut <> null) {
+                if (fut.isDone()) {
+                    fut.get();
+                    last = null;
+                } else {
+                    available = false;
+                    return;
+                }
+            }
             const iter = rigidBodies.iterator();
             while (iter.hasNext()) {
                 const b = iter.next();
@@ -112,7 +123,13 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
                 }
             }
         }
+        if (fut <> null) {
+            last = result;
+        }
+        return result;
     }
+
+    var available = true;
 
     const rigidBodies = new java.util.HashSet of JBox2DCollider;
 
