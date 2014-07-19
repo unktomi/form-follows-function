@@ -465,7 +465,7 @@ public class F3Local {
          */
         @Override
         public int hashCode() {
-            return (name != null ? name : refClass.getName()).hashCode();
+            return type.hashCode();
         }
     
         @Override

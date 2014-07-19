@@ -185,11 +185,6 @@ public class ConstPointer<This extends F3Object,a> implements f3.lang.MemberRef<
 
     public a get() {
         a result = (a)(obj != null? obj.get$(varnum) : getDefaultValue());
-        /*
-        if (result instanceof SequenceRef || result instanceof SequenceProxy) {
-            result = (a)Sequences.copy((Sequence)result);
-        }
-        */
         if (result instanceof ArraySequence) {
             ((ArraySequence)result).incrementSharing();
         }

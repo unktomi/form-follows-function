@@ -264,7 +264,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     var _gravity is javax.vecmath.Vector3f;
 
-    public var gravity is Vec3 = GRAVITY on replace {
+    override var gravity on replace {
         setGravity(gravity.x, gravity.y, gravity.z);
     };
     
