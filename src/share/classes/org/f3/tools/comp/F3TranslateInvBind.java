@@ -343,7 +343,7 @@ public class F3TranslateInvBind extends F3AbstractTranslation implements F3Visit
                 receiver = id(selectorSym);
             } else {
                 JCVariableDecl selector =
-                        TmpVar(syms.f3_ObjectType,
+                    TmpVar(selectorSym.type,//syms.f3_ObjectType,
                         Getter(selectorSym));
                 addSetterPreface(selector);
                 receiver = id(selector);

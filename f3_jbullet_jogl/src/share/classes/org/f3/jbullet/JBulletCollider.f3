@@ -240,7 +240,7 @@ public class JBulletCollider is Collider {
 
     protected function createRigidBody from (colShape is CollisionShape) to () {
         if (_rigidBody <> null) { return }
-        if (_dynamicsWorld() == null or colShape == null) {
+        if (_dynamicsWorld() == null or colShape == null or _dynamicsWorld().paused) {
             return;
         }
         println("creating rigid body {this} collidable={target.get()} w={_dynamicsWorld()} mass={mass} bodyType={bodyType} {colShape}");
@@ -251,6 +251,7 @@ public class JBulletCollider is Collider {
         }
         motionState.worldMatrix = new nativearray of Number(16);
         //java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 16) as nativearray of Number; 
+        setCollisionWorldTransform(getTarget().toSceneTransform * translate(centerOfMass));
         fillWorldMatrix(motionState.worldMatrix);
         if (true) {
             var localInertia = new Vector3f(0, 0, 0);
@@ -326,6 +327,8 @@ public class JBulletCollider is Collider {
             setCollisions([]);
             collisionMap = null;
         }
+        setCollisionWorldTransform(getTarget().toSceneTransform * translate(centerOfMass));
+        fillWorldMatrix(motionState.worldMatrix);
     }
 
     protected function mergeCollisions from (map is Map of (JBulletCollider, Set of ContactPoint)) to () {
