@@ -3,6 +3,7 @@ package org.f3.dynamics.jbox2d;
 import f3.media.scene.*;
 import f3.math.*;
 import f3.math.LinearMath.*;
+import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
@@ -96,6 +97,14 @@ public class JBox2DCollider is Collider {
             setCollisionWorldTransform(t);
         }
         println("created body {body} mass=>{body.getMass()}");
+    }
+
+    protected function removeBody from (world is World) to () {
+        if (body <> null) {
+            world.destroyBody(body);
+            body = null;
+        }
+        setCollisionWorldTransform(getTarget().toSceneTransform);
     }
 
     override function applyConstraint from (collider is Collider, constraint is RigidBodyConstraint) 
