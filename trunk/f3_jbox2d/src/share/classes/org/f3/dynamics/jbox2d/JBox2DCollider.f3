@@ -16,6 +16,11 @@ public class JBox2DCollider is Collider {
     protected var body is Body;
     protected var world is JBox2DDynamicsWorld;
 
+    override function update to ()
+    {
+        updateLocal();
+    }
+
     override function getTarget to Node { target.get() }
     override function destroy to () {
         active = false;
@@ -55,7 +60,7 @@ public class JBox2DCollider is Collider {
         world.removeCollider(this)
     }
     
-    override function update to ()
+    public function updateLocal to ()
     {
         if (active) {
             if (body == null) {
