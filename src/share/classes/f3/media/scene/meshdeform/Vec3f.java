@@ -69,24 +69,26 @@ public class Vec3f {
     }
     */
 
-    public void set(Vec3f arg) {
-	set(arg.x, arg.y, arg.z);
+    public Vec3f set(Vec3f arg) {
+	return set(arg.x, arg.y, arg.z);
     }
 
-    public void set(float x, float y, float z) {
+    public Vec3f set(float x, float y, float z) {
 	this.x = x;
 	this.y = y;
 	this.z = z;
+        return this;
     }
 
     /** Sets the ith component, 0 <= i < 3 */
-    public void set(int i, float val) {
+    public Vec3f set(int i, float val) {
 	switch (i) {
 	case 0: x = val; break;
 	case 1: y = val; break;
 	case 2: z = val; break;
 	default: throw new IndexOutOfBoundsException();
 	}
+        return this;
     }
 
     /** Gets the ith component, 0 <= i < 3 */

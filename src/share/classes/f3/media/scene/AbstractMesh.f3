@@ -3,6 +3,9 @@ import java.nio.*;
 import f3.math.*;
 import f3.math.LinearMath.*;
 import java.lang.Math;
+import f3.media.scene.meshdeform.Intersector;
+
+const worker = new Intersector();
 
 public abstract class AbstractMesh 
 {
@@ -52,6 +55,8 @@ public abstract class AbstractMesh
 	    indexMode <> IndexMode.Triangles) {
             return [];
         }
+        /*
+        println("VERTEX COUNT: {count}");
 	var result is Tuple4[];
 	for (i in [0..<count step 3]) 
 	    {
@@ -71,6 +76,16 @@ public abstract class AbstractMesh
 		}
 	    }
 	return result;
+        */
+        const result = worker.intersect(ray.origin.x, ray.origin.y, ray.origin.z,
+                                        ray.direction.x, ray.direction.y, ray.direction.z,
+                                        getIndexBuffer(), 
+                                        getVertexBuffer());
+        var tups is Tuple4[];
+        for (v in result) {
+            insert new Tuple4(v.t, v.w1, v.w2, v.vert) into tups;
+        }
+        return tups;
     }
 
     abstract public function getIndexBuffer to IntBuffer;
