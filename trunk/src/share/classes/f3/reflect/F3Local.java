@@ -180,6 +180,11 @@ public class F3Local {
 	    return new F3FunctionType(argTypes, returnType);
 	}
 
+	public F3FunctionType makeFunctionType(F3Type[] typeArgs, F3Type[] argTypes, F3Type returnType) 
+	{
+	    return new F3FunctionType(typeArgs, argTypes, returnType);
+	}
+
         /** Create a reference to a given Object. */
         public ObjectValue mirrorOf(Object obj) {
             return new ObjectValue(obj, this);
@@ -689,6 +694,11 @@ public class F3Local {
         }
     
         F3FunctionMember asFunctionMember(Method m, Context context) {
+            java.lang.reflect.TypeVariable[] ts = PlatformUtils.getTypeParameters(m);
+            final F3Type[] typeInputs = new F3Type[ts.length];
+            for (int j = 0; j < ts.length;  j++) {
+                typeInputs[j] = context.makeTypeRef(ts[j]);
+            }
             java.lang.reflect.Type[] ptypes = PlatformUtils.getGenericParameterTypes(m);
             /*
             if (m.isVarArgs()) {
@@ -699,7 +709,7 @@ public class F3Local {
             for (int j = 0; j < ptypes.length;  j++)
                 prtypes[j] = context.makeTypeRef(ptypes[j]);
             java.lang.reflect.Type gret = PlatformUtils.getGenericReturnType(m);
-            F3FunctionType type = new F3FunctionType(prtypes, context.makeTypeRef(gret));
+            F3FunctionType type = new F3FunctionType(typeInputs, prtypes, context.makeTypeRef(gret));
             return new F3Local.MethodFunctionMember(m, this, type);
         }
     
