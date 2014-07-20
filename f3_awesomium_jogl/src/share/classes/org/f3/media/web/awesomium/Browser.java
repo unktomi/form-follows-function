@@ -710,7 +710,7 @@ public class Browser implements AbstractWebBrowser {
                     else if ("loadedmetadata".equals(eventType)) {
                         System.err.println("loadedmetadata: "+event);
                         String script;
-                        if (id == null) { 
+                        if ("".equals(id)) { 
                             script = "document.getElementsByTagName('video')";
                         } else {
                             script = "document.getElementById('"+id+"')";
@@ -955,7 +955,7 @@ public class Browser implements AbstractWebBrowser {
 
         public MediaImpl(String id, String tag) {
             this.id = id;
-            if (id == null) {
+            if ("".equals(id)) {
                 accessor = "document.getElementsByTagName('"+tag+"')[0]";
             } else {
                 accessor = "document.getElementById('"+id+"')";

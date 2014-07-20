@@ -34,27 +34,6 @@ function findFile from (dir is java.io.File, name is String) to java.io.File
             }
         }
     }
-    if (isPsd) {
-        for (f in dir.listFiles()) {
-            if (not f.isDirectory()) {
-                const dot = f.getName().lastIndexOf(".");
-                const fbasename = if (dot > 0) then f.getName().substring(0, dot) else f.getName();
-                if (baseName.equalsIgnoreCase(fbasename)) {
-                    if (f.getName().endsWith(".tif")) {
-                        return f;
-                    }
-                }
-            }
-        }
-    }
-    for (f in dir.listFiles()) {
-        if (f.isDirectory()) {
-            const r = findFile(f, name);
-            if (r <> null) {
-                return r;
-            }
-        }
-    }
     return null;
 }
 
