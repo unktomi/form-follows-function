@@ -58,7 +58,7 @@ public class Ray3 is Mat4.Transformable of Ray3 {
 	}
     }
 
-    // returns Tuple3(distance, weight1, weight2);
+    // returns new Tuple3(distance, weight1, weight2);
     public function intersect
 	from (pointA is Point3, 
 	      pointB is Point3, 
@@ -79,7 +79,6 @@ public class Ray3 is Mat4.Transformable of Ray3 {
             dirDotNorm = -dirDotNorm;
         } else {
             // ray and triangle are parallel
-            //println("parallel {dirDotNorm}");
             return [];
         }
         const dirDotDiffxEdge2 = sign * direction.dot(diff.cross(edge2));
@@ -94,20 +93,10 @@ public class Ray3 is Mat4.Transformable of Ray3 {
                         const w1 = dirDotDiffxEdge2 * inv;
                         const w2 = dirDotEdge1xDiff * inv;
                         // w0 = 1.0-(w1+w2);
-                        return [Tuple3 { x: t y: w1 z: w2 }];
-                    } else {
-                        //println("diffDotNorm={diffDotNorm}");
-                    }
-                } else {
-                    //println("dirDotDiffxEdge2={dirDotDiffxEdge2}");
-                    //println("dirDotEdge1xDiff={dirDotEdge1xDiff}");
-                    //println("dirDotNorm={dirDotNorm}");
-                }
-            } else {
-                //println("dirDotEdge1xDiff={dirDotEdge1xDiff}");
+                        return [Tuple3 { x: t, y: w1, z: w2, }];
+                    } 
+                } 
             }
-        } else {
-            //println("dirDotDiffxEdge2={dirDotDiffxEdge2}");
         }
         return [];
     }   

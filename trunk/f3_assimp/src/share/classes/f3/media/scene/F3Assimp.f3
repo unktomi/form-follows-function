@@ -159,7 +159,11 @@ class Loader {
                 }
                 tmp;
             };
-            const target is TransformNode = spatialRoot.lookup(ch.getNodeName()) as TransformNode;
+            var target is TransformNode = sceneRoot.lookup(ch.getNodeName()) as TransformNode;
+            println("{x.getName()} animation target {ch.getNodeName()} => {target}");
+            if (target == null) {
+                target = spatialRoot.lookup(ch.getNodeName()) as TransformNode;
+            }
             println("{x.getName()} animation target {ch.getNodeName()} => {target}");
             [if (ch.getNumPosKeys() > 0) {
                 [Channel of Number {
@@ -318,7 +322,7 @@ class Loader {
                 const jointIndex = indexof x;
                 for (wt in x.getBoneWeights()) {
                     const v = ib.get(wt.getVertexId()); 
-                    println("joint: {jointIndex}, vertex: {v}, weight: {wt.getWeight()}");
+                    //println("joint: {jointIndex}, vertex: {v}, weight: {wt.getWeight()}");
                     var wl = map.get(v);
                     if (wl == null) {
                         wl = WeightList {};
@@ -332,15 +336,15 @@ class Loader {
                 const joint = spatialRoot.lookup(x.getName());
                 const m1 = toMat4(m);
                 insert m1 into pm;
-                println("Joint {jointIndex} => {joint.id} {joint} pm=\n{m1}");
+                //println("Joint {jointIndex} => {joint.id} {joint} pm=\n{m1}");
                 insert joint into joints;
             }
             for (ent in map.entrySet()) {
                 const v is Integer = ent.getKey();
                 const wl = ent.getValue();
-                for (ii in [0..<wl.w.size() step 2]) {
-                    println("\"wl[{v}].w[{wl.w[ii] as Integer}]\" {wl.w[ii+1]};");                     
-                }
+                //for (ii in [0..<wl.w.size() step 2]) {
+                //    println("\"wl[{v}].w[{wl.w[ii] as Integer}]\" {wl.w[ii+1]};");                     
+                //}
                 insert v into weights;
                 insert wl.w.size() / 2 into weights;
                 var totalWeight = 0.0;
@@ -396,7 +400,7 @@ class ModelContent {
 }
 
 public class F3Assimp {
-
+    public var sceneRoot is Node;
     public var url is String;
     public readonly var spatialRoot is Node = bind getSpatialRoot();
     public readonly var temporalRoot is TimeNode = bind getTemporalRoot();
