@@ -12,13 +12,18 @@ public static const Z_AXIS = Vec3 {x: 0.0, y: 0.0, z: 1.0};
 public const ZERO = <<0>>;
 public const ONE = <<1>>;
 
-public class Buffer 
+public class Buffer is f3.lang.AbstractRef of Vec3
 {
-    var x is Number;
-    var y is Number;
-    var z is Number;
+    public var x is Number;
+    public var y is Number;
+    public var z is Number;
 
-    public function toVec3 to Vec3 
+    public override function set from (v is Vec3) to ()
+    {
+        x = v.x; y = v.y; z = v.z;
+    }
+
+    public override function get to Vec3 
     {
 	Vec3 {
 	    x: x;
@@ -27,12 +32,37 @@ public class Buffer
 	}
     }
 
-    public function dot from (b is Buffer) to Number {
+    /*
+    public function set from (b is Buffer) to Buffer 
+    {
+        this.x = b.x;
+        this.y = b.y;
+        this.z = b.z;
+        return this;
+    }
+
+    public function set from (x is Number, y is Number, z is Number) to Buffer 
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        return this;
+    }
+    */
+    public function dot from (b is Buffer) to Number 
+    {
 	x * b.x + y * b.y + z * b.z;
     }
 
-    public function add from (b is Buffer) to Buffer {
+    public function add from (b is Buffer) to Buffer 
+    {
 	x += b.x;  y += b.y;   z +=  b.z;
+	return this
+    }
+
+    public function sub from (b is Buffer) to Buffer 
+    {
+	x -= b.x;  y -= b.y;   z -=  b.z;
 	return this
     }
 
@@ -47,13 +77,20 @@ public class Buffer
 	return this
     }
 
+    public function sub from (b is Vec3) to Buffer 
+    {
+	x -= b.x;  y -= b.y;   z -=  b.z;
+	return this
+    }
+
     public function mul from (n is Number) to Buffer 
     {
 	x *= n;  y *= n;   z * n;
 	return this
     }
 
-    public function cross from (v is Buffer) to Buffer {
+    public function cross from (v is Buffer) to Buffer 
+    {
 	const x = this.x;
 	const y = this.y;
 	const z = this.z;
@@ -61,6 +98,12 @@ public class Buffer
 	this.y = z*v.x - x*v.z;
 	this.z = x*v.y - y*v.x;
 	return this;
+    }
+
+    public function normalize to Buffer
+    {
+	const lenSq = lengthSquared();
+	if (lenSq <> 1 and lenSq <> 0) then this * (1/Math.sqrt(lenSq) as Number) else this
     }
 
     public function cross from (v is Vec3) to Buffer {
@@ -73,8 +116,12 @@ public class Buffer
 	return this;
     }
 
+    public function lengthSquared to Number {
+	x*x+y*y+z*z;
+    }
+
     public function length to Number {
-	Math.sqrt(x*x+y*y+z*z);
+	Math.sqrt(lengthSquared())
     }
 }
 
