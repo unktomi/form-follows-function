@@ -34,6 +34,11 @@ import org.f3.runtime.annotation.Package;
 
 
 class PlatformUtils {
+
+    static TypeVariable[] getTypeParameters(GenericDeclaration m) {
+        return m.getTypeParameters();
+    }
+
     static Type[] getGenericParameterTypes(Method m) {
         return m.getGenericParameterTypes();
     }

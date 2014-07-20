@@ -30,18 +30,25 @@ package f3.reflect;
  */
 
 public class F3FunctionType extends F3Type {
+    private static final F3Type[] none  = new F3Type[0];
     protected int minArgs;
     protected F3Type[] argTypes;
     protected boolean varArgs;
     protected F3Type returnType;
+    protected F3Type[] typeArgs;
 
     F3FunctionType() {
     }
 
-    F3FunctionType(F3Type[] argTypes, F3Type returnType) {
+    F3FunctionType(F3Type[] typeArgs, F3Type[] argTypes, F3Type returnType) {
         this.argTypes = argTypes;
         minArgs = argTypes.length;
         this.returnType = returnType;
+        this.typeArgs = typeArgs;
+    }
+
+    F3FunctionType(F3Type[] argTypes, F3Type returnType) {
+        this(none, argTypes, returnType);
     }
 
     public boolean isAssignableFrom(F3Type cls) {
@@ -78,6 +85,10 @@ public class F3FunctionType extends F3Type {
                 return false;
         }
         return true;
+    }
+
+    public F3Type[] getTypeParameters() {
+        return typeArgs;
     }
 
 

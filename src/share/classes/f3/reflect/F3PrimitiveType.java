@@ -71,9 +71,9 @@ public class F3PrimitiveType extends F3Type implements F3Local.JVMLocalType {
             } else {
                 result = false;
             }
-            System.err.println("target="+clas);
-            System.err.println("src="+c);
-            System.err.println("result="+result);
+            //System.err.println("target="+clas);
+            //System.err.println("src="+c);
+            //System.err.println("result="+result);
             return result;
         }
         return false;

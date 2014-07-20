@@ -85,6 +85,7 @@ public abstract class AbstractMesh
         for (v in result) {
             insert new Tuple4(v.t, v.w1, v.w2, v.vert) into tups;
         }
+        result.clear();
         return tups;
     }
 
