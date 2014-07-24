@@ -71,6 +71,11 @@ function checkMesh from (mn is MeshNode) to Boolean
             Number.isNaN(b.extent.z)) 
             {
                 println("invalid bounds: {mn}: {b}");
+                var p = mn.parent;      
+                while (p <> null) {
+                      println(p);
+                      p = p.parent;
+                }
                 return false;
             }
             
@@ -1266,6 +1271,9 @@ class ColorPaintShader is CGFXShader
 {
     public var colorPaint is ColorPaint;
     public readonly var color = bind colorPaint.color;
+    override function toString to String {
+        "{super.toString()} color: {color}";
+    }
     override var url =  "{__DIR__}flat.cgfx";
     override var technique =  bind if (color.opacity == 1) then "Opaque" else "Transparent";
     
@@ -1672,10 +1680,16 @@ class OffscreenSurface is JoglTexture
             // unbind...
             gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0);
 	    if (_depthBits > 0) {
-		gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
-					     gl.GL_DEPTH_ATTACHMENT,
-					     gl.GL_RENDERBUFFER,
-					     _depthRBID);
+                if (_stencilBits > 0) {
+                    gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
+                                                 gl.GL_DEPTH_STENCIL_ATTACHMENT,
+                                                 gl.GL_RENDERBUFFER,
+                                                 _depthRBID);
+                } else 
+                    gl.glFramebufferRenderbuffer(gl.GL_FRAMEBUFFER,
+                                                 gl.GL_DEPTH_ATTACHMENT,
+                                                 gl.GL_RENDERBUFFER,
+                                                 _depthRBID);
 	    }
             checkFBOComplete(_fboID);  
             // release
@@ -1711,7 +1725,7 @@ class OffscreenSurface is JoglTexture
 
                 gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0,
                         GL.GL_RENDERBUFFER, _mscolorRBID);
-                gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT,
+                gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, if (_stencilBits == 0) then GL.GL_DEPTH_ATTACHMENT else gl.GL_DEPTH_STENCIL_ATTACHMENT,
                         GL.GL_RENDERBUFFER, _msdepthRBID);
                 // check for errors
                 checkFBOComplete(_msfboID);
@@ -2570,7 +2584,23 @@ public class SceneRenderer {
               camera is Camera)
 	to ()
     {
-	if (not scene.visible) return;
+	if (not scene.visible) {
+            if (scene.stage.content[0] == scene) {
+                if (scene.background.opacity <> 0) {
+                    const bg = scene.background;
+                    //println("clearing {bg}");
+                    gl.glClearColor(bg.red, bg.green, bg.blue, bg.opacity);
+                    gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
+                } else if (firstTime) {
+                    gl.glClearColor(.5, .5, .5, 1);
+                    gl.glClear(Bits.add(GL.GL_COLOR_BUFFER_BIT, GL.GL_DEPTH_BUFFER_BIT));
+                    firstTime = false;
+                } else {
+                    gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
+                }
+            }
+            return;
+        }
 	camera.update();
 	if (ENABLE_2D_RENDERER and camera is Camera2D) {
 	    var canUse2d = true;
@@ -2675,6 +2705,23 @@ public class SceneRenderer {
         disableScissorTest();
         currentScissor = null;
 	gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
+        outlinePass = false;
+        var toOutline is MeshNode[];
+        for (n in toDraw) {
+            const mn = n as MeshNode;
+            if (mn.outlineShader <> null) {
+                insert mn into toOutline;
+            }
+        }
+        if (toOutline.size() > 0) {
+            gl.glEnable(gl.GL_STENCIL_TEST);
+            gl.glClearStencil(0);
+            gl.glClear(gl.GL_STENCIL_BUFFER_BIT);
+            outlinePrepass = true;
+        } else {
+            outlinePrepass = false;
+            gl.glDisable(gl.GL_STENCIL_TEST);
+        }
         for (n in toDraw) {
 	    prev = n;
             const mn = n as MeshNode;
@@ -2684,9 +2731,24 @@ public class SceneRenderer {
                 e.printStackTrace();
             }
         }
+        outlinePrepass = false;
+        prev = null;
+        if (toOutline.size() > 0) {
+            outlinePass = true;
+            gl.glLineWidth(6);
+            for (n in toOutline) {
+                const mn = n as MeshNode;
+                try {
+                    draw1(gl, sceneParent, camera, prev, cameraLight, lights, sceneParentInverse, mn);
+                } catch (e is java.lang.Exception) {
+                    e.printStackTrace();
+                }
+            }
+            gl.glLineWidth(1);
+        }
     }
-    
-
+    var outlinePrepass is Boolean;
+    var outlinePass is Boolean;
     var scissoring is Boolean;
 
     function enableScissorTest to ()
@@ -2706,7 +2768,6 @@ public class SceneRenderer {
     }
         
 
-
     function draw1 from (gl is GL2,
                          sceneParent is Node,
                          camera is Camera, 
@@ -2715,6 +2776,27 @@ public class SceneRenderer {
                          lights is Point3[],
                          sceneParentInverse is Mat4, 
                          mn is MeshNode) to () 
+    {
+        if (outlinePass) {
+            if (mn.outlineShader <> null) {
+                //draw1(gl, sceneParent, camera, prev, cameraLight, lights, sceneParentInverse, mn, mn.mesh.polygonMode, mn.shader);
+                draw1(gl, sceneParent, camera, prev, cameraLight, lights, sceneParentInverse, mn, PolygonMode.Line, mn.outlineShader);
+            }
+        } else {
+            draw1(gl, sceneParent, camera, prev, cameraLight, lights, sceneParentInverse, mn, mn.mesh.polygonMode, mn.shader);
+        }
+    }
+
+    function draw1 from (gl is GL2,
+                         sceneParent is Node,
+                         camera is Camera, 
+                         prev is Node, 
+                         cameraLight is Point3,
+                         lights is Point3[],
+                         sceneParentInverse is Mat4, 
+                         mn is MeshNode,
+                         polygonMode0 is PolygonMode,
+                         shader0 is Shader) to () 
     {
 	var disableDepth = false;
         var n = mn;
@@ -2815,7 +2897,7 @@ public class SceneRenderer {
                         */
                     }
                 }
-		if (mesh.polygonMode == PolygonMode.Line) {
+		if (polygonMode == PolygonMode.Line) {
 		    if (toSceneTransform.getRotation() == Quat.<<1>>) {
 			const t = mn.toSceneTransform.getTranslation();
 			toSceneTransform = translate(Math.round(t.x),
@@ -2839,8 +2921,8 @@ public class SceneRenderer {
 	    if (badtex) {
 		return;
 	    }
-            var shader = mn.shader;
-	    //println("shader={shader}");
+            var shader = shader0;
+	    if (outlinePass) println("shader={shader}");
             const texParams = 
 		foreach (p in shader.getParameters() where p instanceof CGFXShader.SamplerParameter) p as CGFXShader.SamplerParameter;
             if (DEBUG_USE_DEFAULT_SHADER or shader == null) {
@@ -2943,14 +3025,30 @@ public class SceneRenderer {
 		    println("bad transform {mn} {mn.id} or {camera} {camera.id}");
                     return;
 		}
-		///println("applying shader {shader} to {mn.id}");
+                if (outlinePass) {
+                    println("outline: applying shader {shader} to {mn.id}");
+                }
+                if (outlinePrepass and mn.outlineShader <> null) {
+                    println("outlinePrepass: applying shader {shader} to {mn.id}");
+                }
 		shader.apply(mesh,
 			     toSceneTransform,
                              camera.viewMatrix,
                              camera.projectionMatrix);
 		if (disableDepth) {
 		    gl.glDisable(GL.GL_DEPTH_TEST);
-		}
+		} 
+                if (outlinePrepass) {
+                    gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL);
+                    gl.glEnable(gl.GL_STENCIL_TEST);
+                    gl.glStencilFunc(gl.GL_ALWAYS, 1, -1);
+                    gl.glStencilOp(gl.GL_KEEP, gl.GL_KEEP, gl.GL_REPLACE);
+                } else if (outlinePass) {
+                    gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINES);
+                    gl.glEnable(gl.GL_STENCIL_TEST);
+                    gl.glStencilFunc(gl.GL_NOTEQUAL, 1, -1);
+                    gl.glStencilOp(gl.GL_KEEP, gl.GL_KEEP, gl.GL_REPLACE);
+                }
             } catch (e is java.lang.Throwable) {
 		println("Error drawing: {mn}");
                 if (true) return;
@@ -2960,9 +3058,9 @@ public class SceneRenderer {
                                              camera.viewMatrix,
                                              camera.projectionMatrix);
             }
-            if (mesh.polygonMode <> polygonMode) {
-                polygonMode = mesh.polygonMode;
-                gl.glPolygonMode(GL.GL_FRONT_AND_BACK, if (mesh.polygonMode == PolygonMode.Line) GL2.GL_LINE else if (mesh.polygonMode == PolygonMode.Point) GL2.GL_POINT else GL2.GL_FILL);
+            if (polygonMode <> polygonMode0) {
+                polygonMode = polygonMode0;
+                gl.glPolygonMode(GL.GL_FRONT_AND_BACK, if (polygonMode0 == PolygonMode.Line) GL2.GL_LINE else if (polygonMode0 == PolygonMode.Point) GL2.GL_POINT else GL2.GL_FILL);
             }
             const mode = if (mesh.indexMode == IndexMode.Lines) GL.GL_LINES else if (mesh.indexMode == IndexMode.Points) GL.GL_POINTS else GL.GL_TRIANGLES;
             if (vbo <> null) {
@@ -3887,7 +3985,8 @@ public class JoglStage is Stage
         const glp = GLProfile.get("GL2");
         const caps = new GLCapabilities(glp);
         println("samples={SAMPLE_BUFFERS} numSamples={NUM_SAMPLES} depthBits={DEPTH_BITS}");
-        caps.setDepthBits(DEPTH_BITS);
+        caps.setDepthBits(depthBits);
+        caps.setStencilBits(stencilBits);
         caps.setSampleBuffers(SAMPLE_BUFFERS);
         caps.setNumSamples(NUM_SAMPLES);
         canvas = new GLCanvas(caps);

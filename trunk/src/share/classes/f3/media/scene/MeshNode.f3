@@ -8,6 +8,7 @@ public class MeshNode is Node
     override var blocksPointer = true;
     override var contentBounds = bind mesh.bounds;
     public var deformers is MeshDeformer[];
+    public var outlineShader is Shader;
 }
 
 public class Instance is MeshNode {

@@ -393,6 +393,9 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             toBeDeleted.clear();
         }
         lastTimeStep = millis;
+        if (not enabled) {
+            return null;
+        }
         if (not firstTime and paused) {
             return  null;
         }

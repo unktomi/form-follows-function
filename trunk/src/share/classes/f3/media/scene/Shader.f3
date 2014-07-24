@@ -1,13 +1,15 @@
 package f3.media.scene;
 import f3.math.*;
+import f3.lang.ObservableRef;
 import f3.lang.Ref;
 
-public interface Parameter of a is Ref of a
+public interface Parameter of a is ObservableRef of a
 {
     const name is String;
     //public override abstract function get to a;
     //public override abstract function set from (x is a) to ();
     public abstract function bindTo from (ref is Ref of a) to ();
+    override function onReplace of b from (f is function from a to b) to function to () { null }
 }
 
 public abstract class Shader {

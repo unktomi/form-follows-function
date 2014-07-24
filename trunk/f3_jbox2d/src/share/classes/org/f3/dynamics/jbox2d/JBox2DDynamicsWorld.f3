@@ -57,6 +57,9 @@ public class JBox2DDynamicsWorld is DynamicsWorld {
 
     override function update from (sceneTime is Duration, camera is Camera) to function to ()
     {
+        if (not enabled) {
+            return function to () {}
+        }
         if (last <> null) {
             return last;
         }

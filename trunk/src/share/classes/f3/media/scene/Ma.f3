@@ -286,6 +286,7 @@ class MaModel
     public var endFrame is Number;
     var channels is TimeNode[];
     var clipLibs is TimeGroup[];
+    var shaders is Shader[];
 
     function checkDeformers() {
         /*
@@ -306,6 +307,15 @@ class MaModel
     function getCameras to Camera[] 
     {
         foreach (n in spatialMap.values() where n is Camera) n as Camera;
+    }
+
+    function getShaders to Shader[] 
+    {
+        f3.util.Sequences.sort(foreach (x in shaderMap.values() where x.id <> "") x, java.util.Comparator of Shader {
+                override function compare from (x is Shader, y is Shader) to Integer {
+                    x.id.compareTo(y.id)
+                }
+            });
     }
 
     function toNode from (n is MSpatial) to Node 
@@ -3814,6 +3824,7 @@ class MCGFXShader is MAbstractShader
         const shaderURL = new java.net.URL(baseURL, s).toString();
         m.recordResource(shaderURL);
         var shader = m.effectLoader.loadEffect(shaderURL, t);
+        shader.id = name;
         m.shaderMap.put(this, shader);
         for (conns in connectionsToThis.values()) {
             for (conn in conns) {
@@ -5319,6 +5330,11 @@ public class Model {
         modelContent.cameras;
     }
 
+    public bound function getShaders to Shader[]
+    {
+        modelContent.shaders;
+    }
+
     function makeRootMonitor from (modelContent is ModelContent) to Node {
         Group {
             id: bind "{url} {new java.util.Date(fileTimestamp)}";
@@ -5388,6 +5404,7 @@ public class Model {
             temporal: m.temporalRoot;
             cameras: m.getCameras();
             clipLibraries: m.clipLibs;
+            shaders: m.getShaders();
         }
         subject.onNext(mc);
         return mc;

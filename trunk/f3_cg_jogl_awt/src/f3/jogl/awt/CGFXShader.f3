@@ -12,7 +12,21 @@ public static var DEBUG = false;
 
 public abstract class Parameter of a is AbstractRef of a, f3.media.scene.Shader.Parameter of a
 {
-    public readonly var value is a;
+
+    var listeners is java.util.Map of (Object, ());
+
+    function getListeners to java.util.Map {
+        if (listeners == null) listeners = new java.util.WeakHashMap of (Object, ());
+        return listeners;
+    }
+
+    public readonly var value is a on replace {
+        if (value <> null) for (listener in getListeners().keySet()) {
+            const f = listener as function from a to Object;
+            f(value)
+        }
+    }
+
     var ref is Ref of a;
     public const semantic is String;
     public function apply
@@ -36,6 +50,13 @@ public abstract class Parameter of a is AbstractRef of a, f3.media.scene.Shader.
     public override function bindTo from (ref is Ref of a) to () 
     {
 	this.ref = ref;
+    }
+    override function onReplace of b from (f is function from a to b) to function to () { 
+        const listeners = getListeners();
+        listeners.put(f, ());
+        return function to () {
+            listeners.remove(f)
+        }
     }
 }
 

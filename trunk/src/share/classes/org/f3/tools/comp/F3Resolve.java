@@ -889,6 +889,8 @@ public class F3Resolve {
         Symbol origin = null;
         Scope.Entry e = lookup(env.toplevel.starImportScope, name, isThe);
         for (; e != null && e.scope != null; e = next(e, isThe)) {
+            if ((e.sym.flags_field & SYNTHETIC) != 0)
+                continue;
             sym = e.sym;
             if ((sym.kind & (MTH|VAR)) == 0)
                 continue;
