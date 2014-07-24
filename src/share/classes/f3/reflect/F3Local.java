@@ -159,6 +159,9 @@ public class F3Local {
                 public boolean isProtected() {
                     return base.isProtected();
                 }
+                public int hashCode() {
+                    return base.hashCode();
+                }
                 public boolean equals(Object obj) {
                     if (!base.equals(obj)) {
                         return false;
@@ -387,6 +390,9 @@ public class F3Local {
 	Type type;
         Class refClass;
         Class refInterface;
+        public String toString() {
+            return type.toString();
+        }
 	protected static int VOFF_INITIALIZED = 1 << 16; // high to avoid collisions with masks added in parent class.
 
         public ClassType(Context context, int modifiers,
@@ -470,7 +476,7 @@ public class F3Local {
          */
         @Override
         public int hashCode() {
-            return type.hashCode();
+            return refClass.hashCode();
         }
     
         @Override

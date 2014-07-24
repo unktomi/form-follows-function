@@ -5,6 +5,11 @@ import f3.math.Quat.*;
 public const EPSILON = 0.000001;
 public const ZERO_TOLERANCE = .00001;
 
+public function matrix from (q is Quat) to Mat4
+{
+    q.toMat4();
+}
+
 public function quat
     from (rx is Number,
 	  ry is Number,

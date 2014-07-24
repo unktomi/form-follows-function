@@ -44,7 +44,7 @@ public class Intersector {
         rayDirection.normalize();
         final int count = ib.limit();
         for (int i = 0; i < count; i += 3) {
-            int v = ib.get(i) * 3;
+            int v = ib.get(i+0) * 3;
             pointA.set(verts.get(v+0), verts.get(v+1), verts.get(v+2));
             v = ib.get(i+1) * 3;
             pointB.set(verts.get(v+0), verts.get(v+1), verts.get(v+2));
