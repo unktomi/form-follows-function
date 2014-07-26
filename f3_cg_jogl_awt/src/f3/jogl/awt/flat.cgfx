@@ -63,8 +63,7 @@ float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
 
 technique Opaque {
     pass P {
-	DepthTestEnable = true;
-        DepthFunc = LessEqual;
+        DepthFunc = Less;
         DepthMask = true;
         CullFaceEnable  = false; 
         BlendEnable = false;
