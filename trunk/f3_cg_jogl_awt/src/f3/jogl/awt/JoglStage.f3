@@ -1266,6 +1266,11 @@ class JoglLinearGradientShader is JoglGradientShader
     }
 }
 
+class GlowShader is CGFXShader {
+    override var url = "{__DIR__}post_glow.cgfx";
+    override var technique =  "Main";
+}
+
 
 class ColorPaintShader is CGFXShader 
 {
@@ -1998,6 +2003,7 @@ class JoglImageLoader is ImageLoader {
 
 public class DrawInfo {
     public var shader is Shader;
+    public var outlineShader is Shader;
     public var worldBounds is Bounds;
     public var scissorBounds is Bounds;
     public const shaderParams = new java.util.HashMap of (String, Object);
@@ -2389,6 +2395,10 @@ public class SceneRenderer {
 				println("created draw info {info} for {mn}");
 			    }
 			} else {
+                            if (not dirty) {
+                                if (mn.outlineShader <> info.outlineShader) dirty = true;
+                            }
+                            info.outlineShader = mn.outlineShader;
 			    if (not dirty) {
 				if (info.mesh <> mn.mesh or
 				    info.worldBounds <> mn.boundsInScene) {
@@ -2704,7 +2714,6 @@ public class SceneRenderer {
 	var prev is Node = null;
         disableScissorTest();
         currentScissor = null;
-	gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
         outlinePass = false;
         var toOutline is MeshNode[];
         for (n in toDraw) {
@@ -2718,9 +2727,13 @@ public class SceneRenderer {
             gl.glClearStencil(0);
             gl.glClear(gl.GL_STENCIL_BUFFER_BIT);
             outlinePrepass = true;
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL);
+            gl.glStencilFunc(gl.GL_ALWAYS, 1, -1);
+            gl.glStencilOp(gl.GL_KEEP, gl.GL_KEEP, gl.GL_REPLACE);
         } else {
             outlinePrepass = false;
             gl.glDisable(gl.GL_STENCIL_TEST);
+            gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
         }
         for (n in toDraw) {
 	    prev = n;
@@ -2735,7 +2748,9 @@ public class SceneRenderer {
         prev = null;
         if (toOutline.size() > 0) {
             outlinePass = true;
-            gl.glLineWidth(6);
+            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINES);
+            gl.glStencilFunc(gl.GL_NOTEQUAL, 1, -1);
+            gl.glLineWidth(4);
             for (n in toOutline) {
                 const mn = n as MeshNode;
                 try {
@@ -2767,6 +2782,7 @@ public class SceneRenderer {
         }
     }
         
+    var glowShader is Shader;
 
     function draw1 from (gl is GL2,
                          sceneParent is Node,
@@ -2779,7 +2795,7 @@ public class SceneRenderer {
     {
         if (outlinePass) {
             if (mn.outlineShader <> null) {
-                //draw1(gl, sceneParent, camera, prev, cameraLight, lights, sceneParentInverse, mn, mn.mesh.polygonMode, mn.shader);
+                (mn.outlineShader as CGFXShader).updateParameters();
                 draw1(gl, sceneParent, camera, prev, cameraLight, lights, sceneParentInverse, mn, PolygonMode.Line, mn.outlineShader);
             }
         } else {
@@ -2922,7 +2938,7 @@ public class SceneRenderer {
 		return;
 	    }
             var shader = shader0;
-	    if (outlinePass) println("shader={shader}");
+	    
             const texParams = 
 		foreach (p in shader.getParameters() where p instanceof CGFXShader.SamplerParameter) p as CGFXShader.SamplerParameter;
             if (DEBUG_USE_DEFAULT_SHADER or shader == null) {
@@ -3025,29 +3041,12 @@ public class SceneRenderer {
 		    println("bad transform {mn} {mn.id} or {camera} {camera.id}");
                     return;
 		}
-                if (outlinePass) {
-                    println("outline: applying shader {shader} to {mn.id}");
-                }
-                if (outlinePrepass and mn.outlineShader <> null) {
-                    println("outlinePrepass: applying shader {shader} to {mn.id}");
-                }
 		shader.apply(mesh,
 			     toSceneTransform,
                              camera.viewMatrix,
                              camera.projectionMatrix);
-		if (disableDepth) {
-		    gl.glDisable(GL.GL_DEPTH_TEST);
-		} 
-                if (outlinePrepass) {
-                    gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL);
-                    gl.glEnable(gl.GL_STENCIL_TEST);
-                    gl.glStencilFunc(gl.GL_ALWAYS, 1, -1);
-                    gl.glStencilOp(gl.GL_KEEP, gl.GL_KEEP, gl.GL_REPLACE);
-                } else if (outlinePass) {
-                    gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINES);
-                    gl.glEnable(gl.GL_STENCIL_TEST);
-                    gl.glStencilFunc(gl.GL_NOTEQUAL, 1, -1);
-                    gl.glStencilOp(gl.GL_KEEP, gl.GL_KEEP, gl.GL_REPLACE);
+                if (disableDepth) {
+                    gl.glDisable(GL.GL_DEPTH_TEST);                 
                 }
             } catch (e is java.lang.Throwable) {
 		println("Error drawing: {mn}");
