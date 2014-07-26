@@ -6,7 +6,8 @@ public class JSObject {
 
     public String toString() {
 	StringBuffer result = new StringBuffer();
-	String sep = "{";
+        result.append("{");
+	String sep = "";
         for (Object id: getIds()) {
             result.append(sep);
             result.append(id);

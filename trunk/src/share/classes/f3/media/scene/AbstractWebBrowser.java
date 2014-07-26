@@ -1,33 +1,32 @@
 package f3.media.scene;
 
 public interface AbstractWebBrowser {
-    public interface Media {
-        //public String getSource();
+
+    public interface Animation {
         public String getId();
         public String getLabel();
-        public int getWidth();
-        public int getHeight();
         public void play();
         public void pause();
-        public void load();
         public float getCurrentTime();
         public void setCurrentTime(float time);
         public float getPlaybackRate();
         public void setPlaybackRate(float value);
+        public float getDuration();
+    }
+
+    public interface Media extends Animation {
+        public void load();
+        public int getWidth();
+        public int getHeight();
         public void setVolume(float value);
         public float getVolume();
         public void setMuted(boolean value);
         public boolean isMuted();
-        public float getDuration();
         public long getLoaded();
         public long getTotal();
     }
 
     public interface Video extends Media {
-        //public String getSource();
-        public String getId();
-        public int getWidth();
-        public int getHeight();
     }
 
     public interface Audio extends Media {
@@ -35,6 +34,7 @@ public interface AbstractWebBrowser {
 
     public java.util.List<Video> getVideo();
     public java.util.List<Audio> getAudio();
+    public java.util.List<Animation> getAnimation();
     
     public void setURL(String url);
     public String getURL();

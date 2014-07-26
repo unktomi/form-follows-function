@@ -1280,7 +1280,8 @@ class ColorPaintShader is CGFXShader
         "{super.toString()} color: {color}";
     }
     override var url =  "{__DIR__}flat.cgfx";
-    override var technique =  bind if (color.opacity == 1) then "Opaque" else "Transparent";
+    public var outline is Boolean;
+    override var technique =  bind if (outline) then "Outline" else if (color.opacity == 1) then "Opaque" else "Transparent";
     
     override function updateParameters to ()
     {
@@ -2720,6 +2721,9 @@ public class SceneRenderer {
             const mn = n as MeshNode;
             if (mn.outlineShader <> null) {
                 insert mn into toOutline;
+                if (mn.outlineShader is ColorPaintShader) { // hack
+                    (mn.outlineShader as ColorPaintShader).outline = true;
+                }
             }
         }
         if (toOutline.size() > 0) {
@@ -2750,7 +2754,7 @@ public class SceneRenderer {
             outlinePass = true;
             gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINES);
             gl.glStencilFunc(gl.GL_NOTEQUAL, 1, -1);
-            gl.glLineWidth(4);
+            gl.glLineWidth(2);
             for (n in toOutline) {
                 const mn = n as MeshNode;
                 try {

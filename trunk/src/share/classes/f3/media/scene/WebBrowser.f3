@@ -18,8 +18,14 @@ public class WebBrowser is WebBrowserNode
         media: v;
     };
 
+    public readonly var animationClips is AnimationClip[] = bind foreach (v in animation) AnimationClip {
+        browser: this;
+        media: v;
+    };
+
     var video is AbstractWebBrowser.Video[];
     var audio is AbstractWebBrowser.Audio[];
+    var animation is AbstractWebBrowser.Animation[];
 
     override function update {
 	super.update();
@@ -30,13 +36,14 @@ public class WebBrowser is WebBrowserNode
 	}
         video = foreach (v in tex.getVideo()) v;
         audio = foreach (v in tex.getAudio()) v;
+        animation = foreach (v in tex.getAnimation()) v;
     }
 }
 
 abstract public class MediaClip is TimeNode {
     override var id = bind media.getLabel();
     public const browser is WebBrowser;
-    public const media is AbstractWebBrowser.Media;
+    public const media is AbstractWebBrowser.Animation;
     var dur is Number = 0;
     override var contentBounds = bind Interval { end: 1s * dur }
 
@@ -70,4 +77,7 @@ public class VideoClip is MediaClip {
 }
 
 public class AudioClip is MediaClip {
+}
+
+public class AnimationClip is MediaClip {
 }

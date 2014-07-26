@@ -65,7 +65,19 @@ technique Opaque {
     pass P {
         DepthFunc = Less;
         DepthMask = true;
-        CullFaceEnable  = false; 
+        CullFaceEnable = false; 
+        BlendEnable = false;
+        VertexShader = compile latest vertexShaderFunction();
+        PixelShader  = compile latest pixelShaderFunction();
+    }
+}
+
+technique Outline {
+    pass P {
+	DepthTestEnable = true;
+        DepthFunc = LEqual;
+        DepthMask = true;
+        CullFaceEnable = false;
         BlendEnable = false;
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
