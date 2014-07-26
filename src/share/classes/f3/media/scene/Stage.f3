@@ -91,6 +91,7 @@ public interface Stage
             }
             for (x in c.pressed) {
                 if (x.node.blocksPointer) {
+                    insert c into pressed;
                     blocked = true;	  
                     break;
                 }
@@ -107,31 +108,37 @@ public interface Stage
     }
 
     public function injectMouseUp from (event is MouseEvent) to () {
-    	var hit = false;
-	for (c in content) {	
-	    if (c.pressed <> []) hit = true;
-	}
+    	var hit = pressed <> [];
         if (not hit) for (h in mouseHandlers) {
             h.onMouseUp(event);
         }
-        for (c in content.reverse()) {
+        for (c in pressed) {
             c.injectMouseUp(event);
         }
+        pressed = [];
     }
+
+    var pressed is Scene[];
 
     public function injectMouseMove from (event is MouseEvent) to () {
         for (h in mouseHandlers) {
             h.onMouseMove(event);
         }
         var blocked = false;
-        for (c in content.reverse()) {
-            c.injectMouseMove(event);
-            for (j in c.underMouse) {
-                if (j.node.blocksPointer) {
-                    blocked = true;
-                }
+        if (pressed <> []) {
+            for (c in pressed) {
+                c.injectMouseMove(event);
             }
-            if (blocked) break;
+        } else {
+            for (c in content.reverse()) {
+                c.injectMouseMove(event);
+                for (j in c.underMouse) {
+                    if (j.node.blocksPointer) {
+                        blocked = true;
+                    }
+                }
+                if (blocked) break;
+            }
         }
     }
 

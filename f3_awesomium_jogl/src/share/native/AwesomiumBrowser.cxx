@@ -166,10 +166,12 @@ public:
       webView->set_js_method_handler(this);
     } else if (callbackObject == 0) {
       callbackValue = webView->CreateGlobalJavascriptObject(WSLit("f3"));
-      callbackObject = &callbackValue.ToObject();
-      callbackObject->SetCustomMethod(WSLit("handleEvent"), false);
-      if (currentURL.length() > 0) {
-        webView->LoadURL(WebURL(currentURL));
+      if (callbackValue.IsObject()) {
+          callbackObject = &callbackValue.ToObject();
+          callbackObject->SetCustomMethod(WSLit("handleEvent"), false);
+          if (currentURL.length() > 0) {
+              webView->LoadURL(WebURL(currentURL));
+          }
       }
     }
   }

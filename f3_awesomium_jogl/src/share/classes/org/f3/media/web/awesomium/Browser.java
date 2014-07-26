@@ -630,6 +630,10 @@ public class Browser implements AbstractWebBrowser {
         if (html == null) {
             return;
         }
+        JSObject edge = (JSObject)executeJavascript("AdobeEdge");
+        if (edge != null) {
+            executeJavascript("AdobeEdge.bootstrapCallback(function(x) { f3.handleEvent({ type: \"adobeEdgeBootstrap\", compId: x }) })");
+        }
         parseDocument = false;
         HtmlCleaner p = new HtmlCleaner();
         try {
@@ -696,7 +700,24 @@ public class Browser implements AbstractWebBrowser {
     public Browser() {
         EventListener mediaListener = new EventListener() {
                 public void handleEvent(String eventType, JSObject event) {
-                    //System.err.println(eventType+": "+event);
+                    if (eventType.equals("adobeEdgeBootstrap")) {
+                        System.err.println(eventType+": "+event);
+                        JSArray compIds = (JSArray)event.get("compId");
+                        int size0 = compIds.getSize();
+                        for (int j = 0; j < size0; j++) {
+                            String compId = (String)compIds.get(j);
+                            JSArray syms = (JSArray)executeJavascript("var ids = []; var syms = AdobeEdge.getComposition('"+compId+"').getSymbols(); for (var i = 0; i < syms.length; i++) { ids.push(syms[i].getSymbolTypeName()); }; ids");
+                            int size = syms.getSize();
+                            System.err.println("syms="+size);
+                            for (int i = 0; i < size; i++) {
+                                String sym = (String)syms.get(i);
+                                System.err.println("sym "+i+": "+sym);
+                                AdobeEdgeSymbol edgeSym = new AdobeEdgeSymbol(compId, sym);
+                                animations.add(edgeSym);
+                            }
+                        }
+                        return;
+                    }
                     JSObject src = (JSObject)event.get("srcElement");
                     //System.err.println("src="+src);
                     String id = (String)src.get("id");
@@ -717,19 +738,27 @@ public class Browser implements AbstractWebBrowser {
 
                         }
                         executeJavascript("{ var v = "+script+"; v.autoplay = false; v.pause(); }");
+                        return;
                     } 
                     for (Video vid: videos) {
                         if (vid.getId().equals(id)) {
                             ((VideoImpl)vid).handleEvent(eventType, event);
-                            break;
+                            return;
                         }
                     }
                     for (Audio aud: audio) {
                         if (aud.getId().equals(id)) {
                             ((AudioImpl)aud).handleEvent(eventType, event);
-                            break;
+                            return;
                         }
                     }
+                    for (Animation anim: animations) {
+                        if (anim.getId().equals(id)) {
+                            ((AdobeEdgeSymbol)anim).handleEvent(eventType, event);
+                            return;
+                        }
+                    }
+                    System.err.println("handleEvent: "+eventType+": "+event);
                 }
             };
         addEventListener("loadedmetadata", mediaListener);
@@ -739,15 +768,23 @@ public class Browser implements AbstractWebBrowser {
         addEventListener("canplay", mediaListener);
         addEventListener("play", mediaListener);
         addEventListener("pause", mediaListener);
+        addEventListener("adobeEdgeBootstrap", mediaListener, false);
     }
 
     public static void onMethodCall(Object target,
                                     String methodName,
                                     JSArray args) {
         //System.err.println("on method call: "+methodName+": "+args);
-        JSObject obj = (JSObject)args.get(0);
-        String eventType = (String)obj.get("type");
-        ((Browser)target).enqueueEvent(eventType, obj);
+        if (args.getSize() > 0) {
+            Object arg0 = args.get(0);
+            if (arg0 instanceof JSObject) {
+                JSObject obj = (JSObject)args.get(0);
+                String eventType = (String)obj.get("type");
+                ((Browser)target).enqueueEvent(eventType, obj);
+                return;
+            }
+        }
+        System.err.println("on method call: "+methodName+": "+args);
     }
 
     Map<String, Set<EventListener>> eventListeners = new HashMap();
@@ -756,14 +793,19 @@ public class Browser implements AbstractWebBrowser {
         public void handleEvent(String name, JSObject event);
     }
 
+
     public void addEventListener(String event, EventListener listener) {
+        addEventListener(event, listener, true);
+    }
+
+    public void addEventListener(String event, EventListener listener, boolean register) {
         Set<EventListener> listeners = eventListeners.get(event);
         if (listeners == null) {
             listeners = new HashSet();
             eventListeners.put(event, listeners);
         }
         listeners.add(listener);
-        if (documentLoaded && listeners.size() == 1) {
+        if (register && documentLoaded && listeners.size() == 1) {
             registerForEvent(event);
         }
     }
@@ -1030,6 +1072,82 @@ public class Browser implements AbstractWebBrowser {
             return "".equals(getId()) ? ("Audio - "+getSrc()) : getId();
         }
     }
+    
+    class AdobeEdgeSymbol implements Animation {
+        String compId;
+        String symbol;
+        String access;
+        boolean playing;
+        float duration = -1;
+        AdobeEdgeSymbol(String compId, String symbol) {
+            this.compId = compId;
+            this.symbol = symbol;
+            this.access = "AdobeEdge.getComposition('"+compId+"').getStage()";//.getSymbol('"+symbol+"')";
+            pause();
+        }
+        public void handleEvent(String eventName, JSObject event) {
+            System.err.println("handle event: "+compId+": "+eventName+": "+event);
+            JSObject src = (JSObject)event.get("srcElement");
+            Object dur = src.get("duration");
+            //System.err.println("dur="+dur);
+            if (dur instanceof Number) {
+                duration = ((Number)dur).floatValue();
+            }
+            if ("play".equalsIgnoreCase(eventName)) {
+                playing = true;
+            } else if ("pause".equalsIgnoreCase(eventName)) {
+                playing = false;
+            } 
+        }
+        String getAccess() {
+            return access;
+        }
+        public String getId() {
+            return compId;
+        }
+        public String getLabel() {
+            return compId + " " +symbol;
+        }
+        public void play() {
+            if (!playing) {
+                playing = true;
+                executeJavascript(getAccess()+".play()");
+            }
+        }
+        public void pause() {
+            if (playing) {
+                playing = false;
+                executeJavascript(getAccess()+".stop()");
+            }
+        }
+        public void load() {
+        }
+        public float getCurrentTime() {
+            Number num = (Number)executeJavascript(getAccess()+".getPosition()");
+            return num == null ? 0.0f : num.floatValue() / 1000.0f;
+        }
+        public void setCurrentTime(float time) {
+            executeJavascript(getAccess()+".stop("+(time*1000.0f)+")");
+        }
+        public float getPlaybackRate() {
+            Number num = (Number)executeJavascript(getAccess()+".playbackRate");
+            return num == null ? 1.0f : num.floatValue();
+        }
+        public void setPlaybackRate(float value) {
+            executeJavascript(getAccess()+".playbackRate = "+value+"");
+        }
+        public float getDuration() {
+            if (duration < 0) {
+                Number num = (Number)executeJavascript(getAccess()+".getDuration()");
+                float value = num == null ? 0.0f : num.floatValue() / 1000.0f;
+                if (value > 0) {
+                    duration = value;
+                }
+                return value;
+            }
+            return duration;
+        }
+    }
 
     String currentURL;
 
@@ -1050,6 +1168,12 @@ public class Browser implements AbstractWebBrowser {
     }
 
     final List<Audio> audio = new ArrayList();
+
+    final List<Animation> animations = new ArrayList();
+
+    public List<Animation> getAnimation() {
+        return animations;
+    }
     
     String currentContent = null;
 

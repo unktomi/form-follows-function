@@ -36,7 +36,8 @@ public class JSArray implements Iterable<Object> {
 
     public String toString() {
 	StringBuffer result = new StringBuffer();
-	String sep = "[";
+	String sep = "";
+        result.append("[");
 	for (int i = 0; i < getSize(); i++) {
 	    result.append(sep);
 	    result.append(get(i));
