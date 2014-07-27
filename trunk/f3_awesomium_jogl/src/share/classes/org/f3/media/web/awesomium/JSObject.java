@@ -13,7 +13,7 @@ public class JSObject {
             result.append(id);
             result.append(": ");
             Object value = get((String)id);
-            if (value instanceof JSObject) {
+            if (false && value instanceof JSObject) {
                 result.append("[Object]");
             } else {
                 result.append(value);
