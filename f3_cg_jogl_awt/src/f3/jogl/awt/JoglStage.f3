@@ -1431,7 +1431,7 @@ class JoglCGEffectLoader is CGEffectLoader
         var shader is CGFXShader;
         if (diffuseTexture == null) {
             shader = DefaultPhongShader4 { 
-                url: "{__DIR__}phong4.cgfx";
+                url: "{__DIR__}phong4.cgfx"
                 technique: if (diffuse.opacity == 1) "Opaque" else "Transparent";
 		isTransparent: diffuse.opacity <> 1.0;
             }
@@ -1624,6 +1624,7 @@ class OffscreenSurface is JoglTexture
     var _mscolorRBID is Integer;
     var _msdepthRBID is Integer;
     var lastTextureId is Integer;
+    var mipmap = false;
 
     function activate 
     {
@@ -1635,8 +1636,13 @@ class OffscreenSurface is JoglTexture
 	    tex = genTexture(gl, pot_width, pot_height);
 	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE);
 	    tex.setTexParameteri(gl, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE);
-	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
-	    tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+            if (mipmap) {
+                tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR);
+                tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR_MIPMAP_LINEAR);
+            } else {
+                tex.setTexParameteri(gl, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+                tex.setTexParameteri(gl, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
+            }
 	    const textureId = tex.getTextureObject(gl);
 	    println("textureId={textureId} gl={gl}");
             var ibuf = BufferUtils.createIntBuffer(1);
@@ -1785,7 +1791,7 @@ class OffscreenSurface is JoglTexture
                                  bits, GL.GL_NEAREST);
             //println("blitting framebuffer {_msfboID} {_fboID} {_width} {_height} {pot_width} {pot_height}");
         }
-        if (false) {
+        if (mipmap) {
             tex.bind(gl);
             gl.glGenerateMipmap(tex.getTarget());
         }
@@ -3716,7 +3722,7 @@ class AwtMenuItem is MenuFactory.MenuItemImpl {
 
     public function addTo from (parent is java.awt.Menu) to ()
     {
-        println("adding {result} to {parent}");
+        //println("adding {result} to {parent}");
 	parent.add(result);
     }
 
@@ -3743,7 +3749,7 @@ class AwtMenuItem is MenuFactory.MenuItemImpl {
 	      action is function from () to ())
 	to java.awt.MenuItem
     {
-	println("building item {this} {awtItem} {label} {enabled} {shortcut} {action}");
+	//println("building item {this} {awtItem} {label} {enabled} {shortcut} {action}");
 	awtItem.setLabel(label);
 	awtItem.setEnabled(enabled);
 	if (shortcut <> null) {
@@ -3813,12 +3819,12 @@ class AwtMenu is AwtMenuItem {
 	to java.awt.Menu
     {
 	parent.removeAll();
-	println("BUILDING {items.size()} items {item.label} parent={parent} awtItem={awtItem}");
+	//println("BUILDING {items.size()} items {item.label} parent={parent} awtItem={awtItem}");
 	for (item in items) {
 	    item.addTo(parent);
-	    println("added {item} to parent={parent}, count={parent.getItemCount()}");
+	    //println("added {item} to parent={parent}, count={parent.getItemCount()}");
 	}
-	println("parent=>{parent} {parent.getItemCount()}");
+	//println("parent=>{parent} {parent.getItemCount()}");
 	parent;
     }
 }
@@ -3926,11 +3932,11 @@ public class JoglStage is Stage
 	    while (menubar.getMenuCount() > 0) {
 		menubar.remove(0);
 	    }
-	    println("BUILDING MENU BAR {menus}");
+	    //println("BUILDING MENU BAR {menus}");
 	    for (m in menus) {
 		const i = m.itemImpl as AwtMenu;
 		const menu = i.menuResult;
-		println("CREATED {i} {menu} {menu.getItemCount()}");
+		//println("CREATED {i} {menu} {menu.getItemCount()}");
 		menubar.add(menu);
 		for (j in [0..<menu.getItemCount()]) {
 		    const mi = menu.getItem(j);

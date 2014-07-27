@@ -2,12 +2,12 @@ package f3.math;
 import java.lang.Math;
 import f3.math.LinearMath.*;
 
-public static const <<0>> = Vec3 {x: 0.0, y: 0.0, z: 0.0};
-public static const <<1>> = Vec3 {x: 1.0, y: 1.0, z: 1.0};
+public const <<0>> = Vec3 {x: 0.0, y: 0.0, z: 0.0};
+public const <<1>> = Vec3 {x: 1.0, y: 1.0, z: 1.0};
 
-public static const X_AXIS = Vec3 {x: 1.0, y: 0.0, z: 0.0};
-public static const Y_AXIS = Vec3 {x: 0.0, y: 1.0, z: 0.0};
-public static const Z_AXIS = Vec3 {x: 0.0, y: 0.0, z: 1.0};
+public const X_AXIS = Vec3 {x: 1.0, y: 0.0, z: 0.0};
+public const Y_AXIS = Vec3 {x: 0.0, y: 1.0, z: 0.0};
+public const Z_AXIS = Vec3 {x: 0.0, y: 0.0, z: 1.0};
 
 public const ZERO = <<0>>;
 public const ONE = <<1>>;

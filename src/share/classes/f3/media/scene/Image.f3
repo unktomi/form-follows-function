@@ -19,5 +19,6 @@ public class Image is AbstractTexture, Shape2D.MeshNode2D, MouseInputHandler {
     override var paint = bind Shape2D.TexturePaint { texture: getThis() }
     function getThis to Image { this } // workaround for compiler bug with bound "this"
     override var gridFit = false;
+    public var mipmap is Boolean = false;
 }
 

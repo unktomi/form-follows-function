@@ -137,5 +137,5 @@ public class Tuple3 is F3Value, java.lang.Comparable of Tuple3
     }
 }
 
-public static def TYPE_INFO is TypeInfo of ..Tuple3 = 
+public const TYPE_INFO is TypeInfo of ..Tuple3 = 
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Tuple3.<<0>>);

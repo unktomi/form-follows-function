@@ -1127,13 +1127,13 @@ public class Browser implements AbstractWebBrowser {
         public void play() {
             if (!playing) {
                 playing = true;
-                executeJavascript(getAccess()+".play()");
+                executeJavascriptAsync(getAccess()+".play()");
             }
         }
         public void pause() {
             if (playing) {
                 playing = false;
-                executeJavascript(getAccess()+".stop()");
+                executeJavascriptAsync(getAccess()+".stop()");
             }
         }
         public void load() {
@@ -1143,10 +1143,11 @@ public class Browser implements AbstractWebBrowser {
             return num == null ? 0.0f : num.floatValue() / 1000.0f;
         }
         public void setCurrentTime(float time) {
+            if (Float.isNaN(time)) time = 0.0f;
             if (playing) {
-                executeJavascript("var x = "+getAccess()+"; x.play("+(time*1000.0f)+"); x.play()");
+                executeJavascriptAsync("var x = "+getAccess()+"; x.play("+(time*1000.0f)+"); x.play()");
             } else {
-                executeJavascript("var x = "+getAccess()+"; x.stop("+(time*1000.0f)+"); x.stop()");
+                executeJavascriptAsync("var x = "+getAccess()+"; x.stop("+(time*1000.0f)+"); x.stop()");
             }
         }
         public float getPlaybackRate() {
@@ -1158,12 +1159,16 @@ public class Browser implements AbstractWebBrowser {
         }
         public float getDuration() {
             if (duration < 0) {
-                Number num = (Number)executeJavascript(getAccess()+".getDuration()");
-                float value = num == null ? 0.0f : num.floatValue() / 1000.0f;
-                if (value > 0) {
+                Number num = (Number)executeJavascript("var target = "+getAccess()+ ";target ? target.getDuration() : 0");
+                if (num != null) {
+                    float value = num.floatValue() / 1000.0f;
                     duration = value;
+                    if (duration < 0) {
+                        duration = 0;
+                    }
+                } else {
+                    return 0.0f;
                 }
-                return value;
             }
             return duration;
         }
@@ -1326,6 +1331,7 @@ public class Browser implements AbstractWebBrowser {
             return lastResult;
         }
         if (handle != 0) {            
+            flushScriptBuffer();
             //getWindow();
             boolean firstTime = prepareDocument;
             checkPrepareDocument();
@@ -1353,6 +1359,7 @@ public class Browser implements AbstractWebBrowser {
             //System.err.println(result + ": elapsed: "+elapsed+"ms, this: "+(now - pre)+"ms");
             //System.err.println("render: "+ (endRender - pre)+"ms, updateImage: "+(endUpdate-endRender)+"ms");
             updateTime = now;
+            flushScriptBuffer();
         }
         return lastResult = result;
     }
@@ -1438,6 +1445,20 @@ public class Browser implements AbstractWebBrowser {
 	    }
 	}
 	return window;
+    }
+
+    StringBuffer scriptBuffer = new StringBuffer();
+
+    void flushScriptBuffer() {
+        if (scriptBuffer.length() > 0) {
+            executeJavascript(scriptBuffer.toString());
+            scriptBuffer.setLength(0);
+        }
+    }
+
+    public void executeJavascriptAsync(String script) {
+        scriptBuffer.append(script);
+        scriptBuffer.append(";");
     }
 
     public Object executeJavascript(String script) {

@@ -3,8 +3,9 @@ import java.lang.Math;
 import java.lang.Math.*;
 import f3.math.LinearMath.*;
 import f3.util.Bits.*;
-public static const <<1>> = Quat { w: 1.0 };
-public static const <<0>> = Quat { };
+
+public const <<1>> = Quat { w: 1.0 };
+public const <<0>> = Quat { };
 
 // mostly from ardor3d
 
@@ -479,12 +480,12 @@ const EulOrdZXZr = EulOrd(2,EulParEven,EulRepYes,EulFrmR);
 const EulOrdXYZr = EulOrd(2,EulParOdd,EulRepNo,EulFrmR);
 const EulOrdZYZr = EulOrd(2,EulParOdd,EulRepYes,EulFrmR);
 
-public static const EULER_XYZ = EulOrdXYZs;
-public static const EULER_XZY = EulOrdXZYs;
-public static const EULER_YZX = EulOrdYZXs;
-public static const EULER_YXZ = EulOrdYXZs;
-public static const EULER_ZXY = EulOrdZXYs;
-public static const EULER_ZYX = EulOrdZYXs;
+public const EULER_XYZ = EulOrdXYZs;
+public const EULER_XZY = EulOrdXZYs;
+public const EULER_YZX = EulOrdYZXs;
+public const EULER_YXZ = EulOrdYXZs;
+public const EULER_ZXY = EulOrdZXYs;
+public const EULER_ZYX = EulOrdZYXs;
 
 // Convert matrix to Euler angles (in radians).
 function EulFromMatrix from (M is Mat4, order is Integer) to Tuple3 
@@ -534,7 +535,7 @@ function EulFromMatrix from (M is Mat4, order is Integer) to Tuple3
 
 
 
-public static def TYPE_INFO =
+public const TYPE_INFO =
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
 
 public function run {

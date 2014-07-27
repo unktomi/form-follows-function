@@ -2,7 +2,7 @@ package f3.math;
 
 // 1x2 affine transform matrix (translation + scale in time dimension)
 
-public static const <<1>> is TimeMat = TimeMat { rate: 1.0, time: 0s };
+public const <<1>> is TimeMat = TimeMat { rate: 1.0, time: 0s };
 
 public class TimeMat 
 {

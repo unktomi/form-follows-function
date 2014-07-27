@@ -69,8 +69,8 @@ public function <<,>>
     }
 }
 
-public static const <<0>> = Tuple2 {x: 0.0, y: 0.0};
-public static const <<1>> = Tuple2 {x: 1.0, y: 1.0};
+public const <<0>> = Tuple2 {x: 0.0, y: 0.0};
+public const <<1>> = Tuple2 {x: 1.0, y: 1.0};
 
 function run {
     const v = Tuple2(1.0, 1.0);

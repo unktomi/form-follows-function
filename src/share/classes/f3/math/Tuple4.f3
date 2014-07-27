@@ -55,5 +55,5 @@ public class Tuple4 is F3Value
 
 }
 
-public static def TYPE_INFO is TypeInfo of ..Tuple4 = 
+public const TYPE_INFO is TypeInfo of ..Tuple4 = 
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

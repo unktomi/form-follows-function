@@ -88,12 +88,12 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 	}
     }
 
-    public function getFormerOrElse from (defaultValue is a) to a {
-        return defaultValue
+    public function getFormerOrElse from (Default is a) to a {
+        return Default;
     }
 
-    public function getLatterOrElse from (defaultValue is b) to b {
-        return defaultValue
+    public function getLatterOrElse from (Default is b) to b {
+        return Default;
     }
 
 
@@ -111,7 +111,7 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 public function Former of (a, b) from (x is a) to Either of (a, b) 
 {
     Either of (a, b) {
-        override function getFormerOrElse from (defaultValue is a) to a {
+        override function getFormerOrElse from (Default is a) to a {
             x
         }
 
@@ -165,7 +165,7 @@ public function Latter of (a, b) from (y is b) to Either of (a, b)
 {
     Either of (a, b) {
 
-        override function getLatterOrElse from (defaultValue is b) to b {
+        override function getLatterOrElse from (Default is b) to b {
             y
         }
 

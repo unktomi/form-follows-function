@@ -114,7 +114,9 @@ public abstract class TimeNode is Foldable of TimeNode
 	if (playCount <> 1.0) {
 	    now -= contentPlayRange.start.toMillis();
 	    const dur = contentPlayRange.duration().toMillis();
-	    now = now mod dur;
+            if (dur <> 0) {
+                now = now mod dur;
+            }
 	    now += contentPlayRange.start.toMillis();
 	}
         localTime = Duration.valueOf(now);
