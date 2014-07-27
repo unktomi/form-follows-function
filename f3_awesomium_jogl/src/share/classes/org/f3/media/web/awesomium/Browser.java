@@ -769,6 +769,7 @@ public class Browser implements AbstractWebBrowser {
         addEventListener("play", mediaListener);
         addEventListener("pause", mediaListener);
         addEventListener("adobeEdgeBootstrap", mediaListener, false);
+        addEventListener("onPreSymbolPlay", mediaListener, false);
     }
 
     public static void onMethodCall(Object target,
@@ -951,8 +952,8 @@ public class Browser implements AbstractWebBrowser {
 
     public void handleEvent(String eventName, JSObject event) {
         final Set<EventListener> listeners = eventListeners.get(eventName);
-        System.err.println("handle event: "+ eventName);
         if (listeners == null || listeners.size() == 0) {
+            System.err.println("handle event: "+ eventName + ": "+event);
             executeJavascript("document.removeEventListener('"+eventName+"', f3)");
         } else {
             for (EventListener listener: listeners) {
@@ -1084,14 +1085,19 @@ public class Browser implements AbstractWebBrowser {
             this.symbol = symbol;
             this.access = "AdobeEdge.getComposition('"+compId+"').getStage()";//.getSymbol('"+symbol+"')";
             pause();
+            executeJavascript(getAccess()+".addObserver(function(methodName, source, data) { f3.handleEvent({type: methodName, {srcElement: {id:'"+getId()+"'}, data: data}})})");
         }
         public void handleEvent(String eventName, JSObject event) {
             System.err.println("handle event: "+compId+": "+eventName+": "+event);
             JSObject src = (JSObject)event.get("srcElement");
-            Object dur = src.get("duration");
+            //Object dur = src.get("duration");
             //System.err.println("dur="+dur);
-            if (dur instanceof Number) {
-                duration = ((Number)dur).floatValue();
+            //if (dur instanceof Number) {
+            //duration = ((Number)dur).floatValue();
+            //}
+            if ("onPreSymbolPlay".equals(eventName)) {
+                Object obj = event.get("data");
+                System.err.println(eventName+": "+ obj);
             }
             if ("play".equalsIgnoreCase(eventName)) {
                 playing = true;
