@@ -44,8 +44,8 @@ public class Mat2
 
 }
 
-public static const <<1>> = Mat2 {xx: 1.0, xy: 0.0, 
-				  yx: 0.0, yy: 1.0};
+public const <<1>> = Mat2 {xx: 1.0, xy: 0.0, 
+                           yx: 0.0, yy: 1.0};
 
 function run {
     println(<<1>> * <<1>> * Vec2.<<1>> * 2);

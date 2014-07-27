@@ -147,5 +147,5 @@ public class Point3 is Tuple3
     }
 }
 
-public static def TYPE_INFO =
+public const TYPE_INFO =
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

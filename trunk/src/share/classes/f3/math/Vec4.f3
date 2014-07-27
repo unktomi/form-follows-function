@@ -124,5 +124,5 @@ public class Vec4 is Tuple4
 
 }
 
-public static def TYPE_INFO =
+public const TYPE_INFO =
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);

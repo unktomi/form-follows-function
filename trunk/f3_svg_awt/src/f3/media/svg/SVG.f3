@@ -391,7 +391,7 @@ class Loader {
         //override var ty = bind -height/2;
         id: url;
     };
-    public var contentNode is Group = Group {};
+    public var contentNode is Group = Group {id: "Group 1"};
     var width = 0.0;
     var height = 0.0;
     function load {
@@ -426,6 +426,8 @@ class Loader {
 	    }
 	    height = b0.getY() + b0.getHeight();
 	}
+        var pcount = 1;
+        var gcount = 1;
         for (i in top.content) {
             if (i.stroke != null) {
                 println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
@@ -434,12 +436,12 @@ class Loader {
             const p = convertPath(fac, height, i.transform, i.path);
             const p1 = if (i.stroke <> null) p.createStrokedShape(i.stroke) else p;
             const shape = Shape2D.MeshNode2D {
-                id: i.id;
+                id: if i.id == null then "path {pcount++}" else i.id;
                 path: p1;
                 paint: i.paint;
             };
             if (sizeof contentNode.content == 50) {
-                contentNode = Group {}
+                contentNode = Group {id: "group {++gcount}" }
                 insert contentNode into rootNode.content;
             }
             insert shape into contentNode.content;

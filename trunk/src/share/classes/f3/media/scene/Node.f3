@@ -200,6 +200,26 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget, Collidable
         observeKeyInput().filter(|e| e.keyChar == keyChar);
     }
 
+    public function observeUpArrow from () to Observable of KeyboardEvent 
+    {
+        observeKeyDown(Keys.Up);
+    }
+
+    public function observeDownArrow from () to Observable of KeyboardEvent 
+    {
+        observeKeyDown(Keys.Down);
+    }
+
+    public function observeLeftArrow from () to Observable of KeyboardEvent 
+    {
+        observeKeyDown(Keys.Left);
+    }
+
+    public function observeRightArrow from () to Observable of KeyboardEvent 
+    {
+        observeKeyDown(Keys.Right);
+    }
+
     public function lookup from (id is String) to Node 
     {
 	foldLeft(null as Node, 

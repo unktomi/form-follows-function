@@ -65,4 +65,4 @@ public class Plane is F3Value
 }
 
 
-public static def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Plane {});
+public const TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(Plane {});
