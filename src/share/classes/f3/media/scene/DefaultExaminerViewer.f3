@@ -19,7 +19,7 @@ public class DefaultExaminerViewer is ExaminerViewer {
 
     override function setCameraOrientation from (ori is Quat) to () 
     {
-        const angles = ori.toAngles(Quat.EULER_XYZ);
+        const angles = ori.toAngles();
         camera.rx = angles.x;
         camera.ry = angles.y;
         camera.rz = angles.z;

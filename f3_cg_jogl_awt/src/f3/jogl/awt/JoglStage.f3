@@ -1266,12 +1266,6 @@ class JoglLinearGradientShader is JoglGradientShader
     }
 }
 
-class GlowShader is CGFXShader {
-    override var url = "{__DIR__}post_glow.cgfx";
-    override var technique =  "Main";
-}
-
-
 class ColorPaintShader is CGFXShader 
 {
     public var colorPaint is ColorPaint;
