@@ -21,6 +21,7 @@ public class WebBrowser is WebBrowserNode
     public readonly var animationClips is AnimationClip[] = bind foreach (v in animation) AnimationClip {
         browser: this;
         media: v;
+        playCount:-1;
     };
 
     var video is AbstractWebBrowser.Video[];
