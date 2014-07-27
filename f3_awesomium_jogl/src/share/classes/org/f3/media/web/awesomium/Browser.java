@@ -712,8 +712,18 @@ public class Browser implements AbstractWebBrowser {
                             for (int i = 0; i < size; i++) {
                                 String sym = (String)syms.get(i);
                                 System.err.println("sym "+i+": "+sym);
-                                AdobeEdgeSymbol edgeSym = new AdobeEdgeSymbol(compId, sym);
-                                animations.add(edgeSym);
+                                boolean found = false;
+                                String id = compId+"#"+sym;
+                                for (Animation a: animations) {
+                                    if (a.getId().equals(id)) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if (!found) {
+                                    AdobeEdgeSymbol edgeSym = new AdobeEdgeSymbol(compId, sym);
+                                    animations.add(edgeSym);
+                                }
                             }
                         }
                         return;
@@ -1083,7 +1093,7 @@ public class Browser implements AbstractWebBrowser {
         AdobeEdgeSymbol(String compId, String symbol) {
             this.compId = compId;
             this.symbol = symbol;
-            this.access = "AdobeEdge.getComposition('"+compId+"').getStage()";//.getSymbol('"+symbol+"')";
+            this.access = "AdobeEdge.getComposition('"+compId+"').getStage().getSymbol('"+symbol+"')";
             pause();
             executeJavascript(getAccess()+".addObserver(function(methodName, source, data) { f3.handleEvent({type: methodName, {srcElement: {id:'"+getId()+"'}, data: data}})})");
         }
@@ -1109,7 +1119,7 @@ public class Browser implements AbstractWebBrowser {
             return access;
         }
         public String getId() {
-            return compId;
+            return compId+"#"+symbol;
         }
         public String getLabel() {
             return compId + " " +symbol;
@@ -1133,7 +1143,11 @@ public class Browser implements AbstractWebBrowser {
             return num == null ? 0.0f : num.floatValue() / 1000.0f;
         }
         public void setCurrentTime(float time) {
-            executeJavascript(getAccess()+".stop("+(time*1000.0f)+")");
+            if (playing) {
+                executeJavascript("var x = "+getAccess()+"; x.play("+(time*1000.0f)+"); x.play()");
+            } else {
+                executeJavascript("var x = "+getAccess()+"; x.stop("+(time*1000.0f)+"); x.stop()");
+            }
         }
         public float getPlaybackRate() {
             Number num = (Number)executeJavascript(getAccess()+".playbackRate");
