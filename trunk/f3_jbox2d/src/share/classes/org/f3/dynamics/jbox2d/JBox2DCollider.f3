@@ -159,11 +159,12 @@ public class JBox2DCollider is Collider {
 
     override function applyImpulse from (x is Number, y is Number, z is Number) to ()
     {
-        body.applyLinearImpulse(new Vec2(x, y), new Vec2(centerOfMass.x, centerOfMass.y), true);
+        body.applyLinearImpulse(new Vec2(x, y), body.getWorldCenter(), true);
     }
 
     override function applyTarqueImpulse from (v is Vec3) to ()
     {
+        applyTorqueImpulse(0, 0, v.z);
     }
 
     override function applyTorqueImpulse from (x is Number, y is Number, z is Number) to ()
