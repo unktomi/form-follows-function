@@ -29,6 +29,26 @@ public class Tuple3 is F3Value, java.lang.Comparable of Tuple3
 	}
     }
 
+    public function add from (x is Number, y is Number, z is Number) to Tuple3
+    {
+        new Tuple3(this.x+x, this.y+y, this.z+z)
+    }
+
+    public function sub from (x is Number, y is Number, z is Number) to Tuple3
+    {
+        new Tuple3(this.x-x, this.y-y, this.z-z)
+    }
+
+    public function div from (x is Number, y is Number, z is Number) to Tuple3
+    {
+        new Tuple3(this.x/x, this.y/y, this.z/z)
+    }
+
+    public function mul from (x is Number, y is Number, z is Number) to Tuple3
+    {
+        new Tuple3(this.x*x, this.y*y, this.z*z)
+    }
+
     public function + from (n is Tuple3) to Tuple3 
     {
 	Tuple3 {

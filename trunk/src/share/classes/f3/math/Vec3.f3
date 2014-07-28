@@ -134,6 +134,16 @@ public class Vec3 is Tuple3
 	point + this
     }
 
+    override function add from (x is Number, y is Number, z is Number) to Vec3
+    {
+        new Vec3(this.x+x, this.y+y, this.z+z)
+    }
+
+    override function sub from (x is Number, y is Number, z is Number) to Vec3
+    {
+        new Vec3(this.x-x, this.y-y, this.z-z)
+    }
+
     public function dot
 	from (vector is Tuple3) 
 	to Number 
