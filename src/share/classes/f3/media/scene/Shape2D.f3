@@ -27,7 +27,7 @@ public interface Path2D {
     abstract public function createStrokedShape from (stroke is Stroke) to Path2D;
     abstract public function apply from (output is Path2D) to ();
     abstract public function contains from (x is Number, y is Number) to Boolean;
-    public function flatten from (flattness is Number) to Path2D;
+    public function flatten from (flatness is Number) to Path2D;
     public function getPoints to Point2[];
     public function getPoints from (mat is Mat4) to Point2[];
 }
@@ -43,7 +43,13 @@ public function rect
     from (fac is Path2DFactory, x is Number, y is Number, width is Number, height is Number, textureMatrix is Mat4) 
     to Path2D
 {
-    const path = fac.createPath();
+    rect(fac.createPath(), x, y, width, height, textureMatrix);
+}
+
+public function rect
+    from (path is Path2D, x is Number, y is Number, width is Number, height is Number, textureMatrix is Mat4) 
+    to Path2D
+{
     path.setTextureMatrix(textureMatrix);
     path.moveTo(x, y);
     path.lineTo(x+width, y);

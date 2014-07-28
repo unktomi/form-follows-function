@@ -1,0 +1,80 @@
+package f3.media.scene;
+import f3.math.*;
+import f3.math.LinearMath.*;
+import java.lang.Math;
+
+public class SpriteSheet is AbstractNode {
+    public var image is Image;
+    public readonly var frameWidth is Integer = bind image.getWidth() / Math.max(columns, 1);
+    public readonly var frameHeight is Integer = bind image.getHeight() / Math.max(rows, 1);
+    public var frameCount is Integer = 1;
+    public var duration is Duration = 1s;
+    public var rows is Integer = 1;
+    public var columns is Integer = 1;
+    var currentSprite is Shape2D.MeshNode2D = image;
+    override var internalContent = Group { content: bind sprites };
+
+    var targetFrame is Integer;
+
+    bound var sprites is Node[] = 
+        foreach (i in [0..<frameCount]) createSprite(i, image.getWidth(), image.getHeight(), image.paint);
+
+
+    bound function createSprite from (frame is Integer, imageWidth is Number, imageHeight is Number, paint is Shape2D.Paint) to Node
+    {
+        var p = pathFactory.createPath();
+        var x = frame mod columns;
+        var y = frame / columns;
+        var w is Number = frameWidth;
+        var h is Number = frameHeight;
+        var tx = (w * x) / imageWidth;
+        var ty = (h * y) / imageHeight;
+        var sx is Number = w / imageWidth;
+        var sy is Number = h / imageHeight;
+        Shape2D.MeshNode2D {
+            visible: bind targetFrame == frame;
+            path: bind Shape2D.rect(pathFactory, -w/2, -h/2, w, h, translate(tx, ty) * scale(sx, sy));
+            paint: bind paint;
+        }
+    }
+
+    public function setFrame from (frame is Integer) to ()
+    {
+        targetFrame = frame;
+        println("set frame {image.url} => {frame}");
+    }
+
+    public var animTarget is Number on replace {
+        println("animTarget={animTarget}");
+        setFrame(Math.floor(animTarget) as Integer);
+    }
+
+    const targetPtr = &animTarget;
+
+    function createKeys from (frameCount is Integer, duration is Duration) to TimeNode
+    {
+        println("CREATE KEYS {frameCount} {duration}");
+        const frameDuration = duration/frameCount;
+        println("frameDuration={frameDuration}, targetPtr={targetPtr}");
+        const ch = Channel of Number {
+            id: bind "{id}#frame";
+            targets: [targetPtr];
+            keys: foreach (i in [0..frameCount]) {
+                KeyFrame.Key of Number {
+                    position: frameDuration * i;
+                    interpolator: KeyFrame.Linear;
+                    value: i;
+                }
+            }
+        };
+        println("channel dur={ch.contentBounds.duration()}");
+        println("channel dur={ch.bounds.duration()}");
+        return ch;
+    }
+
+    var frameChannel is TimeNode = bind createKeys(frameCount, duration);
+
+    public readonly var animation is TimeNode = bind frameChannel;
+      
+}
+

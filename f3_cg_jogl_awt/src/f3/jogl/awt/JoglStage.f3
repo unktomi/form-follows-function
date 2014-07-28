@@ -188,7 +188,7 @@ abstract class JoglFont is Text.Font {
     override function width from (text is String) to Number
     {
         const r = font.getStringBounds(text, frc);
-        return r.getX() + r.getWidth();
+        return r.getWidth();
     }
 }
 

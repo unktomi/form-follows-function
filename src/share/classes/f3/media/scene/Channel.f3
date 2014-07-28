@@ -143,7 +143,9 @@ public class Channel of a is TimeNode
         if (weight == 0) { return v }
 	const pos = localTime;
 	const picked = pickKey(pos);
-        //println("id={id} playing={playing} localTime={localTime} picked={picked.position} {picked.value}");
+        if (debug) {
+            println("id={id} playing={playing} localTime={localTime} picked={picked.position} {picked.value}");
+        }
 	var k1 is Key of a;
 	var k2 is Key of a;
 	if (picked.position < pos) {
@@ -170,7 +172,7 @@ public class Channel of a is TimeNode
 	}
 	// v + k.interpolate(t) * weight
 	const result = k.add(if (v == null) then k.zero() else v, k.scale(k.interpolate(t), weight));
-	if (DEBUG) {
+	if (DEBUG or debug) {
 	    println("{id} interpolated {k.interpolator} {pos} to {result}");
 	}
 	return result;
