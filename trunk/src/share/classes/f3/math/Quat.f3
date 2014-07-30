@@ -131,7 +131,47 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 	w * q.w;
     }
 
-    public function slerp from (target is Quat, t is Number) to Quat 
+    public function slerp from (b0 is Quat, t is Number) to Quat
+    {
+	if (t == 0) {
+	    return this;
+	}
+	if (t == 1) {
+	    return b0;
+	}
+        var x is Number;
+        var y is Number;
+        var z is Number;
+        var w is Number;
+	var cosHalfTheta = this.x * b0.x + this.y * b0.y + this.z * b0.z + this.w * b0.w;
+        const b = if (cosHalfTheta < 0) then { cosHalfTheta = -cosHalfTheta; b0.inverse() } else b0;
+	// if qa=qb or qa=-qb then theta = 0 and we can return qa
+	if (Math.abs(cosHalfTheta) >= 1.0) {
+            return this;
+	}
+	// Calculate temporary values.
+	const halfTheta = Math.acos(cosHalfTheta) as Number;
+        const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta*cosHalfTheta) as Number;
+	// if theta = 180 degrees then result is not fully defined
+	// we could rotate around any axis normal to qa or qb
+	if (Math.abs(sinHalfTheta) < 0.001) {
+            x = (this.x * 0.5 + b.x * 0.5);
+            y = (this.y * 0.5 + b.y * 0.5);
+            z = (this.z * 0.5 + b.z * 0.5);
+            w = (this.w * 0.5 + b.w * 0.5);
+            return new Quat(x, y, z, w);
+	}
+	const ratioA = (Math.sin((1 - t) * halfTheta) / sinHalfTheta) as Number;
+        const ratioB = (Math.sin(t * halfTheta) / sinHalfTheta) as Number; 
+	//calculate Quaternion.
+	x = (this.x * ratioA + b.x * ratioB);
+	y = (this.y * ratioA + b.y * ratioB);
+	z = (this.z * ratioA + b.z * ratioB);
+	w = (this.w * ratioA + b.w * ratioB);
+        return new Quat(x, y, z, w);
+    }
+
+    public function slerp1 from (target is Quat, t is Number) to Quat 
     {
 	if (t == 0) {
 	    return this;
@@ -220,7 +260,7 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 
     public function toMat4 to Mat4 
     {
-	toMat4(Point3.<<0>>);
+        if (this == <<1>>) then Mat4.<<1>> else toMat4(Point3.<<0>>);
     }   
 
     public function toMat4 from (t is Tuple3) to Mat4 

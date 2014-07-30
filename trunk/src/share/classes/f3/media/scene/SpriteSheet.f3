@@ -1,5 +1,6 @@
 package f3.media.scene;
 import f3.math.*;
+import Shape2D.*;
 import f3.math.LinearMath.*;
 import java.lang.Math;
 
@@ -13,11 +14,13 @@ public class SpriteSheet is AbstractNode {
     public var columns is Integer = 1;
     var currentSprite is Shape2D.MeshNode2D = image;
     override var internalContent = Group { content: bind sprites };
+    public var color is Color = Color.color(1, 1, 1, .9999); // hack
+    public const paint is TexturePaint = TexturePaint { color: bind color; texture: bind image }; 
 
     var targetFrame is Integer;
 
     bound var sprites is Node[] = 
-        foreach (i in [0..<frameCount]) createSprite(i, image.getWidth(), image.getHeight(), image.paint);
+        foreach (i in [0..<frameCount]) createSprite(i, image.getWidth(), image.getHeight(), paint);
 
 
     bound function createSprite from (frame is Integer, imageWidth is Number, imageHeight is Number, paint is Shape2D.Paint) to Node
@@ -41,11 +44,11 @@ public class SpriteSheet is AbstractNode {
     public function setFrame from (frame is Integer) to ()
     {
         targetFrame = frame;
-        println("set frame {image.url} => {frame}");
+        //println("set frame {image.url} => {frame}");
     }
 
     public var animTarget is Number on replace {
-        println("animTarget={animTarget}");
+        //println("animTarget={animTarget}");
         setFrame(Math.floor(animTarget) as Integer);
     }
 

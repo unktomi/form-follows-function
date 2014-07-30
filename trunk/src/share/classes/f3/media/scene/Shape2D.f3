@@ -162,9 +162,11 @@ public function ColorPaint from (color is Color) to ColorPaint
     ColorPaint { color: color }
 }
 
+const TRANSPARENT_WHITE = new Color(1, 1, 1, 0);
+
 public class TexturePaint is ColorPaint 
 {
-    override var color = Color.color(1, 1, 1, 0);
+    override var color = TRANSPARENT_WHITE;
     public var texture is AbstractTexture;
 }
 

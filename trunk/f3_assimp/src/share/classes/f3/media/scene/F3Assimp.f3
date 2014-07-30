@@ -46,7 +46,17 @@ const QuatLinear is KeyFrame.Interpolator = KeyFrame.Interpolator of Quat {
     override var zero = Quat.<<1>>;
     override function interpolate from (k is Key of Quat, t is Number) to Quat 
     {
-	k.prev.value.slerp(k.value, t)
+	const r = if (k.prev == null) then k.value else k.prev.value.slerp(k.value, t);
+        //println("interpolated {k.prev.value.toAngles()} @{t} {k.value.toAngles()} to {r.toAngles()}");
+        return r;
+    }
+    override function scale from (x is Quat, weight is Number) to Quat
+    {
+        Quat.<<1>>.slerp(x, weight);
+    }
+    override function add from (x is Quat, y is Quat) to Quat 
+    {
+        x * y
     }
 }
 
@@ -61,8 +71,12 @@ public class QTransformNode extends Group {
     public var sx is Number = 1.0;
     public var sy is Number = 1.0;
     public var sz is Number = 1.0;
+    public var rx is Number = 0.0;
+    public var ry is Number = 0.0;
+    public var rz is Number = 0.0;
     public var r is Quat = Quat.<<1>>;
-    override var transform = bind translate(tx, ty, tz) * r.toMat4() * scale(sx, sy, sz);
+    public var initialTransform is Mat4;
+    override var transform = bind translate(tx, ty, tz) * rotate(rx, ry, rz) * r.toMat4() * scale(sx, sy, sz) * initialTransform;
 }
 
 class Loader {
@@ -178,7 +192,7 @@ class Loader {
         var tick = 1s / (if (ticksPerSecond == 0) then 24 else ticksPerSecond);
         id: x.getName();
         var content = foreach (ch in x.getChannels())  {
-            /*
+
             const qs is Tuple3[] = {
                 var tmp is Tuple3[];
                 for (i in [0..<ch.getNumRotKeys()]) {
@@ -189,13 +203,13 @@ class Loader {
                 }
                 tmp;
             };
-            */
+
             var target is QTransformNode = sceneRoot.lookup(ch.getNodeName()) as QTransformNode;
-            println("{x.getName()} animation target {ch.getNodeName()} => {target}");
             if (target == null) {
                 target = spatialRoot.lookup(ch.getNodeName()) as QTransformNode;
             }
-            println("{x.getName()} animation target {ch.getNodeName()} => {target}");
+            target.initialTransform = Mat4.<<1>>;
+            println("{x.getName()} animation target {ch.getNodeName()} => {target}, t={ch.getNumPosKeys()}, s={ch.getNumScaleKeys()}, r={ch.getNumRotKeys()}");
             [if (ch.getNumPosKeys() > 0) {
                 [Channel of Number {
                         id: "{x.getName()}#tx"
@@ -267,7 +281,8 @@ class Loader {
                     }];
                 } else [],
                 if (ch.getNumRotKeys() > 0) {
-                    [Channel of Quat {
+
+                    if true then [Channel of Quat {
                         id: "{x.getName()}#r"
                         targets: &target.r;
                         keys: foreach (i in [0..<ch.getNumRotKeys()]) {
@@ -278,9 +293,9 @@ class Loader {
                                 value: q1;
                             }
                        }
-                    }]
-                    /*
-                    ,Channel of Number {
+                    }] else
+
+                [Channel of Number {
                         id: "{x.getName()}#rx"
                         targets: &target.rx;
                         keys: 
@@ -312,8 +327,9 @@ class Loader {
                                 value: qs[i].z;
                             }
                         }
-                    }] */
-                } else []];
+                    }]
+                    } else []
+                ]
             };
             content: content;
     }
@@ -368,7 +384,7 @@ class Loader {
             for (x in sceneMesh.getBones()) {
                 const jointIndex = indexof x;
                 for (wt in x.getBoneWeights()) {
-                    const v = ib.get(wt.getVertexId());
+                    const v = wt.getVertexId();
                     var wl = map.get(v);
                     if (wl == null) {
                         wl = WeightList {};
@@ -383,20 +399,21 @@ class Loader {
                 const m1 = toMat4(m);
                 // pm is joint world to local at time of bind
                 const joint = spatialRoot.lookup(x.getName());
-                println("mesh:");
-                println(mn.toSceneTransform);
-                println("joint inverse {joint.id}:");
-                println(joint.toSceneTransform.inverse());
-                println("offset:");
-                println(m1);
+                insert joint into joints;
+                //println("mesh:");
+                //println(mn.toSceneTransform);
+                //println("joint inverse {joint.id}:");
+                //println(joint.toSceneTransform.inverse());
+                //println("offset:");
+                //println(m1);
                 insert m1 into pm;
             }
             for (ent in map.entrySet()) {
                 const v is Integer = ent.getKey();
                 const wl = ent.getValue();
-                for (ii in [0..<wl.w.size() step 2]) {
-                    println("\"wl[{v}].w[{wl.w[ii] as Integer}]\" {wl.w[ii+1]};");                     
-                }
+                //for (ii in [0..<wl.w.size() step 2]) {
+                //    println("\"wl[{v}].w[{wl.w[ii] as Integer}]\" {wl.w[ii+1]};");                     
+                // }
                 insert v into weights;
                 insert wl.w.size() / 2 into weights;
                 insert wl.w into weights;
@@ -422,9 +439,9 @@ class Loader {
         var q is QTransformNode;
         var t = Group {
             id: "{if x == root then url else x.getName()}#wrapper";
-            transform: toMat4(x.getTransform(wrapper));
             content:
             q = QTransformNode {
+                initialTransform: toMat4(x.getTransform(wrapper));
                 id: if x == root then url else x.getName();
                 var meshIndices is Integer[] = x.getMeshes();
                 var meshNodes is MeshNode[] = foreach (i in meshIndices) {

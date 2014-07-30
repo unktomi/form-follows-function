@@ -129,11 +129,10 @@ public class StageNode is Shape2D.MeshNode2D, Stage, AbstractTexture, MouseInput
         return r;
     }
     override var gridFit = false;
-    public var background is Color = Color.TRANSPARENT;
+    public var background is Color = Color.color(1, 1, 1, 0);
     override var paint = {
 	const self = this;
 	Shape2D.TexturePaint {
-	    color: bind background;
 	    texture: self;
 	}
     }

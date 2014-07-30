@@ -3,16 +3,6 @@ import f3.math.*;
 
 public abstract class AbstractRef of a is AbstractConstRef of a, Ref of a {
 
-    public function add from (this is AbstractRef of Number, n is Number) to () {
-        const r = this;
-        r.set(r.get() + n);
-    }
-
-    public function sub from (this is AbstractRef of Number, n is Number) to () {
-        const r = this;
-        r.set(r.get() - n);
-    }
-
     public function toggle from (this is AbstractRef of Boolean) to () {
         const r = this;
         r.set(not r.get())
