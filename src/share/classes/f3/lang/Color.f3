@@ -388,7 +388,7 @@ public def WHITE = #FFFFFF;
 public def WHITESMOKE = #F5F5F5;
 public def YELLOW = #FFFF00;
 public def YELLOWGREEN = #9ACD32;
-public def TRANSPARENT = #000000|00;
+public def TRANSPARENT = #ffffff|00;
 
 public def TYPE_INFO = org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(BLACK);
 

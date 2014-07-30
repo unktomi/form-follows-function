@@ -5,7 +5,7 @@ import f3.util.*;
 import f3.math.*;
 
 public function sortKeys of a 
-       from (keys is (Key of a)[])
+       from (keys is (Key of a)[], loop is Boolean)
        to (Key of a)[]
 {
     const list = new java.util.ArrayList of Object (keys.size());
@@ -29,6 +29,10 @@ public function sortKeys of a
         prev.next = k;
         prev = k;
         insert k into result;
+    }
+    if (loop) {
+       result[0].prev = result[result.size()-1];
+       result[result.size()-1].next = result[0];
     }
     return result;
 }

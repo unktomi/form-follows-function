@@ -1310,6 +1310,7 @@ class TexturePaintShader is CGFXShader
     override function updateParameters to ()
     {
         setParameter("texSampler0", tex);
+        setParameter("diffuse", color);
     }
 
     override function apply from (mesh is AbstractMesh,
