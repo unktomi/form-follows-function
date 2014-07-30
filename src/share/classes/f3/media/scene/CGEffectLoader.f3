@@ -20,4 +20,11 @@ public interface CGEffectLoader
 	from (paint is Shape2D.Paint) 
 	to Shader;
 
+    abstract public function loadPbrShader(baseColorTex is AbstractTexture,
+                                           baseColor is Color,
+                                           roughness is Number,
+                                           metallic is Number,
+                                           specular is Number)
+        to Shader;
+
 }

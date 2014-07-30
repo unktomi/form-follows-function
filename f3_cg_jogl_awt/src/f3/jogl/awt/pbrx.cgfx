@@ -1,0 +1,135 @@
+uniform float4x4 worldViewProjection : WORLDVIEWPROJECTION;
+uniform float4x4 world : WORLD;
+uniform float4x4 viewInverse : VIEWINVERSE;
+uniform float4x4 worldInverseTranspose : WORLDINVERSETRANSPOSE;
+uniform float3 lightWorldPos1;
+uniform float3 lightWorldPos2;
+uniform float3 lightWorldPos3;
+uniform float3 lightWorldPos4;
+uniform float4 _LightColor0;
+uniform float4 lightMask;
+uniform float4 Albedo;
+uniform float4 Emission;
+uniform float4 Specular;
+uniform float Gloss;
+uniform float Alpha;
+uniform float Rough;
+uniform float Metal;
+
+
+struct SurfaceOutputCustom
+{
+                                                                
+  float3 Albedo;
+  float3 Normal;
+  float3 Emission;
+  float4 Specular;
+  float Gloss;
+  float Alpha;
+  float Rough;
+  float Metal;
+};               
+
+#define PI 3.14159
+
+float calcVisibility(float NoL, float NoV, float alpha2)
+{
+  float invGeo1 = NoV + sqrt(alpha2 + (1.0f - alpha2) * (NoV * NoV));
+  float invGeo2 = NoL + sqrt(alpha2 + (1.0f - alpha2) * (NoL * NoL));
+  return 1.0f / (invGeo1 * invGeo2);
+}
+float calcSpecular(float alpha2, float NoH)
+{
+  float denominator = (NoH * NoH) * (alpha2 - 1.0f) + 1.0f;
+  denominator = PI * denominator * denominator;
+  return alpha2 / denominator;
+}
+
+float4 LightingCustomPBR(SurfaceOutputCustom s, float3 lightDir, float3 viewDir, half atten)
+{
+  //normalizing vectors
+  float3 N = normalize(s.Normal);
+  float3 L = normalize(lightDir);
+  float3 V = normalize(viewDir);
+  float3 Spec = (s.Specular.rgb);              
+  //bunch of vectors
+  float NoL = max(0,(dot(N,L)));
+  float NoV = max(0,dot(N,V));
+  float3 H = normalize(L + V);                            
+  float LoH = saturate(dot(L,H));
+  float NoH = max(0,dot(N,H));
+  float alpha = s.Rough;
+  alpha *= alpha;
+  float alpha2 = alpha * alpha;
+  float3 Fresnel = Spec + (1.0f - Spec) * pow(1.0f - saturate(LoH), 5.0f);
+  float3 SpecCol = saturate((calcSpecular(alpha2, NoH) / calcVisibility(NoL, NoV, alpha2) * Fresnel) / (4.0f * NoL * NoV));
+  half3 Albedo = (1 - SpecCol) * s.Albedo.rgb;
+  float4 c;
+  c.rgb = (Albedo + SpecCol) * _LightColor0.rgb * NoL * (atten * 2.0f);
+  return c;
+}   
+
+struct VertexShaderInput {
+  float4 position : POSITION;
+  float4 normal : NORMAL;
+  float2 tex : TEXCOORD0;  
+};
+
+struct PixelShaderInput {
+  float4 position : POSITION;
+  float3 normal : TEXCOORD1;
+  float3 worldPosition : TEXCOORD4;
+  float2 tex : TEXCOORD0;  
+};
+
+PixelShaderInput vertexShaderFunction(VertexShaderInput input) {
+  PixelShaderInput output;
+  output.position = mul(worldViewProjection, input.position);
+  float3 worldPosition = mul(world, input.position).xyz;
+  output.normal = mul(worldInverseTranspose, input.normal).xyz;
+  output.worldPosition = worldPosition;
+  output.tex = input.tex;  
+  return output;
+}
+
+float4 doLight(float3 worldPosition, float3 lightWorldPos, float3 worldNormal, float3 surfaceToView)  {
+  SurfaceOutputCustom s;
+  float3 surfaceToLight = normalize(lightWorldPos - worldPosition);
+  float attenuation = 1.0;
+  s.Albedo = Albedo;
+  s.Normal = worldNormal;
+  s.Emission = Emission;
+  s.Specular = Specular;
+  s.Gloss = Gloss;
+  s.Alpha = Alpha;
+  s.Rough = Rough;
+  s.Metal = Metal;
+  return LightingCustomPBR(s, surfaceToLight, surfaceToView, attenuation);
+}
+
+float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
+  float3 worldNormal = normalize(input.normal);
+  float3 surfaceToView = normalize(float3(viewInverse[0].w,
+                                          viewInverse[1].w,
+                                          viewInverse[2].w) -
+                                   input.worldPosition);
+  float4 litResult1 = doLight(input.worldPosition, lightWorldPos1, worldNormal, surfaceToView) * lightMask.r;
+  float4 litResult2 = doLight(input.worldPosition, lightWorldPos2, worldNormal, surfaceToView) * lightMask.g;
+  float4 litResult3 = doLight(input.worldPosition, lightWorldPos3, worldNormal, surfaceToView) * lightMask.b;
+  float4 litResult4 = doLight(input.worldPosition, lightWorldPos4, worldNormal, surfaceToView) * lightMask.a;
+  float4 outColor = litResult1 + litResult2 + litResult3 + litResult4;
+  return float4(outColor.rgb, 1.0);
+}
+
+technique Opaque {
+    pass P0 {
+	DepthTestEnable = true;
+        DepthFunc = Less;
+        DepthMask = true;
+        CullFaceEnable  = false; 
+        BlendEnable = false;
+        VertexShader = compile latest vertexShaderFunction();
+        PixelShader  = compile latest pixelShaderFunction();
+    }
+}
+

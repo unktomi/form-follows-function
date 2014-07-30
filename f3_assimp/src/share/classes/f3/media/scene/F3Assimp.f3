@@ -46,8 +46,8 @@ const QuatLinear is KeyFrame.Interpolator = KeyFrame.Interpolator of Quat {
     override var zero = Quat.<<1>>;
     override function interpolate from (k is Key of Quat, t is Number) to Quat 
     {
-	const r = if (k.prev == null) then k.value else k.prev.value.slerp(k.value, t);
-        //println("interpolated {k.prev.value.toAngles()} @{t} {k.value.toAngles()} to {r.toAngles()}");
+	const r = if (k.prev == null) then k.value else k.prev.value.slerp(k.value, t).normalize();
+        println("interpolated {k.prev.value.toAngles()} @{t} {k.value.toAngles()} to {r.toAngles()}");
         return r;
     }
     override function scale from (x is Quat, weight is Number) to Quat
@@ -98,7 +98,7 @@ class Loader {
             
             const r = 
                 Jassimp.importFile(filename, 
-                                   java.util.EnumSet.<<of>>(//CALC_TANGENT_SPACE, 
+                                   java.util.EnumSet.<<of>>(CALC_TANGENT_SPACE, 
                                                             GEN_SMOOTH_NORMALS, 
                                                             //JOIN_IDENTICAL_VERTICES, 
                                                             TRIANGULATE, 
@@ -117,6 +117,16 @@ class Loader {
     }
     const scene = importFile(filename);
     const wrapper = new AiBuiltInWrapperProvider();
+    const cameraMap is java.util.Map of (String, AiCamera) = {
+        const map = new java.util.HashMap of (String, AiCamera);
+        for (cam in scene.getCameras()) map.put(cam.getName(), cam);
+        map;
+    }
+    const lightMap is java.util.Map of (String, AiLight) = {
+        const map = new java.util.HashMap of (String, AiLight);
+        for (light in scene.getLights()) map.put(light.getName(), light);
+        map;
+    }
     function toColor from (c is AiColor) to Color
     {
         println("TO COLOR {c}");
@@ -198,7 +208,8 @@ class Loader {
                 for (i in [0..<ch.getNumRotKeys()]) {
                     const q0 = ch.getRotKeyQuaternion(i, wrapper);
                     const q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW());
-                    const t = q1.toAngles(Quat.EULER_XYZ);
+                    const t = q1.toAngles(Quat.EULER_ZYX);
+                    //println("rot key at {i} = {t}, {q1.toAngles()}");
                     insert t into tmp;
                 }
                 tmp;
@@ -208,8 +219,10 @@ class Loader {
             if (target == null) {
                 target = spatialRoot.lookup(ch.getNodeName()) as QTransformNode;
             }
+            ///println("{x.getName()} animation target {ch.getNodeName()} => {target}, t={ch.getNumPosKeys()}, s={ch.getNumScaleKeys()}, r={ch.getNumRotKeys()}");
+            //println("initialTransform was:");
+            //println(target.initialTransform);
             target.initialTransform = Mat4.<<1>>;
-            println("{x.getName()} animation target {ch.getNodeName()} => {target}, t={ch.getNumPosKeys()}, s={ch.getNumScaleKeys()}, r={ch.getNumRotKeys()}");
             [if (ch.getNumPosKeys() > 0) {
                 [Channel of Number {
                         id: "{x.getName()}#tx"
@@ -355,7 +368,7 @@ class Loader {
             textureBuffers: foreach (i in [0..<JassimpConfig.MAX_NUMBER_TEXCOORDS]) {
                 const buf = mesh.getTexCoordBuffer(i);
                 if (buf == null) then null else {
-                        println("texcoord: {i} {mesh.getNumUVComponents(i)}");
+                        //println("texcoord: {i} {mesh.getNumUVComponents(i)}");
                         VertexAttributeBuffer {
                             id: "TEXCOORD{i}";
                             coordsPerVertex: mesh.getNumUVComponents(i); 
@@ -406,7 +419,7 @@ class Loader {
                 //println(joint.toSceneTransform.inverse());
                 //println("offset:");
                 //println(m1);
-                insert m1 into pm;
+                insert joint.toSceneTransform.inverse() into pm;
             }
             for (ent in map.entrySet()) {
                 const v is Integer = ent.getKey();
@@ -440,25 +453,34 @@ class Loader {
         var t = Group {
             id: "{if x == root then url else x.getName()}#wrapper";
             content:
-            q = QTransformNode {
-                initialTransform: toMat4(x.getTransform(wrapper));
-                id: if x == root then url else x.getName();
-                var meshIndices is Integer[] = x.getMeshes();
-                var meshNodes is MeshNode[] = foreach (i in meshIndices) {
-                    const sceneMesh = scene.getMeshes().get(i);
-                    const mesh = meshes[i];
-                    MeshNode 
-                    { 
-                        id: "{x.getName()}#mesh";
-                        shader: shaders[sceneMesh.getMaterialIndex()];
-                        mesh: mesh;
+            { 
+                q = QTransformNode {
+                    initialTransform: toMat4(x.getTransform(wrapper));
+                    id: if x == root then url else x.getName();
+                    var meshIndices is Integer[] = x.getMeshes();
+                    var meshNodes is MeshNode[] = foreach (i in meshIndices) {
+                        const sceneMesh = scene.getMeshes().get(i);
+                        const mesh = meshes[i];
+                        MeshNode 
+                        { 
+                            id: "{x.getName()}#mesh";
+                            shader: shaders[sceneMesh.getMaterialIndex()];
+                            mesh: mesh;
+                        }
                     }
+                    var ac = cameraMap.get(x.getName());
+                    var cam = if (ac == null) then null else PerspectiveCamera {
+                                id: "{x.getName()}#camera";
+                                near: ac.getClipPlaneNear();
+                                far: ac.getClipPlaneFar();
+                                heightAngle: java.lang.Math.toDegrees(ac.getHorizontalFOV()) * 2;
+                            };
+                    content: [foreach (c in x.getChildren()) generateScene(c), meshNodes, cam];
                 }
-                content: [foreach (c in x.getChildren()) generateScene(c), meshNodes];
             }
         }
-        println("{q.id}:");
-        println(t.transform);
+        //println("{q.id}:");
+        //println(t.transform);
         return t;
     }
 }
@@ -468,6 +490,8 @@ class ModelContent {
     public var spatialRoot is Node;
     public var temporalRoot is TimeNode;
     public var shaders is Shader[];
+    public var cameras is Camera[];
+    public var lights is PointLight[];
 }
 
 public class F3Assimp {

@@ -1372,6 +1372,38 @@ const NUM_SAMPLES = java.lang.Integer.getInteger("numSamples", 8);
 const SAMPLE_BUFFERS = NUM_SAMPLES <> 0;
 const DEPTH_BITS = java.lang.Integer.getInteger("depthBits", 32);
 
+class BasicPbrShader is DefaultLightShader4 {
+    public var baseTex is AbstractTexture;
+    public var baseColor is Color;
+    public var roughness is Number;
+    public var metallic is Number;
+    public var specular is Number;
+
+    override function updateParameters to ()
+    {
+        super.updateParameters();
+        if (baseTex <> null) {
+            setParameter("SpecularTex", baseTex);
+        } else {
+            setParameter("Specular", baseColor);
+        }
+        setParameter("Rough", roughness);
+        setParameter("Metal", metallic);
+        setParameter("Gloss", specular);
+        setParameter("_LightColor0", Color.WHITE);
+        setParameter("Albedo", Color.GRAY);
+    }
+
+    override function apply
+	from (mesh is AbstractMesh,
+	      sceneTransform is Mat4,
+	      viewMatrix is Mat4,
+	      projectionMatrix is Mat4)
+	to ()
+    {
+        super.apply(mesh, sceneTransform, viewMatrix, projectionMatrix);
+    }}
+
 class DefaultPhongShader is CGFXShader 
 {
     public var lightScenePos is Point3 = Point3.<<0>>;
@@ -1392,7 +1424,7 @@ class DefaultPhongShader is CGFXShader
     }
 }
 
-class DefaultPhongShader4 is CGFXShader 
+class DefaultLightShader4 is CGFXShader 
 {
     public var lightScenePos1 is Point3 = Point3.<<0>>;
     public var lightScenePos2 is Point3 = Point3.<<0>>;
@@ -1406,6 +1438,14 @@ class DefaultPhongShader4 is CGFXShader
         setParameter("lightWorldPos3", lightScenePos3);
         setParameter("lightWorldPos4", lightScenePos4);
         setParameter("lightMask", lightMask);
+    }
+}
+
+class DefaultPhongShader4 is DefaultLightShader4
+{
+    override function updateParameters to ()
+    {
+        super.updateParameters();
     }
 
     override function apply
@@ -1421,12 +1461,41 @@ class DefaultPhongShader4 is CGFXShader
 
 class JoglCGEffectLoader is CGEffectLoader 
 {
-    override public function loadDefaultShader(diffuseTexture is AbstractTexture,
-                                               diffuse is Color,
-                                               ambient is Color,
-                                               emissive is Color,
-                                               specular is Color,
-                                               shininess is Number)
+    override public function loadPbrShader(baseColorTex is AbstractTexture,
+                                           baseColor is Color,
+                                           roughness is Number,
+                                           metallic is Number,
+                                           specular is Number)
+    to Shader 
+    {
+        const url =  if (baseColorTex == null) then "{__DIR__}pbrx.cgfx" else "{__DIR__}pbrx-textured.cgfx";
+        const g = BasicPbrShader {
+            url: url;
+            baseTex: baseColorTex;
+            baseColor: baseColor;
+            roughness: roughness;
+            metallic: metallic;
+            specular: specular;
+        }
+        return g;
+    }
+    override function loadDefaultShader(diffuseTexture is AbstractTexture,
+                                        diffuse is Color,
+                                        ambient is Color,
+                                        emissive is Color,
+                                        specular is Color,
+                                        shininess is Number) to Shader 
+    {
+        //loadPbrShader(diffuseTexture, diffuse, .2, .8, .3);
+        loadDefaultShader0(diffuseTexture, diffuse, ambient, emissive, specular, shininess);
+    }
+
+    function loadDefaultShader0(diffuseTexture is AbstractTexture,
+                                diffuse is Color,
+                                ambient is Color,
+                                emissive is Color,
+                                specular is Color,
+                                shininess is Number)
 	to Shader 
     {
         var shader is CGFXShader;
@@ -3031,8 +3100,8 @@ public class SceneRenderer {
             try {
                 if (shader instanceof DefaultPhongShader) {
                     (shader as DefaultPhongShader).lightScenePos = closestLight;
-                } else if (shader instanceof DefaultPhongShader4) {
-                    var ds = shader as DefaultPhongShader4;
+                } else if (shader instanceof DefaultLightShader4) {
+                    var ds = shader as DefaultLightShader4;
 		    ds.lightScenePos1 = allLights[0];
                     ds.lightScenePos2 = allLights[1];
                     ds.lightScenePos3 = allLights[2];
