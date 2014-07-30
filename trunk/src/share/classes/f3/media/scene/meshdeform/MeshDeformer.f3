@@ -4,7 +4,6 @@ import java.util.concurrent.*;
 
 public const pool = new ForkJoinPool(java.lang.Runtime.getRuntime().availableProcessors());
 
-
 public interface MeshDeformer {
     public var enabled is Boolean = true;
     public abstract function apply from (m is MeshNode) to function from () to ();
