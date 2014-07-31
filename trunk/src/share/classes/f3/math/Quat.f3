@@ -131,7 +131,7 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 	w * q.w;
     }
 
-    public function slerp from (b0 is Quat, t is Number) to Quat
+    public function slerp0 from (b0 is Quat, t is Number) to Quat
     {
 	if (t == 0) {
 	    return this;
@@ -171,7 +171,7 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
         return new Quat(x, y, z, w);
     }
 
-    public function slerp1 from (target is Quat, t is Number) to Quat 
+    public function slerp from (target is Quat, t is Number) to Quat 
     {
 	if (t == 0) {
 	    return this;
@@ -233,6 +233,9 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
         const sqy = y * y;
         const sqz = z * z;
         const unit = sqx + sqy + sqz + sqw; // if normalized is one, otherwise
+        if (unit == 0) {
+            return Tuple3.<<0>>
+        }
         // is correction factor
         const test = x * y + z * w;
 	var rx is Number;

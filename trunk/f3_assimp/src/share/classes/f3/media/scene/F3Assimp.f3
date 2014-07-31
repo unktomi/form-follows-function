@@ -23,6 +23,14 @@ public class NumberKey is Key of Number {
     override var interpolator = KeyFrame.Linear;
 }
 
+function toFilename from (u is String) to String
+{
+    const u1 = new java.net.URL(u);
+    new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null)).getAbsolutePath();
+}
+
+
+
 function findFile from (dir is java.io.File, name is String) to java.io.File
 {
     if (dir == null) return null;
@@ -47,7 +55,7 @@ const QuatLinear is KeyFrame.Interpolator = KeyFrame.Interpolator of Quat {
     override function interpolate from (k is Key of Quat, t is Number) to Quat 
     {
 	const r = if (k.prev == null) then k.value else k.prev.value.slerp(k.value, t).normalize();
-        println("interpolated {k.prev.value.toAngles()} @{t} {k.value.toAngles()} to {r.toAngles()}");
+        //println("interpolated {k.value} => {k.prev.value.toAngles()} @{t} {k.value.toAngles()} to {r.toAngles()}");
         return r;
     }
     override function scale from (x is Quat, weight is Number) to Quat
@@ -80,6 +88,8 @@ public class QTransformNode extends Group {
 }
 
 class Loader {
+    public const sceneRoot is Node;
+    public const scene is AiScene;
     var resources = new java.util.HashSet of String;
     const imageLoader is ImageLoader;
     const effectLoader is CGEffectLoader;
@@ -91,31 +101,6 @@ class Loader {
                                        Color.BLACK,
                                        Color.BLACK,
                                        0);
-    
-    function importFile from (filename is String) to AiScene
-    {
-        try {
-            
-            const r = 
-                Jassimp.importFile(filename, 
-                                   java.util.EnumSet.<<of>>(CALC_TANGENT_SPACE, 
-                                                            GEN_SMOOTH_NORMALS, 
-                                                            //JOIN_IDENTICAL_VERTICES, 
-                                                            TRIANGULATE, 
-                                                            //OPTIMIZE_MESHES,
-                                                            //SPLIT_LARGE_MESHES,
-                                                            //SORT_BY_PTYPE,
-                                                            //DEBONE,
-                                                            GEN_UV_COORDS));
-            println("Meshes: {r.getNumMeshes()}");
-            println("Anims: {r.getNumAnimations()}");
-            return r;
-        } catch (e is java.lang.Exception) {
-            println(Jassimp.getErrorString());
-            throw new java.lang.RuntimeException(Jassimp.getErrorString());
-        }
-    }
-    const scene = importFile(filename);
     const wrapper = new AiBuiltInWrapperProvider();
     const cameraMap is java.util.Map of (String, AiCamera) = {
         const map = new java.util.HashMap of (String, AiCamera);
@@ -219,10 +204,11 @@ class Loader {
             if (target == null) {
                 target = spatialRoot.lookup(ch.getNodeName()) as QTransformNode;
             }
-            ///println("{x.getName()} animation target {ch.getNodeName()} => {target}, t={ch.getNumPosKeys()}, s={ch.getNumScaleKeys()}, r={ch.getNumRotKeys()}");
+            println("{x.getName()} animation target {ch.getNodeName()} => {target}, t={ch.getNumPosKeys()}, s={ch.getNumScaleKeys()}, r={ch.getNumRotKeys()}");
+            println("ticks per second: {ticksPerSecond}");
             //println("initialTransform was:");
             //println(target.initialTransform);
-            target.initialTransform = Mat4.<<1>>;
+            target.initialTransform = Mat4.<<1>>; // animation overwrites it
             [if (ch.getNumPosKeys() > 0) {
                 [Channel of Number {
                         id: "{x.getName()}#tx"
@@ -230,6 +216,7 @@ class Loader {
                         keys: 
                         foreach (i in [0..<ch.getNumPosKeys()]) {
                             NumberKey {
+                            //                            var dummy = { println("key time {i} => {ch.getPosKeyTime(i) }"); 1 }
                                 position: tick * ch.getPosKeyTime(i);
                                 value: ch.getPosKeyX(i);
                             }
@@ -502,7 +489,7 @@ public class F3Assimp {
     public bound function getTemporalRoot to TimeNode { modelContent.temporalRoot }
     public const effectLoader is CGEffectLoader = the CGEffectLoader;
     public const imageLoader is ImageLoader = the ImageLoader;
-    bound var modelContent is ModelContent = load(url, effectLoader, fileTimestamp);
+    bound var modelContent is ModelContent = load(url, effectLoader, fileTimestamp, sceneRoot);
     public var monitorForChanges is Boolean = false;
     public var pollInterval is Duration = 2s;
     var lastCheck is Long;
@@ -552,25 +539,36 @@ public class F3Assimp {
         modelContent.resources;
     }
 
-    function toFilename from (u is String) to String
-    {
-        const u1 = new java.net.URL(u);
-        new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null)).getAbsolutePath();
-    }
-
-    function load from (url is String, effectLoader is CGEffectLoader, fileTimestamp is Long) to ModelContent {
-        const loader = Loader {
-            effectLoader: effectLoader;
-            imageLoader: imageLoader;
-            filename: toFilename(url);
+    function load from (url is String, effectLoader is CGEffectLoader, fileTimestamp is Long, sceneRoot is Node) to ModelContent {
+        const mc = ModelContent {}
+        const filename = toFilename(url);
+        function updateContent from (scene is AiScene) to () 
+        {
+            const loader = Loader {
+                sceneRoot: sceneRoot;
+                filename: filename
+                scene: scene;
+                effectLoader: effectLoader;
+                imageLoader: imageLoader;
+            }
+            if (not DISABLE_DEFORMERS) {
+                loader.generateAllDeformers();
+            }
+            mc.spatialRoot = loader.spatialRoot;
+            mc.temporalRoot = TimeGroup { id: url content: loader.clips }
+            mc.resources = foreach (x in loader.resources) x;
         }
-        if (not DISABLE_DEFORMERS) {
-            loader.generateAllDeformers();
-        }
-        ModelContent {
-            spatialRoot: loader.spatialRoot;
-            temporalRoot: TimeGroup { id: url content: loader.clips }
-            resources: foreach (x in loader.resources) x;
-        }
+        const scene = Jassimp.importFile(filename, 
+                                         java.util.EnumSet.<<of>>(//CALC_TANGENT_SPACE, 
+                                                                  GEN_SMOOTH_NORMALS, 
+                                                                  //JOIN_IDENTICAL_VERTICES, 
+                                                                  TRIANGULATE, 
+                                                                  //OPTIMIZE_MESHES,
+                                                                  //SPLIT_LARGE_MESHES,
+                                                                  //SORT_BY_PTYPE,
+                                                                  //DEBONE,
+                                                                  GEN_UV_COORDS));
+        updateContent(scene);
+        return mc;
     }
 }
