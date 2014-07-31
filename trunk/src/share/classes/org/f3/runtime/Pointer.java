@@ -32,14 +32,14 @@ import org.f3.functions.*;
  * @author Brian Goetz
  * @author A. Sundararajan
  */
-public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> implements KeyValueTarget<a>, f3.lang.MemberRef<This>, f3.lang.Ref<a>, f3.lang.ObservableRef<a> {
+public class Pointer<This extends F3Object, T> extends ConstPointer<This, T> implements KeyValueTarget<T>, f3.lang.MemberRef<This>, f3.lang.Ref<T>, f3.lang.ObservableRef<T> {
     @org.f3.runtime.annotation.F3Signature("(Ljava/lang/Object;)Lorg/f3/runtime/Pointer;")
-    public static <This extends F3Object, a> Pointer<This,a> make(Type type, This obj, int varnum) {
-        return new Pointer<This,a>(type, obj, varnum);
+    public static <This extends F3Object, T> Pointer<This,T> make(Type type, This obj, int varnum) {
+        return new Pointer<This,T>(type, obj, varnum);
     }
     
-    public static <This extends F3Object, a> Pointer<This,a> make(This obj, int varnum) {
-        return new Pointer<This,a>(Type.OBJECT, obj, varnum);
+    public static <This extends F3Object, T> Pointer<This,T> make(This obj, int varnum) {
+        return new Pointer<This,T>(Type.OBJECT, obj, varnum);
     }
     
     public static boolean equals(Pointer p1, Pointer p2) {
@@ -50,7 +50,7 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
 	super(type, obj, varnum);
     }
 
-    public void set(a value) {
+    public void set(T value) {
         if (obj != null) {
             obj.set$(varnum, (Object)value);
         }
@@ -60,10 +60,10 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
         return this;
     }
     
-    public void set(int pos, a value) {
+    public void set(int pos, T value) {
         assert type == Type.SEQUENCE : "expecting a sequence type";
         if (obj != null) {
-	    Sequences.<a>set(obj, varnum, value, pos);
+	    Sequences.<T>set(obj, varnum, value, pos);
         }
     }
 
@@ -72,7 +72,7 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
     }
 
     public void setValue(Object value) {
-	set((a)value);
+	set((T)value);
     }
 
     public static void switchDependence(Pointer oldPtr, Pointer newPtr, F3Object dep, int depNum) {
@@ -128,7 +128,7 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
      *
      * @param srcPtr The source Pointer object to which the current Pointer is bound to
      */
-    public BoundPointer<a> bind(Pointer<? extends F3Object, a> srcPtr) {
+    public BoundPointer<T> bind(Pointer<? extends F3Object, T> srcPtr) {
         final F3Object thisObj = getF3Object();
         final int thisVarNum = getVarNum();
         final int srcVarNum = srcPtr.getVarNum();
@@ -146,11 +146,11 @@ public class Pointer<This extends F3Object, a> extends ConstPointer<This, a> imp
             }
         };
         // initial update from "srcPtr"
-        this.obj.set$(thisVarNum, (a)srcPtr.get());
+        this.obj.set$(thisVarNum, (T)srcPtr.get());
 
         // add dependency so that we will get notified with update$ calls
         srcPtr.addDependency(listener);
         // return a BoundPointer so that use can call call "unbind()" later, if needed
-        return new BoundPointer<a>(this, srcPtr, listener);
+        return new BoundPointer<T>(this, srcPtr, listener);
     }
 }

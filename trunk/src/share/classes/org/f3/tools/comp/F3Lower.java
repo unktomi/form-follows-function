@@ -870,7 +870,16 @@ public class F3Lower implements F3Visitor {
 	    pointerMakeSym.flags_field |= F3Flags.FUNC_POINTER_MAKE;
 	    F3Select pointerMake = (F3Select)m.at(that.pos).Select(pointerType, pointerMakeSym, false);
 	    pointerMake.sym = pointerMakeSym;
-	    Type ownerType = vsym.owner.type;
+            //System.err.println("tree.type="+tree.type);
+	    Type ownerType = tree.type.getTypeArguments().get(0);
+            Type elemType = tree.type.getTypeArguments().get(1);
+            //System.err.println("vsym.type: "+ vsym.type);
+            //System.err.println("ownerType: "+vsym.owner.type);
+            //System.err.println("vsym.type': "+ elemType);
+            //System.err.println("ownerType': "+ownerType);
+            if (ownerType instanceof WildcardType) {
+                ownerType = syms.f3_ObjectType;
+            }
             if (types.isMixin(vsym.owner)) {
                 ownerType = syms.f3_ObjectType;
             }
@@ -881,9 +890,10 @@ public class F3Lower implements F3Visitor {
                 ownerType = syms.f3_ObjectType;
             }
 	    F3Expression pointerCall = m.at(that.pos).Apply(List.<F3Expression>of(m.Type(ownerType), 
-										  m.Type(vsym.type)),
+										  m.Type(elemType)),
 							    pointerMake,
 							    List.of(arg1, arg2)).setType(pointerMakeSym.type.getReturnType());
+            //System.err.println("result: "+ pointerCall.type);
 	    result = pointerCall;
         } else if (tree.getF3Tag().isIncDec()) {
             result = lowerNumericUnary(tree);

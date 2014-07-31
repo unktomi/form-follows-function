@@ -52,6 +52,7 @@ public class F3Local {
 
     public static Context getContext() { return Context.instance; }
 
+
     /** Implementation of {@link F3Context} using Java reflection.
      * Can only access objects and types in the current JVM.
      * Normally, this is a singleton, though in the future there might
@@ -62,6 +63,26 @@ public class F3Local {
      */
 
     public static class Context extends F3Context {
+
+        final Class[] functionClassTypes = new Class[] {
+            Function0.class,
+            Function1.class,
+            Function2.class,
+            Function3.class,
+            Function4.class,
+            Function5.class,
+            Function6.class,
+            Function7.class,
+            Function8.class,
+            Function9.class,
+            Function10.class,
+            Function11.class,
+            Function12.class,
+            Function13.class,
+            Function14.class,
+            Function15.class,
+            Function16.class,
+        };
 
         Context parent;
 
@@ -353,13 +374,15 @@ public class F3Local {
             }
         }
     
-        public static Class asClass (F3Type type) {
+        public Class asClass (F3Type type) {
             if (type instanceof F3PrimitiveType)
                 return ((F3PrimitiveType) type).clas;
             else if (type instanceof JavaArrayType)
                 return ((JavaArrayType) type).getJavaClass();
             else if (type instanceof F3SequenceType)
                 return Sequence.class;
+            else if (type instanceof F3FunctionType)
+                return functionClassTypes[((F3FunctionType)type).minArgs()];
             else { // FIXME - handle other cases
                 ClassType ctyp = (ClassType) type;
                 return ctyp.isMixin() ? ctyp.refInterface : ctyp.refClass;
@@ -534,30 +557,48 @@ public class F3Local {
             int nargs = argType.length;
             Class[] ctypes = new Class[nargs];
             for (int i = 0;  i < nargs;  i++) {
-                ctypes[i] = Context.asClass(argType[i]);
+                ctypes[i] = ((Context)getReflectionContext()).asClass(argType[i]);
             }
-            try {
-                Method meth;
+            if (!isF3Type() && name.startsWith("new ")) {
                 try {
-                    meth = refClass.getMethod(name, ctypes);
-                } catch (NoSuchMethodException ex) {
-                    if (isMixin())
-                        meth = null;
-                    else
+                    Constructor meth;
+                    try {
+                        meth = refClass.getConstructor(ctypes);
+                    } catch (NoSuchMethodException ex) {
                         throw ex;
+                    }
+                    return asFunctionMember(meth, getReflectionContext());
                 }
-                if (isMixin())
-                    if (meth == null ||
+                catch (RuntimeException ex) {
+                    throw ex;
+                }
+                catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            } else {
+                try {
+                    Method meth;
+                    try {
+                        meth = refClass.getMethod(name, ctypes);
+                    } catch (NoSuchMethodException ex) {
+                        if (isMixin())
+                            meth = null;
+                        else
+                            throw ex;
+                    }
+                    if (isMixin())
+                        if (meth == null ||
                             (meth.getModifiers() &  Modifier.STATIC) == 0) {
-                    meth = refInterface.getMethod(name, ctypes);
+                            meth = refInterface.getMethod(name, ctypes);
+                        }
+                    return asFunctionMember(meth, getReflectionContext());
                 }
-                return asFunctionMember(meth, getReflectionContext());
-            }
-            catch (RuntimeException ex) {
-                throw ex;
-            }
-            catch (Exception ex) {
-                throw new RuntimeException(ex);
+                catch (RuntimeException ex) {
+                    throw ex;
+                }
+                catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         }
     
