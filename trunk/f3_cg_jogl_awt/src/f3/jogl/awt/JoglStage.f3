@@ -2590,7 +2590,12 @@ public class SceneRenderer {
         for (i in scene.visibleMeshes) {
 	    vf((), i);
 	}
+        const startms = java.lang.System.currentTimeMillis();
         for (v in deformerFutures) v();
+        const endms = java.lang.System.currentTimeMillis();
+        if (endms - startms > 8) {
+            //println("applying deformers: {endms - startms}ms");
+        }
 	for (i in offscreenToRender) {
 	    if (renderStageNode(gl, i as StageNode)) {
                 dirty = true;

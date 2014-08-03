@@ -15,6 +15,7 @@ class TopAction is Callable of (()) {
     const norm = new Vec3f();
     const origPos = new Vec3f();
     const origNorm = new Vec3f();
+    var bounds is Bounds;
     override function call to (()) {
         if (actions == []) {
             cluster.doit(0, size, temp1, temp2, pos, norm, origPos, origNorm);
@@ -25,6 +26,7 @@ class TopAction is Callable of (()) {
                 x.get();
             }
         }
+        bounds = target.computeBounds();
         return ();
     }
 }
@@ -40,7 +42,10 @@ class SkinAction is Callable of (()) {
     const origPos = new Vec3f();
     const origNorm = new Vec3f();
     override function call to (()) {
+        const startMillis = java.lang.System.currentTimeMillis();
         cluster.doit(start, end, temp1, temp2, pos, norm, origPos, origNorm);
+        const endMillis = java.lang.System.currentTimeMillis();
+        //java.lang.System.err.println("elapsed: {endMillis - startMillis}ms for {end - start} vertices");
         return ();
     }
 }
@@ -65,12 +70,19 @@ public class SkinCluster is MeshDeformer {
     const sceneToLocal = new Mat4f();
     var lastWm is Mat4[];
     const tempMat = new Mat4f();
+
+    var lastTime is Long;
     public override function apply from (m is MeshNode) to function from () to () 
     {
         if (root == null) {
            println("ROOT MISSING {this}");
            return null;
         }
+        const now = java.lang.System.currentTimeMillis();
+        if (now - lastTime < 32) {
+            return null;
+        }
+        lastTime = now;
         if (not enabled) {
             return null;
         }
@@ -133,7 +145,7 @@ public class SkinCluster is MeshDeformer {
         const fut = pool.submit(top);
         return function to () {         
             fut.get();
-            target.updateBounds();
+            target.__deformerSetBounds(top.bounds); // hack
         }
     }
 
@@ -158,7 +170,8 @@ public class SkinCluster is MeshDeformer {
         if (size < 512) {
             return []
         } else {
-            const batch = weights.size() / java.lang.Runtime.getRuntime().availableProcessors();
+            const batch = weights.size() / java.lang.Runtime.getRuntime().availableProcessors();;
+                
             var actions is (Callable of (()))[];
             var i = 0;
             var prev = 0;
