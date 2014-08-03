@@ -391,6 +391,17 @@ public class Scene
         moveEvent = event;
         updateMouse(event.screenx, event.screeny);
     }
+
+    public function updateMousePosition from (event is MouseEvent) to ()
+    {
+        const mouseX = event.screenx;
+        const mouseY = event.screeny;
+        this.mouseX = mouseX;
+        this.mouseY = this.height-mouseY;
+        updateCamera();
+        const mouseV = camera.toScene(mouseX, mouseY, 0);
+	mousePosition = mouseV;
+    }
     
     var focusCount is Integer;
 

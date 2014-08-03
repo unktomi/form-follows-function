@@ -22,8 +22,14 @@ public class BlendShape is MeshDeformer {
 
     public override function apply from (_ is MeshNode) to function from () to ()
     {
-        const fut = pool.submit(BlendAction {blendShape: this});
-        return function to () { fut.get() }
+        if (enabled) {
+            const fut = pool.submit(BlendAction {blendShape: this});
+            return function to () { 
+                fut.get();
+                target.updateBounds();
+            }
+        }
+        return null;
     }
 
     function doit to () {

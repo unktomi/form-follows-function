@@ -7,7 +7,7 @@ import java.lang.Math;
 import f3.media.scene.KeyFrame.Key;
 import f3.media.scene.KeyFrame.Interpolator;
 
-package var DEBUG = java.lang.Boolean.getBoolean("f3.debug.anim");
+package var CHANNEL_DEBUG = java.lang.Boolean.getBoolean("f3.debug.anim.channel");
 
 function binarySearch of a from (keys is (Key of a)[], t is Duration) to Integer 
 {
@@ -31,7 +31,7 @@ public class Channel of a is TimeNode
 {
     public var targets is (Ref of a)[];
     public var keys is (Key of a)[];
-    public const loopKeys is Boolean = no;
+    public const loopKeys is Boolean = yes;
 
     readonly var sortedKeys = bind KeyFrame.sortKeys(keys, loopKeys);
 
@@ -141,11 +141,10 @@ public class Channel of a is TimeNode
     public function interpolate
 	from (sceneTime is Duration, weight is Number, v is a) to a
     {
-        if (weight == 0) { return v }
-	const pos = localTime;
+        const pos = localTime;
 	const picked = pickKey(pos);
         if (debug) {
-            println("id={id} playing={playing} localTime={localTime} picked={picked.position} {picked.value}");
+            println("parent.{id} / id={id} playing={playing} localTime={localTime} {picked} => picked={picked.position} {picked.value}");
         }
 	var k1 is Key of a;
 	var k2 is Key of a;
@@ -156,13 +155,16 @@ public class Channel of a is TimeNode
 	    k1 = picked.prev;
 	    k2 = picked;
 	}
+        if (debug) {
+            println("k1={k1.position}, {k1.value}, k2={k2.position}, {k2.value}");
+        }
 	var t = 0.0;
 	var k = k2;
 	if (k1 == null) {
-	    t = 1.0;
+            t = 1.0;  
 	} else if (k2 == null) {
-	    t = 0.0;
-	    k = k1;
+            t = 0.0;
+            k = k1;
 	} else {
 	    const dur = (k2.position - k1.position);
 	    if (dur == 0s) {
@@ -172,8 +174,8 @@ public class Channel of a is TimeNode
 	    }
 	}
 	// v + k.interpolate(t) * weight
-	const result = k.add(if (v == null) then k.zero() else v, k.scale(k.interpolate(t), weight));
-	if (DEBUG or debug) {
+	const result = k.add(if (v == null or weight == 0) then k.zero() else v, k.scale(k.interpolate(t), weight));
+	if (CHANNEL_DEBUG or debug) {
 	    println("{id} interpolated {k.interpolator} {pos} to {result}");
 	}
 	return result;

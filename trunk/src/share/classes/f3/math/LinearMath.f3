@@ -5,6 +5,10 @@ import f3.math.Quat.*;
 public const EPSILON = 0.000001;
 public const ZERO_TOLERANCE = .00001;
 
+public function eq from (x is Number, y is Number) to Boolean {
+    Math.abs(x-y) <= ZERO_TOLERANCE;
+}
+
 public function matrix from (q is Quat) to Mat4
 {
     q.toMat4();

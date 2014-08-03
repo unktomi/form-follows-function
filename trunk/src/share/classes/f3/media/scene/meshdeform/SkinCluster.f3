@@ -69,7 +69,10 @@ public class SkinCluster is MeshDeformer {
     {
         if (root == null) {
            println("ROOT MISSING {this}");
-           return function to () { };
+           return null;
+        }
+        if (not enabled) {
+            return null;
         }
 	root.toSceneTransform.inverse().getRows(sceneToLocal.data);
 	if (jointMats == []) {
@@ -86,7 +89,7 @@ public class SkinCluster is MeshDeformer {
 	    combinedInverseTranspose = foreach (j in bindPreMats) new Mat4f();
 	}
 	var dirty = false;
-	if (lastWm == []) {
+	if (lastWm.size() <> joints.size()) {
 	    lastWm = foreach (j in joints) j.toSceneTransform;
 	    dirty = true;
 	} else {
@@ -128,7 +131,10 @@ public class SkinCluster is MeshDeformer {
             }
         }
         const fut = pool.submit(top);
-        return function to () { fut.get() }
+        return function to () {         
+            fut.get();
+            target.updateBounds();
+        }
     }
 
     var top is TopAction;
