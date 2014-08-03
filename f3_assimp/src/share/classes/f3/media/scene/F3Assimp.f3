@@ -8,6 +8,111 @@ import f3.media.scene.KeyFrame.*;
 import f3.media.scene.Channel.*;
 import f3.math.*;
 import f3.math.LinearMath.*;
+import f3.lang.Ref;
+import java.lang.Math;
+
+function eq from (x is Number, y is Number) to Boolean {
+    Math.abs(x-y) <= 5.0e-4;
+}
+
+abstract class GetChannel {
+    function getNumKeys from (ch is AiNodeAnim) to Integer;
+    function getKey from (ch is AiNodeAnim, i is Integer) to Number;
+    function getKeyTime from (ch is AiNodeAnim, i is Integer) to Number;
+    public var id is String;
+    public var target is Ref of Number;
+    public var tick is Duration;
+
+
+    function getKeys from (ch is AiNodeAnim) to Channel of ? 
+    {
+        var prev is Number;
+        var result is NumberKey[];
+        var chs is (Channel of ?)[];
+        const count = getNumKeys(ch);
+        for (i in [0..<count]) {
+            const value = getKey(ch, i);
+            if (i > 1 and i < count-1) {
+                if (eq(value, prev)) continue;
+            } 
+            prev = value;
+            insert NumberKey {
+                position: tick * getKeyTime(ch, i);
+                value: value;
+            } into result;
+        } 
+        if (result <> []) then Channel of Number {
+                id: id;
+                targets: target;
+                keys: result;
+            } else null;
+    }
+}
+
+abstract class GetT is GetChannel {
+    override function getNumKeys from (ch is AiNodeAnim) to Integer
+    {
+        ch.getNumPosKeys();
+    }
+    override function getKeyTime from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getPosKeyTime(i);
+    }
+}
+
+class GetTx is GetT {
+    override function getKey from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getPosKeyX(i);
+    }
+}
+
+class GetTy is GetT {
+    override function getKey from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getPosKeyY(i);
+    }
+}
+
+class GetTz is GetT {
+    override function getKey from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getPosKeyZ(i);
+    }
+}
+
+abstract class GetS is GetChannel {
+    override function getNumKeys from (ch is AiNodeAnim) to Integer
+    {
+        ch.getNumScaleKeys();
+    }
+    override function getKeyTime from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getScaleKeyTime(i);
+    }
+}
+
+class GetSx is GetS {
+    override function getKey from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getScaleKeyX(i);
+    }
+}
+
+class GetSy is GetS {
+    override function getKey from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getScaleKeyY(i);
+    }
+}
+
+class GetSz is GetS {
+    override function getKey from (ch is AiNodeAnim, i is Integer) to Number
+    {
+        ch.getScaleKeyZ(i);
+    }
+}
+
 
 const DISABLE_DEFORMERS = Boolean.getBoolean("f3.assimp.disable.deformers");
 
@@ -21,6 +126,42 @@ class IntList {
 
 public class NumberKey is Key of Number {
     override var interpolator = KeyFrame.Linear;
+}
+
+const RotLinear = NumberInterpolator {
+    function lerp from (x is Number, y is Number, t is Number) to Number {
+        x + (y - x) * t;
+    }
+    function eulerLerp from (angle1 is Number, angle2 is Number, t is Number) to Number 
+    {
+        var angle = Math.abs(angle2 - angle1); 
+        if (angle > 180) {
+            var x = angle1;
+            var y = angle2;
+            if (y > x) {
+                x += 360;
+            } else {
+                y += 360;
+            }
+            angle = lerp(x, y, t);
+            if (angle >= 0 and angle <= 360) {
+                return angle;
+            }
+            return angle mod 360;
+        }
+        return lerp(angle1, angle2, t);
+    }
+    public function interpolate from (k is Key of Number, t is Number) to java.lang.Float // hack: compiler bug
+    {
+        //if (t >= 0.5) then k.value else k.prev.value; // linear interpolating rotations is fail at the moment
+        if (t == 0) k.prev.value else if t == 1 then k.value else {
+                    eulerLerp(k.prev.value, k.value, t);
+                }
+    }
+}
+
+public class RotNumberKey is Key of Number {
+    override var interpolator = RotLinear;
 }
 
 function toFilename from (u is String) to String
@@ -54,9 +195,10 @@ const QuatLinear is KeyFrame.Interpolator = KeyFrame.Interpolator of Quat {
     override var zero = Quat.<<1>>;
     override function interpolate from (k is Key of Quat, t is Number) to Quat 
     {
-	const r = if (k.prev == null) then k.value else k.prev.value.slerp(k.value, t).normalize();
+	//const r = if (k.prev == null) then k.value else k.prev.value.slerp(k.value, t).normalize();
         //println("interpolated {k.value} => {k.prev.value.toAngles()} @{t} {k.value.toAngles()} to {r.toAngles()}");
-        return r;
+        //return r;
+        if (t >= 0.5) then k.value else k.prev.value;
     }
     override function scale from (x is Quat, weight is Number) to Quat
     {
@@ -181,13 +323,182 @@ class Loader {
                 });
         }
     }
-
-    const clips = foreach (x in scene.getAnimations()) TimeGroup {
+    const clips = foreach (x in scene.getAnimations()) {
         var ticksPerSecond = x.getTicksPerSecond() as Number;
         var tick = 1s / (if (ticksPerSecond == 0) then 24 else ticksPerSecond);
-        id: x.getName();
-        var content = foreach (ch in x.getChannels())  {
+        var resultContent is TimeNode[];
+        var content is TimeGroup;
+        for (ch in x.getChannels())  {
+            var target is QTransformNode = sceneRoot.lookup(ch.getNodeName()) as QTransformNode;
+            if (target == null) {
+                target = spatialRoot.lookup(ch.getNodeName()) as QTransformNode;
+            }
+            target.initialTransform = Mat4.<<1>>; // animation overwrites it
+            var chs is (Channel of ?)[];
+            const tx = GetTx {
+                tick: tick;
+                target: &target.tx;
+                id: "tx";
+            }
+            insert tx.getKeys(ch) into chs;
+            const ty = GetTy {
+                tick: tick;
+                target: &target.ty;
+                id: "ty";
+            }
+            insert ty.getKeys(ch) into chs;
+            const tz = GetTz {
+                tick: tick;
+                target: &target.tz;
+                id: "tz";
+            }
+            insert tz.getKeys(ch) into chs;
+            const sx = GetSx {
+                tick: tick;
+                target: &target.sx;
+                id: "sx";
+            }
+            insert sx.getKeys(ch) into chs;
+            const sy = GetSy {
+                tick: tick;
+                target: &target.sy;
+                id: "sy";
+            }
+            insert sy.getKeys(ch) into chs;
+            const sz = GetSz {
+                tick: tick;
+                target: &target.sz;
+                id: "sz";
+            }
+            insert sz.getKeys(ch) into chs;
+            if (ch.getNumRotKeys() > 0) {
+                if (true) {
+                    var pq is Quat;
+                    var qkeys is QuatKey[];
+                    const cnt = ch.getNumRotKeys();
+                    for (i in [0..<cnt]) {
+                        var q0 = ch.getRotKeyQuaternion(i, wrapper);
+                        var q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW()).normalize();
+                        if (i > 0 and i < cnt-1) {
+                            if (eq(pq.x, q1.x) and
+                                eq(pq.y, q1.y) and
+                                eq(pq.z, q1.z) and
+                                eq(pq.w, q1.w)) {
+                                continue;
+                            }
+                        }
+                        const angles = q1.toAngles(Quat.EULER_XYZ);
+                        //println("angles={angles}");
+                        pq = q1;
+                        const q = QuatKey {
+                            position: tick * ch.getRotKeyTime(i);
+                            value: q1;
+                        }
+                        insert q into qkeys;
+                    }
+                    const chr = Channel of Quat {
+                        id: "r";
+                        targets: &target.r;
+                        keys: qkeys;
+                    }
+                    insert chr into chs;
+                } else {
+                    var pq is Quat;
+                    var qkeys is QuatKey[];
+                    const cnt = ch.getNumRotKeys();
+                    var rx is (Key of Number)[];
+                    var ry is (Key of Number)[];
+                    var rz is (Key of Number)[];
+                    var px is Number;
+                    var py is Number;
+                    var pz is Number;
+                    for (i in [0..<cnt]) {
+                        var q0 = ch.getRotKeyQuaternion(i, wrapper);
+                        var q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW()).normalize();
+                        if (i > 0 and i < cnt-1) {
+                            if (eq(pq.x, q1.x) and
+                                eq(pq.y, q1.y) and
+                                eq(pq.z, q1.z) and
+                                eq(pq.w, q1.w)) {
+                                continue;
+                            }
+                        }
+                        pq = q1;
+                        const angles = q1.toAngles(Quat.EULER_XYZ);
+                        //println("{ch.getNodeName()} {i}: {angles}");
+                        const pos = tick * ch.getRotKeyTime(i);
+                        if (i == 0 or i == cnt-1 or not eq(px, angles.x)) {
+                            insert
+                                RotNumberKey {
+                                position: pos;
+                                value: angles.x;
+                            }
+                            into rx;
+                            px = angles.x;
+                        }
+                        if (i == 0 or i == cnt-1 or not eq(py, angles.y)) {
+                            insert
+                                RotNumberKey {
+                                position: pos;
+                                value: angles.y;
+                            }
+                            into ry;
+                            py = angles.y;
+                        }
+                        if (i == 0 or i == cnt-1 or not eq(pz, angles.z)) {
+                            insert
+                                RotNumberKey {
+                                position: pos;
+                                value: angles.z;
+                            }
+                            into rz;
+                            pz = angles.z;
+                        }
+                    }
+                    insert Channel of Number {
+                        targets: &target.rx;
+                        id: "rx";
+                        keys: rx;
+                    } into chs;
+                    insert Channel of Number {
+                        targets: &target.ry;
+                        id: "ry";
+                        keys: ry;
+                    } into chs;
+                    insert Channel of Number {
+                        targets: &target.rz;
+                        id: "rz";
+                        keys: rz;
+                    } into chs;
+                }
+            }
+            if (chs <> []) {
+                const tg = TimeGroup {
+                    id: ch.getNodeName();
+                    content: chs;
+                }
+                if (content == null or content.content.size() > 10) {
+                    content = TimeGroup {
+                        id: "{resultContent.size()}"
+                    }
+                    insert content into resultContent;
+                }
+                insert tg into content.content;
+            }
+        }
+        TimeGroup { 
+            id: x.getName();
+            content: resultContent;
+        }
+    }    
 
+    /*
+    const clips = foreach (x in scene.getAnimations()) {
+        var ticksPerSecond = x.getTicksPerSecond() as Number;
+        var tick = 1s / (if (ticksPerSecond == 0) then 24 else ticksPerSecond);
+        var resultContent is TimeNode[];
+        var content is TimeGroup;
+        for (ch in x.getChannels())  {
             const qs is Tuple3[] = {
                 var tmp is Tuple3[];
                 for (i in [0..<ch.getNumRotKeys()]) {
@@ -209,21 +520,22 @@ class Loader {
             //println("initialTransform was:");
             //println(target.initialTransform);
             target.initialTransform = Mat4.<<1>>; // animation overwrites it
-            [if (ch.getNumPosKeys() > 0) {
-                [Channel of Number {
-                        id: "{x.getName()}#tx"
+            var tg = TimeGroup {
+                id: ch.getNodeName();
+                content: [if (ch.getNumPosKeys() > 0) {
+                        [Channel of Number {
+                        id: "tx"
                         targets: &target.tx;
                         keys: 
                         foreach (i in [0..<ch.getNumPosKeys()]) {
                             NumberKey {
-                            //                            var dummy = { println("key time {i} => {ch.getPosKeyTime(i) }"); 1 }
                                 position: tick * ch.getPosKeyTime(i);
                                 value: ch.getPosKeyX(i);
                             }
                         }
                     },
                     Channel of Number {
-                        id: "{x.getName()}#ty"
+                        id: "ty"
                         targets: &target.ty;
                         keys: 
                         foreach (i in [0..<ch.getNumPosKeys()]) {
@@ -234,7 +546,7 @@ class Loader {
                         }
                     },
                     Channel of Number {
-                        id: "{x.getName()}#tz"
+                        id: "tz"
                         targets: &target.tz;
                         keys: 
                         foreach (i in [0..<ch.getNumPosKeys()]) {
@@ -247,7 +559,7 @@ class Loader {
                 } else [],
                 if (ch.getNumScaleKeys() > 0) {
                     [Channel of Number {
-                        id: "{x.getName()}#sx"
+                        id: "sx"
                         targets: &target.sx;
                         keys: 
                         foreach (i in [0..<ch.getNumScaleKeys()]) {
@@ -258,7 +570,7 @@ class Loader {
                         }
                     },
                     Channel of Number {
-                        id: "{x.getName()}#sy"
+                        id: "sy"
                         targets: &target.sy;
                         keys: 
                         foreach (i in [0..<ch.getNumScaleKeys()]) {
@@ -269,7 +581,7 @@ class Loader {
                         }
                     },
                     Channel of Number {
-                        id: "{x.getName()}#sz"
+                        id: "sz"
                         targets: &target.sz;
                         keys: 
                         foreach (i in [0..<ch.getNumScaleKeys()]) {
@@ -283,7 +595,7 @@ class Loader {
                 if (ch.getNumRotKeys() > 0) {
 
                     if true then [Channel of Quat {
-                        id: "{x.getName()}#r"
+                        id: "r"
                         targets: &target.r;
                         keys: foreach (i in [0..<ch.getNumRotKeys()]) {
                             QuatKey {
@@ -296,7 +608,7 @@ class Loader {
                     }] else
 
                 [Channel of Number {
-                        id: "{x.getName()}#rx"
+                        id: "rx"
                         targets: &target.rx;
                         keys: 
                         foreach (i in [0..<ch.getNumRotKeys()]) {
@@ -307,7 +619,7 @@ class Loader {
                         }
                     },
                     Channel of Number {
-                        id: "{x.getName()}#rz"
+                        id: "rz"
                         targets: &target.rz;
                         keys: 
                         foreach (i in [0..<ch.getNumRotKeys()]) {
@@ -318,7 +630,7 @@ class Loader {
                         }
                     },
                     Channel of Number {
-                        id: "{x.getName()}#rz"
+                        id: "rz"
                         targets: &target.rz;
                         keys: 
                         foreach (i in [0..<ch.getNumRotKeys()]) {
@@ -330,9 +642,21 @@ class Loader {
                     }]
                     } else []
                 ]
-            };
-            content: content;
+            }
+            if (content == null or content.content.size() > 10) {
+                content = TimeGroup {
+                    id: "{resultContent.size()}"
+                }
+                insert content into resultContent;
+            }
+            insert tg into content.content;
+        }
+        TimeGroup { 
+            id: x.getName();
+            content: resultContent;
+        }
     }
+    */
     function toMat4 from (mat is AiMatrix4f) to Mat4
     {
         Mat4.fromRows(foreach (r in [0..<4], c in [0..<4]) mat.get(r, c))
@@ -431,6 +755,7 @@ class Loader {
                 weights: weights;
                 bindPreMatrices: pm;
                 geomMatrix: Mat4.<<1>>; // already applied by assimp
+                target: mesh;
             }
         } else null
     }
@@ -438,7 +763,7 @@ class Loader {
     function generateScene from (x is AiNode) to Node {
         var q is QTransformNode;
         var t = Group {
-            id: "{if x == root then url else x.getName()}#wrapper";
+            id: "{if x == root then url else x.getName()} wrapper";
             content:
             { 
                 q = QTransformNode {
@@ -450,14 +775,14 @@ class Loader {
                         const mesh = meshes[i];
                         MeshNode 
                         { 
-                            id: "{x.getName()}#mesh";
+                            id: "{x.getName()} mesh";
                             shader: shaders[sceneMesh.getMaterialIndex()];
                             mesh: mesh;
                         }
                     }
                     var ac = cameraMap.get(x.getName());
                     var cam = if (ac == null) then null else PerspectiveCamera {
-                                id: "{x.getName()}#camera";
+                                id: "{x.getName()} camera";
                                 near: ac.getClipPlaneNear();
                                 far: ac.getClipPlaneFar();
                                 heightAngle: java.lang.Math.toDegrees(ac.getHorizontalFOV()) * 2;

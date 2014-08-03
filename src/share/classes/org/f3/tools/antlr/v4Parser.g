@@ -6028,7 +6028,7 @@ expressionOrInferredExpression
 
     returns [F3Expression value]
 :
-    p1=PIPE fp=formalParametersNoParens PIPE e1=expression 
+    p1=PIPE fp=formalParametersNoParens PIPE e1=expressionOrInferredExpression
     { $value = F.at(pos($p1)).InferredExpr($fp.params.toList(), $e1.value);}
 	|
 	e2=expression

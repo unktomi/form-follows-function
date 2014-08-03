@@ -1617,8 +1617,10 @@ public abstract class F3AbstractTranslation
                 if (useInvoke) {
                     if (resultType != syms.voidType) {
                         full = typeCast(resultType, syms.objectType, full);
-			full = typeCast(resultType instanceof Type.TypeVar ? resultType : types.erasure(resultType), syms.objectType, full);
+			//full = typeCast(resultType instanceof Type.TypeVar ? resultType : types.erasure(resultType), syms.objectType, full);
+                        //System.err.println("app="+app);
 			//System.err.println("full="+full);
+                        //full = app;
                     }
                 }
             }

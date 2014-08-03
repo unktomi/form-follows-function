@@ -7,6 +7,8 @@ import org.f3.runtime.Foldable;
 
 const MAX_COUNT = 100000;
 
+public const DEBUG = false;
+
 public abstract class TimeNode is Foldable of TimeNode
 {
     override function toString to String {
@@ -29,6 +31,8 @@ public abstract class TimeNode is Foldable of TimeNode
     }
 
     public var blendWeight is Number = 1.0;
+    
+    public readonly var scenePlayCount is Number = bind if (parent == null) then playCount else parent.scenePlayCount * playCount;
 
     public readonly var sceneBlendWeight is Number =
 	bind if parent == null then blendWeight else parent.sceneBlendWeight * blendWeight;
@@ -104,7 +108,7 @@ public abstract class TimeNode is Foldable of TimeNode
                 add(this);
             }
         }
-	if (debug or Channel.DEBUG) {
+	if (debug and DEBUG) {
 	    println("parentLocalTime {parentLocalTime}, parentTime {parentTime}, bounds {bounds}, pickable {pickableInScene}, picked {picked} {this}");
 	}
         currentTime = parentTime; 
@@ -123,13 +127,13 @@ public abstract class TimeNode is Foldable of TimeNode
         const wasPlaying = playing;
 	playing = picked;
         if (wasPlaying and not playing) {
-            if (debug) println("COMPLETED {this}");
+            if (debug and DEBUG) println("COMPLETED {this}");
             markCompleted();
         } else if (not wasPlaying and playing) {
-            if (debug) println("STARTED {this}");
+            if (debug and DEBUG) println("STARTED {this}");
             markStarted();
         }
-        if (debug) {
+        if (debug and DEBUG) {
             println("{id} => currentTime={currentTime} localTime={localTime} playing={playing}");
         }
 	const f =  { if (picked) then add else null } as function from TimeNode to ();

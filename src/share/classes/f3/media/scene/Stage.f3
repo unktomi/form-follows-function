@@ -140,6 +140,9 @@ public interface Stage
                 if (blocked) break;
             }
         }
+        for (c in content.reverse()) {
+            c.updateMousePosition(event);
+        }
     }
 
     protected var mouseHandlers is MouseInputHandler[];

@@ -1,6 +1,7 @@
 package f3.math;
 import java.lang.Math;
 import LinearMath.*;
+import LinearMath.eq;
 import f3.math.Util.*;
 import org.f3.runtime.F3Value;
 
@@ -22,10 +23,10 @@ public class Mat4 is F3Value
 	super.equals(obj) or 
 	    (obj is Mat4 and {
 		 const m = obj as Mat4;
-		 xx == m.xx and xy == m.xy and xz == m.xz and xw == m.xw and
-		 yx == m.yx and yy == m.yy and yz == m.yz and yw == m.yw and
-		 zx == m.zx and wy == m.zy and zz == m.zz and zw == m.zw and
-		 wx == m.wx and zy == m.wy and wz == m.wz and ww == m.ww
+		 eq(xx, m.xx) and eq(xy, m.xy) and eq(xz, m.xz) and eq(xw, m.xw) and
+		 eq(yx, m.yx) and eq(yy, m.yy) and eq(yz, m.yz) and eq(yw, m.yw) and
+		 eq(zx, m.zx) and eq(zy, m.zy) and eq(zz, m.zz) and eq(zw, m.zw) and
+		 eq(wx, m.wx) and eq(wy, m.wy) and eq(wz, m.wz) and eq(ww, m.ww)
 	     })
     }
 

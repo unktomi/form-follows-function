@@ -2398,7 +2398,6 @@ public class SceneRenderer {
                                 const f = deformer.apply(mn);
                                 insert function to () {
                                     f();
-                                    mn.mesh.updateBounds();
                                 } into deformerFutures;
                             } catch (e is java.lang.Throwable) {
                                 e.printStackTrace();

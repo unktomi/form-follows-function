@@ -23,7 +23,7 @@ public class CMotionState is MotionState {
     public var c is java.lang.ref.WeakReference of JBulletCollider;
     public var rb is CollisionObject;
     public const world is JBulletDynamicsWorld;
-    public var worldMatrix is nativearray of Number; 
+    public var worldMatrix is nativearray of Number = new nativearray of Number(16);
 
     public function fillWorldMatrix to () {
         c.get().fillWorldMatrix(worldMatrix);
@@ -249,7 +249,6 @@ public class JBulletCollider is Collider {
             c: new java.lang.ref.WeakReference of JBulletCollider(self);
             world: _dynamicsWorld();
         }
-        motionState.worldMatrix = new nativearray of Number(16);
         //java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 16) as nativearray of Number; 
         setCollisionWorldTransform(getTarget().toSceneTransform * translate(centerOfMass));
         fillWorldMatrix(motionState.worldMatrix);

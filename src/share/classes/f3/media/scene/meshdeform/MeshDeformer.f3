@@ -1,5 +1,6 @@
 package f3.media.scene.meshdeform;
 import f3.media.scene.MeshNode;
+import f3.media.scene.AbstractMesh;
 import java.util.concurrent.*;
 
 public const pool = new ForkJoinPool(java.lang.Runtime.getRuntime().availableProcessors());
@@ -7,4 +8,5 @@ public const pool = new ForkJoinPool(java.lang.Runtime.getRuntime().availablePro
 public interface MeshDeformer {
     public var enabled is Boolean = true;
     public abstract function apply from (m is MeshNode) to function from () to ();
+    public var target is AbstractMesh;
 }
