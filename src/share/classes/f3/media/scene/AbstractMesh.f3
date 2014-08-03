@@ -47,6 +47,12 @@ public abstract class AbstractMesh
 	bounds = computeBounds();
     }
 
+    // hack
+    public function __deformerSetBounds from (b is Bounds) to ()
+    {
+        bounds = b
+    }
+
     public function intersect from (ray is Ray3) to Tuple4[]  // encodes (t, weight_y, weight_z, triIndex) 
     {
         const count = vertices.getVertexCount();

@@ -891,7 +891,7 @@ public class F3Assimp {
                                                                   //OPTIMIZE_MESHES,
                                                                   //SPLIT_LARGE_MESHES,
                                                                   //SORT_BY_PTYPE,
-                                                                  //DEBONE,
+                                                                  DEBONE,
                                                                   GEN_UV_COORDS));
         updateContent(scene);
         return mc;

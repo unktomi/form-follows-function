@@ -54,18 +54,24 @@ Interval.merge(bnds12,
     var bnds19 = bind mergeBounds(content[1000..], null);
 
     protected bound function mergeBounds
-	from (content0 is TimeNode[], 
-	      b0 is Interval)
+	from (content is TimeNode[], 
+	      b is Interval)
 	to Interval 
     {
+       if content == [] then b else mergeNonEmpty(content, b)
+    }
+
+    bound function mergeNonEmpty 
+	from (content0 is TimeNode[], 
+	      b0 is Interval)
+	to Interval {
         var content = content0;
         var b = b0;
-        if (content == []) then b else {
-		var t = content[0];
-		var ts = content[1..];
-		var r = mergeBounds(ts, Interval.merge(t.bounds, b)); 
-        }
+        var t = content[0];
+        var ts = content[1..];
+        mergeBounds(ts, Interval.merge(t.bounds, b)); 
     }
+        
 
     override function pickChildren
 	from (sceneTime is Duration, 
