@@ -20,7 +20,8 @@ public function quat
 	  rz is Number)
     to Quat
 {
-    Quat(rx, ry, rz)
+    //Quat(rx, ry, rz)
+    rotate(rx, ry, rz).getRotation();
 }
 
 public function quat

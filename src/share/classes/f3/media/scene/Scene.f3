@@ -4,7 +4,11 @@ import f3.math.LinearMath.*;
 import f3.media.input.*;
 import f3.util.*;
 
-public class RootNode {
+public interface RootNode {
+    public readonly var scene is Scene;
+}
+
+class RootNodeGroup is Group, RootNode {
 }
 
 public class Target {
@@ -48,7 +52,8 @@ public class Scene
 
     public readonly var root is Node = {
         const scene = this;
-        Group {
+        RootNodeGroup {
+            scene: scene;
             override var visibleInScene = true;
             override var parentToSceneTransform = Mat4.<<1>>;
             override var pickableInScene = true;
@@ -736,5 +741,71 @@ public class Scene
     public function fireRenderComplete to ()
     {
         postRenderSubject.onNext(this);
+    }
+
+    public function convertToScene from (pt is Point3, target is Scene) to Point3
+    {
+        if (this == target) {
+            return this;
+        }
+        var src = this;
+        var p = pt;
+        println("src = {this}, pt={pt}");
+        while (src <> null) {
+            p = src.camera.toScreen(p); 
+            println("{src} toScreen => {p}");
+            if (src.stage is StageNode) {
+                p = point(p.x - src.width/2, -p.y + src.height/2.0, p.z);
+                println("p=>{p}");
+                var sn = src.stage as StageNode;
+                var par = sn.parent;
+                p = sn.toSceneTransform * p;
+                src = null;
+                while (par <> null) {
+                    if (par is RootNode) {
+                        src = (par as RootNode).scene;
+                        break;
+                    }
+                    par = par.parent;
+                }
+                println("toSceneTransform => {p}");
+                println("src=>{src}");
+            } else {
+                break;
+            }
+        }
+        var targ = target;
+        var f is (function from Point3 to Point3)[];
+        while (targ <> null) {
+            insert function from (pt is Point3) to Point3 {
+                var p = pt;
+                println("target {targ} => {p}");
+                p = targ.camera.toScene(p.x, p.y, p.z);
+                println("to Scene {targ} => {p}");
+                return p;
+            } into f;
+            if (targ.stage is StageNode) {
+                var sn = targ.stage as StageNode;
+                var par = sn.parent;
+                insert function from (pt is Point3) to Point3 {
+                    var p = sn.toSceneTransform.inverse() * pt;
+                    point(-p.x + targ.width/2, p.y - targ.height/2, p.z);
+                } into f;
+                targ = null;
+                while (par <> null) {
+                    if (par is RootNode) {
+                        targ = (par as RootNode).scene;
+                        break;
+                    }
+                    par = par.parent;
+                }
+            } else {
+                break;
+            }
+        }
+        for (g in f.reverse()) {
+            p = g(p);
+        }
+        return p;
     }
 }
