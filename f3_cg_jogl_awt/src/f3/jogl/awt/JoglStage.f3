@@ -2216,8 +2216,8 @@ public class SceneRenderer {
             const scale = if not DISABLE_SUPERSAMPLE then stageNode.superSample else 1;
             surface = OffscreenSurface {
                 gl: gl;
-                override var width = bind Math.min(4096, stageNode.width * scale);
-                override var height = bind Math.min(4096, stageNode.height * scale);
+                override var width = bind stageNode.width * scale
+                override var height = bind stageNode.height * scale;
             }
 	    surface.stageRenderer = SurfaceRenderer {
 		stage: stageNode;

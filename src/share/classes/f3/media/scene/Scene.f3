@@ -746,7 +746,7 @@ public class Scene
     public function convertToScene from (pt is Point3, target is Scene) to Point3
     {
         if (this == target) {
-            return this;
+            return pt;
         }
         var src = this;
         var p = pt;
