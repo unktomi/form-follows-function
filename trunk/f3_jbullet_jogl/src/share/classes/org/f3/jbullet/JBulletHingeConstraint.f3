@@ -20,9 +20,9 @@ public class JBulletHingeConstraint is JBulletRigidBodyConstraint of HingeConstr
         if (constraint.usePivots) {
             const pivotInA = w1.inverse() * constraint.pivotInA;
             const pivotInB = w2.inverse() * constraint.pivotInB;
-            var q = Quat.Quat(constraint.rotInA);
+            var q = rotate(constraint.rotInA).getRotation();
             const axisInA = (q * NEG_Z_AXIS).normalize();
-            q = Quat.Quat(constraint.rotInB);
+            q = rotate(constraint.rotInB).getRotation();
             const axisInB = (q * NEG_Z_AXIS).normalize();
             if (a == null) {
                 ct = new com.bulletphysics.dynamics.constraintsolver.HingeConstraint(b,

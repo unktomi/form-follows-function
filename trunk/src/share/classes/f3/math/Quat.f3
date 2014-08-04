@@ -332,7 +332,7 @@ public function Quat from (degrees is Number, axis0 is Vec3) to Quat
 	w: w;
     }
 }
-
+/*
 public function Quat from (eulerAngles is Tuple3) to Quat {
     Quat(eulerAngles.x,
 	 eulerAngles.y,
@@ -380,6 +380,7 @@ public function Quat from (rx is Number, ry is Number, rz is Number) to Quat
 	w: w;
     }
 }
+*/
 
 public function Quat from (m is Mat4) to Quat 
 {
@@ -581,6 +582,3 @@ function EulFromMatrix from (M is Mat4, order is Integer) to Tuple3
 public const TYPE_INFO =
        org.f3.runtime.TypeInfo.makeAndRegisterTypeInfo(<<0>>);
 
-public function run {
-    println(Quat(0, 90, 0).toAngleAxis());
-}
