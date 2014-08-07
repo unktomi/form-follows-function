@@ -150,6 +150,11 @@ public abstract class Interpolator of a
 
     abstract function interpolate from (k is Key of a, t is Number) to a;
 
+    public function blend from (src is a, target is a, w is Number) to a
+    {
+        add(src, scale(target, w));
+    }
+
     public function scale from (x is a, weight is Number) to a 
     {
 	x

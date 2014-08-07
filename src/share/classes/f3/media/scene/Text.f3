@@ -140,7 +140,7 @@ public class Label is AbstractText {
     public var text is String on invalidate {
            textInvalid = true;
     }
-    //override var width = bind font.width(text); // this exposed compiler bugs when its overridden subsequently
+    //override var width = bind indent+font.width(text); // this exposed compiler bugs when its overridden subsequently
     override function update to () 
     {
         super.update();
