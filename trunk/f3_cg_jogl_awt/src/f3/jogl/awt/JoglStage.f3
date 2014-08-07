@@ -188,6 +188,7 @@ abstract class JoglFont is Text.Font {
     override function width from (text is String) to Number
     {
         const r = font.getStringBounds(text, frc);
+        //println("bounds {text} in {font} => {r}");
         return r.getWidth();
     }
 }
@@ -366,7 +367,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
             const nextNewline = text.indexOf("\n", measurer.getPosition()+1);
             const limit = if (nextNewline < 0) Integer.MAX_VALUE else nextNewline+1;
 	    try {
-		const layout = measurer.nextLayout(wrapWidth, limit, false);
+		const layout = measurer.nextLayout(wrapWidth+1, limit, false);
                 //y += layout.getAscent();
                 y += font.ascent;
 		if (y > clipHeight) {
@@ -1694,7 +1695,7 @@ class OffscreenSurface is JoglTexture
     var _mscolorRBID is Integer;
     var _msdepthRBID is Integer;
     var lastTextureId is Integer;
-    var mipmap = false;
+    var mipmap = true;
 
     function activate 
     {
@@ -2090,6 +2091,26 @@ public class TextDrawInfo is DrawInfo {
 }
 
 public class StageRenderer {
+
+    var scissoring is Boolean;
+    protected var gl is GL2;
+
+    function enableScissorTest to ()
+    {
+        if (not scissoring) {
+            scissoring = true;
+            gl.glEnable(GL.GL_SCISSOR_TEST);
+        }
+    }
+
+    function disableScissorTest to ()
+    {
+        if (scissoring) {
+            scissoring = false;
+            gl.glDisable(GL.GL_SCISSOR_TEST);
+        }
+    }
+        
     public var topLevel is Boolean = false;
     public var parent is StageRenderer;
     public var activate is function from () to ();
@@ -2157,7 +2178,7 @@ public class StageRenderer {
 		foreach (scene in stage.content) {
                 var s = SceneRenderer {gl:gl};
                 s.scene = scene;
-                s.parent = parent;
+                s.parent = this;//parent;
                 s
             }
 	}
@@ -2172,6 +2193,7 @@ public class StageRenderer {
 	if (dirty) {
 	    startDraw();
             gl.glViewport(0, 0, width, height);
+            disableScissorTest();
 	    for (sceneRenderer in sceneRenderers) {
 		sceneRenderer.renderScene(gl, width, height, sceneRenderer.scene.camera);
                 sceneRenderer.scene.fireRenderComplete();
@@ -2185,9 +2207,26 @@ public class StageRenderer {
 	}
 	return dirty;
     }
+    
+    function scissor from (gl is GL2, x is Integer, y is Integer, w is Integer, h is Integer) to ()
+    {
+        gl.glScissor(x, y, w, h);
+        const err = gl.glGetError();
+        if (err <> gl.GL_NO_ERROR) {
+            var glu = new GLUgl2();
+            println(glu.gluErrorString(err));
+        }
+    }
 }
 
 class SurfaceRenderer is StageRenderer {
+    override function scissor from (gl is GL2, x is Integer, y is Integer, w is Integer, h is Integer) to ()
+    {
+        println("scissor {x}, {y}, {w}, {h}, {stage.width} {stage.height}, {surface._width}, {surface._height}");
+        const surfaceWidth is Number = surface.width;
+        const surfaceHeight is Number = surface.height;
+        gl.glScissor(x, y, w * (surfaceWidth/stage.width) , h * (surfaceHeight / stage.height));
+    }
     public var surface is OffscreenSurface;
     override function startDraw {
         surface.push();
@@ -2202,6 +2241,13 @@ class SurfaceRenderer is StageRenderer {
 public class SceneRenderer {
     public var gl is GL2;
     var phongShader is Shader;
+
+    function disableScissorTest to () {
+        parent.disableScissorTest();
+    }
+    function enableScissorTest to () {
+        parent.enableScissorTest();
+    }
     var transparentToDraw = new java.util.ArrayList of MeshNode;
     var last2DDraw = new java.util.ArrayList of MeshNode;
     var opaqueToDraw = new java.util.ArrayList of MeshNode;
@@ -2220,6 +2266,7 @@ public class SceneRenderer {
                 override var height = bind stageNode.height * scale;
             }
 	    surface.stageRenderer = SurfaceRenderer {
+                gl: gl;
 		stage: stageNode;
                 surface: surface;
 	    };
@@ -2704,6 +2751,7 @@ public class SceneRenderer {
 	    } 
 	}
         disableScissorTest();
+        firstScissor = true;
         if (scene.background.opacity <> 0) {
             const bg = scene.background;
 	    //println("clearing {bg}");
@@ -2767,6 +2815,7 @@ public class SceneRenderer {
     var polygonMode = PolygonMode.Fill;
 
     var currentScissor is Bounds;
+    var firstScissor is Boolean;
 
     function draw
 	from (gl is GL2,
@@ -2842,24 +2891,6 @@ public class SceneRenderer {
     }
     var outlinePrepass is Boolean;
     var outlinePass is Boolean;
-    var scissoring is Boolean;
-
-    function enableScissorTest to ()
-    {
-        if (not scissoring) {
-            scissoring = true;
-            gl.glEnable(GL.GL_SCISSOR_TEST);
-        }
-    }
-
-    function disableScissorTest to ()
-    {
-        if (scissoring) {
-            scissoring = false;
-            gl.glDisable(GL.GL_SCISSOR_TEST);
-        }
-    }
-        
     var glowShader is Shader;
 
     function draw1 from (gl is GL2,
@@ -2926,20 +2957,21 @@ public class SceneRenderer {
 		}
 		mp = mp.parent;
 	    }
-	    if (sbounds <> currentScissor) {
+	    if (sbounds <> currentScissor or firstScissor) {
+                firstScissor = false;
 		currentScissor = sbounds;
  		if (not DISABLE_SCISSOR and camera is Camera2D and sbounds <> null) {
 		    const bounds = sbounds;
-		    const sb = bounds;//camera.toScreen(bounds);
-                    const x = camera.width/2 + sb.center.x - sb.extent.x;
-                    const y = camera.height/2 + sb.center.y - sb.extent.y;
-                    const w = sb.extent.x*2;
-                    const h = sb.extent.y*2;
+		    const sb = camera.toScreen(bounds);
+                    const x = sb.left();
+                    const y = sb.bottom();
+                    const w = sb.width();
+                    const h = sb.height();
                     if (DEBUG_SCISSOR) {
                        println("glScissor {x},{y},{w},{h}");
                     }
 		    enableScissorTest();
-		    gl.glScissor(x, y, w, h);
+		    this.parent.scissor(gl, Math.round(x) as Integer, Math.round(y) as Integer, Math.round(w) as Integer, Math.round(h) as Integer);
 		} else {
 		    disableScissorTest();
 		}
@@ -3472,6 +3504,7 @@ public class Listener is GLEventListener, DropTargetListener {
 	    stageRenderer = StageRenderer {
                 topLevel: true;
 		stage: stage;
+                gl: gl;
 		activate: function from () to () {
                     var dummy = prevTime;
 		    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);

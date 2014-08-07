@@ -128,35 +128,38 @@ public class NumberKey is Key of Number {
     override var interpolator = KeyFrame.Linear;
 }
 
-const RotLinear = NumberInterpolator {
+const RotLinear = Interpolator of Number {
+
+    override var zero = 0.0;
+
+    override function scale from (x is Number, weight is Number) to Number
+    {
+        x * weight;
+    }
+
+    override function add from (x is Number, y is Number) to Number
+    {
+        x + y;
+    }
+
     function lerp from (x is Number, y is Number, t is Number) to Number {
         x + (y - x) * t;
     }
+
     function eulerLerp from (angle1 is Number, angle2 is Number, t is Number) to Number 
     {
-        var angle = Math.abs(angle2 - angle1); 
-        if (angle > 180) {
-            var x = angle1;
-            var y = angle2;
-            if (y > x) {
-                x += 360;
-            } else {
-                y += 360;
-            }
-            angle = lerp(x, y, t);
-            if (angle >= 0 and angle <= 360) {
-                return angle;
-            }
-            return angle mod 360;
+        var angle = angle2 - angle1; 
+        if (angle < -180) {
+            angle += 360;
+        } else if (angle > 180) {
+            angle -= 360;
         }
-        return lerp(angle1, angle2, t);
+        angle = angle mod 360;
+        return lerp(angle1, angle1 + angle, t);
     }
-    public function interpolate from (k is Key of Number, t is Number) to java.lang.Float // hack: compiler bug
+    override public function interpolate from (k is Key of Number, t is Number) to java.lang.Float // hack: compiler bug
     {
-        //if (t >= 0.5) then k.value else k.prev.value; // linear interpolating rotations is fail at the moment
-        if (t == 0) k.prev.value else if t == 1 then k.value else {
-                    eulerLerp(k.prev.value, k.value, t);
-                }
+        eulerLerp(k.prev.value, k.value, t);
     }
 }
 
@@ -195,18 +198,13 @@ const QuatLinear is KeyFrame.Interpolator = KeyFrame.Interpolator of Quat {
     override var zero = Quat.<<1>>;
     override function interpolate from (k is Key of Quat, t is Number) to Quat 
     {
-	//const r = if (k.prev == null) then k.value else k.prev.value.slerp(k.value, t).normalize();
-        //println("interpolated {k.value} => {k.prev.value.toAngles()} @{t} {k.value.toAngles()} to {r.toAngles()}");
-        //return r;
         if (t >= 0.5) then k.value else k.prev.value;
+        //if (t == 0) then k.prev.value else if t == 1 then k.value else k.prev.value.slerp(k.value, t);
     }
-    override function scale from (x is Quat, weight is Number) to Quat
+
+    override function blend from (src is Quat, target is Quat, w is Number) to Quat
     {
-        Quat.<<1>>.slerp(x, weight);
-    }
-    override function add from (x is Quat, y is Quat) to Quat 
-    {
-        x * y
+        if (src == zero) then target else src.blend(target, w).normalize();
     }
 }
 
@@ -372,13 +370,14 @@ class Loader {
             }
             insert sz.getKeys(ch) into chs;
             if (ch.getNumRotKeys() > 0) {
+                var prev is Tuple3;
                 if (true) {
                     var pq is Quat;
                     var qkeys is QuatKey[];
                     const cnt = ch.getNumRotKeys();
                     for (i in [0..<cnt]) {
                         var q0 = ch.getRotKeyQuaternion(i, wrapper);
-                        var q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW()).normalize();
+                        var q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW());
                         if (i > 0 and i < cnt-1) {
                             if (eq(pq.x, q1.x) and
                                 eq(pq.y, q1.y) and
@@ -387,7 +386,7 @@ class Loader {
                                 continue;
                             }
                         }
-                        const angles = q1.toAngles(Quat.EULER_XYZ);
+                        //const angles = q1.toAngles(Quat.EULER_XYZ);
                         //println("angles={angles}");
                         pq = q1;
                         const q = QuatKey {
@@ -414,7 +413,7 @@ class Loader {
                     var pz is Number;
                     for (i in [0..<cnt]) {
                         var q0 = ch.getRotKeyQuaternion(i, wrapper);
-                        var q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW()).normalize();
+                        var q1 = new Quat(q0.getX(), q0.getY(), q0.getZ(), q0.getW());
                         if (i > 0 and i < cnt-1) {
                             if (eq(pq.x, q1.x) and
                                 eq(pq.y, q1.y) and
@@ -424,7 +423,19 @@ class Loader {
                             }
                         }
                         pq = q1;
-                        const angles = q1.toAngles(Quat.EULER_XYZ);
+                        var angles = q1.toAngles(Quat.EULER_XYZ);
+                        if (i > 1) {
+                            const delta = (angles - prev);
+                            function clamp from (x is Number) to Number {
+                                if (x > 180) {
+                                    x - 360;
+                                } else if (x < -180) {
+                                    x + 360;
+                                } else x
+                            }
+                            angles = prev + tuple(clamp(delta.x), clamp(delta.y), clamp(delta.z));
+                        }
+                        prev = angles;
                         //println("{ch.getNodeName()} {i}: {angles}");
                         const pos = tick * ch.getRotKeyTime(i);
                         if (i == 0 or i == cnt-1 or not eq(px, angles.x)) {
@@ -479,7 +490,7 @@ class Loader {
                 }
                 if (content == null or content.content.size() > 10) {
                     content = TimeGroup {
-                        id: "{resultContent.size()}"
+                        id: "{resultContent.size() * 10}"
                     }
                     insert content into resultContent;
                 }

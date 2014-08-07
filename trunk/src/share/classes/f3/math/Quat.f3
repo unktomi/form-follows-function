@@ -11,6 +11,37 @@ public const <<0>> = Quat { };
 
 public class Quat is Tuple4, Mat4.Transformable of Quat
 {
+    public function blend from (target is Quat, w is Number) to Quat
+    {
+        this * (this.inverse() * target).pow(w);
+    }
+
+    public function pow from (exponent is Number) to Quat 
+    {
+        if (Math.abs(this.w) > .9999) {   
+            return this;
+        }   
+   
+        // Extract the half angle alpha (alpha = theta/2)   
+   
+        const alpha = Math.acos(this.w);   
+   
+        // Compute new alpha value   
+   
+        const newAlpha = alpha * exponent;   
+   
+        // Compute new w value   
+   
+
+        const w = Math.cos(newAlpha);   
+   
+        // Compute new xyz values   
+   
+        const mult = sin(newAlpha) / sin(alpha);   
+
+        return new Quat(x *mult, y *mult, z *mult, w);
+    }
+
     public function toAngleAxis to (Number, Vec3) {
         const sqrLength = x*x + y*y + z*z;
         if (Math.abs(sqrLength) <= LinearMath.EPSILON) { // length is ~0
@@ -131,24 +162,23 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 	w * q.w;
     }
 
-    public function slerp0 from (b0 is Quat, t is Number) to Quat
+    public function negate to Quat
     {
-	if (t == 0) {
-	    return this;
-	}
-	if (t == 1) {
-	    return b0;
-	}
-        var x is Number;
-        var y is Number;
-        var z is Number;
-        var w is Number;
-	var cosHalfTheta = this.x * b0.x + this.y * b0.y + this.z * b0.z + this.w * b0.w;
-        const b = if (cosHalfTheta < 0) then { cosHalfTheta = -cosHalfTheta; b0.inverse() } else b0;
+        new Quat(-x, -y, -z, -w);
+    }
+
+    public function slerp from (b0 is Quat, t is Number) to Quat
+    {
+	var cosHalfTheta = dot(b0);
 	// if qa=qb or qa=-qb then theta = 0 and we can return qa
 	if (Math.abs(cosHalfTheta) >= 1.0) {
             return this;
 	}
+        const b = if (cosHalfTheta < 0) then { cosHalfTheta = -cosHalfTheta; -b0 } else b0;
+        var x is Number;
+        var y is Number;
+        var z is Number;
+        var w is Number;
 	// Calculate temporary values.
 	const halfTheta = Math.acos(cosHalfTheta) as Number;
         const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta*cosHalfTheta) as Number;
@@ -169,56 +199,6 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 	z = (this.z * ratioA + b.z * ratioB);
 	w = (this.w * ratioA + b.w * ratioB);
         return new Quat(x, y, z, w);
-    }
-
-    public function slerp from (target is Quat, t is Number) to Quat 
-    {
-	if (t == 0) {
-	    return this;
-	}
-	if (t == 1) {
-	    return target;
-	}
-	const startQuat = this;
-	const q2 = target;
-        var dotP = startQuat.dot(q2);
-	var changeAmnt = t;
-	var r = 1.0;
-        if (dotP < 0.0) {
-            // Negate the second quaternion and the result of the dot product
-            //q2.multiplyLocal(-1);
-	    r = -1;
-            dotP = -dotP;
-        }
-
-        // Set the first and second scale for the interpolation
-        var scale0 = 1 - changeAmnt;
-        var scale1 = changeAmnt;
-
-        // Check if the angle between the 2 quaternions was big enough to
-        // warrant such calculations
-        if ((1 - dotP) > 0.1) {// Get the angle between the 2 quaternions,
-            // and then store the sin() of that angle
-            const theta = Math.acos(dotP);
-            const invSinTheta = 1.0 / Math.sin(theta);
-
-            // Calculate the scale for q1 and q2, according to the angle and
-            // it's sine value
-            scale0 = Math.sin((1 - changeAmnt) * theta) * invSinTheta;
-            scale1 = Math.sin((changeAmnt * theta)) * invSinTheta;
-        }
-        // Calculate the x, y, z and w values for the quaternion by using a
-        // special form of linear interpolation for quaternions.
-        const x = (scale0 * startQuat.x) + (scale1 * q2.x);
-        const y = (scale0 * startQuat.y) + (scale1 * q2.y);
-        const z = (scale0 * startQuat.z) + (scale1 * q2.z);
-        const w = (scale0 * startQuat.w) + (scale1 * q2.w);
-	Quat {
-	    x: x;
-	    y: y;
-	    z: z;
-	    w: w;
-	}
     }
 
     public function toAngles(order is Integer) to Tuple3 
@@ -575,6 +555,7 @@ function EulFromMatrix from (M is Mat4, order is Integer) to Tuple3
 	y: Math.toDegrees(ry);
 	z: Math.toDegrees(rz);
     }
+
 }
 
 

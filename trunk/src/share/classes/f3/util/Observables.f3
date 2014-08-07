@@ -74,6 +74,38 @@ public function observe of a
     }
 }
 
+/*
+class Delay of a is Observable of a {
+    public const dur is Duration;
+    const src is Observable of a;
+    override function subscribe from (y is Observer of a) to Disposable {
+        const delegate = DefaultObserver of a {
+            override function onNext from (x is a) to ()
+            {
+                const timer = new javax.swing.Timer(dur.toMillis());
+                timer.addActionListener(java.awt.event.ActionListener {
+                        override function actionPerformed from (e is java.awt.event.ActionEvent) to ()
+                        {
+                            timer.stop();
+                            y.onNext(x);
+                        }
+                    });
+            }
+            onCompleted: y.onCompleted;
+            onError: y.onError
+        }
+        src.subscribe(delegate);
+    }
+}
+
+public function delay of a from (xs is Observable of a, dur is Duration) to Observable of a {
+    Delay of a {
+        src: xs;
+        dur: dur
+    }
+         
+}
+*/
 public function Filter of a 
     from (source is Observable of a, 
           predicate is function from a to Boolean) 
