@@ -60,7 +60,7 @@ float4 pixelShaderFunctionTransp(PixelShaderInput input) : COLOR {
 
 float4 pixelShaderFunction(PixelShaderInput input) : COLOR {
   float4 c = tex2D(texSampler0, input.tex);
-  return float4(c.xyz*diffuse.xyz*1.0, 1.0);
+  return c;
 }
 
 technique Transparent {
@@ -79,7 +79,8 @@ technique Opaque {
     pass P {
         DepthMask = false;
         CullFaceEnable  = false; 
-        BlendEnable = false;
+        BlendEnable = true;
+        BlendFunc = int2(SrcAlpha, OneMinusSrcAlpha);
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
     }

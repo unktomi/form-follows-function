@@ -22,12 +22,14 @@ public class SpriteSheet is AbstractNode {
     bound var sprites is Node[] = 
         foreach (i in [0..<frameCount]) createSprite(i, image.getWidth(), image.getHeight(), paint);
 
+    public var yIsDown is Boolean = true;
 
     bound function createSprite from (frame is Integer, imageWidth is Number, imageHeight is Number, paint is Shape2D.Paint) to Node
     {
         var p = pathFactory.createPath();
         var x = frame mod columns;
-        var y = frame / columns;
+        var y0 = frame / columns;;
+        var y = if (yIsDown) then rows - y0 else y0;
         var w is Number = frameWidth;
         var h is Number = frameHeight;
         var tx = (w * x) / imageWidth;

@@ -1099,6 +1099,14 @@ public class SVGParser {
                     gradient.positions.add(offset);
                     gradient.colors.add(color);
                 }
+            } else if (localName.equals("animate")) {
+                //String attrType = getStringAttr("attributeType", atts);
+                //String attributeName = getStringAttr("attrName", atts);
+                //String from = getStringAttr("from");
+                //String to = getStringAttr("to");
+                //String dur = getStringAttr("dur");
+                //if ("css".equalsIgnoreCase(attrType)) {
+                // }
             } else if (localName.equals("g")) {
                 // Check to see if this is the "bounds" layer
                 Properties props = new Properties(getParent(), atts);

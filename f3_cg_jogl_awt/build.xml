@@ -76,6 +76,7 @@
 		<path path="lib/f3.awesomium.jogl.jar"/>
 		<path path="lib/f3.xhtml.awt.jar"/>
 		<path path="lib/commons-imaging-1.0-SNAPSHOT.jar"/>
+                <path path="lib/com.realityinteractive.imageio.tga.jar"/>
             </classpath>
     </f3c>
   </target>
