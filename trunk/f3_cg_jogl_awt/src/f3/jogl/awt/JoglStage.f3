@@ -91,6 +91,12 @@ function checkMesh from (mn is MeshNode) to Boolean
     return result;
 }
 
+const tga_init = {
+    const registry = javax.imageio.spi.IIORegistry.getDefaultInstance();
+    registry.registerServiceProvider(new com.realityinteractive.imageio.tga.TGAImageReaderSpi());
+    1;
+}
+
 const DEBUG_HIERARCHY = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.hierarchy");
 const DEBUG_MESHES = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.meshes");
 const DEBUG_DRAW = java.lang.Boolean.getBoolean("f3.jogl.stage.debug.draw");
@@ -916,8 +922,9 @@ class TextRenderer2D {
 	    id: id;
 	    mesh: MeshBuffer.quad(bounds.width(), bounds.height(), w, h);
 	    shader: TexturePaintShader {
-		color: Color.WHITE;
+                technique: "Opaque";
 		tex: texture;
+                colorPaint: ColorPaint(Color.WHITE);
 	    }
 	    transform: bind translate(bounds.center.x, bounds.center.y);
 	}
@@ -1304,7 +1311,7 @@ class TexturePaintShader is CGFXShader
     public var tex is AbstractTexture;
     public readonly var color = bind colorPaint.color;
     override var url =  "{__DIR__}flat-textured.cgfx";
-    override var technique =  bind if (color.opacity == 1) "Opaque" else "Transparent";
+    override var technique = bind if (color.opacity == 1) then "Opaque" else "Transparent";
     override var uvMap = [0];
     public var transform is Mat4 = Mat4.<<1>>;
 
@@ -2018,7 +2025,7 @@ class JoglImageLoader is ImageLoader {
                 if (texture == null) {
                     // read image
                     im = 
-                        if (loweredUrl.endsWith(".jpg")) then {
+                        if (loweredUrl.endsWith(".jpg") or loweredUrl.endsWith(".tga")) then {
                                 javax.imageio.ImageIO.setUseCache(false);
                                 javax.imageio.ImageIO.read(new java.net.URL(url));
                             } else {
@@ -2436,10 +2443,10 @@ public class SceneRenderer {
                         dirty = true;
 		    }
 		} 
-		if (n is MeshNode) {
+		if (n is MeshNode and n.visibleInScene) {
 		    var mn = n as MeshNode;
 		    if (not DISABLE_DEFORMERS) {
-			for (deformer in mn.deformers) {
+			for (deformer in mn.deformers where deformer.enabled) {
 			    //println("applying deformer {deformer} to {mn}");
                             try {
                                 const f = deformer.apply(mn);
@@ -2912,6 +2919,22 @@ public class SceneRenderer {
         }
     }
 
+    const enabledClientStates = new java.util.TreeSet of Integer;
+    
+    function enableClientState from (gl is GL2, state is Integer) to ()
+    {
+        if (enabledClientStates.add(state)) {
+            gl.glEnableClientState(state);
+        }
+    }
+
+    function disableClientState from (gl is GL2, state is Integer) to ()
+    {
+        if (enabledClientStates.remove(state)) {
+            gl.glDisableClientState(state);
+        }
+    }
+
     function draw1 from (gl is GL2,
                          sceneParent is Node,
                          camera is Camera, 
@@ -3064,7 +3087,7 @@ public class SceneRenderer {
             }
             var vbo = getVBO(gl, mesh);
             vertexBuffer.rewind();
-            gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
+            enableClientState(gl, GL2.GL_VERTEX_ARRAY);
             if (vbo <> null) {
                 gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.vertexBuffer);
                 gl.glVertexPointer(mesh.vertices.getCoordsPerVertex(), 
@@ -3075,9 +3098,9 @@ public class SceneRenderer {
                                    GL.GL_FLOAT, 0, vertexBuffer);
             }
             if (normalBuffer == null) {
-                gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+                disableClientState(gl, GL2.GL_NORMAL_ARRAY);
             } else {
-                gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+                enableClientState(gl, GL2.GL_NORMAL_ARRAY);
                 if (vbo <> null) {
                     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo.normalBuffer);
                     gl.glNormalPointer(GL.GL_FLOAT, 0, 0);
@@ -3100,7 +3123,7 @@ public class SceneRenderer {
 		const coord = mesh.textureCoordinates[shader.uvMap[unit]];
 		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
 		if (textureBuffer <> null) {
-		    gl.glEnableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		    enableClientState(gl, GL2.GL_TEXTURE_COORD_ARRAY);
 		    if (vbo <> null) {
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vbo.textureBuffers[unit]);
 			gl.glTexCoordPointer(coord.getCoordsPerVertex(),
@@ -3111,7 +3134,7 @@ public class SceneRenderer {
 					     GL.GL_FLOAT, 0, textureBuffer);
 		    }
 		} else {
-		    gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		    disableClientState(gl, GL2.GL_TEXTURE_COORD_ARRAY);
 		}
             }
             //println("applying shader {shader}");
@@ -3187,7 +3210,7 @@ public class SceneRenderer {
             }            
 	    for (unit in [0..<texUnits]) {
 		gl.glClientActiveTexture(GL.GL_TEXTURE0+unit);
-		gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
+		disableClientState(gl, GL2.GL_TEXTURE_COORD_ARRAY);
             }
             shader.reset();
             //mn.needsDraw = false;

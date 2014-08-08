@@ -23,7 +23,7 @@ public class CMotionState is MotionState {
     public var c is java.lang.ref.WeakReference of JBulletCollider;
     public var rb is CollisionObject;
     public const world is JBulletDynamicsWorld;
-    public var worldMatrix is nativearray of Number = new nativearray of Number(16);
+    public var worldMatrix is nativearray of Number;
 
     public function fillWorldMatrix to () {
         c.get().fillWorldMatrix(worldMatrix);
@@ -249,7 +249,7 @@ public class JBulletCollider is Collider {
             c: new java.lang.ref.WeakReference of JBulletCollider(self);
             world: _dynamicsWorld();
         }
-        //java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 16) as nativearray of Number; 
+        motionState.worldMatrix = java.lang.reflect.Array.newInstance(java.lang.Float.TYPE, 16) as nativearray of Number; 
         setCollisionWorldTransform(getTarget().toSceneTransform * translate(centerOfMass));
         fillWorldMatrix(motionState.worldMatrix);
         if (true) {
@@ -406,6 +406,7 @@ public class JBulletCollider is Collider {
     var collisionMap is Map of (JBulletCollider, Set of ContactPoint);
 
     public function fillWorldMatrix from (worldMatrix0 is nativearray of Number) to () {
+        if (worldMatrix0 == null) return;
         var worldMatrix = worldMatrix0;
         const n = target.get();
         if (n <> null) {
@@ -483,7 +484,7 @@ public class JBulletCollider is Collider {
         if (_dynamicsWorld() <> null) {
             if (_rigidBody == null) {
                 if (active) {
-                    println(initialTransform);
+                //                    println(initialTransform);
                     if (bodyType == RigidBodyType.Dynamic)  {
                         setCollisionWorldTransform(initialTransform);
                     }

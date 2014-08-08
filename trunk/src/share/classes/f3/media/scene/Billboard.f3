@@ -45,24 +45,30 @@ public class Billboard2D is AbstractNode, MouseInputHandler {
     var normBuffer is java.nio.FloatBuffer;
     var indexBuffer is java.nio.IntBuffer;
     public var content is Image[];
-    var imageBounds = bind foreach (im in content) if (im.visible) then im.bounds else null;
-    
-    var pressed is Image;
-    var over is Image;
+    var imageBounds is Bounds[];
 
-    function findTarget from (pt is Point3) to Image
+    var pressed is Pick;
+    var over is Pick;
+
+    function findTarget from (pt is Point3) to Pick
     {
         for (im in content where im.visible) {
             if (im.bounds.contains(pt)) {
-                return im;
+                const p = Pick {
+                    node: im;
+                    t: 1;
+                    dragPoint1: Point3.<<0>> + (im.bounds.center - pt);
+                }
+                return p;
             }
         }
         return null;
     }
 
-    function retarget from (im is Image, e is MouseEvent) to MouseEvent
+    function retarget from (p is Pick, e is MouseEvent) to MouseEvent
     {
         MouseEvent {
+            picked: p;
             count: e.count;
             clickCount: e.clickCount;
             stage: e.stage;
@@ -75,35 +81,55 @@ public class Billboard2D is AbstractNode, MouseInputHandler {
             screeny: e.screeny;
             screenDrag: e.screenDrag;
             sceneLocation: e.sceneLocation;
-            location: e.location + (im.bounds.center - Point3.<<0>>);
+            location: p.dragPoint1;
             buttons: e.buttons;
         }
     }
 
+    function getMouseInputHandlers from (p is Pick) to MouseInputHandler[] 
+    {
+        if (p.node is MouseInputHandler) then p.node as MouseInputHandler else null;
+    }
+
     override public function onMouseUp from (event is MouseEvent) to () {
+        for (h in getMouseInputHandlers(pressed)) {
+            h.onMouseUp(event)
+        }
         pressed = null;
     }
 
     override public function onMouseDown from (event is MouseEvent) to () {
         pressed = findTarget(event.location);
-        pressed.onMouseDown(retarget(pressed, event));
+        for (h in getMouseInputHandlers(pressed)) {
+            h.onMouseDown(retarget(pressed, event));
+        }
     }
 
     override public function onMouseMove from (event is MouseEvent) to () {
-        over.onMouseMove(retarget(over, event));
+        for (h in getMouseInputHandlers(over)) {
+            h.onMouseMove(retarget(over, event));
+        }
     }
 
     override public function onMouseDrag from (event is MouseEvent) to () {
-        pressed.onMouseDrag(retarget(pressed, event));
+        pressed.dragPoint0 = pressed.dragPoint1;
+        pressed.dragPoint1 = Point3.<<0>> + (event.location - pressed.node.bounds.center);
+        for (h in getMouseInputHandlers(pressed)) {
+            h.onMouseDrag(retarget(pressed, event));
+        }
     }
 
     override public function onMouseEnter from (event is MouseEvent) to () {
         over = findTarget(event.location);
-        over.onMouseEnter(retarget(over, event));
+        for (h in getMouseInputHandlers(over)) {
+            h.onMouseEnter(retarget(over, event));
+        }
     }
 
     override public function onMouseLeave from (event is MouseEvent) to () {
-        over.onMouseLeave(retarget(over, event));
+        for (h in getMouseInputHandlers(over)) {
+            h.onMouseLeave(retarget(over, event));
+        }
         over = null;
     }
 
@@ -121,6 +147,12 @@ public class Billboard2D is AbstractNode, MouseInputHandler {
 
     const paint = Shape2D.TexturePaint {
         texture: bind content[0];
+    }
+
+    override function update to ()
+    {
+        imageBounds = foreach (im in content) im.bounds;
+        super.update();
     }
 
     override var internalContent = MeshNode {
