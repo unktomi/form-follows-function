@@ -15,8 +15,10 @@ public class JBulletHingeConstraint is JBulletRigidBodyConstraint of HingeConstr
         to com.bulletphysics.dynamics.constraintsolver.TypedConstraint 
     {
         var ct is com.bulletphysics.dynamics.constraintsolver.HingeConstraint;
-        const w1 = if (constraint.worldSpace and constraint.node1 <> null) then constraint.node1.collider.collisionWorldTransform else Mat4.<<1>>;
-        const w2 = if (constraint.worldSpace and constraint.node2 <> null) then constraint.node2.collider.collisionWorldTransform else Mat4.<<1>>;
+        const c1 = constraint.node1.collider as JBulletCollider;
+        const c2 = constraint.node1.collider as JBulletCollider;
+        const w1 = if (constraint.worldSpace and constraint.node1 <> null) then c1.getWorldTransform() else Mat4.<<1>>;
+        const w2 = if (constraint.worldSpace and constraint.node2 <> null) then c2.getWorldTransform() else Mat4.<<1>>;
         if (constraint.usePivots) {
             const pivotInA = w1.inverse() * constraint.pivotInA;
             const pivotInB = w2.inverse() * constraint.pivotInB;
@@ -56,11 +58,15 @@ public class JBulletHingeConstraint is JBulletRigidBodyConstraint of HingeConstr
                                                                                      Util.convertToBullet(frameB, null));
             }
         }
-        ct.setLimit(constraint.minLimit, 
-                    constraint.maxLimit, 
-                    constraint.limitSoftness, 
-                    constraint.biasFactor, 
-                    constraint.relaxationFactor);
+        ct.enableAngularMotor(constraint.angularMotor, 
+                              constraint.angularMotorVelocity,
+                              constraint.angularMotorMaxForce);
+        ct.setLimit(constraint.angularConstraintMin,
+                    constraint.angularConstraintMax, 
+                    constraint.angularLimitSoftness, 
+                    constraint.angularLimitBias,
+                    constraint.angularLimitRelaxation);
+        println("CREATED RIGID BODY constraint {ct} from {constraint.node1.id} to {constraint.node2.id}");
         return ct;
     }
 }

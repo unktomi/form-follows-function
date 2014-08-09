@@ -12,6 +12,9 @@ public const Z_AXIS = Vec3 {x: 0.0, y: 0.0, z: 1.0};
 public const ZERO = <<0>>;
 public const ONE = <<1>>;
 
+public const MAX_VALUE = new Vec3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+public const MIN_VALUE = new Vec3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+
 public class Buffer is f3.lang.AbstractRef of Vec3
 {
     public var x is Number;

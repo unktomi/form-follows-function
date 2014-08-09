@@ -3497,9 +3497,9 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
     public var angcony is Number;
     public var angconz is Number;
     public var lcmin is Vec3;
-    public var lcmax is Vec3;
+    public var lcmax is Vec3 = Vec3.MAX_VALUE;
     public var acmin is Vec3;
-    public var acmax is Vec3;
+    public var acmax is Vec3 = Vec3.MAX_VALUE;
     public var linspstiff is Vec3;
     public var linspdamp is Vec3;
     public var angspstiff is Vec3 = Vec3.<<1>> * 39.478;
@@ -3520,7 +3520,7 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
     public var linlimrelax is Number = 1.0;
     public var anglimsoft is Number = 1.0;
     public var anglimbias is Number = 0.3;
-    public var anglimrelas is Number = 1.0;
+    public var anglimrelax is Number = 1.0;
     public var linspringx is Boolean;
     public var linspringy is Boolean;
     public var linspringz is Boolean;
@@ -3588,7 +3588,7 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
         else if (n == "linlimrelax") { linlimrelax = cmd.getFloat(); }
         else if (n == "anglimsoft") { anglimsoft = cmd.getFloat(); }
         else if (n == "anglimbias") { anglimbias = cmd.getFloat(); }
-        else if (n == "anglimrelas") { anglimrelas = cmd.getFloat(); }
+        else if (n == "anglimrelax") { anglimrelax = cmd.getFloat(); }
         else if (n == "linspringx") { linspringx = cmd.getBoolean(); }
         else if (n == "linspringy") { linspringy = cmd.getBoolean(); }
         else if (n == "linspringz") { linspringz = cmd.getBoolean(); }
@@ -3637,7 +3637,15 @@ class MBulletRigidBodyConstraintShape is MRigidBodyConstraint {
                 worldSpace: no;
                 pivotInA: pivotA;
                 pivotInB: pivotB;
-                usePivots: no;
+                usePivots: yes;
+                angularConstraintMin: acmin.z;
+                angularConstraintMax: acmax.z;
+                angularMotorVelocity: angmotorvel.z;
+                angularMotor: angmotor;
+                angularMotorMaxForce: angmotormaxf.z;
+                angularLimitSoftness: anglimsoft;
+                angularLimitBias: anglimbias;
+                angularLimitRelaxation: anglimrelax;
             }
         } else {
             null;

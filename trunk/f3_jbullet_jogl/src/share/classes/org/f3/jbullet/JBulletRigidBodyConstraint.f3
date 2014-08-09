@@ -18,8 +18,10 @@ public abstract class JBulletRigidBodyConstraint of (a is f3.media.scene.RigidBo
                                         y is com.bulletphysics.dynamics.RigidBody)
         to com.bulletphysics.dynamics.constraintsolver.TypedConstraint 
     {
-        tc = createConstraint(x, y);
-        tc.setUserData(new java.lang.ref.WeakReference of JBulletRigidBodyConstraint(this));
+        if (tc == null) {
+            tc = createConstraint(x, y);
+            tc.setUserData(new java.lang.ref.WeakReference of JBulletRigidBodyConstraint(this));
+        }
         return tc;
     }
 
