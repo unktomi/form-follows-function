@@ -192,7 +192,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget, Collidable
 
     public function observeKeyUp from (keyCode is Integer) to Observable of KeyboardEvent 
     {
-        observeKeyUp().filter(|e | e.keyCode == keyCode);
+        observeKeyUp().filter(|e| e.keyCode == keyCode);
     }
 
     public function observeKeyInput from (keyChar is String) to Observable of KeyboardEvent 

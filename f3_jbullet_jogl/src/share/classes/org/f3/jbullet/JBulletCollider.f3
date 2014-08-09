@@ -62,6 +62,13 @@ public class JBulletCollider is Collider {
     public var target is java.lang.ref.WeakReference of Node;
     
     var collisionShape is com.bulletphysics.collision.shapes.CollisionShape;
+
+    public function getWorldTransform to Mat4 {
+        const n = target.get();
+        if n == null then Mat4.<<1>> else {
+                (if bodyType == RigidBodyType.Dynamic then getCollisionWorldTransform() else n.toSceneTransform) * translate(centerOfMass);
+            }
+    }
     
     public function getCollisionShape to com.bulletphysics.collision.shapes.CollisionShape
     {
@@ -264,7 +271,7 @@ public class JBulletCollider is Collider {
             rbinfo.angularDamping = angularDamping;
             if (bodyType <> RigidBodyType.Dynamic) {
                 rigidBody = new RigidBody(rbinfo);
-                if (bodyType == RigidBodyType.Kinematic) {
+                if (true or bodyType == RigidBodyType.Kinematic) {
                     rigidBody.setCollisionFlags(CollisionFlags.KINEMATIC_OBJECT);
                 } else {
                     rigidBody.setCollisionFlags(CollisionFlags.STATIC_OBJECT);
@@ -296,7 +303,7 @@ public class JBulletCollider is Collider {
             }
             setLinearFactor(linearFactor);
             setAngularFactor(angularFactor);
-            _dynamicsWorld().getDynamicsWorld().addRigidBody(_rigidBody as RigidBody);
+            _dynamicsWorld().addRigidBody(_rigidBody as RigidBody);
         } else {
             _rigidBody = CollisionObject {
                 override public function getWorldTransform(out is com.bulletphysics.linearmath.Transform) to com.bulletphysics.linearmath.Transform {
@@ -445,10 +452,10 @@ public class JBulletCollider is Collider {
         if (rb1 <> null and rb2 <> null) {
             try {
                 const tc = (c.impl as JBulletRigidBodyConstraint).getConstraint(rb1, rb2);
-                _dynamicsWorld().getDynamicsWorld().addConstraint(tc);
+                _dynamicsWorld().addConstraint(tc);
                 return true;
             } catch (e) {
-                println(e);
+                e.printStackTrace();
             }
         }
         return false;

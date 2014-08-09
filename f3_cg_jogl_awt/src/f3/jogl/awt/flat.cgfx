@@ -78,7 +78,8 @@ technique Outline {
         DepthFunc = LEqual;
         DepthMask = true;
         CullFaceEnable = false;
-        BlendEnable = false;
+        BlendEnable = true;
+        BlendFunc = int2(One, OneMinusSrcAlpha);
         VertexShader = compile latest vertexShaderFunction();
         PixelShader  = compile latest pixelShaderFunction();
     }

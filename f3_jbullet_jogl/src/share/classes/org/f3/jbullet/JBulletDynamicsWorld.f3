@@ -27,6 +27,7 @@ import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.IDebugDraw;
 import com.bulletphysics.linearmath.DebugDrawModes;
 import com.bulletphysics.linearmath.Transform;
+import com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
 import javax.vecmath.Vector3f;
 import java.util.*;
 import java.lang.System;
@@ -140,8 +141,8 @@ class DebugDrawer is IDebugDraw {
         
     }
 
-    var mode = //DebugDrawModes.DRAW_WIREFRAME;
-    f3.util.Bits.add(DebugDrawModes.DRAW_AABB, DebugDrawModes.DRAW_WIREFRAME);
+    var mode =
+    f3.util.Bits.add(DebugDrawModes.DRAW_AABB, DebugDrawModes.DRAW_CONTACT_POINTS);
     //      DebugDrawModes.DRAW_AABB;
 
     public override function setDebugMode(debugMode:Integer):Void {
@@ -195,7 +196,7 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
         return null;
     }            
     
-    function getUserData from (obj is com.bulletphysics.dynamics.constraintsolver.TypedConstraint) to Object 
+    function getUserData from (obj is TypedConstraint) to Object 
     {
         const ref = obj.getUserData() as WeakReference;
         if (ref <> null) {
@@ -340,9 +341,11 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
 
     override var debug is Boolean = DEBUG_DRAW;
 
+    var busy is Boolean = true;
+
     override public function debugDraw from (camera is Camera) to () 
     {
-        if (debug) {
+        if (debug and not busy) {
             if (dynamicsWorld.getDebugDrawer() == null) {
                 dynamicsWorld.setDebugDrawer(debugDrawer = DebugDrawer{});
             }
@@ -355,6 +358,21 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
             gl.glPopClientAttrib();
         }
     }
+
+    const rbsToAdd = new java.util.ArrayList of RigidBody;
+
+    public function addRigidBody from (rb is RigidBody) to ()
+    {
+        rbsToAdd.add(rb);
+    }
+
+    const constraintsToAdd = new java.util.ArrayList of TypedConstraint;
+    
+    public function addConstraint from (tc is TypedConstraint) to ()
+    {
+        constraintsToAdd.add(tc);
+    }
+    
     const FIXED_TIME_STEP = 1.0/60;
     var lastTimeStep is Double;
     public override function update from (sceneTime is Duration, camera is Camera) to 
@@ -382,7 +400,6 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
                             c.tc = null;
                             c0.remove();
                         }
-                        
                     }
                     dynamicsWorld.removeRigidBody(d as RigidBody);
                 } else {
@@ -391,6 +408,18 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
                 println("REMOVED {d}");
             }
             toBeDeleted.clear();
+        }
+        if (rbsToAdd.size() > 0) {
+            for (rb in rbsToAdd) {
+                dynamicsWorld.addRigidBody(rb);
+            }
+            rbsToAdd.clear();
+        }
+        if (constraintsToAdd.size() > 0) {
+            for (tc in constraintsToAdd) {
+                dynamicsWorld.addConstraint(tc);
+            }
+            constraintsToAdd.clear();
         }
         lastTimeStep = millis;
         if (not enabled) {
@@ -426,7 +455,9 @@ public class JBulletDynamicsWorld is f3.media.scene.DynamicsWorld {
                 }
             });
         return function to () {
+            busy = true;
             fut.get();
+            busy = false;
             for (obj in cobjs) {
                 if (obj instanceof RigidBody) {
                     var cobj = obj as RigidBody;

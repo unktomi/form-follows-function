@@ -5,6 +5,7 @@ public abstract class RigidBodyConstraint {
     public const node1 is Node;
     public const node2 is Node;
 
+
     public var impl is Object; // hack
 
     protected var applied is Boolean;

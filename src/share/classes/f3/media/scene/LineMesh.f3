@@ -1,5 +1,6 @@
 package f3.media.scene;
 import f3.math.*;
+import java.lang.Math;
 
 public class LineMesh {
 
@@ -11,6 +12,8 @@ public class LineMesh {
     var startx is Number;
     var starty is Number;
     var startz is Number;
+
+    public var gridFit is Boolean = false;
 
     public function reset {
         builder.reset();
@@ -30,31 +33,45 @@ public class LineMesh {
         this.x = x;
         this.y = y;
         this.z = z;
-        startx = x;
-        starty = y;
-        startz = z;
+        applyGridFit();
+        startx = this.x;
+        starty = this.y;
+        startz = this.z;
+    }
+    
+    function applyGridFit to ()
+    {
+        if (gridFit) {
+            x = Math.round(x);
+            y = Math.round(y);
+            z = Math.round(z);
+        }
     }
 
-    public function lineTo from (pos is Point3) to () {
+    public function lineTo from (pos is Point3) to () 
+    {
         lineTo(pos.x, pos.y, pos.z);
     }
 
-    public function lineTo from (x is Number, y is Number) to () {
+    public function lineTo from (x is Number, y is Number) to () 
+    {
 	lineTo(x, y, 0)
     }
 
-    public function lineTo from (x is Number, y is Number, z is Number) to () {
+    public function lineTo from (x is Number, y is Number, z is Number) to () 
+    {
 //    println("line to {x}, {y}, {z}");
         indexBuilder.add(indexBuilder.getBufferSize());
         builder.add(this.x, this.y, this.z);
         this.x = x;
         this.y = y;
         this.z = z;
+        applyGridFit();
         indexBuilder.add(indexBuilder.getBufferSize());
-        builder.add(x, y, z);
+        builder.add(this.x, this.y, this.z);
     }
 
-    public function close {
+    public function close to () {
         lineTo(startx, starty, startz);
     }
 

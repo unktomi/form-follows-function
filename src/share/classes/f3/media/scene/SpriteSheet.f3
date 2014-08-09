@@ -28,14 +28,15 @@ public class SpriteSheet is AbstractNode {
     {
         var p = pathFactory.createPath();
         var x = frame mod columns;
-        var y0 = frame / columns;;
-        var y = if (yIsDown) then rows - y0 else y0;
+        var y = frame / columns;;
         var w is Number = frameWidth;
         var h is Number = frameHeight;
         var tx = (w * x) / imageWidth;
-        var ty = (h * y) / imageHeight;
+        var ty0 = (h * y) / imageHeight;
+        var ty = if (yIsDown) then imageHeight - ty0 else ty0;
         var sx is Number = w / imageWidth;
         var sy is Number = h / imageHeight;
+        println("sprite frame={frame}, tx={tx}, ty={ty}, sx={sx}, sy={sy}");
         Shape2D.MeshNode2D {
             visible: bind targetFrame == frame;
             path: bind Shape2D.rect(pathFactory, -w/2, -h/2, w, h, translate(tx, ty) * scale(sx, sy));
