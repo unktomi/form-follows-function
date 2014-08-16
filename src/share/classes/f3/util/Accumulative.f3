@@ -36,7 +36,7 @@ public interface Accumulative of a is org.f3.runtime.Foldable of a
 		   function from (r is (a[], a[]), y is a) 
 		   to (a[], a[]) 
 		   {
-		       if (f(y)) then ([r.first, y] as a[], r.second) else (r.first, [r.second, y] as a[]);
+		       if (f(y)) then ([r.former, y] as a[], r.latter) else (r.former, [r.latter, y] as a[]);
 		   });
     }
 

@@ -6,6 +6,9 @@ import f3.media.scene.*;
 import f3.lang.Ref;
 import f3.lang.ConstRef;
 import f3.lang.AbstractRef;
+import f3.lang.MemberRef;
+import org.f3.runtime.F3Object;
+import org.f3.runtime.Pointer;
 import f3.lang.AbstractConstRef;
 import java.lang.Math;
 import f3.media.scene.meshdeform.BlendShape;
@@ -821,6 +824,38 @@ function makeRefZ from (ref is Ref of Number) to Ref of Tuple3
         }
         override public function set from (tuple is Tuple3) to () {
             ref.set(tuple.z);
+        }
+    }
+}
+
+abstract class AbstractMemberRef of (b is F3Object, a) is AbstractRef of a, MemberRef of b {
+}
+
+function makeMemberRef from (name is String, ptr is String, result is Pointer of (MaTransform, Number)) to Ref of Number
+{
+    AbstractMemberRef of (MaTransform, Number) {
+
+        override function getF3Object to MaTransform { result.getF3Object() }
+    
+        override function toString to String 
+        {
+            "{name}.{ptr} = {get()}";
+        }
+        override function get to Number
+        {
+            result.get();
+        }
+        override function set from (x is Number) to () 
+        {
+            result.set(x);
+        }
+        override function hashCode to Integer 
+        {
+            result.hashCode();
+        }
+        override function equals from (obj is Object) to Boolean
+        {
+            super.equals(obj) or obj.equals(result)
         }
     }
 }
@@ -1876,7 +1911,7 @@ class MTransform is MSpatial {
             }
         }
 
-        const rptr =
+        const rptr is Pointer of (MaTransform, Number) =
         if ptr == "tx" 
         then &n.tx 
         else if ptr == "ty"
@@ -1932,8 +1967,8 @@ class MTransform is MSpatial {
         then &n.tmrpy 
         else if ptr == "tmprz"
         then &n.tmrpz 
-        else null as Ref of Number;
-        if (rptr == null) then super.getPointer(ptr, target) as Ref of Number else makeRef(n.id, ptr, rptr as Ref of Number);
+        else null;
+        if (rptr == null) then super.getPointer(ptr, target) as Ref of Number else makeMemberRef(n.id, ptr, rptr);
     }
 
 

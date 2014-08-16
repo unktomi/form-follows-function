@@ -206,8 +206,8 @@ public function /
 bound function asStream of a from (p is (a, Stream of a)) to Stream of a 
 {
      Stream of a {
-	 now: bind p.first;
-	 later: bind p.second;
+	 now: bind p.former;
+	 later: bind p.latter;
      }
 }
 

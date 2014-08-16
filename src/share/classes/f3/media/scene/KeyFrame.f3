@@ -148,7 +148,7 @@ public abstract class Interpolator of a
 {
     public const zero is a;
 
-    abstract function interpolate from (k is Key of a, t is Number) to a;
+    public abstract function interpolate from (k is Key of a, t is Number) to a;
 
     public function blend from (src is a, target is a, w is Number) to a
     {

@@ -181,3 +181,7 @@ public class Channel of a is TimeNode
 	return result;
     }
 }
+
+public class SpatialChannel is Channel of Number {
+    public var target is Node;
+}

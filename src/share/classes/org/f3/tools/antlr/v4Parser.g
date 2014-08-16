@@ -4798,7 +4798,7 @@ primaryExpression
        (
           e=expression {$value = e;} (
             COMMA e1=expression {
-                $value = F.at(rPos).Binary(F3Tag.TUPLE, $value, e1);
+                $value = F.at(rPos).BinaryExp(F3Tag.TUPLE, $value, e1);
             }
           )*
        |

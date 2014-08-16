@@ -901,7 +901,7 @@ public class Browser implements AbstractWebBrowser {
 
     public CursorType getCursorType() {
         // hack...fixme
-        int cursor = getCursor(handle);
+        int cursor = getCursor(getHandle());
         for (CursorType c: CursorType.values()) {
             if (c.ordinal() == cursor) {
                 return c;
@@ -932,7 +932,7 @@ public class Browser implements AbstractWebBrowser {
     }
 
     public String getURL() {
-        return getURL(handle);
+        return getURL(getHandle());
     }
 
     TagNode document;
@@ -1203,7 +1203,7 @@ public class Browser implements AbstractWebBrowser {
     String currentContent = null;
 
     public void setContent(String content) {
-        setContent(handle, content);
+        setContent(getHandle(), content);
     }
 
     public String getContent() {
@@ -1400,15 +1400,15 @@ public class Browser implements AbstractWebBrowser {
     }
 
     public void injectMouseDown(int button) {
-        injectMouseDown(handle, button);
+        injectMouseDown(getHandle(), button);
     }
 
     public void injectMouseUp(int button) {
-        injectMouseUp(handle, button);
+        injectMouseUp(getHandle(), button);
     }
 
     public void injectMouseWheel(int x, int y) {
-	injectMouseWheel(handle, y, x);
+	injectMouseWheel(getHandle(), y, x);
     }
 
     public void injectMouseMove(int x, int y) {
@@ -1421,19 +1421,19 @@ public class Browser implements AbstractWebBrowser {
         cy = height/2f - cy;
         cx *= sx;
         cy *= sy;
-        injectMouseMove(handle, (int)Math.round(cx), (int)Math.round(cy));
+        injectMouseMove(getHandle(), (int)Math.round(cx), (int)Math.round(cy));
     }
 
     public void injectKeyDown(int keyCode, int mods) {
-        injectKeyDown(handle, mods, mapKeyCode(keyCode));
+        injectKeyDown(getHandle(), mods, mapKeyCode(keyCode));
     }
 
     public void injectKeyUp(int keyCode, int mods) {
-        injectKeyUp(handle, mods, mapKeyCode(keyCode));
+        injectKeyUp(getHandle(), mods, mapKeyCode(keyCode));
     }
 
     public void injectKeyInput(int keyCode, int mods, char keyChar) {
-        injectKeyInput(handle, mods, mapKeyCode(keyCode), keyChar);
+        injectKeyInput(getHandle(), mods, mapKeyCode(keyCode), keyChar);
     }
 
     JSObject window = null;
@@ -1470,6 +1470,13 @@ public class Browser implements AbstractWebBrowser {
             return result;
         }
         return null;
+    }
+
+    private long getHandle() {
+        if (handle == 0) {
+            resize(width, height);
+        }
+        return handle;
     }
 
     static native Object execute_js(long handle, String script);

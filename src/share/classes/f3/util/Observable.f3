@@ -215,8 +215,11 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 		self.subscribe(DefaultObserver of a {
 			override public function onNext from (x is a) to () 
 			{
-			    const y = f(x);
-			    observer.onNext(y);
+                            try {
+                                const y = f(x);
+                                observer.onNext(y);
+                            } catch (wasFiltered is f3.lang.Builtins.BooleanOperators.FalseException) {
+                            }
 			}
 			override public function onError from (e is java.lang.Exception) to () 
 			{
@@ -283,11 +286,14 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 
 			override public function onNext from (x is a) to () 
 			{
-                            const ob = f(x);
-                            if (queue.size() == 0) {
-                                performNext(ob);
-                            } else {
-                                queue.addLast(ob);
+                            try {
+                                const ob = f(x);
+                                if (queue.size() == 0) {
+                                    performNext(ob);
+                                } else {
+                                    queue.addLast(ob);
+                                }
+                            } catch (wasFiltered is f3.lang.Builtins.BooleanOperators.FalseException) {
                             }
                         }
 

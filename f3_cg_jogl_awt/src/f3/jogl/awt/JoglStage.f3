@@ -2245,6 +2245,312 @@ class SurfaceRenderer is StageRenderer {
     }
 }
 
+class ClipDrawInfo is DrawInfo {
+    const clip is ClipNode;
+    const contentRenderer is NodeRenderer;
+    const clipRenderer is NodeRenderer;
+}
+
+public class NodeRenderer {
+    const offscreenToRender = new java.util.HashSet of StageNode;
+    const scene is Scene;
+    const lastDrawn is java.util.Map of (MeshNode, DrawInfo) = new java.util.HashMap of (MeshNode, DrawInfo);
+    const opaqueToDraw is java.util.List of MeshNode = new java.util.ArrayList of MeshNode;
+    const transparentToDraw is java.util.List of MeshNode = new java.util.ArrayList of MeshNode;
+    const visited is java.util.Set of Node = new java.util.HashSet of Node;
+    var scissorBounds is Bounds;
+    const thisDraw = new java.util.HashMap of (MeshNode, DrawInfo);
+    var deformerFutures is (function to ())[];
+    var dirty is Boolean = true;
+    var gl is GL2;
+    function foldRoot from (n is Node) to () {
+        var opaqueTris = 0;
+        var transparentTris = 0;
+        var lights is PointLight[];
+	var iter is java.util.Iterator of MeshNode;
+        if (n.toSceneTransform == null) {
+            println("no scene transform: {n.id} => {n.toSceneTransform} parent={n.parent.id}");
+            return;
+        }
+        if (visited.contains(n)) {
+            //java.lang.Thread.currentThread().dumpStack();
+            if (DEBUG_HIERARCHY) println("node occurs multiply in hierarchy: {n} => {visited}");
+            return;
+        }
+        visited.add(n);
+        if (n.bounds.extent == Tuple3.<<0>>) {
+            if (lastDrawn.containsKey(n)) {
+                dirty = true;
+            }
+            return;
+        }
+        if (n.visibleInScene) {
+            var debug = false;
+            var par = n;
+            while (par <> null) {
+                if (par.debug) {
+                    debug = true;		       
+                    break;
+                }
+                par = par.parent;
+            }
+            par = n.parent;
+            var scissorBounds is Bounds = null;
+            if (scene.camera is Camera2D) while (par <> null and not (par is Stage)) {
+		    if (par is Scissored) {
+                        const sciss = (par as Scissored).scissorBounds;
+                        if (sciss != null) {
+                            const sb = par.toSceneTransform * sciss;
+                            if (Bounds.intersect(sb, n.boundsInScene) == null) {
+                                if (DEBUG_DRAW) {
+                                    println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
+                                }
+                                if (lastDrawn.containsKey(n)) {
+                                    if (DEBUG_DRAW) {
+                                        println("scissor cull {par} / {sb} of {n} / {n.boundsInScene}");
+                                        println("dirty due to scissor cull change {n}");
+                                    }
+                                    //dirty = true;
+                                }
+                                return ();
+                            }
+                            if (scissorBounds == null) {
+                                scissorBounds = sb;
+                            } else {
+                                scissorBounds = Bounds.intersect(sb, scissorBounds);
+                            }
+                        }
+		    }
+		    par = par.parent;
+		}
+		if (n is Shape2D.MeshNode2D) {
+		    const shape = n as Shape2D.MeshNode2D;
+		    if (shape.shader == null) {
+			if (shape.paint is Shape2D.ColorPaint) {
+			    readonly var paint = bind shape.paint as Shape2D.ColorPaint;
+			    if (paint is Shape2D.TexturePaint) {
+				var tex = 
+				    bind (paint as Shape2D.TexturePaint).texture;
+				shape.shader = TexturePaintShader {
+				    color: bind paint.color;
+				    tex: bind tex;
+				}
+			    } else {
+				shape.shader = ColorPaintShader {
+				    color: bind paint.color;
+				}
+			    }
+			} else if (shape.paint is Shape2D.GradientPaint) {
+			    const gradient = shape.paint as Shape2D.GradientPaint;
+			    shape.shader = makeGradientShader(gl, gradient);
+			}
+                        //			println("creating shader for {shape} => {shape.shader}");
+                        if (DEBUG_DRAW) {
+                            println("dirty due to shader update {n} {shape.shader}");
+                        }
+                        dirty = true;
+		    }
+		} 
+		if (n is MeshNode and n.visibleInScene) {
+		    var mn = n as MeshNode;
+		    if (not DISABLE_DEFORMERS) {
+			for (deformer in mn.deformers where deformer.enabled) {
+			    //println("applying deformer {deformer} to {mn}");
+                            try {
+                                const f = deformer.apply(mn);
+                                insert function to () {
+                                    f();
+                                } into deformerFutures;
+                            } catch (e is java.lang.Throwable) {
+                                e.printStackTrace();
+                            }
+			    //println("bounds is now {mn.mesh.bounds}");
+			}
+		    }
+		    if (scene.camera.contains(mn.boundsInScene)) {
+			const shader = mn.shader;
+			if (mn.shader <> null) {
+			    for (p in (mn.shader as CGFXShader).parameters) {
+				const value = (p as CGFXShader.Parameter of Object).get();
+				if (value is StageNode) {
+				    const stageNode = value as StageNode;
+				    //if (renderStageNode(gl, stageNode)) {
+				    //dirty = true;
+				    //}
+				    offscreenToRender.add(stageNode);
+				} else if (value is WebBrowserNode) {
+				    if ((value as WebBrowserNode).updateTexture()) {
+                                        if (DEBUG_DRAW) {
+                                            println("dirty due to texture update {value}");
+                                        }
+					dirty = true;
+				    }
+				}
+			    }
+			} 
+                        if (mn is WebBrowserNode) {
+                            if ((mn as WebBrowserNode).updateTexture()) {
+                                if (DEBUG_DRAW) {
+                                    println("dirty due to texture update {mn}");
+                                } 
+                                dirty = true;
+                            } else {
+                                if (DEBUG_DRAW) {
+                                    println("not dirty due to texture update {mn}");
+                                } 
+                            }
+                        }
+			var tris is Integer;
+                        if (not checkMesh(mn)) {
+                            return ();
+                        }
+                        tris = mn.mesh.getIndexBuffer().limit() / 3;        
+			var info = lastDrawn.get(mn);
+			const cgfx = mn.shader as CGFXShader;
+			cgfx.updateParameters();
+			if (info == null) {
+			    dirty = true;
+			    if (DEBUG_DRAW) {
+				println("dirty due to new mesh {mn}");
+			    }
+			    if (ENABLE_TEXTURED_TEXT and scene.camera is Camera2D and mn is Text.TextMeshNode and { const tn = mn as Text.TextMeshNode; tn.getText().background <> null }) {
+				info = TextDrawInfo {
+				    renderer: TextRenderer2D {
+					gl: gl
+				    }
+				}
+			    } else {
+				info = DrawInfo {
+				}
+			    }
+			    if (DEBUG_DRAW) {
+				println("created draw info {info} for {mn}");
+			    }
+			} else {
+                            if (not dirty) {
+                                if (mn.outlineShader <> info.outlineShader) dirty = true;
+                            }
+                            info.outlineShader = mn.outlineShader;
+			    if (not dirty) {
+				if (info.mesh <> mn.mesh or
+				    info.worldBounds <> mn.boundsInScene) {
+				    dirty = true;
+				    if (DEBUG_DRAW) {
+                                        if (info.mesh <> mn.mesh) {
+                                            println("dirty due to new mesh {mn}");
+                                        } else {
+                                            println("dirty due to bounds change {mn}, {info.worldBounds} {mn.boundsInScene}");
+                                        }
+				    }
+				}
+                                if (info.scissorBounds <> scissorBounds) {
+                                    if (DEBUG_DRAW) {
+                                        println("dirty due to scissorBounds change {n}");
+                                    }
+                                    dirty = true;
+                                }
+				if (info.shader <> mn.shader) {
+				    dirty = true;
+				    if (DEBUG_DRAW) {
+					println("is dirty due to shader change {info.shader} => {mn.shader}");
+				    }
+				}
+				if (not dirty) {
+				    for (p in cgfx.parameters) {
+					const x = p.get() as Object;
+					const y = info.shaderParams.get(p.name);
+					if (x <> y) {
+					    if (DEBUG_DRAW) {
+						println("is dirty: {mn}: {p.name}");
+					    }
+					    dirty = true;
+					    break;
+					} else {
+                                            if (x is Movie) {
+                                                const movie = x as Movie;
+                                                if (movie.updateTexture()) {
+                                                    if (DEBUG_DRAW) {
+                                                        println("is dirty: {mn}: {p.name}");
+                                                    }
+                                                    dirty = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+				    }
+				}
+			    }
+			}
+			info.mesh = mn.mesh;
+			info.shader = mn.shader;
+			info.worldBounds = mn.boundsInScene;
+                        info.scissorBounds = scissorBounds;
+			const key = mn;
+			if (info is TextDrawInfo) {
+			    const ti = info as TextDrawInfo;
+			    const tn = mn as Text.TextMeshNode;
+			    if (ti.tex == null or 
+				ti.layout <> tn.getLayout() or 
+				ti.background <> tn.background or
+				ti.foreground <> tn.paint) {
+                                if (DEBUG_DRAW) {
+                                    println("dirty due text draw change {tn}");
+                                }
+				dirty = true;
+				ti.tex = ti.renderer.render(mn as Text.TextMeshNode);
+				//println("rendered {mn}");
+				ti.layout = tn.getLayout();
+				ti.background = tn.background;
+				ti.foreground = tn.paint;
+			    }
+			    mn = ti.tex;
+			}
+			if ((scene.camera is Camera2D) or shader.isTransparent or (mn is Shape2D.MeshNode2D)) {
+			    transparentToDraw.add(mn);
+			    transparentTris += tris;
+			} else {
+			    opaqueToDraw.add(mn);
+			    opaqueTris += tris;
+			}
+                        info.scissorBounds = scissorBounds;
+			for (i in (mn.shader as CGFXShader).parameters) {
+			    info.shaderParams.put(i.name, i.get());
+			}
+			thisDraw.put(key, info);
+			if (scene.camera is Camera2D and not dirty) {
+			    if (not iter.hasNext() or iter.next() <> mn) {
+				dirty = true;
+                                if (DEBUG_DRAW) {
+                                    println("dirty due to hierarchy change {mn}");
+                                }
+			    }
+			}
+			//println("thisDraw {mn}: {thisDraw.size()}");
+		    } else {
+			if (DEBUG_DRAW) {
+			    println("culled {n} {n.id} {n.boundsInScene}");
+			}
+			if (lastDrawn.containsKey(mn)) {
+			    dirty = true;
+			    if (DEBUG_DRAW) {
+				println("is dirty: culled {n}");
+			    }
+			}
+		    }
+		}
+	    } else if (n is MeshNode) {
+		if (lastDrawn.containsKey(n as MeshNode)) {
+		    dirty = true;
+		    if (DEBUG_DRAW) {
+			println("is dirty: visibility {n}");
+		    }
+		}
+	    }
+            return ();
+    }
+
+}
+
 public class SceneRenderer {
     public var gl is GL2;
     var phongShader is Shader;
@@ -2318,6 +2624,7 @@ public class SceneRenderer {
     var lastHeight = 0.0;
 
     var lastVisible = true;
+
 
 
     function checkNeedsDraw
@@ -3195,6 +3502,12 @@ public class SceneRenderer {
                 gl.glPolygonMode(GL.GL_FRONT_AND_BACK, if (polygonMode0 == PolygonMode.Line) GL2.GL_LINE else if (polygonMode0 == PolygonMode.Point) GL2.GL_POINT else GL2.GL_FILL);
             }
             const mode = if (mesh.indexMode == IndexMode.Lines) GL.GL_LINES else if (mesh.indexMode == IndexMode.Points) GL.GL_POINTS else GL.GL_TRIANGLES;
+            if (mesh.lineStipple <> null) {
+                gl.glEnable(gl.GL_LINE_STIPPLE);
+                gl.glLineStipple(mesh.lineStipple.pattern, mesh.lineStipple.factor);
+            } else {
+                gl.glDisable(gl.GL_LINE_STIPPLE);
+            }
             if (vbo <> null) {
                 gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vbo.indexBuffer);
                 gl.glDrawElements(mode,
@@ -4394,7 +4707,7 @@ public function run from (args is String[]) to ()
         } else if (url.endsWith(".mp4")) {
             viewer.focusCamera(currentModel = Movie {url: url});
 	} else if (url.endsWith(".txt")) {
-	    textModel.setText(readTextFile(url).first);
+	    textModel.setText(readTextFile(url).former);
 	    viewer.focusCamera(currentModel = TransformNode {
 		    tx: 150;
 		    ty: 150;

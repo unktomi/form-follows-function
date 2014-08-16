@@ -7,10 +7,16 @@ import f3.media.scene.meshdeform.Intersector;
 
 const worker = new Intersector();
 
+public class LineStipple {
+    public const pattern is Integer = 0xaaaa;
+    public const factor is Integer = 1;
+}
+
 public abstract class AbstractMesh 
 {
     public const polygonMode is PolygonMode = PolygonMode.Fill;
     public const indexMode is IndexMode = IndexMode.Triangles;
+    public const lineStipple is LineStipple;
     public const vertices is VertexData;
     public const normals is VertexData;
     public const textureCoordinates is VertexData[];

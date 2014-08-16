@@ -240,7 +240,7 @@ public class F3TreeMaker implements F3TreeFactory {
         F3Ident id = Ident(names.fromString("f3"));
         F3Select sel = 
             Select(id, names.fromString("lang"), false);
-        sel = Select(sel, names.fromString("Builtins"), false);
+        sel = Select(sel, names.fromString("Both"), false);
         sel = Select(sel, names.fromString("both"), false);
 	F3Expression arg1 = expr.head;
 	expr = expr.tail;
@@ -269,6 +269,14 @@ public class F3TreeMaker implements F3TreeFactory {
         F3AssignOp tree = new F3AssignOp(opcode, lhs, rhs, null);
         tree.pos = pos;
         return tree;
+    }
+
+    public F3Expression BinaryExp(F3Tag opcode, F3Expression lhs, F3Expression rhs) {
+        if (opcode == F3Tag.TUPLE) { // @TODO
+            List<F3Expression> exps = List.of(lhs, rhs);
+            return Tuple(exps);
+        }
+        return Binary(opcode, lhs, rhs);
     }
 
     public F3Binary Binary(F3Tag opcode, F3Expression lhs, F3Expression rhs) {
@@ -1357,11 +1365,10 @@ public class F3TreeMaker implements F3TreeFactory {
 	    second = TypeClass(second, Cardinality.SINGLETON);
 	}
 	//((F3Type)second).boundKind = BoundKind.EXTENDS;
-        F3Ident id = Ident(names.fromString("org"));
+        F3Ident id = Ident(names.fromString("f3"));
         F3Select sel = 
-            Select(id, names.fromString("f3"), false);
-        sel = Select(sel, names.fromString("runtime"), false);
-        sel = Select(sel, names.fromString("Pair"), false);
+            Select(id, names.fromString("lang"), false);
+        sel = Select(sel, names.fromString("Both"), false);
 	return Ident(sel, List.of(first, second));
     }
 
