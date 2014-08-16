@@ -184,7 +184,6 @@ public class Builtins {
     {
 	return Either.latter(y);
     }
-    */
 
     public static <a,b> Pair<a, b> both(a x,  b y) 
     {
@@ -213,7 +212,6 @@ public class Builtins {
 	return Pair.both(x, y);
     }
 
-    /*
 
     public static <a> Pair<? extends a,? extends java.lang.Integer> $comma(a x, int y) 
     {
@@ -390,8 +388,21 @@ public class Builtins {
 
     public final static class BooleanOperators {
 
+        public final static class FalseException extends RuntimeException {
+            public FalseException(String str) {
+                super(str);
+            }
+        }
+
+        static final FalseException falseException = new FalseException("No!");
+
         public static <a> a If (boolean condition, a _then, a _else) {
             return condition ? _then : _else; 
+        }
+
+        public static <a> a If (boolean condition, a _then) throws FalseException {
+            if (condition) return _then;
+            throw falseException;
         }
 
         public static boolean yes() {

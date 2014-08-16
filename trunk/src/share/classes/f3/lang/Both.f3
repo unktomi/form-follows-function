@@ -29,6 +29,10 @@ public class Both of (a, b)
     public const former is a;
     public const latter is b;
 
+    public function and of c from (x is c) to Both of (Both of (a, b), c) {
+	return new Both of (Both of (a, b), c)(this, x);
+    }
+
     public function flatmap of c from (f is function from a to Both of (c, b)) to Both of (c, b) 
     {
         f(former);

@@ -1406,21 +1406,37 @@ public class F3Lower implements F3Visitor {
                 args.append(lowerExpr(expr));
             }
         }
+        boolean isFieldAccess = false;
 	if (staticOfNonStatic) {
 	    // we want to change 
 	    // String.toUpperCase($x$0) 
 	    // to
 	    // $x$0.toUpperCase();
+
+            // and given
+	    // class X { var a is Integer }
+            //
+            // change
+	    // X.a
+            // to
+	    // function from ($x$0 is X) to Integer { $x$0.a  }
+
 	    F3Ident p = (F3Ident)args.next();
-	    meth = m.at(tree.pos).Select(p, msym, false);
+            if (msym != null) {
+                meth = m.at(tree.pos).Select(p, msym, false);
+            } else {
+                // field access
+                meth = m.at(tree.pos).Select(p, sym, false);
+                isFieldAccess = true;
+            }
 	}
         if (needsReceiverVar) {
             F3Select qualId= (F3Select)tree;
             receiverVar = makeVar(tree.pos(), "rec", qualId.selected, qualId.selected.type);
             F3Ident receiverVarRef = (F3Ident)m.at(tree.pos).Ident(receiverVar.sym).setType(receiverVar.type);
-            meth = m.at(tree.pos).Select(receiverVarRef, msym, false).setType(mtype);
+            meth = m.at(tree.pos).Select(receiverVarRef, sym, false).setType(mtype);
         }
-        F3Expression call = m.at(tree.pos).Apply(List.<F3Expression>nil(), meth, args.toList()).setType(returnType);
+        F3Expression call = isFieldAccess ? meth : m.at(tree.pos).Apply(List.<F3Expression>nil(), meth, args.toList()).setType(returnType);
         F3Block body = (F3Block)m.at(tree.pos).Block(0, List.<F3Expression>nil(), call).setType(returnType);
         F3FunctionValue funcValue = m.at(tree.pos).FunctionValue(m.at(tree.pos).Modifiers(0L), preTrans.makeTypeTree(returnType),
                 params.toList(), body);
@@ -1690,7 +1706,7 @@ public class F3Lower implements F3Visitor {
     }
 
     public void visitSelect(F3Select tree) {
-        result = (tree.sym.kind == Kinds.MTH) ?
+        result = (tree.sym.kind == Kinds.MTH || tree.staticRefOfNonStatic) ?
             toFunctionValue(tree, true) :
             lowerSelect(tree);
     }

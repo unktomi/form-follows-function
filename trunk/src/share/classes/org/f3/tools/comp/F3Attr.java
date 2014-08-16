@@ -1083,29 +1083,45 @@ public class F3Attr implements F3Visitor {
 	if (tree.typeArgs != null) {
 	    actuals = attribTypeArgs(tree.typeArgs, env);
 	}
-        result = checkId(tree, site, sym, env, actuals, pkind, pt, pSequenceness, varArgs);
-
+        Symbol toCheck = sym;
+        boolean checked = false;
 	if (isType(sitesym)) {
 	    if (!sym.isStatic()) {
 		tree.staticRefOfNonStatic = true;
-		MethodType mt = null;
-		if (result instanceof MethodType) {
-		    mt = (MethodType)result;
-		} else if (result instanceof FunctionType) {
-		    mt = ((FunctionType)result).asMethodType();
-		}
-		if (mt != null) {
-		    ListBuffer<Type> typarams = new ListBuffer<Type>();
-		    Type rtype = mt.restype;
+                if (sym instanceof MethodSymbol) {
+                    checked = true;
+                    result = checkId(tree, site, toCheck, env, actuals, pkind, pt, pSequenceness, varArgs);
+                    MethodType mt = null;
+                    if (result instanceof MethodType) {
+                        mt = (MethodType)result;
+                    } else if (result instanceof FunctionType) {
+                        mt = ((FunctionType)result).asMethodType();
+                    }
+                    if (mt != null) {
+                        ListBuffer<Type> typarams = new ListBuffer<Type>();
+                        Type rtype = mt.restype;
+                        typarams.append(types.boxedTypeOrType(rtype));
+                        typarams.append(types.boxedTypeOrType(tree.selected.type));
+                        for (List<Type> l = mt.argtypes; l.nonEmpty(); l = l.tail) {
+                            typarams.append(types.boxedTypeOrType(l.head));
+                        }
+                        result = syms.makeFunctionType(typarams.toList());
+                    }
+		} else {
+                    result = checkId(tree, site, sym, env, actuals, pkind, pt, pSequenceness, varArgs);
+                    ListBuffer<Type> typarams = new ListBuffer<Type>();
+		    Type rtype = result;
 		    typarams.append(types.boxedTypeOrType(rtype));
 		    typarams.append(types.boxedTypeOrType(tree.selected.type));
-		    for (List<Type> l = mt.argtypes; l.nonEmpty(); l = l.tail) {
-			typarams.append(types.boxedTypeOrType(l.head));
-		    }
 		    result = syms.makeFunctionType(typarams.toList());
-		}
-	    }
+                    MethodSymbol res = new MethodSymbol(sym.flags_field, sym.name, ((FunctionType)result).mtype, sym.owner);
+                    toCheck = res;
+                }
+            }
 	}
+        if (!checked) {
+            result = checkId(tree, site, toCheck, env, actuals, pkind, pt, pSequenceness, varArgs);
+        }
 	tree.type = result;
 	if (tree.sym.kind == MTH && result instanceof FunctionType) {
             if (tree.implicitArgs != null && tree.implicitArgs.nonEmpty()) {

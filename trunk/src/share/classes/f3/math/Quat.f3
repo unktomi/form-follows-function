@@ -45,18 +45,18 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
     public function toAngleAxis to (Number, Vec3) {
         const sqrLength = x*x + y*y + z*z;
         if (Math.abs(sqrLength) <= LinearMath.EPSILON) { // length is ~0
-	   (0.0, Vec3.<<0>>)
+	   f3.lang.Both.both(0.0, Vec3.<<0>>)
         } else {
             const angle = 2.0 * Math.acos(w);
 	    const i is Number = 1.0/Math.sqrt(sqrLength);
-	    (Math.toDegrees(angle) as Number, new Vec3(x*i, y*i, z*i));
+	    f3.lang.Both.both(Math.toDegrees(angle) as Number, new Vec3(x*i, y*i, z*i));
         }
     }
 
     override function premultiply from (m is Mat4) to Quat 
     {
 	const aa = toAngleAxis();
-	Quat(aa.first, m * aa.second);
+	Quat(aa.former, m * aa.latter);
     }
 
     public function mul from (mat is Mat4) to Mat4

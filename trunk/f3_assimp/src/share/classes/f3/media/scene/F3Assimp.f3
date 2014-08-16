@@ -198,13 +198,13 @@ const QuatLinear is KeyFrame.Interpolator = KeyFrame.Interpolator of Quat {
     override var zero = Quat.<<1>>;
     override function interpolate from (k is Key of Quat, t is Number) to Quat 
     {
-        if (t >= 0.5) then k.value else k.prev.value;
+        if (k.prev == null) then k.value else if (t >= 0.5) then k.value else k.prev.value;
         //if (t == 0) then k.prev.value else if t == 1 then k.value else k.prev.value.slerp(k.value, t);
     }
 
     override function blend from (src is Quat, target is Quat, w is Number) to Quat
     {
-        if (src == zero) then target else src.blend(target, w).normalize();
+        if src == zero then target else if target == zero then src else src.blend(target, w);
     }
 }
 
@@ -327,9 +327,22 @@ class Loader {
         var resultContent is TimeNode[];
         var content is TimeGroup;
         for (ch in x.getChannels())  {
-            var target is QTransformNode = sceneRoot.lookup(ch.getNodeName()) as QTransformNode;
+            const name = ch.getNodeName();
+            var target is QTransformNode = sceneRoot.lookup(name) as QTransformNode;
             if (target == null) {
-                target = spatialRoot.lookup(ch.getNodeName()) as QTransformNode;
+                // hack for unity
+                const underscore_name = "_{name}";
+                sceneRoot.foldLeft((), function from (_ is (), n is Node) to ()
+                                   {
+                                       if (n is QTransformNode) {
+                                           if (target == null and n.id.endsWith(underscore_name)) {
+                                               target = n as QTransformNode; 
+                                           }
+                                       }
+                                   });
+                if (target == null) {
+                    target = spatialRoot.lookup(ch.getNodeName()) as QTransformNode;
+                }
             }
             target.initialTransform = Mat4.<<1>>; // animation overwrites it
             var chs is (Channel of ?)[];

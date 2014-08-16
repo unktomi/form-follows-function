@@ -80,11 +80,7 @@ public class Bounds is Mat4.Transformable of Bounds
 
     public function contains from (other is Bounds) to Boolean
     {
-        println("this={this}");
-        println("other={other}");
-        const i = merge(this, other);
-        println("merge={i}");
-        i == this;
+        this <> null and merge(this, other) == this;
     }
 
     public function contains
