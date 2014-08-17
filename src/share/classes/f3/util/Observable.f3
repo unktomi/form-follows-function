@@ -27,7 +27,7 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 
     public function count to Observable of Integer 
     {
-        fold(0, function from (n is Integer, _ is a) to Integer { n + 1 })
+        fold of Integer(0, function from (n is Integer, _ is a) to Integer { n + 1 })
     }
 
     public function or of b from (xs is Observable of b) to Observable of <a, b> {

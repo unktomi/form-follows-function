@@ -2606,6 +2606,7 @@ public class F3Types extends Types {
 
 	java.util.Map<Symbol, Type> visited = new java.util.HashMap();
 
+
         @Override
         public Type visitTypeVar(TypeVar t, Void ignored) {
 	    Type t1 = visitTypeVar0(t, ignored);
@@ -3060,5 +3061,29 @@ public class F3Types extends Types {
     public Type fixWildcards(Type t) {
 	fixW.visit(t, t);
 	return t;
+    }
+
+
+    public boolean isSuperType(Type t, Type s) {
+        switch (t.tag) {
+        case ERROR:
+            return true;
+        case UNDETVAR: {
+            UndetVar undet = (UndetVar)t;
+            //System.err.println("UNDET isSuperType: "+undet.qtype+" "+ t+" "+s);
+            //Thread.currentThread().dumpStack();
+            if (t == s ||
+                undet.qtype == s ||
+                s.tag == ERROR ||
+                s.tag == BOT) return true;
+            if (undet.inst != null)
+                return isSubtype(s, undet.inst);
+            undet.lobounds = undet.lobounds.prepend(s);
+            //System.err.println("UNDET isSuperType: "+ t+" "+s);
+            return true;
+        }
+        default:
+            return isSubtype(s, t);
+        }
     }
 }

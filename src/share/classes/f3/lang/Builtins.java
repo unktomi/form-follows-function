@@ -37,6 +37,14 @@ import java.util.*;
  * @profile common
  */
 public class Builtins {
+    /* function composition */
+    public static
+        <A, B, C> Function1<? extends C, ? super A> 
+                                      $times(final Function1<? extends C,  ? super B> f, 
+                                             final Function1<? extends B, ? super A> g) {
+	return f.composeWith(g);
+    }
+
     /**
      * Compare 2 F3 Objects
      * 
@@ -457,4 +465,5 @@ public class Builtins {
     }
 
     public static Void nothing() { return null; }
+
 }
