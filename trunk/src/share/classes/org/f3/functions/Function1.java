@@ -55,12 +55,9 @@ public class Function1<R, A1> extends Function<R>
 	    }
 	};
     }
-
-    public <B> Function1<? extends R, ? super B> mul(final Function1<? extends A1, ? super B> f) {
-	return composeWith(f);
-    }
     
-    public <B> Function1<? extends R, ? super B> composeWith(final Function1<? extends A1, ? super B> f) {
+    public <B> Function1<? extends R, ? super B> 
+        composeWith(final Function1<? extends A1, ? super B> f) {
 	final Function1<R, A1> self = this;
 	return new Function1<R, B>() {
 	    public R invoke(final B b) {
@@ -150,6 +147,6 @@ public class Function1<R, A1> extends Function<R>
 	compose(Function1<? extends c, ? super b> f,
 		Function1<? extends b, ? super a> g) 
 	{
-	    return f.mul(g);
+	    return f.composeWith(g);
 	}
 }

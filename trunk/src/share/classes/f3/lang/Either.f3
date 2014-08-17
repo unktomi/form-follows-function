@@ -3,8 +3,8 @@ package f3.lang;
 public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 {
     public abstract function case of c 
-	from (f is function from a to c, 
-	      g is function from b to c) 
+	from (i1 is function from a to c, 
+	      i2 is function from b to c) 
 	to c;
 
     override abstract public function map of c 
@@ -15,6 +15,7 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 	from (f is function from b to Either of (a, c)) 
 	to Either of (a, c);
 
+    /*
     public function case of (c, d) 
 	from (this is Either of (Either of (a, b), c),
 	      f is function from a to d,
@@ -27,7 +28,6 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 		  },
 		  h)
     }
-    /*
     public function case of (c, d, e) 
 	from (this is Either of (Either of (Either of (a, b), c), d),
 	      f is function from a to e,
@@ -96,7 +96,6 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
         return Default;
     }
 
-
     public function getFormer to java.lang.Iterable of a 
     {
 	java.util.Collections.emptySet of a()
@@ -120,12 +119,12 @@ public function Former of (a, b) from (x is a) to Either of (a, b)
 	    "Former: {x}";
 	}
 
-	override function case of _ 
-	    from (f is function from a to _, 
-		  g is function from b to _) 
-	    to _
+	override function case of c 
+	    from (i1 is function from a to c, 
+		  _ is function from b to c) 
+	    to c
 	{
-	    f(x);
+	    i1(x);
 	}
 
 	override public function map of c from (f is function from b to c) to Either of (a, c)

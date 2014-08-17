@@ -108,12 +108,19 @@ public class F3Infer {
      */
     Mapping fromTypeVarFun = new Mapping("fromTypeVarFun") {
             public Type apply(Type t) {
+                Type result = applyx(t);
+                //System.err.println("from type var "+t.getClass()+" "+t+" => "+result);
+                return result;
+            }
+
+            public Type applyx(Type t) {
                 if (t.tag == TYPEVAR) {
 		    UndetVar v = new UndetVar(t);
 		    TypeVar tv = (TypeVar)t;
 		    if (tv.lower != syms.botType && tv.lower != tv.bound) {
 			v.lobounds = v.lobounds.append(tv.lower);
 		    }
+                    //System.err.println("lobounds="+v.lobounds);
 		    Type upper = tv.getUpperBound();
 		    tv.bound = upper == null ? tv: upper;
 		    return v;
@@ -202,7 +209,7 @@ public class F3Infer {
      *  Throw a NoInstanceException if this not possible.
      */
     void minimizeInst(UndetVar that, Warner warn) throws NoInstanceException {
-	//System.err.println("minimize inst: "+that.qtype +" low="+that.lobounds + " inst="+that.inst);
+	///System.err.println("minimize inst: "+that.qtype +" low="+that.lobounds + " inst="+that.inst);
 	if (that.inst != null) {
 	    if (that.lobounds.size() > 0) {
 		that.lobounds = that.lobounds.append(that.inst);
@@ -320,7 +327,6 @@ public class F3Infer {
 	}
         List<Type> undetvars = Type.map(tvars, fromTypeVarFun);
         List<Type> formals = mt.argtypes;
-
         // instantiate all polymorphic argument types and
         // set up lower bounds constraints for undetvars
         Type varargsFormal = useVarargs ? formals.last() : null;
@@ -332,8 +338,10 @@ public class F3Infer {
                 at = instantiateArg((ForAll) at, ft, tvars, warn);
 		//System.err.println("instantiated: "+ bt + " to "+ at);
 	    }
-	    //System.err.println("undetvars="+undetvars);
             Type sft = types.subst(ft, tvars, undetvars);
+            //System.err.println("subst "+ft+" "+tvars+" "+undetvars+" => "+sft);
+            types.isSuperType(at, sft); // Hack!!! insane but true: f3infer depends on this being called (types.isSuperType sets bounds on undetvar's)
+
             boolean works = allowBoxing
                 ? types.isConvertible(at, sft, warn)
                 : types.isSubtypeUnchecked(at, sft, warn);
@@ -405,11 +413,16 @@ public class F3Infer {
         checkWithinBounds(tvars, undettypes.toList(), warn);
 
         if (!restvars.isEmpty()) {
+            //System.err.println("tvars="+tvars);
+            //System.err.println("insttypes="+insttypes.toList());
             // if there are uninstantiated variables,
             // quantify result type with them
             mt = new MethodType(mt.argtypes,
                                 new ForAll(restvars.toList(), mt.restype),
                                 mt.thrown, syms.methodClass);
+            //System.err.println("couldn't instantiate: "+restvars.toList());
+            //System.err.println("returning: "+mt);
+            //throw new NoInstanceException(false);
         }
 
         // return instantiated version of method type

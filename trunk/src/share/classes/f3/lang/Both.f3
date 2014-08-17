@@ -10,18 +10,6 @@ public function both of (a, b)
     }
 }
 
-// dual of Either.case
-public function both of (a, b, c)
-    from (f is function from c to a, 
-          g is function from c to b) 
-    to function from c to Both of (a, b) 
-{
-    function from (x is c) to Both of (a, b) {
-        both(f(x), g(x))
-    }
-}
-
-
 public class Both of (a, b) 
     is org.f3.runtime.Monad of (Both, a), org.f3.runtime.Comonad of (Both, a) 
 {
@@ -29,8 +17,9 @@ public class Both of (a, b)
     public const former is a;
     public const latter is b;
 
-    public function and of c from (x is c) to Both of (Both of (a, b), c) {
-	return new Both of (Both of (a, b), c)(this, x);
+    public function and of c from (x is c) to Both of (Both of (a, b), c) 
+    {
+	new Both of (Both of (a, b), c)(this, x);
     }
 
     public function flatmap of c from (f is function from a to Both of (c, b)) to Both of (c, b) 
@@ -46,7 +35,8 @@ public class Both of (a, b)
         }
     }
 
-    override function hashCode() to Integer {
+    override function hashCode() to Integer 
+    {
         var hashCode = 1;
         var e is Object = former;
         hashCode = 31*hashCode + e.hashCode();
@@ -63,9 +53,10 @@ public class Both of (a, b)
         } else false;
     }
 
-    function toString from (x is Object, sep is String) to String {
+    function toString from (x is Object, sep is String) to String 
+    {
 	const r = new java.lang.StringBuilder();
-	if (x instanceof Both of (?, ?)) {
+	if (x is Both of (?, ?)) {
 	    const p = x as Both of (?, ?);
 	    r.append(toString(p.former, ", "));
 	    r.append(toString(p.latter, sep));
