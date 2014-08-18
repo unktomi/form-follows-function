@@ -2702,6 +2702,8 @@ public abstract class F3AbstractTranslation
                     return op(lhs(), tree.methodName, rhs());
                 case MINUS:
                     return op(lhs(), tree.methodName, rhs());
+                case MOD:
+                    return op(lhs(), tree.methodName, rhs());
                 case DIV:
                     return op(lhs(), tree.methodName, rhs());
                               //rhs(isDuration(rhsType)? null : durationNumericType));

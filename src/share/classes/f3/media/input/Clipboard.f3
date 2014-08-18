@@ -1,0 +1,9 @@
+package f3.media.input;
+import f3.util.Observable;
+
+public interface Clipboard {
+    public function copyStringToClipboard from (data is String) to ();
+    public function copyStringFromClipboard to String;
+    public bound function isEmpty to Boolean;
+    public function observeContent to Observable of Boolean;
+}
