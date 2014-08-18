@@ -4299,6 +4299,47 @@ class AWTMenuFactoryImpl is MenuFactory {
 
 public const THE_MENU_FACTORY = AWTMenuFactoryImpl {}
 
+class AwtClipboard is f3.media.input.Clipboard {
+
+    const subject = Subject of Boolean {};
+
+    var empty is Boolean on replace {
+        subject.onNext(not empty);
+    }
+
+
+    override function observeContent to Observable of Boolean 
+    {
+        subject;
+    }
+
+    override bound function isEmpty to Boolean 
+    {
+        empty;
+    }
+
+    init {
+        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().addFlavorListener(java.awt.datatransfer.FlavorListener {
+                override function flavorsChanged from (e is FlavorEvent) to ()
+                {
+                    empty = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().isDataFlavorAvailable(java.awt.datatransfer.DataFlavor.stringFlavor);
+                }
+            })
+    }
+    override public function copyStringToClipboard from (data is String) to () 
+    {
+        const stringSelection = new java.awt.datatransfer.StringSelection(data);
+        const clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
+    }   
+    override public function copyStringFromClipboard to String 
+    {
+        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().getData(java.awt.datatransfer.DataFlavor.stringFlavor).toString(); 
+    }
+}
+
+public const THE_CLIPBOARD is f3.media.input.Clipboard = AwtClipboard {};
+
 public class JoglStage is Stage
 {
 
