@@ -285,3 +285,18 @@ public function rotateNormalAxis
     if (degrees == 0) then Mat4.<<1>> else Quat(degrees, axis).toMat4();
 }
 
+
+public function round from (n is Number) to Number
+{
+    java.lang.Math.round(n);
+}
+
+public function floor from (n is Number) to Number
+{
+    java.lang.Math.floor(n);
+}
+
+public function ceil from (n is Number) to Number
+{
+    java.lang.Math.ceil(n);
+}

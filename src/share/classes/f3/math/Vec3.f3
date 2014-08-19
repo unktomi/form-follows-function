@@ -273,9 +273,14 @@ public class Vec3 is Tuple3
 	this * (1/scale)
     }
 
-    public function map from (f is function from Number to Number) to Vec3 
+    override function map from (f is function from Number to Number) to Vec3 
     {
 	new Vec3(f(x), f(y), f(z))
+    }
+
+    public function zip from (v is Vec3, f is function from (Number, Number) to Number) to Vec3 
+    {
+	new Vec3(f(x, v.x), f(y, v.y), f(z, v.z))
     }
 
     public function normalize to Vec3 
@@ -286,10 +291,10 @@ public class Vec3 is Tuple3
 
     public function projector to Mat4 
     {
-	matrix(x * x, y * x, z * x, 0,
-	       x * y, y * y, z * y, 0,
-	       x * z, y * z, z * z, 0,
-	       0    , 0    , 0    , 1);
+	LinearMath.matrix(x * x, y * x, z * x, 0,
+                          x * y, y * y, z * y, 0,
+                          x * z, y * z, z * z, 0,
+                          0    , 0    , 0    , 1);
     }
 
     public function project from (vector is Tuple3) to Vec3 

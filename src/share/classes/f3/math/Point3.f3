@@ -120,6 +120,16 @@ public class Point3 is Tuple3
         }
     }   
 
+    override function map from (f is function from Number to Number) to Point3 
+    {
+	new Point3(f(x), f(y), f(z));
+    }
+
+    public function zip from (v is Point3, f is function from (Number, Number) to Number) to Point3
+    {
+    	new Point3(f(x, v.x), f(y, v.y), f(z, v.z));
+    }
+
     public function min from (point is Point3) to Point3 
     {
 	if (point == this) point else new Point3 (Math.min(x, point.x), Math.min(y, point.y), Math.min(z, point.z))

@@ -2,6 +2,7 @@ package f3.media.scene;
 
 public class Stroke is AbstractStroke 
 {
+    public const scale is Number = 1.0;
     public const cap is Cap = Cap.BUTT;
     public const join is Join = Join.MITER;
     public const width is Number = 1.0;
@@ -13,6 +14,7 @@ public class Stroke is AbstractStroke
     {
         (obj instanceof Stroke) and {
             const other = obj as Stroke;
+            scale == other.scale and
 	    cap == other.cap and join == other.join and width == other.width and
             miterlimit == other.miterlimit and dash == other.dash and dashPhase == dashPhase;
         }
