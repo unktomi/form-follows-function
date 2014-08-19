@@ -73,7 +73,7 @@ public const Linear = NumberInterpolator
     }
 }
 
-public static const ColorLinear = ColorInterpolator 
+public const ColorLinear = ColorInterpolator 
 {
     override function interpolate from (k is Key of Color, t is Number) to Color 
     {
@@ -81,7 +81,7 @@ public static const ColorLinear = ColorInterpolator
     }
 }
 
-public static const Discrete = NumberInterpolator
+public const Discrete = NumberInterpolator
 {
     override function interpolate from (k is Key of Number, t is Number) to Number 
     {

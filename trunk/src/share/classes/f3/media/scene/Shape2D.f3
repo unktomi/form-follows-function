@@ -8,8 +8,8 @@ public interface Path2DFactory {
 }
 
 // @TODO
-public static const WIND_NON_ZERO = 0;
-public static const WIND_EVEN_ODD = 1; 
+public const WIND_NON_ZERO = 0;
+public const WIND_EVEN_ODD = 1; 
 
 public interface Path2D {
     abstract public function moveTo from (x0 is Number, y0 is Number) to ();
@@ -214,7 +214,15 @@ public class RadialGradient is GradientPaint
     }
 }
 
-public static const DEFAULT_STROKE = Stroke {};
+public const DEFAULT_STROKE = Stroke {
+    scale: 1.0, 
+    width: 1.0, 
+    cap: Stroke.Cap.BUTT, 
+    join: Stroke.Join.MITER,
+    miterlimit: 1.0;
+    dash: [];
+    dashPhase: 0.0;
+};
 
 function getStroke from (stroke is Stroke) to Stroke 
 {

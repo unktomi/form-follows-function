@@ -36,6 +36,7 @@ import com.sun.tools.mjavac.code.Symbol.ClassSymbol;
 import com.sun.tools.mjavac.code.Symbol.MethodSymbol;
 import com.sun.tools.mjavac.code.Symbol.VarSymbol;
 import com.sun.tools.mjavac.code.Type;
+import com.sun.tools.mjavac.code.BoundKind;
 import com.sun.tools.mjavac.code.Type.WildcardType;
 import com.sun.tools.mjavac.code.TypeTags;
 import com.sun.tools.mjavac.tree.JCTree;
@@ -1590,6 +1591,8 @@ public abstract class F3AbstractTranslation
 		    }
 		    if (exp.type == null) {
 			//System.err.println("exp.type is null: "+ exp);
+                        //exp.type = new WildcardType(syms.objectType, BoundKind.UNBOUND, syms.boundClass);
+                        exp.type = syms.objectType;
 		    }
 		    JCExpression te = makeType(types.boxedTypeOrType(exp.type), false);
 		    if (exp.type instanceof Type.TypeVar) { // hack

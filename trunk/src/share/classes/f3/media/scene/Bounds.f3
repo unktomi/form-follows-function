@@ -6,11 +6,11 @@ import java.lang.Math;
 // Spatial Bounds
 
 // return values of whichSide
-public static const INTERSECTING = 0;
-public static const INSIDE = -1;
-public static const OUTSIDE = 1;
+public const INTERSECTING = 0;
+public const INSIDE = -1;
+public const OUTSIDE = 1;
 
-public static const UNIT = Bounds { extent: Tuple3.<<1>> * 0.5 };
+public const UNIT = Bounds { extent: Tuple3.<<1>> * 0.5 };
 
 public class Bounds is Mat4.Transformable of Bounds
 {

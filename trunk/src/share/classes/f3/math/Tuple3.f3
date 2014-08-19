@@ -28,6 +28,15 @@ public class Tuple3 is F3Value, java.lang.Comparable of Tuple3
 	    z == v.z
 	}
     }
+    public function map from (f is function from Number to Number) to Tuple3 
+    {
+	new Tuple3(f(x), f(y), f(z));
+    }
+
+    public function zip from (v is Tuple3, f is function from (Number, Number) to Number) to Tuple3
+    {
+    	new Tuple3(f(x, v.x), f(y, v.y), f(z, v.z));
+    }
 
     public function add from (x is Number, y is Number, z is Number) to Tuple3
     {

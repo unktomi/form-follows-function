@@ -754,6 +754,9 @@ class JoglPath2D is Path2D
 
     override public function createStrokedShape from (stroke is Stroke) to Path2D 
     {
+        if (stroke.scale == 0.0) {
+            throw new java.lang.IllegalArgumentException("stroke scale is 0");
+        }
         const cap = 
             if (stroke.cap == Stroke.Cap.BUTT) then BasicStroke.CAP_BUTT 
                 else if (stroke.cap == Stroke.Cap.SQUARE) then BasicStroke.CAP_SQUARE
@@ -762,11 +765,13 @@ class JoglPath2D is Path2D
             if (stroke.join == Stroke.Join.BEVEL) then BasicStroke.JOIN_BEVEL 
                 else if (stroke.join == Stroke.Join.MITER) then BasicStroke.JOIN_MITER
                     else BasicStroke.JOIN_ROUND;
-        const dashArray is nativearray of Number = stroke.dash;
-        const bs = new BasicStroke(stroke.width, cap, join, 
-                                   Math.max(stroke.miterlimit, 1.0), 
-                                   if dashArray.length == 0 then null else dashArray, 
-                                   stroke.dashPhase);
+        const scale = stroke.scale;
+        const dashArray is nativearray of Number = foreach (dash in stroke.dash) scale*dash;
+        const bs = new BasicStroke(scale*stroke.width, cap, join, 
+                                   Math.max(scale*stroke.miterlimit, 1.0), 
+                                   if dashArray.length == 0 then null else dashArray,
+                                   scale*stroke.dashPhase);
+        println("BASIC STROKE=>{scale} =>width={bs.getLineWidth()}, miter={bs.getMiterLimit()} dashPhase={bs.getDashPhase()}, dashArray={bs.getDashArray()}");
         const ss = bs.createStrokedShape(getPath());
         var gp is GeneralPath;
         if (ss instanceof GeneralPath){
