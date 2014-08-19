@@ -217,6 +217,7 @@ function convertStroke from (paint is f3.media.svg.impl.Paint) to Stroke
     const cap = paint.getStrokeCap();
     const join = paint.getStrokeJoin();
     Stroke {
+        scale: 1.0;
         cap: if (cap == Cap.BUTT) Stroke.Cap.BUTT else if (cap == Cap.SQUARE) Stroke.Cap.SQUARE else Stroke.Cap.ROUND;
         join: if (join == Join.BEVEL) Stroke.Join.BEVEL else if (join == Join.ROUND) Stroke.Join.ROUND else Stroke.Join.MITER;        
         width: paint.getStrokeWidth();
