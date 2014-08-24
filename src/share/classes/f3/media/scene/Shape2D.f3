@@ -11,7 +11,7 @@ public interface Path2DFactory {
 public const WIND_NON_ZERO = 0;
 public const WIND_EVEN_ODD = 1; 
 
-public interface Path2D {
+public interface Path2D is Mat4.Transformable of Path2D {
     abstract public function moveTo from (x0 is Number, y0 is Number) to ();
     abstract public function lineTo from (x1 is Number, y1 is Number) to ();
     abstract public function quadTo from (cx1 is Number, cy1 is Number, 
@@ -30,6 +30,8 @@ public interface Path2D {
     public function flatten from (flatness is Number) to Path2D;
     public function getPoints to Point2[];
     public function getPoints from (mat is Mat4) to Point2[];
+    public function clip from (other is Path2D) to Path2D;
+    public function mul from (mat is Mat4) to Path2D;
 }
 
 public function rect
@@ -459,6 +461,9 @@ public class PathLine {
                     lineMesh.close();
                 }
                 override public function reset to () { }
+                override public function premultiply from (m is Mat4) to Path2D { null }
+                override public function mul from (m is Mat4) to Path2D { null }
+                override public function clip from (other is Path2D) to Path2D { null }
                 override public function createMesh to AbstractMesh { null }
                 override public function setTextureMatrix from (mat is Mat4) to () { }
                 override public function getBounds to Bounds { null }
@@ -474,17 +479,17 @@ public class PathLine {
 }
 
 
-public function moveTo(p is Vec2) to MoveTo 
+public function moveTo from (p is Tuple2) to MoveTo 
 {
     MoveTo { x: p.x, y: p.y }
 }
 
-public function lineTo(p is Vec2) to LineTo 
+public function lineTo from (p is Tuple2) to LineTo 
 {
     LineTo { x: p.x, y: p.y }
 }
 
-public function cubicTo(c1 is Vec2, c2 is Vec2, p2 is Vec2) to CubicTo 
+public function cubicTo from (c1 is Tuple2, c2 is Tuple2, p2 is Tuple2) to CubicTo 
 {
     CubicTo {
         cx1: c1.x;

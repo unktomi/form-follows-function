@@ -340,8 +340,8 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
     override public function createLayout
 	from (text0 is String, 
 	      font0 is Text.Font, 
-	      wrapWidth is Integer, 
-	      clipHeight is Integer,
+	      wrapWidth is Number, 
+	      clipHeight is Number,
 	      rightJustify is Boolean)
 	to Text.Layout 
     {
@@ -358,7 +358,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
         const str = convertMarkup(text, (font as JoglFont).font.getAttributes());
         const measurer = new java.awt.font.LineBreakMeasurer(str.getIterator(), frc);
         var y = 0.0;
-	var w = Math.round(wrapWidth / 2.0);
+	var w = wrapWidth / 2.0;
         var lastPos = -1;
         while (true) {
             const pos = measurer.getPosition();
@@ -519,7 +519,7 @@ class JoglTextLayout is Text.Layout
                     row: indexof layout;
 		    column: 
 		    if info.isLeadingEdge() then info.getInsertionIndex() + 1 else info.getInsertionIndex();
-		    x: pt.x;
+		    x: pt.x ;
 		    y: pt.y;
                 }
             }
@@ -594,6 +594,21 @@ class JoglTextLayout is Text.Layout
 
 class JoglPath2D is Path2D 
 {
+    override public function premultiply from (m is Mat4) to Path2D 
+    {
+        const t = toAffineTransform(m);
+        const newPath = new GeneralPath();
+        newPath.append(getPath().getPathIterator(t), false);
+        JoglPath2D {
+            path: newPath;
+        }
+    }
+
+    override function mul from (m is Mat4) to Path2D 
+    {
+        premultiply(m);
+    }
+
     public var path is GeneralPath = new GeneralPath();
     public const extrusion = new Jogl2DExtruder.Extrusion(null, false, 0);
     var textureMatrix is Mat4 = Mat4.<<1>>;
@@ -637,6 +652,19 @@ class JoglPath2D is Path2D
         }
     }
     */
+
+    override function clip from (other is Path2D) to Path2D {
+        const j = other as JoglPath2D;
+        const area1 = new java.awt.geom.Area(getPath());
+        const area2 = new java.awt.geom.Area(j.getPath());
+        const newPath = new GeneralPath();
+        area1.intersect(area2);
+        newPath.append(area1.getPathIterator(null), false);
+        JoglPath2D {
+            path: newPath
+        }
+    }
+    
     function getPath to GeneralPath { 
         path;
     }

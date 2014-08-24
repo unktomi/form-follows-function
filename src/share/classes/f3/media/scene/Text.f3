@@ -52,8 +52,8 @@ public interface LayoutInstance
     public abstract function createLayout
 	from (text is String, 
 	      font is Font, 
-	      wrapWidth is Integer, 
-	      clipHeight is Integer,
+	      wrapWidth is Number, 
+	      clipHeight is Number,
 	      rightJustify is Boolean) 
 	to Layout;
 }
@@ -160,6 +160,33 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     var lastValue is String;
     const buffer = new java.lang.StringBuffer;
     var caretPosition is Integer;
+
+    function setCaretPosition from (pos is Integer) to ()
+    {
+        const lastPos = caretPosition;
+        caretPosition = pos;
+        checkCaret(caretPosition, lastPos);
+    }
+
+    const A_WIDTH = bind font.width("A");
+
+    function checkCaret from (caretPosition is Integer, lastPos is Integer) to ()
+    {
+	const hit = layout.pick(caretPosition);
+        const tx = hit.x + wrapWidth/2.0;
+        const limit = width-factor*indent-A_WIDTH;
+        if (caretPosition > lastPos) {
+            if (tx >= limit) {
+                scrollX = -(tx-limit);
+            
+            }
+        } else if (caretPosition < lastPos) {
+            if (tx + scrollX < 0) {
+                scrollX = -tx;
+            }
+        } 
+    }
+
     readonly var start = bind Math.min(selectionStart, selectionEnd);
     readonly var end = bind Math.max(selectionStart, selectionEnd);
     protected const singleLine is Boolean = false;
@@ -171,12 +198,17 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         fillPaint: bind background;
     };
     readonly var layoutInstance = bind layoutEngine.createLayoutInstance();
-    public readonly var layout is Layout = bind layoutInstance.createLayout(text, font, Math.max(width-indent, 0), height, rightJustified);
+    protected var wrapWidth is Number = bind Math.max(width-indent, 0);
+    public readonly var layout is Layout = bind layoutInstance.createLayout(text, font, wrapWidth, height, rightJustified);
     override bound function getLayout to Layout { layout }
     public readonly var textShape = bind layout.getShape();
     public readonly var selectionShape = bind layout.getSelectionShape(start, end);
     public readonly var caretShape = bind layout.getCaretShape(caretPosition);
-    readonly var selectionMesh = MeshNode2D { path: bind selectionShape, paint: bind selectionBackground, visible: bind end > start};
+    readonly var selectionMesh = MeshNode2D { 
+        path: bind selectionShape;
+        paint: bind selectionBackground;
+        visible: bind end > start
+    };
     const self = this;
     readonly var textMesh is TextMeshNode = TextMeshNode {
         override var path = bind textShape;
@@ -191,7 +223,10 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
             "{super.toString()}: {text}";
         }
     }
-    const caretMesh = MeshNode2D { paint: bind foreground, path: bind caretShape };
+    const caretMesh = MeshNode2D { 
+        paint: bind foreground;
+        path: bind caretShape;
+    };
     var column is Number;
     var isLeading is Boolean;
     var dirty = true;
@@ -212,9 +247,12 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         }
     }
 
+    var scrollX is Number;
+    var scrollY is Number;
+    var factor is Number = bind if (rightJustified) then -1.0 else 1.0;
     const contentGroup is Group = Group {
-	override var transform = bind translate(if rightJustified then -indent else indent, 
-						height / 2);
+	override var transform = bind translate(factor*(0.5*(wrapWidth-width)+indent)+scrollX, 
+						height / 2 + scrollY);
 	content: bind [selectionMesh, textMesh, caretMesh];
     }
 
@@ -222,16 +260,21 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 
     override var internalContent = Group {
         content: bind [rect, contentGroup];
+    };
+
+    function convertX from (x is Number) to Number
+    {
+        x - 0.5 *(wrapWidth-width) - scrollX;
     }
 
     override function onMouseDown from (event is MouseEvent) to () 
     {
 	if (not editable) return;
 	const pt = event.location;
-	const mouseHit = layout.pick(pt.x, pt.y);
+	const mouseHit = layout.pick(convertX(pt.x), pt.y);
 	if (mouseHit <> null)  {
 	    const index = mouseHit.insertionIndex;
-	    caretPosition = index;
+	    setCaretPosition(index);
 	    if (event.clickCount == 3) {
 		selectAll();
 	    } else {
@@ -288,10 +331,10 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
 	if (not editable) return;
         const pt = event.location;
-        const mouseHit = layout.pick(pt.x, pt.y);
+        const mouseHit = layout.pick(convertX(pt.x), pt.y);
         if (mouseHit <> null) {
             const index = mouseHit.insertionIndex;
-            selectionEnd = caretPosition = index;
+            setCaretPosition(selectionEnd = index);
         }
 	updateColumn();
     }
@@ -361,7 +404,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     public function deleteRange from (start is Integer, end is Integer) to ()
     {
         if (start < end) {
-            caretPosition = start;
+            setCaretPosition(start);
             buffer.delete(start, end);
             clearSelection();
             markDirty();
@@ -372,7 +415,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
         if (start < end) {
             buffer.delete(start, end);
-            caretPosition = start;
+            setCaretPosition(start);
             selectionEnd = selectionStart = caretPosition;
             markDirty();
         }
@@ -395,7 +438,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     {
         selectionStart = 0;
         selectionEnd = buffer.length();
-        caretPosition = selectionEnd;
+        setCaretPosition(selectionEnd);
     }
 
     public function clearSelection to ()
@@ -455,13 +498,16 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         moveCaret(caretPosition+1, shift, true);
     }
 
+
+
     function moveCaret
 	from (toPos is Integer, 
 	      shift is Boolean, 
 	      setColumn is Boolean)
 	to ()
     {
-        caretPosition = Math.max(Math.min(toPos, text.length()), 0);
+        var lastPos = caretPosition;
+        setCaretPosition(Math.max(Math.min(toPos, text.length()), 0));
         if (shift) {
             selectionEnd = caretPosition;
         } else {
@@ -509,4 +555,5 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 
 public class Field extends Area {
     override const singleLine is Boolean = true;
+    override var wrapWidth = bind font.width(text);
 }
