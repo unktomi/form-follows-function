@@ -389,12 +389,20 @@ $PREFIX:{T|
 
     public Sequence<T> prepend(Object o) {
 	// fix me !!
+        if (o instanceof Sequence) {
+           Sequence<T> x = (Sequence<T>)o;
+           return (Sequence<T>)Sequences.insertBefore(this, x, 0);
+        }
 	final T x = (T)o;
 	return (Sequence<T>)Sequences.insertBefore(this, x, 0);
     }
 
     public Sequence<T> append(Object o) {
 	// fix me !!
+        if (o instanceof Sequence) {
+           Sequence<T> x = (Sequence<T>)o;
+           return (Sequence<T>)Sequences.insertBefore(this, x, size());
+        }
 	final T x = (T)o;
 	return (Sequence<T>)Sequences.insertBefore(this, x, size());
     }

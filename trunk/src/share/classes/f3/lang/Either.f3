@@ -46,6 +46,8 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
                   i) 
     }
     */
+    public function swap to Either of (b, a);
+    /*
     public function swap to Either of (b, a) 
     {
 	const self = this;
@@ -87,6 +89,7 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 	    }
 	}
     }
+    */
 
     public function getFormerOrElse from (Default is a) to a {
         return Default;
@@ -157,7 +160,11 @@ public function Former of (a, b) from (x is a) to Either of (a, b)
 		}
 	    }
 	}
+        override function swap to Either of (b, a) {
+            Latter of (b, a)(x);
+        }
     }
+
 }
 
 public function Latter of (a, b) from (y is b) to Either of (a, b) 
@@ -194,6 +201,10 @@ public function Latter of (a, b) from (y is b) to Either of (a, b)
 	{
 	    f(y);
 	}
+
+        override function swap to Either of (b, a) {
+            Former of (b, a)(y);
+        }
 
 	override function getLatter to java.lang.Iterable of b 
 	{

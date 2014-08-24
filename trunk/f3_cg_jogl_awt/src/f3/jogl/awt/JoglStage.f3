@@ -195,7 +195,7 @@ abstract class JoglFont is Text.Font {
     {
         const r = font.getStringBounds(text, frc);
         //println("bounds {text} in {font} => {r}");
-        return r.getWidth();
+        return r.getX()+r.getWidth();
     }
 }
 
@@ -381,7 +381,7 @@ public class JoglTextLayoutInstance is Text.LayoutInstance {
 		}
 		if (layout <> null) {
 		    var dx = 
-			if (rightJustify or not layout.isLeftToRight()) then wrapWidth - layout.getAdvance() else 0.0;
+			if (rightJustify or not layout.isLeftToRight()) then wrapWidth - layout.getBounds().getWidth() else 0.0;
 		    dx -= w;
 		    //y += layout.getDescent() + layout.getLeading();
                     y += font.descent + font.leading;
@@ -3762,6 +3762,13 @@ public class Listener is GLEventListener, DropTargetListener {
         ctx = GLContext.getCurrent();
         gl.setSwapInterval(1);
 	(ImageLoader_INSTANCE as JoglImageLoader).gl = gl; // hack
+        println("RESIZE {width}, {height}, frame={frame.getWidth()}, {frame.getHeight()}");
+        if (width mod 2 <> 0 or height mod 2 <> 0) {
+            const d = frame.getHeight()-height;
+            invoke(function to () {
+                    frame.setSize((width / 2)*2, (height/2)*2 + d);
+                });
+        }
 	stage.resize(width, height, frame.getWidth(), frame.getHeight());
         wakeup();
     }
