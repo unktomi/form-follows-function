@@ -251,7 +251,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
     var scrollY is Number;
     var factor is Number = bind if (rightJustified) then -1.0 else 1.0;
     const contentGroup is Group = Group {
-	override var transform = bind translate(factor*(0.5*(wrapWidth-width)+indent)+scrollX, 
+	override var transform = bind translate(Math.round(factor*(0.5*(wrapWidth-width)+indent)+scrollX), 
 						height / 2 + scrollY);
 	content: bind [selectionMesh, textMesh, caretMesh];
     }

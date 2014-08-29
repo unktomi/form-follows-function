@@ -430,17 +430,32 @@ class Loader {
         var pcount = 1;
         var gcount = 1;
         for (i in top.content) {
-            if (i.stroke != null) {
-                println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
+            //            if (i.stroke != null) {
+                //                println("path {i.path} transform {i.transform} stroke {i.stroke} paint {i.paint}");
+            //}
+            var shape is Node;
+            if (i.path is java.awt.geom.Rectangle2D) {
+                const rect = i.path as java.awt.geom.Rectangle2D;
+                shape = Shape2D.Rectangle {
+                    id: if i.id == null then "rect {pcount++}" else i.id;
+                    width: rect.getWidth();
+                    height: rect.getHeight();
+                    cx: rect.getWidth() / 2;
+                    cy: rect.getHeight() / 2;
+                    transform: convertTransform(i.transform);
+                    stroke: i.stroke;
+                    strokePaint: if i.stroke == null then null else i.paint;
+                    fillPaint: if i.stroke <> null then null else i.paint;
+                }
+            } else {
+                const p = convertPath(fac, height, i.transform, i.path);
+                const p1 = if (i.stroke <> null) p.createStrokedShape(i.stroke) else p;
+                shape = Shape2D.MeshNode2D {
+                    id: if i.id == null then "path {pcount++}" else i.id;
+                    path: p1;
+                    paint: i.paint;
+                };
             }
-            //var shape = Shape2D.createMeshNode(i.id, dynamicsWorld, convertPath(fac, height, i.transform, i.path), i.stroke, i.paint, true);
-            const p = convertPath(fac, height, i.transform, i.path);
-            const p1 = if (i.stroke <> null) p.createStrokedShape(i.stroke) else p;
-            const shape = Shape2D.MeshNode2D {
-                id: if i.id == null then "path {pcount++}" else i.id;
-                path: p1;
-                paint: i.paint;
-            };
             if (sizeof contentNode.content == 50) {
                 contentNode = Group {id: "group {++gcount}" }
                 insert contentNode into rootNode.content;
