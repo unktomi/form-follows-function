@@ -3360,11 +3360,11 @@ public class SceneRenderer {
                                                      0);
                         //println("grid fit: {tn.getText().text} {t} => {toSceneTransform.getTranslation()}");
                     } else {
-                        println("text was rotated {toSceneTransform.getTranslation()}");
-                        const t = toSceneTransform.getTranslation();
-                        toSceneTransform *= translate(t.x-Math.round(t.x),
-                                                      t.y-Math.round(t.y),
-                                                      0);
+                        //println("text was rotated {toSceneTransform.getTranslation()}");
+                        //const t = toSceneTransform.getTranslation();
+                        //toSceneTransform *= translate(t.x-Math.round(t.x),
+                        //                              t.y-Math.round(t.y),
+                        //                             0);
                     }
                 } else {
 //                    println("camera is : {camera}");
