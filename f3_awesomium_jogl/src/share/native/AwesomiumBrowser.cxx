@@ -102,8 +102,8 @@ static void ensureWebCore() {
     config.log_level = kLogLevel_Verbose;
     //config.enable_plugins = true;
     //config.plugin_path = WSLit("/Library/Internet Plug-ins/");
-    config.user_agent = WSLit("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36");
-    //config.user_agent = WSLit("Mozilla/5.0 (iPhone; U; CPU iPhone OS 5_1_1 like Mac OS X; en-gb) AppleWebKit/534.46.0 (KHTML, like Gecko) CriOS/19.0.1084.60 Mobile/9B206 Safari/7534.48.3");
+    config.user_agent = 
+      WSLit("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.94 Safari/537.36");
     /*
     WebStringArray arr;
     arr.Push(WSLit("--allow-file_access-from-files"));

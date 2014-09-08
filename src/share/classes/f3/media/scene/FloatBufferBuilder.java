@@ -16,7 +16,6 @@ public class FloatBufferBuilder {
     }
 
     FloatBuffer cached;
-    int cachedCapacity = -1;
     Chunk head;
     
     // There are issues with direct buffers: a minimum 4K allocation
@@ -59,11 +58,10 @@ public class FloatBufferBuilder {
         }
         cached = null;
         chunkIndex = curIndex;
-        cachedCapacity = -1;
     }
 
     final public void reserve(int count) {
-        if (cached != null && cachedCapacity < curIndex+count) {
+        if (cached != null && cached.capacity() < curIndex+count) {
             expandBuffer(count);
         }
     }
@@ -238,8 +236,10 @@ public class FloatBufferBuilder {
         store.limit(curIndex);
         if (cache) {
             clear();
-            cachedCapacity = store.capacity();
             cached = store;
+            head = null;
+            curChunk = null;
+            chunkIndex = 0;
         }
         return store;
     }

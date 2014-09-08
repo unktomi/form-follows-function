@@ -408,8 +408,13 @@ public class Builtins {
             return condition ? _then : _else; 
         }
 
-        public static <a> a If (boolean condition, a _then) throws FalseException {
+        public static <a> a If (a _then, boolean condition) throws FalseException {
             if (condition) return _then;
+            throw falseException;
+        }
+
+        public static <a> a Unless (a _, boolean condition) throws FalseException {
+            if (!condition) return _;
             throw falseException;
         }
 

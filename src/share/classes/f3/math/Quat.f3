@@ -13,7 +13,7 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
 {
     public function blend from (target is Quat, w is Number) to Quat
     {
-        this * (this.inverse() * target).pow(w);
+        this * ((this.inverse() * target).pow(w));
     }
 
     public function pow from (exponent is Number) to Quat 
@@ -31,7 +31,6 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
         const newAlpha = alpha * exponent;   
    
         // Compute new w value   
-   
 
         const w = Math.cos(newAlpha);   
    
@@ -39,7 +38,7 @@ public class Quat is Tuple4, Mat4.Transformable of Quat
    
         const mult = sin(newAlpha) / sin(alpha);   
 
-        return new Quat(x *mult, y *mult, z *mult, w);
+        return new Quat(x *mult, y*mult, z*mult, w);
     }
 
     public function toAngleAxis to (Number, Vec3) {

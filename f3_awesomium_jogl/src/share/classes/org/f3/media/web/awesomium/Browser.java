@@ -1296,7 +1296,7 @@ public class Browser implements AbstractWebBrowser {
     javax.swing.Timer keepAliveTimer = new javax.swing.Timer(1000, new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent event) {
                 long now = System.currentTimeMillis();
-                if (now - updateTime > 2000) {
+                if (now - updateTime > 60000) {
                     System.err.println("killing page web page");
                     keepAliveTimer.stop();
                     long h = handle;

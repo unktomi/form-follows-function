@@ -37,8 +37,7 @@ public class Timeline
             if (weight > 0) {
                 var r;
                 for (ch in chs) {
-                    const w = ch.sceneBlendWeight / weight;
-                    r = interpolateChannel(ch, sceneTime, r, w);
+                    r = interpolateChannel(ch, sceneTime, r, ch.sceneBlendWeight / weight);
                 }
                 target.set(r);
             }
@@ -58,11 +57,11 @@ public class Timeline
 	if (pausedSubject == null) then pausedSubject = Subject of Boolean {} else pausedSubject;
     }
 
-    function interpolateChannel
+    function interpolateChannel of a
 	from (ch is Channel of Object, 
 	      sceneTime is Duration,
-	      r is Object, 
-	      weight is Number) 
+              r is Object,
+	      weight is Number)
 	to Object 
     {
 	ch.interpolate(sceneTime, weight, r);

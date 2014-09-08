@@ -11,6 +11,33 @@ import f3.math.LinearMath.*;
 import f3.lang.Ref;
 import java.lang.Math;
 
+function lerp from (x is Number, y is Number, t is Number) to Number 
+{
+    x + (y - x) * t;
+}
+
+function eulerLerp from (angle1 is Number, angle2 is Number, t is Number) to Number 
+{
+    var angle = angle2 - angle1; 
+    if (angle < -180) {
+        angle += 360;
+    } else if (angle > 180) {
+        angle -= 360;
+    }
+    angle = angle mod 360;
+    lerp(angle1, angle1 + angle, t);
+}
+
+const CONVERT_QUAT_TO_EULER = java.lang.Boolean.getBoolean("f3.assimp.convert.quat.to.euler");
+
+function createEulerKey from (pos is Duration, value is Number) to Key of Number 
+{
+    RotNumberKey {
+        position: pos;
+        value: value;
+    }
+}
+
 function eq from (x is Number, y is Number) to Boolean {
     Math.abs(x-y) <= 5.0e-4;
 }
@@ -130,7 +157,7 @@ public class NumberKey is Key of Number {
 
 const RotLinear = Interpolator of Number {
 
-    override var zero = 0.0;
+    override var zero = 360.0 * 1000;
 
     override function scale from (x is Number, weight is Number) to Number
     {
@@ -142,21 +169,11 @@ const RotLinear = Interpolator of Number {
         x + y;
     }
 
-    function lerp from (x is Number, y is Number, t is Number) to Number {
-        x + (y - x) * t;
+    override function blend from (src is Number, target is Number, w is Number) to Number
+    {
+        if src == zero then target else if target == zero then src else eulerLerp(src, target, w);
     }
 
-    function eulerLerp from (angle1 is Number, angle2 is Number, t is Number) to Number 
-    {
-        var angle = angle2 - angle1; 
-        if (angle < -180) {
-            angle += 360;
-        } else if (angle > 180) {
-            angle -= 360;
-        }
-        angle = angle mod 360;
-        return lerp(angle1, angle1 + angle, t);
-    }
     override public function interpolate from (k is Key of Number, t is Number) to java.lang.Float // hack: compiler bug
     {
         eulerLerp(k.prev.value, k.value, t);
@@ -172,8 +189,6 @@ function toFilename from (u is String) to String
     const u1 = new java.net.URL(u);
     new java.io.File(new java.net.URI(u1.getProtocol(), u1.getPath(), null)).getAbsolutePath();
 }
-
-
 
 function findFile from (dir is java.io.File, name is String) to java.io.File
 {
@@ -384,7 +399,7 @@ class Loader {
             insert sz.getKeys(ch) into chs;
             if (ch.getNumRotKeys() > 0) {
                 var prev is Tuple3;
-                if (true) {
+                if (not CONVERT_QUAT_TO_EULER) {
                     var pq is Quat;
                     var qkeys is QuatKey[];
                     const cnt = ch.getNumRotKeys();
@@ -437,44 +452,26 @@ class Loader {
                         }
                         pq = q1;
                         var angles = q1.toAngles(Quat.EULER_XYZ);
-                        if (i > 1) {
-                            const delta = (angles - prev);
-                            function clamp from (x is Number) to Number {
-                                if (x > 180) {
-                                    x - 360;
-                                } else if (x < -180) {
-                                    x + 360;
-                                } else x
-                            }
-                            angles = prev + tuple(clamp(delta.x), clamp(delta.y), clamp(delta.z));
+                        if (false and i > 0) {
+                            angles = tuple(eulerLerp(prev.x, angles.x, 1.0),
+                                           eulerLerp(prev.y, angles.y, 1.0),
+                                           eulerLerp(prev.z, angles.z, 1.0));
                         }
                         prev = angles;
                         //println("{ch.getNodeName()} {i}: {angles}");
                         const pos = tick * ch.getRotKeyTime(i);
                         if (i == 0 or i == cnt-1 or not eq(px, angles.x)) {
-                            insert
-                                RotNumberKey {
-                                position: pos;
-                                value: angles.x;
-                            }
+                            insert createEulerKey(pos, angles.x)
                             into rx;
                             px = angles.x;
                         }
                         if (i == 0 or i == cnt-1 or not eq(py, angles.y)) {
-                            insert
-                                RotNumberKey {
-                                position: pos;
-                                value: angles.y;
-                            }
+                            insert createEulerKey(pos, angles.y)
                             into ry;
                             py = angles.y;
                         }
                         if (i == 0 or i == cnt-1 or not eq(pz, angles.z)) {
-                            insert
-                                RotNumberKey {
-                                position: pos;
-                                value: angles.z;
-                            }
+                            insert createEulerKey(pos, angles.z)
                             into rz;
                             pz = angles.z;
                         }
@@ -784,7 +781,8 @@ class Loader {
         } else null
     }
 
-    function generateScene from (x is AiNode) to Node {
+    function generateScene from (x is AiNode) to Node 
+    {
         var q is QTransformNode;
         var t = Group {
             id: "{if x == root then url else x.getName()} wrapper";

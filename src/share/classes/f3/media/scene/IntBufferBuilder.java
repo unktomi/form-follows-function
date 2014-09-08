@@ -202,6 +202,9 @@ public class IntBufferBuilder {
             clear();
             cachedCapacity = store.capacity();
             cached = store;
+            head = null;
+            curChunk = null;
+            chunkIndex = 0;
         }
         return store;
     }

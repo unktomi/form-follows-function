@@ -92,13 +92,19 @@ public class Jogl2DExtruder {
             return getMeshData();
         }
 
+        FloatBuffer verticesBuffer;
+        FloatBuffer normalsBuffer;
+        FloatBuffer texCoordsBuffer;
+        IntBuffer indicesBuffer;
+
+
         public MeshData getMeshData() {
             MeshData meshData = new MeshData();
-            FloatBufferData texCoords = new FloatBufferData(this.texCoords.getBuffer(), 2);
-            meshData.setVertexBuffer(vertices.getBuffer());
-            meshData.setNormalBuffer(normals.getBuffer());
+            FloatBufferData texCoords = new FloatBufferData(this.texCoords.getBuffer(texCoordsBuffer, true), 2);
+            meshData.setVertexBuffer(vertices.getBuffer(verticesBuffer, true));
+            meshData.setNormalBuffer(normals.getBuffer(normalsBuffer, true));
             meshData.setTextureCoords(texCoords, 0);
-            meshData.setIndexBuffer(indices.getBuffer());
+            meshData.setIndexBuffer(indices.getBuffer(indicesBuffer, true));
             return meshData;
         }
         
@@ -122,8 +128,8 @@ public class Jogl2DExtruder {
             glNormal = new float[] { 0, 0, 1};
             this.shape = shape;
 	    index = 0;
-            normals.reset();
             vertices.reset();
+            normals.reset();
             texCoords.reset();
             indices.reset();
         }
