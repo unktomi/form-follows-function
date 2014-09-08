@@ -174,7 +174,7 @@ public class Channel of a is TimeNode
 	    }
 	}
 	// v + k.interpolate(t) * weight
-        const result = k.interpolator.blend(if (v == null or weight == 0) then k.zero() else v, k.interpolate(t), weight);
+        const result = k.interpolator.blend(if (v == null) then k.zero() else v, k.interpolate(t), weight);
 	if (CHANNEL_DEBUG or debug) {
 	    println("{id} interpolated {k.interpolator} {pos} to {result}");
 	}

@@ -10,5 +10,5 @@ public class Camera2D is Camera
 {
     override var near = -1;
     override var far = 1;
-    override var projectionMatrix = bind ortho(near, far, 0, width, 0, height);
+    override var projectionMatrix = bind ortho(near, far, 0, Math.max(width, 1), 0, Math.max(height, 1));
 }

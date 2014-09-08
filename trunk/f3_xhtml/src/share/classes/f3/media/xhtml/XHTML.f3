@@ -644,8 +644,7 @@ class TextRendererImpl is TextRenderer {
         outputDevice.fill(shape);
     }
 
-    function adjustGlyphPositions from (
-                                        string is String, 
+    function adjustGlyphPositions from (string is String, 
                                         info is JustificationInfo, 
                                         vector is java.awt.font.GlyphVector) to () 
     {
@@ -654,8 +653,7 @@ class TextRendererImpl is TextRenderer {
             const c = string.charAt(i);
             if (i != 0) {
                 const point = vector.getGlyphPosition(i);
-                vector.setGlyphPosition(
-                                        i, new java.awt.geom.Point2D.Double(point.getX() + adjust, point.getY()));
+                vector.setGlyphPosition(i, new java.awt.geom.Point2D.Double(point.getX() + adjust, point.getY()));
             }
             if (c == " ".charAt(0) or c == "\u00a0".charAt(0) or c == "\u3000".charAt(0)) {
                 adjust += info.getSpaceAdjust();
