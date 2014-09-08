@@ -264,7 +264,7 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 
     function convertX from (x is Number) to Number
     {
-        x - 0.5 *(wrapWidth-width) - scrollX;
+        ((toSceneTransform * textMesh.toSceneTransform.inverse()) * new Point3(x - scrollX, 0, 0)).x;
     }
 
     override function onMouseDown from (event is MouseEvent) to () 
