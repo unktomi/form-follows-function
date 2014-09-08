@@ -168,22 +168,18 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         checkCaret(caretPosition, lastPos);
     }
 
-    const A_WIDTH = bind font.width("A");
-
     function checkCaret from (caretPosition is Integer, lastPos is Integer) to ()
     {
 	const hit = layout.pick(caretPosition);
-        const tx = hit.x + wrapWidth/2.0;
-        const limit = width-factor*indent-A_WIDTH;
-        if (caretPosition > lastPos) {
-            if (tx >= limit) {
-                scrollX = -(tx-limit);
-            
-            }
-        } else if (caretPosition < lastPos) {
-            if (tx + scrollX < 0) {
-                scrollX = -tx;
-            }
+        const tx = unconvertX(hit.x);
+        const right = width/2-caretMesh.bounds.width();
+        const left = -width/2+caretMesh.bounds.width();
+        //println("hit.x={hit.x}, tx={tx}, {left}..{right}, scrollx={scrollX}");
+        if (tx >= right) {
+            //            scrollX -= tx-right;
+        } 
+        if (tx < left) {
+            //            scrollX += left-tx;
         } 
     }
 
@@ -262,9 +258,14 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
         content: bind [rect, contentGroup];
     };
 
+    function unconvertX from (x is Number) to Number
+    {
+        ((toSceneTransform.inverse() * textMesh.toSceneTransform) * new Point3(x, 0, 0)).x;
+    }
+
     function convertX from (x is Number) to Number
     {
-        ((toSceneTransform * textMesh.toSceneTransform.inverse()) * new Point3(x - scrollX, 0, 0)).x;
+        ((toSceneTransform * textMesh.toSceneTransform.inverse()) * new Point3(x, 0, 0)).x;
     }
 
     override function onMouseDown from (event is MouseEvent) to () 
