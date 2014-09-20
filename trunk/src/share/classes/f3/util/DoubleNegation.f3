@@ -195,15 +195,15 @@ public function cojoin of a
     }
 }
 
-public function callCC of (a, _)
-    from (f is function /* of _ */ from (function from a to _) to _) 
+public function callCC of (a, _1)
+    from (f is function /* of _1 */ from (function from a to _1) to _1) 
     to DoubleNegation of a 
 {
     DoubleNegation of a 
     {
-	override function negate of _ 
-	    from (negate_a is function from a to _) 
-	    to _ 
+	override function negate of _2 
+	    from (negate_a is function from a to _2) 
+	    to _2
 	{
 	    f(negate_a)
 	}
@@ -214,12 +214,11 @@ public function run from (args is String[]) to ()
 { 
     println((foreach (x in doublyNegate(2), 
                       y in doublyNegate(3),
-                      z in callCC(function from (k is function from Integer to String) to String
-                                  {
-                                      if (args <> []) then args[0] else k(x+y);
+                      z in callCC(function from (k is function from Integer to Integer) to Integer                                  {
+                                      if (args <> []) then Integer.parseInt(args[0])+x+y else k(x+y);
                                   })
                       ) {
-                 "{x} + {y} = {z}";
+                 x + y - z
              }).extract());       
 }
 

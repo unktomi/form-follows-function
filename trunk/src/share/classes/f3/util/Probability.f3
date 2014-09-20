@@ -143,7 +143,6 @@ public class Distribution of a is Monad of (Distribution, a), Foldable of Possib
     {
 	Math.sqrt(variance());
     }
-
 }
 
 public function probably of a from (x is a, p is Number) to Possibility of a
@@ -214,8 +213,9 @@ public function stdDev
 function run { 
     const die = uniform([1..6]);
     const twoDiceDifferBy1 = 
-    foreach (x in die, y in die) {
-        Math.abs(x - y) == 1
-    }
+        foreach (x in die, y in die) 
+        {
+            Math.abs(x - y) == 1
+        }
     println(twoDiceDifferBy1);
 }

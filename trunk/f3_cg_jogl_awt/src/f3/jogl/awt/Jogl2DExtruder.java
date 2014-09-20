@@ -10,8 +10,18 @@ import f3.media.scene.ImportUtils.*;
 import f3.media.scene.FloatBufferBuilder;
 import f3.media.scene.IntBufferBuilder;
 
+
 public class Jogl2DExtruder {
 
+    static float DEFAULT_FLATNESS;
+    static {
+        String str = System.getProperty("jogl.stage.2d.flatness");
+        try {
+            DEFAULT_FLATNESS = Float.parseFloat(str);
+        } catch (Exception exc) {
+            DEFAULT_FLATNESS = 0.05f;
+        }
+    }
     static void toDoubleArray(double[] a2, float[] a1) {
         for (int i = 0; i< a1.length; i++) {
             a2[i] = a1[i];
@@ -26,7 +36,7 @@ public class Jogl2DExtruder {
         private boolean flipY = false;
         
         private boolean calcNormals = true;
-        private float flatness = 0.01f;
+        private float flatness = DEFAULT_FLATNESS;
         
         private Vector3 vecA = new Vector3();
         private Vector3 vecB = new Vector3();

@@ -470,5 +470,5 @@ public class Builtins {
     }
 
     public static Void nothing() { return null; }
-
+    public static Void ignore(Void former, Void latter) { return null; }
 }
