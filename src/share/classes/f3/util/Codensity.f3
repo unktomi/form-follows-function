@@ -1,0 +1,144 @@
+package f3.util;
+import f3.util.Monad;
+import f3.util.List;
+
+public abstract class Codensity of (class M of _, a) is org.f3.runtime.Monad of (Codensity, a) {
+    public function invoke of _ 
+        from (k is function from a to M of _) to M of _;
+
+    public const m is Monad of M = the Monad of M;
+
+    public function extract to M of a 
+    {
+        invoke(m.return of a);
+    }
+
+    override public function map of b
+        from (f is function from a to b) to Codensity of (M, b) 
+    {
+        const self = this;
+        Codensity of (M, b) {
+            m: self.m;
+            override public function invoke of c 
+                from (k is function from b to M of c) to M of c
+            {
+                self.invoke(function from (x is a) to M of c 
+                            {
+                                k(f(x))
+                            });
+            }
+        }
+    }
+
+    public function flatmap of b
+        from (f is function from a to Codensity of (M, b)) to Codensity of (M, b) 
+    {
+        const self = this;
+        Codensity of (M, b) {
+            m: self.m;
+            override public function invoke of c 
+                from (k is function from b to M of c) to M of c
+            {
+                const q = function from (x is a) to M of c {
+                    const xs = f(x);
+                    xs.invoke(k);
+                }
+                self.invoke(q);
+            }
+        }
+    }
+}
+
+/*
+function monad of (class M of _) from () to Monad of Codensity of M
+    with (m is the Monad of M)
+{
+    Monad of Codensity of M {
+        override function map of (a, b) 
+            from (xs is Codensity of (M, a), f is function from a to b) 
+            to Codensity of (M, b)
+        {
+            Codensity of (M, b) {
+                m: m;
+                override public function invoke of c 
+                    from (k is function from b to M of c) to M of c
+                {
+                    xs.invoke(k * f);
+                }
+            }
+        }
+        override function flatmap of (a, b) 
+            from (xs is Codensity of (M, a), f is function from a to Codensity of (M, b)) 
+            to Codensity of (M, b)
+        {
+            Codensity of (M, b) {
+                m: m;
+                override public function invoke of c 
+                    from (k is function from b to M of c) to M of c
+                {
+                    const q = function from (x is a) to M of c {
+                        const ys = f(x);
+                        ys.invoke(k);
+                    }
+                    xs.invoke(q);
+                }
+            }
+        }
+        override function return of a from (x is a) to Codensity of (M, a) {
+            Codensity of (M, a) {
+                m: m;
+                override public function invoke of b 
+                    from (k is function from a to M of b) to M of b
+                {
+                    k(x)
+                }
+            }
+        }
+    }
+}
+*/
+
+public function return of (class M of _, a) from (x is a) 
+    to Codensity of (M, a) 
+    with (m is the Monad of M)
+{
+    Codensity of (M, a) {
+        m: m;
+        override public function invoke of b 
+            from (k is function from a to M of b) to M of b
+        {
+            k(x);
+        }
+    }
+}
+
+public function improve of (class M of _, a) 
+    from (xs is M of a) 
+    to Codensity of (M, a)
+    with (m is the Monad of M) 
+{
+    Codensity of (M, a) {
+        m: m;
+        override public function invoke of b 
+            from (k is function from a to M of b) to M of b
+        {
+            m.flatmap(xs, k);
+        }
+    }
+}
+
+
+function run (args is String[])  {
+    const list = List.asList([1..100]);         
+    println(list);
+    if (args <> []) {
+        const xs = list;
+        const ys = foreach (x in xs, y in xs, z in xs) x * y * z;
+    } 
+    else 
+    {
+        const xs = improve(list);
+        const ys = foreach (x in xs, y in xs, z in xs) x * y * z;
+    }
+}
+
