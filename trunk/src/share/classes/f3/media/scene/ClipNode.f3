@@ -1,0 +1,15 @@
+package f3.media.scene;
+
+public class ClipNode is AbstractNode {
+    public var clip is Node;
+    public var content is Node[];
+    override function updateParent to ()
+    {
+        clip.setParent(this);
+        clip.updateParent();
+        super.updateParent();
+    }
+    override var internalContent = Group {
+        content: bind content;
+    }
+}

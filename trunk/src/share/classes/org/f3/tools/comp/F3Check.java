@@ -484,12 +484,12 @@ public class F3Check {
         }
         else
             foundUnboxed = found;
-
+        //System.err.println("checkTypes: "+reqUnboxed + " <= "+foundUnboxed);
         if (types.isAssignable(foundUnboxed, reqUnboxed, convertWarner(pos, found, req))) {
             Type foundElem = types.elementTypeOrType(found);
             Type reqElem = types.elementTypeOrType(req);
             if (foundElem.tag == VOID && reqElem.tag != VOID) {
-                return typeError(pos, JCDiagnostic.fragment(MsgSym.MESSAGE_INCOMPATIBLE_TYPES), found, req);
+                //return typeError(pos, JCDiagnostic.fragment(MsgSym.MESSAGE_INCOMPATIBLE_TYPES), found, req);
             }
             if (reqElem.tag <= LONG && foundElem.tag >= FLOAT && foundElem.tag <= DOUBLE && giveWarnings) {
                 // FUTURE/FIXME: return typeError(pos, JCDiagnostic.fragment(MsgSym.MESSAGE_INCOMPATIBLE_TYPES), found, req);

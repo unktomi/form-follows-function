@@ -16,6 +16,32 @@ public interface Monad of (class F of _) is Functor of F, org.f3.runtime.typecla
     {
 	flatmap(xs, id of F of a);
     }
+    /*
+    public function lazyDuplicate of a from (xs is F of a) to F of F of a
+    {
+        this.return(xs)
+    }
+
+    public function strictDuplicate of a from (xs is F of a) to F of F of a
+    {
+        const self = this;
+        flatmap(xs, 
+                function from (x is a) to F of F of a
+                {
+                    self.return(self.return(x))
+                })
+    }
+
+    public function pureDuplicate of a from (xs is F of a) to F of F of a
+    {
+        const self = this;
+        map(xs, 
+            function from (x is a) to F of a
+            {
+                self.return(x);
+            });
+    }
+    */
 }
 
 

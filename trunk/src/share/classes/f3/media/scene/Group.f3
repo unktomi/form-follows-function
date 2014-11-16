@@ -88,4 +88,18 @@ public class Group is Node
 	    insert n before content[0];
 	}
     }
+
+    override function lookup from (id is String) to Node 
+    {
+        var result is Node;
+        if (this.id == id) {
+            result = this;
+        } else {
+            for (x in content) {
+                result = x.lookup(id);
+                if (result <> null) break;
+            }
+        }
+        return result;
+    }
 }
