@@ -1,0 +1,51 @@
+package f3.util;
+import Optional.*;
+
+public class Mutable of a is Observed of a, Observer of a {
+
+    override function invoke to a 
+    {
+        memo.get()
+    }
+
+    override function changed to Optional of a
+    {
+        memo
+    }
+
+    function update from (x is a) to ()
+    {
+        memo = present(x);
+        onInvalidate()
+    }
+
+    override function onNext from (x is a) to ()
+    {
+        const wasValid = valid;
+        valid = true;
+        if (wasValid) {
+            if (x != memo.get()) {
+                update(x)
+            }
+        } else {
+            update(x);
+        }
+        
+    }
+    
+    public function get to a {
+        invoke()
+    }
+    
+    public function set from (x is a) to ()
+    {
+        onNext(x)
+    }
+}
+
+public function ref of a to Mutable of a 
+{ 
+    Mutable of a {} 
+}
+
+
