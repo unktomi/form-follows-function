@@ -37,4 +37,9 @@ public abstract class AbstractNode is Node
 	f(this, r);
     }
 
+    override function lookup from (id is String) to Node 
+    {
+        if this.id  == id then this else internalContent.lookup(id)
+    }
+
 }

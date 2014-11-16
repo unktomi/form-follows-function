@@ -6,6 +6,17 @@ public interface Observable of a, is org.f3.runtime.Monad of (Observable, a)
 {
     public var debugString is String;
 
+    var ob is Observed of a;
+
+    public function toObserved to Observed of a {
+        if (ob == null) {
+            const x = Mutable of a {}
+            subscribe(x);
+            ob = x;
+        }
+        return ob
+    }
+
     public function toRef to ConstRef of a 
     {
         AbstractConstRef of a {

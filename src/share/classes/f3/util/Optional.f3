@@ -141,6 +141,11 @@ public function present of a
     }
 }
 
+public function not_a of (a, b) from (_ is a) to Optional of b
+{
+    absent of b();
+}
+
 public function absent of a to Absent of a
 {
     Absence as Absent of a;

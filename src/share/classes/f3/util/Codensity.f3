@@ -3,6 +3,7 @@ import f3.util.Monad;
 import f3.util.List;
 
 public abstract class Codensity of (class M of _, a) is org.f3.runtime.Monad of (Codensity, a) {
+
     public function invoke of _ 
         from (k is function from a to M of _) to M of _;
 
@@ -127,18 +128,17 @@ public function improve of (class M of _, a)
     }
 }
 
-
-function run (args is String[])  {
+function run (args is String[]) to ()
+{
     const list = List.asList([1..100]);         
-    println(list);
     if (args <> []) {
         const xs = list;
         const ys = foreach (x in xs, y in xs, z in xs) x * y * z;
-    } 
-    else 
-    {
-        const xs = improve(list);
-        const ys = foreach (x in xs, y in xs, z in xs) x * y * z;
+        println(ys.length);
+    } else {
+    //        const xs = improve(list);
+     //   const ys = foreach (x in xs, y in xs, z in xs) x * y * z;
+        //        println(ys.extract().length);
     }
 }
 

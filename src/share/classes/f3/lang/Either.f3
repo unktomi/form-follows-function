@@ -1,12 +1,13 @@
 package f3.lang;
 
-public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
+public abstract class Either of (a, b) //is org.f3.runtime.Monad of (Either, b)
 {
     public abstract function case of c 
 	from (i1 is function from a to c, 
 	      i2 is function from b to c) 
 	to c;
 
+    /*
     override abstract public function map of c 
 	from (f is function from b to c) 
 	to Either of (a, c);
@@ -15,7 +16,6 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 	from (f is function from b to Either of (a, c)) 
 	to Either of (a, c);
 
-    /*
     public function case of (c, d) 
 	from (this is Either of (Either of (a, b), c),
 	      f is function from a to d,
@@ -46,13 +46,13 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
                   i) 
     }
     */
-    public function swap to Either of (b, a);
-    /*
+
     public function swap to Either of (b, a) 
     {
 	const self = this;
 	Either of (b, a) 
 	{
+/*
 	    override public function map of c 
 		from (f is function from a to c) 
 		to Either of (b, c)
@@ -81,7 +81,7 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 			  });
 		
 	    }
-
+*/
 	    override function case of c from (f is function from b to c, 
 					      g is function from a to c) to c
 	    {
@@ -89,7 +89,7 @@ public abstract class Either of (a, b) is org.f3.runtime.Monad of (Either, b)
 	    }
 	}
     }
-    */
+
 
     public function getFormerOrElse from (Default is a) to a {
         return Default;
@@ -129,7 +129,7 @@ public function Former of (a, b) from (x is a) to Either of (a, b)
 	{
 	    i1(x);
 	}
-
+/*
 	override public function map of c from (f is function from b to c) to Either of (a, c)
 	{
 	    Former of (a, c) (x);
@@ -139,7 +139,7 @@ public function Former of (a, b) from (x is a) to Either of (a, b)
 	{
 	    Former of (a, c) (x);
 	}
-	
+*/	
 	override function getFormer to java.lang.Iterable of a 
 	{
 	    java.lang.Iterable of a {
@@ -187,7 +187,7 @@ public function Latter of (a, b) from (y is b) to Either of (a, b)
 	{
 	    g(y);
 	}
-
+/*
 	override public function map of c 
 	    from (f is function from b to c) 
 	    to Either of (a, c)
@@ -201,7 +201,7 @@ public function Latter of (a, b) from (y is b) to Either of (a, b)
 	{
 	    f(y);
 	}
-
+*/
         override function swap to Either of (b, a) {
             Former of (b, a)(y);
         }

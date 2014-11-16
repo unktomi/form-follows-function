@@ -4766,6 +4766,12 @@ public class F3Attr implements F3Visitor {
         Type rightUnboxed = (isEq && types.isSequence(right)) ?
             types.elementType(right) :
             types.unboxedTypeOrType(right);
+        if (leftUnboxed == syms.voidType) {
+            leftUnboxed = types.boxedTypeOrType(leftUnboxed);
+        }
+        if (rightUnboxed == syms.voidType) {
+            rightUnboxed = types.boxedTypeOrType(rightUnboxed);
+        }
         return rs.resolveBinaryOperator(pos, tag, env, leftUnboxed, rightUnboxed);
     }
 

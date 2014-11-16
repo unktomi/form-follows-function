@@ -222,11 +222,7 @@ public abstract class Node is Foldable of Node, KeyboardFocusTarget, Collidable
 
     public function lookup from (id is String) to Node 
     {
-	foldLeft(null as Node, 
-		 function from (r is Node, n is Node) to Node 
-		 {
-		     if (r == null and n.id == id) then n else r;
-		 })
+        if this.id  == id then this else null;
     }
 
     public function toFront from () to () 

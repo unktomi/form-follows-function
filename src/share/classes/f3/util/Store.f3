@@ -1,0 +1,94 @@
+package f3.util;
+/*
+public function comonad of d to Comonad of Store of d {
+
+    Comonad of Store of d {
+
+        public function map of (a, b)
+            from (xs is Store of (d, a),
+                  f is function from a to b) 
+`            to Store of (d, b)
+        {
+            xs.map(f)
+        }
+
+        public function coflatmap of (a, b) 
+            from (xs is Store of (d, a),
+                  f is function from Store of (d, a) to b) 
+            to Store of (d, b)
+        {
+            xs.coflatmap(f)
+        }
+
+        override public function extract of a
+            from (xs is Store of (d, a)) 
+            to a
+        {
+            xs.extract();
+        }
+    }
+}
+*/
+
+public class Store of (b, a) is org.f3.runtime.Comonad of (Store, a), org.f3.runtime.Monad of (Store, a)
+{
+    public const peek is function from b to a;
+    public const pos is b;
+
+    override public function map of c 
+	from (f is function from a to c) 
+	to Store of (b, c) 
+    {
+	Store of (b, c) 
+	{
+	    peek: f * peek;
+	    pos: pos;
+	}
+    }
+
+    public function extract to a 
+    {
+	peek(pos);
+    }
+
+    public function flatmap of c 
+	from (f is function from a to Store of (b, c)) 
+	to Store of (b, c) 
+    {
+	Store of (b, c) 
+	{
+	    peek: function from (x is b) to c 
+		{
+		    f(x).extract();
+		}
+	    pos: pos;
+	}
+    }
+
+    public function coflatmap of c 
+	from (f is function from Store of (b, a) to c) 
+	to Store of (b, c) 
+    {
+	Store of (b, c) 
+	{
+	    peek: function from (x is b) to c 
+		{
+		    f(Store of (b, a) 
+		      {
+			  peek: peek;
+			  pos: x;
+		      });
+		}
+	    pos: pos;
+	}
+    }
+}
+
+public function return of a from (x is a) to Store of (a, a) 
+{
+    Store of (a, a) {
+        peek: id of a;
+        pos: x;
+    }
+}
+
