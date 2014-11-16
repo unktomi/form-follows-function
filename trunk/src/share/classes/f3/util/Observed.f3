@@ -1,0 +1,113 @@
+package f3.util;
+import Optional.*;
+
+public abstract class Observed of a is org.f3.runtime.Monad of (Observed, a), org.f3.runtime.Comonad of (Observed, a) {
+    protected function invoke to a;
+    protected var memo is Optional of a = absent of a();
+    protected var valid is Boolean;
+    const listeners = new java.util.WeakHashMap of (Observed of ?, ());
+    var subject is Subject;
+
+    public function toObservable to Observable of a {
+        if (subject == null) {
+            subject = Subject of a {}
+        }
+        return subject
+    }
+
+    function addListener of b from (x is Observed of b) to Observed of b
+    {
+        listeners.put(x, ());
+        return x
+    }
+
+    function invalidate to ()
+    {
+        if (valid) {
+            valid = false;
+            onInvalidate()
+        }
+    }
+
+    function invalidateDependents to ()
+    {
+        for (x in listeners.keySet()) x.invalidate();
+    }
+
+    protected function onInvalidate to ()
+    {
+        invalidateDependents();
+        notifyObservers()
+    }
+
+    protected function changed to Optional of a
+    {
+        const prev = memo;
+        const current = present(extract());
+        println("prev: {prev}, curr: {current}");
+        if (current == prev) then absent of a() else current
+    }
+    
+    function notifyObservers to () 
+    {
+        if (subject <> null) {
+            foreach (x in changed()) {
+                subject.onNext(x)
+            }
+        }
+    }
+    
+    // Functor
+    override public function map of b from (f is function from a to b) to Observed of b 
+    {
+        const self = this;
+        const r = Observed of b {
+            var lastInput is Optional of a = absent of a()
+            override function invoke to b 
+            {
+                const x = self.extract();
+                const y = present(x);
+                if (lastInput != y) {
+                    lastInput = y;
+                    memo = present(f(x));
+                }
+                memo.get()
+            }
+        }
+        addListener(r)
+    }
+
+    // Monad (from Comonad)
+    public function flatmap of b from (f is function from a to Observed of b) to Observed of b {
+        const self = this;
+        const r = Observed of b {
+            override function invoke to b {
+                f(self.extract()).extract()
+            }
+        }
+        addListener(r);
+    }
+
+    // Comonad
+    public function extract to a 
+    {
+        if (not valid) {
+            memo = present(invoke());
+            valid = true;
+        }
+        memo.get()
+    }
+
+    public function coflatmap of b from (f is function from Observed of a to b) to Observed of b {
+        const self = this;
+        const r = Observed of b {
+            override function invoke to b {
+                f(self)
+            }
+        }
+        addListener(r)
+    }
+}
+
+
+
