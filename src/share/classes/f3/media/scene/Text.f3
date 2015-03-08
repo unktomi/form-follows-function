@@ -260,12 +260,16 @@ public class Area is AbstractText, Focusable, KeyboardInputHandler, MouseInputHa
 
     function unconvertX from (x is Number) to Number
     {
-        ((toSceneTransform.inverse() * textMesh.toSceneTransform) * new Point3(x, 0, 0)).x;
+        const x1 = ((toSceneTransform.inverse() * textMesh.toSceneTransform) * new Point3(x, 0, 0)).x;
+        println("unconvert {x} => {x1}");
+        return x1;
     }
 
     function convertX from (x is Number) to Number
     {
-        ((toSceneTransform * textMesh.toSceneTransform.inverse()) * new Point3(x, 0, 0)).x;
+        const x1 = ((toSceneTransform * textMesh.toSceneTransform.inverse()) * new Point3(x, 0, 0)).x;
+        println("convert {x} => {x1}");
+        return x1;
     }
 
     override function onMouseDown from (event is MouseEvent) to () 

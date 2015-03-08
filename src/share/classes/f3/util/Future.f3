@@ -1,0 +1,80 @@
+package f3.util;
+
+public abstract class Future of a is org.f3.runtime.Monad of (Future, a) {
+
+    public function onComplete(k is function from a to ()) to ();
+
+    override public function map of b from (f is function from a to b) to Future of b
+    {
+        const self = this;
+        Future of b {
+            override function onComplete from (k is function from b to ()) to () {
+                self.onComplete(function from (x is a) to () 
+                                {
+                                    k(f(x));
+                                });
+            }
+        }
+    }
+
+    public function flatmap of b from (f is function from a to Future of b) to Future of b
+    {
+        const self = this;
+        Future of b {
+            override function onComplete from (k is function from b to ()) to () {
+                self.onComplete(function from (x is a) to () 
+                                {
+                                    f(x).onComplete(k);
+                                });
+            }
+        }
+    }
+}
+
+class AbstractFuture of a extends Future of a {
+    var ks is (function from a to ())[];
+    override function onComplete from (k is function from a to ()) to ()
+    {
+        insert k into ks
+    }
+    protected function complete from (x is a) to ()
+    {
+        for (k in ks) k(x)
+    }
+}
+
+function now of a from (x is a) to Future of a {
+    Future of a {
+        override function onComplete from (k is function from a to ()) to ()
+        {
+            k(x)
+        }
+    }
+}
+
+function delay of a from (t is Duration) to Future of (()) {
+    const result = AbstractFuture of (()) {}
+    const i = t.toMillis().intValue();
+    const timer = new javax.swing.Timer(i, java.awt.event.ActionListener {
+            override function actionPerformed from (e is java.awt.event.ActionEvent) to ()
+            {
+                result.complete(());
+            }
+        });
+    timer.setRepeats(0);
+    timer.start();
+    return result;
+}
+
+
+function run to () {
+    const q = foreach (i in delay(1s)) {
+        println("delayed 1s")
+    };
+    const v = foreach (r in q, s in delay(3s)) {
+        println("delayed 3s");
+    }
+    v.onComplete(println)
+}
+
+

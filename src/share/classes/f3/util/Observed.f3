@@ -1,5 +1,6 @@
 package f3.util;
 import Optional.*;
+import Optional.absent;
 
 public abstract class Observed of a is org.f3.runtime.Monad of (Observed, a), org.f3.runtime.Comonad of (Observed, a) {
     protected function invoke to a;
