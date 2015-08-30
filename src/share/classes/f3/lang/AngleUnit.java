@@ -38,7 +38,7 @@ public enum AngleUnit {
      */
     DEGREE("deg"),
     /**
-     * Radian angular unit type.  There are 2Ï€ radians in a circle.
+     * Radian angular unit type.  There are 2pi radians in a circle.
      */
     RADIAN("rad"),
     /**

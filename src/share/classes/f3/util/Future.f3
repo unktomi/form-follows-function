@@ -61,7 +61,7 @@ function delay of a from (t is Duration) to Future of (()) {
                 result.complete(());
             }
         });
-    timer.setRepeats(0);
+    timer.setRepeats(false);
     timer.start();
     return result;
 }

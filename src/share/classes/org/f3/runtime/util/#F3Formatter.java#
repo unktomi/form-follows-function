@@ -3514,17 +3514,9 @@ public final class F3Formatter implements Closeable, Flushable {
                         FormattedFloatingDecimal.Form.SCIENTIFIC);
 
                 char[] v = new char[MAX_FD_CHARS];
-                int len = fd.getChars(v);
 
-                char[] mant = addZeros(mantissa(v, len), prec);
-
-                // If the precision is zero and the '#' flag is set, add the
-                // requested decimal point.
-                if (f.contains(Flags.ALTERNATE) && (prec == 0))
-                    mant = addDot(mant);
-
-                char[] exp = (value == 0.0)
-                    ? new char[] {'+','0','0'} : exponent(v, len);
+                char[] mant = fd.getMantissa();
+                char[] exp = fd.getExponent();
 
                 int newW = width;
                 if (width != -1)
@@ -3553,9 +3545,7 @@ public final class F3Formatter implements Closeable, Flushable {
                 // MAX_FD_CHARS + 1 (round?)
                 char[] v = new char[MAX_FD_CHARS + 1
                                    + Math.abs(fd.getExponent())];
-                int len = fd.getChars(v);
-
-                char[] mant = addZeros(mantissa(v, len), prec);
+                char[] mant = fd.getMantissa();
 
                 // If the precision is zero and the '#' flag is set, add the
                 // requested decimal point.
@@ -3578,18 +3568,14 @@ public final class F3Formatter implements Closeable, Flushable {
                         FormattedFloatingDecimal.Form.GENERAL);
 
                 // MAX_FD_CHARS + 1 (round?)
-                char[] v = new char[MAX_FD_CHARS + 1
-                                   + Math.abs(fd.getExponent())];
-                int len = fd.getChars(v);
-
-                char[] exp = exponent(v, len);
+                char[] exp = fd.getExponent();
                 if (exp != null) {
                     prec -= 1;
                 } else {
                     prec = prec - (value == 0 ? 0 : fd.getExponentRounded()) - 1;
                 }
 
-                char[] mant = addZeros(mantissa(v, len), prec);
+                char[] mant = fd.getMantissa();
                 // If the precision is zero and the '#' flag is set, add the
                 // requested decimal point.
                 if (f.contains(Flags.ALTERNATE) && (prec == 0))

@@ -24,6 +24,7 @@
 #include <windows.h>
 
 #include "util.h"
+#include <cstdio>
 
 Util::Util() {
 }

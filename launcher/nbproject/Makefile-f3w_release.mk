@@ -46,8 +46,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-mwindows -mno-cygwin -s
-CXXFLAGS=-mwindows -mno-cygwin -s
+CCFLAGS=-mwindows
+CXXFLAGS=-mwindows 
 
 # Fortran Compiler Flags
 FFLAGS=

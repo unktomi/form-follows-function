@@ -31,6 +31,7 @@ import com.sun.tools.mjavac.jvm.*;
 import com.sun.tools.mjavac.tree.*;
 
 import com.sun.tools.mjavac.code.Type.*;
+import com.sun.tools.mjavac.code.Symbol;
 import com.sun.tools.mjavac.code.Symbol.*;
 
 import static com.sun.tools.mjavac.code.Flags.*;
@@ -41,6 +42,7 @@ import javax.lang.model.element.ElementVisitor;
 import org.f3.tools.code.*;
 import org.f3.tools.tree.*;
 import org.f3.tools.util.MsgSym;
+import java.lang.annotation.Annotation;
 
 /** Helper class for name resolution, used mostly by the attribution phase.
  *
@@ -2797,6 +2799,10 @@ public class F3Resolve {
      *  Instances of subclass indicate other errors.
      */
     private class ResolveError extends Symbol {
+
+        public <A extends Annotation> A[] getAnnotationsByType(Class<A> clazz) {
+            return null;
+        }
 
         ResolveError(int kind, Symbol sym, String debugName) {
             super(kind, 0, null, null, null);

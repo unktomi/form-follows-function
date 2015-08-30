@@ -40,7 +40,7 @@ import org.f3.tools.comp.F3Defs;
 import com.sun.tools.mjavac.tree.JCTree.JCClassDecl;
 import com.sun.tools.mjavac.tree.JCTree.JCIdent;
 import com.sun.tools.mjavac.util.Options;
-import static com.sun.tools.javac.code.Flags.*;
+import static com.sun.tools.mjavac.code.Flags.*;
 
 /** Prints out a tree as an indented Java source program.
  *

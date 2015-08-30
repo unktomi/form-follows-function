@@ -25,6 +25,8 @@
 #define	_CONFIGURATION_H
 
 #include <string>
+#include <cstdlib>
+#include <cstdio>
 
 class Configuration {
 public:
